@@ -88,34 +88,3 @@ describe('unionBoxedBounds', () => {
     expect(unionBoxedBounds([box('a')], new Set(['x']))).toBeNull();
   });
 });
-
-describe('bringManyToFront / sendManyToBack keep layer membership', () => {
-  const el = (id: string, layerId: string) =>
-    ({ id, type: 'sticky', x: 0, y: 0, width: 10, height: 10, layerId }) as unknown as Element;
-
-  const elements = [el('a', 'L1'), el('b', 'L1'), el('c', 'L2'), el('d', 'L1')];
-
-  it('brings the selection to the end of the array, layerId untouched', () => {
-    const out = bringManyToFront(elements, new Set(['a']));
-    expect(out.map((e) => e.id)).toEqual(['b', 'c', 'd', 'a']);
-    expect(out.find((e) => e.id === 'a')!.layerId).toBe('L1');
-    // Its band-mates are all before it now, so it paints last within L1.
-    const inBand = out.filter((e) => e.layerId === 'L1').map((e) => e.id);
-    expect(inBand[inBand.length - 1]).toBe('a');
-  });
-
-  it('sends the selection to the start of the array, layerId untouched', () => {
-    const out = sendManyToBack(elements, new Set(['d']));
-    expect(out.map((e) => e.id)).toEqual(['d', 'a', 'b', 'c']);
-    expect(out.find((e) => e.id === 'd')!.layerId).toBe('L1');
-    const inBand = out.filter((e) => e.layerId === 'L1').map((e) => e.id);
-    expect(inBand[0]).toBe('d');
-  });
-
-  it('never reorders across bands — a lower layer still paints below', () => {
-    // 'c' sits on L2; bringing an L1 element to the front cannot lift it
-    // above L2 content, because banding is applied at render time.
-    const out = bringManyToFront(elements, new Set(['a']));
-    expect(out.filter((e) => e.layerId === 'L2').map((e) => e.id)).toEqual(['c']);
-  });
-});

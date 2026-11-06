@@ -2,7 +2,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { openTabStyleFrom, registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
+import { onAnyPage } from '@liveworkspace/workbench/components/primitives/paged-carousel-testing';
 
 // jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
 globalThis.ResizeObserver ??= class {
@@ -58,6 +60,30 @@ describe('CanvasThemeDialog placement', () => {
     expect(panel.style.bottom).toBe('68px');
   });
 
+  it("drops from a page's Style button, right edges aligned, over the brush", () => {
+    Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
+    const brush = document.createElement('button');
+    brush.setAttribute('data-tour-id', 'canvas-theme');
+    brush.getBoundingClientRect = () =>
+      ({ left: 1360, right: 1404, top: 840, bottom: 884, width: 44, height: 44 }) as DOMRect;
+    document.body.appendChild(brush);
+    const style = document.createElement('button');
+    style.getBoundingClientRect = () =>
+      ({ left: 900, right: 967, top: 120, bottom: 148, width: 67, height: 28 }) as DOMRect;
+    document.body.appendChild(style);
+    const undo = registerTabStyleOpen(() => {});
+    openTabStyleFrom(style);
+    render(<CanvasThemeDialog {...props} />);
+    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    expect(panel.style.right).toBe('473px');
+    expect(panel.style.top).toBe('156px');
+    expect(panel.style.bottom).toBe('');
+    expect(panel.style.transformOrigin).toBe('top right');
+    undo();
+    style.remove();
+    brush.remove();
+  });
+
   it('is the centred dialog without a brush', () => {
     Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
     render(<CanvasThemeDialog {...props} />);
@@ -108,6 +134,13 @@ describe('CanvasThemeDialog Finish tab', () => {
 describe('CanvasThemeDialog home', () => {
   const home = (over: Partial<ComponentProps<typeof CanvasThemeDialog>> = {}) =>
     render(<CanvasThemeDialog {...props} tab="looks" {...over} />);
+  // A look's card on whichever page holds it (the carousel mounts only the page on show and its neighbours).
+  const lookCard = (name: string) =>
+    onAnyPage(
+      'Looks',
+      () => screen.queryByRole('button', { name: new RegExp(`^${name}`) }),
+      fireEvent.click,
+    );
   const lookNames = [
     'Everyday',
     'Textbook',
@@ -132,8 +165,8 @@ describe('CanvasThemeDialog home', () => {
   it('offers the eighteen looks, each drawn as a preview', () => {
     home();
     for (const name of lookNames) {
-      const card = screen.getByRole('button', { name: new RegExp(`^${name}`) });
-      expect(card.querySelector('svg'), name).not.toBeNull();
+      const card = lookCard(name);
+      expect(card?.querySelector('svg'), name).not.toBeNull();
     }
   });
 
@@ -183,9 +216,7 @@ describe('CanvasThemeDialog home', () => {
     unmount();
     home({ themeId: 'brand', finish: 'sketch', font: null });
     for (const name of lookNames)
-      expect(
-        screen.getByRole('button', { name: new RegExp(`^${name}`) }).getAttribute('aria-pressed'),
-      ).toBe('false');
+      expect(lookCard(name)?.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('shows each setting’s current value on its Fine-tune row and opens its panel', () => {

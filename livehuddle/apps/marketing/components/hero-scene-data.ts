@@ -1,16 +1,16 @@
-// The editor-window scenes (docs/specs/019-marketing/marketing-site.md "Hero" and "Story beats"):
-// one live document per mode at work, each in the editor window it is drawn in. The hero's stage
-// plays them in turn (HeroIllustration.tsx), and each landing beat and feature category page plays
-// the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
+// The editor-window scenes (docs/specs/019-marketing/marketing-site.md "Feature scenes"): one Space in use per
+// landing beat, each in the editor window it is drawn in. Each landing beat and feature category page plays the one
+// that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
-// The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all three. hero-scenes.tsx pairs each with its board for the hero stage.
+// The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that scene's board,
+// never all three. hero-scenes.tsx pairs each with its board.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
-import { SPACE_VIEWBOX } from './hero-space-cast';
+import { TEAM_POD, viewBoxOf } from './hero-space-cast';
+import { HALL, OFFICE } from './hero-space-places';
 
-export type HeroSceneKey = 'space' | 'draw' | 'townhall';
+export type HeroSceneKey = 'space' | 'office' | 'hall';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -37,54 +37,55 @@ export type HeroSceneData = {
 
 const PORTRAIT = '0 -40 360 520';
 
-// In the order the hero's stage plays them.
+// In the order the landing beats play them.
 export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'space',
     word: 'Space',
     build: '/new?q=team%20pod',
-    short: 'Space',
+    short: 'Team Pod',
     title: 'Team Pod',
-    label: 'Space: walk in as yourself and gather round the table with your team',
+    label: 'Team Pod: walk in as yourself and gather round the table with your team',
     mode: 'workshop',
     tabs: [
       { name: 'Stand-up', color: '#10b981', active: true },
-      { name: 'Retro', color: '#f59e0b' },
-      { name: 'Planning', color: '#8b5cf6' },
+      { name: 'Coffee Corner', color: '#f59e0b' },
+      { name: 'Focus Room', color: '#8b5cf6' },
     ],
     shared: true,
-    landscapeViewBox: SPACE_VIEWBOX,
+    landscapeViewBox: viewBoxOf(TEAM_POD.stage),
     portraitViewBox: PORTRAIT,
   },
   {
-    key: 'draw',
-    word: 'Whiteboard',
-    build: '/new?q=retro',
-    short: 'Draw',
-    title: 'Sprint retro',
-    label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
+    key: 'hall',
+    word: 'All-Hands',
+    build: '/new?q=all-hands',
+    short: 'All-Hands',
+    title: 'Friday All-Hands',
+    label: 'All-Hands Hall: the room sits facing the stage, and cheers the wins together',
     mode: 'workshop',
     tabs: [
-      { name: 'Went well', color: '#10b981', active: true },
-      { name: 'To improve', color: '#f59e0b' },
+      { name: 'Main Hall', color: '#10b981', active: true },
+      { name: 'Breakout', color: '#0ea5e9' },
     ],
     shared: true,
+    landscapeViewBox: viewBoxOf(HALL.stage),
     portraitViewBox: PORTRAIT,
   },
   {
-    key: 'townhall',
-    word: 'Workshop',
-    short: 'Town hall',
-    build: '/new?q=town%20hall',
-    title: 'Q3 all-hands',
-    label: 'Town hall: questions in, votes up, answered live with the whole room',
+    key: 'office',
+    word: 'Office',
+    build: '/new?q=virtual%20office',
+    short: 'Office',
+    title: 'Our Office',
+    label: 'Virtual Office: the team walks from their desks to the meeting room to talk',
     mode: 'workshop',
     tabs: [
-      { name: 'Q&A', color: '#ef4444', active: true },
-      { name: 'Agenda', color: '#0ea5e9' },
+      { name: 'Ground Floor', color: '#10b981', active: true },
+      { name: 'Rooftop', color: '#f59e0b' },
     ],
     shared: true,
-    landscapeViewBox: '-28 -60 668 400',
+    landscapeViewBox: viewBoxOf(OFFICE.stage),
     portraitViewBox: PORTRAIT,
   },
 ];

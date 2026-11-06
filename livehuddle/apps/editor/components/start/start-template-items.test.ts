@@ -6,11 +6,7 @@ import {
   popularKindsFor,
   templateEditorMode,
 } from '@livehuddle/templates';
-import {
-  LEADING_START_GROUP,
-  TEMPLATE_STARTS,
-  type TemplateStartMode,
-} from './start-template-items';
+import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
 const MODES: readonly TemplateStartMode[] = ['workshop'];
@@ -21,14 +17,10 @@ describe.each(MODES)('the %s template start', (mode) => {
     (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
 
-  // docs/specs/007-editor/start-diagramming.md "The Spaces lead": the Spaces first, and the start opens on them.
-  it('leads with the Spaces, and opens on them', () => {
-    expect(start.groups[0]!.id).toBe(LEADING_START_GROUP);
-    expect(start.initial).toBe('spaces');
-  });
-
-  it("puts Recommended, the mode's Popular shelf, its blank first, straight after the Spaces", () => {
-    const recommended = start.groups[1]!;
+  // docs/specs/007-editor/start-diagramming.md "Recommended leads": first in the rail, and the start opens on it.
+  it("leads with Recommended, the mode's Popular shelf, its blank first, and opens on it", () => {
+    const recommended = start.groups[0]!;
+    expect(start.initial).toBe('recommended');
     expect(recommended.id).toBe('recommended');
     expect(recommended.kinds).toEqual(popularKindsFor(mode));
     expect(recommended.kinds[0]).toBe(start.blank);
@@ -53,7 +45,7 @@ describe.each(MODES)('the %s template start', (mode) => {
     expect(start.search('  ')).toEqual([]);
     expect(start.search('zzzqqq')).toEqual([]);
     const probe = {
-      workshop: ['retro', 'retrospective'],
+      workshop: ['standup', 'team-pod'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
     expect(kinds).toContain(probe[1]);
@@ -66,12 +58,12 @@ describe.each(MODES)('the %s template start', (mode) => {
 describe.each(MODES)('the %s start’s groups', (mode) => {
   const start = TEMPLATE_STARTS[mode];
 
-  it('are the catalogue’s categories, the Spaces lifted first, the rest in order, each with its label and line', () => {
-    const others = start.groups.slice(2);
+  it('are the catalogue’s categories after Recommended, in order, each with its label and line', () => {
+    const others = start.groups.slice(1);
     const ids = others.map((g) => g.id);
     const order = TEMPLATE_CATEGORIES.map((c) => c.id) as string[];
-    expect(ids).toEqual(order.filter((id) => ids.includes(id) && id !== LEADING_START_GROUP));
-    for (const g of [start.groups[0]!, ...others]) {
+    expect(ids).toEqual(order.filter((id) => ids.includes(id)));
+    for (const g of others) {
       const c = TEMPLATE_CATEGORIES.find((x) => x.id === g.id)!;
       expect([g.name, g.line]).toEqual([c.label, c.description]);
     }
@@ -79,54 +71,55 @@ describe.each(MODES)('the %s start’s groups', (mode) => {
 });
 
 describe('Start a Space', () => {
-  it('reaches every session the room runs, by its category', () => {
+  // docs/specs/007-editor/templates-by-mode.md "The catalogue": the Spaces and Recommended, nothing else.
+  it('offers Recommended, then Campus, Events, Office, Outdoor and Recreation', () => {
     expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
-      'spaces',
       'recommended',
-      'ideas',
-      'decisions',
-      'goals',
-      'meetings',
-      'people',
-      'planning',
-      'product',
-      'games',
-      'retros',
-      'strategy',
-      'learning',
+      'campus',
+      'events',
+      'office',
+      'outdoor',
+      'recreation',
     ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
-    // A cross-listed template shows in each of its categories.
-    expect(group('retros')).toContain('incident-postmortem');
-    expect(group('planning')).toContain('raci-matrix');
-    expect(group('games')).toEqual([
-      'pub-quiz',
-      'icebreaker-questions',
-      'two-truths-and-a-lie',
-      'would-you-rather',
-      'people-bingo',
-    ]);
-    expect(group('spaces')).toEqual([
+    expect(group('office')).toEqual([
       'virtual-office',
       'coworking-space',
       'team-pod',
-      'all-hands-hall',
+      'focus-library',
     ]);
-    expect(group('strategy')).toEqual(
-      expect.arrayContaining(['swot', 'pestle-analysis', 'business-model-canvas']),
-    );
-    expect(group('learning')).toEqual(expect.arrayContaining(['pub-quiz', 'kwl-chart']));
+    expect(group('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
+    expect(group('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
+    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe']);
+    // The Beach Offsite is cross-listed in Campus, after the Campus Spaces.
+    expect(group('campus')).toEqual([
+      'company-campus',
+      'conference-venue',
+      'startup-hq',
+      'school-quad',
+      'hotel-and-suites',
+      'coworking-tower',
+      'beach-offsite',
+    ]);
+    expect(group('recommended')[0]).toBe('blank-session');
   });
 
   it('lists a search match once, under its primary category', () => {
-    expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
-      { group: 'retros', kinds: ['incident-postmortem'] },
+    expect(TEMPLATE_STARTS.workshop.search('standup')).toEqual([
+      { group: 'office', kinds: ['team-pod'] },
     ]);
+    expect(TEMPLATE_STARTS.workshop.search('drinks')).toEqual([
+      { group: 'recreation', kinds: ['rooftop-bar', 'cafe'] },
+    ]);
+    // A template that left (Work Tracker #423) is found nowhere.
+    expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([]);
   });
 
-  it('lists the Spaces first among search matches, in rail order', () => {
-    const groups = TEMPLATE_STARTS.workshop.search('hall').map((g) => g.group);
-    expect(groups[0]).toBe('spaces');
+  it('lists search matches in rail order', () => {
+    const order = TEMPLATE_STARTS.workshop.groups.map((g) => g.id);
+    const groups = TEMPLATE_STARTS.workshop.search('room').map((g) => g.group);
+    expect(groups.length).toBeGreaterThan(1);
+    expect([...groups].sort((a, b) => order.indexOf(a) - order.indexOf(b))).toEqual(groups);
   });
 });
 

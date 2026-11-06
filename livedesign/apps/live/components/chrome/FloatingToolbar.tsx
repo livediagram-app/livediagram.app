@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import type { Rect } from '@livedesign/design';
 
 const GAP = 14; // canvas-space gap between the toolbar and the selection
@@ -37,8 +36,6 @@ export function FloatingToolbar({
     GAP / zoom,
     suspended,
   );
-  const minimalChrome = useMinimalChrome();
-
   return (
     <div
       ref={ref}
@@ -52,7 +49,7 @@ export function FloatingToolbar({
       className="pointer-events-auto absolute z-[var(--z-toolbar)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
       style={style}
     >
-      {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
+      {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
       {children}
     </div>
   );

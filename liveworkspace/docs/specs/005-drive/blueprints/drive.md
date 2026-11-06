@@ -110,7 +110,8 @@ Failures (`failed`): `PassAborted` stops; `BudgetSpent` continues in 1 s; `Needs
 The soonest of: `lastPassAt` + the fallback check (6 h with a live channel, 30 min without, doubled per back-off level
 up to 6 h); a failure's `retryAt`; `now + 1 s` for more, or `now` + the write interval for more after
 `DRIVE_PASS_STALLS_MAX` (3) stalled passes in a row; the plan's `nextDueAt`; the channel's renewal (expiry minus
-24 h) when still ahead. An earlier alarm already set stands. `signal` sets `now + 30 s` unless sooner is set; `check`
+24 h) when still ahead, never sooner than a second from now (`roomAlarmAt`, `@liveworkspace/api-kit/room-alarm`). An
+earlier alarm already set stands. `signal` sets `now + 30 s` unless sooner is set; `check`
 sets `now` with `flushNext` unless syncing or a pass ended within 30 s.
 
 A pass that ends with more to do is `stalled` when it moved nothing on: no row recorded or dropped (`PassState.writes`),

@@ -403,42 +403,4 @@ describe('groupCategories', () => {
     ]);
     expect(grouped[1]!.rows[0]).toMatchObject({ target: 'app:map' });
   });
-
-  it("points a readout line at the heading its row is drawn under (a common setting's, Common)", () => {
-    const line = (rowKey: string) => ({
-      setting: rowKey,
-      rowKey,
-      categoryId: 'editor',
-      categoryLabel: 'Editor',
-      label: rowKey,
-      value: 'On',
-      restorable: true,
-      changed: false,
-      reachable: true,
-    });
-    const [editor] = groupCategories(
-      'app',
-      [
-        {
-          id: 'editor',
-          label: 'Editor',
-          rows: [
-            {
-              kind: 'presetSummary',
-              key: 'preset',
-              label: '',
-              description: '',
-              lines: [line('alignmentGuides'), line('tourSeen')],
-            },
-          ],
-        },
-      ],
-      { groupOf: (rowKey) => (rowKey === 'alignmentGuides' ? 'common' : 'app') },
-    );
-    const lines = (editor!.rows[0] as Extract<SettingsRow, { kind: 'presetSummary' }>).lines;
-    expect(lines.map((l) => [l.rowKey, l.categoryId])).toEqual([
-      ['common:alignmentGuides', 'common:editor'],
-      ['app:tourSeen', 'app:editor'],
-    ]);
-  });
 });

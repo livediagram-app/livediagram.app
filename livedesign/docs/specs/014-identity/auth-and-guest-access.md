@@ -54,7 +54,7 @@ Every person the api knows is a **liveworkspace identity**, carried the same way
 1. **Account access token.** The token's `sub` is the owner id; its `email` is trusted only when `email_verified` is true.
 2. **Guest token.** A liveworkspace guest's token, verified the same way ([Guests](#guests)).
 
-When verification fails (expired token, wrong audience, sign-in not configured) the request carries on with no identity, as a link visitor, never a 401 of its own; the failure is logged as `[auth] access_token_rejected` (never the token). A page that cannot get a guest token (no accounts site) carries on with a stand-in id for that page load, and the api treats it as a link visitor too.
+When verification fails (expired token, wrong audience, sign-in not configured) the request carries on with no identity, as a link visitor, never a 401 of its own; the failure is logged as `[auth] access_token_rejected` (never the token). A page that cannot get a guest token (no accounts site: `/api/auth/guest` returns to `/auth/guest#error=guest_not_configured`, as a path, so behind the local router it lands back on the app, not on the api worker) carries on with a stand-in id for that page load, and the api treats it as a link visitor too.
 
 **A guest's token never stands in for an account's.** The editor sends the account's access token once signed in (`identityHeaders` in `apps/live/lib/api/core.ts`, shared with the unload beacon): a signed-in client whose `getToken()` resolves null asks once more with `{ skipCache: true }`, and if that is null too it throws `SessionTokenUnavailableError` rather than going on as the guest. The autosave reports both a 401 and a missing token as `unauthenticated` ([Per-tab storage](../006-design/per-tab-storage.md)).
 

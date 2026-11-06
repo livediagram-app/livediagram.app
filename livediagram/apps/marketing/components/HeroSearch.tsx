@@ -79,7 +79,7 @@ export function HeroSearch() {
       onBlur={(e) => {
         if (!rootRef.current?.contains(e.relatedTarget)) setFocused(false);
       }}
-      className="relative mx-auto mt-12 w-full max-w-2xl scroll-mt-20 text-left"
+      className="relative mx-auto mt-12 w-full max-w-2xl sm:mt-14 scroll-mt-20 text-left"
     >
       {/* Tighter gaps and padding below sm: on a 320px phone they leave the box room for its whole
           placeholder ("Search templates") beside Start Blank, instead of "Search templat". */}

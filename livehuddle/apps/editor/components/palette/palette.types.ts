@@ -1,4 +1,3 @@
-import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { EmbedProvider } from '@livehuddle/document';
 import type { ShapeKind } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -7,19 +6,10 @@ import type { PaletteTint } from '@/components/palette/palette-controls';
 export type CanvasTool =
   | 'pan'
   | 'select'
-  | 'laser'
-  | 'spotlight'
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
   | 'avatar'
   | 'eraser'
-  | 'format'
-  | 'isometric'
-  // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
-  // Picking the tool does NOT start presenting; Start is a deliberate second
-  // act. Deliberately absent from SELECTION_MODES: there is no Mode Button
-  // for it, because handing somebody else's screen into a full-screen deck is
-  // not something one person should do to another.
-  | 'slide-deck';
+  | 'format';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
@@ -30,42 +20,23 @@ export type PaletteProps = {
   // the user picks any palette tile while walking, so the add lands instead of
   // being swallowed by the read-only canvas. Omit outside the editor.
   onExitAvatarMode?: () => void;
-  // Enter zen mode (docs/specs/007-editor/zen-mode.md), offered as a Zen entry in the canvas-tool
-  // dropdown under Isometric. An action, not a tool: firing it leaves the
-  // current tool selected. Omit to hide the entry; exit stays on the zoom
-  // dock (the only chrome left in zen).
-  onToggleZen?: () => void;
   // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format / Laser / Spotlight / Isometric).
+  // need existing content (Eraser / Format).
   canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
-  // (docs/specs/012-collaboration/session-button.md session tools, docs/specs/009-elements/reaction-pad.md reactions), so a tile per choice places
+  // (docs/specs/009-elements/mode-button.md modes), so a tile per choice places
   // that choice rather than the factory default.
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livehuddle/document').SessionTool;
-      reaction?: import('@livehuddle/document').Reaction;
       mode?: import('@livehuddle/document').SelectionMode;
-      estimateScale?: import('@livehuddle/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
   ) => void;
-  // Drops a curated icon glyph (shape kind 'icon') carrying the chosen
-  // catalogue id at the viewport centre. Picked from the Icons
-  // accordion's searchable grid.
-  onAddIcon: (iconId: string) => void;
-  // Sticker (docs/specs/010-palette/stickers.md) — its own element kind, so its own handler: unlike an
-  // icon it never folds into the selected shape.
+  // Sticker (docs/specs/010-palette/stickers.md): its own element kind, so its own handler; it never folds into the
+  // selected shape. No icon handlers: livehuddle adds no icon (docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
   onAddSticker: (stickerId: string) => void;
-  // Drops a Technology (brand) icon (docs/specs/010-palette/technology-icons.md) as a STANDALONE 'icon'
-  // element carrying the chosen tech-catalogue id. Picked from the
-  // Technology tab's searchable grid; never dropped inside a shape.
-  onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
@@ -104,15 +75,13 @@ export type PaletteProps = {
   // Highlighter (docs/specs/008-canvas/highlighter.md): the pencil gesture with the marker
   // variant. Same one-shot arm semantics as onBeginFreehand.
   onBeginHighlighter: () => void;
-  // Picks up one of Draw mode's markers outside Draw mode (the Toolbar strip's Search,
-  // docs/specs/007-editor/toolbar-layout.md "Search: every element type").
-  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
   onBeginShapePen: () => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.
   onBeginPolygon: () => void;
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
+  onBeginRoomWalls?: () => void;
   // Currently-queued draw-to-size intent, or null. When set, the
   // matching palette button (shape, text, sticky, image, arrow)
   // renders pressed so the user can see what's queued for the next

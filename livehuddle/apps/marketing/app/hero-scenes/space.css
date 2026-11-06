@@ -281,7 +281,7 @@
   }
 }
 
-/* The board: Kit's cursor glides in, writes the note into Wins and moves aside; then the dot votes land. */
+/* The board: Kit's cursor glides in, writes the note into Wins and moves aside. */
 .hs-cursor {
   opacity: 0;
   animation: hs-cursor 6s ease-in-out var(--d) both;
@@ -318,23 +318,7 @@
     clip-path: inset(0 0 0 0);
   }
 }
-.hs-vote {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: hs-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d) both;
-}
-@keyframes hs-pop {
-  from {
-    opacity: 0;
-    transform: scale(0);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Reduced motion: the settled frame. Everyone at the table, Maya's bubble up, the note and the votes on the board. */
+/* Reduced motion: the settled frame. Everyone in their place, the first bubble up, the note on the notes. */
 @media (prefers-reduced-motion: reduce) {
   .hs-leg {
     animation: none;
@@ -353,7 +337,6 @@
   .hs-arrive,
   .hs-rest-cheer,
   .hs-rest-wave,
-  .hs-vote,
   .hs-note {
     animation: none;
     opacity: 1;

@@ -10,9 +10,8 @@ import {
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
 import { lucideGlyph } from '@livehuddle/ui';
-import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
+import { lucideLayers, lucideMap } from '@liveworkspace/icons/lucide';
 import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 // The categories that carry a tile: every top-level one. A sub-category
 // (one per panel under Panels, one per mode under Editor, Notifications and
@@ -30,14 +29,7 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  | 'presenting'
-  | 'layers'
-  | 'map'
-  | 'collaborate'
-  | 'quickStyle'
-  | 'notifications'
-  | 'tokens'
-  | 'webhooks';
+  'layers' | 'map' | 'collaborate' | 'notifications' | 'tokens' | 'webhooks';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -59,18 +51,14 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
 // A sub-category's glyph: the same mark its panel carries in the editor, so
 // the row is recognisable as that panel's settings. Layers and Collaborate
 // are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
-// button's glyph), at 16px. The Map and Quick Style
-// have no toolbar button, so they take Lucide's map and palette from the
-// same family. Notifications and API Tokens keep the shared bell and key.
+// button's glyph), at 16px. The Map has no toolbar button, so it takes
+// Lucide's map from the same family. Notifications and API Tokens keep the shared bell and key.
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
-const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,
-  quickStyle: () => <QuickStyleSubGlyph />,
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
   webhooks: () => <SettingsSharedGlyph id="webhooks" />,

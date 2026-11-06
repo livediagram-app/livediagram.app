@@ -26,9 +26,7 @@ function handlers(): CommandHandlers {
     openCollaborators: vi.fn(),
     undo: vi.fn(),
     redo: vi.fn(),
-    toggleZen: vi.fn(),
     fitToScreen: vi.fn(),
-    autoLayout: vi.fn(),
     autoAlign: vi.fn(),
     openExport: vi.fn(),
     openImport: vi.fn(),
@@ -42,7 +40,6 @@ const base: CommandContext = {
   isReadOnly: false,
   canUndo: false,
   canRedo: false,
-  zenMode: false,
   selectionCount: 0,
   singleIsBoxed: false,
   singleRotates: false,
@@ -55,7 +52,6 @@ const base: CommandContext = {
   // assertions live; the tool commands have their own describe block.
   canvasTool: 'select',
   canvasEmpty: false,
-  isMobile: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -91,7 +87,7 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
-// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+// The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
   it('offers neither Share nor Delete document, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });
@@ -217,10 +213,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   it('offers view / cleanup / dialog commands for editors', () => {
     expect(ids(base)).toEqual(
       expect.arrayContaining([
-        'zen',
         'fit-to-screen',
         'export',
-        'auto-layout',
         'auto-align',
         'import',
         'settings',
@@ -236,13 +230,24 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(ids({ ...base, canRedo: true })).toContain('redo');
   });
 
+  // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking".
+  it('offers no Undo, Redo or Tab Style while walking, and brings them back after', () => {
+    const history = { ...base, canUndo: true, canRedo: true };
+    const walking = ids({ ...history, canvasTool: 'avatar' });
+    for (const id of ['undo', 'redo', 'open-theme', 'open-canvas'])
+      expect(walking).not.toContain(id);
+    expect(walking).toContain('share');
+    expect(ids(history)).toEqual(
+      expect.arrayContaining(['undo', 'redo', 'open-theme', 'open-canvas']),
+    );
+  });
+
   it('read-only sessions get exactly the view-safe subset', () => {
     // The three view verbs plus the tools that only change how you LOOK at
     // the canvas. Nothing here writes to the document, which is the property
     // this test exists to hold: the eraser and the format painter are
     // withheld, and so is every command below the read-only return.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
-      'zen',
       'fit-to-screen',
       'export',
       // Reads the room, writes nothing — a viewer may ask who else is here.
@@ -250,10 +255,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:pan',
       // Walking writes nothing, so Avatar mode is every role's (docs/specs/008-canvas/avatar-mode.md "Where it lives").
       'tool:avatar',
-      'tool:laser',
-      'tool:spotlight',
-      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
-      'tool:isometric',
     ]);
   });
 
@@ -278,59 +279,29 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(h.openCollaborators).toHaveBeenCalledOnce();
   });
 
-  it('names the zen command by its direction', () => {
-    const name = (zen: boolean) =>
-      buildEditorCommands({ ...base, zenMode: zen }, handlers()).find((c) => c.id === 'zen')!.name;
-    expect(name(false)).toBe('Enter zen mode');
-    expect(name(true)).toBe('Exit zen mode');
-  });
-
   it('dispatches the app-level handlers', () => {
     const h = handlers();
     const cmds = buildEditorCommands({ ...base, canUndo: true, canRedo: true }, h);
     cmds.find((c) => c.id === 'undo')!.run();
-    cmds.find((c) => c.id === 'auto-layout')!.run();
+    cmds.find((c) => c.id === 'auto-align')!.run();
     cmds.find((c) => c.id === 'export')!.run();
     expect(h.undo).toHaveBeenCalledOnce();
-    expect(h.autoLayout).toHaveBeenCalledOnce();
+    expect(h.autoAlign).toHaveBeenCalledOnce();
     expect(h.openExport).toHaveBeenCalledOnce();
   });
 
-  // docs/specs/008-canvas/layout-cleanup.md "Layout styles": one command per explicit style, each passing
-  // its choice through to the shared autoLayout handler.
-  it('offers a command per layout style and passes the choice through', () => {
-    const h = handlers();
-    const cmds = buildEditorCommands(base, h);
-    for (const styleId of ['flow-down', 'flow-right', 'tree'] as const) {
-      cmds.find((c) => c.id === `auto-layout-${styleId}`)!.run();
-      expect(h.autoLayout).toHaveBeenLastCalledWith(styleId);
-    }
-    // The plain command stays the smart default (no explicit choice).
-    cmds.find((c) => c.id === 'auto-layout')!.run();
-    expect(h.autoLayout).toHaveBeenLastCalledWith();
-  });
-
-  it('withholds the layout style commands from read-only sessions', () => {
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-tree');
+  // Auto Layout left livehuddle (Work Tracker #423, part 4): only Auto-align tidies the tab.
+  it('offers no Auto Layout command', () => {
+    expect(ids(base).some((id) => id.startsWith('auto-layout'))).toBe(false);
   });
 });
 
 // Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
-// was the only way to reach Hand / Eraser / Laser / Spotlight / Avatar /
-// Isometric; the search panel offered none of them.
+// was the only way to reach Hand / Eraser / Avatar; the search panel offered none of them.
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:avatar',
-      'tool:eraser',
-      'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:slide-deck',
-      'tool:isometric',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:avatar', 'tool:eraser', 'tool:format']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
@@ -340,9 +311,9 @@ describe('canvas tool commands', () => {
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
     buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:laser')!
+      .find((c) => c.id === 'tool:eraser')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('laser');
+    expect(h.setTool).toHaveBeenCalledWith('eraser');
   });
 
   it('drops the content-dependent tools on an empty canvas', () => {
@@ -352,29 +323,28 @@ describe('canvas tool commands', () => {
     expect(got).toEqual(['tool:pan', 'tool:avatar']);
   });
 
-  it('withholds Spotlight on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
-    expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
+  it('offers no Laser, Spotlight, Isometric or Zen command', () => {
+    for (const id of ['tool:laser', 'tool:spotlight', 'tool:isometric', 'zen'])
+      expect(ids(base)).not.toContain(id);
   });
 
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
+  // livehuddle has no Slide Deck (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+  it('offers no Slide Deck command', () => {
+    expect(ids(base)).not.toContain('tool:slide-deck');
   });
 
-  it('gives a read-only visitor the presenting tools but not the editing ones', () => {
+  it('gives a read-only visitor the looking tools but not the editing ones', () => {
     const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:laser');
-    expect(got).toContain('tool:isometric');
+    expect(got).toContain('tool:pan');
+    expect(got).toContain('tool:avatar');
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
   });
 });
 
-describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
-  it('offers no format painter', () => {
-    const onBoard = ids({ ...base, whiteboard: true });
-    expect(onBoard).not.toContain('tool:format');
+describe('tool commands', () => {
+  it('offers the format painter', () => {
     expect(ids(base)).toContain('tool:format');
   });
 

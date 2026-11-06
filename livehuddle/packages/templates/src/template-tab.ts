@@ -1,4 +1,4 @@
-// Template tabs for the authoring paths outside the editor (docs/specs/015-api/mcp-server.md §4.5,
+// Template tabs for the authoring paths outside the editor (livediagram/docs/specs/015-api/mcp-server.md §4.5,
 // docs/specs/024-agents/edit-operations.md): the MCP's `template` argument and a changeset's
 // `replace` body. Here rather than in @livehuddle/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
@@ -8,6 +8,7 @@ import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { isBlankTemplate } from './template-modes';
+import { templateFirstFloorName } from './template-floors';
 
 // The templates an agent may build: the catalogue's (templateCatalogue), never a hidden one.
 const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);
@@ -28,7 +29,7 @@ export const CLOSEST_TEMPLATES_MAX = 5;
 const wordsOf = (text: string) => text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
 
 /**
- * The kinds an unknown one most likely meant (docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
+ * The kinds an unknown one most likely meant (livediagram/docs/specs/015-api/mcp-server.md §4.5): those whose kind or title has a
  * word starting with a word of it (of 3 letters or more), so "retro" offers the three retrospectives named for it.
  */
 export function closestTemplateKinds(given: string): TemplateKind[] {
@@ -70,5 +71,6 @@ export function buildTemplateTab(
 // the tab keeps (or takes) its own name.
 export function templateTabName(kind: TemplateKind): string | null {
   if (isBlankTemplate(kind)) return null;
-  return TEMPLATES.find((t) => t.kind === kind)?.title ?? null;
+  // A building's first tab is its first floor ("Lobby"), so the Elevator panel reads as its floors.
+  return templateFirstFloorName(kind) ?? TEMPLATES.find((t) => t.kind === kind)?.title ?? null;
 }

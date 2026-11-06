@@ -9,7 +9,7 @@ export type TemplateKind =
   // Blank Illustration (docs/specs/008-canvas/canvas-and-palette.md "Templates"): one empty page, which asks what
   // it is for. A quick-pick, never inside a category grid.
   | 'blank-illustration'
-  // The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): one empty
+  // The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Groups"): one empty
   // page whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
   | 'blank-slide-deck'
   | 'blank-article'

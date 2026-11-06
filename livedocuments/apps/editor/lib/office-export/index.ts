@@ -27,7 +27,6 @@ export type OfficeExportInput = {
   title: string;
   images?: ImageExportOpts['images'];
   resolveTabWindow?: ImageExportOpts['resolveTabWindow'];
-  tabWindowFontIds?: ImageExportOpts['tabWindowFontIds'];
 };
 
 export type OfficeExportResult =

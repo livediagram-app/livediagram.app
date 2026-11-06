@@ -43,11 +43,14 @@ test.describe('Viewport on add', () => {
     // On livedocuments, not This Browser: the autosave is read back through the api.
     await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
     const canvas = page.locator(CANVAS);
-    // Dropped at the far corner, so only a fit would bring it back to the middle.
+    // Dropped at the far corner of what shows beside the Contents sidebar (docked from the first page,
+    // docs/specs/007-editor/pages-mode.md "Contents"), so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;
+    const contents = (await page.locator('[data-contents-sidebar]').boundingBox())!;
+    const shows = contents.x + contents.width - box.x;
     await (
       await paletteTile(page, 'Add Square')
-    ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
+    ).dragTo(canvas, { targetPosition: { x: shows + 80, y: box.height - 80 } });
     await page.keyboard.press('Escape');
     // Let the autosave land before reloading.
     await expect
@@ -66,10 +69,13 @@ test.describe('Viewport on add', () => {
     await page.reload();
     const square = page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);
+    // Framed in the middle of what shows beside the sidebar (pages-mode.md "Framing beside it").
     await expect(async () => {
       const after = (await page.locator(CANVAS).boundingBox())!;
+      const docked = (await page.locator('[data-contents-sidebar]').boundingBox())!;
+      const left = docked.x + docked.width;
       const at = centre((await square.boundingBox())!);
-      expect(Math.abs(at.x - (after.x + after.width / 2))).toBeLessThan(40);
+      expect(Math.abs(at.x - (left + (after.x + after.width - left) / 2))).toBeLessThan(40);
     }).toPass({ timeout: 5_000 });
     expectNoPageErrors(pageErrors);
   });

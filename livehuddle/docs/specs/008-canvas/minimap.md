@@ -27,7 +27,7 @@ lets you jump the viewport anywhere with a tap or drag.
   every preference is in Settings, and one setting with two controls is one control too many.
 - **What it shows.** A **full-fidelity miniature of the tab**: the map is
   drawn by the SAME headless renderer the exports / live image use
-  (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
+  (`svgBoxed` / `svgArrow`, [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §5), so every element appears with its
   real colours, silhouette, table grid, freehand stroke, icon glyph (the
   Technology marks pop in when the async catalogue lands), rotation, and
   every arrow with its true curved / elbow path, not a grey wireframe. That
@@ -59,7 +59,7 @@ lets you jump the viewport anywhere with a tap or drag.
   renderer writes itself (a checklist's items, a legend's labels) is in the
   element's text colour, else `defaultTextColor(element, surface)` as on the
   canvas, never a fixed dark ink, so the SVG, PNG and PDF exports of a dark
-  page read too. The Layers panel's previews follow the same rule.
+  page read too.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags

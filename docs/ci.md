@@ -50,6 +50,71 @@ Turbo's own cache (`.turbo/cache`) is kept between runs with GitHub's cache, sav
 read by pull requests, so a workspace whose inputs haven't changed since `main`'s run replays its
 result.
 
+### Cache pruning
+
+Every run on `main` saves its turbo and Next build caches under a key ending in its commit, and a
+restore takes the newest of each family, so the older copies are never read again. They still count
+against the repository's 10 GB of cache storage, and past it GitHub evicts the least recently used
+caches of every family: on 2026-11-06 the repository held 10.65 GB, 6.04 GB of it superseded copies.
+**Cache prune** (`cache-prune.yml`) runs `.github/scripts/cache-prune.mjs` whenever CI or E2E finishes
+on `main`, and deletes every cache a newer one of the same family (key without its commit, on the same
+ref) replaced. A key without a commit, such as setup-node's pnpm store, is never touched. It runs
+`main`'s own script and checks out nothing else, so its `actions: write` never meets a pull request's
+code.
+
+## Runs on main
+
+CI, E2E and CodeQL keep one run per branch. On a pull request, a newer push cancels the older run. On
+`main`, a run that has started always finishes: a newer push waits behind it, and a still newer one
+replaces the one waiting, so at most one run runs and one waits. A run started by hand is never
+cancelled. So that the commits a replaced run skipped are still checked, a push to `main` plans against
+the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit
+just before it, and with no such commit everything runs. A failure on `main` is therefore pinned on the
+commits since the last green one. Until 2026-11-06 every commit on `main` ran to the end, and a burst of
+merges kept jobs waiting a median 16 minutes for one of the free plan's 20 runners. For an hour after
+that, a push to `main` cancelled the run in progress, and with merges landing faster than a run takes
+no run on `main` finished, so staging never deployed; letting the running one finish ends that (each
+product's `docs/specs/016-platform/deployment.md` "Runs on main cancel older ones").
+
+## Fail fast
+
+On a pull request, a commit that is already red stops spending runners. Over the 80 pull request
+commits before 2026-11-06, 1,527 of their 9,248 CI and E2E runner minutes (17%) ran after one of
+their jobs had already failed.
+
+- **The step.** Every job of CI and E2E that checks out (Plan, Checks, Tests, the editor shards and
+  Build in `ci.yml`; Plan in `e2e.yml`; each product's smoke build, smoke shards, sites audit and
+  signed-in specs in `e2e-product.yml`) ends with **Cancel on failure**
+  (`.github/actions/cancel-on-failure`), run only `if: failure() && github.event_name ==
+'pull_request'`. It runs on the runner that just failed, so it starts at once; a job of its own
+  would wait for everything it watched and then queue for a runner. It calls
+  `.github/scripts/cancel-on-failure.mjs`, which lists the commit's unfinished pull request runs of
+  `ci.yml` and `e2e.yml` (by the pull request's head commit) and cancels them. It never fails the job
+  further, and on a fork's read-only token it logs and does nothing.
+- **Never its own run.** Cancelling the run it is in would also stop that run's other jobs, but GitHub
+  then records the failing job itself as `cancelled`, not `failure`: a probe on pull request #1356 (a
+  job that failed a step and then cancelled its own run) came out `cancelled`, as did the run. That
+  hides the red, so the step cancels only the other workflow: CI's failure cancels E2E, E2E's cancels
+  CI. The failing workflow's other jobs run to the end, which also means each of them still reports
+  its own failures.
+- **The required checks stay red.** A cancelled run's **CI** or **E2E** gate still runs (`if:
+always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a red pull request
+  never looks mergeable.
+- **Reruns.** `gh run rerun --failed` (and **Re-run failed jobs**) reruns a run's cancelled jobs as
+  well as its failed ones (seen in the probe). A retry without a fix reruns the failed jobs of both
+  workflows, the cancelled one included.
+- **Only pull requests.** A push to `main`, a run by hand and the deploys always run to the end: the
+  step's `if:`, the action's own `if:` and the script each check the event.
+  `.github/scripts/cancel-on-failure.test.mjs` holds the step as the last of every such job, guarded
+  to pull requests, with `actions: write` granted (the jobs' own `permissions`, and `e2e.yml`'s calls
+  of `e2e-product.yml`, which can grant no more than its callers). Exempt: the **CI** and **E2E**
+  gates, and the coverage report, whose failure never gates. A same-repository pull request's jobs
+  already run code its author can push, and a fork's token stays read-only, so `actions: write` opens
+  nothing new.
+- **The trade-off.** A commit with two separate failures, one in each workflow, shows only the first
+  until it runs again: in the sample 4 of 24 red commits had two, 3 of them from a breakage on `main`
+  since fixed.
+
 ## Workflows
 
 - **CI** (`ci.yml`), on every pull request and every push to `main`. Its Plan job also writes the
@@ -70,11 +135,13 @@ result.
   - **CI:** one job that fails when any of the above failed, and passes when nothing needed to run.
     It's the check to require on `main`.
 - **E2E** (`e2e.yml`, calling `e2e-product.yml` per product), on every pull request and push to
-  `main`, for each product whose editor a change reaches: one smoke build shared by three smoke shards, the sites audit and the
+  `main`, for each product whose editor a change reaches: one smoke build shared by the smoke shards (three for livediagram, whose smoke specs take about three minutes a shard; two for the others, whose shards take about a minute and a half on three), the sites audit and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
 - **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
   opens or updates that product's issue, **Canvas performance budget: <product>**.
+- **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
+  [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
 - **Dependency updates** (`dependabot.yml`): Dependabot, weekly, for the npm tree (one lockfile for every
   product) and the actions. Minor and patch bumps come grouped, dev apart from production; each major
@@ -82,14 +149,21 @@ result.
   `@huggingface/transformers` major.
 
 - **Deploys** (`deploy-staging.yml` and `deploy-production.yml`, both calling `deploy.yml`, which calls
-  `deploy-worker.yml` per Worker): see [Deploys](#deploys).
+  `deploy-group.yml` once per group of Workers): see [Deploys](#deploys).
 
 - **CodeQL** (`codeql.yml`): one Analyze job scans the whole repository (Actions and
-  JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
+  JavaScript/TypeScript) but its test code, on every pull request, every push to `main` and weekly on Mondays, so newly
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
   The job may run for 60 minutes: since the livehuddle fork a full analysis takes 21 to over 30, and a run
   cancelled at its limit leaves the PR's required CodeQL result missing until it runs again.
+  `.github/codeql/codeql-config.yml` leaves out the unit tests and e2e specs (37% of the code it read,
+  measured 2026-11-06): they never ship, and their alerts don't block a merge. It keeps the default
+  query suite, which GitHub's incremental pull request analysis needs; that analysis is behind a GitHub
+  feature flag not yet on for this repository (the log says `overlay database mode: none`), and the
+  action turns it on by itself once it is. GitHub's separate Code Quality scan (a second CodeQL run of
+  11 to 21 minutes on every push) was turned off on 2026-11-06 to free runners: the `main` ruleset no
+  longer requires it.
 
 - **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
   chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
@@ -186,8 +260,10 @@ each product's api, sites, MCP and router, and the platform's services and site.
   check for `main`'s tip and deploys the head of the branch it was started on, moving
   `deployed/staging` there, so production's default then ships that commit.
 - **Production** is a manual gate (`deploy-production.yml`): run **Deploy Production** from the Actions
-  tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs. A
-  `ref` ships another commit; one older than production's own (a rollback) redeploys every Worker, as
+  tab, or `gh workflow run deploy-production.yml`. By default (**Deploy Staging Tip**) it ships
+  exactly what staging runs; **Deploy Latest Main** ships `main`'s tip instead, to move faster than
+  staging (`gh workflow run deploy-production.yml -f source='Deploy Latest Main'`). A `ref` ships
+  another commit instead of either; one older than production's own (a rollback) redeploys every Worker, as
   **all** does. Required reviewers on the `production` environment, if set in the repository's
   settings, add a second gate before anything deploys.
 
@@ -206,6 +282,30 @@ apply`), then the sites and MCP Workers, then the routers in front of them. Two 
 (`TIER_OF` in `ci-plan.mjs`): accounts deploys with the sites, once every Worker that checks its tokens
 accepts the issuer it signs with, and liveworkspace's bare-domain redirect with the routers, once
 `www.` answers. A failing tier stops the ones after it.
+
+**Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
+sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.
+The plan names each Worker's group (`deploy-group.mjs`), and each group's job checks out and installs
+once, then deploys its Workers one after another (`node .github/scripts/deploy-group.mjs`). The plan and
+the group jobs run the deploy workflows' own `.github/scripts` (from `github.workflow_sha`, the newest
+main) over the commit being deployed, so a change to a workflow and its scripts together can't meet an
+older commit's scripts: on 2026-11-04 the deploys of commits from before the grouped jobs planned no
+groups and failed until main's CI caught up. Before
+2026-11-04 every Worker had a job of its own: a production deploy was about 40 one-minute jobs, each
+waiting for a runner behind pull requests' CI (a median 8.4 minutes, up to 25, measured that day), and
+half of each job was the same checkout and install. Now a full deploy's Workers queue for a runner 8
+times (1 job, then 6 side by side, then 1) instead of about 40, and each group's job has a limit sized from the
+measured step times: 10 minutes, plus 6 per Worker that builds a site and 2 per other Worker, with 15
+minutes for any one command.
+
+- **Each Worker is visible.** Its output is a log group of its own, named for it, and the job's summary
+  lists every Worker with its result, the step it failed at, and its time.
+- **One failure doesn't hide the rest.** A Worker whose step fails stops there (a failing migration
+  never deploys the code after it), and the group goes on with its other Workers. The job fails at the
+  end when any Worker failed, which stops the tiers after it, as before, and leaves the tag where it was.
+- **A retry is safe.** Re-running a failed job deploys its whole group again, the Workers that
+  succeeded included. That is harmless: `wrangler deploy` of the same commit puts up the same code and
+  vars again, and `wrangler d1 migrations apply` skips the migrations already applied.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
 product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's

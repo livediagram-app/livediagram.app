@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
   isBoxed,
+  textSizeFields,
   type BoxedElement,
   type Element,
   type Tab,
@@ -37,6 +38,9 @@ export function useElementHelpers(opts: {
   activeId: string;
   activeTab: Tab;
   editsBlocked: boolean;
+  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): the Format tool never paints
+  // onto one.
+  layerInertIds?: ReadonlySet<string>;
   formatSourceId: string | null;
   // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.
@@ -52,6 +56,7 @@ export function useElementHelpers(opts: {
     activeId,
     activeTab,
     editsBlocked,
+    layerInertIds,
     formatSourceId,
     formatConfig,
     commit,
@@ -118,7 +123,7 @@ export function useElementHelpers(opts: {
       width,
       height,
       // Seed the tab's default text size onto the new element (docs/specs/004-interface-design/fonts.md).
-      ...(activeTab.defaultTextSize ? { textSize: activeTab.defaultTextSize } : {}),
+      ...(activeTab.defaultTextSize ? textSizeFields(base.type, activeTab.defaultTextSize) : {}),
     });
     // Single commit that both adds the element and marks the template
     // picker as dismissed for this tab (if it was still showing).
@@ -183,6 +188,11 @@ export function useElementHelpers(opts: {
     const boxedPair = !!target && isBoxed(source) && isBoxed(target);
     const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
     if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
+    // A lock holds an element's look as well as its place (docs/specs/008-canvas/format-panel.md "Locks"): a
+    // locked element, one on a locked layer and everything on a locked tab refuse the paint, and the brush stays
+    // loaded. A locked source still lends its look: copying it changes nothing.
+    if (target.locked === true || activeTab.locked === true || layerInertIds?.has(target.id))
+      return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to

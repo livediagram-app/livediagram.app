@@ -72,8 +72,9 @@ export type AvatarConfig = {
 
 // The statuses a character can show in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), the one list both
 // ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
-// receiver's type does not name.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away'] as const;
+// receiver's type does not name. `dnd` (Do Not Disturb) is livehuddle's call status (its
+// docs/specs/012-collaboration/meeting-rooms-and-stage.md): every product parses and draws it, only livehuddle offers it.
+export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away', 'dnd'] as const;
 export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
 
 export type AvatarPresence = {
@@ -108,10 +109,15 @@ export type AvatarPresence = {
   // clients, and reaches D1 and undo not at all. Optional so a
   // packet from an older client still parses as "standing".
   seatedOn?: string | null;
+  // Which of the piece's seats (its `seatPoints` index), when the sitter sat (the sender's epoch ms) and a random
+  // tiebreak drawn then (docs/specs/009-elements/chair.md "Occupancy is presence"): a seat takes one sitter, and two
+  // who sat at once settle it the same way on every machine, the earlier `at` then the lower `tie` keeping it.
+  // Optional so an older client's packet parses: it holds the seat nearest its feet. Sent only while seated.
+  seat?: { index: number; at: number; tie: number } | null;
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"), from a water cooler or a coffee machine,
   // or none. Presence like the seat: put down after a minute or on leaving the mode, never in the document.
   // Optional so an older client's packet parses as empty-handed; anything else draws nothing.
-  holding?: 'water' | 'coffee' | null;
+  holding?: 'water' | 'coffee' | 'juice' | 'soda' | null;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none. Presence for the session only;
   // a receiver draws only a status it knows. Optional so an older client's packet parses as no status.
   status?: AvatarStatus | null;

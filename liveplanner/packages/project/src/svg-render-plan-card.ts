@@ -293,7 +293,7 @@ function runningBit(item: Item, type: ItemTypeDef, p: PlanPalette): Bit | null {
 }
 
 // A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
-// board's done columns (a Rollup's Count Done too). A Formula reads the card itself, so a lone card draws it too (none
+// board's done columns (a Rollup's Count Done reads 0 without them). A Formula reads the card itself, so a lone card draws it too (none
 // when it can't be worked out; docs/specs/026-plan/item-types.md "Formula fields"); a Rollup or Lookup reads the
 // cards ("Rollup and Lookup fields").
 function calculatedOf(

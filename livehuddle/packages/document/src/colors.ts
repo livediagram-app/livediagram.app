@@ -1,3 +1,4 @@
+import { isMeetingPieceShape } from './meeting-pieces';
 import { parseCssColour, parseCssColourAlpha } from '@liveworkspace/model-core/css-colour';
 import {
   DEFAULT_BACKGROUND_COLOR,
@@ -18,7 +19,14 @@ import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
 import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
-import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
+import { isOfficeShape, ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK } from './office';
+import {
+  GARDEN_PATH_FILL,
+  GARDEN_PATH_FILL_DARK,
+  GRASS_FILL,
+  GRASS_FILL_DARK,
+} from './office-garden';
+import { POND_FILL, POND_FILL_DARK } from './office-social';
 import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -195,11 +203,6 @@ export function inkOn(color: string): string {
   return bestInk(color, '#0f172a', '#ffffff');
 }
 
-// The green that means FINISHED on the Collaborate cards: a resolved comment
-// thread, a done action (docs/specs/012-collaboration/comment-pin.md, action-panel.md). One value, so the
-// canvas and the export agree on what done looks like.
-export const COLLAB_DONE_COLOR = '#16a34a';
-
 // The ink for dark paper: the blue-slate set of the Default scheme's dark half
 // (docs/specs/008-canvas/canvas-and-palette.md) — fill a step above the backdrop, a slate-500 stroke
 // at 3:1 or better on both, white text. Sticky notes, images, link cards
@@ -217,23 +220,28 @@ export const DARK_INK = {
 
 // The Behaviour elements that look like controls or furniture store no
 // colour (behaviour-skin.ts); these are their unstyled looks per surface. The
-// buttons (mode, session: the timer, vote and poll; picker) wear a real UI
-// button's skin, a light card on light paper and a raised slate one on dark,
-// never the shape default, so they read as pressable before anyone styles
-// them. The reveal cover and the chair paint themselves; only their outline
-// and label ink follow the paper.
-// The Reveal cover's opaque base, from the PAPER under it rather than the
-// app's appearance, so a dark theme in light mode still gets a dark cover
-// (docs/specs/009-elements/reveal-zone.md "The look"). Shared by the canvas
-// face and the headless renderer (exports, the minimap), so the two cannot
-// drift: the renderer once hard-coded the light base and drew a white cover
-// on a dark canvas's map.
-export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
-  light: '#f1f5f9',
-  dark: '#172131',
-};
+// mode button wears a real UI button's skin, a light card on light paper and a
+// raised slate one on dark, never the shape default, so it reads as pressable
+// before anyone styles it. The chair paints itself; only its outline and label
+// ink follow the paper.
 const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
 const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
+
+// The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
+const FLOOR_FILLS: Record<
+  'room' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond',
+  readonly [string, string]
+> = {
+  // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").
+  pond: [POND_FILL, POND_FILL_DARK],
+  // A door paints the gap it cuts in a wall in the room's floor (docs/specs/009-elements/room-builder.md "Door").
+  door: [ROOM_FLOOR, '#292524'],
+  'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
+  grass: [GRASS_FILL, GRASS_FILL_DARK],
+  room: [ROOM_FLOOR, '#292524'],
+  rug: [RUG_FILL, '#713f12'],
+  stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
+};
 
 function behaviourSkin(
   element: BoxedElement,
@@ -241,40 +249,40 @@ function behaviourSkin(
 ): { fill: string; stroke: string; text: string } | null {
   if (element.type !== 'shape') return null;
   const kind = element.shape;
-  if (kind === 'mode-button' || kind === 'session-button' || kind === 'picker') {
+  if (kind === 'mode-button') {
     return surface === 'dark' ? CONTROL_SKIN_DARK : MODE_BUTTON_SKIN;
   }
   // A fence (docs/specs/009-elements/fence.md) is timber: a wood brown on each paper, no box.
-  // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) paints its own pixels in the sprite's palette, no box.
-  if (kind === 'avatar-pad') {
-    return { fill: 'transparent', stroke: 'transparent', text: OUTLINE_SKIN_LIGHT.text };
-  }
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
-  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
-  // deep on dark. Their outlines are the furniture's.
-  if (kind === 'room' || kind === 'rug') {
-    const fill =
-      kind === 'room'
-        ? surface === 'dark'
-          ? '#292524'
-          : ROOM_FLOOR
-        : surface === 'dark'
-          ? '#713f12'
-          : RUG_FILL;
+  // A room's floor, a rug and a stage's top are the element's fill (docs/specs/009-elements/office.md): warm on
+  // light paper, deep on dark, a stage a little lighter than the room it stands in. Their outlines are the
+  // furniture's.
+  if (
+    kind === 'room' ||
+    kind === 'rug' ||
+    kind === 'stage' ||
+    kind === 'garden-path' ||
+    kind === 'grass' ||
+    kind === 'door' ||
+    kind === 'pond'
+  ) {
+    const fill = FLOOR_FILLS[kind][surface === 'dark' ? 1 : 0];
     return surface === 'dark'
       ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill, ...OUTLINE_SKIN_LIGHT };
   }
-  if (kind === 'reveal' || isSeatingShape(kind) || isOfficeShape(kind)) {
-    if (surface === 'dark') {
-      return { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text };
-    }
-    // The reveal cover's stroke is its ACCENT (docs/specs/009-elements/reveal-zone.md "The look"), so on
-    // light paper it takes the shape accent, not the chair's grey outline.
-    return kind === 'reveal'
-      ? { fill: 'transparent', stroke: '#0ea5e9', text: OUTLINE_SKIN_LIGHT.text }
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) paint themselves like the furniture,
+  // and so does an Avatar Pad (docs/specs/009-elements/avatar-pad.md): its outlines in the furniture's ink, no box.
+  if (
+    isSeatingShape(kind) ||
+    isOfficeShape(kind) ||
+    isMeetingPieceShape(kind) ||
+    kind === 'avatar-pad'
+  ) {
+    return surface === 'dark'
+      ? { fill: 'transparent', stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill: 'transparent', ...OUTLINE_SKIN_LIGHT };
   }
   return null;
@@ -358,23 +366,9 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // A frame is a section BACKDROP you place elements inside (docs/specs/008-canvas/canvas-and-palette.md), so with
-  // no explicit fill it is see-through on either surface, whatever the shape
-  // default would be. It is still fillable: set `fillColor` and the frame
-  // paints that behind its contents, which is safe because frames sort to the
-  // front of their band and therefore paint below their band-mates (layers.ts).
-  //
-  // This used to be hardcoded as `fill="none"` in the canvas renderer instead,
-  // which had two consequences: a background colour picked in the context menu
-  // did nothing, and the headless renderer (exports, the minimap) never got
-  // the memo and filled every frame with the shape default, so a frame that
-  // was transparent on the canvas exported pale blue.
   // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
   // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
-  if (
-    element.type === 'shape' &&
-    (element.shape === 'frame' || element.shape === 'boundary' || element.shape === 'stack')
-  )
+  if (element.type === 'shape' && (element.shape === 'boundary' || element.shape === 'stack'))
     return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
@@ -472,7 +466,7 @@ export function defaultStrokeColor(
 }
 
 // Whether an element exposes a BACKGROUND colour control. Text and images
-// have no fill to expose; everything else does, including a frame, whose fill
+// have no fill to expose; everything else does, including a boundary, whose fill
 // merely defaults to transparent.
 //
 // Call sites used to ask `defaultFillColor(el) !== 'transparent'` as a proxy
@@ -588,9 +582,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'checklist',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
-  // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
+  // Behaviour elements (docs/specs/009-elements/portal-element.md): the ring IS the element.
   'portal',
-  'reveal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
   // which is what the canvas does too (isSvgRenderedShape excludes it).
   'chair',
@@ -608,9 +601,48 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'water-cooler',
   'coffee-machine',
   'rug',
-  // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
-  // them would frame a circle in a square.
-  'quiz',
+  'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md). Each draws itself.
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
+  // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
+  'directory',
+  'elevator',
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) draw themselves.
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
+  // A Door (docs/specs/009-elements/room-builder.md "Door") draws its jambs, leaf and swing: no border of its own.
+  'door',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
@@ -629,8 +661,8 @@ export function supportsBorderControls(element: Element): boolean {
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether
 // dropping a palette icon on it (or adding one while it's selected) folds
 // the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
-// glyph, and a `frame` is a section container you place elements INSIDE,
-// not decorate (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
+// glyph, and a `stack` is a container you place elements INSIDE,
+// not decorate (docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
 // standalone `icon` element instead of attaching. One predicate so all
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
@@ -639,10 +671,10 @@ export function supportsBorderControls(element: Element): boolean {
 // and the callout as its badge glyph; the banner, stat row and process have
 // nowhere to put one, so an icon dropped on them stands alone.
 //
-// Nor do the Behaviour and Collaborate elements that draw their own face
-// (hasOwnFace: the collaboration cards, the buttons, the picker, the reveal
-// cover, the chair...): their face never renders an inline icon, so one folded
-// in would be invisible. Dropped on them, it stands alone too.
+// Nor do the Behaviour elements that draw their own face (hasOwnFace: the
+// buttons, the chair, a retired element's placeholder...): their face never
+// renders an inline icon, so one folded in would be invisible. Dropped on
+// them, it stands alone too.
 // Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
 // a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
 // (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
@@ -678,7 +710,6 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
-    element.shape !== 'frame' &&
     element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&

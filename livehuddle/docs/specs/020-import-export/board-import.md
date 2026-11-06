@@ -1,5 +1,7 @@
 # Board import
 
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/board-import.md) is the one to read and change. livehuddle imports no board from another tool. The image pipeline it shared stays for image search ([Import image pipeline](import-image-pipeline.md)). The rest of this page records what livehuddle had.
+
 One shape for every "bring a board from another tool" import: a source file,
 folder or paste becomes a [board scene](board-scene.md), the scene
 lands as the contents of a tab, its images go through the

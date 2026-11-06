@@ -274,6 +274,11 @@ updatedAt}`; 409 `folder_exists`, `cycle`. Deleting moves children (folders and 
   Default Folders lists the app's entry, the app's modes and kinds (`defaultFolderOptions`), then its template
   families. An explicit
   `folderId: null` is the root chosen on purpose and wins over any default.
+- **Retired default keys** (`RETIRED_PLACEMENT_KEYS`): a key an app no longer offers an entry for (livehuddle's
+  `livehuddle:mode:workshop`, which repeated its app entry, and `livehuddle:template:retrospective`, whose templates
+  left) is never dropped. It reads as the app's own key: a create tries it after the app's key, in the list's order,
+  and the Explorer shows it as the app's entry while that holds none. Clearing the app's entry clears its retired
+  keys too, so the entry says what a create does; setting it leaves them, since the app's key wins.
 
 ## Sharing and access
 
@@ -284,6 +289,19 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   out; any other value is 400 `invalid_expiry`, as a bad `level` is `invalid_level`, never a link that lasts for ever.
   `POST /items/:id/share {public: true}` makes a public link (a Community post's): it never asks for the
   item's share password, and while one is set it opens nothing (404), as if closed.
+- The levels a new link may grant are each app's (`APP_LINK_LEVELS`, most capable first) and so is the level a link
+  made without one grants (`APP_DEFAULT_LINK_LEVEL`), both in `packages/index-client`: every app offers Editor,
+  Participant and Viewer and starts at Editor, except livehuddle, which offers Editor and Participant and starts at
+  Participant ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#what-a-new-share-offers)).
+  `POST /items/:id/share` with a level the item's app does not offer is 400 `level_not_offered`, and so is a
+  `PATCH /share/:code` that changes a link to one; a link already holding such a level (made before the app stopped
+  offering it) keeps working, opens at its level and can be rescoped to another tab. A public link is always `view`,
+  outside the table. The shared Share dialog reads the same table for the item's app: its role picker lists the
+  offered levels with the default chosen, and a pass whose level is no longer offered reads "Viewer (Legacy)".
+  Each level's card carries a one-line blurb, the same for every app (`LEVEL_PASS` in
+  `packages/explorer/src/dialogs/share/parts.tsx`) unless the app words it its own way (`APP_LEVEL_BLURBS`, keyed
+  by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
+  nothing." ([livehuddle Share roles](../../../../livehuddle/docs/specs/013-workspace/share-roles.md#a-participant-walks)).
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
@@ -297,6 +315,8 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   lists), and the app is told to reload every link's sessions (`revoke`, `reason: "rescoped"`, below), so they meet
   the password; entering it records them again. Saving the same password, or removing it, sends no one away.
 - `GET /shared` (with the lens's filters), `DELETE /shared/:itemId`.
+- A connected tab's pass is a share link like these, made by `POST /items/:id/connections` and handed out only by
+  `GET /connections/:id` ([connected-tabs.md](connected-tabs.md)).
 
 Who gets what, the rule the grant applies: the owner of a personal item, and every joined member of a team item's
 team, edit everything; anyone else needs a live share link (its level, and its tab when it is scoped to one). A team
@@ -453,6 +473,9 @@ never tried.
 - **The room's alarm** drains on idle and at most once a minute, and never before the earliest key's wait is over;
   a drain sends only the keys whose wait is over, so a key in backoff never holds back a fresh one. With nothing
   owed but parked keys, the alarm is not set for the outbox at all.
+- **The room's one alarm** is the earliest of everything the room has due (the outbox, its shared tabs, grants to ask
+  for or lapse, the Community check, upkeep), and never sooner than a second from now, whatever is due
+  ([architecture.md](../002-architecture/architecture.md#a-durable-objects-alarm)).
 
 A tab shared between items (each app's `tab-<item>-many-to-many.md`) keeps the same count on `share_outbox`: a
 send the other holder fails waits a minute, doubling, at most an hour, and is parked after 12 failures

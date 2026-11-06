@@ -31,17 +31,16 @@ export function elementIndicatorItems(
   showComments = true,
 ): IndicatorItem[] {
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
-  const shape = element.type === 'shape' ? element.shape : undefined;
-  // A comment pin and an action panel show theirs on their face; a link card IS its link; an
-  // annotation's marker is its note. A done action stops showing.
+  // A link card IS its link; an annotation's marker is its note. A done action stops showing. A retired
+  // comment pin or action panel (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") shows its
+  // thread and its action here like any element, since its own face is gone.
   const link =
     element.type !== 'link-card' &&
     element.link &&
     (element.link.kind === 'tab' || element.link.kind === 'document' || element.link.kind === 'url')
       ? element.link
       : undefined;
-  const assignee =
-    shape !== 'action-card' && isOpenAction(element.action) ? element.action?.assignee : undefined;
+  const assignee = isOpenAction(element.action) ? element.action?.assignee : undefined;
   const assigneeName = assignee?.name?.trim() || 'a teammate';
   return buildIndicatorItems({
     link: link
@@ -60,8 +59,7 @@ export function elementIndicatorItems(
         }
       : undefined,
     comments: {
-      count:
-        shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
+      count: !showComments ? 0 : activeCommentCount(element.commentThread),
       onOpen: () => onOpenComments(element.id),
     },
   });

@@ -1,19 +1,14 @@
 import type { PaletteTileDef } from './palette-tile-defs';
 
-// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): which modes show
-// the bar, whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
+// The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar"): whether it has room to name its categories, how each one's tiles are laid out in its flyout, the short line under its name, and
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
 
-import type { EditorMode } from '@livehuddle/document';
-
-/** The modes whose strip is a category bar: Workshop, the one mode. */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop']);
+import { SPACE_CATEGORIES } from './space-categories';
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
 const BAR_LABELS: Readonly<Record<string, string>> = {
   write: 'Write',
-  'my-shapes': 'Library',
 };
 
 export function barLabel(categoryId: string, label: string): string {
@@ -41,7 +36,7 @@ export function flyoutColumns(categoryId: string): number {
 // dividers would split twelve tiles into groups of one and three.
 const UNGROUPED: ReadonlySet<string> = new Set(['popular']);
 
-/** A card category's columns: one for a short list (Media's two), so its flyout is narrow; two otherwise. */
+/** A card category's columns: one for a short list (three or fewer), so its flyout is narrow; two otherwise. */
 export const SHORT_CARD_LIST = 3;
 export function flyoutCardColumns(tileCount: number): 1 | 2 {
   return tileCount <= SHORT_CARD_LIST ? 1 : 2;
@@ -50,38 +45,25 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 // The line under a flyout's name: what the category is for, short enough for one line at 26rem. A category not
 // listed falls back to its own description.
 const TAGLINES: Readonly<Record<string, string>> = {
-  popular: 'The tiles a diagram is most often built from.',
+  popular: 'What a Space is most often furnished with.',
   shapes: 'The basics, the flowchart vocabulary and more.',
-  'my-shapes': 'Shapes from your imported libraries.',
-  write: 'Words on the canvas: text, notes and comments.',
+  write: 'Words on the canvas: text and sticky notes.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
   diagrams: 'Structures that grow as you type.',
   layout: 'Lanes, frames and the parts that label a diagram.',
   concepts: 'Ideas laid out as one element that arranges itself.',
-  icons: 'Single-colour glyphs for any idea.',
   technology: 'Cloud and infrastructure marks for architecture.',
-  media: 'Pictures and people.',
   stickers: 'Colour emoji to react, mark status and celebrate.',
   data: 'Charts and meters that read at a glance.',
-  'collab-ask': 'Put a question to the room.',
-  'collab-tools': 'Run the session: timers, reveals and picks.',
-  'collab-record': 'Keep what happened: comments, actions, decisions.',
-  'collab-react': 'Celebrate on the canvas.',
-  'collab-mode': 'Buttons that switch how everyone points.',
-  'collab-navigate': 'Places to go, and things to sit at.',
+  ...Object.fromEntries(SPACE_CATEGORIES.map((c) => [c.id, c.tagline])),
   logo: 'The tools a logo is made with.',
   components: 'Ready-made blocks that follow the theme.',
   devices: 'Frames to set a screen design in.',
 };
 
-// Where a mode fills a category differently enough that its default line would mislead.
-const MODE_TAGLINES: Readonly<Partial<Record<EditorMode, Readonly<Record<string, string>>>>> = {
-  workshop: { write: 'Words, notes, tables and checklists.' },
-};
-
-export function flyoutTagline(categoryId: string, fallback: string, mode?: EditorMode): string {
-  return (mode && MODE_TAGLINES[mode]?.[categoryId]) ?? TAGLINES[categoryId] ?? fallback;
+export function flyoutTagline(categoryId: string, fallback: string): string {
+  return TAGLINES[categoryId] ?? fallback;
 }
 
 // A group's name, by the tile that starts it: a category splits into groups where a tile ends one (`dividerAfter`,
@@ -92,7 +74,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
-  'tools:page': 'Text',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
   'tools:pencil': 'Pens',
@@ -119,6 +100,10 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:avatar': 'People',
   'data:pie': 'Charts',
   'data:progress-bar': 'Meters',
+  // Rooms (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): what a room is made with,
+  // then the rest of the floor.
+  'tools:room': 'Build',
+  'tools:fence': 'Floor',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };

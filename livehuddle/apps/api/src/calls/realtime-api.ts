@@ -3,6 +3,7 @@
 // secret. Only the fields the editor needs come back, so nothing else Realtime answers ever reaches a browser.
 import type {
   CallIceServer,
+  CallLayer,
   CallSessionDescription,
   CallTrackResult,
   CallTracksResponse,
@@ -100,6 +101,30 @@ export async function newSession(env: RealtimeEnv, fetcher: Fetcher = fetch): Pr
   return r.sessionId;
 }
 
+/**
+ * A camera subscription's simulcast choice (docs/specs/012-collaboration/video-and-screen-bubbles.md "Two layers"). The
+ * large layer `f` falls back to the small `h` when bandwidth or the publisher runs short; the small layer never steps
+ * up to the large one by itself, so a bubble never costs a maximised view.
+ */
+export type RealtimeSimulcast = {
+  preferredRid: CallLayer;
+  priorityOrdering: 'none' | 'asciibetical';
+  ridNotAvailable: 'none' | 'asciibetical';
+};
+
+export function simulcastFor(layer: CallLayer): RealtimeSimulcast {
+  return layer === 'f'
+    ? { preferredRid: 'f', priorityOrdering: 'asciibetical', ridNotAvailable: 'asciibetical' }
+    : { preferredRid: 'h', priorityOrdering: 'none', ridNotAvailable: 'none' };
+}
+
+export type RealtimeRemoteTrack = {
+  location: 'remote';
+  sessionId: string;
+  trackName: string;
+  simulcast?: RealtimeSimulcast;
+};
+
 /** `tracks/new`: publish local tracks with the browser's offer, or ask for remote ones. */
 export async function newTracks(
   env: RealtimeEnv,
@@ -109,11 +134,24 @@ export async function newTracks(
         sessionDescription: CallSessionDescription;
         tracks: { location: 'local'; mid: string; trackName: string }[];
       }
-    | { tracks: { location: 'remote'; sessionId: string; trackName: string }[] },
+    | { tracks: RealtimeRemoteTrack[] },
   fetcher: Fetcher = fetch,
 ): Promise<CallTracksResponse> {
   const url = sfu(env, `${encodeURIComponent(sessionId)}/tracks/new`);
   return tracksResponseOf(await call(fetcher, 'tracks', url, env.REALTIME_APP_TOKEN, 'POST', body));
+}
+
+/** `tracks/update`: change the simulcast layer of this session's remote tracks, by their receiving `mid`. */
+export async function updateTracks(
+  env: RealtimeEnv,
+  sessionId: string,
+  tracks: (RealtimeRemoteTrack & { mid: string })[],
+  fetcher: Fetcher = fetch,
+): Promise<CallTracksResponse> {
+  const url = sfu(env, `${encodeURIComponent(sessionId)}/tracks/update`);
+  return tracksResponseOf(
+    await call(fetcher, 'update', url, env.REALTIME_APP_TOKEN, 'PUT', { tracks }),
+  );
 }
 
 /** `renegotiate`: the browser's answer to an offer the SFU made. */

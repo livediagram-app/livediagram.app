@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The fifth mode panel, after [Avatar](avatar-mode.md), [Laser](laser-panel.md), [Spotlight](spotlight-panel.md), and [Eraser](eraser-panel.md).
+While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The third mode panel, after [Avatar](avatar-mode.md) and [Eraser](eraser-panel.md).
 
 ## Why
 
@@ -38,6 +38,10 @@ The top of the panel is the brush itself: the source element's name and a swatch
 Device-local, in `localStorage` (`livehuddle:v2:format-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 The **Copies** toggles are the setting most likely to be wrong later: someone leaves Fill off, comes back tomorrow, and wonders why the painter isn't copying colours. So the panel keeps the count in view ("Copies: Border, Text") and the brush swatch shows only what is enabled.
+
+## Locks
+
+A lock holds an element's look as well as its place. The Format tool never paints onto a locked element or anything on a locked tab: the tap does nothing, counts as no paint (no `Element·Changed·FormatPainter`), and leaves a Paint once brush loaded. A locked element can still be the source, since copying its look changes nothing. The Eraser protects the same locks ([Canvas and palette](canvas-and-palette.md) "Eraser").
 
 ## Telemetry
 

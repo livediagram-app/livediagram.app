@@ -1,4 +1,4 @@
-// The export descriptor layer of the headless SVG renderer (docs/specs/015-api/mcp-server.md
+// The export descriptor layer of the headless SVG renderer (livediagram/docs/specs/015-api/mcp-server.md
 // §5), split out of svg-render.ts: the export constants, the
 // ExportShape / resolver types, and describeBoxedExport — the pure
 // element -> shape + label descriptor both the per-element emitters and
@@ -21,7 +21,7 @@ import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
-import { isCollabPanelShape } from './collab-shapes';
+import { SHAPE_KINDS } from './shape-kinds';
 import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
@@ -94,7 +94,7 @@ export type ExportStickerArt = { viewBox: string; markup: string };
 export type ResolveStickerArt = (stickerId: string) => ExportStickerArt | undefined;
 
 // An emoji's own drawing, by its glyph, for a render with no emoji font (a Worker's preview): a face that writes an
-// emoji (a reaction pad's) draws it from this instead of as text. Absent, or answering nothing, the glyph is text.
+// emoji draws it from this instead of as text (none does in livehuddle since the Reaction Pad left). Absent, or answering nothing, the glyph is text.
 export type ResolveEmojiArt = (glyph: string) => { viewBox: string; markup: string } | undefined;
 
 type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | null };
@@ -397,14 +397,18 @@ export function describeBoxedExport(
 }
 
 // A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Collaborate panel, a Behaviour face other than the chair, a
-// web component.
+// (charts; the legend is its own case), a Behaviour face other than the chair, a web component, a retired
+// element's placeholder (svg-render-retired.ts, its stored label under its name).
 export function selfLabelled(el: BoxedElement): boolean {
   if (el.type !== 'shape') return false;
   return (
     (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
-    isCollabPanelShape(el.shape) ||
-    (BEHAVIOUR_FACE_SHAPES.has(el.shape) && !isSeatingShape(el.shape) && el.shape !== 'room') ||
+    !SHAPE_KINDS.has(el.shape) ||
+    // A room's and a stage's label is their name plate (docs/specs/009-elements/office.md).
+    (BEHAVIOUR_FACE_SHAPES.has(el.shape) &&
+      !isSeatingShape(el.shape) &&
+      el.shape !== 'room' &&
+      el.shape !== 'stage') ||
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||

@@ -9,8 +9,7 @@
 //     it — a click is a click, a drag is a drag.
 //  2. It keeps `pointer-events: auto` even inside a pointer-inert canvas
 //     layer, which is what makes a button still work while someone is walking
-//     around in Avatar mode. A control bar of these is useless if the mode it
-//     hands out is a one-way portal.
+//     around in Avatar mode: the button is also the way back out of it.
 //  3. It carries the affordances a button needs to look pressable: the glyph
 //     over the label (the toolbar-button shape), a hover lift, and a press that
 //     scales and sinks. Hover is desktop-only — a touch device has no hover, and
@@ -19,28 +18,12 @@
 import { SELECTION_MODE_LABEL, type SelectionMode } from '@livehuddle/document';
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import {
-  AvatarModeIcon,
-  EraserIcon,
-  FormatPainterIcon,
-  IsometricIcon,
-  LaserIcon,
-  PanIcon,
-  SelectIcon,
-  SpotlightIcon,
-} from '@/components/palette/palette-icons';
+import { AvatarModeIcon } from '@/components/palette/palette-icons';
 
-// The picker's own glyphs, so a button advertises the mode with exactly the
-// icon the palette uses for it.
+// The picker's own glyph, so a button advertises the mode with exactly the icon the palette uses for it. Avatar is the
+// one mode a button hands out in livehuddle (docs/specs/009-elements/mode-button.md "Only Avatar").
 const MODE_ICON: Record<SelectionMode, React.ReactNode> = {
-  select: <SelectIcon />,
-  pan: <PanIcon />,
-  laser: <LaserIcon />,
-  spotlight: <SpotlightIcon />,
   avatar: <AvatarModeIcon />,
-  eraser: <EraserIcon />,
-  format: <FormatPainterIcon />,
-  isometric: <IsometricIcon />,
 };
 
 // The mode names come from the shared table the export reads too
@@ -73,7 +56,8 @@ export function ModeButtonFace({
   // Undefined on a read-only surface that can't switch tools (an embed).
   onPress?: () => void;
 }) {
-  const isCurrent = activeMode === mode;
+  // An inert face (a Participant's, always walking) cannot take you out, so it never says it would.
+  const isCurrent = activeMode === mode && onPress !== undefined;
   const press = usePressWithoutDrag(onPress);
   const kicker = isCurrent ? 'Leave' : 'Switch to';
   // In its mode the button takes you out, so it says so whatever its own label: a "Walk In" that walked you out
@@ -165,6 +149,7 @@ export function ModeButtonFace({
         // dragging it must move it without also switching everyone's mode.
         // See usePressWithoutDrag.
         {...press}
+        data-piece-main=""
         // Sits exactly over the chip `inner` draws. `pointer-events-auto`
         // survives the inert canvas layer of Avatar / Spotlight / Isometric
         // mode; see the file header. The hover / active treatment is what

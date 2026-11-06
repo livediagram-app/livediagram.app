@@ -195,6 +195,34 @@ function sameCellShape(stored: unknown, incoming: unknown): boolean {
   );
 }
 
+// A table's rows grow to fit the words written in them (docs/specs/009-elements/table-rows-fit-text.md), so a
+// Participant's writing may make it taller in the same change: taller only, no pinned row shorter or unpinned, and
+// at most MIND_GROW_PX_PER_CHAR per character of its cells, as a mind node grows to fit its label.
+function growTableRows(target: Bag, stored: Bag, incoming: Bag): void {
+  const was = stored.height as number;
+  const height = incoming.height;
+  if (!isPositive(height) || height <= was) return;
+  const rows = (incoming.cells as string[][]).length;
+  const chars = (incoming.cells as string[][]).reduce(
+    (n, row) => n + row.reduce((m, cell) => m + cell.length, 0),
+    0,
+  );
+  if (height > was + Math.max(1, chars) * MIND_GROW_PX_PER_CHAR) return;
+  const before = Array.isArray(stored.rowHeights) ? (stored.rowHeights as unknown[]) : [];
+  const after = incoming.rowHeights;
+  if (after !== undefined) {
+    if (!Array.isArray(after) || after.length !== rows) return;
+    const grows = after.every((v, i) => {
+      const old = before[i] ?? null;
+      if (v === null) return old === null;
+      return isPositive(v) && (old === null || (typeof old === 'number' && v >= old));
+    });
+    if (!grows) return;
+    target.rowHeights = after;
+  }
+  target.height = height;
+}
+
 // Copy one field from incoming onto the merge, an absent incoming value removing it.
 function copyField(target: Bag, incoming: Bag, field: string): void {
   if (incoming[field] !== undefined) target[field] = incoming[field];
@@ -220,7 +248,10 @@ function mergeOthers(tab: Tab, stored: Element, incoming: Element): Element {
       if (field in s || field in inc) copyField(next, inc, field);
     }
   }
-  if (stored.type === 'table' && sameCellShape(s.cells, inc.cells)) next.cells = inc.cells;
+  if (stored.type === 'table' && sameCellShape(s.cells, inc.cells)) {
+    next.cells = inc.cells;
+    if (!sameValue(s.cells, inc.cells)) growTableRows(next, s, inc);
+  }
   // A text box that sizes to its text (`sizing` set) follows its words: writing on it resizes it.
   if (stored.type === 'text' && s.sizing !== undefined) {
     for (const field of ['width', 'height'] as const) {

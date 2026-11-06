@@ -130,12 +130,12 @@ working; each part that removes a feature removes its help in the same PR, so he
    Not in livehuddle, the meeting board ([Workshop mode](../012-collaboration/workshop-mode.md)), the catalogue
    ([Templates by mode](../007-editor/templates-by-mode.md)), a **Leaving livehuddle** note on every spec that goes,
    and both products' AGENTS.md shared-features lists set to the target.
-2. **Decks, presenting and the Page** (#356's scope): the Slide Deck panel, Presentation mode and the `page` tile and
+2. **Decks, presenting and the Page** (#356's scope, done): the Slide Deck panel, Presentation mode and the `page` tile and
    kind leave the editor, with their help articles, help registry entries, figures and links (redirects to the
    nearest article). They are small and self-contained, so their code goes in the same PR.
 3. **Entry points to the rest.** The catalogue becomes Blank Space and the four Spaces (`packages/templates`, Popular,
    the template categories, `retired-templates.test.ts` answering a leaving kind with Blank Space); the palette
-   becomes the meeting palette; the Session strip offers Timer and Vote; the Session button, the Workshop tour and the
+   becomes the meeting palette (with the React category's Reaction Pads, owner 2026-11-04); the Session strip offers Timer and Vote; the Session button, the Workshop tour and the
    interface's "Workshop" wording go (Start a Space, the default folder's label, the Explorer's Opens In filter). The
    help articles for the retros, the Collaborate elements, the leaving palette categories and the templates are
    removed or rewritten in the same PR. Stored elements still draw. The MCP's and CLI's template lists follow the
@@ -165,11 +165,11 @@ marketing decision, not part of this card.
 ## Keeping the two products from drifting
 
 Two copies of what both products carry will drift. Since step 10 that is Avatar mode, the Navigate elements, the
-office pieces, the Spaces templates, the Session strip's Timer and Vote, Bring Focus, the facilitator baton and
+office pieces, the Spaces templates, the Session strip's Timer, Bring Focus, the facilitator baton and
 follow-me; the rest of Workshop mode is livediagram's alone. Four rules keep the drift small:
 
 1. **One copy of what can be shared.** The avatar core and its wire shapes live once, in `packages/` (step 1).
-2. **The next extraction is named now.** The Session strip's Timer and Vote, Bring Focus and the facilitator baton
+2. **The next extraction is named now.** The Session strip's Timer, Bring Focus and the facilitator baton
    are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
    `@liveworkspace/session-tools` package the first time a change has to land in both products, instead of being
    made twice.

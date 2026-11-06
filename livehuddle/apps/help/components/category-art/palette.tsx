@@ -3,7 +3,7 @@ import { Arrow, Cursor, Label, SelectionBox, Shape } from '@liveworkspace/help-s
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
 // Workshop's palette categories, the first of them as the bar names them.
-const TABS = ['Shapes', 'Write', 'Draw', 'Layout', 'Ask', 'Icons'];
+const TABS = ['Shapes', 'Write', 'Draw', 'Layout', 'Ask', 'Stickers'];
 // Each tab's centre, spaced by its label's width.
 const TAB_X = [117, 160, 199, 240, 279, 317];
 

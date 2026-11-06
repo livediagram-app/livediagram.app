@@ -7,7 +7,6 @@ import { useSlideDeck } from './useSlideDeck';
 // docs/specs/012-collaboration/speaker-note-cards.md "The model": the deck writes a slide's note cards with the
 // `notes` mirror, and an Editor alone writes them.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
 vi.mock('@/lib/editor-deferred-code', () => ({ loadPresentationOverlay: () => Promise.resolve() }));
 
 const tabs = [{ id: 'a', name: 'a', elements: [] }] as unknown as Tab[];
@@ -19,8 +18,6 @@ function deckHook(isReadOnly: boolean) {
       commitPrefs: () => {},
       tabs,
       activeTabId: 'a',
-      setActiveId: vi.fn(),
-      readSelection: () => ({ ids: new Set() }) as never,
       setSelectedId: vi.fn(),
       setMultiSelectedIds: vi.fn(),
       isReadOnly,

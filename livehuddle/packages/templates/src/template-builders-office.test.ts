@@ -1,7 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
+import { doorOnRoom, roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
+import { avatarScale } from '@liveworkspace/avatar/config';
+import { AVATAR_SPAWN_GAP, AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { buildTemplate } from './build-template';
 import { furnishRooms } from './template-office-parts';
+
+// The wall a room's Door piece stands on (docs/specs/009-elements/office.md "The doorway is a Door"), or 'none'.
+function doorSide(
+  room: Extract<Element, { type: 'shape' }>,
+  els: readonly Element[],
+): 'n' | 's' | 'e' | 'w' | 'none' {
+  const door = els.find(
+    (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && doorOnRoom(e, room),
+  );
+  if (!door) return 'none';
+  const cx = door.x + door.width / 2;
+  const cy = door.y + door.height / 2;
+  const gaps = {
+    n: Math.abs(cy - room.y),
+    s: Math.abs(cy - (room.y + room.height)),
+    w: Math.abs(cx - room.x),
+    e: Math.abs(cx - (room.x + room.width)),
+  };
+  return (Object.keys(gaps) as (keyof typeof gaps)[]).reduce((a, b) => (gaps[b] < gaps[a] ? b : a));
+}
 
 // docs/specs/012-collaboration/virtual-office-template.md
 describe('the Virtual Office template', () => {
@@ -22,7 +44,7 @@ describe('the Virtual Office template', () => {
       'Focus Room',
     ]);
     const top = Math.min(...rooms.map((r) => r.y));
-    for (const r of rooms) expect(r.roomDoor).toBe(r.y === top ? 's' : 'n');
+    for (const r of rooms) expect(doorSide(r, els)).toBe(r.y === top ? 's' : 'n');
   });
 
   it('lays the rooms and rugs under everything else', () => {
@@ -49,7 +71,8 @@ describe('the Virtual Office template', () => {
   it('puts every piece inside a room, clear of its walls', () => {
     const rooms = shapes('room');
     for (const e of els) {
-      if (e.type !== 'shape' || ['room', 'mode-button', 'sticker'].includes(e.shape)) continue;
+      if (e.type !== 'shape' || ['room', 'door', 'mode-button', 'sticker'].includes(e.shape))
+        continue;
       const room = rooms.find(
         (r) =>
           e.x >= r.x &&
@@ -83,11 +106,12 @@ describe('the Virtual Office layout', () => {
 
   it('keeps every seat out of the first 80 px inside each doorway', () => {
     for (const room of of('room')) {
-      const span = roomDoorSpan(room.width, room.roomDoor ?? 's')!;
+      const side = doorSide(room as Extract<Element, { type: 'shape' }>, els) as 'n' | 's';
+      const span = roomDoorSpan(room.width, side)!;
       const approach = {
         x: room.x + span[0],
         width: span[1] - span[0],
-        y: room.roomDoor === 'n' ? room.y : room.y + room.height - 80,
+        y: side === 'n' ? room.y : room.y + room.height - 80,
         height: 80,
       };
       for (const seat of els.filter((e) => e.type === 'shape' && SEATS.includes(e.shape)) as Box[])
@@ -128,7 +152,7 @@ describe('the space templates', () => {
     for (const kind of ['coworking-space', 'team-pod', 'all-hands-hall'] as const) {
       const els = build(kind);
       const isFloor = (e: Element) =>
-        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug');
+        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug' || e.shape === 'stage');
       const firstOther = els.findIndex((e) => !isFloor(e));
       expect(els.slice(firstOther).some(isFloor), kind).toBe(false);
       expect(count(els, 'mode-button'), kind).toBe(1);
@@ -157,13 +181,15 @@ describe('the space templates', () => {
     };
     for (const booth of rooms.filter((r) => r.label.startsWith('Booth'))) {
       // A step of 60 px out through the doorway, from its middle: clear of every wall by a Tall character's reach.
-      const step = { n: [0, -60], s: [0, 60], e: [60, 0], w: [-60, 0] }[booth.roomDoor ?? 's'];
+      const side = doorSide(booth as Extract<Element, { type: 'shape' }>, els) as
+        'n' | 's' | 'e' | 'w';
+      const step = { n: [0, -60], s: [0, 60], e: [60, 0], w: [-60, 0] }[side];
       const mid = {
         n: { x: booth.x + booth.width / 2, y: booth.y },
         s: { x: booth.x + booth.width / 2, y: booth.y + booth.height },
         e: { x: booth.x + booth.width, y: booth.y + booth.height / 2 },
         w: { x: booth.x, y: booth.y + booth.height / 2 },
-      }[booth.roomDoor ?? 's'];
+      }[side];
       const outside = { x: mid.x + step[0]!, y: mid.y + step[1]! };
       expect(Math.min(...walls.map((w) => dist(outside, w))), booth.label).toBeGreaterThan(24);
     }
@@ -178,16 +204,15 @@ describe('the space templates', () => {
 
   it('gives the team pod four desks, a table and a board of four stickies', () => {
     const els = build('team-pod');
-    // The way in waits under the pod, where its door is, not under the board beside it.
-    const pod = els.find((e) => e.type === 'shape' && e.shape === 'room') as Element & {
-      x: number;
-      width: number;
-    };
-    const walk = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Element & {
-      x: number;
-      width: number;
-    };
-    expect(walk.x + walk.width).toBeLessThanOrEqual(pod.x + pod.width);
+    // The way in waits beside the pod under the board, level with the pod, never under the plan's bottom edge where
+    // the canvas's bottom-right cluster floats in a view from a desk (Work Tracker #580).
+    type Box = Element & { x: number; y: number; width: number; height: number };
+    const pod = els.find((e) => e.type === 'shape' && e.shape === 'room') as Box;
+    const walk = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Box;
+    const stickies = els.filter((e) => e.type === 'sticky') as Box[];
+    expect(walk.x).toBeGreaterThanOrEqual(pod.x + pod.width);
+    expect(walk.y + walk.height).toBeLessThanOrEqual(pod.y + pod.height);
+    expect(walk.y).toBeGreaterThanOrEqual(Math.max(...stickies.map((s) => s.y + s.height)));
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);
     expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
@@ -199,6 +224,27 @@ describe('the space templates', () => {
     expect(chairs).toHaveLength(32);
     expect(chairs.every((c) => c.type === 'shape' && c.chairFacing === 's')).toBe(true);
     expect(count(els, 'focus-button')).toBe(1);
+    // A real Stage up front, cameras on, inside the hall and clear of the first row; no rug and no "Stage" text
+    // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in").
+    const stages = els.filter((e) => e.type === 'shape' && e.shape === 'stage') as (Element & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    })[];
+    expect(stages).toHaveLength(1);
+    const [stage] = stages;
+    expect(stage).toMatchObject({ label: 'Stage', width: 400, height: 160, stageCameras: true });
+    expect(stage!.type === 'shape' && stage!.stageSpeakers).toBeFalsy();
+    const hall = els.find((e) => e.type === 'shape' && e.shape === 'room') as Element & {
+      x: number;
+      width: number;
+    };
+    expect(stage!.x - hall.x).toBe(hall.x + hall.width - (stage!.x + stage!.width));
+    const firstRow = Math.min(...chairs.map((c) => (c as { y: number }).y));
+    expect(firstRow - (stage!.y + stage!.height)).toBeGreaterThanOrEqual(60);
+    expect(count(els, 'rug')).toBe(0);
+    expect(els.some((e) => e.type === 'text' && e.label === 'Stage')).toBe(false);
     // A raised hand is Behaviour › Wave, which everyone sees; a Reactions burst plays on its sender's screen only.
     const hint = els.find((e) => e.type === 'text' && /take a seat/.test(e.label ?? ''));
     expect(hint?.label).toMatch(/Wave/);
@@ -225,5 +271,62 @@ describe('furnishRooms', () => {
     ) as (Element & { width: number; height: number })[];
     expect(rug!.width).toBe(400);
     expect(rug!.height).toBe(240);
+  });
+});
+
+// The character opens a full figure below the Walk In button (avatarSpawnBelow), so that spot has to be open floor:
+// Virtual Office's button once sat over the Focus Room's wall and bookshelf.
+describe('the Walk In button in every Spaces template', () => {
+  type Box = { x: number; y: number; width: number; height: number };
+  const kinds = [
+    'virtual-office',
+    'coworking-space',
+    'team-pod',
+    'focus-library',
+    'all-hands-hall',
+    'training-room',
+    'rooftop-bar',
+    'cafe',
+    'garden-retreat',
+    'city-park',
+    'company-campus',
+    'conference-venue',
+    'startup-hq',
+  ] as const;
+  const hits = (a: Box, b: Box) =>
+    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+  it.each(kinds)('leaves open floor under it in %s', (kind) => {
+    const els = buildTemplate(kind, 0, 0);
+    const button = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Element &
+      Box;
+    // The standing figure of the biggest size (Tall): its head AVATAR_SPAWN_GAP under the button, its feet one figure
+    // height below that.
+    const scale = avatarScale('tall');
+    const top = button.y + button.height + AVATAR_SPAWN_GAP;
+    const figure = {
+      x: button.x + button.width / 2 - (AVATAR_WIDTH * scale) / 2,
+      y: top,
+      width: AVATAR_WIDTH * scale,
+      height: avatarFigureHeight(scale),
+    };
+    const solid = els.filter(
+      (e) =>
+        e.type === 'sticky' ||
+        (e.type === 'shape' && !['room', 'rug', 'mode-button', 'sticker'].includes(e.shape)),
+    ) as Box[];
+    for (const piece of solid) expect(hits(figure, piece), JSON.stringify(piece)).toBe(false);
+    for (const room of els.filter((e) => e.type === 'shape' && e.shape === 'room') as (Element &
+      Box & { roomDoor?: 'n' | 's' | 'e' | 'w' })[]) {
+      for (const w of roomWalls(room)) {
+        const wall = {
+          x: Math.min(w.a.x, w.b.x) - 1,
+          y: Math.min(w.a.y, w.b.y) - 1,
+          width: Math.abs(w.a.x - w.b.x) + 2,
+          height: Math.abs(w.a.y - w.b.y) + 2,
+        };
+        expect(hits(figure, wall), `${room.label ?? 'room'} wall`).toBe(false);
+      }
+    }
   });
 });

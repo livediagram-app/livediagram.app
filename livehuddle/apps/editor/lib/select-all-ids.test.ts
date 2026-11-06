@@ -9,10 +9,6 @@ describe('selectAllIds', () => {
   } as unknown as Pick<Tab, 'elements'>;
 
   it('selects every element on the tab', () => {
-    expect([...selectAllIds(tab, new Set())].sort()).toEqual(['a', 'b', 'c']);
-  });
-
-  it('leaves out the inert ones', () => {
-    expect([...selectAllIds(tab, new Set(['c']))].sort()).toEqual(['a', 'b']);
+    expect([...selectAllIds(tab)].sort()).toEqual(['a', 'b', 'c']);
   });
 });

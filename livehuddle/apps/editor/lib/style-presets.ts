@@ -326,8 +326,7 @@ export function applyPaddingToEl(el: Element, padding: Padding): Element {
 }
 
 // Re-place a shape's inline icon on another side (docs/specs/008-canvas/canvas-and-palette.md icons). Regular
-// shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
-// dropIconOnElement in useInlineIconMutators.
+// shapes only: the dedicated 'icon' shape has no inline-icon slot.
 export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {
   return el.type === 'shape' && el.shape !== 'icon' ? withInlineIcon(el, iconId, position) : el;
 }

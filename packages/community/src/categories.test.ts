@@ -61,6 +61,9 @@ describe("each app's categories", () => {
     expect(isCommunityCategoryOf('livedesign.app', 'logos')).toBe(true);
     expect(isCommunityCategoryOf('livediagram.app', 'logos')).toBe(false);
     expect(isCommunityCategoryOf('liveplanner.app', null)).toBe(false);
+    // livediagram keeps Workshops; livehuddle, for meeting in Spaces, retired it (Work Tracker #423).
+    expect(isCommunityCategoryOf('livehuddle.app', 'workshops')).toBe(false);
+    expect(isCommunityCategoryOf('livehuddle.app', 'socials')).toBe(true);
   });
 
   it('labels and types a category by its id', () => {

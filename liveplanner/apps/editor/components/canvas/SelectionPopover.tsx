@@ -1,11 +1,6 @@
 import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
-import {
-  useMinimalChrome,
-  usePowerUser,
-} from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@liveplanner/ui';
 import {
   BringToFrontIcon,
@@ -94,15 +89,10 @@ export function SelectionPopover({
   title,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
-  // More opens the element menu: on every device, since right-click is not something a desktop
-  // user finds, except in power user mode, where right-click is the way in. Touch can't
-  // right-click, so it always keeps it. The bin goes only with Minimal chrome on desktop, where
-  // Delete is the key (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
-  const touch = useCoarsePointer();
-  const minimalChrome = useMinimalChrome();
-  const powerUser = usePowerUser();
-  const showMore = !!onOpenContextMenu && (touch || !powerUser);
-  const showDelete = !!onDelete && (touch || !minimalChrome);
+  // More opens the element menu on every device: right-click is not something a desktop user finds,
+  // and touch can't right-click (docs/specs/008-canvas/canvas-and-palette.md#selection-popover).
+  const showMore = !!onOpenContextMenu;
+  const showDelete = !!onDelete;
   // Counter-scaled placement: the popover renders at its natural on-screen size
   // regardless of zoom, pinned to the selection's nearest centre edge.
   const { ref, placeAbove, style } = useEdgeAwarePlacement(
@@ -136,7 +126,7 @@ export function SelectionPopover({
         // (touch-target-y, touch-targets.md), never sideways into its neighbour's.
         className="pointer-events-auto relative max-w-[95vw] animate-fade-in rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
       >
-        {title && !minimalChrome ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
+        {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
         {/* The toolbar is at most 95vw wide; its buttons ride a strip that scrolls sideways when they outgrow it (a
           flowchart step's full set on a phone). The strip reaches 6px past the buttons top and bottom, so their 44px
           tap pads are not clipped, and it is not positioned, so a dropdown's menu anchors to the card and escapes its

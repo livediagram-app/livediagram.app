@@ -66,9 +66,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
 import { useSelectTab } from './useSelectTab';
 import { useRoleIndicator } from './useRoleIndicator';
-import { RolePill, RoleStatusIcon } from '@/components/chrome/RoleIndicator';
-import { MinimalChromeProvider } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-import { isMinimalChrome, isPowerUserMode } from '@/lib/power-user-mode';
+import { RolePill } from '@/components/chrome/RoleIndicator';
 import {
   UiScaleProvider,
   useUiScalePreview,
@@ -187,8 +185,6 @@ export function EditorView() {
     openCollaborators,
     userPreferences,
   } = ctx;
-  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
-  const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
@@ -288,8 +284,7 @@ export function EditorView() {
             copying={copying}
             readOnly={isStructureReadOnly}
             renameNonce={renameProjectNonce}
-            // Minimal chrome moves the pill to an icon in the status bar.
-            rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+            rolePill={<RolePill {...role} />}
             onOpenAccount={() => openSettingsOn('account')}
             onOpenShare={() => {
               setShareDialogOpen(true);
@@ -317,7 +312,6 @@ export function EditorView() {
       <LandscapeBarFold shown={landscapeBars.shown}>
         <AreaErrorBoundary area="TabBar" fallback="panel">
           <TabBar
-            powerUser={isPowerUserMode(userPreferences)}
             workbenchBack={
               workbenchFrame
                 ? (labelled) => (
@@ -338,11 +332,6 @@ export function EditorView() {
                     />
                   )
                 : undefined
-            }
-            roleIcon={
-              minimalChrome ? (
-                <RoleStatusIcon role={role.role} onToggle={role.onToggle} />
-              ) : undefined
             }
             tabs={tabs}
             activeId={activeId}
@@ -449,140 +438,129 @@ export function EditorView() {
                           canComment={ctx.can.takePart}
                         >
                           <CanvasFocusProvider value={ctx.focusBounds}>
-                            <MinimalChromeProvider
-                              value={minimalChrome}
-                              powerUser={isPowerUserMode(userPreferences)}
-                            >
-                              <UiScaleProvider value={uiScales}>
-                                <DockNamesProvider
-                                  value={userPreferences?.dockButtonNames !== false}
-                                >
-                                  {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
+                            <UiScaleProvider value={uiScales}>
+                              <DockNamesProvider value={userPreferences?.dockButtonNames !== false}>
+                                {/* Side by side tabs (docs/specs/007-editor/split-view.md): the editor, and another
                       tab of the project live beside it when one has been dragged to the right. */}
-                                  <SplitViewFrame header={header} footer={footer}>
-                                    {(headerInColumn, footerInColumn) => (
-                                      <div className="flex h-dvh flex-col">
-                                        {headerInColumn}
-                                        <AreaErrorBoundary area="TabDialogs">
-                                          <EditorTabDialogs />
-                                        </AreaErrorBoundary>
-                                        <AreaErrorBoundary area="Collaborators">
-                                          <CollaboratorsHost />
-                                        </AreaErrorBoundary>
-                                        {/* At the canvas's top edge, under the header. */}
-                                        {landscapeBarsHandle}
-                                        <AreaErrorBoundary
-                                          area="Canvas"
-                                          fallback="panel"
-                                          fallbackClassName="flex-1"
+                                <SplitViewFrame header={header} footer={footer}>
+                                  {(headerInColumn, footerInColumn) => (
+                                    <div className="flex h-dvh flex-col">
+                                      {headerInColumn}
+                                      <AreaErrorBoundary area="TabDialogs">
+                                        <EditorTabDialogs />
+                                      </AreaErrorBoundary>
+                                      <AreaErrorBoundary area="Collaborators">
+                                        <CollaboratorsHost />
+                                      </AreaErrorBoundary>
+                                      {/* At the canvas's top edge, under the header. */}
+                                      {landscapeBarsHandle}
+                                      <AreaErrorBoundary
+                                        area="Canvas"
+                                        fallback="panel"
+                                        fallbackClassName="flex-1"
+                                      >
+                                        {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
+                                        <ChangesetRevealContext.Provider
+                                          value={ctx.changesetReveals}
                                         >
-                                          {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                          <ChangesetRevealContext.Provider
-                                            value={ctx.changesetReveals}
+                                          {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                          <AgentFocusContext.Provider
+                                            value={ctx.agentFocusByElement}
                                           >
-                                            {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                            <AgentFocusContext.Provider
-                                              value={ctx.agentFocusByElement}
+                                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                            <CommentBadgesContext.Provider
+                                              value={!(embedMode && isReadOnly)}
                                             >
-                                              {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                              <CommentBadgesContext.Provider
-                                                value={!(embedMode && isReadOnly)}
-                                              >
-                                                {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                                <SuppressElementIndicators when={embedMode}>
-                                                  <EditorCanvasHost />
-                                                </SuppressElementIndicators>
-                                              </CommentBadgesContext.Provider>
-                                            </AgentFocusContext.Provider>
-                                          </ChangesetRevealContext.Provider>
-                                          {ctx.plan.openItemId ||
-                                          ctx.plan.editingType ||
-                                          ctx.plan.requiredFields ? (
-                                            // Its own boundary: a card opened offline before this code came
-                                            // must not take the board with it (load-recovery.md "Offline").
-                                            <AreaErrorBoundary area="Modals">
-                                              <PlanSheetsHost plan={ctx.plan} />
-                                            </AreaErrorBoundary>
-                                          ) : null}
-                                        </AreaErrorBoundary>
-                                        {embedMode ? (
-                                          // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
-                                          // switcher replace the full TabBar. Same selection clears as
-                                          // the TabBar's onSelect so element state never leaks across a
-                                          // tab switch.
-                                          <EmbedChrome
-                                            tabs={tabs}
-                                            activeId={activeId}
-                                            shareCode={sessionShareCode}
-                                            onSelectTab={selectTab}
-                                          />
-                                        ) : null}
-                                        {workbench ? (
-                                          // The workbench's Reconnect line; its Open in liveplanner sits in the tab bar.
-                                          <WorkbenchReconnectLine
-                                            workbenchName={workbench.workbenchName}
-                                            ended={workbench.ended}
-                                          />
-                                        ) : null}
-                                        {footerInColumn}
-                                        {ctx.searchOpen ? (
-                                          <AreaErrorBoundary area="Search">
-                                            <EditorSearchPanel />
+                                              {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                              <SuppressElementIndicators when={embedMode}>
+                                                <EditorCanvasHost />
+                                              </SuppressElementIndicators>
+                                            </CommentBadgesContext.Provider>
+                                          </AgentFocusContext.Provider>
+                                        </ChangesetRevealContext.Provider>
+                                        {ctx.plan.openItemId ||
+                                        ctx.plan.editingType ||
+                                        ctx.plan.requiredFields ? (
+                                          // Its own boundary: a card opened offline before this code came
+                                          // must not take the board with it (load-recovery.md "Offline").
+                                          <AreaErrorBoundary area="Modals">
+                                            <PlanSheetsHost plan={ctx.plan} />
                                           </AreaErrorBoundary>
                                         ) : null}
-                                        <AreaErrorBoundary area="Modals">
-                                          <EditorModals />
+                                      </AreaErrorBoundary>
+                                      {embedMode ? (
+                                        // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
+                                        // switcher replace the full TabBar. Same selection clears as
+                                        // the TabBar's onSelect so element state never leaks across a
+                                        // tab switch.
+                                        <EmbedChrome
+                                          tabs={tabs}
+                                          activeId={activeId}
+                                          shareCode={sessionShareCode}
+                                          onSelectTab={selectTab}
+                                        />
+                                      ) : null}
+                                      {workbench ? (
+                                        // The workbench's Reconnect line; its Open in liveplanner sits in the tab bar.
+                                        <WorkbenchReconnectLine
+                                          workbenchName={workbench.workbenchName}
+                                          ended={workbench.ended}
+                                        />
+                                      ) : null}
+                                      {footerInColumn}
+                                      {ctx.searchOpen ? (
+                                        <AreaErrorBoundary area="Search">
+                                          <EditorSearchPanel />
                                         </AreaErrorBoundary>
-                                        <AreaErrorBoundary area="Popovers">
-                                          <EditorAnchoredPopovers />
-                                        </AreaErrorBoundary>
-                                        <AreaErrorBoundary area="ContextMenu">
-                                          <EditorContextMenuHost />
-                                        </AreaErrorBoundary>
-                                        <AreaErrorBoundary area="ElementDialogs">
-                                          <EditorElementDialogs />
-                                        </AreaErrorBoundary>
-                                        {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
+                                      ) : null}
+                                      <AreaErrorBoundary area="Modals">
+                                        <EditorModals />
+                                      </AreaErrorBoundary>
+                                      <AreaErrorBoundary area="Popovers">
+                                        <EditorAnchoredPopovers />
+                                      </AreaErrorBoundary>
+                                      <AreaErrorBoundary area="ContextMenu">
+                                        <EditorContextMenuHost />
+                                      </AreaErrorBoundary>
+                                      <AreaErrorBoundary area="ElementDialogs">
+                                        <EditorElementDialogs />
+                                      </AreaErrorBoundary>
+                                      {/* Interactive editor tour (docs/specs/007-editor/editor-tour.md): renders nothing unless the /new
           wizard's "Show me around" handoff flag is pending. */}
-                                        <AreaErrorBoundary area="Tour">
-                                          <EditorTours />
-                                        </AreaErrorBoundary>
+                                      <AreaErrorBoundary area="Tour">
+                                        <EditorTours />
+                                      </AreaErrorBoundary>
 
-                                        {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
+                                      {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Stands on
           the bottom chrome (the tab bar, the Undo / session cluster, the dock) rather than over it, above the canvas
           (z-[var(--z-overlay)]). */}
-                                        {showSignInBanner ? (
-                                          <SignInBanner
-                                            surface="Editor"
-                                            onDismiss={dismissSignIn}
-                                            placementClassName="z-[var(--z-overlay)]"
-                                            standOnChrome
-                                          />
-                                        ) : null}
-                                        <EditorStartPanels />
-
-                                        {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
-          right now. Suppressed while a mode banner owns the top slot. */}
-                                        {minimalChrome ? null : (
-                                          <ModifierHint
-                                            readOnly={isReadOnly}
-                                            drag={drag}
-                                            elements={activeTab.elements}
-                                            hasElements={activeTab.elements.length > 0}
-                                          />
-                                        )}
-
-                                        {/* An editor older than the server's project format offers a reload, once its edits
-            are saved (docs/specs/016-platform/new-version-prompt.md). */}
-                                        <NewVersionPrompt
-                                          hasUnsavedChanges={ctx.hasUnsavedChanges}
+                                      {showSignInBanner ? (
+                                        <SignInBanner
+                                          surface="Editor"
+                                          onDismiss={dismissSignIn}
+                                          placementClassName="z-[var(--z-overlay)]"
+                                          standOnChrome
                                         />
-                                      </div>
-                                    )}
-                                  </SplitViewFrame>
-                                </DockNamesProvider>
-                              </UiScaleProvider>
-                            </MinimalChromeProvider>
+                                      ) : null}
+                                      <EditorStartPanels />
+
+                                      {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
+          right now. Suppressed while a mode banner owns the top slot. */}
+                                      <ModifierHint
+                                        readOnly={isReadOnly}
+                                        drag={drag}
+                                        elements={activeTab.elements}
+                                        hasElements={activeTab.elements.length > 0}
+                                      />
+
+                                      {/* An editor older than the server's project format offers a reload, once its edits
+            are saved (docs/specs/016-platform/new-version-prompt.md). */}
+                                      <NewVersionPrompt hasUnsavedChanges={ctx.hasUnsavedChanges} />
+                                    </div>
+                                  )}
+                                </SplitViewFrame>
+                              </DockNamesProvider>
+                            </UiScaleProvider>
                           </CanvasFocusProvider>
                         </SheetsProviders>
                       </FormBoardContext.Provider>

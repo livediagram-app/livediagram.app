@@ -4,27 +4,39 @@
 // keeps it on screen, and what it is standing on. No React, no DOM, so
 // the walk behaviour is unit-testable without a canvas.
 
-import { isFloorShape } from './office-geometry';
+import { isFloorShape, isSceneryShape, isWallPieceShape } from './office-geometry';
 import { hasSceneBox, isSceneShape, type AvatarSceneElement } from './scene';
 
 // Walk speed in CANVAS px per second. Constant on purpose: an eased
 // glide reads as a camera move, a constant walk reads as a character.
-// How far below a Selection Mode button the character appears when that button
-// is what put you in Avatar mode (docs/specs/009-elements/mode-button.md): clear of the button's own box, so
-// it reads as standing in front of it rather than on top of it.
+// The space between a Selection Mode button's bottom edge and the top of the character's head when that button is
+// what put you in Avatar mode (docs/specs/009-elements/mode-button.md): the whole figure stands clear of the button,
+// so it reads as standing in front of it and never hides the button's label.
 export const AVATAR_SPAWN_GAP = 12;
 
-// Where pressing a Selection Mode button should put the character on entry (docs/specs/008-canvas/avatar-mode.md
-// "Entering from a button"): feet just below the button, centred on it. Null for a button of another mode, and for
-// a press made IN Avatar mode, which leaves it: a spawn point set then outlived the walk, so the next entry from
-// the palette put the character back at the button.
+type ButtonBox = { x: number; y: number; width: number; height: number };
+
+// Where a character of size `scale` stands to be just below `button` (docs/specs/008-canvas/avatar-mode.md "Entering
+// from a button"): centred on it, its head AVATAR_SPAWN_GAP under the button's bottom edge. The position is the feet,
+// so the figure's height goes in too: with the gap alone, a Regular figure stood over the button and hid its label.
+export function avatarSpawnBelow(button: ButtonBox, scale: number): AvatarPoint {
+  return {
+    x: button.x + button.width / 2,
+    y: button.y + button.height + AVATAR_SPAWN_GAP + avatarFigureHeight(scale),
+  };
+}
+
+// Where pressing a Selection Mode button should put a character of size `scale` on entry: just below the button
+// (avatarSpawnBelow). Null for a button of another mode, and for a press made IN Avatar mode, which leaves it: a spawn
+// point set then outlived the walk, so the next entry from the palette put the character back at the button.
 export function avatarSpawnFromButton(
-  button: { x: number; y: number; width: number; height: number; mode?: string },
+  button: ButtonBox,
   buttonMode: string,
   currentTool: string,
+  scale: number,
 ): AvatarPoint | null {
   if (buttonMode !== 'avatar' || currentTool === 'avatar') return null;
-  return { x: button.x + button.width / 2, y: button.y + button.height + AVATAR_SPAWN_GAP };
+  return avatarSpawnBelow(button, scale);
 }
 
 // How far a shoved character slides, in canvas px (docs/specs/008-canvas/avatar-mode.md). Far enough to be
@@ -48,6 +60,17 @@ export const AVATAR_SPEED = 260;
 // Avatar Panel (docs/specs/008-canvas/avatar-mode.md) scales these via avatarBox(scale).
 export const AVATAR_WIDTH = 40;
 export const AVATAR_HEIGHT = 56;
+// What a character carries over its head (AvatarWalker), as rises in canvas px above the top of its head
+// (AVATAR_HEIGHT * scale up from the feet): a peer's name chip, your own status chip and the away Zz. The highest,
+// AVATAR_HEAD_CHROME, is how far above a head anything else must stay to be seen (a seat's name pill, chair-sitters.ts).
+export const AVATAR_NAME_CHIP_RISE = 16;
+export const AVATAR_STATUS_CHIP_RISE = 22;
+export const AVATAR_ZZ_RISE = 24;
+export const AVATAR_HEAD_CHROME = Math.max(
+  AVATAR_NAME_CHIP_RISE,
+  AVATAR_STATUS_CHIP_RISE,
+  AVATAR_ZZ_RISE,
+);
 // Empty space reserved ABOVE the standing sprite so a jump has somewhere to go.
 // The sprite's SVG clips at its viewBox, so without headroom a hop chopped the
 // character off at the shoulders — the box has to cover the peak of the hop,
@@ -75,6 +98,12 @@ export const AVATAR_VIEW_BOX = `${-SLACK_UNITS} ${-HEADROOM_UNITS} ${GRID_W + SL
 // it so the box hugs the character instead of framing mostly empty space.
 const PORTRAIT_TOP_UNITS = 4;
 export const AVATAR_PORTRAIT_VIEW_BOX = `0 ${-PORTRAIT_TOP_UNITS} ${GRID_W} ${GRID_H + PORTRAIT_TOP_UNITS}`;
+
+// How far the standing figure reaches above its feet at a given scale, tallest hair included: the portrait's top, so
+// whatever stands that far above the feet clears every hairstyle.
+export function avatarFigureHeight(scale = 1): number {
+  return (AVATAR_HEIGHT + PORTRAIT_TOP_UNITS * AVATAR_UNIT) * scale;
+}
 
 // Size of that cropped portrait in px at a given scale, for the preview's own
 // box (the walking box above is deliberately much bigger).
@@ -113,7 +142,7 @@ const ARRIVE_EPSILON = 1.5;
 
 // How near a viewport edge (SCREEN px) the avatar may get before the
 // camera pans to keep it comfortably in frame.
-const AVATAR_FOLLOW_MARGIN = 120;
+export const AVATAR_FOLLOW_MARGIN = 120;
 
 export type AvatarFacing = 'down' | 'up' | 'left' | 'right';
 
@@ -255,6 +284,39 @@ export function facingFromDelta(dx: number, dy: number): AvatarFacing | null {
   return dy < 0 ? 'up' : 'down';
 }
 
+// How far the character walks (canvas px) for an off-centre view to close half its gap to it
+// (docs/specs/008-canvas/avatar-mode.md "The camera").
+export const AVATAR_CAMERA_HALF_LIFE = 400;
+
+// The centred camera's step (docs/specs/008-canvas/avatar-mode.md "The camera"): the viewport offset after the
+// character moved `from` -> `to`. The canvas wrapper is `scale(zoom) translate(offset)` about its own centre, so the
+// offset that centres a point p is `size / 2 - p` at any zoom, and `from + offset - size / 2` is how far (canvas px)
+// the character stands off the middle of the view. A centred view moves with every step; an off-centre one stays put
+// while the walk closes the gap itself and otherwise gravitates back by distance walked.
+export function centredCamera(
+  offset: AvatarPoint,
+  from: AvatarPoint,
+  to: AvatarPoint,
+  size: { width: number; height: number },
+  zoom: number,
+): AvatarPoint {
+  const z = zoom > 0 ? zoom : 1;
+  const cx = size.width / 2;
+  const cy = size.height / 2;
+  const centred = { x: cx - to.x, y: cy - to.y };
+  const off = { x: from.x + offset.x - cx, y: from.y + offset.y - cy };
+  const gap = Math.hypot(off.x, off.y);
+  // Within a screen pixel counts as centred.
+  if (gap * z < 1) return centred;
+  const stay = { x: to.x + offset.x - cx, y: to.y + offset.y - cy };
+  // Walking towards the middle of the view: the camera waits for you.
+  if (Math.hypot(stay.x, stay.y) < gap) return offset;
+  // Any other way, the gap shrinks with distance walked, so the character never ends further off the middle (or
+  // nearer an edge) than it started the step.
+  const keep = Math.pow(0.5, Math.hypot(to.x - from.x, to.y - from.y) / AVATAR_CAMERA_HALF_LIFE);
+  return { x: centred.x + off.x * keep, y: centred.y + off.y * keep };
+}
+
 // The camera correction (in CANVAS px, i.e. already divided by zoom) that
 // brings a point back inside `margin` of the viewport edges. Zero on both
 // axes when the point is comfortably inside, so the common case is a no-op.
@@ -301,7 +363,8 @@ export function elementUnderFeet(
     if (shape === 'fence') continue;
     // Nor is the office's floor and scenery (docs/specs/009-elements/office.md): a room or a rug is where you
     // stand, and a plant or a bookshelf is walked round.
-    if (shape !== null && (isFloorShape(shape) || shape === 'plant' || shape === 'bookshelf'))
+    // Nor is a piece on a wall (a notice board, a world clock): walked past, not to.
+    if (shape !== null && (isFloorShape(shape) || isSceneryShape(shape) || isWallPieceShape(shape)))
       continue;
     if (
       feet.x >= el.x &&
@@ -313,6 +376,24 @@ export function elementUnderFeet(
     }
   }
   return hit;
+}
+
+/**
+ * Whether stepping onto a seat piece sits the character down (livehuddle's docs/specs/009-elements/chair.md "Only the
+ * chair you are going to"): always when steered there (no click-walk target), and on a click-walk only when the walk's
+ * destination is inside that piece, so a walk that crosses a chair on its way somewhere else goes straight through.
+ */
+export function sitsOnEntry(
+  seat: { x: number; y: number; width: number; height: number },
+  target: AvatarPoint | null,
+): boolean {
+  if (!target) return true;
+  return (
+    target.x >= seat.x &&
+    target.x <= seat.x + seat.width &&
+    target.y >= seat.y &&
+    target.y <= seat.y + seat.height
+  );
 }
 
 // The viewport offset that centres a box (a portal, an Avatar Pad) in a viewport of `size` at `zoom`.

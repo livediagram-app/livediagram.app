@@ -1,4 +1,4 @@
-// How graph input's lines leave and join their boxes (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): which
+// How graph input's lines leave and join their boxes (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): which
 // arrows meet in one trunk or bus, and which of a step's exits leave by another side.
 
 import { isBoxed, type Anchor, type ArrowElement, type BoxedElement, type Element } from './index';
@@ -151,7 +151,7 @@ export function branchExits(elements: Element[], opts: BranchOptions): Element[]
   const arrows = elements.filter((el): el is ArrowElement => el.type === 'arrow');
   // The boxes a side exit's one bend must clear: every box but the frames and lanes that hold them.
   const solid = [...boxes.values()].filter(
-    (b) => !(b.type === 'shape' && (b.shape === 'frame' || b.shape === 'lane')),
+    (b) => !(b.type === 'shape' && (b.shape === 'boundary' || b.shape === 'lane')),
   );
   const used = new Set<string>();
   for (const a of arrows)

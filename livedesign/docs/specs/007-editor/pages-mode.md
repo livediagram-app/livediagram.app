@@ -44,7 +44,8 @@ page is and offers; this section is the basics.
 - **Adding a page:** a round **+** sits in the gap's width to the right of the
   last page, level with its middle, adding another page like the last, always of the
   tab's own kind ("One kind a tab", "Adding a page"); on a wireframe tab a smaller button
-  under it adds a screen of another device. The page goes after the last; the buttons
+  under it adds a screen of another device. The page goes right after the page it sits beside ("Where a new page
+  goes"); the buttons
   are gone at the limit, and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
   moves the pages after it; every element whose centre lies on a page that
@@ -176,10 +177,16 @@ page), held at one screen size. It adds **another page like the last one** (the 
 kind), at once: its kind and shape (the logo artboard, a photo page's picture size), and a wireframe
 page's device, frame look, orientation and system bars too ([Wireframe pages](wireframe-pages.md)). It
 carries the last page's background as every new page does, never its content. Its tooltip and name
-say what it adds (`addAnotherLabel`): **Add Another Logo Page**, **Add Another Photo Page** (an
-unstarted photo page), **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch
+say what it adds (`addAnotherLabel`): **Add Logo Page**, **Add Photo Page** (an
+unstarted photo page), **Add iPhone Screen** (a browser's **Browser Page**, a watch's **Watch
 Face**). There is no way to choose another kind: the tab has one. A tab with no kind yet (a blank
 first page) shows no +.
+
+**Where a new page goes** (2026-11-04): right after the page someone is on, never at the end by default. Contents'
+**Add Page** (Add Logo Page, Add Screen, Add Photo Page) adds it after the page Contents marks as here;
+the **+** beside a page adds it after that page; with no page here, after the last. The pages after it move along,
+their content with them (as a moved page's does), it wears the background of the page it follows, and the view goes
+to it; one edit, one undo. An agent's `add` keeps its own placement.
 
 **A screen of another device**: on a wireframe tab a smaller button sits under the + (a grid, tooltip
 **Add a Screen of Another Device**). It opens **Choose a Device**: a compact list, a row per device
@@ -668,6 +675,33 @@ given in one go rather than page by page.
 
 ### Beside the cog
 
+**One toolbar card.** A page's controls above its top-right corner sit together on one small card
+(`PageTitleBar`, `../packages/workbench/src/components/canvas/PageTitleBar.tsx`, shared with
+livedocuments) rather than loose on the canvas: a white card, a hairline border and a soft shadow, its
+buttons 28 px tall, quiet until hovered and tinted while their popover is open or their tool is on.
+They come in groups, a short hairline between, read left to right: **how the page looks** (a logo
+page's Mirror and Guides, a photo page's controls, a device frame, Layout, Background), then **the
+page itself** (its lock, then its cog), last at the corner. A group with nothing to show is left out
+with its hairline. The label beside it shows the page's name in the label's strong ink and the rest
+muted, so the name reads first.
+
+**On a phone, fewer buttons.** A phone (the mobile viewport) has no room for a row of small controls, so its bar is
+simplified, each button a 44 px touch target and its icon alone but Appearance:
+
+- A wireframe page's **Device**, **Layout** and **Background** gather under one **Appearance** button (a sparkles
+  glyph, named **Appearance** beside it while the page on screen holds the named bar, `appearanceNamed`, its icon
+  alone on a page too narrow; 108 px named). It opens a bottom sheet of rows (the shared `AppearanceRowList`), each its icon, its name and a short line;
+  a press closes the sheet and opens that control's own sheet, the very one its desktop button opens.
+  Telemetry `UI / Opened / PageAppearance` as it opens (`PageAppearanceButton`,
+  `apps/live/components/canvas/PageAppearanceButton.tsx`). A locked page has no Appearance.
+- A logo page keeps **Mirror** and **Guides**, with **no Tidy**; a photo page keeps its Image, Select and Filter
+  menus (they are how a photo is edited).
+- **No lock button**: the page's cog sheet holds **Lock page** or **Unlock page** in its actions row instead, and a
+  locked page's sheet says to unlock it there.
+- **No page label** above a page's top-left corner: its name is read in Contents and renamed in the cog sheet, and
+  the page moves with the cog sheet's Move left and Move right (or in Contents).
+- A Participant or a Viewer sees no title-bar controls, on a phone as on a desktop.
+
 **Named while there is room.** On a desktop the title bar's buttons (Layout, Background,
 the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name themselves beside their icons only while
 the page is wide enough on screen to hold them named and still leave the label its least room
@@ -834,14 +868,16 @@ in livedocuments.
   and Hide; the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
-  soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
-  the tab is next opened; the title bar's Layout button still opens the layouts. It
+  soon as anything lands on the page, and **Hide** (in its corner), or Escape while anything in the card
+  has focus (its search, a chip, a tile), puts it away for that page until the tab is next opened; the title bar's Layout button still opens the layouts. It
   never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
   (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
   the tool is put down with the page still empty), in zen, or when the page is too small on
   screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
-  small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
-  sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
+  small, the page shows a **Choose a Layout** invite in its middle instead (the shared
+  `EmptyPageInvite`, as livedocuments' Use a Layout: a soft white card with a brand tile holding the
+  layouts glyph, its name and "Start from a ready-made page" muted under it, held at its screen
+  size, rising in and lifting a little on hover), which opens the layout gallery on its own: a bottom
   sheet on a phone, a centred dialog on a desktop, headed like the card; a press or Surprise Me
   places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
@@ -877,27 +913,27 @@ canvas's ink.
   the way a slide editor shows its slides. It starts below the Toolbar strip and runs down to the
   canvas's foot, 236 px wide (at the panels' UI scale), opaque, with no gap at its edge, so no page
   shows round or through it; only its inner top corner is rounded, and a border and a soft shadow
-  part it from the canvas. Its header holds the list glyph, "Contents" and **Minimise** (a
-  panel-close glyph facing its edge; HoverCard "Minimise", "Tuck Contents into its button, bottom
-  right."). Dragging the header carries it across the canvas, the side it would pin to outlined,
-  and it pins to the left or the right on release; there is no button for it. Its side is the
-  person's per-device choice, kept in this browser alone (`livedesign:contents-side:v1`), as the
-  corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
-  works; the cluster has no Contents button while it shows, and the corner panels and the
-  bottom-right cluster on its side start past it. Docked left, the cluster stops 16px short of the
-  sidebar and, in a window too narrow for it in one row, wraps upward from the right rather than
-  run under Add Page (`contentsClusterBounds`).
-- **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
+  part it from the canvas. It has no header of its own: the list starts at its top, and its foot
+  holds Add Page with **Contents Options** to its right (a square button the height of Add Page, a
+  cog glyph; tooltip "Contents Options"), opening a small menu above it with **Collapse Contents**
+  (tuck Contents into its button, bottom right; the foot's own Minimise button before 2026-11-04).
+  livedesign offers no Stack Pages there: its pages stand in a row. A Viewer, who has no Add Page,
+  finds the cog alone at the foot's right. It is
+  always on the left: it cannot be moved to the other side. It stays open while the person works;
+  the cluster has no Contents button while it shows, and the corner panels on the left start past
+  it. The bottom-right cluster stops 16px short of the sidebar and, in a window too narrow for it in one row, wraps upward from the right rather than
+  run under Add Page (`contentsClusterLeft`).
+- **Joined to the menu box**: the sidebar rises to the canvas's top and the menu box
   (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
   rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
   (200 ms, none under reduced motion) and the sidebar's surface carries it; the box reaches across
   the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
-  the Contents header exactly where it sits without the join. The menu button itself never moves or
+  the list exactly where it starts without the join. The menu button itself never moves or
   changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
   workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
   and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
-  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
-  (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
+  keeps its category names. Minimised, and on a phone (which has no sidebar), the box is its
+  usual card. It is the same for every role: a Viewer's box
   joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
@@ -906,26 +942,24 @@ canvas's ink.
 
 Which home is the person's own, kept in their synced preferences (`contentsPlacement`,
 [User preferences](user-preferences.md)), so it follows them across devices and designs; Settings
-› Editor › Pages › **Contents** (Sidebar or Button) sets it too. The sidebar docks only while
-the tab has more than one page: a single page has nothing to find your way round, so it keeps the
-button (and its popover offers no Dock as Sidebar). A phone never has the sidebar, whatever the
+› Editor › Pages › **Contents** (Sidebar or Button) sets it too. The sidebar docks from the
+tab's first page: it is where pages are added, named and reordered, so it is there from the start
+rather than appearing with a second page and shifting the canvas. A phone never has the sidebar, whatever the
 choice: there Contents is always the button, opening a bottom sheet. Zen mode hides
-both. The sidebar slides in from its side as it docks (a 200 ms fade and 12 px slide), with none
+both. The sidebar slides in from the left as it docks (a 200 ms fade and 12 px slide), with none
 under reduced motion.
 
 **Framing beside it**: a page framed on screen (a press in the list, the pages row's arrows,
 opening the tab) centres in what shows beside the sidebar, never under it. Docking it (from the
-popover, opening the tab, dragging it to the other side) frames the page in view again beside it,
+popover, opening the tab) frames the page in view again beside it,
 measured where the sidebar comes to rest rather than mid-slide;
 minimising it frames that page again across the whole canvas. **Fit** (the zoom cluster's, and
 Shift+1) frames the page nearest the middle of what shows, not the whole tab.
 
 Both show the same list:
 
-- **Header**: "Contents" (no page count: the list says it); with more than six pages, a **Find a
-  Page** box under it that narrows the list as you type, by a page's name, kind or number and by
-  the words on it: its elements' labels, notes, cells, items and the rest the editor's find reads
-  (Escape clears it, then closes).
+- **Header**: the popover's reads "Contents" (no page count: the list says it), and Escape closes
+  it. The sidebar has none. There is no Find box: the tab's own Find searches the pages.
 - **The list**: every page in row order, one row each: its number, a live thumbnail of the page as
   it is (its background, motion still, and everything on it, drawn by the same renderer as the
   Map and the export, 16:9, A4 or square as the page is), and its name (its own, else "Page
@@ -974,8 +1008,7 @@ Both show the same list:
   dragging its label along the pages row does.
   A mouse or pen drags the whole row; a finger drags the row's grip (shown on a phone and on hover
   on a desktop), so the list still scrolls by touch. The release is not a press of the row: it
-  does not glide there, but marks the moved page as here. While Find a Page narrows the list there
-  is no reordering (the rows shown are not the whole order). A Participant and a Viewer see no grip
+  does not glide there, but marks the moved page as here. A Participant and a Viewer see no grip
   and cannot drag. The drag is `useRowReorderDrag`.
 - **For a screen reader** the rows are a list named Pages. Each row opens through one button stretched across it,
   named by the page and `aria-current="page"` on the one here; its toolbar (or ⋯ menu) and grip sit above that
@@ -983,23 +1016,21 @@ Both show the same list:
   control. Up, Down, Home and End move between the rows' buttons.
 - **Adding**: an Editor's footer is the canvas's + after the last page ("Adding a
   page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
-  tooltip names what it adds, **Add Another Logo Page**, **Add Another iPad Screen**: its kind and
+  tooltip names what it adds, **Add Logo Page**, **Add iPad Screen**: its kind and
   shape, a wireframe page's device and frame too), always of the tab's kind ("One kind a tab"); on a
   wireframe tab, beside it, a square button, **Add a Screen of Another Device**, opening Choose a
-  Device beside it. A new page lands after the last (carrying the background), glides into view and the list scrolls to its new row, marked as here. At the page
+  Device beside it. A new page lands right after the page here ("Where a new page goes") (carrying the background), glides into view and the list scrolls to its new row, marked as here. At the page
   limit the buttons are disabled with the limit in
   their tooltips. A tab with no kind yet (a blank first page) has no footer. A Participant and a Viewer see the list without the footer.
 - **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
   or pages change while it is open, arrow labels laid out once for the tab rather than once a
   page; nothing is drawn while it is closed. The sidebar stays on screen while the person works, so
   its thumbnails redraw only once the tab has rested 250 ms, never on every frame of a drag or every
-  key typed, and the page in view is read on the view's rest, never on every frame of a pan. The
-  words on the pages are read only while Find a Page holds a search.
+  key typed, and the page in view is read on the view's rest, never on every frame of a pan.
 - **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
   to a page; `UI · Used · PageContentsReorder` on moving one; adding a page counts as the row's + does,
   and a page's actions as its title bar's. Minimising sends `UI · Changed · ContentsPlacementButton`,
-  docking `UI · Changed · ContentsPlacementSidebar`, before the choice is kept; dragging the sidebar
-  across sends `UI · Changed · ContentsSideLeft` or `ContentsSideRight`.
+  docking `UI · Changed · ContentsPlacementSidebar`, before the choice is kept.
 
 ## Page actions
 
@@ -1048,6 +1079,7 @@ is while the rest of the tab is worked on.
   controls), for someone who may edit: **Lock page** while open, **Unlock page** (pressed, the
   padlock closed) while locked. Its label says **Locked** beside it on a desktop while locked.
   One edit, one undo, synced to everyone (the lock is the page's, not a person's).
+  On a phone the bar has no padlock ("Beside the cog"): the cog sheet's actions row holds it instead.
 - **What a lock holds**:
   - **Its elements** (those whose centre lies on the page) behave as on a locked layer: drawn as
     ever, but not selectable, movable, editable or deletable; clicks pass through; the marquee
@@ -1085,9 +1117,15 @@ is while the rest of the tab is worked on.
 - **The label fits its page**: it truncates to the page's width on screen less the title bar's
   buttons, and hides when under 40 px.
 - **Snapping to the pages**: while a move or a resize is in hand, an element
-  snaps to the edges, the centre lines and the margins (7% of the short side) of every page, with
+  snaps to the edges, the centre lines and the margins (7% of the short side) of its page, with
   the same guides as element-to-element alignment (not to the pages' spacing: equal-spacing snaps
   stay element to element).
+- **Snapping on a page**: a box moved, resized, or dragged in from the palette lines up with, and
+  is spaced against, only what is on the page under its centre, and that page's own edges and
+  margins; never another page's, which sit at the same places on every page and would pull it to
+  lines that mean nothing here. Off every page, it lines up with what is off every page. Outside
+  Pages mode, everything (`snapScope`, `../packages/workbench/src/lib/page-snap-scope.ts`, through
+  `apps/live/lib/page-snap-scope.ts`: O(n log p) a frame).
 - **The page navigator**: in the bottom-right cluster, right of Undo / Redo (first when there is
   no Undo / Redo), while there are two pages or more: a cluster strip of the cluster's own 44 px
   controls, **Previous page**, the place of the page someone is on ("2 of 5"), **Next page**
@@ -1095,8 +1133,9 @@ is while the rest of the tab is worked on.
   there (an ease-out over `VIEW_GLIDE_MS`, 280ms, `../packages/workbench/src/lib/viewport-glide.ts`) so the eye follows the
   move; a page just added glides into view the same way, and under reduced motion each lands at
   once. A second press mid-glide starts from where the view has got to. For everyone who can see
-  the pages; not in zen, and not on a phone, whose bottom row has no room for it (a swipe moves
-  between pages there).
+  the pages; only while Contents is minimised to its button (the docked sidebar already shows
+  every page and the one in view), not in zen, and not on a phone, whose bottom row has no room
+  for it (a swipe moves between pages there).
 - **The arrow keys**: with nothing selected (and no text being typed in), **Right** and **Down** go
   to the next page and **Left** and **Up** to the previous one, from the page someone is on, as the
   navigator's arrows do (gliding there, the page fitted); at either end of the row the key does

@@ -1,32 +1,36 @@
 import type { HeroSceneKey } from '@/components/hero-scenes';
 import {
   ApiArt,
-  AssignedActionsArt,
-  AvatarModeArt,
+  ArriveArt,
   BringFocusArt,
-  CommentsArt,
-  ComponentsArt,
+  BrowserSpaceArt,
+  BubbleArt,
+  CameraArt,
+  CharacterArt,
+  CommunitySpaceArt,
+  DriveCopyArt,
+  EveryMeetingArt,
+  EveryoneArt,
   ExpiryArt,
-  ExportArt,
   FacilitatorArt,
-  FollowAlongArt,
-  LaserArt,
-  LiveImageArt,
-  LockArt,
-  McpArt,
+  FollowArt,
+  FourSpacesArt,
+  FurnitureArt,
+  NoteActionArt,
+  NoteCommentArt,
+  NoteUndoArt,
+  PortalArt,
   PresenceArt,
+  ReactArt,
   RealtimeArt,
   RevokeArt,
-  SelectionGlowArt,
+  SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
-  SpotlightArt,
-  TabsArt,
+  StatusArt,
   TeamsArt,
-  TemplatesArt,
   TimelineFeedArt,
-  UndoRedoArt,
-  WorkshopModeArt,
+  WalkInArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -59,7 +63,7 @@ export type LandingSection = {
 
 /**
  * The feature categories, in the order the landing page tells them: the Space you meet in, the
- * workshop you run in it, then working on it together. `page.tsx` renders one beat per entry and
+ * meeting you hold in it, then being in it together. `page.tsx` renders one beat per entry and
  * alternates its background by index; `/features/<id>` renders each one's cards.
  */
 export const LANDING_SECTIONS: LandingSection[] = [
@@ -75,13 +79,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Walk into a Space as your own character: offices, team pods and halls to meet in, with status, speech bubbles and reactions for the whole room.',
     highlights: [
       'Walk in as yourself',
-      'Four Spaces to start from',
+      'Eighteen Spaces to start from',
       'Status at a glance',
       'Say it in a bubble',
     ],
     items: [
       {
-        art: <AvatarModeArt />,
+        art: <WalkInArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Walk in',
         title: 'Walk in as yourself',
@@ -89,7 +93,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Pick Avatar and a little pixel character stands on the board in your colour. Click or tap where you want to go and it walks there, steer it with the arrow keys, and press Space to hop and wave a flag. The board stays as it is while you walk, so nobody moves a sticky by accident.',
       },
       {
-        art: <PresenceArt />,
+        art: <CharacterArt />,
         href: '/help/selection-modes/avatar-mode/avatar-tour/',
         group: 'Walk in',
         title: 'A character of your own',
@@ -97,15 +101,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Choose a gender, one of sixteen outfits, fourteen hairstyles and three sizes, or press randomise. Your browser remembers the character for next time, and your shirt is always your presence colour, so everyone can tell at a glance who is who.',
       },
       {
-        art: <TemplatesArt />,
+        art: <FourSpacesArt />,
         href: '/help/palette/virtual-office/',
         group: 'Rooms to meet in',
-        title: 'Four Spaces to start from',
+        title: 'Eighteen Spaces to start from',
         description:
-          'Open a Virtual Office of rooms either side of a corridor, a Coworking Space with phone booths, a Team Pod with a meeting table and a board for the week, or an All-Hands Hall of chairs facing a stage. Each is ready to walk into, with no floor plan to draw first.',
+          'Open a Virtual Office of rooms either side of a corridor, a Team Pod with a board for the week, an All-Hands Hall of chairs facing a stage, or a whole Company Campus of buildings, floors and doors. Each is ready to walk into, with no floor plan to draw first.',
       },
       {
-        art: <BringFocusArt />,
+        art: <ArriveArt />,
         href: '/help/palette/avatar-pads/',
         group: 'Rooms to meet in',
         title: 'Spaces that open walking',
@@ -113,7 +117,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Open a Space and you are already on your feet: the board puts you in Avatar mode, standing on its Avatar Pad and arriving in a beam of light. Press Walk In to come back after you leave, or pick any other tool and carry on as you were.',
       },
       {
-        art: <ComponentsArt />,
+        art: <FurnitureArt />,
         href: '/help/palette/chairs/',
         group: 'Rooms to meet in',
         title: 'Desks, sofas and a coffee machine',
@@ -121,7 +125,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Build your own rooms from walls with doorways, desks, chairs, sofas, a meeting table, rugs, plants and bookshelves. Walk onto a chair to sit down, and walk up to the water cooler or the coffee machine to come away holding a drink.',
       },
       {
-        art: <TabsArt />,
+        art: <PortalArt />,
         href: '/help/palette/tools/portals/',
         group: 'Rooms to meet in',
         title: 'Fences and portals',
@@ -129,15 +133,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Fences and room walls keep characters where they belong, and they come in by the doorway. Step into a portal and you come out of its partner, on this tab or another, so a Space can run to several floors.',
       },
       {
-        art: <PresenceArt />,
+        art: <EveryoneArt />,
         href: '/help/selection-modes/walking-together/',
         group: 'Say hello',
         title: 'Everyone walks together',
         description:
-          'On a shared Space every character is on everyone else’s board, in its owner’s colour with their name above its head. Click a teammate’s character to walk over and give them a gentle push. Viewers can walk too: walking changes nothing on the board.',
+          'On a shared Space every character is on everyone else’s board, in its owner’s colour with their name above its head. Click a teammate’s character to walk over and give them a gentle push. Everyone can walk, whatever their role: walking changes nothing on the board.',
       },
       {
-        art: <SelectionGlowArt />,
+        art: <StatusArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Status at a glance',
@@ -145,7 +149,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Say how you are without a word: Available, Focusing (headphones on), In a Meeting or Away, shown above your head while you walk. It lasts for the session only, so yesterday’s In a Meeting never greets anyone today.',
       },
       {
-        art: <CommentsArt />,
+        art: <BubbleArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Say it in a bubble',
@@ -153,15 +157,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Press Enter, type a line and it appears in a speech bubble over your character for everyone on the tab, then floats up and away. A hello, a follow me or a nice one while someone presents, with no chat panel and nothing left behind.',
       },
       {
-        art: <AvatarModeArt />,
-        href: '/help/palette/behaviour/reaction-pads/',
+        art: <ReactArt />,
+        href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'Wave, cheer and dance',
         description:
-          'Five moves, each one key: jumping jacks, a wave, a spin, a cheer and a dance, and five bursts of confetti, sparkles, hearts, applause or fireworks. Reaction pads on the board throw them over the whole room when someone presses one or walks onto it.',
+          'Five moves, each one key: jumping jacks, a wave, a spin, a cheer and a dance, and five bursts of confetti, sparkles, hearts, applause or fireworks.',
       },
       {
-        art: <FollowAlongArt />,
+        art: <CameraArt />,
         href: '/help/selection-modes/avatar-mode/',
         group: 'Say hello',
         title: 'A camera that keeps up',
@@ -171,29 +175,29 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
   },
   {
-    id: 'workshops',
-    label: 'Workshops',
-    scene: 'townhall',
-    cta: 'Explore workshops',
-    title: 'Run the session from the board',
+    id: 'meetings',
+    label: 'Meetings',
+    scene: 'hall',
+    cta: 'Explore meetings',
+    title: 'Run the meeting from the room',
     description:
-      'Everything a facilitator reaches for is on the board: a timer the room can see, dot votes, polls and quizzes, a baton so one person runs it, and templates for retros, town halls and Lean Coffee.',
+      'What a meeting needs is in the room: a timer everyone sees, a baton so one person runs it, and a way to ask everyone to look at the same thing.',
     metaDescription:
-      'Run retros, town halls and workshops on the board: timers, dot votes, polls, quizzes and a facilitator baton, with a template for every session.',
+      'Run stand-ups and all-hands in a Space: a Timer and a Stopwatch on the wall, a facilitator baton and Bring Focus.',
     highlights: [
-      'Timer, vote and poll',
+      'Timer and Stopwatch',
       'One person runs the room',
-      'Quizzes, polls and estimates',
-      'A template for every session',
+      'Ask the room to look here',
+      'A Space for every meeting',
     ],
     items: [
       {
         art: <SessionToolsArt />,
-        href: '/help/collaboration/session-tools/',
+        href: '/help/collaboration/session-tools/timer/',
         group: 'Run the room',
-        title: 'Timer, vote and poll',
+        title: 'Timer and Stopwatch',
         description:
-          'Timer, Vote and Poll sit in the Session strip at the foot of every board. Start a countdown or a stopwatch the whole room sees, open a dot vote with a budget of dots, or ask a quick poll. Results tally live, and revealing a vote walks the room through the top picks one at a time.',
+          'Place a Timer or a Stopwatch in any room. Start a countdown the whole room sees, or run a stopwatch, and pause or restart it for everyone at once, with a gentle chime at zero.',
       },
       {
         art: <FacilitatorArt />,
@@ -201,7 +205,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Run the room',
         title: 'One person runs the room',
         description:
-          'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
+          'Hand someone the facilitator baton and the tools that run the meeting answer to them alone, starting with the timer. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
       },
       {
         art: <BringFocusArt />,
@@ -212,93 +216,29 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
-        art: <SpotlightArt />,
-        href: '/help/selection-modes/spotlight/',
-        group: 'Run the room',
-        title: 'Spotlight the room on one thing',
-        description:
-          'Switch on Spotlight and the board dims under a soft shroud, with only a circle of light around your cursor. Walk the room through a busy board one piece at a time, and nobody else’s view is touched.',
-      },
-      {
-        art: <LaserArt />,
-        href: '/help/selection-modes/laser/',
-        group: 'Run the room',
-        title: 'A laser pointer everyone sees',
-        description:
-          'Switch to the laser and your cursor leaves a glowing trail on everyone’s screen. Point at the thing you mean while you talk it through, and the trail fades on its own.',
-      },
-      {
-        art: <SessionToolsArt />,
-        href: '/help/palette/collaborate/quizzes/',
-        group: 'Ask the room',
-        title: 'Quizzes, polls and estimates',
-        description:
-          'Run a quiz with a countdown and a reveal of who got it right, a live poll, a temperature check, or planning poker on an estimate scale. Everyone answers from their own screen, and the board shows the room’s answer as it comes in.',
-      },
-      {
-        art: <CommentsArt />,
-        href: '/help/palette/collaborate/qa-boards/',
-        group: 'Ask the room',
-        title: 'Questions and ideas from the floor',
-        description:
-          'A Q&A board collects questions the room can upvote, so the one most people want answered rises to the top. An idea box takes suggestions anonymously, for the thought nobody wants their name on.',
-      },
-      {
-        art: <SessionToolsArt />,
-        href: '/help/palette/behaviour/done-checks/',
-        group: 'Ask the room',
-        title: 'Ask the room if they are done',
-        description:
-          'Drop a Done check and everyone marks themselves finished. The card shows who has and who it is still waiting on, built from whoever is actually in the room, and flashes when the last person marks.',
-      },
-      {
-        art: <SpotlightArt />,
-        href: '/help/palette/behaviour/reveal-zones/',
-        group: 'Ask the room',
-        title: 'Reveal it when the room is ready',
-        description:
-          'Hide the answers, the next exercise or the vote’s result under a reveal zone, then lift it for everyone at once. A picker chooses someone at random, so nobody has to volunteer.',
-      },
-      {
-        art: <FacilitatorArt />,
-        href: '/help/palette/collaborate/agendas/',
-        group: 'Keep the record',
-        title: 'Keep the record of the meeting',
-        description:
-          'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, and a decision record keeps what was decided, why and when, beside the thing it decided.',
-      },
-      {
-        art: <TemplatesArt />,
+        art: <EveryMeetingArt />,
         href: '/help/canvas/templates/',
-        group: 'Keep the record',
-        title: 'A template for every session',
+        group: 'Run the room',
+        title: 'A Space for every meeting',
         description:
-          'Start from five retro formats, a town hall, Lean Coffee, Crazy Eights, a meeting agenda, a brainstorm or a workshop board, with the timer and the votes already in place. For a break, a pub quiz, icebreakers and party games are ready too.',
-      },
-      {
-        art: <WorkshopModeArt />,
-        href: '/help/canvas/workshop-mode/',
-        group: 'Keep the record',
-        title: 'Every tool on one palette',
-        description:
-          'Stickies, writing, pens, shapes, icons, stickers, media, charts and every session element sit on one palette built for running a room. There is no mode to switch: every board in livehuddle is a workshop board.',
+          'Start from a Team Pod for the stand-up, an All-Hands Hall with a stage, a Conference Venue or an Expo Hall for the big day, a whole Virtual Office, or a blank Space you furnish yourself.',
       },
     ],
   },
   {
     id: 'collaboration',
     label: 'Collaborate',
-    scene: 'draw',
+    scene: 'office',
     cta: 'Explore collaboration',
-    title: 'Work on it together, live',
+    title: 'Together in one place, live',
     description:
-      'Share a link and your team is in the Space with you: live cursors, comments on any element, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
+      'Share a link and your team is in the Space with you: who is where at a glance, notes and comments on the walls, actions handed to teammates, and links for whoever runs it, whoever takes part and whoever watches.',
     metaDescription:
-      'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors, participants and viewers.',
+      'Share a link and your team is in the Space with you: live cursors, comments, assigned actions, and share links for editors and participants.',
     highlights: [
       'Live presence',
       'Comments on any element',
-      'Editor, participant or view-only links',
+      'Editor and participant links',
       'Assign actions to teammates',
     ],
     items: [
@@ -319,7 +259,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'The moment someone makes a change, everyone sees it. If two people edit the same thing at once, the most recent change is the one that sticks.',
       },
       {
-        art: <SelectionGlowArt />,
+        art: <SelectedNoteArt />,
         href: '/help/collaboration/live-presence/',
         group: 'Work together live',
         title: 'See what others are working on',
@@ -327,7 +267,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Click an element and your collaborators see your colour glow on its border, plus your initials in the corner, in real time.',
       },
       {
-        art: <CommentsArt />,
+        art: <NoteCommentArt />,
         href: '/help/collaboration/comments/',
         group: 'Work together live',
         title: 'Comments on any element',
@@ -335,7 +275,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Right-click an element, leave a thread, and mention a teammate to let them know. Replies, emoji reactions, resolve, delete. Comments carry the author's name and colour so it's clear who said what.",
       },
       {
-        art: <AssignedActionsArt />,
+        art: <NoteActionArt />,
         href: '/help/collaboration/assigned-actions/',
         group: 'Work together live',
         title: 'Assign actions to teammates',
@@ -343,7 +283,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
-        art: <FollowAlongArt />,
+        art: <FollowArt />,
         href: '/help/canvas/follow-along/',
         group: 'Work together live',
         title: 'Follow someone’s view',
@@ -359,7 +299,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'The Explorer opens on Home: the Spaces you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed.',
       },
       {
-        art: <UndoRedoArt />,
+        art: <NoteUndoArt />,
         href: '/help/canvas/undo/',
         group: 'Work together live',
         title: 'Undo and redo',
@@ -370,9 +310,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
         group: 'Share & access',
-        title: 'Editor, participant or view-only links',
+        title: 'Editor and participant links',
         description:
-          'Create an editor link for whoever runs the session, a participant link for a room that should add stickies, write and vote without reshaping the board, or a view-only link for people who should watch and walk, not touch. Point one at a single tab to keep the rest private.',
+          'Create an editor link for whoever runs the session, or a participant link, the default, for a room that should talk, add stickies, write and comment without reshaping the board. Point one at a single tab to keep the rest private.',
       },
       {
         art: <TeamsArt />,
@@ -399,7 +339,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Sharing is a toggle, not a state of being. Revoke a link and the URL stops working. The Space is yours again.',
       },
       {
-        art: <LockArt />,
+        art: <BrowserSpaceArt />,
         href: '/help/privacy-and-security/offline-mode/',
         group: 'Your Spaces, your way',
         title: 'Keep a Space in This Browser',
@@ -407,7 +347,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Without an account your Spaces live in This Browser and never leave it. Take a Space offline whenever you like, or sync it to your account when you want company.',
       },
       {
-        art: <ExportArt />,
+        art: <DriveCopyArt />,
         href: '/help/account-and-data/google-drive/',
         group: 'Your Spaces, your way',
         title: 'A copy in your Google Drive',
@@ -415,28 +355,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Signed in, connect Google Drive and every Space you own is kept as a file in your own Drive, in folders that match yours, synced both ways.',
       },
       {
-        art: <LiveImageArt />,
+        art: <CommunitySpaceArt />,
         href: '/help/collaboration/sharing/community/',
         group: 'Your Spaces, your way',
         title: 'Share a Space with the Community',
         description:
-          'Publish a Space you are proud of to the Community gallery, filed under meetings and workshops, so another team can start their next session from yours.',
-      },
-      {
-        art: <McpArt />,
-        href: '/help/account-and-data/connect-ai-mcp/',
-        group: 'Your Spaces, your way',
-        title: 'Bring your AI tools',
-        description:
-          'Hook livehuddle up to Claude or any MCP client at mcp.livehuddle.app and let it find, read, create, change and share your Spaces for you: set out an agenda, fill a retro from your notes. It runs on a revocable token, read-only if you prefer.',
+          'Publish a Space you are proud of to the Community gallery, filed under offices, meetings or socials, so another team can start their next meeting from yours.',
       },
       {
         art: <ApiArt />,
-        href: '/help/developers/cli/',
+        href: '/help/developers/api-overview/',
         group: 'Your Spaces, your way',
-        title: 'A command line and an API',
+        title: 'An open API',
         description:
-          'Install the livehuddle command line from npm, or call the same REST API the editor uses with an API token, to read, change, share and export your Spaces from your own scripts.',
+          'Call the same REST API the editor uses with an API token to read, change, share and export your Spaces from your own scripts.',
       },
     ],
   },

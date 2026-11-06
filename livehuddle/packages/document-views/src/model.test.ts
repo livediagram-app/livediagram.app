@@ -9,31 +9,25 @@ describe('buildViewModel', () => {
     name: 'Checkout',
     elements: [
       shapeAt('square', 'a', 0, 0),
-      { ...shapeAt('square', 'h', 0, 0), layerId: 'off' },
+      shapeAt('square', 'h', 0, 0),
       { id: 'u', type: 'hologram' } as unknown as Element,
       arrowBetween('ah', 'a', 'h'),
       { ...arrowBetween('loose', 'a', 'a'), to: { kind: 'free', x: 0, y: 0 } },
     ],
-    layers: [
-      { id: 'default', name: 'Default' },
-      { id: 'off', name: 'Off', visible: false },
-    ],
   };
 
-  it('counts printed, hidden and unknown elements and carries the revision', () => {
+  it('counts printed and unknown elements and carries the revision', () => {
     const model = buildViewModel(tab, { rev: 7 });
     expect(model.facts).toMatchObject({
       tab: { ref: '0b34', name: 'Checkout', kind: 'diagram' },
-      elements: 3,
-      hidden: 2,
+      elements: 5,
       unknown: 1,
       rev: 7,
     });
-    expect(model.kindOf(model.printed[1]!)).toBe('? hologram');
-    expect(model.kindOf(model.printed[1]!)).toBe('? hologram');
+    expect(model.kindOf(model.printed[2]!)).toBe('? hologram');
   });
 
-  it('refs every element, hidden ones included, so refs never change with visibility (VW2)', () => {
+  it('refs every element (VW2)', () => {
     const model = buildViewModel(tab);
     expect(model.refs.refOf('h')).toBe('h');
     expect(model.facts.rev).toBeNull();

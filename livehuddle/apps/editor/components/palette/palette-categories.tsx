@@ -13,22 +13,12 @@ import {
   DataTabIcon,
   DrawTabIcon,
   PopularTabIcon,
-  IconsTabIcon,
   MediaTabIcon,
-  MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
   WriteTabIcon,
-  ParticipateTabIcon,
 } from '@livehuddle/ui';
-import {
-  AskGroupIcon,
-  WorkshopGroupIcon,
-  ModeGroupIcon,
-  MoveGroupIcon,
-  ReactionGroupIcon,
-  RecordGroupIcon,
-} from '@livehuddle/ui';
+import { MEET_BAND, SPACE_CATEGORIES } from './space-categories';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -41,7 +31,7 @@ import {
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 6 Collaborate).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 6 Meet, 7 Travel).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -63,29 +53,11 @@ export const PALETTE_CATEGORIES: {
     icon: <PopularTabIcon />,
   },
   {
-    // Participate (docs/specs/013-workspace/share-roles.md): a Participant's whole palette, what it may add. In no
-    // mode's layout: participantPaletteCategories offers it, and only to a Participant.
-    id: 'participate',
-    label: 'Participate',
-    fullWidth: true,
-    description: 'Add stickies and text to the board.',
-    icon: <ParticipateTabIcon />,
-  },
-  {
     id: 'shapes',
     label: 'Shapes',
     group: 0,
     description: 'Square, circle, diamond, and the flowchart shape vocabulary.',
     icon: <ShapesTabIcon />,
-  },
-  {
-    // My shapes (docs/specs/013-workspace/shape-libraries.md): the owner's imported shape libraries,
-    // after Shapes in the Common band; offered only when there is a shape to place.
-    id: 'my-shapes',
-    label: 'My shapes',
-    group: 0,
-    description: 'Shapes from your imported libraries, ready to place.',
-    icon: <MyShapesTabIcon />,
   },
   {
     id: 'write',
@@ -94,7 +66,6 @@ export const PALETTE_CATEGORIES: {
     description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
     icon: <WriteTabIcon />,
   },
-
   {
     id: 'draw',
     label: 'Draw',
@@ -127,13 +98,6 @@ export const PALETTE_CATEGORIES: {
     icon: <ComponentsTabIcon />,
   },
   {
-    id: 'icons',
-    label: 'Icons',
-    group: 2,
-    description: 'Searchable catalogue of single-colour glyphs.',
-    icon: <IconsTabIcon />,
-  },
-  {
     id: 'stickers',
     label: 'Stickers',
     group: 2,
@@ -156,58 +120,16 @@ export const PALETTE_CATEGORIES: {
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
   },
-  // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
-  // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
-  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
-  // room-first order: Workshop offers them in place of one Collaborate category with a group
-  // browser inside it, since every group is something a facilitator reaches for mid-session and a
-  // parent category was a click in front of each (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
-  {
-    id: 'collab-ask',
-    label: 'Ask',
-    group: 6,
-    description:
-      'Put a question to the room: dot votes, polls, quizzes, estimates, a temperature check, an idea box and a Q&A board.',
-    icon: <AskGroupIcon />,
-  },
-  {
-    id: 'collab-tools',
-    label: 'Tools',
-    group: 6,
-    description:
-      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
-    icon: <WorkshopGroupIcon />,
-  },
-  {
-    id: 'collab-record',
-    label: 'Record',
-    group: 6,
-    description:
-      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
-    icon: <RecordGroupIcon />,
-  },
-  {
-    id: 'collab-react',
-    label: 'React',
-    group: 6,
-    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
-    icon: <ReactionGroupIcon />,
-  },
-  {
-    id: 'collab-mode',
-    label: 'Selection Mode',
-    group: 6,
-    description:
-      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
-    icon: <ModeGroupIcon />,
-  },
-  {
-    id: 'collab-navigate',
-    label: 'Navigate',
-    group: 6,
-    description:
-      'Take people somewhere and build an office: a portal, a bring-focus button, a chair, desk or sofa, a fence, an avatar pad, a link card, rooms, a meeting table, plants, shelves, a water cooler, a coffee machine and rugs.',
-    icon: <MoveGroupIcon />,
-  },
+  // The meeting elements (docs/specs/010-palette/palette-top-level-categories.md "The Space categories"): the Space
+  // categories, from their one list. Their own band, one category per group, with no parent category. Their tiles:
+  // COLLABORATE_CATEGORY_GROUPS. The Selection Mode category is gone: the Avatar button is in Travel
+  // (docs/specs/009-elements/mode-button.md "Only Avatar").
+  // Travel takes a band of its own, set apart on the bar (palette-top-level-categories.md "The strip's order").
+  ...SPACE_CATEGORIES.map(({ id, label, description, icon, band }) => ({
+    id,
+    label,
+    group: band ?? MEET_BAND,
+    description,
+    icon,
+  })),
 ];

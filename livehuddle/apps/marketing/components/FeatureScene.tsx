@@ -17,17 +17,17 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 // scenes' SVG stays out of the page's HTML (about 18 KB gzipped on the home page).
 
 // Each scene's board, loaded on its own: a feature page shows one scene, and importing the hero's
-// whole set put all four boards in its JavaScript. The board is drawn only once the window plays
+// whole set put every board in its JavaScript (the three Spaces share one module and its art files). The board is drawn only once the window plays
 // (below), and its code is fetched as the window mounts, well before that.
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
-  space: () => import('./hero-space-scene').then((m) => m.SpaceScene),
-  draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
-  townhall: () => import('./hero-townhall-board').then((m) => m.TownHallBoard),
+  space: () => import('./hero-space-scene').then((m) => m.TeamPodScene),
+  office: () => import('./hero-space-scene').then((m) => m.OfficeScene),
+  hall: () => import('./hero-space-scene').then((m) => m.HallScene),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
   space: dynamic(BOARD_LOADERS.space, { ssr: false }),
-  draw: dynamic(BOARD_LOADERS.draw, { ssr: false }),
-  townhall: dynamic(BOARD_LOADERS.townhall, { ssr: false }),
+  office: dynamic(BOARD_LOADERS.office, { ssr: false }),
+  hall: dynamic(BOARD_LOADERS.hall, { ssr: false }),
 };
 
 // The hero's build cycle (HeroIllustration.tsx CYCLE_MS): the scene's keyframes and its closing

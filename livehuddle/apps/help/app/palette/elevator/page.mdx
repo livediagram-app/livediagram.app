@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Elevator',
+  description:
+    "A lift between a space's tabs, its floors. Click it or walk in, pick an Elevator on this floor or another, and step out of it.",
+  path: '/help/palette/elevator/',
+});
+
+<ArticleLayout
+  title="Elevator"
+  description="Put an Elevator on each tab and every floor of your space is one press away, with nothing to link."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("elevator")}
+>
+
+An **Elevator** takes people between the tabs of a space, which it treats as floors. Unlike a [Portal](/help/palette/tools/portals/), there is nothing to link: every Elevator serves every floor.
+
+It lives in the palette's **Travel** category, one of the [meeting elements](/help/palette/behaviour/), beside the [Directory](/help/palette/directory/), and search adds one too.
+
+## Setting one up
+
+1. Add an Elevator to the first tab.
+2. Add one to each other tab you want people to reach. Each tab's name is its floor's name.
+3. Click any of them, or walk your character in, and its panel opens.
+4. Give each a name if you like: double-click it, or use **Rename** in its menu. Unnamed ones read **Elevator 1**, **Elevator 2** by position on their floor.
+
+## Riding
+
+- The panel lists every Elevator in the space by name. Your floor comes first, marked **You Are Here**, with its other Elevators, so you can hop across a big floor without changing tab. Then come the other floors in tab order.
+- Pick one and you arrive just outside it, its doors opening as you step out.
+- A floor with no Elevator still works: you arrive at its [Avatar Pad](/help/palette/avatar-pads/), or the middle of the tab.
+- If you were walking in [Avatar mode](/help/selection-modes/avatar-mode/), you stay in it and keep walking from there.
+- With **reduced motion** turned on, the doors do not move.
+
+## Who can do what
+
+- **Editors** place, move, name and delete Elevators.
+- **Everyone**, Editors, Participants and Viewers, can ride.
+
+## The look
+
+A lift set into a wall, with steel doors, a floor display over them and a call panel beside them. Its name sits under it. Otherwise it is an ordinary element: move, rotate, lock, copy and export.
+
+</ArticleLayout>

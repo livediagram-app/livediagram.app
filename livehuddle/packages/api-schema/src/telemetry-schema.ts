@@ -51,12 +51,6 @@ export const TELEMETRY_CATEGORIES = [
   'Search',
   'UI',
   'Folder',
-  // Layers (docs/specs/006-document/layers.md): panel + layer lifecycle. 'Added'/'Deleted'/'Renamed'/
-  // 'Reordered' for the layer rows, 'Toggled' with `type`
-  // 'Hidden'/'Shown'/'Locked'/'Unlocked' for the eye + padlock,
-  // 'Selected' for an active-layer switch, 'Moved' for move-selection-
-  // to-layer, 'Opened' for the panel. Never layer names in `type`.
-  'Layer',
   'Session',
   // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
   // 'Started' when somebody takes a free one, 'Changed' when it is handed on
@@ -80,17 +74,13 @@ export const TELEMETRY_CATEGORIES = [
   // per-article helpful / not-really feedback. The second app (besides
   // the editor) that emits telemetry. `type` is the article slug.
   'Help',
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md) + MCP connections (docs/specs/015-api/mcp-server.md): 'Created'/'Removed'
-  // with `type` 'Manual' (Explorer New-token) or 'MCP' (an AI tool connected
-  // via the consent screen, which mints a token under the hood).
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): 'Created'/'Removed' with `type` 'Manual' (Explorer
+  // New-token); 'MCP' and 'Cli', from the retired MCP consent screen and CLI sign-in, still parse.
   'Token',
-  // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
-  // third app that reports telemetry, so usage shows up distinctly from the
-  // editor's own events.
+  // MCP server tool calls: 'Used' with `type` the tool name. livehuddle no longer has an MCP server
+  // (docs/specs/002-project-scope/not-in-livehuddle.md); kept so the events it sent still parse.
   'Mcp',
-  // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
-  // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
+  // CLI commands: 'Used' with `type` the verb. livehuddle no longer has a CLI; kept so the events it sent still parse.
   'Cli',
   // Transactional + lifecycle email (apps/api, docs/specs/014-identity/transactional-email.md): 'Sent' with `type`
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by
@@ -242,12 +232,11 @@ export const TELEMETRY_ACTIONS = [
   'SignedIn',
   'SignedUp',
   'SignedOut',
-  // Live session tools (docs/specs/012-collaboration/session-tools.md): a timer / vote started or ended, vote
-  // results revealed, and a dot cast on an element.
+  // Something run started or ended: a tour, the facilitator baton, a Timer or Stopwatch piece
+  // (docs/specs/009-elements/timer-and-stopwatch.md). (The retired Session strip timer sent these too; the retired
+  // Vote's `Revealed` and `Voted` are gone, so an old client's are filtered out at ingest.)
   'Started',
   'Ended',
-  'Revealed',
-  'Voted',
   // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
@@ -354,7 +343,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
-    // The UML final state (a state machine's end), made by graph input and Mermaid.
+    // The UML final state (a state machine's end), made by graph input.
     'Final-state',
   ],
   tools: [
@@ -424,6 +413,50 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Water-cooler',
     'Coffee-machine',
     'Rug',
+    // The Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage"), beside the office.
+    'Stage',
+    // The Office Pod, the bar, the garden (docs/specs/009-elements/office.md) and the Door
+    // (docs/specs/009-elements/room-builder.md), beside the office.
+    'Office-pod',
+    'Bar',
+    'Bar-stool',
+    'Drinks-cabinet',
+    'Drinks-fridge',
+    'Outdoor-plant',
+    'Tree',
+    'Garden-path',
+    'Grass',
+    'Garden-fence',
+    'Door',
+    // Wayfinding (docs/specs/009-elements/directory.md, elevator.md), beside the office.
+    'Directory',
+    'Elevator',
+    // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md), beside the office.
+    'Screen',
+    'Room-sign',
+    // The social pieces (docs/specs/009-elements/social-pieces.md), beside the office.
+    'Notice-board',
+    'World-clock',
+    'Jukebox',
+    'Ping-pong-table',
+    'Arcade-machine',
+    'Fireplace',
+    'Campfire',
+    'Bench',
+    'Picnic-table',
+    'Hammock',
+    'Garden-umbrella',
+    'Fountain',
+    'Pond',
+    'Pool-table',
+    'Foosball-table',
+    'Dartboard',
+    'Vending-machine',
+    'Bean-bag',
+    'Reading-nook',
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
+    'Timer',
+    'Stopwatch',
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
     // token is what elementTelemetryType actually emits for the kind, which
     // for a hyphenated one is the hyphen kept (see Pie-chart above).

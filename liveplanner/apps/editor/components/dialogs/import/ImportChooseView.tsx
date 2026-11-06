@@ -3,7 +3,7 @@
 // The Import dialog's list (docs/specs/026-plan/plan-tabs.md "The Import dialog"): Into This Tab, then A Board from
 // Another Tool for an Editor, each a Plan option list of rows with their icon, name, file type and a line saying what
 // file to bring. A file dropped anywhere on it is read as what it is (the dialog decides where it goes).
-import { useRef, useState, type DragEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideFileDown } from '@liveworkspace/icons/lucide';
 import type { TrackerSource } from '@liveplanner/items';
@@ -73,6 +73,16 @@ export function ImportChooseView({
   onTool: (source: TrackerSource) => void;
   onDropFile: (file: File) => void;
 }) {
+  // The format is the first decision: on a desktop the list opens with focus on its first row that can be pressed (Into
+  // This Tab, or Trello when that row is dimmed). Runs before the dialog's focus trap, which keeps a focus already
+  // inside. A touch screen leaves it on the panel, so no row lights up unasked (useFocusTrap).
+  const list = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!window.matchMedia?.('(pointer: fine)').matches) return;
+    list.current
+      ?.querySelector<HTMLButtonElement>('button:not([disabled])')
+      ?.focus({ preventScroll: true });
+  }, []);
   // Entering a child fires before leaving its parent: a count keeps the outline steady over the rows.
   const depth = useRef(0);
   const [over, setOver] = useState(false);
@@ -102,6 +112,7 @@ export function ImportChooseView({
 
   return (
     <div
+      ref={list}
       data-testid="import-choose"
       className="relative flex flex-col gap-5"
       onDragEnter={dragEnter}

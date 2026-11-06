@@ -84,23 +84,13 @@ test.describe('Arrow auto-rebind', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('the Settings switch turns it off', async ({ page, pageErrors }) => {
+  // The Auto-Attach Arrows switch left livehuddle (Work Tracker #423, part 4): Settings has none, and arrows
+  // always reattach.
+  test('Settings has no switch to turn it off', async ({ page, pageErrors }) => {
     await startBlankDocument(page);
-    await seedTab(page, [
-      square('a', 'Alpha', 400, 200),
-      square('b', 'Beta', 700, 200),
-      { id: 'x', type: 'arrow', from: pinned('a', 'e'), to: pinned('b', 'w') },
-    ]);
     await page.getByRole('button', { name: /^application settings$/i }).click();
-    const toggle = page.getByRole('switch', { name: /auto-attach arrows/i });
-    await expect(toggle).toBeChecked();
-    await toggle.click();
-    await expect(toggle).not.toBeChecked();
+    await expect(page.getByRole('switch', { name: /auto-attach arrows/i })).toHaveCount(0);
     await page.keyboard.press('Escape');
-
-    const release = await grab(page, 'Beta', -500, 0);
-    await release();
-    expect(await pathEnds(page, 'x')).toEqual([500, 250, 200, 250]);
     expectNoPageErrors(pageErrors);
   });
 });

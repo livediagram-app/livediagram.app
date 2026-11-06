@@ -2,7 +2,7 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import { SLIDE_DECK_OPENED } from './features';
+import { PRESENTATION_SETTINGS_OPENED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
 
 // The shared Share dialog (@liveworkspace/explorer ShareDialog), reported through its host's onTelemetry
@@ -568,13 +568,6 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
 };
 
 // Presentations (docs/specs/012-collaboration/presentation-mode.md).
-export const SLIDES_REORDERED = chart(
-  'UI',
-  'Moved',
-  'Slides Reordered',
-  'Slides dragged into a new order in the deck.',
-  { types: ['Slide'] },
-);
 export const PRESENTATIONS_STARTED = chart(
   'UI',
   'Started',
@@ -595,16 +588,16 @@ export const SLIDES_ADDED = chart(
   'UI',
   'Added',
   'Slides Added',
-  'A slide added to a deck: from a selection or a page.',
-  { types: ['Slide', 'PageSlide', 'AllPageSlides'] },
+  'A page added to the deck, with Add to Slides on its Contents menu.',
+  { types: ['PageSlide'] },
 );
 
-export const SLIDES_REMOVED = chart(
+export const PRESENTED_FROM_HERE = chart(
   'UI',
-  'Removed',
-  'Slides Removed',
-  'A slide taken out of a deck.',
-  { types: ['Slide'], rising: 'neutral' },
+  'Used',
+  'Presented From Here',
+  'A show started at a chosen slide, from its page\u2019s Contents menu.',
+  { types: ['PresentFromHere'] },
 );
 
 export const SLIDES_SHOWN_HIDDEN = chart(
@@ -637,20 +630,19 @@ export const PRESENTER_SETTINGS_TOGGLED = chart(
 export const PRESENTATIONS: MetricStack = {
   stack: true,
   title: 'Presentations',
-  blurb: 'Slide decks built from element sets and presented full screen.',
+  blurb: 'Slide decks built from pages and presented full screen.',
   members: [
     PRESENTATIONS_STARTED,
     PRESENTATIONS_CLOSED,
-    SLIDE_DECK_OPENED,
+    PRESENTED_FROM_HERE,
+    PRESENTATION_SETTINGS_OPENED,
     SLIDES_ADDED,
-    SLIDES_REMOVED,
     SLIDES_SHOWN_HIDDEN,
     SLIDE_NOTES,
     NOTE_CARDS_ADDED,
     NOTE_CARDS_REMOVED,
     NOTE_CARDS_REORDERED,
     NOTE_CARD_FLIPS,
-    SLIDES_REORDERED,
     PRESENTER_SETTINGS_CHANGED,
     PRESENTER_SETTINGS_TOGGLED,
   ],

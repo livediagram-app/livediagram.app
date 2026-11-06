@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { TabWindowFace } from './tab-window/TabWindowFace';
+import { RetiredTabWindowFace } from './RetiredTabWindowFace';
 import type { ReactNode } from 'react';
 import {
   PADDING_PX,
@@ -44,7 +44,7 @@ const TableView = dynamic(loadTableView, { ssr: false });
 //
 // One exclusive chain, ordered from the most specific face to the plain
 // label at the end. Most branches are an element kind that draws its own
-// face — a tab window, a link card, a chart, a concept graphic, a web
+// face — a link card, a chart, a concept graphic, a web
 // component.
 //
 // Split out of BoxedElementView because it is the one part of that component
@@ -122,14 +122,8 @@ export function ElementFaceRouter({
   return (
     <>
       {element.type === 'shape' && element.shape === 'tab-window' ? (
-        /* Tab window (docs/specs/009-elements/tab-window.md): another tab of the document, live, fitted inside it. */
-        <TabWindowFace
-          element={element}
-          surface={surface}
-          selected={isSelected}
-          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
-          canChoose={!readOnly && !isLocked}
-        />
+        /* A stored tab window (docs/specs/009-elements/tab-window.md, retired): a still frame named for its tab. */
+        <RetiredTabWindowFace element={element} surface={surface} tabs={tabSummaries} />
       ) : element.type === 'article-note' ? (
         <ArticleNoteFace element={element} />
       ) : element.type === 'video' ? (

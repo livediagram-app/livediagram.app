@@ -1,6 +1,6 @@
 # Quick style panel
 
-While one or more shapes, arrows and / or text elements are selected, a small panel on the left
+While one or more shapes, arrows and / or text elements are selected, a small panel on the right
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
 alignment, plus a Clear Styles action. What you choose there
@@ -39,8 +39,11 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel sits **on the left edge of the canvas, vertically centred**: one gap
-(12 px) in from the canvas's left, out of the way of the strip across the top.
+The panel sits **on the right edge of the canvas, vertically centred**, always: one gap (12 px) in
+from the canvas's right, out of the way of the strip across the top. The left holds the Contents
+sidebar, and the right is where the eye goes for what a selection can change, so it never moves
+across. (livediagram and livedesign keep it on the left: the shared placement takes the side,
+`placeQuickStylePanel` `side`, `../packages/workbench/src/lib/quick-style-placement.ts`.)
 
 It is **compact** (no header, 258 px wide), not draggable and with no collapse button of its own;
 it leaves when the selection does. The colour swatches are the colour picker's one swatch
@@ -56,13 +59,16 @@ width counts the targets, their gaps, 8 px of padding a side and a 1 px border a
 
 Never over the other chrome (panels, the Contents panel, popovers, the Toolbar strip and
 the popovers hanging from it, the bottom-right cluster). The placement tries fixed candidate spots in order and
-takes the first that overlaps none of them:
+takes the first that overlaps none of them. The bottom-right cluster counts by its strips, not its row: beside a
+docked Contents sidebar the row reaches left to the sidebar (so it can wrap upward short of it) while its strips sit at
+the right, and the empty row is no obstacle:
 
-1. the left edge, centred;
-2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;
-3. the left edge, just above an obstacle on that edge, the lowest spot first;
-4. directly right of the obstacles on the left edge, centred;
-5. the right edge, centred.
+1. the right edge, centred;
+2. the right edge, just below an obstacle on that edge (the Explorer, a panel), the highest spot first;
+3. the right edge, just above an obstacle on that edge (the bottom-right cluster), the lowest spot first;
+4. directly left of the obstacles on the right edge, centred.
+
+It never crosses to the left edge.
 
 If none is clear, the first is used. The order is fixed so the panel always lands in the same place
 for the same chrome. Placement is recomputed when the chrome moves or resizes, and when a panel appears or goes
@@ -335,12 +341,8 @@ WCAG 2.2 AA.
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title.
-- **Minimal chrome keeps the section titles** ([Power user mode](../007-editor/power-user-mode.md)).
-  Minimal chrome removes words that teach the interface; these name what each row changes. Two
-  rows of seven coloured squares (Stroke, Background) look alike without them, and a user who
-  knows the editor still has to tell them apart at a glance. The docked panel's header follows the
-  panel rule instead: Minimal chrome hides a panel's title and help button, which would leave an
-  empty strip, so the header is not shown; the panel keeps its accessible name ("Quick style").
+- **Section titles always show**: they name what each row changes. Two rows of seven coloured
+  squares (Stroke, Background) look alike without them.
 - **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
   one (`scrollbar-slim`), light and dark, not the operating system's.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above

@@ -41,6 +41,6 @@ describe('the edge-case tab (E2 to E28, R25)', () => {
   it('prints every case, never dropping an unknown kind', async () => {
     const { text, json } = outlineView(buildViewModel(edgeCasesTab()));
     await expect(text).toMatchFileSnapshot(golden('edge-cases.outline.txt'));
-    expect(json.header).toMatchObject({ hidden: 2, unknown: 3 });
+    expect(json.header).toMatchObject({ unknown: 3 });
   });
 });

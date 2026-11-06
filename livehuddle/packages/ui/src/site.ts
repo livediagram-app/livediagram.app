@@ -22,12 +22,12 @@ export const SITE_NAME = 'livehuddle';
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. The pitch is open decision D5's (docs/specs/005-project-roadmap/open-decisions.md):
-// a place to meet and run workshops, never a diagramming tool, which is livediagram's.
-export const SITE_TITLE = 'livehuddle: Meet and run workshops together, live';
+// a place for a team to meet, never a workshop or diagramming tool, which are livediagram's (Work Tracker #423).
+export const SITE_TITLE = 'livehuddle: Meet your team in a Space, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time Space for meetings and workshops: walk in, gather round the table and run the session with timers, votes and polls.';
+  'A free, real-time Space for your team to meet in: walk in as your own character, gather round the table, and keep it to time with a Timer on the wall.';
 // Lower case: it follows "livehuddle: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time space to meet and run workshops together';
+export const SITE_PITCH = 'a real-time space where your team meets';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked

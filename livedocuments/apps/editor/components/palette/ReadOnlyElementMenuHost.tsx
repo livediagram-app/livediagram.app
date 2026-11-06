@@ -30,7 +30,6 @@ export function ReadOnlyElementMenuHost() {
     embedMode,
     lockedByOther,
     openComments,
-    openNote,
     followLink,
     beginEdit,
     setImageAlt,
@@ -46,7 +45,12 @@ export function ReadOnlyElementMenuHost() {
     attachments: isBoxed(target),
     writeText: can.writeText(target) && elementSupportsText(target) && !lockedByOther(target.id),
   });
-  const items = readOnlyElementMenuItems(facts);
+  // Element links and notes are retired in livedocuments (docs/specs/009-elements/links-and-notes-retired.md): no
+  // View Note, and Open Link only where the link is the element's own content (a link card, a video).
+  const ownLink = target.type === 'link-card' || target.type === 'video';
+  const items = readOnlyElementMenuItems(facts).filter(
+    (i) => i.key !== 'note' && (i.key !== 'open-link' || ownLink),
+  );
   // A picture's alt text (docs/specs/009-elements/images.md "Alt text"): every role reads it here, and a Participant
   // who may write the image's words writes it (alt is in PARTICIPANT_TEXT_FIELDS).
   const picture = target.type === 'image' && target.imageId ? target : null;
@@ -70,7 +74,7 @@ export function ReadOnlyElementMenuHost() {
             // Offered only on an element with a link (readOnlyElementMenuFacts).
             return followLink((target as { link?: ElementLink }).link as ElementLink);
           case 'note':
-            return openNote(target.id);
+            return;
           case 'copy-text':
             return void copyElementText(facts.text);
         }

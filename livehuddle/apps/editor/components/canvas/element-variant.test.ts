@@ -86,8 +86,9 @@ describe('describeVariant — per-type body styling', () => {
     expect(describeVariant(unset, false, false, null).style.borderRadius).toBe('4px');
     const pill = shape({ width: 14, height: 14, borderRadius: 'full' });
     expect(describeVariant(pill, false, false, null).style.borderRadius).toBe('9999px');
-    const node = shape({ shape: 'mind-node', width: 20, height: 20 });
-    expect(describeVariant(node, false, false, null).style.borderRadius).toBe('5px');
+    // A kind livehuddle doesn't have paints its own placeholder card, so it keeps the fixed corner.
+    const retired = shape({ shape: 'mind-node', width: 20, height: 20 });
+    expect(describeVariant(retired, false, false, null).style.borderRadius).toBe('4px');
   });
 
   it('circle and stadium use fixed silhouette radii', () => {

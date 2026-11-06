@@ -66,7 +66,7 @@ livedocuments's scenes:
 | Tabs                 | own                  | one document's tabs stacked behind the tab bar, a pitch deck's slides in front                              |
 | User Interface       | own                  | the editor with numbered callouts: the menu, the palette strip, the bottom-right buttons, the tab bar       |
 | Tools                | shared, with its own | Markdown Import turning `#` and `-` lines into an article, beside the shared appearance switch and Zen mode |
-| Tips and Tricks      | shared, with its own | the command palette (Slide Deck, Fit to Screen, Zen mode) and T, N and 9                                    |
+| Tips and Tricks      | shared, with its own | the command palette (Spotlight, Fit to Screen, Zen mode) and T, N and 9                                     |
 | Search Panel         | shared, with its own | "roadmap" finding a document, a tab, a sticky note and a guide                                              |
 | Supported Devices    | shared, with its own | an article page on a laptop, a tablet and a phone                                                           |
 | Developers           | shared, with its own | `POST /api/documents` with the `slide-deck` template, and the slide it makes                                |

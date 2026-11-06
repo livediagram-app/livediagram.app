@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
 import { PenWidthIcon } from './PenWidthIcon';
@@ -455,7 +455,7 @@ describe('WhiteboardDock position', () => {
     expect(refusePin().dataset.side).toBe('above');
   });
 
-  it('keeps clear of the Explorer menu card at the top: right beside it on a phone, clear of it at UI scale on a tablet, centred from lg', () => {
+  it('keeps clear of the Explorer menu card at the top: right beside it on a phone, clear of it at UI scale on a tablet', () => {
     renderDock();
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
@@ -464,11 +464,63 @@ describe('WhiteboardDock position', () => {
         'max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)]',
         'phone:left-[var(--dock-clear,4.125rem)]',
         'phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)]',
-        'lg:left-1/2',
-        'lg:-translate-x-1/2',
-        'lg:max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
       ]),
     );
+    expect(dock().hasAttribute('data-dock-centred')).toBe(false);
+  });
+
+  describe('from lg', () => {
+    // Every query matches: a wide window (and not a phone, whose own query this stub also answers).
+    const wide = (q: string) => q === '(min-width: 1024px)';
+    const stubMedia = () =>
+      vi.stubGlobal(
+        'matchMedia',
+        (q: string) =>
+          ({
+            matches: wide(q),
+            addEventListener: () => {},
+            removeEventListener: () => {},
+          }) as unknown as MediaQueryList,
+      );
+    const stubRoom = (width: number) => {
+      const real = Element.prototype.getBoundingClientRect;
+      return vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        if (this.hasAttribute('data-dock-room'))
+          return { left: 0, top: 0, right: width, bottom: 0, width, height: 0 } as DOMRect;
+        return real.call(this);
+      });
+    };
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    });
+
+    it('centres with the clearance on both sides before measuring, and where the bar fits centred', () => {
+      stubMedia();
+      renderDock();
+      expect(dock().className.split(' ')).toEqual(
+        expect.arrayContaining([
+          'left-1/2',
+          '-translate-x-1/2',
+          'max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
+        ]),
+      );
+      cleanup();
+      stubRoom(1200);
+      renderDock();
+      expect(dock().hasAttribute('data-dock-centred')).toBe(true);
+    });
+
+    it('stays beside the menu card where centring would fold more of the bar', () => {
+      stubMedia();
+      // Beside the card: 470 px, the whole bar; centred: 470 - 120 + 12 = 362, which folds.
+      stubRoom(470);
+      renderDock();
+      expect(dock().hasAttribute('data-dock-centred')).toBe(false);
+      expect(screen.queryByRole('button', { name: 'More Tools' })).toBeNull();
+    });
   });
 
   it('moves between top and bottom in place, keeping its groups', () => {

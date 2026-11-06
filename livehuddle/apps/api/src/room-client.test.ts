@@ -19,17 +19,18 @@ import {
 const card: ShapeElement = {
   id: 'card',
   type: 'shape',
-  shape: 'done-check',
+  shape: 'checklist',
   x: 0,
   y: 0,
   width: 100,
   height: 100,
+  checklistItems: [{ text: 'a', done: false }],
 };
 const tab: Tab = { id: 't1', name: 'T', elements: [card] };
 
-// The room's answer: b cast at seq 5.
+// The room's answer: the first row ticked at seq 5.
 const ledger: TabLedger = {
-  elements: { card: { responses: { b: { value: 'done', at: 1, seq: 5 } } } },
+  elements: { card: { ticks: { '0\u0000a': { done: true, seq: 5 } } } },
 };
 
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
@@ -51,9 +52,7 @@ describe('the room ledger merge (docs/specs/012-collaboration/collab-race-harden
   it("merges the room's answers the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');
-    expect((merged.elements[0] as ShapeElement).responses?.map((r) => r.participantId)).toEqual([
-      'b',
-    ]);
+    expect((merged.elements[0] as ShapeElement).checklistItems?.map((r) => r.done)).toEqual([true]);
     expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
   });
 

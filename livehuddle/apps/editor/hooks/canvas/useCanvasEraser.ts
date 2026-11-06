@@ -57,9 +57,6 @@ type EraserDeps = {
   // eraser: a one-pixel sweep that removes anything it touches, one element
   // at a time.
   config?: EraserConfig;
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): the eraser passes
-  // over them like element-locked ones.
-  layerInertIds: Set<string>;
   activeId: string;
   activeTab: Tab;
   // Element-level write WITHOUT a fresh history checkpoint (see
@@ -103,7 +100,7 @@ export function useCanvasEraser(deps: EraserDeps) {
 
   // The whiteboard's step. Returns false when this is not a whiteboard gesture.
   const whiteboardErase = (clientX: number, clientY: number): boolean => {
-    const { whiteboard, activeTab, tick, layerInertIds } = depsRef.current;
+    const { whiteboard, activeTab, tick } = depsRef.current;
     const frame = frameRef.current?.() ?? null;
     if (!whiteboard || !frame) return false;
     const rect = { left: frame.left, top: frame.top } as DOMRect;
@@ -112,8 +109,7 @@ export function useCanvasEraser(deps: EraserDeps) {
     prevRef.current = at;
     const screenRadius = WHITEBOARD_ERASER_RADIUS_PX[whiteboard.mode];
     const r = screenRadius / frame.zoom;
-    const isProtected = (el: Element) =>
-      el.locked === true || depsRef.current.layerInertIds.has(el.id);
+    const isProtected = (el: Element) => el.locked === true;
     // A path goes whole in either mode (docs/specs/023-draw-mode/path-tool.md "Selecting and erasing").
     let changed = false;
     for (const id of pathsTouched(activeTab.elements, from, at, r, isProtected)) {
@@ -146,7 +142,7 @@ export function useCanvasEraser(deps: EraserDeps) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
         if (!el || el.type === 'freehand' || el.type === 'path' || el.type === 'shape') continue;
-        if (isProtected(el) || layerInertIds.has(id)) continue;
+        if (isProtected(el)) continue;
         erasedRef.current.add(id);
         changed = true;
       }
@@ -160,11 +156,10 @@ export function useCanvasEraser(deps: EraserDeps) {
     checkpointOnce();
     const ids = erasedRef.current;
     depsRef.current.tick((els) => {
-      const inert = depsRef.current.layerInertIds;
       // Drop arrows attached to an erased element, and those hung off them, matching deleteSelected.
-      const gone = withAttachedArrows(els, ids, (el) => el.locked === true || inert.has(el.id));
+      const gone = withAttachedArrows(els, ids, (el) => el.locked === true);
       return els.filter((el) => {
-        if (el.locked === true || inert.has(el.id)) return true;
+        if (el.locked === true) return true;
         return !gone.has(el.id);
       });
     });
@@ -172,7 +167,7 @@ export function useCanvasEraser(deps: EraserDeps) {
 
   const eraseAtPoint = (clientX: number, clientY: number) => {
     if (whiteboardErase(clientX, clientY)) return;
-    const { activeTab, layerInertIds } = depsRef.current;
+    const { activeTab } = depsRef.current;
     const config = depsRef.current.config ?? DEFAULT_ERASER_CONFIG;
     let changed = false;
     // One sample for a Point brush; a ring of them for a sized one.
@@ -181,9 +176,8 @@ export function useCanvasEraser(deps: EraserDeps) {
       for (const { id } of elementHostsAtPoint(point.x, point.y)) {
         if (erasedRef.current.has(id)) continue;
         const el = activeTab.elements.find((e) => e.id === id);
-        // Skip unknown ids (a wrapper for something on another layer) and
-        // locked / hidden-or-locked-LAYER elements (protected, docs/specs/006-document/layers.md).
-        if (!el || el.locked === true || layerInertIds.has(id)) continue;
+        // Skip unknown ids and locked elements (protected).
+        if (!el || el.locked === true) continue;
         // And skip what the target filter protects — a sweep set to Drawings
         // passes straight over everything else on the canvas.
         if (!eraserAllows(el, config.target)) continue;

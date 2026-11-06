@@ -1,5 +1,5 @@
 // What the + beside the last page adds (docs/specs/007-editor/pages-mode.md "Adding a page"):
-// another page like the last, named for what it is ("Add Another Logo Page", "Add Another iPhone
+// another page like the last, named for what it is ("Add Logo Page", "Add iPhone
 // Screen"), so the button says exactly what a press makes.
 import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livedesign/design';
 
@@ -25,7 +25,15 @@ export function anotherPageNoun(page: Pick<Page, 'kind' | 'device'>): string {
       : `${label} Screen`;
 }
 
-/** The + button's name: "Add Another Slide". */
+/** The + button's name: "Add Logo Page", "Add iPhone Screen". */
 export function addAnotherLabel(page: Pick<Page, 'kind' | 'device'>): string {
-  return `Add Another ${anotherPageNoun(page)}`;
+  return `Add ${anotherPageNoun(page)}`;
+}
+
+/** Contents' footer button, short enough for its row: "Add Logo Page", "Add Screen", "Add Photo Page"
+ *  (the device is the tooltip's). */
+export function addPageLabel(page: Pick<Page, 'kind' | 'device'> | undefined): string {
+  const kind = page ? pageKindOf(page) : undefined;
+  if (!kind) return 'Add Page';
+  return kind === 'wireframe' ? 'Add Screen' : `Add ${KIND_NOUN[kind]}`;
 }

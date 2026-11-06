@@ -6,7 +6,7 @@
 // px from the slider, which the preview follows as it moves), and Apply to All Elements.
 
 import { useState } from 'react';
-import { FONTS, type Finish, type TextSize } from '@livedocuments/document';
+import { FONTS, textPxRangeFor, type Finish, type TextSize } from '@livedocuments/document';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TabStylePreview } from './TabStylePreview';
@@ -81,6 +81,8 @@ export function TextTab({
         <div className="-mx-3">
           <TextSizeControl
             current={size}
+            // New text's size, so a text's range: a document's 24 to 72 px.
+            range={textPxRangeFor('text')}
             onSet={(next) => {
               setPreviewSize(null);
               onSetDefaultTextSize(next);

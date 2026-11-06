@@ -1,5 +1,5 @@
 import type { PageKind } from '@livedocuments/document';
-import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
+import { withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Pages tour's relaunch signal (docs/specs/007-editor/pages-tour.md "Where it appears"): the Settings
@@ -13,8 +13,10 @@ export function requestPagesTourRelaunch(): void {
 }
 
 // Each page kind offers its own track once (docs/specs/007-editor/pages-tour.md "Where it appears"):
-// `pagesTourKinds` lists the kinds answered; `pagesTourSeen` counts them all only for a power user
-// (tourTrackSeen).
+// `pagesTourKinds` lists the kinds answered. The older single flag `pagesTourSeen` counts none: an answer given to the
+// single tour before it split stands for no kind in particular, so each is offered once more. The one place it meant
+// "every kind" was the retired Power user mode's preset, and that is folded into the list as the blob is read
+// (upgradeLegacyPreferences in @livedocuments/api-schema).
 export const PAGES_TOUR_KINDS: readonly PageKind[] = [
   'slide',
   'infographic',
@@ -23,7 +25,7 @@ export const PAGES_TOUR_KINDS: readonly PageKind[] = [
 ];
 
 export function pagesKindSeen(prefs: UserPreferences | null | undefined, kind: PageKind): boolean {
-  return tourTrackSeen(prefs, prefs?.pagesTourKinds, prefs?.pagesTourSeen, kind);
+  return (prefs?.pagesTourKinds ?? []).includes(kind);
 }
 
 /** The preferences with `kind` answered. */

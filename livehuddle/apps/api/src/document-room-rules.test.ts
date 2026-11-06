@@ -214,19 +214,34 @@ describe('admitFrame', () => {
 
 // docs/specs/013-workspace/share-roles.md "Integrity": a Participant answers only as itself.
 describe('answersAsSelf', () => {
-  const vote = (voter: unknown) => ({ kind: 'vote', voter });
   const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
-  it('admits its own dot and response, and any idea', () => {
-    expect(answersAsSelf(vote('k'), 'k')).toBe(true);
-    expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(true);
-    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), undefined)).toBe(true);
+  it('admits its own comment reaction', () => {
+    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'k' }), 'k')).toBe(true);
   });
   it("refuses another's key, no key, and anything else", () => {
-    expect(answersAsSelf(vote('other'), 'k')).toBe(false);
-    expect(answersAsSelf(vote('k'), undefined)).toBe(false);
-    expect(answersAsSelf(delta({ kind: 'response', participantId: 'other' }), 'k')).toBe(false);
+    // The retired Vote's dot is no answer (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+    expect(answersAsSelf({ kind: 'vote', voter: 'k' }, 'k')).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'comment-react', by: 'other' }), 'k')).toBe(false);
     expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
+    // The retired per-participant responses and idea box take no Participant answer any more.
+    expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), 'k')).toBe(false);
     expect(answersAsSelf(null, 'k')).toBe(false);
+  });
+});
+
+// docs/specs/009-elements/timer-and-stopwatch.md "Share roles": a Timer's press names nobody, so any Participant runs it.
+describe('answersAsSelf, Timer and Stopwatch presses', () => {
+  it('admits a piece-timer press from anyone taking part', () => {
+    const press = {
+      kind: 'el-delta',
+      delta: {
+        kind: 'piece-timer',
+        state: { running: true, startedAt: 1, accumulatedMs: 0, durationMs: 300_000 },
+      },
+    };
+    expect(answersAsSelf(press, 'k')).toBe(true);
+    expect(answersAsSelf(press, undefined)).toBe(true);
   });
 });
 

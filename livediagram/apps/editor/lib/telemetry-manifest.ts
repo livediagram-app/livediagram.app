@@ -187,8 +187,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Cleared',
   'UI·Closed',
   'UI·Copied',
-  // The power user mode offer turned down (docs/specs/007-editor/power-user-mode.md).
-  'UI·Declined',
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',

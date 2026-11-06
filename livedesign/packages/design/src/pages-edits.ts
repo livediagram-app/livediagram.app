@@ -197,7 +197,8 @@ export function pageBackgroundStored<T extends PagesTab>(
 const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
 
 /**
- * A new page of a kind after the last: a logo page the 1024 artboard, a wireframe page its device
+ * A new page of a kind right after the page `after` names (the person's current page, docs/specs/007-editor/
+ * pages-mode.md "Adding a page"), else after the last: a logo page the 1024 artboard, a wireframe page its device
  * (else the last wireframe page's), a photo page a blank photo. All on the plain paper, carrying the
  * last page's background. Only ever of the tab's kind (docs/specs/007-editor/pages-mode.md "One kind
  * a tab"): any other, and any on a tab whose first page is still blank, is refused.
@@ -210,6 +211,36 @@ export function pageAdded<T extends PagesTab>(
   device?: WireframeDeviceId,
   // A photo page's picture size (docs/specs/031-photo/photo-pages.md "Making a photo page").
   photoSize?: { width: number; height: number },
+  // The page it goes right after; absent or unknown, after the last.
+  after?: string,
+): PageEdit<T> {
+  const out = pageAppended(tab, kind, id, device, photoSize, after);
+  return 'tab' in out ? { tab: placedAfter(out.tab, id, after) } : out;
+}
+
+/** The page a page added after `after` follows: `after`'s unit's last page, else the last page. */
+function pageBefore(pages: readonly Page[], after: string | undefined): Page | undefined {
+  const unit = after ? pageUnits(pages).find((u) => u.pageIds.includes(after)) : undefined;
+  const id = unit?.pageIds[unit.pageIds.length - 1];
+  return (id ? pages.find((p) => p.id === id) : undefined) ?? pages[pages.length - 1];
+}
+
+/** The new page's unit (`id`'s) moved to just after `after`'s unit; as it was where `after` is unknown or last. */
+function placedAfter<T extends PagesTab>(tab: T, id: string, after: string | undefined): T {
+  if (!after) return tab;
+  const anchor = pageUnits(pagesOf(tab)).findIndex((u) => u.pageIds.includes(after));
+  if (anchor < 0) return tab;
+  return (withUnitMoved(tab, id, anchor + 1) as T | null) ?? tab;
+}
+
+/** pageAdded's page at the end; `after` only picks the page whose background it wears. */
+function pageAppended<T extends PagesTab>(
+  tab: T,
+  kind: PageKind,
+  id: string,
+  device: WireframeDeviceId | undefined,
+  photoSize: { width: number; height: number } | undefined,
+  after: string | undefined,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
@@ -221,9 +252,9 @@ export function pageAdded<T extends PagesTab>(
     const page = newPhotoPage(id, photo.width, photo.height);
     return { tab: withPhoto(withPages(tab, [...pages, page]), id, photo) };
   }
-  // The new page wears the background of the page before it (the last), whatever either kind; a
-  // logo page takes its fill alone, since it takes no pattern.
-  const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
+  // The new page wears the background of the page before it, whatever either kind; a logo page takes its fill
+  // alone, since it takes no pattern.
+  const carried = carriedBackground(pageBefore(pages, after)?.background, kind);
   // A wireframe page takes the last wireframe page's device and frame
   // (docs/specs/007-editor/wireframe-pages.md "Choosing the device"), its device unless one was
   // just chosen.
@@ -260,7 +291,7 @@ export function photoPagesAdded<T extends PagesTab>(
 }
 
 /**
- * A new page like `sourceId` after the last (docs/specs/007-editor/pages-mode.md "Adding a page"):
+ * A new page like `sourceId` right after `after` (else the last) (docs/specs/007-editor/pages-mode.md "Adding a page"):
  * its kind and shape, a wireframe page's device, frame look, orientation and system bars too,
  * carrying the last page's background as any new page does; never its content.
  */
@@ -268,6 +299,7 @@ export function pageAddedLike<T extends PagesTab>(
   tab: T,
   sourceId: string,
   id: string,
+  after?: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   const source = pages.find((p) => p.id === sourceId);
@@ -281,19 +313,19 @@ export function pageAddedLike<T extends PagesTab>(
     // A photo page's like is a blank photo of its picture's size.
     if (kind === 'photo') {
       const { width, height } = photoOfPage(tab, sourceId);
-      return pageAdded(tab, kind, id, undefined, { width, height });
+      return pageAdded(tab, kind, id, undefined, { width, height }, after);
     }
-    return pageAdded(tab, kind, id);
+    return pageAdded(tab, kind, id, undefined, undefined, after);
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  const carried = carriedBackground(pages[pages.length - 1]?.background, 'wireframe');
+  const carried = carriedBackground(pageBefore(pages, after)?.background, 'wireframe');
   const page: Page = {
     ...newWireframePage(id, source.device, source.frameLook),
     orientation: source.orientation,
     ...(source.systemBars === false ? { systemBars: false as const } : {}),
     ...(carried ? { background: carried } : {}),
   };
-  return { tab: withPages(tab, [...pages, page]) };
+  return { tab: placedAfter(withPages(tab, [...pages, page]), id, after) };
 }
 
 // The background a new page of `kind` carries over from the page before it: none for the paper,

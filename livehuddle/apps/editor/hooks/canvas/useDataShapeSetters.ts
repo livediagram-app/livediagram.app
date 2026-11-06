@@ -6,34 +6,27 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  AGENDA_MAX_ITEMS,
-  AGENDA_MAX_TEXT,
-  DECISION_MAX_DRIVERS,
-  DECISION_MAX_TEXT,
-  type AgendaItem,
   type ChairFacing,
-  type DecisionStatus,
-  type EstimateScale,
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
   type AnimationSpeed,
   type ChecklistItem,
-  type SelectionMode,
   type CodeLanguage,
   type Element,
   type ProgressAnim,
-  type ShapeElement,
   turnsWithFacing,
   seatingFacing,
   turnedSeatingBox,
   type SeatingKind,
   type RoomDoor,
+  type ClockZone,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+import type { StagePatch } from '@/components/palette/StageMenuSection';
 
 // The kinds carrying masthead lines (see setPageHeading).
 const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card', 'boundary']);
@@ -188,76 +181,6 @@ export function useDataShapeSetters({
     );
   };
 
-  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
-  // Selection-wide like every other setter here, each gated to its own kind so
-  // a multi-selection containing a chair and a chart only writes the chair.
-  const setCollabFieldSelected = (
-    kind: ShapeElement['shape'],
-    patch: Partial<ShapeElement>,
-    telemetryType: string,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === kind ? { ...el, ...patch } : el,
-      ),
-    );
-    track('Element', 'Changed', telemetryType);
-  };
-
-  const setEstimateScaleSelected = (scale: EstimateScale) =>
-    setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
-
-  // The current segment travels with its row (docs/specs/012-collaboration/agenda.md
-  // "The current segment"): `moveCurrent` says where a reorder or removal put
-  // it, and a current index past the new rows is cleared either way.
-  const setAgendaItemsSelected = (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    const agendaItems = items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
-      label: item.label.slice(0, AGENDA_MAX_TEXT),
-      minutes: item.minutes,
-    }));
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'agenda') return el;
-        let current = el.agendaCurrent;
-        if (current !== undefined && moveCurrent) current = moveCurrent(current);
-        if (current !== undefined && current >= agendaItems.length) current = undefined;
-        return {
-          ...el,
-          agendaItems,
-          agendaCurrent: current,
-          ...(current === undefined ? { agendaTimerStartedAt: undefined } : {}),
-        };
-      }),
-    );
-    track('Element', 'Changed', 'Agenda');
-  };
-
-  const setDecisionStatusSelected = (status: DecisionStatus) =>
-    setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');
-
-  // An empty date CLEARS the field, so an undated card renders nothing at all
-  // rather than an empty slot (docs/specs/012-collaboration/decision-record.md).
-  const setDecisionDateSelected = (date: string | undefined) =>
-    setCollabFieldSelected('decision', { decisionDate: date || undefined }, 'Decision');
-
-  const setDecisionDriversSelected = (drivers: string[]) =>
-    setCollabFieldSelected(
-      'decision',
-      {
-        decisionDrivers: drivers
-          .slice(0, DECISION_MAX_DRIVERS)
-          .map((d) => d.slice(0, DECISION_MAX_TEXT)),
-      },
-      'Decision',
-    );
-
   // Chair, desk and sofa (docs/specs/009-elements/chair.md): one facing for all three. A desk or a
   // sofa turned onto its side swaps its box about its centre, so the drawing keeps its proportions.
   const setChairFacingSelected = (facing: ChairFacing) => {
@@ -288,6 +211,46 @@ export function useDataShapeSetters({
   });
   const setRoomDoor = (door: RoomDoor) => setRoomDoorSelected({ roomDoor: door }, 'Room');
 
+  // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): Who Can Speak and Show
+  // Cameras, on every selected stage and nothing else.
+  const patchStages = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'stage',
+  });
+  const setStageSelected = (patch: StagePatch) => patchStages(patch, 'Stage');
+  // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen"); undefined clears it.
+  const patchScreens = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'screen',
+  });
+  const setScreenUrlSelected = (url: string | undefined) =>
+    patchScreens({ screenUrl: url }, 'Screen');
+  // The same patch on one Screen by id: the walking reader's Set Link (docs/specs/008-canvas/avatar-mode.md "The
+  // reader"), which edits the Screen it opened, not the selection.
+  const setScreenUrlOf = (id: string, url: string | undefined) =>
+    makeShapePatcher({
+      currentSelectionIds: () => new Set([id]),
+      commit,
+      matches: (kind) => kind === 'screen',
+    })({ screenUrl: url }, 'Screen');
+  // A World Clock's zones and a Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears them.
+  const patchClocks = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'world-clock',
+  });
+  const setClockZonesSelected = (zones: ClockZone[] | undefined) =>
+    patchClocks({ clockZones: zones }, 'World-clock');
+  const patchJukeboxes = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'jukebox',
+  });
+  const setJukeboxSourceSelected = (source: string | undefined) =>
+    patchJukeboxes({ jukeboxSource: source }, 'Jukebox');
+
   const setChecklistItemsSelected = (items: ChecklistItem[]) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -302,20 +265,6 @@ export function useDataShapeSetters({
       ),
     );
     track('Element', 'Changed', 'Checklist');
-  };
-
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode the button hands whoever
-  // presses it. Gated to the button kind, so a multi-selection of mixed
-  // elements only rewrites the buttons in it.
-  const setButtonModeSelected = (mode: SelectionMode) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'shape' && el.shape === 'mode-button' ? { ...el, mode } : el,
-      ),
-    );
-    track('Element', 'Changed', 'ModeButton');
   };
 
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
@@ -337,13 +286,12 @@ export function useDataShapeSetters({
     setLegendItemsSelected,
     setPageHeading,
     setChecklistItemsSelected,
-    setEstimateScaleSelected,
-    setAgendaItemsSelected,
-    setDecisionStatusSelected,
-    setDecisionDateSelected,
-    setDecisionDriversSelected,
     setChairFacingSelected,
     setRoomDoorSelected: setRoomDoor,
-    setButtonModeSelected,
+    setStageSelected,
+    setScreenUrlSelected,
+    setScreenUrlOf,
+    setClockZonesSelected,
+    setJukeboxSourceSelected,
   };
 }

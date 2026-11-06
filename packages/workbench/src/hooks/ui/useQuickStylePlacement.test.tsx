@@ -175,6 +175,17 @@ describe('useQuickStylePlacement', () => {
     onCanvas.remove();
   });
 
+  it('keeps to the right edge where the editor asks, clear of the cluster there', () => {
+    const cluster = document.createElement('div');
+    cluster.setAttribute('data-zoom-cluster', '');
+    box(cluster, { left: 1100, top: 840, width: 328, height: 44 });
+    document.body.append(cluster);
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'right'));
+    expect(result.current).toEqual({ left: 1440 - 12 - 240, top: 350 });
+    cluster.remove();
+  });
+
   it('keeps clear of the Contents panel docked at the left, standing beside it', () => {
     const contents = document.createElement('aside');
     contents.setAttribute('data-contents-sidebar', '');
@@ -228,5 +239,26 @@ describe('useQuickStylePlacement', () => {
 
     expect(result.current!.top + 200).toBeLessThanOrEqual(560);
     map.remove();
+  });
+
+  // Beside a docked Contents sidebar the cluster's row reaches left to it, its strips at the right: the strips are in
+  // the way, not the empty row, so the panel still stands beside the sidebar.
+  it('stands beside the Contents sidebar when the cluster row reaches across to it', () => {
+    const contents = document.createElement('aside');
+    contents.setAttribute('data-contents-sidebar', '');
+    box(contents, { left: 0, top: 120, width: 236, height: 780 });
+    const cluster = document.createElement('div');
+    cluster.setAttribute('data-zoom-cluster', '');
+    box(cluster, { left: 252, top: 840, width: 1172, height: 44 });
+    const strip = document.createElement('div');
+    box(strip, { left: 1100, top: 840, width: 324, height: 44 });
+    cluster.append(strip);
+    document.body.append(contents, cluster);
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true));
+    // Beside the widest thing on the left edge (the palette, to 240), not across at the right edge.
+    expect(result.current).toEqual({ left: 240 + 12, top: 350 });
+    contents.remove();
+    cluster.remove();
   });
 });

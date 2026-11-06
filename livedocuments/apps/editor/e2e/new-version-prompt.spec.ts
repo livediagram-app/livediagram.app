@@ -4,6 +4,7 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
+  onPage,
   paletteTile,
   serverNewUrl,
   test,
@@ -48,11 +49,12 @@ async function openBlank(page: Page) {
   await dismissQuickTour(page);
 }
 
-// One edit: a square dropped on the page, each beside the last.
+// One edit: a square dropped on the page, each beside the last. Placed by the page, not the canvas: the page is framed
+// beside the Contents sidebar, docked from the first page (docs/specs/007-editor/pages-mode.md "Contents").
 async function addSquare(page: Page) {
   const placed = await squares(page).count();
   await (await paletteTile(page, 'Add Square')).click();
-  await page.locator(CANVAS).click({ position: { x: 640 + placed * 140, y: 450 } });
+  await page.locator(CANVAS).click({ position: await onPage(page, 0.3 + placed * 0.2, 0.5) });
   await expect(squares(page)).toHaveCount(placed + 1);
 }
 

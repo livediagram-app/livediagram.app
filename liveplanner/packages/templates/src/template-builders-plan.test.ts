@@ -75,7 +75,7 @@ describe('plan templates', () => {
       'sales-crm': ['Deals', 'Contacts'],
       'help-desk': ['Tickets', 'Contact Form', 'Knowledge Base'],
       'meeting-agenda': ['Agenda', 'Actions', 'Archive'],
-      'personal-goals': ['Goals', 'Key Results', 'Habits'],
+      'personal-goals': ['Goals', 'Milestones', 'Habits'],
       'study-planner': ['Assignments', 'Revision', 'Calendar'],
     });
   });
@@ -285,7 +285,7 @@ describe('plan templates', () => {
     expect(takes('sales-crm')).toEqual([['deal']]);
     expect(takes('help-desk')).toEqual([['ticket'], ['note']]);
     expect(takes('meeting-agenda')).toEqual([['note'], ['action'], undefined]);
-    expect(takes('personal-goals')).toEqual([['objective'], ['key-result']]);
+    expect(takes('personal-goals')).toEqual([['objective'], ['milestone']]);
     expect(takes('study-planner')).toEqual([['task'], ['note']]);
   });
 

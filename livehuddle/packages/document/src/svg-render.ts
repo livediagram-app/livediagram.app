@@ -1,4 +1,4 @@
-// Headless SVG renderer for a tab's elements (docs/specs/015-api/mcp-server.md §5). Extracted from the
+// Headless SVG renderer for a tab's elements (livediagram/docs/specs/015-api/mcp-server.md §5). Extracted from the
 // editor's export pipeline (apps/editor/lib/export-tab.ts) so the SAME element
 // drawing serves both the in-app SVG/PNG export AND the MCP worker's inline
 // render — one renderer, two callers, no DOM. The per-element drawers
@@ -35,6 +35,8 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
+import { isRetiredElement } from './retired-kinds';
+import { svgRetiredElement } from './svg-render-retired';
 import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
@@ -72,7 +74,7 @@ import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-l
 
 export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
-import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
+import { paintOrder } from './paint-order';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
 import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
 
@@ -235,6 +237,11 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   let shapeStr = '';
+  if (el.type === 'shape' && isRetiredElement(el)) {
+    // A kind livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
+    // placeholder card, in place of its body, border and label.
+    return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
+  }
   if (el.type === 'table') {
     // The real grid (tracks / headers / zebra / per-cell text), not a
     // box-with-nothing. Tables carry no element label; the cells are the
@@ -557,7 +564,7 @@ export function renderElementsToSvg(
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
-  const visible = visibleLayerElements(tab.elements, tab.layers);
+  const visible = tab.elements;
   // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
   const backdrops = sketchBackdropIds(visible, tab.finish);
   // Every caption laid out once, in document order, so labels see each other.
@@ -592,13 +599,12 @@ export function renderElementsToSvg(
   if (shadowDefs) parts.push(shadowDefs);
   const sketchArtDefs = svgSketchArtDefs(visible, tab.finish);
   if (sketchArtDefs) parts.push(sketchArtDefs);
-  // Per band, in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
-  // interleave by array order, so an arrow sent behind a box stays behind it.
-  // A dimmed layer wraps its band in a <g opacity>.
+  // In the canvas's paint order (docs/specs/006-document/layers.md "Stacking"): arrows and boxes interleave by
+  // array order, so an arrow sent behind a box stays behind it.
   // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
   const tagColours = tagColoursOf(tab);
-  for (const band of layerBands(tab.elements, tab.layers)) {
-    const inner = band.elements.map((el) =>
+  parts.push(
+    ...paintOrder(tab.elements).map((el) =>
       el.type === 'arrow'
         ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
         : svgBoxed(el, {
@@ -614,12 +620,8 @@ export function renderElementsToSvg(
             chartPalette,
             tagColours,
           }),
-    );
-    const opacity = layerOpacityOf(band.layer);
-    parts.push(
-      opacity < 1 ? `<g opacity="${r2(opacity)}">${inner.join('\n')}</g>` : inner.join('\n'),
-    );
-  }
+    ),
+  );
   parts.push('</svg>');
   return parts.join('\n');
 }

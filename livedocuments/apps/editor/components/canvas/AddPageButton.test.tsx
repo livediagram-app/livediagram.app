@@ -14,7 +14,7 @@ describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
     render(<AddPageButton last={page()} zoom={1} onAddLike={vi.fn()} />);
     const holder = screen
-      .getByRole('button', { name: 'Add Another Infographic Page' })
+      .getByRole('button', { name: 'Add Infographic Page' })
       .closest('div[style]') as HTMLElement;
     expect(holder.style.top).toBe('420px');
   });
@@ -29,7 +29,7 @@ describe('AddPageButton', () => {
         onAddLike={onAddLike}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add Another Slide' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Slide' }));
     expect(onAddLike).toHaveBeenCalledWith('p1');
   });
 
@@ -42,8 +42,9 @@ describe('AddPageButton', () => {
 
 describe('addAnotherLabel', () => {
   it('names each kind', () => {
-    expect(addAnotherLabel({ kind: 'slide' })).toBe('Add Another Slide');
-    expect(addAnotherLabel({})).toBe('Add Another Infographic Page');
-    expect(addAnotherLabel({ kind: 'article' })).toBe('Add Another Article');
+    expect(addAnotherLabel({ kind: 'slide' })).toBe('Add Slide');
+    expect(addAnotherLabel({})).toBe('Add Infographic Page');
+    expect(addAnotherLabel({ kind: 'article' })).toBe('Add Article');
+    expect(addAnotherLabel({ kind: 'flashcard' })).toBe('Add Card');
   });
 });

@@ -1,21 +1,18 @@
 // Labels (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values", EO18, EO22): a
-// shape's label over GRAPH_LABEL_MAX keeps its heading and moves the whole text into its note; an
-// arrow's is cut; any other element's label is its content and stays whole. A
+// shape's or an arrow's label over GRAPH_LABEL_MAX keeps its heading and the rest is cut (element notes, where a
+// shape's whole text used to go, are retired: docs/specs/009-elements/links-and-notes-retired.md); any other
+// element's label is its content and stays whole. A
 // shape whose label no longer fits grows around its centre, never shrinking.
 
 import { capLabel, labelBoxSize, type Element } from '@livedocuments/document';
 
-type LabelWrite = { label: string; note?: string; capped: boolean };
+type LabelWrite = { label: string; capped: boolean };
 
-// The label to store, and the note it ends with when the whole text moved there. `note` is the note
-// the element ends with otherwise.
-export function applyLabel(el: Element, text: string, note: string | undefined): LabelWrite {
+// The label to store, and whether it was cut short.
+export function applyLabel(el: Element, text: string): LabelWrite {
   if (el.type !== 'shape' && el.type !== 'arrow') return { label: text, capped: false };
   const { label, cut } = capLabel(text);
-  if (!cut) return { label, capped: false };
-  if (el.type === 'arrow') return { label, capped: true };
-  const whole = text.replace(/\s+/g, ' ').trim();
-  return { label, note: note ? `${whole}\n\n${note}` : whole, capped: true };
+  return { label, capped: cut };
 }
 
 export type Fit = { widened?: [number, number]; taller?: [number, number] };

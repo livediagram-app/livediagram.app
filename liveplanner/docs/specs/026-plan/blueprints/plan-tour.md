@@ -33,7 +33,7 @@ footer's Start Tour button live once in `@liveworkspace/workbench/components/tou
 | `apps/editor/hooks/plan/usePlanTourLeftovers.ts`             | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                                         |
 
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
-and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article
+and dialog, `help-articles.ts`, the help article
 `apps/help/app/plan/plan-tour/page.mdx` with its registry entry, icon and colour, and the telemetry
 dashboard (`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/features.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/visitors.ts`,
 `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/settings.ts`, `../liveworkspace/apps/site/app/telemetry/liveplanner/config.ts`,
@@ -86,8 +86,7 @@ its own (no settle delay, no arming).
 
 "Usable": `hydrated && !anyWelcomeOpen && !isReadOnly && !embedMode`. "No other tour": `activeTour()` is null or
 `'plan'`. "Has plan work": a `plan-board` or `plan-sheet` shape on `activeTab.elements`. `offerTrack`: of the tracks
-with work on the tab (Boards first), the first not `planTrackSeen` (in `planTourTracks`, or every track when
-`planTourSeen` and Power user mode are both on), else the first. `seen`: every track with work on the tab is
+with work on the tab (Boards first), the first not `planTrackSeen` (in `planTourTracks`), else the first. `seen`: every track with work on the tab is
 `planTrackSeen`; `useOfferTour` then withholds the offer, so a taken tour is off the button until a Settings row
 forgets it. A press marks `offerTrack` taken at once, as the end does.
 
@@ -141,8 +140,10 @@ another project is kept. Nothing writes a record any more.
 ## Interfaces and contracts
 
 - `UserPreferences.planTourTracks?: PlanTourTrack[]` (`'boards' | 'sheets' | 'dashboards'`; PlanTourHost runs the
-  first two, `BoardSheetTrack`); missing = none answered. `planTourSeen?: boolean` counts every
-  track only while `powerUserMode` is on. No migration (free-form preferences blob).
+  first two, `BoardSheetTrack`); missing = none answered. `planTourSeen?: boolean` counts no
+  track on its own; for a stored blob that had `powerUserMode` on, `upgradeLegacyPreferences`
+  (`packages/api-schema/src/legacy-preferences.ts`) adds every track to `planTourTracks` on read. No migration
+  (free-form preferences blob).
 - `PLAN_TOUR_RELAUNCH_EVENT = 'liveplanner:plan-tour-relaunch'`, dispatched by `requestPlanTourRelaunch()`.
 - Leftover record (read only): `localStorage['liveplanner:v2:plan-tour-content']` = JSON `PlanTourContent`; a
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
@@ -153,12 +154,11 @@ another project is kept. Nothing writes a record any more.
   `PlanTourSeenOn`), then one row per track nested beneath it (`tourTrackSwitch`, `parent: 'planTourSeen'`), keys
   `planTourSeen-boards`, `planTourSeen-sheets` and `planTourSeen-dashboards`, labels **Boards Tour**, **Sheets Tour**
   and **Dashboards Tour**. A track's row reads on while `!planTrackSeen(p, track)`; it writes `planTourSeen: false`
-  and `planTourTracks` = the tracks seen in `p` (the single flag folded in) with its own track added (off) or removed
+  and `planTourTracks` = the tracks seen in `p` with its own track added (off) or removed
   (on). A row on puts its track back on the button (the host's `seen` reads the same `planTrackSeen`). Help articles `planTour` (Boards, Sheets) and `planDashboards` (Dashboards); events
   `{ on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' }`, `{ on: 'SheetsTourSeenOff', off: 'SheetsTourSeenOn' }` and
   `{ on: 'DashboardsTourSeenOff', off: 'DashboardsTourSeenOn' }`. `SettingsDialog`'s close relaunches when a track is
   owed that was not owed at open; the host starts the tour then only if it is on offer.
-- `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.
 
 ## Data and persistence
 

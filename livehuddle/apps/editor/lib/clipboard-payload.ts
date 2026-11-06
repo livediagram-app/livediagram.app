@@ -58,8 +58,8 @@ type ClipboardEnvelope = {
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
 // about the original element, and re-attaching it to a copy in another document
-// misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
-// for the same reason — a vote is cast in a session, not a property of a shape.
+// misrepresents it whether or not the names survive. A retired element's `responses` (docs/specs/002-project-scope/not-in-livehuddle.md) go
+// for the same reason: an answer is given in a session, not a property of a shape.
 // An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own
 // id into the Activity index: a pasted copy made a second action under the
 // same id rather than a second piece of work anybody had assigned.

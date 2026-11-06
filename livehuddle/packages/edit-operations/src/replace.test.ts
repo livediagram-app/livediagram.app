@@ -113,15 +113,8 @@ describe('applyReplace on an existing tab', () => {
     expect(applyElementOps(next.elements, inverse)).toEqual(tab.elements);
   });
 
-  it('takes Mermaid through the same graph path', () => {
-    const { tab } = applied(
-      applyReplace(checkoutFlow(), { mermaid: 'flowchart TD\n  a --> b' }, options),
-    );
-    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(1);
-  });
-
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'team-pod' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
@@ -179,7 +172,7 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its canvas and kind', () => {
-    const { tab } = applied(applyReplace(null, { template: 'retrospective' }, options));
+    const { tab } = applied(applyReplace(null, { template: 'virtual-office' }, options));
     expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'diagram' });
   });
 
@@ -213,10 +206,8 @@ describe('applyReplace refusals', () => {
   const refusal = (body: unknown) => refused(applyReplace(null, body as ReplaceBody, options));
 
   it('needs exactly one source', () => {
-    expect(refusal({}).details).toEqual([
-      'replace takes exactly one of graph, mermaid, template, elements',
-    ]);
-    expect(refusal({ graph, mermaid: 'x' }).code).toBe('invalid_value');
+    expect(refusal({}).details).toEqual(['replace takes exactly one of graph, template, elements']);
+    expect(refusal({ graph, template: 'team-pod' }).code).toBe('invalid_value');
   });
 
   it('names a malformed graph member', () => {
@@ -233,15 +224,17 @@ describe('applyReplace refusals', () => {
     expect(refusal({ graph }).details[0]).toMatch(/every node in a lane: "b"/);
   });
 
-  it('refuses Mermaid it cannot read as parse_error, and Mermaid that is not text', () => {
-    expect(refusal({ mermaid: 'not a diagram' }).code).toBe('parse_error');
-    expect(refusal({ mermaid: 42 }).details).toEqual(['mermaid: expected a string']);
+  // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools"): it is no source.
+  it('refuses Mermaid as a body with no source', () => {
+    expect(refusal({ mermaid: 'flowchart TD\n  a --> b' }).details).toEqual([
+      'replace takes exactly one of graph, template, elements',
+    ]);
   });
 
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('sailboat');
+    expect(rejection.hint).toContain('all-hands-hall');
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
   });
 

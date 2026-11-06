@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { graphFromMermaid, layoutGraph, type GraphInput } from './graph-input';
+import { layoutGraph, type GraphInput } from './graph-input';
 import { anchorPrimarySide } from './anchors';
 import type { ArrowElement, BoxedElement, Element } from './index';
 
-// A shared end in swimlanes (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
+// A shared end in swimlanes (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
 // stacks ordered by their feeders, a hand-off along its lane lined up straight.
 
 let n = 0;
@@ -144,26 +144,44 @@ describe('a level label in swimlanes', () => {
 
 describe('a router line into a crowded side', () => {
   it('takes a free side of a shared end rather than landing beside two lines', () => {
-    const read = graphFromMermaid(
-      [
-        'stateDiagram-v2',
-        '    direction TB',
-        '    [*] --> Created',
-        '    Created --> Paid : payment captured',
-        '    Paid --> Packed : items picked',
-        '    Packed --> Shipped : handed to carrier',
-        '    Shipped --> Delivered : signed for',
-        '    Created --> Cancelled : customer cancels',
-        '    Paid --> Cancelled : cancelled before packing',
-        '    Delivered --> Returned : return received',
-        '    Returned --> Refunded : refund issued',
-        '    Delivered --> [*]',
-        '    Cancelled --> [*]',
-        '    Refunded --> [*]',
-      ].join('\n'),
-    );
-    if (!read.ok) throw new Error(read.error);
-    const els = lay(read.graph);
+    // An order's states, as a state machine (each state a stadium): one start dot, one final state three lines end in.
+    const step = (from: string, to: string, label?: string) => ({
+      from,
+      to,
+      ...(label ? { label } : {}),
+    });
+    const graph: GraphInput = {
+      direction: 'down',
+      nodes: [
+        { id: 'start', label: '', shape: 'circle' },
+        ...[
+          'Created',
+          'Paid',
+          'Packed',
+          'Shipped',
+          'Delivered',
+          'Cancelled',
+          'Returned',
+          'Refunded',
+        ].map((id) => ({ id, label: id, shape: 'stadium' })),
+        { id: 'end', label: '', shape: 'final-state' },
+      ],
+      edges: [
+        step('start', 'Created'),
+        step('Created', 'Paid', 'payment captured'),
+        step('Paid', 'Packed', 'items picked'),
+        step('Packed', 'Shipped', 'handed to carrier'),
+        step('Shipped', 'Delivered', 'signed for'),
+        step('Created', 'Cancelled', 'customer cancels'),
+        step('Paid', 'Cancelled', 'cancelled before packing'),
+        step('Delivered', 'Returned', 'return received'),
+        step('Returned', 'Refunded', 'refund issued'),
+        step('Delivered', 'end'),
+        step('Cancelled', 'end'),
+        step('Refunded', 'end'),
+      ],
+    };
+    const els = lay(graph);
     const into = els.filter(
       (e): e is ArrowElement =>
         e.type === 'arrow' &&

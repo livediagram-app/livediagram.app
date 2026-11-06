@@ -64,7 +64,7 @@ describe('selector rows', () => {
     expect(ids('type:stadium')).toEqual(['n1', 'n8']);
     expect(ids('type:text')).toEqual(['t1']);
     expect(ids('type:shape shape:diamond')).toEqual(['n6']);
-    expect(ids('Type:frame')).toEqual(['f2']);
+    expect(ids('Type:boundary')).toEqual(['f2']);
   });
 
   it('in: the members of a frame or lane, never arrows', () => {
@@ -145,18 +145,18 @@ describe('selector refusals', () => {
   it('refuses in: on what is not a container, naming the containers', () => {
     expect(refusal('in:n3')).toMatchObject({
       code: 'invalid_value',
-      details: ['in:n3: n3 is not a frame or lane', 'containers: f2'],
+      details: ['in:n3: n3 is not a boundary or lane', 'containers: f2'],
     });
     const tab = {
       ...checkoutFlow(),
       elements: checkoutFlow().elements.filter((el) => el.id !== 'f2'),
     };
-    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a frame or lane']);
+    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a boundary or lane']);
   });
 
   it('needs a word inside a term to name one element', () => {
-    expect(refusal('in:type:frame').details[0]).toBe(
-      '"type:frame" must name one element: a ref or a "label"',
+    expect(refusal('in:type:boundary').details[0]).toBe(
+      '"type:boundary" must name one element: a ref or a "label"',
     );
     expect(refusal('from:nope').code).toBe('target_not_found');
     expect(refusal('to:label~c').code).toBe('target_not_found');

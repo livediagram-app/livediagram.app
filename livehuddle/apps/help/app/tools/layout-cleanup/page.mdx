@@ -7,49 +7,39 @@ import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Layout Cleanup',
   description:
-    'Tidy a messy diagram in one step: snap elements to a grid with Auto-Align, or recompute the whole layout with Auto Layout.',
+    'Tidy a messy Space in one step: Auto-align snaps sticky notes and images onto a 10 px grid, lining up what nearly lines up.',
   path: '/help/tools/layout-cleanup/',
 });
 
-<ArticleLayout title="Layout Cleanup" description="Two complementary tidiers, one for nudging things into alignment and one for laying a diagram out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
+<ArticleLayout title="Layout Cleanup" description="One press on Tidy Up lines up the notes and pictures that are nearly lined up." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
 
-When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livehuddle has a tool for each, both one press away on the **Tidy Up** button, and in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
+A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to roughly the right size, pictures that almost share an edge. **Tidy Up** puts that right in one press. Its tidier, **Auto-align**, snaps what you already have onto the grid, so near-aligned notes become exactly aligned and nothing moves far.
 
-<Figure caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout.">
+<Figure caption="Auto-align takes a scattered, mis-sized handful of notes and snaps them into neat rows on the grid.">
   <CleanupBeforeAfter />
 </Figure>
-
-## The two tools
-
-- **Auto-align** is a grid snap. It rounds every element's size to a 10 px grid and lines shapes up by the edges and centres they nearly share, so near-aligned shapes become exactly aligned, small drift collapses, and nothing moves far. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
-- **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick: flowchart (down or right), tree, or mindmap. It can legitimately move an element across the canvas. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
 
 <FeatureGrid>
   <Feature slug="auto-align" title="Auto-Align">
     Snap current positions to a tidy grid when things are just a few pixels off.
   </Feature>
-  <Feature slug="auto-layout" title="Auto Layout">
-    Recompute the whole diagram's layout from the connections between shapes.
-  </Feature>
 </FeatureGrid>
 
-## How to run them
+## How to run it
 
-Press the **Tidy Up** button (the broom in the bottom-right corner, just left of Layers). It opens a panel with a picture of each Auto Layout style (**Smart**, **Flowchart Down**, **Flowchart Right**, **Tree** and **Mindmap**) and **Auto-align** below them. Rest the mouse on one and the tab is laid out that way behind the panel, so you can compare styles before you commit; move away and everything goes back. Click the one you want to keep it.
+Press the **Tidy Up** button (the broom in the bottom-right corner, just left of the Theme & canvas button) and choose **Auto-align** in its panel. Rest the mouse on it first and the tab is tidied behind the panel, so you can see the result before you commit; move away and everything goes back.
 
-You can also open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
+You can also open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto-align** and pick **Auto-align to Grid** under **Actions**. It runs on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
 
-<Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
   <SearchCommandPalette />
 </Figure>
 
-The tidiers are for editors: they aren't offered to a participant or in a view-only session, and they leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
-
-Neither tool will trash your work. Each one is tried before it's offered, and one that would change nothing, cover a shape, or pull shapes out of their lanes is greyed out with the reason. Run one from the command palette and the same check applies: nothing moves, and a short notice says why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
+Tidying is for editors: it isn't offered to a participant or in a view-only session, and it leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/) stays exactly where it is.
 
 <Note>
-  Both tools work entirely offline and deterministically. They never call out to anything, so
-  they're always available.
+  Tidying works entirely offline and deterministically. It never calls out to anything, so it's
+  always available.
 </Note>
 
 </ArticleLayout>

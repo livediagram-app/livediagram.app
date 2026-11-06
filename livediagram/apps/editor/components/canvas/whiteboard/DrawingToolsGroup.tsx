@@ -2,121 +2,90 @@
 
 // The dock's Drawing tools group (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
 // Select, Markers 1 to 3, Text, Path tool, Fill and Eraser; the sticky note is a shape (the Shapes
-// group). A pen, the Fill tool or the eraser already in hand opens its flyout.
+// group). A pen, the Fill tool or the eraser already in hand opens its flyout. A bar too wide for its
+// room folds the least-used tools into More Tools at the end ("When the bar is too wide").
 
-import {
-  EditPointsIcon,
-  EraserIcon,
-  SelectIcon,
-  ShapePenIcon,
-} from '@/components/palette/palette-icons';
-import { penColourCss } from '@livediagram/document';
-import { penLabel } from '@/lib/whiteboard-prefs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
+import { Fragment } from 'react';
+import { EllipsisIcon } from '@livediagram/ui';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
+import { drawingRuns, type FoldableTool } from '@/lib/whiteboard-dock-fold';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
+import { useDrawingTools } from './drawing-tools';
 import type { DockFlyoutApi } from './useDockFlyout';
-import { FillToolIcon } from '@livediagram/ui';
-import { DOCK_ICON_PX, PenGlyph, TextGlyph } from './whiteboard-icons';
-import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
+
+export const MORE_TOOLS_LABEL = 'More Tools';
 
 export function DrawingToolsGroup({
   model,
   ink,
   fly,
+  folded,
   pickAndClose,
 }: {
   model: WhiteboardDockModel;
   ink: string;
   fly: DockFlyoutApi;
+  // The tools in More Tools rather than on the bar.
+  folded: ReadonlySet<FoldableTool>;
   pickAndClose: (pick: () => void) => void;
 }) {
-  const { tool, prefs } = model;
-  // A named colour in its version for this board (docs/specs/023-draw-mode/draw-mode.md).
-  // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
-  const appearance = useCanvasSurface();
-  const expanded = (kind: string) => fly.flyout?.kind === kind;
-  // The colour the Fill tool pours, as its button shows it: null for Transparent.
-  const fillBar = model.fill === FILL_TRANSPARENT ? null : model.fill;
+  const specOf = useDrawingTools(model, ink);
+  const runs = drawingRuns(
+    model.prefs.pens.map((p) => p.id),
+    folded,
+  );
+  const foldedInHand = [...folded].some((tool) => specOf(tool)?.inHand);
   return (
     <DockToolbar label="Drawing tools" group="drawing">
-      {/* In a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing") Select shows the
-          path glyph, and pressing it leaves the mode. */}
-      <DockButton
-        itemKey="select"
-        label={model.pathEditing ? 'Select, editing a path' : 'Select'}
-        shortcut={WHITEBOARD_TOOL_KEYS.select}
-        icon={
-          model.pathEditing ? (
-            <EditPointsIcon size={DOCK_ICON_PX} />
-          ) : (
-            <SelectIcon size={DOCK_ICON_PX} />
-          )
-        }
-        pressed={tool === 'select'}
-        onPress={() => pickAndClose(model.pathEditing ? model.leavePathEdit : model.pickSelect)}
-      />
-      <DockDivider />
-      {prefs.pens.map((pen) => {
-        const inHand = tool === 'pen' && prefs.activePenId === pen.id;
-        return (
-          <DockButton
-            key={pen.id}
-            itemKey={pen.id}
-            label={penLabel(pen)}
-            shortcut={WHITEBOARD_TOOL_KEYS[pen.id]}
-            icon={<PenGlyph colour={penColourCss(pen.colour, appearance, ink)} width={pen.width} />}
-            pressed={inHand}
-            controls={{ id: `whiteboard-flyout-${pen.id}`, expanded: expanded(pen.id) }}
-            onPress={(el) =>
-              inHand ? fly.toggle(pen.id, el) : pickAndClose(() => model.pickPen(pen.id))
-            }
-            onContext={() => model.resetPen(pen.id)}
-          />
-        );
-      })}
-      <DockDivider />
-      <DockButton
-        itemKey="text"
-        label="Text"
-        shortcut={WHITEBOARD_TOOL_KEYS.text}
-        icon={<TextGlyph />}
-        pressed={tool === 'text'}
-        onPress={() => pickAndClose(model.pickText)}
-      />
-      {/* The Path tool (docs/specs/023-draw-mode/path-tool.md), in the Shape Pen's own icon. */}
-      <DockButton
-        itemKey="path"
-        label="Path tool"
-        shortcut={WHITEBOARD_TOOL_KEYS.path}
-        icon={<ShapePenIcon size={DOCK_ICON_PX} />}
-        pressed={tool === 'path'}
-        onPress={() => pickAndClose(model.pickPath)}
-      />
-      <DockDivider />
-      {/* The Fill tool (docs/specs/023-draw-mode/fill-tool.md): a paint bucket over its colour; in
-          hand, a press opens its colours. */}
-      <DockButton
-        itemKey="fill"
-        label="Fill"
-        shortcut={WHITEBOARD_TOOL_KEYS.fill}
-        icon={<FillToolIcon colour={fillBar} size={DOCK_ICON_PX} />}
-        pressed={tool === 'fill'}
-        controls={{ id: 'whiteboard-flyout-fill', expanded: expanded('fill') }}
-        onPress={(el) => (tool === 'fill' ? fly.toggle('fill', el) : pickAndClose(model.pickFill))}
-      />
-      <DockButton
-        itemKey="eraser"
-        label="Eraser"
-        shortcut={WHITEBOARD_TOOL_KEYS.eraser}
-        icon={<EraserIcon size={DOCK_ICON_PX} />}
-        pressed={tool === 'eraser'}
-        controls={{ id: 'whiteboard-flyout-eraser', expanded: expanded('eraser') }}
-        onPress={(el) =>
-          tool === 'eraser' ? fly.toggle('eraser', el) : pickAndClose(model.pickEraser)
-        }
-      />
+      {runs.map((run, i) => (
+        <Fragment key={run[0]}>
+          {i > 0 ? <DockDivider /> : null}
+          {run.map((tool) => {
+            const spec = specOf(tool);
+            if (!spec) return null;
+            const { flyout } = spec;
+            return (
+              <DockButton
+                key={tool}
+                itemKey={tool}
+                label={spec.label}
+                shortcut={spec.shortcut}
+                icon={spec.icon}
+                pressed={spec.inHand}
+                controls={
+                  flyout
+                    ? { id: `whiteboard-flyout-${flyout}`, expanded: fly.flyout?.kind === flyout }
+                    : undefined
+                }
+                onPress={(el) =>
+                  flyout && spec.inHand ? fly.toggle(flyout, el) : pickAndClose(spec.arm)
+                }
+                // A right-click on a marker puts it back as it came.
+                onContext={
+                  tool === 'main' || tool === 'second' || tool === 'third'
+                    ? () => model.resetPen(tool)
+                    : undefined
+                }
+              />
+            );
+          })}
+        </Fragment>
+      ))}
+      {folded.size > 0 ? (
+        <DockButton
+          itemKey="more"
+          label={MORE_TOOLS_LABEL}
+          icon={<EllipsisIcon />}
+          // A folded tool in hand: the bar still says a tool is held.
+          pressed={foldedInHand}
+          // Expanded too while a folded tool's own flyout, opened from here, is up.
+          controls={{
+            id: `whiteboard-flyout-${fly.flyout?.openerKey === 'more' ? fly.flyout.kind : 'more'}`,
+            expanded: fly.flyout?.openerKey === 'more',
+          }}
+          onPress={(el) => fly.toggle('more', el)}
+        />
+      ) : null}
     </DockToolbar>
   );
 }

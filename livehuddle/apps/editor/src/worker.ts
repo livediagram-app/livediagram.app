@@ -24,8 +24,7 @@ type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 //   - Permissions-Policy: deny every powerful feature the editor
 //     doesn't use (camera / mic / geolocation / payment / USB) so a
 //     compromised script can't request them. Clipboard isn't denied
-//     because the image picker uses paste; fullscreen=self is
-//     allowed for the laser-presenter view.
+//     because the image picker uses paste; fullscreen=self is allowed.
 //   - Strict-Transport-Security: 1-year HSTS with includeSubDomains.
 //     Pins the browser to HTTPS for the apex + every subdomain
 //     after the first visit; subsequent loads can't be downgraded
@@ -90,19 +89,8 @@ export default {
         return withSecurityHeaders(await shell());
       }
     }
-    // The workspace frame (docs/specs/013-workspace/workbench-embeds.md "Two scopes"): one static page backs every
-    // place inside it, rewritten rather than redirected so the frame keeps its address. Under /embed: frameable.
-    if (isWorkspaceFramePath(url.pathname)) {
-      const rewritten = new URL(request.url);
-      rewritten.pathname = WORKSPACE_FRAME_PAGE;
-      return withSecurityHeaders(
-        await env.ASSETS.fetch(new Request(rewritten.toString(), request)),
-        { frameable: true },
-      );
-    }
     return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
   },
 };
 import { isEditorPath } from '../lib/legacy-editor-path';
-import { isWorkspaceFramePath, WORKSPACE_FRAME_PAGE } from '../lib/workbench/workbench-frame-path';
 import { isSharePagePath, sharePage } from './share-page';

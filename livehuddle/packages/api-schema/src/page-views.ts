@@ -17,10 +17,14 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
   // recorded for it before that are still filed under the editor app. Its code is never recorded.
   'form',
   'get-started',
-  // The liveworkspace Explorer's "Import from", /import (docs/specs/013-workspace/folders.md "Import from").
+  // The retired /import page (livehuddle imports from no other tool, docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Imports from other tools"): the segment stays so an old address reaches the editor's not-found page and page
+  // views recorded for it before stay filed under the editor app.
   'import',
   'join',
   'new',
+  // The retired /oauth pages (the MCP server's sign-in, docs/specs/002-project-scope/not-in-livehuddle.md): the segment
+  // stays so an old address reaches the editor's not-found page and page views recorded for it stay filed under the editor.
   'oauth',
   // /offline, the old This Browser page: a redirect to /explorer/offline (docs/specs/006-document/offline-mode.md).
   'offline',

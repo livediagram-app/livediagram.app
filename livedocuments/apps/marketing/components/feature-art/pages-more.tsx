@@ -1,13 +1,11 @@
 // Feature illustrations for Pages mode's pages beyond layouts (docs/specs/007-editor/pages-mode.md):
-// pages played as an animated GIF, a live window onto another tab, a page tidied in one press, the
+// pages played as an animated GIF, a page tidied in one press, the
 // Contents sidebar, and a talk kept to time while presenting.
 
 import { YOU } from '@/components/art-tokens';
 import {
   ARROW,
   HAIRLINE,
-  INK,
-  INK_TEXT,
   PANEL,
   SHADOW,
   Scene,
@@ -81,91 +79,6 @@ export function PagesGifArt() {
         <text className={TEXT_MUTED} x="170" y="86" fontSize="5">
           All pages · 3 s each · Medium
         </text>
-      </Scene>
-    </Frame>
-  );
-}
-
-// Tab window: a slide holding a window onto the Architecture tab, and that tab beside it, a box
-// just added on the tab appearing in the window too.
-export function TabWindowArt() {
-  const box = (x: number, y: number, s: number, label: string) => (
-    <g>
-      <rect
-        className={INK}
-        x={x}
-        y={y}
-        width={30 * s}
-        height={14 * s}
-        rx={2 * s}
-        strokeWidth={0.9 * s}
-      />
-      <text
-        className={INK_TEXT}
-        x={x + 15 * s}
-        y={y + 9 * s}
-        fontSize={5.2 * s}
-        textAnchor="middle"
-      >
-        {label}
-      </text>
-    </g>
-  );
-  const diagram = (s: number, late: boolean) => (
-    <g>
-      {box(0, 0, s, 'App')}
-      <line className={ARROW} x1={30 * s} x2={42 * s} y1={7 * s} y2={7 * s} strokeWidth={0.9 * s} />
-      {box(42 * s, 0, s, 'API')}
-      <g
-        className={late ? 'fa-d-land' : undefined}
-        style={late ? { animationDelay: '0.6s' } : undefined}
-      >
-        <line
-          className={ARROW}
-          x1={57 * s}
-          x2={57 * s}
-          y1={14 * s}
-          y2={24 * s}
-          strokeWidth={0.9 * s}
-        />
-        {box(42 * s, 24 * s, s, 'Cache')}
-      </g>
-    </g>
-  );
-  return (
-    <Frame canvas>
-      <Scene>
-        {/* The slide, its title and the window. */}
-        <Sheet x={10} y={10} w={136} h={76} />
-        <text className={TEXT_STRONG} x="18" y="24" fontSize="7" fontWeight="800">
-          How it fits together
-        </text>
-        <rect
-          x="18"
-          y="30"
-          width="120"
-          height="50"
-          rx="2"
-          className="fill-(--art-paper) stroke-slate-300 dark:stroke-slate-600"
-          strokeWidth="0.7"
-          strokeDasharray="2 1.5"
-        />
-        <text className={TEXT_MUTED} x="22" y="37" fontSize="4.6" fontWeight="700">
-          Architecture
-        </text>
-        <g transform="translate(44 42)">{diagram(0.95, true)}</g>
-        {/* The tab itself. */}
-        <text className={TEXT_MUTED} x="170" y="18" fontSize="5" fontWeight="700">
-          ARCHITECTURE TAB
-        </text>
-        <g transform="translate(172 28)">{diagram(1.3, true)}</g>
-        <path
-          className={ARROW}
-          d="M164 60 C156 60 152 56 146 56"
-          strokeWidth="0.9"
-          strokeDasharray="2 2"
-          fill="none"
-        />
       </Scene>
     </Frame>
   );

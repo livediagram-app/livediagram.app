@@ -1,4 +1,5 @@
-import { isFixedSizeElement } from '@livedocuments/document';
+import { isFixedSizeElement, type LaidOutPage } from '@livedocuments/document';
+import { snapScope } from '@/lib/page-snap-scope';
 import {
   alignmentGuides,
   distributionSnap,
@@ -50,6 +51,25 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
   'resize-nw': { sx: 1, sy: 1 },
 };
 
+/** The move (dx, dy) with the box's centre held on `rect`: a box moved off a stack's page in front stops with its
+ *  centre at the page's edge, half hanging off (clipped as anything off a page is). A box whose centre starts off it
+ *  (placed there before the tab was stacked) moves freely. */
+export function keepCentreOn(
+  rect: { x: number; y: number; width: number; height: number },
+  box: { x: number; y: number; width: number; height: number },
+  dx: number,
+  dy: number,
+): { dx: number; dy: number } {
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const inside = (x: number, y: number) =>
+    x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height;
+  if (!inside(cx, cy)) return { dx, dy };
+  const nx = Math.min(Math.max(cx + dx, rect.x), rect.x + rect.width);
+  const ny = Math.min(Math.max(cy + dy, rect.y), rect.y + rect.height);
+  return { dx: nx - cx, dy: ny - cy };
+}
+
 // Resolve one move frame: snap the primary's candidate bounds to align
 // with other elements' edges / centres (equal-spacing distribution
 // filling the axes alignment didn't claim), returning the total
@@ -57,12 +77,14 @@ const FIXED_SIGN: Partial<Record<DragMode, { sx: number; sy: number }>> = {
 export function resolveBoxedMove({
   elements,
   pageSnapBoxes,
+  pages,
   startBounds,
   primaryId,
   dx,
   dy,
   noSnap,
   guidesOn,
+  keepOn,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -75,9 +97,14 @@ export function resolveBoxedMove({
   // Lines to snap to besides the elements' own (a page's edges and margins), as
   // stand-in boxes: aligned to and guided by, never spaced against.
   pageSnapBoxes?: Element[];
+  // Pages mode's laid-out pages: snapping keeps to the page the moved box is over (snapScope).
+  pages?: readonly LaidOutPage[];
   // The user's alignment-guides preference (guides only; the snap still
   // applies when it's off).
   guidesOn: boolean;
+  // On a stack, the page in front's rect: the moved box's centre stays on it, so a drop off its edge never lands
+  // on a page hidden behind it (docs/specs/007-editor/pages-mode.md "Stacked infographics").
+  keepOn?: { x: number; y: number; width: number; height: number } | null;
 }): {
   tx: number;
   ty: number;
@@ -85,7 +112,15 @@ export function resolveBoxedMove({
   distGuides: DistributionGuide[];
 } {
   const primaryStart = startBounds.get(primaryId);
-  if (!primaryStart || noSnap) return { tx: dx, ty: dy, guides: [], distGuides: [] };
+  if (!primaryStart) return { tx: dx, ty: dy, guides: [], distGuides: [] };
+  if (keepOn) {
+    const kept = keepCentreOn(keepOn, primaryStart, dx, dy);
+    if (kept.dx !== dx || kept.dy !== dy) {
+      // Held at the page's edge: no snapping can carry it past.
+      return { tx: kept.dx, ty: kept.dy, guides: [], distGuides: [] };
+    }
+  }
+  if (noSnap) return { tx: dx, ty: dy, guides: [], distGuides: [] };
   const memberIds = new Set(startBounds.keys());
   const candidate = {
     x: primaryStart.x + dx,
@@ -93,7 +128,8 @@ export function resolveBoxedMove({
     width: primaryStart.width,
     height: primaryStart.height,
   };
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
+  // Aligned to what is on the page under it and that page's lines; spaced against what is on it.
+  const { spaced, aligned } = snapScope(elements, pageSnapBoxes, pages, candidate);
   const snap = snapToAlignment(candidate, aligned, memberIds, ALIGN_SNAP_THRESHOLD);
   let snapDx = snap.dx;
   let snapDy = snap.dy;
@@ -107,7 +143,7 @@ export function resolveBoxedMove({
   const dist =
     snap.snappedX && snap.snappedY
       ? { dx: 0, dy: 0, guides: [] }
-      : distributionSnap(candidate, elements, memberIds, ALIGN_SNAP_THRESHOLD);
+      : distributionSnap(candidate, spaced, memberIds, ALIGN_SNAP_THRESHOLD);
   // Distribution fills only the axes alignment didn't claim. Keyed off
   // snap.snappedX/Y (not snapDx === 0) so an EXACT edge alignment, whose
   // delta is 0, still wins over an equal-spacing nudge that's also in
@@ -132,7 +168,14 @@ export function resolveBoxedMove({
         g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
       )
     : [];
-  return { tx: dx + snapDx, ty: dy + snapDy, guides, distGuides };
+  const tx = dx + snapDx;
+  const ty = dy + snapDy;
+  if (keepOn) {
+    const kept = keepCentreOn(keepOn, primaryStart, tx, ty);
+    if (kept.dx !== tx || kept.dy !== ty)
+      return { tx: kept.dx, ty: kept.dy, guides: [], distGuides: [] };
+  }
+  return { tx, ty, guides, distGuides };
 }
 
 // Apply a move frame's translation: every dragged boxed element shifts
@@ -196,6 +239,7 @@ export function resolveBoxedResize({
   dragAspectLocked,
   guidesOn,
   noSnap = false,
+  pages,
 }: {
   elements: Element[];
   startBounds: ReadonlyMap<string, ShapeBounds>;
@@ -215,9 +259,15 @@ export function resolveBoxedResize({
   noSnap?: boolean;
   // As resolveBoxedMove's: page lines to snap the resized edge to.
   pageSnapBoxes?: Element[];
+  // As resolveBoxedMove's: snapping keeps to the page the resized box started on.
+  pages?: readonly LaidOutPage[];
 }): { boundsById: Map<string, ShapeBounds>; guides: AlignmentGuide[] | null } | null {
   if (mode === 'move') return null;
-  const aligned = pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements;
+  // Snapped to what is on the page the resized box started on, and that page's lines.
+  const startRect = startBounds.get(primaryId);
+  const { aligned } = startRect
+    ? snapScope(elements, pageSnapBoxes, pages, startRect)
+    : { aligned: pageSnapBoxes?.length ? [...elements, ...pageSnapBoxes] : elements };
   const corner = cornerOf(mode);
   // Corner OR single edge — so edge resizes snap + dimension-match on
   // their axis (multi-member scaling below stays corner-only).

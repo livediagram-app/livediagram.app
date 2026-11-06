@@ -1,5 +1,7 @@
 # Excalidraw import & export
 
+> **Gone from livehuddle** (imports from other tools, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)): livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/020-import-export/excalidraw-import-export.md) is the one to read and change. livehuddle offers no Excalidraw import, paste, drop or export, and its code for them is deleted. What an import already brought into a Space stays and draws as before. The rest of this page records what livehuddle had.
+
 Excalidraw content reaches livehuddle four ways, all through **one parser**:
 
 - **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livehuddle canvas. It lands with the diagram profile
@@ -20,18 +22,18 @@ degradation table below; nothing degrades silently outside that table.
 
 ## Where it lives
 
-- `apps/editor/lib/excalidraw-envelope.ts`: `readExcalidrawEnvelope(text)`, the
+- `../livediagram/apps/editor/lib/excalidraw-envelope.ts`: `readExcalidrawEnvelope(text)`, the
   envelope reader (detection, size cap, `JSON.parse`, the named rejections) and
   `looksLikeExcalidraw(text)`, the cheap prefix test a paste runs first.
-- `apps/editor/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
+- `../livediagram/apps/editor/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
   pure mapping from Excalidraw elements to a `BoardScene`. Helpers for colours,
   text and linear geometry sit beside it (`excalidraw-scene-*.ts`).
-- `apps/editor/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
+- `../livediagram/apps/editor/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
   then scene, or the rejection's message) and `readExcalidrawFile(file)` (a
   dropped or pasted file: its scene, `not-excalidraw`, or an error). Never
   throws. Lazy-loaded by its callers, so the parser stays out of the editor's
   first bundle.
-- `apps/editor/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
+- `../livediagram/apps/editor/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
   or drop runs first: `excalidrawTextFromPaste(data)` and
   `isExcalidrawFileCandidate(file)`, plus the drop refusal copy.
 - The Import dialog (`useTabImport`) reads the scene and hands it to the shared
@@ -40,10 +42,10 @@ degradation table below; nothing degrades silently outside that table.
   [Import image pipeline](import-image-pipeline.md) before the tab changes.
   `useClipboard` hands a pasted or dropped scene to the board-scene insert
   (`useBoardSceneInsert`); `usePaletteDrop` passes dropped files to it.
-- `apps/editor/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
+- `../livediagram/apps/editor/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
   which finds the scene JSON inside an Excalidraw PNG or SVG export (see
   "Embedded-scene PNG and SVG") and hands plain JSON text through untouched.
-- `apps/editor/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
+- `../livediagram/apps/editor/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
 - None of these is needed by the MCP worker or any other app, so they stay in
@@ -141,9 +143,10 @@ exposes the custom type only to pages in the same browser engine, so:
   element centred where it was released, through the same upload as a pasted one
   ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any
   other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
-  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livehuddle JSON file, by
-  its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
-  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.)
+  scene embedded."_ A file the Import dialog reads (a livehuddle JSON file, by its name) is told where it goes
+  instead: _"To bring in a livehuddle export, use Import in the tab menu."_ (Import replaces the tab's content, so a
+  drop never does it unasked; `lib/drop-import-hint.ts`.) A draw.io, Mermaid or Markdown file is refused like any
+  other, since those imports are gone from livehuddle (Work Tracker #423, part 4).
 
 ## Scene mapping (Excalidraw to board scene)
 
@@ -329,8 +332,8 @@ The editor's tab-scoped Import dialog card, paste and drop stay as they are.
 
 Every element exports (nothing is dropped), but only geometry, colours, label
 text, links, rotation, opacity and lock survive (`groupIds` is always empty); livehuddle-only
-behaviour (animations, markers, notes, comments, actions, non-URL links,
-layers: the list flattens) does not. Export emits `version: 2` with
+behaviour (animations, markers, notes, comments, actions, non-URL links)
+does not. Export emits `version: 2` with
 `source: "https://livehuddle.app"`, `appState.viewBackgroundColor` from the
 tab's background colour, and an empty `files` map. Kind by kind:
 
@@ -341,7 +344,6 @@ tab's background colour, and an empty `files` map. Kind by kind:
 | `diamond`                                                                                                  | `diamond`                                                                                                                                                                                                                                          |
 | `stadium`                                                                                                  | `rectangle` with rounded corners                                                                                                                                                                                                                   |
 | every other shape kind (cylinder, cloud, actor, devices, progress, charts, code block, checklist, icon, …) | `rectangle` carrying the label: the documented "labelled box" degrade                                                                                                                                                                              |
-| `frame`                                                                                                    | `rectangle` (transparent fill) with the frame label                                                                                                                                                                                                |
 | `text`                                                                                                     | `text`                                                                                                                                                                                                                                             |
 | `sticky`                                                                                                   | `rectangle` with the sticky fill + bound label                                                                                                                                                                                                     |
 | `table`                                                                                                    | `rectangle` placeholder (cells don't survive; the label does if set)                                                                                                                                                                               |

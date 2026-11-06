@@ -12,11 +12,12 @@ const row = (opens_in: string | null, tab_kind: string | null, template_family: 
 });
 
 describe('readRecordedIntent', () => {
-  it('reads a full record', () => {
+  // The Retrospective family left (Work Tracker #507): a row that recorded it keeps it, and reads as no family.
+  it('reads a record from the retired retrospective family as no family', () => {
     expect(readRecordedIntent(row('diagram', 'diagram', 'retrospective'))).toEqual({
       opensIn: 'workshop',
       tabKind: 'diagram',
-      templateFamily: 'retrospective',
+      templateFamily: null,
     });
   });
 

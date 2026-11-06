@@ -1,11 +1,10 @@
-// The element format as an agent writes it (docs/specs/015-api/blueprints/cli.md CLI73): the kinds `add` makes, and
+// The element format as an agent writes it (livediagram/docs/specs/015-api/blueprints/cli.md CLI73): the kinds `add` makes, and
 // for one kind its first size, the aliases `set` takes with their values, and the stored fields it also takes by
 // name. Read off the engine's own factories, aliases and value lists, so it says what the engine accepts.
 
 import {
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
-  SHAPE_KINDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
@@ -15,7 +14,7 @@ import {
 } from '@livehuddle/document';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
-import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
+import { AGENT_SHAPE_KINDS, buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
 
 export const SCHEMA_KIND_MAX_TOKENS = 300;
 
@@ -37,7 +36,7 @@ function wrapped(words: readonly string[], indent: string, sep = ' '): string[] 
 
 // Every kind `add` makes: the boxed kinds, then the shape kinds.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...OTHER_KINDS, ...AGENT_SHAPE_KINDS];
 }
 
 export function elementKindsText(): string {
@@ -45,7 +44,7 @@ export function elementKindsText(): string {
     'Element kinds: add <kind> makes one; livehuddle schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
+    ...wrapped(AGENT_SHAPE_KINDS, '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
       .filter((k) => k !== 'arrow')
@@ -127,28 +126,30 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   ],
   checklist: ['checklistItems'],
   lane: ['headerFill', 'headerSize', 'titleOrientation'],
-  frame: ['headerFill', 'headerSize'],
   'progress-bar': ['progress'],
   'progress-ring': ['progress'],
   rating: ['rating'],
   legend: ['legendItems'],
-  agenda: ['agendaItems'],
-  decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],
-  picker: ['pickerOptions', 'pickerSource'],
   'stat-row': ['stats'],
   process: ['processSteps'],
   'site-header': ['navLinks'],
-  page: ['pageTitle', 'pageSubtitle'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  estimate: ['estimateScale'],
   chair: ['chairFacing'],
   desk: ['chairFacing'],
   sofa: ['chairFacing'],
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
   room: ['roomDoor'],
+  // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
+  door: ['doorClosed'],
+  // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
+  stage: ['stageSpeakers', 'stageCameras'],
+  // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
+  'world-clock': ['clockZones'],
+  jukebox: ['jukeboxSource'],
   portal: ['portalTarget'],
+  // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link.
+  screen: ['screenUrl'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

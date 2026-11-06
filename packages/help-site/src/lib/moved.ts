@@ -96,3 +96,12 @@ export const popularMoved: MovedPage = moved(
   'Toolbar Layout',
   'Popular is gone: the palette shows its categories on the strip, each one press away.',
 );
+
+/** /help/user-interface/power-user-mode: Power User Mode is gone from the editors (Work Tracker #500). Everyone gets the
+ *  default interface, and the settings it applied stay as they were, so its article went with it; Settings lists them. */
+export const powerUserModeMoved: MovedPage = moved(
+  '/help/user-interface/settings/',
+  'Settings guide',
+  'Settings',
+  'Power User Mode is gone: everyone gets the default interface, and every setting is in Settings.',
+);

@@ -4,7 +4,7 @@
 // layouts"): the layout gallery on a card centred inside the page, as large as the page on screen
 // leaves room for (layoutCardSize) and held at that screen size whatever the zoom. A layout pressed
 // lands on the page at once. No hover preview here: drawn over the page the card sits on, it hid
-// the very tiles being pointed at. Hide puts the card away for the page; the host takes it away
+// the very tiles being pointed at. Hide (or Escape inside the card) puts the card away for the page; the host takes it away
 // once anything lands there. Where the card has no room, the page shows EmptyPageInvite instead.
 // The card keeps to its layouts: Change Theme is the Layout popover's alone.
 import { lucideSparkles } from '@liveworkspace/icons/lucide';
@@ -61,6 +61,14 @@ export function EmptyPageLayouts({
         // A press on the card is the card's, never the canvas's (no marquee, no deselect).
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
+        // Escape from anything in the card (its search, a chip, a tile) hides it as Hide does, and is
+        // the card's alone: the canvas does not deselect on the same press.
+        onKeyDown={(e) => {
+          if (e.key !== 'Escape') return;
+          e.preventDefault();
+          e.stopPropagation();
+          onHide();
+        }}
         className="pointer-events-auto relative flex animate-dialog-in flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
         style={{
           width,

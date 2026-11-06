@@ -49,23 +49,15 @@ export function trackDuplicated(created: Element[], gestureType?: string): void 
 // would report as 'Code-block' while every other event for that feature says
 // 'CodeBlock', splitting one feature across two tokens on the dashboard.
 //
-// Four of these were missing and the events really were going nowhere: a
-// session button, reaction pad, comment pin or done check reported as
-// 'Session-button' and friends on Added, while its own Changed events and the
-// dashboard's PALETTE_TELEMETRY_TYPES both said 'SessionButton'. The Added
-// count for four features sat at zero.
+// One of these was missing and its events really were going nowhere: a
+// reaction pad reported as 'Reaction-pad' on Added, while its own Changed events and the
+// dashboard's PALETTE_TELEMETRY_TYPES both said 'ReactionPad', so its Added count sat at zero.
 //
-// Not every hyphenated kind belongs here. 'roll-call' reports as 'Roll-call'
-// deliberately, and the catalogue agrees; this map is for kinds whose OTHER
+// Not every hyphenated kind belongs here: this map is for kinds whose OTHER
 // events already chose the camel-case spelling.
 const SHAPE_TOKENS: Record<string, string> = {
   'code-block': 'CodeBlock',
   'mode-button': 'ModeButton',
-  'session-button': 'SessionButton',
-  'reaction-pad': 'ReactionPad',
-  'comment-pin': 'CommentPin',
-  'action-card': 'ActionPanel',
-  'done-check': 'DoneCheck',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) report as their palette component, so a
   // copied stat row lands in the same dashboard row as a dropped one.
   banner: 'Banner',

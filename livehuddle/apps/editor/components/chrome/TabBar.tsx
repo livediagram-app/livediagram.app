@@ -20,7 +20,6 @@ import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
@@ -32,7 +31,7 @@ import type { AccessLevel } from '@livehuddle/api-schema';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
-// adding, and the command palette's Actions keep Auto Layout and Auto-align.)
+// adding, and the command palette's Actions keep Auto-align.)
 export type CanvasMenuActions = {
   // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
   // not hidden, when the buffer is empty.
@@ -61,14 +60,6 @@ type TabBarProps = {
   canvasMenu?: CanvasMenuTarget | null;
   onCloseCanvasMenu?: () => void;
   canvasActions?: CanvasMenuActions;
-  // Minimal chrome's role icon (docs/specs/007-editor/power-user-mode.md), first in the bar.
-  roleIcon?: ReactNode;
-  // Power user mode turns the Appearance control into a quick switch
-  // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
-  powerUser?: boolean;
-  // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
-  // livehuddle link at the bar's right end, and no Appearance control (the workbench sets the scheme).
-  workbenchLink?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-document/tab-folders.md), menu-only. Move the active tab
@@ -179,14 +170,9 @@ export function TabBar({
   canvasMenu,
   onCloseCanvasMenu,
   canvasActions,
-  roleIcon,
-  powerUser = false,
-  workbenchLink,
 }: TabBarProps) {
-  const minimalChrome = useMinimalChrome();
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
-  const buttonLabels = useButtonLabelsSetting();
-  const labelled = !minimalChrome && buttonLabels;
+  const labelled = useButtonLabelsSetting();
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // The command palette requests an active-tab rename by bumping
@@ -335,7 +321,6 @@ export function TabBar({
         }}
         className={TAB_BAR_CLASS}
       >
-        {roleIcon}
         {/* The tabs and folders (the shared strip, docs/specs/007-editor/editor-app.md "How a tab looks"). */}
         <TabStrip
           runs={groupTabsIntoRuns(tabs)}
@@ -359,14 +344,11 @@ export function TabBar({
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences. They follow your account, not this space."
-          // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
+          // Icons only with Button Labels off; each keeps its hover card,
           // titled with its name.
           labelled={labelled}
           github={false}
-          powerUser={powerUser}
-          appearance={!workbenchLink}
         />
-        {workbenchLink?.(labelled)}
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.

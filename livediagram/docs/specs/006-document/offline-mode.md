@@ -233,8 +233,7 @@ wherever the document is listed: This Browser's page and Home's Jump Back In.
 - **The guide is one click away.** The pill is a link to the Offline Mode help
   article (new tab, the editor's help-link telemetry), with its own focus ring.
   Where the row is itself a single control, the pill is a plain label inside it, carrying the same
-  description: a link cannot sit inside a button. Minimal chrome keeps the words: the pill is a
-  warning, not a teaching hint.
+  description: a link cannot sit inside a button.
 
 ## Converting between Offline and Cloud
 

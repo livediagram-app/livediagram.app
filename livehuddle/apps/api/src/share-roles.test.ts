@@ -1,16 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { applyParticipantOp, type ElementOp, type Tab } from '@livehuddle/document';
+import {
+  applyElementDelta,
+  applyParticipantOp,
+  type ElementDelta,
+  type ElementOp,
+  type Tab,
+} from '@livehuddle/document';
 import { gateClientOp } from './room-op-gate';
 import { claimBaton, FREE_BATON, grantBaton } from './facilitator';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the room enforces it: one block per row of the
-// table, one case per level. What the room does with an op is one of:
+// table, one case per level. livehuddle makes no new Viewer link, so the Viewer cases are a legacy Viewer link's
+// ("Legacy Viewer links"), which keeps every gate it had. What the room does with an op is one of:
 //   relayed  the op reaches the room's peers as sent (presence, an Editor's change, a Participant's own answer)
 //   written  a Participant's element op the participant content rule applied to the stored tab
 //   held     a Participant's element op the rule took with nothing of it landing (no permitted field changed)
 //   refused  a Participant's element op the rule refused, its correction sent back
 //   dropped  never relayed, never answered
-// REST doors (comments, Q&A notes, tab and document writes) are held per level in routes/context.test.ts and
+// REST doors (comments, tab and document writes) are held per level in routes/context.test.ts and
 // routes/comment-routes.test.ts; the room's own plumbing around this gate in document-room*.test.ts.
 
 type Level = 'edit' | 'participate' | 'view';
@@ -44,9 +51,11 @@ const BOARD = {
     shape('chair', 'chair'),
     shape('room', 'room', { label: 'Lounge' }),
     { id: 'link', type: 'link-card', ...box, link: { kind: 'url', url: 'https://example.com' } },
-    shape('col', 'rectangle', { label: 'Column' }),
+    shape('col', 'square', { label: 'Column' }),
     sticky('theirs'),
     sticky('mine', { addedBy: ADDER }),
+    shape('door', 'door', { doorClosed: true }),
+    shape('locked-door', 'door', { doorClosed: true, locked: true }),
   ],
 } as unknown as Tab;
 const stored = (id: string) => BOARD.elements.find((e) => e.id === id)! as Record<string, unknown>;
@@ -211,36 +220,39 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   row(
     'Start, end, reveal or configure a session tool',
     {
-      'start a poll': { kind: 'poll-start', poll: { id: 'p1', question: 'Q', options: ['A'] } },
-      'end a poll': { kind: 'poll-end', pollId: 'p1' },
-      'start the timer': { kind: 'tab-meta', tabId: 't', patch: { timer: { running: true } } },
-      'open a vote': { kind: 'tab-meta', tabId: 't', patch: { vote: { active: true } } },
+      'change a tab setting': { kind: 'tab-meta', tabId: 't', patch: { folder: 'Stand-ups' } },
       'tick the done check': delta({ kind: 'check', index: 0, text: 'a', done: true }),
       'show a drag preview': { kind: 'drag-preview', tabId: 't', ids: ['col'] },
     },
     EDITOR_ONLY,
   );
 
-  // A Participant answers as itself only; the presence answers (a poll answer, a reaction) the room then checks
-  // against the running poll.
   row(
-    'Take part in a session tool (vote, answer, react)',
+    'Take part in a session tool (react)',
     {
-      vote: { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 },
-      answer: delta({ kind: 'response', participantId: ME, value: '3' }),
-      idea: delta({ kind: 'idea', id: 'i1', text: 'More coffee' }),
-      'poll answer': { kind: 'poll-answer', pollId: 'p1', value: 'A', key: ME, proof: 'x' },
-      react: { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
+      react: delta({
+        kind: 'comment-react',
+        commentId: 'c1',
+        emoji: 'thumbs-up',
+        by: ME,
+        name: 'Me',
+        on: true,
+      }),
     },
     TAKING_PART,
   );
 
-  it("Take part: a Participant's vote or answer as somebody else is dropped", () => {
-    const asOther = [
-      { kind: 'vote', tabId: 't', elementId: 'col', voter: 'you', delta: 1 },
-      delta({ kind: 'response', participantId: 'you', value: '3' }),
-    ];
-    for (const op of asOther) expect(roomDoes(op, 'participate')).toBe('dropped');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot reaches nobody, from any role.
+  it("drops an old client's dot from every level", () => {
+    const dot = { kind: 'vote', tabId: 't', elementId: 'col', voter: ME, delta: 1 };
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      expect(roomDoes(dot, level)).toBe('dropped');
+      // The laser's trail and a Reaction Pad's burst left with them (not-in-livehuddle.md "The presenting tools").
+      expect(roomDoes({ kind: 'laser', tabId: 't', x: 1, y: 2 }, level)).toBe('dropped');
+      expect(
+        roomDoes({ kind: 'reaction', tabId: 't', elementId: 'p', reaction: 'clap' }, level),
+      ).toBe('dropped');
+    }
   });
 
   describe('Hold the facilitator baton', () => {
@@ -262,9 +274,10 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // An Editor's op relays; a Participant adds stickies and text, writes on anyone's, moves stickies and removes its
-  // own through the rule; a Viewer's is dropped.
-  describe('Add, write and arrange stickies and text', () => {
+  // An Editor's op relays; a Participant's goes through the rule, which refuses every add and remove (its own earlier
+  // sticky's included) and keeps every content field as stored (share-roles.md "A Participant walks"); a Viewer's is
+  // dropped.
+  describe('Add, write, arrange or delete stickies and text', () => {
     const ops = {
       'add a sticky': add(sticky('n1')),
       'add text': add({ id: 'n2', type: 'text', ...box, label: 'Note' }),
@@ -272,17 +285,18 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
       'write on the board': update('col', { label: 'Doing' }),
       'move a sticky': update('theirs', { x: 300, y: 40 }),
       'recolour a sticky': update('theirs', { fillColor: '#fde68a' }),
+      'write on its own sticky': update('mine', { label: 'Mine, better' }),
+      'move its own sticky': update('mine', { x: 300 }),
       'remove its own sticky': remove('mine'),
     };
+    const adds = ['add a sticky', 'add text', 'remove its own sticky'];
     it('edit: relayed', () => {
       for (const [label, op] of Object.entries(ops))
         expect(roomDoes(op, 'edit'), label).toBe('relayed');
     });
-    it('participate: written', () => {
+    it('participate: an add or a remove refused, a change held as stored', () => {
       for (const [label, op] of Object.entries(ops))
-        expect(roomDoes(op, 'participate'), label).toBe('written');
-    });
-    it("participate: never another's sticky removed, nor the board's shape moved", () => {
+        expect(roomDoes(op, 'participate'), label).toBe(adds.includes(label) ? 'refused' : 'held');
       expect(roomDoes(remove('theirs'), 'participate')).toBe('refused');
       expect(roomDoes(update('col', { x: 300 }), 'participate')).toBe('held');
     });
@@ -291,6 +305,112 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
         expect(roomDoes(op, 'view'), label).toBe('dropped');
     });
   });
+
+  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): the one field a Participant
+  // writes on a door, and only an unlocked one.
+  describe('Swing a door', () => {
+    it('edit: relayed', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'edit')).toBe('relayed');
+    });
+    it('participate: an unlocked door written, a locked one refused, nothing else of it changed', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'participate')).toBe('written');
+      expect(roomDoes(update('locked-door', { doorClosed: false }), 'participate')).toBe('refused');
+      expect(roomDoes(update('door', { x: 400 }), 'participate')).toBe('held');
+    });
+    it('view: dropped', () => {
+      expect(roomDoes(update('door', { doorClosed: false }), 'view')).toBe('dropped');
+    });
+  });
+
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): an Editor's update relays; a
+  // Participant pins and unpins its own through the rule, never another's; a Viewer's is dropped.
+  describe('Pin a note on a Notice Board, unpin your own', () => {
+    const note = (id: string, by: string) => ({ id, text: 'Lunch at 1', author: 'Sam', by, at: 1 });
+    const board = (notes: unknown[]) =>
+      shape('nb', 'notice-board', { label: '', noticeNotes: notes });
+    const NOTICE = {
+      id: 't',
+      name: 'Office',
+      elements: [board([note('t1', 'b'.repeat(32)), note('m1', ADDER)])],
+    } as unknown as Tab;
+    const pinned = (notes: unknown[]) => el({ kind: 'update', element: board(notes) });
+    const does = (op: unknown, level: Level) => {
+      const gate = gateClientOp(op, { role: level, tabScope: null, key: ME });
+      if (gate.kind !== 'participant-content') return gate.kind === 'drop' ? 'dropped' : 'relayed';
+      const r = applyParticipantOp(NOTICE, (op as { op: ElementOp }).op, ADDER);
+      if (r.result === 'refused') return 'refused';
+      const notes = (r.tab.elements[0] as { noticeNotes?: { id: string }[] }).noticeNotes ?? [];
+      return notes.map((n) => n.id).join(',');
+    };
+    const pin = pinned([note('t1', 'b'.repeat(32)), note('m1', ADDER), note('m2', ADDER)]);
+    const unpinOwn = pinned([note('t1', 'b'.repeat(32))]);
+    const unpinTheirs = pinned([note('m1', ADDER)]);
+    it('edit: relayed', () => {
+      for (const op of [pin, unpinOwn, unpinTheirs]) expect(does(op, 'edit')).toBe('relayed');
+    });
+    it("participate: pins and unpins its own, never another's", () => {
+      expect(does(pin, 'participate')).toBe('t1,m1,m2');
+      expect(does(unpinOwn, 'participate')).toBe('t1');
+      expect(does(unpinTheirs, 'participate')).toBe('t1,m1');
+    });
+    it('view: dropped', () => {
+      for (const op of [pin, unpinOwn, unpinTheirs]) expect(does(op, 'view')).toBe('dropped');
+    });
+
+    // What the editor sends now: one delta per pin or unpin (docs/specs/012-collaboration/collab-race-hardening.md).
+    // The room relays a Participant's only when it is signed with its own adder key, and every screen and the stored
+    // board apply it against the stored note's signer.
+    const noteDelta = (d: ElementDelta) => ({ ...delta(d), elementId: 'nb' });
+    const doesDelta = (d: ElementDelta, level: Level) => {
+      const gate = gateClientOp(noteDelta(d), {
+        role: level,
+        tabScope: null,
+        key: ME,
+        adderKey: ADDER,
+      });
+      if (gate.kind !== 'relay') return 'dropped';
+      const next = applyElementDelta(NOTICE.elements[0]!, d) as { noticeNotes?: { id: string }[] };
+      return (next.noticeNotes ?? []).map((n) => n.id).join(',');
+    };
+    const pinMine: ElementDelta = { kind: 'notice-pin', note: note('m2', ADDER) };
+    const pinAsOther: ElementDelta = { kind: 'notice-pin', note: note('x1', 'b'.repeat(32)) };
+    const unpinMine: ElementDelta = { kind: 'notice-unpin', noteId: 'm1', by: ADDER };
+    const unpinOther: ElementDelta = { kind: 'notice-unpin', noteId: 't1', by: 'b'.repeat(32) };
+    const unpinOtherAsMe: ElementDelta = { kind: 'notice-unpin', noteId: 't1', by: ADDER };
+    it('edit, by delta: pins as anyone and unpins any note', () => {
+      expect(doesDelta(pinAsOther, 'edit')).toBe('t1,m1,x1');
+      expect(doesDelta(unpinOther, 'edit')).toBe('m1');
+    });
+    it("participate, by delta: pins and unpins as itself, never another's", () => {
+      expect(doesDelta(pinMine, 'participate')).toBe('t1,m1,m2');
+      expect(doesDelta(unpinMine, 'participate')).toBe('t1');
+      expect(doesDelta(pinAsOther, 'participate')).toBe('dropped');
+      expect(doesDelta(unpinOther, 'participate')).toBe('dropped');
+      // Its own key on someone else's note: relayed, and a no-op on every screen and in the store.
+      expect(doesDelta(unpinOtherAsMe, 'participate')).toBe('t1,m1');
+    });
+    it('view, by delta: dropped', () => {
+      for (const d of [pinMine, unpinMine]) expect(doesDelta(d, 'view')).toBe('dropped');
+    });
+  });
+
+  // docs/specs/009-elements/timer-and-stopwatch.md "Share roles": a press on a Timer or Stopwatch is taking part. It
+  // names nobody, so any Participant's is relayed (and written by the room); a Viewer's is dropped. Its effect on the
+  // piece is element-deltas' (timer-piece-deltas.test.ts in packages/document).
+  row(
+    'Start, pause, reset or set a Timer or Stopwatch',
+    {
+      start: delta({
+        kind: 'piece-timer',
+        state: { running: true, startedAt: 1_000, accumulatedMs: 0, durationMs: 300_000 },
+      }),
+      reset: delta({
+        kind: 'piece-timer',
+        state: { running: false, startedAt: 0, accumulatedMs: 0, durationMs: 600_000 },
+      }),
+    },
+    TAKING_PART,
+  );
 
   // A Participant comments through the comment routes (gateParticipate, routes/comment-routes.test.ts: a
   // Participant link comments, a view link is refused), which write the tab and tell the room; in the room the
@@ -323,13 +443,12 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     });
   });
 
-  // Panning and zooming are the viewport a follower follows; spotlight and export write nothing and send nothing.
+  // Panning and zooming are the viewport a follower follows; export writes nothing and sends nothing.
   row(
-    'Pan, zoom, laser, spotlight, export',
+    'Pan, zoom, export',
     {
       pan: { kind: 'viewport', tabId: 't', x: 40, y: 0, zoom: 1 },
       zoom: { kind: 'viewport', tabId: 't', x: 0, y: 0, zoom: 2 },
-      laser: { kind: 'laser', tabId: 't', x: 1, y: 2 },
       cursor: { kind: 'cursor', tabId: 't', x: 1, y: 2 },
       select: { kind: 'select', tabId: 't', ids: ['col'] },
     },
@@ -369,7 +488,6 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   it('treats an unknown level as a Viewer', () => {
     const ops = [
       { kind: 'avatar-say', tabId: 't', id: 'b1', text: 'Hello', x: 0, y: 0 },
-      { kind: 'reaction', tabId: 't', id: 'r1', reaction: 'clap', x: 0, y: 0 },
       { kind: 'drag-preview', tabId: 't', ids: ['col'] },
       add(sticky('n1')),
     ];

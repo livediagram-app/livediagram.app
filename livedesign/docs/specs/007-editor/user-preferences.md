@@ -24,7 +24,7 @@ blocks on a network round-trip at boot.
   app `livedesign.app`). Each person has two scopes there: **All**, the keys
   every liveworkspace app shares (`ALL_SETTING_KEYS` in
   `@liveworkspace/settings`: privacy, motion, notifications, the chrome's
-  scale and opacity, power user mode, your own swatches, and the editor
+  scale and opacity, your own swatches, and the editor
   settings two or more apps have: the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover and Pages' Contents), and livedesign's
   own for every other key. The api joins the two on a read
   (`joinSettings`) and splits a change between them on a write
@@ -232,8 +232,8 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Pages tour's seen record (docs/specs/007-editor/pages-tour.md): true counts every
-  // page kind's track as seen while Power user mode is on. Set with every kind by Power user mode.
+  // The Pages tour's older single seen record (docs/specs/007-editor/pages-tour.md): written with every kind by
+  // Settings' Pages Tours switch, off; on its own it counts no kind.
   pagesTourSeen?: boolean;
   // The page kinds whose Pages tour track has been taken (completed or skipped). Feeds Settings' row per kind (Logo Tour, ...), which adds or removes its own kind, and which page a
   // Start Pages Tour press prefers; the button offers the tour only while a kind on the tab is not in it.
@@ -242,7 +242,8 @@ type UserPreferences = {
   // (a press of Start Tour). Surfaced in Settings as Tours › Show Me, one switch
   // per kind (inverted); a kind in it is off the Start Tour button.
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as taken while Power user mode is on; written by its preset.
+  // Counts every element tour as taken: Settings' Show Me on Every Element, switched off, writes it (as did the
+  // retired Power user mode's preset).
   elementToursSeen?: boolean;
   // DEAD (docs/specs/012-collaboration/presentation-mode.md): presenter settings livedesign has no use for.
   // Nothing reads or writes this; a stored value is ignored and left in place.
@@ -271,25 +272,6 @@ type UserPreferences = {
   // docked as a sidebar beside the canvas, or minimised to its cluster button.
   // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
   contentsPlacement?: 'sidebar' | 'button';
-
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
-  // Switching it on applies the preset once; see powerUserBaseline.
-  powerUserMode?: boolean;
-  // What switching the mode on changed, per preset setting: the values
-  // before (a key absent here was absent then) and the values written.
-  // Switching off restores `before` for every setting whose current
-  // values still equal `applied`, then deletes this. Present only while
-  // the mode is on.
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // Minimal chrome, a power-user-only setting. Honoured only while
-  // powerUserMode is on; the preset writes true.
-  minimalChrome?: boolean;
-  // True once the power user mode offer has been shown, answered or not,
-  // so it is made once per account.
-  powerUserOfferShown?: boolean;
 };
 ```
 
@@ -320,7 +302,7 @@ Missing key === undefined === default behaviour. Concretely:
   the button. Which edge (left or right) is per device, kept in the browser
   alone, never here
   ([Pages](pages-mode.md#contents)). Written by the sidebar's
-  Minimise, the popover's Dock as Sidebar and Settings › Editor › Pages ›
+  Collapse Contents (in its Contents Options), the popover's Dock as Sidebar and Settings › Editor › Pages ›
   Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
   `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
@@ -403,15 +385,13 @@ Missing key === undefined === default behaviour. Concretely:
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
 
-- `powerUserMode` undefined / false → the mode is off (the default). Switching it
-  on applies the preset and records `powerUserBaseline`; switching it off restores
-  every preset setting the user did not change and deletes the baseline
-  ([Power user mode](power-user-mode.md)). Emits `UI`/`Toggled`/`PowerUserMode{On,Off}`.
-- `minimalChrome` → honoured only while `powerUserMode` is on, where undefined /
-  true is on. Off the mode it has no effect whatever its value. Emits
-  `UI`/`Toggled`/`MinimalChrome{On,Off}`.
-- `powerUserOfferShown` undefined → the offer may still be made, once its
-  thresholds are met.
+- **Retired keys.** `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) drops
+  `powerUserMode`, `powerUserBaseline`, `minimalChrome` and `powerUserOfferShown` on read
+  ([Power user mode](power-user-mode.md) is retired), from the browser's copy and the server's alike, so the next write
+  stores the blob without them (the sync sends a null for each key the server held). Nothing is written on load.
+  Dropping them reverts nothing: whatever the mode's preset wrote (alignment guides, auto-attach arrows, the tours'
+  seen flags) stays as it is, and a blob that had the mode on with `pagesTourSeen` gets every page kind added to
+  `pagesTourKinds`, so the Pages tour stays seen. Only Minimal chrome, which nothing reads any more, goes.
 
 Empty (or missing entirely) localStorage entry, AND nothing stored
 with the account for this owner, is therefore the "everything
@@ -521,8 +501,7 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
-  pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-categories
+  pan; with the sub-categories
   **Pages** (a **Pages**
   section: Contents, Sidebar or Button; then a **Logo Pages** section: Logo Guides, with Logo Guide Strength and the Guides Shown chips
   nested under it)), **Appearance** (theme, then an **Interface** section:
@@ -546,8 +525,7 @@ and the dialog stays as the one complete, browsable index of them.
   account-shaped things belong.
 
   **A link row** (`kind: 'link'`) opens another category of the same dialog
-  in place, the way the power user preset readout goes to a row: it names the
-  category it opens and never navigates the page.
+  in place: it names the category it opens and never navigates the page.
 
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
@@ -557,8 +535,8 @@ and the dialog stays as the one complete, browsable index of them.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
   spec). **Editor** holds **Pages** (Contents and the logo guides); the
-  settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach arrows, middle-mouse pan
-  and power user mode) stay on Editor itself. A category with no rows is never shown. **Account** holds **Notifications** and
+  settings that act on the whole canvas (quick-add on hover, alignment guides, auto-attach arrows, middle-mouse pan)
+  stay on Editor itself. A category with no rows is never shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
@@ -582,9 +560,8 @@ and the dialog stays as the one complete, browsable index of them.
   switch** ("Enable Layers Panel", "Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
-  switch (`parent`) and are offered only while it is on, the way power
-  user mode's rows follow that mode: a setting for a panel you have
-  turned off has nothing to act on. The Map's switch keeps its stored key
+  switch (`parent`) and are offered only while it is on: a setting for a
+  panel you have turned off has nothing to act on. The Map's switch keeps its stored key
   (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
@@ -614,7 +591,7 @@ and the dialog stays as the one complete, browsable index of them.
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
-  holding several clusters (Editor's Power User rows) gets a sub-heading per
+  holding several clusters (Editor's Canvas and Mouse rows) gets a sub-heading per
   cluster. Sections group CONSECUTIVE runs, so one cannot be split and
   silently re-headed further down.
 
@@ -692,9 +669,7 @@ and the dialog stays as the one complete, browsable index of them.
   `pagesTourSeen`: on while any track is untaken, off marks every track taken, on forgets every record), and each track
   has its own row nested beneath it, named for itself (`tourTrackSwitch`). A track's row is on while its track is
   untaken; off adds its kind to `pagesTourKinds`, on removes it alone, and both clear the single `pagesTourSeen`,
-  folding it into the list first so one track back on leaves the others taken. Power user mode's readout lists
-  the switch over all its tracks (**Pages Tours**). The old single flag `pagesTourSeen` counts every track only
-  while Power user mode is on.
+  so only the list speaks for the tracks. The old single flag `pagesTourSeen` counts no track on its own.
 
   Below the Pages tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
@@ -730,8 +705,8 @@ and the dialog stays as the one complete, browsable index of them.
   `@liveworkspace/settings-ui` (`packages/settings-ui` at the monorepo root) draws the header with its
   back bar, the rail, the pane, search and its "no matches" state, the view memory and scroll
   anchor, sections, collapsed sections, nested rows, the desktop-only note and every generic row
-  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note`, the power user
-  preset readout and the shortcut list). It knows nothing of this app: it is driven by a plain model
+  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note` and the shortcut
+  list). It knows nothing of this app: it is driven by a plain model
   (categories with an icon, rows with a value and an `onChange`) and is handed the app's pieces (the
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
   keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
@@ -781,13 +756,10 @@ and the dialog stays as the one complete, browsable index of them.
   ([Transactional email](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
   out entirely rather than becoming a row that pushes a blank pane.
-  **Power-user-only rows** (Minimal chrome) are absent the same way unless
-  power user mode is on ([Power user mode](power-user-mode.md)); they appear the
-  moment the mode's row is switched on, without reopening the dialog.
 
   A row may have a **parent** row: its children render directly beneath it,
-  indented, as one group named "<parent label> settings" (the power user mode
-  row's Minimal Chrome and its preset readout). A child whose parent is not
+  indented, as one group named "<parent label> settings" (Show Me on Every
+  Element's switch per kind). A child whose parent is not
   among the rows shown (a search match) renders on its own.
 
   (Element add is a single always-on tap-or-drag gesture with no setting, see

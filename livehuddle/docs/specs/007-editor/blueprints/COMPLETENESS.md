@@ -17,21 +17,21 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## power-user-mode
+## role-pill
 
 - [x] Domain and naming
 - [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Data and persistence
+- [ ] Interfaces and contracts
+- [ ] Data and persistence
 - [x] Errors and edge cases
 - [x] Security and trust
-- [x] Performance and limits
+- [ ] Performance and limits
 - [x] Presentation and UX
 - [x] Accessibility
-- [x] Web Experience
+- [ ] Web Experience
 - [x] Observability
 - [x] Testing
-- [x] Constants and configuration
+- [ ] Constants and configuration
 - [x] Defaults ledger
 
 ## ui-scale
@@ -79,3 +79,20 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## opening-screen
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [ ] Interfaces and contracts
+- [ ] Data and persistence
+- [ ] Errors and edge cases
+- [ ] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [ ] Web Experience
+- [ ] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [ ] Defaults ledger

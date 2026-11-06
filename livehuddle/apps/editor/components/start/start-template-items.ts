@@ -14,7 +14,6 @@ import {
   templateCategory,
   templateEditorMode,
   templateMatchesQuery,
-  type TemplateCategory,
   type TemplateDescriptor,
   type TemplateKind,
 } from '@livehuddle/templates';
@@ -33,21 +32,17 @@ type TemplateStartGroup = {
 type TemplateStart = {
   // The mode's blank: Recommended's first card, which starts from nothing.
   blank: TemplateKind;
-  // The group the start opens on: the Spaces (LEADING_START_GROUP).
+  // The group the start opens on: Recommended.
   initial: string;
-  // The Spaces, then Recommended, then every other group holding a template.
+  // Recommended, then every catalogue group holding a template.
   groups: readonly TemplateStartGroup[];
   // Every match, each once, under its primary category, in rail order.
   search: (query: string) => { group: string; kinds: TemplateKind[] }[];
 };
 
 const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
-  workshop: 'The quickest ways to run a session, picked for most teams.',
+  workshop: 'The quickest ways to meet, picked for most teams.',
 };
-
-// The group the start leads with and opens on (docs/specs/007-editor/start-diagramming.md "The Spaces lead"):
-// livehuddle is a place to meet, so the spaces to walk round come before everything, Recommended included.
-export const LEADING_START_GROUP: TemplateCategory = 'spaces';
 
 const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
@@ -71,18 +66,16 @@ function build(mode: TemplateStartMode): TemplateStart {
     line: c.description,
     kinds: listed.filter((k) => isInTemplateCategory(k, c.id)),
   }));
-  const lead = rest.filter((g) => g.id === LEADING_START_GROUP);
-  const others = rest.filter((g) => g.id !== LEADING_START_GROUP);
-  const railed = [...lead, ...others];
-  const groups = [...lead, recommended, ...others].filter((g) => g.kinds.length > 0);
+  // Recommended leads, and the start opens on it (docs/specs/007-editor/start-diagramming.md "Recommended leads").
+  const groups = [recommended, ...rest].filter((g) => g.kinds.length > 0);
   const search = (query: string) => {
     if (query.trim() === '') return [];
     const found = listed.filter((k) => templateMatchesQuery(templateOf(k), query));
-    return railed
+    return rest
       .map((g) => ({ group: g.id, kinds: found.filter((k) => templateCategory(k) === g.id) }))
       .filter((g) => g.kinds.length > 0);
   };
-  return { blank, initial: groups[0]?.id ?? recommended.id, groups, search };
+  return { blank, initial: recommended.id, groups, search };
 }
 
 export const TEMPLATE_STARTS: Readonly<Record<TemplateStartMode, TemplateStart>> = {

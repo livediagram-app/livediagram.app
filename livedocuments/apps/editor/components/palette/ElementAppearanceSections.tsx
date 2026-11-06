@@ -36,7 +36,8 @@ import {
   type Padding,
   type TextAlignX,
   type TextAlignY,
-  type TextSize,
+  drawnTextSize,
+  textPxRangeFor,
 } from '@livedocuments/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
@@ -326,8 +327,9 @@ export function ElementAppearanceSections({
           {showAlignment ? (
             <TypographySections
               currentFont={(target as { font?: string }).font ?? null}
-              currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+              currentSize={drawnTextSize(target, 'sm')}
               presetPx={presetPxFor(target.type)}
+              sizeRange={textPxRangeFor(target.type)}
               padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
               onSetFont={props.onSetFont}
               onSetSize={props.onSetTextSize}

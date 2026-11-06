@@ -1,5 +1,7 @@
 # Shape libraries
 
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/013-workspace/shape-libraries.md) is the one to read and change. livehuddle's palette, Explorer and imports offer no shape library, and its code for them is deleted. The api keeps its `/shape-libraries` routes and table, so a library someone imported stays stored, unread by the editor; the Explorer's Library shows the Image Gallery alone (the sites registry's `shapeLibrariesPath` for livehuddle is `null`). The rest of this page records what livehuddle had.
+
 A **shape library** is a named set of reusable shapes that belongs to a person: a draw.io library (the
 "preset" kept in a draw.io scratchpad or a Drive file) brought into livehuddle, its shapes ready to
 place on any tab from the palette's **My shapes** category. Importing several libraries gives several,

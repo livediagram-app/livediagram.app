@@ -6,7 +6,6 @@ import { useSettingsUiKit } from '../kit';
 import type {
   SettingsLinkRow,
   SettingsNoteRow,
-  SettingsPresetSummaryRow,
   SettingsShortcutListRow,
   SettingsShortcutSection,
 } from '../model';
@@ -53,59 +52,6 @@ export function SettingsNoteRowView({ row }: { row: SettingsNoteRow }) {
         </>
       }
     />
-  );
-}
-
-// "Set By Power User Mode": what the preset set, each value live from its own row, and whether
-// switching off would put it back. Changing one happens in its row; "Change" goes there.
-export function SettingsPresetSummaryRowView({
-  row,
-  onGoToRow,
-}: {
-  row: SettingsPresetSummaryRow;
-  onGoToRow?: (categoryId: string, rowKey: string) => void;
-}) {
-  return (
-    <SettingsRowShell row={row}>
-      <ul
-        aria-labelledby={`${row.key}-label`}
-        className="-my-1.5 flex flex-col divide-y divide-slate-100 dark:divide-slate-700"
-      >
-        {row.lines.map((line) => (
-          <li key={line.setting} className="flex items-center gap-3 py-1.5">
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="text-xs text-slate-700 dark:text-slate-200">
-                {line.label}: <span className="font-semibold">{line.value}</span>
-                <span className="text-slate-500 dark:text-slate-400"> · {line.categoryLabel}</span>
-              </span>
-              {line.restorable ? (
-                <span
-                  className={
-                    line.changed
-                      ? 'text-[11px] text-amber-700 dark:text-amber-300'
-                      : 'text-[11px] text-slate-500 dark:text-slate-400'
-                  }
-                >
-                  {line.changed
-                    ? 'Changed: kept when you switch off'
-                    : 'Restored when you switch off'}
-                </span>
-              ) : null}
-            </div>
-            {line.reachable && onGoToRow ? (
-              <button
-                type="button"
-                onClick={() => onGoToRow(line.categoryId, line.rowKey)}
-                aria-label={`Change ${line.label} in ${line.categoryLabel}`}
-                className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
-              >
-                Change
-              </button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    </SettingsRowShell>
   );
 }
 

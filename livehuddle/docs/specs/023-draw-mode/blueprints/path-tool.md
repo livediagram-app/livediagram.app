@@ -1,7 +1,7 @@
 # Path tool: blueprint
 
-Derived from [Path tool](../path-tool.md), with [Whiteboard, round one](whiteboard-round-one.md) for
-the dock, keys, ink and board style memory, and [Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
+Derived from [Path tool](../path-tool.md), with [Draw mode](../draw-mode.md) for the ink, and
+[Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
 for the click-to-place gesture it grows from. The spec decides; this file adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Pn`.
 
@@ -31,11 +31,11 @@ Scope, by file:
 | `apps/editor/lib/quick-style.ts`, `quick-style-tool.ts`                | A path is a quick-style target; "Next path" phantom                                                                               |
 | `apps/editor/lib/style-memory.ts`                                      | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
 | `apps/editor/lib/element-names.ts`                                     | "Path, N points" / "Closed path, N points"                                                                                        |
-| `apps/editor/lib/excalidraw-export.ts`                                 | A path as a sampled `line`                                                                                                        |
+| `../livediagram/apps/editor/lib/excalidraw-export.ts`                  | A path as a sampled `line`                                                                                                        |
 | `apps/editor/components/canvas/path/PathSvg.tsx`                       | The canvas renderer, shared by committed and draft paths                                                                          |
 | `apps/editor/components/canvas/path/usePathDrawGesture.ts`             | Drawing: presses, drags, keys, commit                                                                                             |
 | `apps/editor/components/canvas/path/usePathEditGesture.ts`             | Edit mode: presses, drags, keys, commit                                                                                           |
-| `apps/editor/components/canvas/path/usePathTool.ts`                    | Composes both for `Canvas`: press intercept, displayed elements, layers                                                           |
+| `apps/editor/components/canvas/path/usePathTool.ts`                    | Composes both for `Canvas`: press intercept, displayed elements                                                                   |
 | `apps/editor/components/canvas/path/PathDraftLayer.tsx`                | The path being drawn, rubber band, rings                                                                                          |
 | `apps/editor/components/canvas/path/PathEditLayer.tsx`                 | Nodes, handles, box, snap guides                                                                                                  |
 | `apps/editor/components/canvas/path/PathEditToolbar.tsx`               | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
@@ -47,7 +47,6 @@ Scope, by file:
 | `apps/editor/app/globals.css`                                          | `[data-path-cursor]`: descendants inherit the edit cursor                                                                         |
 | `apps/editor/components/dialogs/EditorTabDialogs.tsx`                  | Exports `tabAsSeen`                                                                                                               |
 | `apps/editor/hooks/canvas/usePathCommits.ts`                           | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                            | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                     | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
 | `apps/editor/components/palette/palette-icons.tsx`                     | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | Sentences for the four events                                                                                                     |
@@ -87,7 +86,6 @@ export type PathNode = PathPoint & {
 export type PathElement = {
   id: ElementId;
   type: 'path';
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -165,8 +163,7 @@ and Alt first (see [Editing while drawing](#editing-while-drawing-usepathdrawges
 3. Within that radius of the **last** node (later than a double press): a drag moves it; a release
    without one makes it a **cusp**: its `handleOut` is removed (mode `corner`).
 4. Within that radius of any other placed node: a drag moves it; a click does nothing (P18).
-5. No draft and within that radius of an **end node of an open path** on the tab (unlocked, not on an
-   inert layer, not being edited): **continue**. Its anchors, in world px (rotation baked in, P4), are
+5. No draft and within that radius of an **end node of an open path** on the tab (unlocked, not being edited): **continue**. Its anchors, in world px (rotation baked in, P4), are
    the draft, reversed when the start node was pressed; `continuing = { id, reversed }`; `placed = 0`.
 6. Otherwise **place** a node at `p` (Shift: `constrain45(last, p)`), mode `corner`, no handles; the
    drag that follows shapes it. The first node of a new draft clears the selection.
@@ -305,8 +302,9 @@ With the Path tool in hand, the draft is editable (as in Figma):
 ### Dock, keys and tool state
 
 - `activeWhiteboardTool`: `pendingDraw.type === 'path'` → `'path'`.
-- `useWhiteboard.pickPath()`: `setCanvasTool('select')`, `beginDraw({ type: 'path' })`, track
-  `Draw·Selected·Path`. Leaving a whiteboard tab cancels a path intent as it does a pen.
+- livehuddle has no whiteboard dock (Work Tracker #329 removed it with `useWhiteboard`), so nothing arms the
+  tool: `pickPath`, `pathEditing` and `leavePathEdit` went with it, and the dock button, the Select button's
+  editing state and the keys below describe livediagram's build.
 - The dock button, in the Shapes group after the sticky note (the dock's own blueprint places it):
   key `path`, label "Path tool", shortcut `P`,
   `aria-pressed` when the tool is `path`, icon `ShapePenIcon` at `DOCK_ICON_PX`: the one component
@@ -432,7 +430,7 @@ paths ship with the validator, the OpenAPI schema and the MCP's type list in one
 - Draft of 1 node, then Enter / Escape / tool change: dropped, nothing committed.
 - A close press with 2 nodes and no handle, released without a drag: ignored (P3).
 - The continued element deleted or locked by a peer mid-draft: committed as a new path.
-- The edited element deleted, locked, or moved to an inert layer by a peer: edit mode leaves.
+- The edited element deleted or locked by a peer: edit mode leaves.
 - A rotated path: edited in its own frame; continuing bakes the rotation in (P4).
 - A horizontal or vertical straight path: a 1 px box dimension, nodes normalise against it.
 - Zoom or pan mid-draft: every point converts with its event's rect and zoom.
@@ -507,10 +505,9 @@ numbers only).
 | Edit gesture: select, drag, keys, one commit                                                    | `apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                                    |
 | Commit: new, continued, edit, delete, telemetry                                                 | `apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                                  |
 | Tool derivation                                                                                 | `apps/editor/lib/whiteboard-tool.test.ts`                                                                           |
-| `pickPath`                                                                                      | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                                                   |
 | Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                       |
 | Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                             |
-| Excalidraw line                                                                                 | `apps/editor/lib/excalidraw-export.test.ts`                                                                         |
+| Excalidraw line                                                                                 | `../livediagram/apps/editor/lib/excalidraw-export.test.ts`                                                          |
 | Telemetry vocabulary and sentences                                                              | `apps/editor/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                      |
 | Edit keys, Tab on into the toolbar                                                              | `apps/editor/lib/path-edit-keys.test.ts`                                                                            |
 | Node types, open, cursors, `toWorld`, `dragNodes`                                               | `apps/editor/lib/path-edit.test.ts`                                                                                 |

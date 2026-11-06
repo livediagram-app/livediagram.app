@@ -15,7 +15,7 @@
 import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { EditorMode, Tab } from '@livehuddle/document';
-import type { CreationTabKind, TemplateFamily } from './placement-defaults';
+import type { CreationTabKind, TemplateFamilyOrNone } from './placement-defaults';
 import type { CallsMode } from './calls-mode';
 
 export type {
@@ -85,7 +85,7 @@ export type LiveDoc = {
 export type RecordedIntent = {
   opensIn: EditorMode | null;
   tabKind: CreationTabKind | null;
-  templateFamily: TemplateFamily | null;
+  templateFamily: TemplateFamilyOrNone;
 };
 
 // Lightweight list projection — drops `tabs` so listing 100 documents
@@ -247,14 +247,11 @@ export {
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
-  // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
-  // oldest CLI accepted for writes.
+  // For scripts (docs/specs/015-api/api.md "Capabilities"), each optional so an older worker parses: where the
+  // api answers, whether sign-in exists, and the stored document format.
   apiBase?: string;
   authEnabled?: boolean;
-  oauthIssuer?: string;
   documentFormat?: number;
-  cli?: { minVersion: string };
   // True only when the deployment has the Email Service `EMAIL` binding (docs/specs/014-identity/transactional-email.md). The
   // editor app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
@@ -264,7 +261,7 @@ export type CapabilitiesResponse = {
   // false hides it, so an older worker that omits it leaves the Community showing.
   communityEnabled?: boolean;
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md "Turning calls on"): true when this deployment
-  // has calls (never on production yet, and only with the Realtime secrets set), paused or not. Absent is off.
+  // has calls (wherever the Realtime secrets are set, production included), paused or not. Absent is off.
   callsEnabled?: boolean;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused. Absent is `on`.
   callsMode?: CallsMode;
@@ -284,9 +281,12 @@ export * from './participant-colours';
 export * from '@liveworkspace/api-schema/image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './poll';
 export * from './room-messages';
 export * from './call-voice';
+export * from './call-hand';
+export * from './call-control';
+// Knock (docs/specs/012-collaboration/knock.md).
+export * from './knock';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';
@@ -317,8 +317,6 @@ export {
 // Default folders: their entries and the creation intent a create carries
 // (docs/specs/013-workspace/default-folders.md).
 export * from './placement-defaults';
-// The Explorer filter lens's Mode values (docs/specs/013-workspace/explorer-filters.md).
-export * from './lens-modes';
 // Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
@@ -348,11 +346,6 @@ export * from './community-categories';
 export * from './community-paths';
 export * from './document-paths';
 export * from '@liveworkspace/api-schema/http-errors';
-export * from './oauth-clients';
-// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
-export * from './workbench';
-export * from './workbench-messages';
-export * from './mcp-origin';
 
 // The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
 export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';

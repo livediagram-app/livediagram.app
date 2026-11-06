@@ -1,14 +1,21 @@
 # Layout cleanup
 
-The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are reached through the
-[command palette](../007-editor/command-palette.md)'s actions. They are
-complementary, not duplicates: one snaps current positions, the other recomputes them from the
-graph. Both are editor-only (they mutate) and run a single undoable operation.
+> **Auto Layout is gone from livehuddle's editor** (Work Tracker #423, part 4): not part of livehuddle's meeting
+> product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). A Space has no tools for drawing shapes or
+> arrows, so the editor's Tidy Up offers **Auto-align** alone, and the command palette has no Auto Layout command.
+> livediagram keeps both ([its spec there](../../../../livediagram/docs/specs/008-canvas/layout-cleanup.md)). The
+> Auto Layout engine (`autoLayoutElements`, `tidyLayoutElements` in `packages/document`) stays, Work Tracker #459's to
+> decide: graph input (the API's and MCP's `graph` and `mermaid`) still lays out with it. The
+> [Auto Layout section](#auto-layout-tidy-up) below records the engine, and what the editor did with it.
+
+The editor's one layout tidier, **Auto-align**, is reached through the Tidy Up button and the
+[command palette](../007-editor/command-palette.md)'s actions. It snaps current positions; Auto Layout, which
+recomputes them from the graph, is the engine's (above). Auto-align is editor-only (it mutates) and runs a single
+undoable operation.
 
 ## Locked elements stay put
 
-Neither tidier moves or resizes a **locked element** or anything on a **locked layer**
-([Layers](../006-document/layers.md)): a lock means "protected from moves and resizes",
+Neither tidier moves or resizes a **locked element**: a lock means "protected from moves and resizes",
 and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
 (`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
 Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
@@ -40,7 +47,7 @@ off", not "this diagram has no layout".
   key's rows), stay an even step apart; the step rounds to the grid only when that moves the last
   box no further than the tolerance.
 - **Nothing breaks.** A snap that would make two boxes overlap that did not, or nudge a box part-way
-  out of a lane or frame that held it, is undone for both.
+  out of a lane or boundary that held it, is undone for both.
 - **Settled.** Passes repeat (at most 4) until one moves nothing, so running it twice changes
   nothing: the second press finds the tab already tidy.
 - Free arrow endpoints snap to the grid; pinned ones follow their boxes.
@@ -120,7 +127,7 @@ pick by angle (`reanchorArrow`'s `axis`).
 
 An angled arrow on its own is an L: from a parent's bottom to a child's top it
 runs down to the child's level and meets the child's top edge sideways. Laid-out
-graph input (the MCP's `graph` / `mermaid`, [MCP server](../015-api/mcp-server.md))
+graph input (the MCP's `graph` / `mermaid`, [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md))
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
@@ -233,20 +240,18 @@ through the fewest boxes:
 
 ### A tidy never trashes the work
 
-Every tidier is judged before it is offered (`lib/tidy-verdict.ts`, `assessCleanup`), on the tab as
+Auto-align is judged before it is offered (`lib/tidy-verdict.ts`, `assessCleanup`), on the tab as
 the author has it. It is **not offered** when its result would:
 
-| Verdict            | When                                                                                                                                                                                                                                   | Tile line                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `unchanged`        | No box moves and no arrow re-routes                                                                                                                                                                                                    | Already tidy                               |
-| `leaves-container` | A shape that sat inside a bigger box comes out of it, the box staying behind                                                                                                                                                           | Would pull shapes out of their lanes       |
-| `rearranges-lanes` | Lanes (two or more boxes holding wired shapes, alike in length, in line, stacked at most 48 px apart) reorder, fall out of line, or a gap between them changes by more than 16 px. Not judged for Auto-align, whose few px tidy a lane | Would rearrange your lanes                 |
-| `covers`           | A moved box newly overlaps another box                                                                                                                                                                                                 | Would cover a shape / Would cover N shapes |
+| Verdict            | When                                                                         | Tile line                                  |
+| ------------------ | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| `unchanged`        | No box moves and no arrow re-routes                                          | Already tidy                               |
+| `leaves-container` | A shape that sat inside a bigger box comes out of it, the box staying behind | Would pull shapes out of their lanes       |
+| `covers`           | A moved box newly overlaps another box                                       | Would cover a shape / Would cover N shapes |
 
-The Tidy Up popover greys such a tile out with its line in amber; the command palette refuses the
-command with an info notice naming the tidier (`verdictNotice`), and nothing is committed. So
-lanes, which the layouts move only as rigid blocks, are protected: a swimlane offers Auto-align
-and says why the layouts are not offered.
+The Tidy Up popover greys the row out with its line in amber; the command palette refuses the
+command with an info notice naming the tidier (`verdictNotice`), and nothing is committed. (The
+`rearranges-lanes` verdict judged only Auto Layout, and left with it.)
 
 One layered layout can't express every board: a hierarchy wants parents centred over their
 children. So Auto Layout is a
@@ -263,8 +268,8 @@ a component's nodes are positioned:
 
 - The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
   MCP server keep calling it with no style and get Smart, unchanged.
-- **UI:** the command palette carries one command per style (Smart is the plain "Auto Layout
-  (tidy up)", then "Auto Layout: Tree", ...). All styles are the same single undoable op.
+- **UI:** none in livehuddle's editor (Work Tracker #423, part 4). It had one command per style in the
+  command palette and a tile per style in Tidy Up.
 - Tree consumes the same directed edge set as the layered layout; on a
   graph that isn't a tree (extra in-edges, cycles) it lays out a BFS/longest-path
   spanning tree and let the extra arrows re-anchor across it (deterministic, never
@@ -276,9 +281,8 @@ a component's nodes are positioned:
 ## The Tidy Up button
 
 The editor has a **Tidy Up** button in the bottom-right cluster, the segment immediately
-**left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
-Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
-than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
+**left of the Theme & Canvas brush** in the Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up
+and the brush, both about how the tab is arranged and how it looks rather than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
 strip's other buttons (one open at a time, a second press or a press outside closes it).
 
 ### Where it shows
@@ -287,60 +291,45 @@ strip's other buttons (one open at a time, a second press or a press outside clo
   and a Viewer are read-only for structure and an embed has no cluster. The command palette reaches the
   tidiers too.
 - **On a phone too.** The phone cluster is one row with room for it: Undo and Redo, the
-  Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the
+  Tidy Up and Theme strip, then Fit. There is no hover on touch, so a tap on the row is the
   press; the popover fits the screen's width.
-- **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
-- **A locked tab** shows the button, with every tile inert under a "This tab is locked" note, since
-  unlocking it is the one step that makes the tidiers work.
+- **Not during the welcome flow**: the strip itself is hidden there.
+- **A locked tab** shows the button, with Auto-align inert under a "This tab is locked" note, since
+  unlocking it is the one step that makes it work.
 
 ### Share roles
 
 | Role        | Tidy Up                                                                                       |
 | ----------- | --------------------------------------------------------------------------------------------- |
-| Editor      | Sees the button and uses every tile.                                                          |
+| Editor      | Sees the button and uses Auto-align.                                                          |
 | Participant | No button. A tidy moves every element on the tab, and a Participant never reshapes the board. |
 | Viewer      | No button.                                                                                    |
 
-The gate is the structural one Layers uses (a Participant is read-only for structure,
+The gate is the structural one (a Participant is read-only for structure,
 [Share roles](../013-workspace/share-roles.md)).
 
 ### The popover
 
-A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. Two groups:
+A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. It holds one full-width
+row, **Auto-align**: a small drawing of notes snapping into line, the name, and "Snap to the grid.
+Nothing moves far." (Auto Layout's four style tiles, Smart, Flowchart Down, Flowchart Right and Tree, left
+livehuddle in Work Tracker #423 part 4.)
 
-1. **Auto Layout**, captioned "Rearrange shapes from the arrows between them.": a two-column grid
-   of four **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree. Each tile is a small drawing of the layout it makes (boxes and arrows in the brand
-   colours, readable in light and dark), its name, and one line saying what it does:
+Pressing the row runs Auto-align on the active tab (one undoable step, the same command the palette
+runs) and closes the popover. A tab with nothing on it shows the row inert under "Nothing to tidy yet.
+Add some notes or pictures to this Space first." The row is a button, reached with Tab and pressed with
+Enter or Space; Escape closes the popover.
 
-   | Tile            | Line                         |
-   | --------------- | ---------------------------- |
-   | Smart           | Follows the way you drew it  |
-   | Flowchart Down  | Top to bottom, in layers     |
-   | Flowchart Right | Left to right, in layers     |
-   | Tree            | Parents above their children |
-
-2. **Auto-align**, a full-width row under a hairline: its glyph, the name, and "Snap to the grid.
-   Nothing moves far."
-
-Pressing a tile or the row runs that tidier on the active tab (one undoable step, the same command
-the palette runs) and closes the popover. A tab with nothing on it shows the tiles inert under
-"Nothing to tidy yet. Add some shapes and connect them with arrows." The tiles are buttons, reached
-with Tab and pressed with Enter or Space; Escape closes the popover.
-
-**Greyed out with the reason.** Each tidier is [judged](#a-tidy-never-trashes-the-work) once, one
-per task after the popover paints (so opening never waits on six layouts of a big tab), on the tab
-as it was when the popover opened. A tile that would not help is disabled, its line replaced by the
-reason in amber at full strength while its drawing and name dim. When every layout is refused for
-the lanes, the caption says it once instead: "Your shapes sit in lanes, which keep the layout you
-gave them." A tile pressed before its turn is judged at the press, as the palette's command is.
+**Greyed out with the reason.** Auto-align is [judged](#a-tidy-never-trashes-the-work) once, in a task
+after the popover paints (so opening never waits on it), on the tab as it was when the popover opened.
+If it would not help, the row is disabled, its line replaced by the reason in amber at full strength
+while its drawing and name dim. A row pressed before the judgement is judged at the press, as the
+palette's command is.
 
 ### Hover to see it first
 
-On a desktop pointer, hovering a tile (or the Auto-align row) lays the tab out **live behind the
-popover**; the layout only sticks on press, and taking the pointer off the tile puts everything
-back. Four styles that can only be told apart by doing them is four undos to find the one you
-wanted, and the names ("Tree", "Smart") describe a shape the author has to imagine. Showing it is
-cheaper than explaining it.
+On a desktop pointer, hovering the Auto-align row lays the tab out **live behind the popover**; the
+layout only sticks on press, and taking the pointer off the row puts everything back.
 
 It is the style-preset preview ([Style presets](../010-palette/style-presets.md)) one level up: that
 one previews a look on the selected elements, this one previews a position on all of them, and the
@@ -348,13 +337,13 @@ rules are the same ones for the same reasons.
 
 - The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), shared by the preview and the
   command, so a preview is byte-for-byte the layout its press commits.
-- The first hover snapshots the tab. Every hover lays out from that snapshot, so sweeping across the
-  tiles shows each style cleanly rather than stacking them.
+- The first hover snapshots the tab. Every hover lays out from that snapshot, so hovering again never
+  stacks one tidy on another.
 - Preview and revert go through `tickTabs`: present-only, no undo snapshot, and autosave skips the
   tick (`previewingRef`), so nothing ephemeral is ever persisted or sent to the room.
 - The press ends the preview first and commits second, in one React batch, so undo returns to the
   layout the author actually had rather than to the preview.
-- **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a flicker. The tile
+- **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a flicker. The row
   also reverts if the popover closes with the pointer still on it, since `pointerleave` does not
   fire on unmount.
 
@@ -368,4 +357,4 @@ Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
-involvement (Auto Layout is deterministic and offline-safe, and every deployment gets it). See issue #12 for the fuller rationale and open questions.
+involvement (Auto-align is deterministic and offline-safe, and every deployment gets it). See issue #12 for the fuller rationale and open questions.

@@ -157,40 +157,12 @@ describe('EditorHeader title on a touch screen', () => {
   });
 });
 
-// docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
-describe('EditorHeader Present button', () => {
-  const header = (present?: Parameters<typeof EditorHeader>[0]['present']) =>
-    render(
-      <EditorHeader
-        documentName="Deck"
-        showShare
-        shareable={false}
-        onOpenShare={() => {}}
-        onRename={() => {}}
-        present={present}
-      />,
-    );
-
-  it('is absent without a deck to present', () => {
-    header();
-    expect(screen.queryByRole('button', { name: /Present/ })).toBeNull();
-  });
-
-  it('sits immediately left of Share and starts the deck', () => {
-    const onPresent = vi.fn();
-    header({ slideCount: 3, starting: false, onPresent });
-    const present = screen.getByRole('button', { name: 'Present' });
-    const share = screen.getByRole('button', { name: 'Share' });
-    expect(present.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    fireEvent.click(present);
-    expect(onPresent).toHaveBeenCalledOnce();
-  });
-
-  it('reads Starting and refuses a second press while the deck loads', () => {
-    const onPresent = vi.fn();
-    header({ slideCount: 3, starting: true, onPresent });
-    const button = screen.getByRole('button', { name: 'Starting' });
-    expect(button).toHaveProperty('disabled', true);
+// livehuddle has no presenting (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+describe('EditorHeader', () => {
+  it('offers no Present button', () => {
+    renderHeader();
+    expect(screen.queryByRole('button', { name: /Present|Starting/ })).toBeNull();
+    expect(document.querySelector('[data-presentation-start]')).toBeNull();
   });
 
   it('links the logo to the Explorer on this address, not the homepage', () => {

@@ -287,13 +287,14 @@ describe('PagesTourHost end', () => {
 
   it('counts the page’s steps on screen', async () => {
     await start();
-    expect(stage.engine!.countableSteps).toBe(7);
+    expect(stage.engine!.countableSteps).toBe(6);
   });
 
   it('leaves out a step whose control is not on screen', async () => {
-    dom.hidden = ['data-tour-id="slides"'];
+    // Contents minimised: no row to point at, nor its menu.
+    dom.hidden = ['data-contents-slot'];
     await start();
-    expect(stage.engine!.countableSteps).toBe(3);
+    expect(stage.engine!.countableSteps).toBe(4);
   });
 
   it('ends as skipped when the person leaves Pages or the tab', async () => {

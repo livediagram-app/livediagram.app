@@ -291,7 +291,7 @@ the same strokes, hatching and heads from `sketch.ts`, and the Professional fall
 `data-finish="marker"` group). `svgArrow` takes its width from `finishArrowWidthPx` and its line from
 `handDrawnArrow` (a still: `flowing` false); a marker line writes `stroke-opacity`, its `lineOver` as a second path,
 and a `headFill` head with `fill` and `fill-opacity`. Every caller that loops `svgBoxed` (`renderElementsToSvg`,
-`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
+`export-tab.ts` PNG and SVG, `Minimap`) computes `sketchBackdropIds`
 once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
 raster path so PNG matches SVG.
 
@@ -377,7 +377,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 
 ### Agents
 
-`packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_document` and
+`livediagram/packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_document` and
 `add_tab`, passed through like `theme`; `finish` added to the element format allowlists for shape, arrow, text,
 sticky and table.
 

@@ -25,6 +25,7 @@ import {
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 const NAVY = '#1e1b4b';
 const MUTED = '#475569';
@@ -65,9 +66,14 @@ const STEPS = [
   },
 ] as const;
 
-const EXPLAINER_PAGE = templatePage(1, 'wide', 'portrait', 'How It Works', {
-  fill: { kind: 'gradient', from: '#fff7ed', to: '#eef2ff', angle: 180 },
-});
+// The theme's Dawn: a template's backgrounds are the theme's own (template-backgrounds).
+const EXPLAINER_PAGE = templatePage(
+  1,
+  'wide',
+  'portrait',
+  'How It Works',
+  themeGradientBackground('dawn'),
+);
 
 /** The explainer's page: one Story (9:16) portrait page on a warm-to-lavender wash. */
 export function howItWorksPages(): Page[] {

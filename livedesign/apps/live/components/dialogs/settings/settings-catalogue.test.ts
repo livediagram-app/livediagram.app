@@ -1,8 +1,7 @@
-import { setPowerUserMode } from '@/lib/power-user-mode';
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
-import { TELEMETRY_TYPE_PATTERN } from '@livedesign/api-schema';
+import { TELEMETRY_TYPE_PATTERN, upgradeLegacyPreferences } from '@livedesign/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
 
@@ -113,8 +112,9 @@ describe('settings catalogue', () => {
     expect(logo.event.off).toBe('LogoTourSeenOn');
   });
 
-  it("folds a power user's single seen flag into the list, so one track back on leaves the others answered", () => {
-    const power = setPowerUserMode({}, true).prefs;
+  it('keeps every track answered for someone who had Power user mode on, so one back on leaves the others', () => {
+    // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences": the blob as it is read.
+    const power = upgradeLegacyPreferences({ powerUserMode: true, pagesTourSeen: true });
     const wireframe = SWITCHES.find((r) => r.key === 'pagesTourSeen-wireframe')!;
     const logo = SWITCHES.find((r) => r.key === 'pagesTourSeen-logo')!;
     expect(wireframe.read(power)).toBe(false);
@@ -250,9 +250,7 @@ describe('settings catalogue', () => {
       'elementTour-stack': ['elementTourKinds'],
       'elementTour-tab-window': ['elementTourKinds'],
     };
-    // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
-    // exactly the preset's settings, pinned by its own test below.
-    for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
+    for (const row of TOGGLES) {
       const after = row.write(before, !row.read(before));
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
@@ -409,32 +407,6 @@ describe('settings catalogue', () => {
     expect(notifyRows(without)).not.toContain('notifyActionAssigned');
   });
 
-  it('offers Minimal chrome only while power user mode is on', () => {
-    const editorRows = (powerUserMode: boolean) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, powerUserMode })
-        .find((c) => c.id === 'editor')!
-        .rows.map((r) => r.key);
-    expect(editorRows(false)).toContain('powerUserMode');
-    expect(editorRows(false)).not.toContain('minimalChrome');
-    expect(editorRows(true)).toEqual(expect.arrayContaining(['powerUserMode', 'minimalChrome']));
-  });
-
-  it('switches power user mode through the preset, not a bare flag', () => {
-    const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ alignmentGuides: false }, true);
-    expect(on.alignmentGuides).toBe(true);
-    expect(on.minimalChrome).toBe(true);
-    expect(row.read(on)).toBe(true);
-    const off = row.write(on, false);
-    expect(off).toEqual({ alignmentGuides: false });
-    expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
-  });
-
-  it('names the Minimal chrome flips in telemetry', () => {
-    const row = TOGGLES.find((r) => r.key === 'minimalChrome')!;
-    expect(row.event).toEqual({ category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' });
-  });
-
   it('never offers a category with no rows', () => {
     // An empty category is a dead end: a row that pushes a blank pane.
     for (const ctx of BOTH_CONTEXTS) {
@@ -464,9 +436,6 @@ describe('settings sub-categories', () => {
       'elementIndicatorStyle',
       'quickAddOnHover',
       'middleMousePan',
-      'powerUserMode',
-      'minimalChrome',
-      'powerUserPreset',
     ]);
   });
 

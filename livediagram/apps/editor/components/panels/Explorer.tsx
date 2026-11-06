@@ -16,7 +16,6 @@ import { BrandMark, ProductNavLinks, useCommunityEnabled } from '@livediagram/ui
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
@@ -64,7 +63,6 @@ function ExplorerImpl({
   onPopoverClose,
   popoverAnchor,
 }: ExplorerProps) {
-  const minimalChrome = useMinimalChrome();
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
@@ -147,7 +145,7 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      // Roomy on a desktop or tablet: up to 64rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // Roomy on a desktop or tablet: up to 54rem wide (kept 1rem inside the window) and 45rem tall (kept on the
       // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
       // panel takes the one size from the package.
       popoverWidth={EXPLORER_POPOVER_WIDTH}
@@ -159,11 +157,7 @@ function ExplorerImpl({
       // A phone's sheet drops the ⋯ menu: every entry is a tap away there already.
       headerActions={
         sheet ? undefined : (
-          <ExplorerHeaderMenu
-            onNewDocument={onNewDocument}
-            actions={menuActions}
-            helpArticle="explorerPanel"
-          />
+          <ExplorerHeaderMenu onNewDocument={onNewDocument} actions={menuActions} />
         )
       }
       popoverOpen={popoverOpen}
@@ -210,9 +204,8 @@ function ExplorerImpl({
         // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
         layout={sheet ? 'sheet' : 'side'}
         open={shown}
-        divider={minimalChrome ? 'lines' : 'titles'}
-        // The sign-in note under the card (an onboarding notice: Minimal chrome drops it).
-        notice={minimalChrome ? null : <SignInPrompt bar />}
+        // The sign-in note under the card.
+        notice={<SignInPrompt bar />}
         // The product's surfaces, which the editor header no longer carries as a menu.
         footer={
           <ProductNavLinks

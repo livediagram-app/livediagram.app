@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { AVATAR_SIZES, avatarScale } from './config';
 import {
   AVATAR_SPAWN_GAP,
+  avatarBox,
+  avatarFigureHeight,
+  avatarPortraitBox,
+  avatarSpawnBelow,
   avatarSpawnFromButton,
   AVATAR_HEIGHT,
   AVATAR_JUMP_VELOCITY,
@@ -229,16 +234,52 @@ describe('peerPushTarget', () => {
 describe('avatarSpawnFromButton', () => {
   const button = { x: 100, y: 50, width: 40, height: 20 };
 
-  it('stands the character just below an Avatar button that enters the mode', () => {
-    expect(avatarSpawnFromButton(button, 'avatar', 'select')).toEqual({
+  it('stands the character centred below an Avatar button that enters the mode', () => {
+    expect(avatarSpawnFromButton(button, 'avatar', 'select', 1)).toEqual({
       x: 120,
-      y: 70 + AVATAR_SPAWN_GAP,
+      y: 70 + AVATAR_SPAWN_GAP + avatarFigureHeight(1),
     });
   });
 
   it('sets nothing for a press that leaves Avatar mode, or a button of another mode', () => {
-    expect(avatarSpawnFromButton(button, 'avatar', 'avatar')).toBeNull();
-    expect(avatarSpawnFromButton(button, 'laser', 'select')).toBeNull();
+    expect(avatarSpawnFromButton(button, 'avatar', 'avatar', 1)).toBeNull();
+    expect(avatarSpawnFromButton(button, 'laser', 'select', 1)).toBeNull();
+  });
+});
+
+// Work Tracker #346: the opening character stood over the Walk In button and hid its label.
+describe('avatarSpawnBelow', () => {
+  // A Spaces template's Walk In button (104 x 96), its label along the bottom.
+  const walkIn = { x: 2000, y: 100, width: 104, height: 96 };
+
+  it.each(AVATAR_SIZES.map((size) => [size.id, avatarScale(size.id)] as const))(
+    'keeps the whole %s figure, its tallest hair included, clear of the button',
+    (_size, scale) => {
+      const feet = avatarSpawnBelow(walkIn, scale);
+      // The sprite's drawn box, from the same geometry AvatarWalker places it with: its top is the jump headroom,
+      // so the figure itself starts where the cropped portrait does.
+      const box = avatarBox(scale);
+      const portrait = avatarPortraitBox(scale);
+      const belowFeet = box.height - box.offsetY;
+      const figureTop = feet.y + belowFeet - portrait.height;
+      expect(figureTop).toBeCloseTo(walkIn.y + walkIn.height + AVATAR_SPAWN_GAP);
+      expect(figureTop).toBeGreaterThan(walkIn.y + walkIn.height);
+      // Centred on the button, so it reads as standing in front of it.
+      expect(feet.x).toBe(walkIn.x + walkIn.width / 2);
+    },
+  );
+
+  it('stands a bigger character further down, so each size keeps the same gap', () => {
+    const small = avatarSpawnBelow(walkIn, avatarScale('small'));
+    const tall = avatarSpawnBelow(walkIn, avatarScale('tall'));
+    expect(tall.y - small.y).toBeCloseTo(
+      avatarFigureHeight(avatarScale('tall')) - avatarFigureHeight(avatarScale('small')),
+    );
+  });
+
+  it('measures the figure from its feet to the top of its tallest hair', () => {
+    expect(avatarFigureHeight()).toBeGreaterThan(AVATAR_HEIGHT);
+    expect(avatarFigureHeight(2)).toBeCloseTo(avatarFigureHeight(1) * 2);
   });
 });
 

@@ -18,11 +18,10 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import {
   CONTENTS_SIDEBAR_WIDTH,
-  contentsClusterBounds,
+  contentsClusterLeft,
   contentsSidebarClearancePx,
 } from '@liveworkspace/workbench/lib/contents-sidebar';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
@@ -100,11 +99,6 @@ type ChromeExtras = {
   spotlightPanelPosition?: { x: number; y: number } | null;
   onMoveSpotlightPanel?: (x: number, y: number) => void;
   onResetSpotlightPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the sixth tool panel.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
@@ -210,7 +204,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Alignment guides while a palette tile is being dragged in (docs/specs/010-palette/palette-drag-ghost.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
-  const paletteDrag = usePaletteDragGuides({ elements, readZoom, wrapperRef });
+  const paletteDrag = usePaletteDragGuides({
+    elements,
+    pages: props.pagesMode?.pages,
+    readZoom,
+    wrapperRef,
+  });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
   // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
@@ -240,11 +239,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     explorerEl,
     layersEl,
     collaborateEl,
-    slidesPopoverEl,
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
-    contentsSide,
     menuJoined,
     paletteTint,
   } = useCanvasChromePanels({
@@ -288,11 +285,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   const cornerScale = useUiScale('cornerButtons');
-  // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): past it when pinned right, short of it
-  // when pinned left, where the cluster wraps upward instead (contentsClusterBounds).
-  const cluster = contentsClusterBounds(!isMobile && contentsDocked, contentsSide, panelScale);
-  const clusterX = cluster.right;
-  const clusterLeft = cluster.left;
+  // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): short of it, where the cluster wraps
+  // upward instead (contentsClusterLeft).
+  const clusterLeft = contentsClusterLeft(!isMobile && contentsDocked, panelScale);
   // The bar across the top that the top corners give way to: the strip.
   const topBar = isMobile ? null : stripShown ? STRIP_SELECTOR : null;
   const topBarCrowds = useStripCrowdsCorners(
@@ -334,8 +329,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
               // Beside Pages mode's Contents sidebar, never under it.
-              ...(contentsDocked && corner.endsWith(contentsSide)
-                ? { [contentsSide]: contentsSidebarClearancePx(panelScale) }
+              ...(contentsDocked && corner.endsWith('left')
+                ? { left: contentsSidebarClearancePx(panelScale) }
                 : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -406,7 +401,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
-      {zenMode ? null : slidesPopoverEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
       {paletteShown ? (
@@ -440,12 +434,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.laser}
           {panelEls.spotlight}
           {panelEls.format}
-          {panelEls['slide-deck']}
         </>
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the mode's own strip (Slides, Plan), the
+          strip, the mode's own strip (Contents), the
           Collaborate button (only while the tab has a thread or an action), the Layers and
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
@@ -459,12 +452,12 @@ export function CanvasChrome(props: CanvasChromeProps) {
         style={
           cornerScale === 1
             ? {
-                right: atLeastInset(`${16 + clusterX}px`, 'right'),
+                right: atLeastInset('16px', 'right'),
                 ...(clusterLeft === null ? {} : { left: clusterLeft }),
               }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16 + clusterX, cornerScale)}px`, 'right'),
+                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
                 ...(clusterLeft === null ? {} : { left: toSurfacePx(clusterLeft, cornerScale) }),
                 bottom: toSurfacePx(16, cornerScale),
               }
@@ -489,19 +482,23 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* The page navigator (docs/specs/007-editor/pages-mode.md "Getting around the pages"): right of Undo /
-                Redo, for every role, while the tab has two pages or more; not on a phone, whose row has no room
-                for it (a swipe moves between pages there). */}
-            {!zenMode && !isMobile && props.pagesMode && props.pagesMode.pages.length > 1 ? (
+                Redo, for every role, while the tab has two pages or more and Contents is minimised (the docked
+                sidebar already shows every page); not on a phone, whose row has no room for it (a swipe moves
+                between pages there). */}
+            {!zenMode &&
+            !isMobile &&
+            !contentsDocked &&
+            props.pagesMode &&
+            // A stack flips from the page in front's own Previous and Next (StackNav).
+            !props.pagesMode.cardStage &&
+            props.pagesMode.pages.length > 1 ? (
               <PageNavigatorClusterStrip
                 pageIds={props.pagesMode.pages.map((p) => p.id)}
                 onGo={props.pagesMode.focusPage}
               />
             ) : null}
-            {/* Contents and Slides (docs/specs/007-editor/pages-mode.md "Contents", "Slides"): in Pages
-                mode, one strip where Layers would be. Contents for every role and on a phone too; Slides on a
-                desktop only, as the Slide Deck itself is, and an Editor's, since building and presenting a deck
-                runs the session (docs/specs/013-workspace/share-roles.md), once a page is a slide: before that
-                the deck has nothing to hold. */}
+            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode, where Layers would be,
+                for every role and on a phone too. The deck is built from its rows' menus ("Slides"). */}
             {!zenMode && props.pagesMode ? (
               <PagesClusterStrip
                 contents={
@@ -512,17 +509,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
                     />
                   )
-                }
-                slides={
-                  !isMobile &&
-                  !readOnly &&
-                  showsSlidesButton(props.pagesMode.pages) &&
-                  props.slideDeck ? (
-                    <SlidesClusterSegment
-                      popoverOpen={activeDockPanel === 'slides'}
-                      onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
-                    />
-                  ) : null
                 }
               />
             ) : null}

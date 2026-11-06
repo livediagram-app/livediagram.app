@@ -1,6 +1,5 @@
-// The Behaviour elements that look like controls or furniture (the mode and
-// session buttons, the timer among them, the picker, the reveal cover, the
-// chair) used to be CREATED with fixed light colours stamped onto them. A
+// The Behaviour elements that look like controls or furniture (the mode
+// button, the chair) used to be CREATED with fixed light colours stamped onto them. A
 // stored colour is the author's choice and wins over the surface, so on the
 // Default scheme they stayed white-on-dark-canvas in dark mode, forever. They
 // now store no colour, like any plain shape, and resolve through the
@@ -19,9 +18,6 @@ type Skin = { fill?: string; stroke?: string; text?: string };
 // differs in any slot is a real choice and is left alone.
 const STAMPED_SKINS: Partial<Record<ShapeKind, Skin>> = {
   'mode-button': MODE_BUTTON_SKIN,
-  'session-button': MODE_BUTTON_SKIN,
-  picker: MODE_BUTTON_SKIN,
-  reveal: { stroke: '#94a3b8', text: '#0f172a' },
   chair: { stroke: '#94a3b8', text: '#0f172a' },
 };
 
@@ -47,8 +43,7 @@ export function ownColours(el: BoxedElement): { fill?: string; stroke?: string; 
     text: 'textColor' in el ? el.textColor : undefined,
   };
   if (!wearsStampedSkin(el)) return stored;
-  // Only the slots the stamp wrote are cleared (a reveal's transparent fill
-  // was never part of it).
+  // Only the slots the stamp wrote are cleared.
   const skin =
     el.type === 'shape' && isLegacyModeButtonSkin(el)
       ? MODE_BUTTON_SKIN

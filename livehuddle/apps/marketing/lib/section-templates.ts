@@ -11,29 +11,20 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  spaces: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall', 'town-hall'],
-  workshops: [
-    'retrospective',
-    'lean-coffee',
-    'town-hall',
-    'meeting-agenda',
-    'workshop-board',
-    'brainstorm',
-    'crazy-eights',
-    'pub-quiz',
-    'icebreaker-questions',
-  ],
-  collaboration: [
+  spaces: [
+    'virtual-office',
     'team-pod',
-    'workshop-board',
-    'brainstorm',
-    'affinity-map',
-    'start-stop-continue',
-    'mad-sad-glad',
-    'sailboat',
-    'empathy-map',
-    'user-story-map',
+    'coworking-space',
+    'all-hands-hall',
+    'rooftop-bar',
+    'garden-retreat',
+    'focus-library',
+    'cafe',
+    'city-park',
   ],
+  // The Spaces a meeting is held in, and the blank to furnish your own (Work Tracker #423).
+  meetings: ['all-hands-hall', 'training-room', 'team-pod', 'virtual-office', 'blank-session'],
+  collaboration: ['team-pod', 'coworking-space', 'virtual-office', 'all-hands-hall'],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

@@ -40,9 +40,9 @@ the outer one, so the deeper a zone is nested the deeper it reads, with nothing 
 
 ## A container
 
-A boundary is a **container**, as a frame and a lane are: it holds every element whose centre is inside it (the
+A boundary is a **container**, as a lane is: it holds every element whose centre is inside it (the
 shared containment rule), carries them when it is dragged or nudged, and always paints behind what it holds. A
-boundary's own containment and a frame's are the same predicate, not a second copy. It is never inherited as the
+boundary's own containment and a lane's are the same predicate, not a second copy. It is never inherited as the
 size of the next element added while it is selected.
 
 Arrows connect to a boundary like any shape ("Internet → VPC"); its anchors sit on its outline.
@@ -56,10 +56,10 @@ title takes the **Text** set.
 
 ## Palette
 
-| Mode     | Where                                     |
-| -------- | ----------------------------------------- |
-| Diagram  | **Build**: Boundary, after Frame and Lane |
-| Workshop | none (Search still finds and places it)   |
+| Mode     | Where                                   |
+| -------- | --------------------------------------- |
+| Diagram  | **Build**: Boundary, after Lane         |
+| Workshop | none (Search still finds and places it) |
 
 ## The menu
 

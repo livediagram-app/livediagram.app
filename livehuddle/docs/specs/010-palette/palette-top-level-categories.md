@@ -1,10 +1,103 @@
 # Palette top-level categories and bands
 
 Status: shipped. **In livehuddle, the categories and bands are the meeting palette's** (Work Tracker #423,
-[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Write, Frame; Navigate, Selection
-Mode; Icons, Stickers, Media. The Collaborate band, its six categories, the Structure and Dynamic bands and the
-Session category below are livediagram's Workshop layout, which livehuddle's code carries until part 3; the mechanics
-(flat categories, rows, search, the pickers, group count badges) stay.
+[The meeting board](../012-collaboration/workshop-mode.md#the-palette)): Popular; Write; Rooms, Seating, Amenities,
+Bar, Recreation, Garden, Meeting; Travel; Stickers. The band holding the Space categories but Travel is named
+**Meet**; Travel is a band of its own (**Travel**, band 7), so the strip sets it apart between two dividers
+([The strip's order](#the-strips-order)). The Icons category is gone from livehuddle
+([Icons](../002-project-scope/not-in-livehuddle.md#icons)): Stickers is the palette's decoration. So is the Media
+category, with adding an Image or a Link card anywhere ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)). The Frame category (and then the Frame itself, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)), Reaction Pads, and the Laser, Spotlight and Isometric mode buttons,
+are gone from livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), so there is no React category.
+The **Selection Mode** category (bar name "Modes") is gone too: its Select, Hand, Eraser and Format buttons left
+livehuddle, and the Avatar one moved to Travel ([Selection Mode button](../009-elements/mode-button.md#only-avatar)).
+See [The Space categories](#the-space-categories) for why one Navigate category became four. The Collaborate band's other categories, the Structure and Dynamic bands and the Session category below
+are livediagram's Workshop layout, gone from livehuddle's palette since part 3; the mechanics (flat categories, rows,
+search, the pickers, group count badges) stay.
+
+## The Space categories
+
+livehuddle's palette once held every piece a Space is built from in one **Navigate** category: sixteen tiles split by
+a divider into "Around the Space" and "Office Pieces". The catalogue is growing, and one category of everything a
+Space holds would only get longer. So the meeting palette offers them as **eight top-level categories**, each a
+question somebody building a Space asks, in the Meet band (Travel in a band of its own, [The strip's order](#the-strips-order)):
+
+| Category       | id                  | Holds                                                                                                                          | The question                     |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Seating**    | `collab-seating`    | Chair, Desk, Sofa, Meeting Table, Bean Bag, Reading Nook                                                                       | Where do people sit?             |
+| **Rooms**      | `collab-rooms`      | **Build**: Room, Room Builder, Door; **Floor**: Fence, Stage, Office Pod, Rug                                                  | How is the floor laid out?       |
+| **Amenities**  | `collab-amenities`  | Plant, Bookshelf, Water Cooler, Coffee Machine, Vending Machine                                                                | What makes it feel like a place? |
+| **Bar**        | `collab-bar`        | Bar, Bar Stool, Drinks Cabinet, Drinks Fridge                                                                                  | Where do people gather after?    |
+| **Recreation** | `collab-recreation` | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace                                     | Where do people unwind?          |
+| **Garden**     | `collab-garden`     | Outdoor Plant, Tree, Garden Path, Grass, Garden Fence, Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire | Can we take it outside?          |
+| **Meeting**    | `collab-meeting`    | Screen, Room Sign, Notice Board, World Clock, Timer, Stopwatch                                                                 | What does a meeting room need?   |
+| **Travel**     | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Elevator, Avatar Button                                                            | How do people get somewhere?     |
+
+- **Data, not special cases.** Each tile names its category through its `tileGroup` (`travel`, `seating`, `rooms`,
+  `amenities`), and `COLLABORATE_CATEGORY_GROUPS` maps each category id to its group. A new piece of furniture
+  joins its category the day it lands by carrying the group; a new kind of piece gets a group, a category entry
+  (label, blurb, glyph) and a line in the meeting layout. Nothing in the bar, the flyouts or the search names a
+  tile.
+- **Room to grow.** **Bar** (`collab-bar`: the bar, bar stools, a drinks cabinet, a fridge) and **Garden**
+  (`collab-garden`: outdoor plants, trees, paths, grass, low fences) are defined in the same list, after Amenities
+  ([Office](../009-elements/office.md) "Bar, Bar Stool" to "Garden Fence"). A category with no tiles is left off the
+  palette, the bar and the search (`paletteCategoriesFor`), so a new category appears the day its first piece
+  carries its group. An Office Pod is a room
+  within the floor: `tileGroup: 'rooms'`.
+- **One word each**, so the category bar needs no short names for them.
+- **Glyphs**: Travel keeps the arrow through a doorway Navigate wore; Seating an armchair, Rooms a floor plan of
+  panels, Amenities a coffee cup, Bar a wine glass, Recreation a game controller ([Social pieces](../009-elements/social-pieces.md)), Garden a pine tree, Meeting a wall screen
+  ([Screen and Room Sign](../009-elements/screen-and-room-sign.md)).
+- **No groups inside, but Rooms.** Most hold four tiles, so their flyout is one block; the old divider and its two
+  group headings are gone.
+- **Rooms opens on Build.** The owner (2026-11-05): "Room is hard to discover and a critical first piece". So the Rooms
+  flyout leads with a **Build** group, in order **Room**, **Room Builder** and **Door** (what a room is made with),
+  then **Floor**: the rest of Rooms (Fence, Stage, Office Pod, Rug) in catalogue order. Each tile shows once. The
+  meeting layout spells out Build's three (`ROOMS_BUILD` in `palette-layouts.ts`, then a divider) and takes the rest
+  of the `rooms` tile group after them, so a new rooms piece still joins Floor by its `tileGroup` alone. The group
+  names are `GROUP_NAMES` entries keyed by each group's first tile (`tools:room` Build, the first Floor tile Floor),
+  the flyout's usual rule; the flyout opens at its top, so Build is the first thing seen. The bar's other flyouts are
+  unchanged, and Popular, which also holds the Room, stays one block.
+- **Defined once**, in `space-categories.tsx` (`SPACE_CATEGORIES`: id, tile group, label, blurb, flyout tagline,
+  glyph); the category catalogue, the meeting layout, the flyout taglines and `COLLABORATE_CATEGORY_GROUPS` read it.
+- Popular still picks the Space pieces a Space is most often furnished with (Room, Meeting Table, Chair, Bring Focus,
+  Avatar Pad) from across them.
+
+## The strip's order
+
+The owner (2026-11-05) set the category bar's order, a hairline divider between each band:
+
+```
+Write | Rooms Seating Amenities Bar Recreation Garden Meeting | Travel | Stickers
+```
+
+- **Write** first: a note or a word is what anybody reaches for first.
+- **Then building the Space**, floor first: Rooms (the floor plan), then what goes in it (Seating, Amenities, Bar,
+  Recreation, Garden) and the meeting room's own pieces (Meeting).
+- **Travel apart**: its pieces (Portal, Bring Focus, Avatar Pad, Directory, Elevator, the Avatar Button) take people
+  somewhere rather than furnish a place, so it stands alone between two dividers.
+- **Stickers last**: the decoration. No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)).
+- **The mechanism is the bands.** The bar draws its divider wherever two neighbours' bands differ (`CategoryBar`'s
+  band change), so Travel's divider is its band: `SPACE_CATEGORIES` gives Travel `band: 7`, the rest of the Space
+  categories take the Meet band (6). `SPACE_CATEGORIES` is in this order, so the meeting layout, the flyouts and the
+  search read it as they always have.
+- **On a phone** the bar is the strip's swipeable rail (`scrollable`), so the longer row swipes sideways and the
+  selection mode and Search beside it stay in reach; between a phone and a wide window the names drop to glyphs when
+  the named bar does not fit (`useBarLabels`), as before.
+
+## The Selection Mode picker
+
+The canvas-tool picker at the start of the strip offers three bands, each with its heading, in this order:
+
+| Band         | Tools          |
+| ------------ | -------------- |
+| **Build**    | Select, Hand   |
+| **Edit**     | Eraser, Format |
+| **Interact** | Avatar         |
+
+Build is how you arrange the board and move round it, Edit changes what is drawn, and Interact is being on the board
+yourself. A Participant's picker keeps Build and Interact (Select, Hand, Avatar). The band headings are one map
+(`CANVAS_TOOL_GROUP_LABELS` beside `buildCanvasToolOptions`), keyed by the options' `group`, so a new tool joins a
+band by its group alone. The one Selection Mode button left in livehuddle, the Avatar Button in Travel, offers Avatar.
 
 ## What
 
@@ -47,7 +140,7 @@ tools plus Frame). The **User / actor** tile was deleted outright; see below.
 | Band            | Categories                                                                                                              |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | _(no heading)_  | Popular, full width                                                                                                     |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw              |
+| **Common**      | Shapes, Write, Draw (My shapes left with [shape libraries](../013-workspace/shape-libraries.md))                        |
 | **Structure**   | Layout (with the [Timeline](../009-elements/timeline.md)); Components is in the catalogue but on no strip (Search only) |
 | **Decorate**    | Icons, Stickers, Media                                                                                                  |
 | **Dynamic**     | Data                                                                                                                    |
@@ -165,14 +258,12 @@ author?** Pressing something that acts on your session and the canvas collecting
 both what you reach for while running a session, so they are one category ([The Done check](../012-collaboration/done-check.md)
 is filed with the estimate card, not apart from it).
 
-| Group              | Holds                                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
-| **Reactions**      | the five pads                                                                                                                     |
-| **Selection Mode** | one button per mode (8)                                                                                                           |
-| **Navigate**       | Portal, Chair, Desk, Sofa, Fence, Avatar Pad, Link card, Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug |
+| Group                                 | Holds                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Ask**                               | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll               |
+| **Tools**                             | Reveal, Done, Picker, Timer                                                          |
+| **Record**                            | Comment panel, Agenda, Decision record, Roll call                                    |
+| **Travel, Seating, Rooms, Amenities** | the Space pieces, as four categories ([The Space categories](#the-space-categories)) |
 
 **There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE
 asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a

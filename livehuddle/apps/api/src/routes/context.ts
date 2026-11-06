@@ -1,4 +1,4 @@
-import { objectOrEmpty, type WorkbenchRole } from '@livehuddle/api-schema';
+import { objectOrEmpty } from '@livehuddle/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write
@@ -7,28 +7,11 @@ import { objectOrEmpty, type WorkbenchRole } from '@livehuddle/api-schema';
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@livehuddle/api-schema';
+import { levelAtLeast, type AccessLevel } from '@livehuddle/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
-import type { WorkbenchReach } from '../auth/workbench-session';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env, DocumentEnv, ShareRole } from '../types';
 import type { GrantCaller, ItemGrant } from '../index-service';
-
-// A workbench session as the choke point resolved it (blueprint "A request bearing lvw_", "The choke point by
-// scope"): one document in the document scope, the workspace (from an optional folder) in the workspace scope.
-export type WorkbenchContext = {
-  sessionId: string;
-  ownerId: string;
-  tokenId: string;
-  pairingId: string;
-  tabId: string | null;
-  origin: string;
-  level: WorkbenchRole;
-  expiresAt: number;
-  // The teams the session's token had joined when it was opened, so the api can ask the index for a team canvas's
-  // grant on the owner's behalf. Absent: none.
-  teams?: TeamClaim[] | null;
-} & WorkbenchReach;
 
 export type RouteContext = {
   request: Request;
@@ -55,19 +38,15 @@ export type RouteContext = {
   // drives teams' invite auto-connection so it must be unforgeable.
   accountEmail: string | null;
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md): the verified account id (signed in, an
-  // API token's or a workbench session's), else the guest token's id, else null. Resolved once in `fetch`.
+  // API token's), else the guest token's id, else null. Resolved once in `fetch`.
   resolveOwner: () => string | null;
   // The API token the request presented, or null for a signed-in session or a guest. Only a token
   // makes a changeset an agent's, and a token may never do a whole-tab save
   // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
-  // Its name and expiry are liveworkspace's answer when it was checked (the CLI's auth status, the workbench).
+  // Its name and expiry are liveworkspace's answer when it was checked (GET /api/tokens/current).
   token?: { id: string; readOnly?: boolean; name?: string | null; expiresAt?: number } | null;
-  // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
-  // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
-  // one document, never a token and never an administrator. Optional so unit tests can leave it out.
-  workbench?: WorkbenchContext | null;
   // The verified bearer of a signed-in person or a guest (an accounts access token or guest token), passed on to
-  // the index as theirs; null for an API token, a workbench session or a link visitor.
+  // the index as theirs; null for an API token or a link visitor.
   bearer?: string | null;
   // The teams the caller is in, from their token's claim (null for a guest or a token minted without them): what
   // an API token delegates to the index with, and the list GET /api/teams answers.
@@ -91,10 +70,10 @@ export type RouteContext = {
 // A RouteContext inside a document's Durable Object (document-room/document-route.ts): its env reaches the document's content.
 export type DocumentRouteContext = RouteContext & { env: DocumentEnv };
 
-// Who the index sees: an API token or workbench session delegates (the app checked the person, with the app's key),
+// Who the index sees: an API token delegates (the app checked the person, with the app's key),
 // anyone else's own bearer goes as it is (a link visitor's is null).
 export function grantCallerOf(ctx: RouteContext): GrantCaller {
-  if (ctx.token || ctx.workbench) {
+  if (ctx.token) {
     const personId = ctx.verifiedUserId ?? ctx.resolveOwner() ?? '';
     return { kind: 'delegate', personId, teams: (ctx.teams ?? []).map((t) => t.id) };
   }
@@ -108,7 +87,7 @@ export { shareAccessOf, shareCodeOf } from '@liveworkspace/index-app';
 
 // What a caller holds on a canvas (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
-// index's grant, read here; a workbench session holds no more than its own level.
+// index's grant, read here.
 //
 // `community` marks a grant through the canvas's Community post's link (docs/specs/025-community/community.md
 // "Viewing a post's document"): read-only like any view link, and a content-only pass: no realtime room and no
@@ -138,7 +117,7 @@ export function grantOn(
   const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
   // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
   if (community && (!post.open || !opts.community)) return null;
-  const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
+  const role = grant.level;
   // A Community post's link opens to view, whatever the index's link says.
   return {
     role: community ? 'view' : role,
@@ -177,7 +156,7 @@ export async function gateRead(
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
-// Editor (comments, Q&A notes and upvotes). A Viewer only looks, so it is refused. Agent presence stays on
+// Editor (comments and their reactions). A Viewer only looks, so it is refused. Agent presence stays on
 // gateRead: an agent acts at its owner's level.
 export async function gateParticipate(
   ctx: RouteContext,

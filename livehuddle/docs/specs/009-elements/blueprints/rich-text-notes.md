@@ -31,7 +31,6 @@ Scope, by file:
 | `apps/editor/components/canvas/RichTextToolbar.tsx`            | The label toolbar hosting the same picker                                        |
 | `apps/editor/components/canvas/useRichTextSession.ts`          | Label session (`collapsedScope: 'all'`)                                          |
 | `apps/editor/components/canvas/label-style.ts`                 | `effectiveRunStyle`: label headings in `em`                                      |
-| `apps/editor/components/canvas/PresentationElementPopover.tsx` | Third read-only surface for a note, in presentation mode [QD7]                   |
 | `../packages/workbench/src/lib/url-safety.ts`                  | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming

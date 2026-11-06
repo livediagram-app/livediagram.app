@@ -10,7 +10,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `../packages/api-schema/src/avatar-say.ts`                   | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
 | `packages/api-schema/src/room-messages.ts`                   | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
 | `apps/api/src/room-op-gate.ts`                               | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
-| `../packages/avatar/src/speech.ts`                           | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
+| `../packages/avatar/src/speech.ts`                           | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`, `speechLift`             |
 | `../packages/avatar/src/speech-store.ts`                     | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
 | `../packages/avatar/src/hooks/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
 | `../packages/avatar/src/components/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
@@ -80,7 +80,7 @@ closes the composer, tracks `Canvas · Used · AvatarMessage` or `AvatarMessageP
   reduced motion is read once per flight; each bubble is its own component (`FlyingBubble`), so its ref callbacks
   stay the same across the canvas's re-renders and its nodes are never detached and reattached.
 - Bubbles draw only for the active tab (`bubble.tabId === activeTabId`). A peer's bubble draws only while its
-  speaker's character has been found on this tab (`peers`, empty under a hide-cursors vote): name and colour are
+  speaker's character has been found on this tab (`peers`): name and colour are
   captured the first time it is, in state adjusted during render, and kept if the speaker walks off. Until then the
   bubble is looked for again each render while it flies (their presence lands a frame after their words, or you open
   their tab a moment later); state changes only when a speaker is newly found, a bubble is new or one has gone.
@@ -142,22 +142,23 @@ the one new stored value, a synced user preference.
 
 ## Errors and edge cases
 
-| #   | Case                                       | Handling                                                      |
-| --- | ------------------------------------------ | ------------------------------------------------------------- |
-| E1  | Enter while typing in a field elsewhere    | Ignored (`isTypingTarget`)                                    |
-| E1a | Enter on a focused button, row or tour     | Left to it (`isEnterActivatedTarget`)                         |
-| E2  | Enter with a dialog open                   | Ignored (`anyModalOpen`)                                      |
-| E3  | Paste of 2,000 characters                  | Clamped to the limits                                         |
-| E4  | Send during the cooldown                   | Held, "One moment…"                                           |
-| E5  | Composer open, mode left / tab switched    | Closed, draft dropped                                         |
-| E6  | Peer op for another tab                    | Not drawn until its speaker is found on the open tab          |
-| E7  | Same id twice                              | Second dropped (`SeenIds`, capped at 200)                     |
-| E8  | Peer floods ops                            | Room op-rate cap, then three bubbles per person on screen     |
-| E9  | Viewer sends by a modified client          | Room drops it                                                 |
-| E10 | Markup in the text                         | Rendered as text                                              |
-| E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                 |
-| E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                   |
-| E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin |
+| #   | Case                                       | Handling                                                                                                |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| E1  | Enter while typing in a field elsewhere    | Ignored (`isTypingTarget`)                                                                              |
+| E1a | Enter on a focused button, row or tour     | Left to it (`isEnterActivatedTarget`)                                                                   |
+| E2  | Enter with a dialog open                   | Ignored (`anyModalOpen`)                                                                                |
+| E3  | Paste of 2,000 characters                  | Clamped to the limits                                                                                   |
+| E4  | Send during the cooldown                   | Held, "One moment…"                                                                                     |
+| E5  | Composer open, mode left / tab switched    | Closed, draft dropped                                                                                   |
+| E6  | Peer op for another tab                    | Not drawn until its speaker is found on the open tab                                                    |
+| E7  | Same id twice                              | Second dropped (`SeenIds`, capped at 200)                                                               |
+| E8  | Peer floods ops                            | Room op-rate cap, then three bubbles per person on screen                                               |
+| E9  | Viewer sends by a modified client          | Room drops it                                                                                           |
+| E10 | Markup in the text                         | Rendered as text                                                                                        |
+| E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                                                           |
+| E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin                                           |
+| E14 | Bubble rising to the view's top edge       | It stops 120px below the top (`topShift`, `SPEECH_TOP_CLEAR`), under the palette strip, and fades there |
+| E15 | Composer with your character at the top    | It sits 120px below the top (`topShift` on its measured height), over the head, with no tail            |
 
 ## Security and trust
 
@@ -169,6 +170,8 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 
 - Worst case on screen: 3 bubbles × peers; the room caps at its participant limit. Per frame the loop does one
   `bubbleMotion` and two style writes per bubble: O(bubbles), no layout reads, no React render.
+- With `obstacles`, each frame adds one `speechLift` per bubble: a filter and sort of the obstacles (at most 9 in
+  livehuddle) and one pass. Nothing without it (livediagram).
 - The loop is off whenever there are no bubbles. Removal timers are cleared on unmount.
 - The op is at most ~400 bytes.
 
@@ -182,7 +185,24 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 - Edge clamp: the layer takes the view's screen width and x offset (`viewWidth`, `offsetX`). A bubble's screen x is
   `zoom * (x + offsetX) + width / 2 * (1 - zoom)` (the layer scales about its centre); its card width is measured once when it mounts (a composer is a fixed 240px), so each frame is
   arithmetic only: `edgeShift(centre, width, viewWidth)` (pure, in `speech.ts`) answers the sideways shift in reading px,
-  added to the card's translate. No layout reads per frame.
+  added to the card's translate. The top edge the same way: the layer also takes the view's height and y offset
+  (`viewHeight`, `offsetY`; `screenY` is `screenX`'s formula on the other axis), and `topShift(top)` answers how far
+  down a card whose top is at screen y `top` (its anchor, less its rise, lift and scaled height) moves to keep
+  SPEECH_TOP_CLEAR (the walk's follow margin, `AVATAR_FOLLOW_MARGIN`, 120px: the palette strip floats over the
+  canvas's top) below the view's top: zero while it fits, so a bubble rises until it meets the top and holds
+  there as it fades. The composer (#501) takes the same `topShift` on its head's `screenY` less its height, read
+  (`offsetHeight`) in a layout effect only when its draft, its cooldown or the view's height changes, and moves down by
+  it (a negative bottom margin), so a character the camera follow has not yet brought clear of the top still types in
+  view. Moved down, its card sits below the head it would point at, so it drops its tail (`SpeechCard`'s `tail={false}`). No layout reads per frame.
+- Clear of other things (livehuddle's camera and screen bubbles, docs/specs/012-collaboration/
+  video-and-screen-bubbles.md "Close together"): the layer takes an optional `obstacles` ref of canvas rects
+  (`SpeechObstacle`, `{ left, top, right, bottom }`), read by the flight loop each frame. `speechLift` (pure,
+  `speech.ts`, taking `from`, `halfWidth`, `reach` and the obstacles) answers the canvas px a bubble starting at `from` must start higher by: the
+  obstacles across its width (centre `x + shift / zoom`, half width `(width / 2 + SPEECH_SWAY_PX) / zoom`), nearest
+  first, each one still in its path (`reach`: the whole flight's rise plus the card's height, over the zoom) lifts
+  its start to `SPEECH_CLEAR_GAP` over that obstacle's top. The loop keeps the largest target so far per bubble and
+  eases toward it (`1 - exp(-dt / SPEECH_LIFT_EASE_MS)`, at once on the first frame and under reduced motion), added
+  to the rise. The card's height is measured with its width when it mounts. The composer is not lifted.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under

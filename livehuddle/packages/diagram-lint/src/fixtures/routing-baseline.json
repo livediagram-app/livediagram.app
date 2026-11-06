@@ -118,25 +118,5 @@
     "behind": 0,
     "collisions": 0,
     "extent": "1330×753"
-  },
-  "mermaid-statediagram-1": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2465×252"
-  },
-  "mermaid-statediagram-2": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "578×1278"
   }
 }

@@ -1,10 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { pagesOf } from '@livedocuments/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
-import { showsTemplateStart } from '@/components/start/template-start-mode';
+import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
 // The template start (docs/specs/007-editor/start-diagramming.md) carries every template's preview: loaded the first
@@ -18,7 +17,7 @@ const StartFromTemplates = dynamic(
 // (useTemplatePickMove) keeps watching the tab.
 export function EditorStartPanels() {
   const ctx = useEditorContext();
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
+  const { activeTab } = ctx;
   // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md). A template picked from it
   // on a document /new just made goes to its default folder (docs/specs/013-workspace/default-folders.md "A template
   // picked after creation").
@@ -27,16 +26,7 @@ export function EditorStartPanels() {
     tabId: activeTab.id,
     tabHasContent: activeTab.elements.length > 0,
   });
-  const templateStart = showsTemplateStart({
-    hydrated,
-    zen: zenMode,
-    embed: embedMode,
-    readOnly: isReadOnly,
-    drawToolArmed: !!pendingDraw,
-    elementCount: activeTab.elements.length,
-    // Read only for an empty tab: EditorView renders often, and a tab with content shows no start.
-    pages: activeTab.elements.length === 0 ? pagesOf(activeTab) : [],
-  });
+  const templateStart = useTemplateStartShown();
   return templateStart ? (
     <>
       <StartFromTemplates

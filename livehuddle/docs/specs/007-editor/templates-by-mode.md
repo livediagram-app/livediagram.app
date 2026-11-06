@@ -1,7 +1,6 @@
 # Templates by mode
 
-Status: **approved, being built** (Work Tracker #423, part 3). Until part 3 lands the code still ships the thirty-nine
-templates livehuddle forked down to; the catalogue below is the target.
+Status: **shipped** (Work Tracker #423, part 3).
 
 Every template opens on a meeting board, livehuddle's one [editor mode](editor-modes.md)
 ([The meeting board](../012-collaboration/workshop-mode.md)). They wait on an empty tab in Start a Space
@@ -31,12 +30,22 @@ untitled.
 
 ## The catalogue
 
-- **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod** (`team-pod`) and
-  **All-Hands Hall** (`all-hands-hall`), in the one **Virtual Spaces** category ([Virtual Office
-  template](../012-collaboration/virtual-office-template.md)).
-- Start a Space shows them as one group under Recommended, as every start does ([Start
-  diagramming](start-diagramming.md) "Recommended and groups"); with one category it has no rail of groups.
-- **Leaving** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
+- Eighteen Spaces in five categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+  [Virtual Office template](../012-collaboration/virtual-office-template.md)):
+  - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
+    (`team-pod`) and **Focus Library** (`focus-library`).
+  - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`) and **Expo Hall**
+    (`expo-hall`).
+  - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`).
+  - **Outdoor**: **Garden Retreat** (`garden-retreat`), **City Park** (`city-park`) and **Beach Offsite**
+    (`beach-offsite`, also in Campus).
+  - **Campus**: **Company Campus** (`company-campus`), **Conference Venue** (`conference-venue`), **Startup HQ**
+    (`startup-hq`), **School Quad** (`school-quad`), **Hotel and Suites** (`hotel-and-suites`, three floors) and
+    **Co-working Tower** (`coworking-tower`, three floors): whole sites of rooms joined by a garden or a building's floors
+    ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)).
+- Start a Space shows Recommended first, then each category as a group: Campus, Events, Office, Outdoor and Recreation
+  ([Start diagramming](start-diagramming.md) "Recommended leads").
+- **Gone** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
   `sailboat`), `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, the
   dot-vote boards (`affinity-map`, `prioritization-matrix`, `risk-matrix`), the fill-in-together boards
   (`incident-postmortem`, `user-persona`, `empathy-map`, `journey`, `objectives-planner`, `roadmap`, `raci-matrix`,
@@ -51,13 +60,46 @@ untitled.
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the four Spaces and the blank, five templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the eighteen Spaces and the blank, nineteen templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
+- Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
+  lie first, it has one Walk In with open floor under it, every piece in a room sits inside its walls, no seat stands
+  in a doorway's first 80 px, and no two pieces of furniture overlap.
+- **Every Space is roomy**: a walk between seats never brushes one. Two seats (chairs, desks, sofas, stools,
+  benches, tables) side by side are either one row (at most 16 px apart) or an aisle apart, and two seats one behind
+  the other either share an edge (a desk cluster's facing pair) or are an aisle apart. An aisle is at least
+  `TEMPLATE_AISLE`, 120 canvas px: two Regular characters' footprints (2 x 40 px x 1.5) side by side, plus the
+  distance at which a seat catches a character, which is none, since a character sits only once its feet are inside
+  a seat it was going to ([Chair](../009-elements/chair.md) "Only the chair you are going to"). Rooms grew to fit
+  (`template-builders-spaces-more.test.ts` "keeps every aisle between seats wide enough to walk").
+- Every Campus Space is joined up (`template-builders-campus.test.ts`): every room is closed with exactly one Door on
+  its walls and a Garden Path outside it, the first 96 px inside each Door is clear, every room has a Room Sign that
+  reads it, the Directory waits inside the gate above the Walk In, the aisles are roomy and the hall's centre aisle is
+  at least 160 px. A template's floors are held to the same rules, floor by floor (`template-floors.test.ts`): rooms
+  closed with a signed Door, pieces inside their walls or clear of them, roomy aisles, no furniture on furniture, and
+  named Elevators, the same number on every floor of the Co-working Tower.
+
+## A template with floors
+
+- A template may have **floors**: more tabs after its first (`templateFloors`, in `@livehuddle/templates`), each with
+  its own name, floor pattern and builder. The Hotel and Suites and the Co-working Tower have three
+  ([Spaces with floors](../012-collaboration/virtual-office-template.md#spaces-with-floors)); every other template has
+  none.
+- **Made together.** `/new?template=` and the workspace frame's New document make the document with every floor as a
+  tab, in order ([New document route](new-document-route.md)). Picked on Start a Space, the template lands on the empty
+  tab as always, and its other floors are added as new tabs straight after it, each loaded at once (it has no server
+  row to fetch yet), in the tab's theme. Undo takes the pick back as one step.
+- **Names.** The first tab is named after the template's first floor ("Lobby", "Ground Floor"), the others after
+  theirs, so the [Elevator](../009-elements/elevator.md) panel reads as the building's floors. The document is still
+  named after the template ("Untitled Hotel and Suites").
+- **Agents** (`buildTemplateTab`, the MCP's create and add tab) get the first floor only, for now; the floors are a
+  follow-up for the agents' catalogue.
 
 ## The tab's name
 
 - A template picked on a start or on /new names the tab it fills after itself, (a retrospective's tab is
-  "Virtual Office"): the template's title. It does
+  "Virtual Office"): the template's title, or its first floor's name for a template with floors
+  ([A template with floors](#a-template-with-floors)). It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
 ## The document's name

@@ -10,7 +10,9 @@ describe('teamsOfToken', () => {
   });
 
   it('reads a name with any letter in it', () => {
-    const json = new TextEncoder().encode(JSON.stringify({ teams: [{ id: 't1', name: 'Équipe 🎨' }] }));
+    const json = new TextEncoder().encode(
+      JSON.stringify({ teams: [{ id: 't1', name: 'Équipe 🎨' }] }),
+    );
     const payload = btoa(String.fromCharCode(...json))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')

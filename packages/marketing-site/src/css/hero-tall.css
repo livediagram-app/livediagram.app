@@ -1,0 +1,35 @@
+/* The landing hero's height, shared by every product's landing page and the liveworkspace site's front door
+   (each product's docs/specs/019-marketing/marketing-site.md "Hero"; liveworkspace/docs/specs/010-site/site.md
+   "The front door"). From `sm` the band (.hero-tall) fills the first screen under the header, up to a cap so a very
+   tall screen still sees the page carry on below, and never less than its content or the floor the app sets
+   (--hero-tall-floor). The extra height goes into the copy column (.hero-tall-copy) as two spacers, above and
+   below the copy, split by --hero-tall-above and --hero-tall-below, so the copy keeps its place against the art
+   whatever the screen. A phone keeps the height its app gives it. Plain CSS: `svh` is fixed for the page's life,
+   so the height is right on first paint and nothing shifts. In the components layer, so an app's utilities win. */
+@layer components {
+  @media (min-width: 40rem) {
+    .hero-tall {
+      display: flex;
+      flex-direction: column;
+      min-height: max(
+        var(--hero-tall-floor, 0px),
+        min(100svh - var(--hero-tall-header, 72px), var(--hero-tall-cap, 72rem))
+      );
+    }
+    .hero-tall-copy {
+      display: flex;
+      flex-direction: column;
+      flex: 1 0 auto;
+    }
+    .hero-tall-copy::before,
+    .hero-tall-copy::after {
+      content: '';
+    }
+    .hero-tall-copy::before {
+      flex: var(--hero-tall-above, 1) 0 0;
+    }
+    .hero-tall-copy::after {
+      flex: var(--hero-tall-below, 1) 0 0;
+    }
+  }
+}

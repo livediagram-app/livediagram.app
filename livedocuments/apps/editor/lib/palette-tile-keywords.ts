@@ -42,7 +42,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   hub: 'hub spoke satellites ecosystem stakeholders integrations centre radial star',
   onion: 'onion rings concentric layers clean hexagonal architecture core maturity trust',
   chevrons: 'chevron arrows stages pipeline value chain phases process lifecycle',
-  'tab-window': 'tab window live view embed mirror show diagram slide reference frame',
   browser: 'web page window chrome site',
   monitor: 'screen desktop display computer',
   laptop: 'macbook notebook computer',

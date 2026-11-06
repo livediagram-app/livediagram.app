@@ -71,10 +71,10 @@ export function BackgroundKinds({
     >
       {categories.map((c) => {
         const on = c === value;
+        // One colour or one gradient, which fills the tile as it is: no size or position longhands beside the
+        // shorthand (React warns when they mix, and a re-render could drop them).
         const sheet: CSSProperties = {
           background: kindPreview(c, fill, current, accent, themeGradient),
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
         };
         return (
           <button

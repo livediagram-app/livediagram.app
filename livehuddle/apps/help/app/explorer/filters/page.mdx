@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Search and Filter Spaces',
   description:
-    'Filter Explorer lists with search and chips (Opens in, Template, Made by AI, Edited, People, Space) or type filters like made-by:ai into the search.',
+    'Filter Explorer lists with search and chips (Opens in, Made by AI, Edited, People, Space) or type filters like made-by:ai into the search.',
   path: '/help/explorer/filters/',
 });
 
@@ -29,8 +29,7 @@ Words match a space's name or the name of the folder it is in, ignoring capitals
 
 | Chip       | Keeps spaces that                                                                        |
 | ---------- | ---------------------------------------------------------------------------------------- |
-| Opens in   | Open in livehuddle, livedocuments, liveplanner or livedesign (on All Apps only)          |
-| Template   | Were made from a Retrospective template                                                  |
+| Opens in   | Open in livediagram, liveplanner, livedocuments or livedesign (on All Apps only)         |
 | Made by AI | An AI tool made for you; they also carry a **Made by AI** badge wherever they are listed |
 | Edited     | Were last edited today, in the last 7, 30 days or 12 months, or this year                |
 | People     | You own (Me), or someone else owns (Others)                                              |
@@ -45,8 +44,7 @@ While the switch at the top right of the page is on **All Apps**, showing every 
 The field takes filters as words too, the way the chips write them:
 
 - `made-by:ai` keeps what an AI made.
-- `opens-in:canvas,document` keeps what opens in livehuddle or livedocuments.
-- `template:retrospective` keeps what was made from a Retrospective template.
+- `opens-in:canvas,document` keeps what opens in livediagram or livedocuments.
 - `edited:7d` keeps what you edited in the last 7 days; `today`, `30d`, `12m` and `this-year` work too.
 - `people:me` or `people:others`, and `space:mine` or `space:shared`, work the same way. A team is offered by name as you type `space:`.
 

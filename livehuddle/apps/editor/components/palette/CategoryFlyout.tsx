@@ -1,7 +1,6 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import type { EditorMode } from '@livehuddle/document';
 import { CountBadge } from '@livehuddle/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -21,7 +20,7 @@ import { BrowseLayoutContext } from './PaletteCategoryBrowser';
 // tiles under its name, in its named groups, as a grid of pictures (Shapes) or cards with a blurb (Build). A footer
 // says what the pointed-at tile does and its key. A tile with presets (Card, Badge) or an opener opens a side panel
 // beside the flyout (CategoryFlyoutSide), which the host draws, so this one stays open. A catalogue (Icons,
-// Technology, My shapes) shows its own browse instead, under the same header.
+// Technology) shows its own browse instead, under the same header.
 
 export type FlyoutCategory = {
   id: string;
@@ -50,7 +49,6 @@ export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElemen
 
 export function CategoryFlyout({
   category,
-  mode,
   actions,
   pendingDraw,
   focusFirst,
@@ -59,8 +57,6 @@ export function CategoryFlyout({
   onItemHover,
 }: {
   category: FlyoutCategory;
-  // The mode, for a line it words its own way.
-  mode?: EditorMode;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
   // Opened from the keyboard: the first tile takes focus, so the arrows carry on from there.
@@ -97,7 +93,7 @@ export function CategoryFlyout({
       <FlyoutHeader
         icon={category.icon}
         title={category.label}
-        tagline={flyoutTagline(category.id, category.description, mode)}
+        tagline={flyoutTagline(category.id, category.description)}
         count={tiles?.length}
       />
       {/* Keyed on the category, so a switch fades the new body in and replays the tiles' cascade. */}
@@ -135,13 +131,9 @@ export function CategoryFlyout({
             ))}
           </div>
         ) : (
-          // A catalogue browses as two panes (PaletteCategoryRail), edge to edge; My shapes keeps its padding.
+          // A catalogue browses as two panes (PaletteCategoryRail), edge to edge.
           <BrowseLayoutContext.Provider value="rail">
-            {category.id === 'my-shapes' ? (
-              <div className="px-2 py-2.5">{category.content}</div>
-            ) : (
-              category.content
-            )}
+            {category.content}
           </BrowseLayoutContext.Provider>
         )}
       </div>

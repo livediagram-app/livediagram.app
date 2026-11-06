@@ -14,6 +14,7 @@ export function ElementVoteOverlay({
   selfId,
   voteMax,
   votableInVote,
+  hasText = true,
   voteReviewActive,
   isVoteFocus,
   onRetractVote,
@@ -28,6 +29,9 @@ export function ElementVoteOverlay({
   voteMax: number | null | undefined;
   // Kind rule AND the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md), resolved upstream.
   votableInVote?: boolean;
+  // Does the element's text have a non-blank character? A text-only vote's plus needs it
+  // (docs/specs/012-collaboration/session-tools.md "Only items with text"). Absent = yes.
+  hasText?: boolean;
   // Vote-results walkthrough (docs/specs/012-collaboration/session-tools.md): while it runs, the static winner
   // rings yield to ONE pulsing focus on the currently-reviewed element,
   // so attention lands on a single pick at a time.
@@ -60,10 +64,11 @@ export function ElementVoteOverlay({
   // a control, and the walkthrough wants the canvas quiet.
   const showReadOnlyCount =
     !!vote && (!vote.active || !canVote) && voteTotal > 0 && votableInVote === true;
-  // Budget, and the one-dot-per-item rule when the vote has it (docs/specs/012-collaboration/session-tools.md).
+  // Budget, the one-dot-per-item rule and the text-only rule when the vote has them
+  // (docs/specs/012-collaboration/session-tools.md).
   // Either disables plus rather than hiding it, so the control doesn't move
   // under the pointer mid-vote.
-  const canCast = !!vote && !!selfId && canCastVote(vote, selfId, voteKey);
+  const canCast = !!vote && !!selfId && canCastVote(vote, selfId, voteKey, hasText);
   return (
     <>
       {isVoteFocus ? (

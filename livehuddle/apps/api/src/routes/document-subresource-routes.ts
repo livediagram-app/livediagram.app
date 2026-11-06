@@ -9,7 +9,6 @@ import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livehuddle/api-schema';
-import { handleQaBoardRoute } from './qa-board-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
@@ -40,9 +39,6 @@ export async function handleDocumentSubresources(
   // Agent changesets (docs/specs/024-agents/agent-changesets.md).
   const changesets = await handleChangesetRoutes(ctx);
   if (changesets) return changesets;
-  // /api/documents/<id>/tabs/<tabId>/qa — a Q&A board action (docs/specs/012-collaboration/qa-board.md).
-  const qa = await handleQaBoardRoute(ctx);
-  if (qa) return qa;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -150,7 +146,7 @@ export async function handleDocumentSubresources(
       if (grant?.tabScope !== null) return forbidden();
       // A tab this document does not have deletes nothing: said, not answered as done.
       if (!existing.tabs.some((t) => t.id === tabId)) return notFound();
-      // An agent or the CLI (a token) may not delete the last tab (docs/specs/015-api/mcp-server.md
+      // An agent (a token) may not delete the last tab (livediagram/docs/specs/015-api/mcp-server.md
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');

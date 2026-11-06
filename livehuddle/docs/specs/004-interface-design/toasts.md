@@ -7,7 +7,7 @@ Status: shipped
 A toast is a short, floating notice that says what just happened or what went wrong, and offers at most a couple of
 answers to it. It is the editor and Explorer's one notification surface (`useToast`, `apps/editor/hooks/ui/useToast.tsx`):
 a failure that would otherwise be silent, a consequential action that would otherwise go unconfirmed ("“Roadmap”
-deleted", with Undo), or an offer (power user mode). It never says what is already visible on screen (an element
+deleted", with Undo), or an offer (a new version to reload into). It never says what is already visible on screen (an element
 appearing, a copy button turning into "Copied"), and autosave has its own header pill.
 
 Inline notices that belong to a surface (a dialog's error line, a panel's empty state) are not toasts.
@@ -94,7 +94,7 @@ lists its decline before its confirm.
   where that is wider, so it is easy to read and to tap.
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
-  bottom-right cluster (Undo, Layers, Zoom) and the whiteboard dock, the Explorer's bottom bar, and the
+  bottom-right cluster (Undo, Zoom) and the whiteboard dock, the Explorer's bottom bar, and the
   [sign-in banner](../014-identity/sign-in-encouragement.md). It lifts 8px clear of the highest of those that
   overlaps its column, measured as they move or resize, so a toast never lands on a button or on a banner's words.
   Chrome off to the side of the column (the cluster on a wide desktop) does not lift it.

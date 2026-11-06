@@ -1,9 +1,8 @@
-// Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md), off useEditorState rather
+// Setters for the Behaviour elements (docs/specs/009-elements/portal-element.md), off useEditorState rather
 // than the style hook: a portal link is the one element setting that reaches
 // ACROSS TABS, so these need the whole tab list and a tabs-wide commit, not the
-// active tab's element mapper every other setter uses — and the session button,
-// reveal zone, and picker settings sit beside it because they are configured
-// from the same menu, on the same kinds of element.
+// active tab's element mapper every other setter uses, and the reaction pad's
+// setting sits beside it because it is configured from the same menu.
 //
 // Three actions, all keyed off the current selection:
 //  - link this portal to another (either tab), or unlink it,
@@ -11,14 +10,7 @@
 //  - create a fresh portal already linked to this one, for when the place you
 //    want to lead to doesn't exist yet.
 
-import {
-  createShape,
-  type PickerSource,
-  type Reaction,
-  type SessionButtonConfig,
-  type ShapeElement,
-  type Tab,
-} from '@livehuddle/document';
+import { createShape, type ShapeElement, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 // How far to the right of its partner a freshly created portal lands, in canvas
@@ -32,7 +24,6 @@ export function usePortalSetters({
   tabs,
   activeId,
   setSelectedId,
-  sessionToolsBlocked,
 }: {
   currentSelectionIds: () => Set<string>;
   // The element the open context menu is acting on. The menu can be opened on
@@ -45,9 +36,6 @@ export function usePortalSetters({
   tabs: Tab[];
   activeId: string;
   setSelectedId: (id: string | null) => void;
-  // Somebody else holds the baton (docs/specs/012-collaboration/facilitator.md "What the facilitator runs"):
-  // configuring a session button and lifting a cover for the room are theirs.
-  sessionToolsBlocked: boolean;
 }) {
   // The selected portals on the active tab — the only place a selection can
   // live, so the sources are always local even when the target isn't.
@@ -151,58 +139,9 @@ export function usePortalSetters({
     track('Element', 'Added', 'Portal');
   };
 
-  // The remaining Behaviour settings are ordinary active-tab patches on the
-  // element the menu is acting on: what a session button starts (docs/specs/012-collaboration/session-button.md),
-  // whether a cover is off for everyone (docs/specs/009-elements/reveal-zone.md), and where a picker draws
-  // its candidates from (docs/specs/012-collaboration/picker.md).
-  const patchTarget = (patch: Partial<ShapeElement>, kind: string, telemetry: string) => {
-    const tab = tabs.find((t) => t.id === activeId);
-    const ids = currentSelectionIds();
-    const targets = (tab?.elements ?? []).filter(
-      (el): el is ShapeElement =>
-        el.type === 'shape' && el.shape === kind && (ids.has(el.id) || el.id === contextTargetId),
-    );
-    if (targets.length === 0) return;
-    const targetIds = new Set(targets.map((t) => t.id));
-    commitTabs((ts) =>
-      ts.map((t) =>
-        t.id !== activeId
-          ? t
-          : {
-              ...t,
-              elements: t.elements.map((el) =>
-                el.type === 'shape' && targetIds.has(el.id) ? { ...el, ...patch } : el,
-              ),
-            },
-      ),
-    );
-    track('Element', 'Changed', telemetry);
-  };
-
-  const setSessionConfigSelected = (session: SessionButtonConfig) => {
-    if (sessionToolsBlocked) return;
-    patchTarget({ session }, 'session-button', 'SessionButton');
-  };
-  const setRevealedSelected = (revealed: boolean) => {
-    if (sessionToolsBlocked) return;
-    patchTarget({ revealed }, 'reveal', 'Reveal');
-  };
-  const setPickerSourceSelected = (pickerSource: PickerSource) =>
-    patchTarget({ pickerSource }, 'picker', 'Picker');
-  const setPickerOptionsSelected = (pickerOptions: string[]) =>
-    patchTarget({ pickerOptions }, 'picker', 'Picker');
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst it throws.
-  const setReactionSelected = (reaction: Reaction) =>
-    patchTarget({ reaction }, 'reaction-pad', 'ReactionPad');
-
   return {
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
-    setSessionConfigSelected,
-    setRevealedSelected,
-    setPickerSourceSelected,
-    setPickerOptionsSelected,
-    setReactionSelected,
   };
 }

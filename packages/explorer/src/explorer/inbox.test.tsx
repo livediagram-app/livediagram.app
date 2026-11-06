@@ -26,6 +26,7 @@ import {
   inboxSections,
   threadReason,
 } from './inbox/sections';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 // Every part of the place in the address, so a test reads exactly what the pane hands the host.
 const itemHref: ItemHref = (item, at) => {
@@ -815,15 +816,16 @@ describe('reading', () => {
       forms: Array.from({ length: many }, (_, i) => form({ tabId: `f${i}`, latestAt: i })),
       timelineNew: 0,
     };
-    const start = performance.now();
-    for (let i = 0; i < 20; i++) {
-      const entries = inboxEntries(inboxSections(data, 'user_me'));
-      inboxFilterCounts(entries);
-      filterEntries(entries, 'comments');
-    }
-    const per = (performance.now() - start) / 20;
+    const per =
+      cpuMsOf(() => {
+        for (let i = 0; i < 20; i++) {
+          const entries = inboxEntries(inboxSections(data, 'user_me'));
+          inboxFilterCounts(entries);
+          filterEntries(entries, 'comments');
+        }
+      }) / 20;
     console.info(`inbox: 3,000 rows built, counted and filtered in ${per.toFixed(1)} ms`);
     // Measured at about 4 ms on an idle laptop; the budget leaves room for a loaded CI box.
-    expect(per).toBeLessThan(30);
+    expect(per).toBeLessThan(cpuBudgetMs(30));
   });
 });

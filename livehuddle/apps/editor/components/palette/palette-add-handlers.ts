@@ -6,10 +6,7 @@ import type { PaletteProps } from './palette.types';
 // a handler missing from the list cannot leave a tile that silently does nothing.
 export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddShape',
-  'onAddIcon',
   'onAddSticker',
-  'onAddTechIcon',
-  'onInsertLibraryShape',
   'onAddText',
   'onAddSticky',
   'onAddTable',
@@ -27,9 +24,9 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddArrow',
   'onBeginFreehand',
   'onBeginHighlighter',
-  'onBeginMarker',
   'onBeginShapePen',
   'onBeginPolygon',
+  'onBeginRoomWalls',
   // Not an add: a tile pressed while armed puts its tool down again.
   'onCancelDraw',
 ] as const satisfies readonly (keyof PaletteProps)[];

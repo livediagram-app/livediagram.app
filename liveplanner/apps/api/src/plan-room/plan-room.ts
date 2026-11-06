@@ -48,6 +48,7 @@ import {
   clearAgentsForOp,
   RoomAgentPresence,
 } from '@liveworkspace/api-kit/room-agent-presence';
+import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import type { ClientMessage, Env, PlanEnv, ServerMessage } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import { multiplayerDecision } from '@liveworkspace/api-kit/room-multiplayer';
@@ -1183,7 +1184,7 @@ export class PlanRoom extends DurableObject<Env> {
     await this.ledger.settled();
     // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
     const sentImages = this.lastSentImages();
-    await this.state.storage.deleteAlarm();
+    await disarmRoomAlarm(this.state.storage);
     await this.state.storage.deleteAll();
     this.schemaReady = false;
     this.planRowReady = false;
@@ -1478,9 +1479,9 @@ export class PlanRoom extends DurableObject<Env> {
       this.maintenanceAt,
       this.repeats.at,
       this.nextGrantDue(),
-    ].filter((t): t is number => t !== null);
-    if (due.length === 0) void this.state.storage.deleteAlarm();
-    else void this.state.storage.setAlarm(Math.min(...due));
+    ];
+    // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
+    armRoomAlarm(this.state.storage, due, Date.now());
   }
 
   /** Agent entries past their expiry go; the outbox pushes and the upkeep runs when due. Safe to call early. */

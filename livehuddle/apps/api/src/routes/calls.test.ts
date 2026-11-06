@@ -23,6 +23,19 @@ vi.mock('../calls/calls-mode', async (load) => {
     callTrackKind: (name: string) => (trackKinds.asVideo ? 'video' : real.callTrackKind(name)),
   };
 });
+// The Space's room answers the hearing check (#483): every track heard, unless a test says otherwise.
+const room = vi.hoisted(() => ({
+  answers: null as null | ((asks: { sessionId: string }[]) => string[]),
+  asked: [] as { subscriber: string; asks: unknown }[],
+}));
+vi.mock('../document-client', () => ({
+  documentRoom: () => ({
+    callsHearing: async (subscriber: string, asks: { sessionId: string }[]) => {
+      room.asked.push({ subscriber, asks });
+      return room.answers ? room.answers(asks) : asks.map(() => 'heard');
+    },
+  }),
+}));
 const { handleCallRoutes, MAX_SUBSCRIBE_BATCH, mediaRefused } = await import('./calls');
 
 const SECRETS = {
@@ -94,6 +107,8 @@ beforeEach(() => {
     }),
   );
   vi.spyOn(console, 'warn').mockImplementation(() => {});
+  room.answers = null;
+  room.asked = [];
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -146,14 +161,13 @@ describe('the gates, in order', () => {
     expect(upstream).toEqual([]);
   });
 
-  it('refuses every session on production, whatever is set (the hard flag)', async () => {
+  it('mints a session on production once the secrets are set', async () => {
     const res = await call('POST', 'session', undefined, {
       ...SECRETS,
       APP_BASE_URL: 'https://www.livehuddle.app',
     });
-    expect(res.status).toBe(503);
-    expect(await res.json()).toEqual({ error: 'calls_off', reason: 'production' });
-    expect(upstream).toEqual([]);
+    expect(res.status).toBe(200);
+    expect(upstream.length).toBeGreaterThan(0);
   });
 
   it('is off without the secrets', async () => {
@@ -267,6 +281,51 @@ describe('POST tracks', () => {
         { location: 'remote', sessionId: 'pub2', trackName: 'mic' },
       ],
     });
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust" (#483): the room says who may hear whom.
+  it('subscribes only what the room says the caller may hear, answering the rest not_heard in place', async () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      grant = grantAt(level);
+      upstream = [];
+      room.answers = (asks) => asks.map((a) => (a.sessionId === 'pub2' ? 'heard' : 'apart'));
+      const res = await call('POST', 'tracks', {
+        ...(await listenerProof()),
+        subscribe: [await locator(), await locator(DOC, 'pub2')],
+      });
+      expect(res.status).toBe(200);
+      expect(room.asked.at(-1)).toEqual({
+        subscriber: 'sess1',
+        asks: [
+          { sessionId: 'pub1', trackName: 'mic' },
+          { sessionId: 'pub2', trackName: 'mic' },
+        ],
+      });
+      expect(upstream[0]!.body).toEqual({
+        tracks: [{ location: 'remote', sessionId: 'pub2', trackName: 'mic' }],
+      });
+      const body = (await res.json()) as { tracks: unknown[] };
+      expect(body.tracks[0]).toEqual({
+        sessionId: 'pub1',
+        trackName: 'mic',
+        errorCode: 'not_heard',
+      });
+      expect(body.tracks[1]).toMatchObject({ mid: '0' });
+    }
+  });
+
+  it('asks Realtime nothing when the room refuses every track', async () => {
+    room.answers = (asks) => asks.map(() => 'unknown-session');
+    const res = await call('POST', 'tracks', {
+      ...(await listenerProof()),
+      subscribe: [await locator()],
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      requiresImmediateRenegotiation: false,
+      tracks: [{ sessionId: 'pub1', trackName: 'mic', errorCode: 'not_heard' }],
+    });
+    expect(upstream).toEqual([]);
   });
 
   it('refuses a locator from another Space, a forged one, a camera, an empty or oversized batch', async () => {
@@ -390,11 +449,8 @@ describe('the kill switch', () => {
     expect(upstream.map((u) => u.body)).toEqual([{ tracks: [{ mid: '1' }], force: true }]);
   });
 
-  it('holds production and unset secrets before the switch, close included', async () => {
+  it('holds unset secrets before the switch, close included', async () => {
     const proof = await listenerProof();
-    const production = { ...withMode('off'), APP_BASE_URL: 'https://www.livehuddle.app' };
-    const res = await call('PUT', 'close', { ...proof, mids: ['1'] }, production);
-    expect(await res.json()).toEqual({ error: 'calls_off', reason: 'production' });
     const bare = await call('PUT', 'close', { ...proof, mids: ['1'] }, { CALLS_SWITCH: fakeKv() });
     expect(await bare.json()).toEqual({ error: 'calls_off', reason: 'unconfigured' });
     expect(upstream).toEqual([]);
@@ -462,5 +518,165 @@ describe('the kill switch', () => {
     expect(refusal?.status).toBe(503);
     expect(await refusal?.json()).toEqual({ error: 'calls_off', reason: 'audio-only' });
     expect(mediaRefused('on', ['nobody-publishes-this'])?.status).toBe(503);
+  });
+});
+
+// docs/specs/012-collaboration/video-and-screen-bubbles.md "The mint route" and "Share roles".
+describe('the camera and a shared screen', () => {
+  const withMode = (mode: string) => ({ ...SECRETS, CALLS_SWITCH: fakeKv({ 'calls-mode': mode }) });
+  const publish = (trackName?: string) => ({
+    sdp: 'v=0',
+    mid: '1',
+    ...(trackName === undefined ? {} : { trackName }),
+  });
+  const camera = async (sessionId = 'pub1') => ({
+    ...(await locator(DOC, sessionId)),
+    trackName: 'cam',
+  });
+  const publishAs = async (trackName: string, proof = speakerProof) =>
+    call('POST', 'tracks', { ...(await proof()), publish: publish(trackName) });
+
+  it('publishes a camera for an Editor or a Participant, named as asked', async () => {
+    for (const level of ['participate', 'edit'] as const) {
+      grant = grantAt(level);
+      upstream = [];
+      const res = await publishAs('cam');
+      expect(res.status).toBe(200);
+      expect(upstream[0]!.body).toMatchObject({
+        tracks: [{ location: 'local', mid: '1', trackName: 'cam' }],
+      });
+    }
+    grant = grantAt('view');
+    expect(await (await publishAs('cam')).json()).toEqual({ error: 'calls_listen_only' });
+  });
+
+  it('publishes a screen for an Editor only', async () => {
+    grant = grantAt('participate');
+    const participant = await publishAs('screen');
+    expect(participant.status).toBe(403);
+    expect(await participant.json()).toEqual({ error: 'calls_editor_only' });
+    grant = grantAt('view');
+    expect(await (await publishAs('screen')).json()).toEqual({ error: 'calls_listen_only' });
+    expect(upstream).toEqual([]);
+    grant = grantAt('edit');
+    expect((await publishAs('screen')).status).toBe(200);
+    expect(upstream[0]!.body).toMatchObject({ tracks: [{ trackName: 'screen' }] });
+    // A listener's session stays one, even for an Editor.
+    expect((await publishAs('screen', listenerProof)).status).toBe(403);
+  });
+
+  it('refuses a publish naming a track no call publishes', async () => {
+    expect((await publishAs('camera')).status).toBe(400);
+    expect(upstream).toEqual([]);
+  });
+
+  it('subscribes a camera on its small layer, or the layer asked, and a screen without layers', async () => {
+    grant = grantAt('view');
+    const screen = { ...(await locator(DOC, 'pub3')), trackName: 'screen' };
+    const res = await call('POST', 'tracks', {
+      ...(await listenerProof()),
+      subscribe: [
+        await camera(),
+        { ...(await camera('pub2')), layer: 'f' },
+        screen,
+        await locator(),
+      ],
+    });
+    expect(res.status).toBe(200);
+    expect(upstream[0]!.body).toEqual({
+      tracks: [
+        {
+          location: 'remote',
+          sessionId: 'pub1',
+          trackName: 'cam',
+          simulcast: { preferredRid: 'h', priorityOrdering: 'none', ridNotAvailable: 'none' },
+        },
+        {
+          location: 'remote',
+          sessionId: 'pub2',
+          trackName: 'cam',
+          simulcast: {
+            preferredRid: 'f',
+            priorityOrdering: 'asciibetical',
+            ridNotAvailable: 'asciibetical',
+          },
+        },
+        { location: 'remote', sessionId: 'pub3', trackName: 'screen' },
+        { location: 'remote', sessionId: 'pub1', trackName: 'mic' },
+      ],
+    });
+  });
+
+  it('refuses a layer on anything but a camera, or a layer that is not one', async () => {
+    const proof = await listenerProof();
+    for (const subscribe of [
+      [{ ...(await locator()), layer: 'h' }],
+      [{ ...(await camera()), layer: 'q' }],
+    ]) {
+      expect((await call('POST', 'tracks', { ...proof, subscribe })).status).toBe(400);
+    }
+    expect(upstream).toEqual([]);
+  });
+
+  it('switches camera subscriptions between layers with tracks/update', async () => {
+    grant = grantAt('view');
+    const track = { mid: '4', sessionId: 'pub1', trackName: 'cam', layer: 'f' };
+    const res = await call('PUT', 'layer', { ...(await listenerProof()), tracks: [track] });
+    expect(res.status).toBe(200);
+    expect(upstream[0]).toMatchObject({
+      method: 'PUT',
+      url: 'https://rtc.live.cloudflare.com/v1/apps/app1/sessions/sess1/tracks/update',
+      body: {
+        tracks: [
+          {
+            location: 'remote',
+            mid: '4',
+            sessionId: 'pub1',
+            trackName: 'cam',
+            simulcast: { preferredRid: 'f' },
+          },
+        ],
+      },
+    });
+  });
+
+  it('refuses a malformed layer change, and a forged session', async () => {
+    const proof = await listenerProof();
+    const ok = { mid: '4', sessionId: 'pub1', trackName: 'cam', layer: 'h' };
+    for (const body of [
+      { ...proof, tracks: [] },
+      { ...proof, tracks: 'all' },
+      { ...proof, tracks: [{ ...ok, trackName: 'mic' }] },
+      { ...proof, tracks: [{ ...ok, layer: 'q' }] },
+      { ...proof, tracks: [{ ...ok, mid: 4 }] },
+      { ...proof, tracks: [{ ...ok, sessionId: '' }] },
+      { ...proof, tracks: [null] },
+      { ...proof, tracks: Array.from({ length: MAX_SUBSCRIBE_BATCH + 1 }, () => ok) },
+      { sessionId: 'sess1', tracks: [ok] },
+    ]) {
+      expect((await call('PUT', 'layer', body)).status).toBe(400);
+    }
+    expect(upstream).toEqual([]);
+  });
+
+  it('refuses a camera, a screen and a layer change while audio only, and pauses all while off', async () => {
+    grant = grantAt('edit');
+    const env = withMode('audio-only');
+    const proof = await speakerProof();
+    const layer = { mid: '4', sessionId: 'pub1', trackName: 'cam', layer: 'f' };
+    const refused = [
+      await call('POST', 'tracks', { ...proof, publish: publish('cam') }, env),
+      await call('POST', 'tracks', { ...proof, publish: publish('screen') }, env),
+      await call('POST', 'tracks', { ...proof, subscribe: [await camera()] }, env),
+      await call('PUT', 'layer', { ...proof, tracks: [layer] }, env),
+    ];
+    for (const res of refused) {
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: 'calls_off', reason: 'audio-only' });
+    }
+    resetCallsModeCache();
+    const off = await call('PUT', 'layer', { ...proof, tracks: [layer] }, withMode('off'));
+    expect(await off.json()).toEqual({ error: 'calls_off', reason: 'paused' });
+    expect(upstream).toEqual([]);
   });
 });

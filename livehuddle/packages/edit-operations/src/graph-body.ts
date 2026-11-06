@@ -1,4 +1,4 @@
-// A `replace` body's graph checked before it is laid out (docs/specs/015-api/mcp-server.md §4.7, the
+// A `replace` body's graph checked before it is laid out (livediagram/docs/specs/015-api/mcp-server.md §4.7, the
 // shape the MCP's `graph` argument takes): `layoutGraph` trusts its input, and a changeset's body is
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
@@ -75,7 +75,7 @@ export function graphBodyIssue(graph: unknown): string | null {
   const { nodes, edges } = graph as GraphInput;
   if (nodes.length + edges.length > MAX_ELEMENTS_PER_TAB)
     return `graph: at most ${MAX_ELEMENTS_PER_TAB} nodes and edges`;
-  // An icon that names none would draw a question mark (docs/specs/015-api/mcp-server.md §4.4 "Values checked").
+  // An icon that names none would draw a question mark (livediagram/docs/specs/015-api/mcp-server.md §4.4 "Values checked").
   const unknownIcon = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
   if (unknownIcon) {
     const like = iconsLike(unknownIcon.icon!).map((i) => i.id);

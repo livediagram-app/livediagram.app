@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
-import { lucidePanelsTopLeft, lucideSettings } from '@liveworkspace/icons/lucide';
+import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
 import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
 import { EmptyPageLayouts } from './EmptyPageLayouts';
@@ -11,12 +11,19 @@ import { LayoutGalleryDialog } from './LayoutGalleryDialog';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
 import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
+import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
 import { PageBackgroundButton } from './PageBackgroundButton';
+import { appearanceRows, PageAppearanceButton } from './PageAppearanceButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
 import { PageMotionLayer } from './PageMotionLayer';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { PageDeviceButton } from './wireframe/PageDeviceButton';
-import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
+import {
+  appearanceNamed,
+  LABEL_MIN,
+  titleBarFixedRoom,
+  titleBarNamed,
+} from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import {
   lastPageOfTabKind,
@@ -55,7 +62,6 @@ import {
   usePageBackgroundPreview,
 } from '@/lib/page-background-preview';
 
-const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
 // The empty page's layout button beside the cog: with its words, or just its icon.
@@ -106,6 +112,15 @@ export function CanvasPages({
   );
   const cogs = useRef(new Map<string, HTMLButtonElement>());
   const mobile = useIsMobileViewport();
+  // A phone's Appearance (PageAppearanceButton): each page's look control opened from its sheet, a count per page and
+  // control that only rises, as that control's open request.
+  const [appearanceAsks, setAppearanceAsks] = useState<Readonly<Record<string, number>>>({});
+  const askOf = (pageId: string, row: string) => appearanceAsks[`${pageId}:${row}`] ?? 0;
+  const ask = (pageId: string, row: string) =>
+    setAppearanceAsks((was) => ({
+      ...was,
+      [`${pageId}:${row}`]: (was[`${pageId}:${row}`] ?? 0) + 1,
+    }));
   // Being on a logo page (opened on one, adding one, going to one, pressing into one) turns the
   // palette to its kind (lib/palette-kind.ts).
   const logoPalette = useLogoPaletteSwitch(pages, !!edit && !bare);
@@ -185,6 +200,10 @@ export function CanvasPages({
         // pixel size (docs/specs/031-photo/photo-pages.md "A photo page").
         const photoSize = page.kind === 'photo' ? view.photo?.photos[page.id] : undefined;
         const label = pageLabel(page, page.index, 1, photoSize);
+        // The name (when the page has one) and the rest (its size and kind), as pageLabel joins them.
+        const labelParts = page.name
+          ? { name: page.name, rest: label.slice(page.name.length + 3) }
+          : { name: '', rest: label };
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
         // corner; an empty logo page's layout invite sits beside it, with its words while there is
@@ -222,7 +241,13 @@ export function CanvasPages({
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
         // them named; zoomed out further they drop to their icons, as a phone shows them.
         const labelled = titleBarNamed(room, buttons, mobile);
-        const fixedRoom = titleBarFixedRoom(buttons, labelled);
+        // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
+        const appearanceLabelled = mobile && appearanceNamed(room, buttons);
+        const fixedRoom = titleBarFixedRoom(
+          buttons,
+          mobile ? appearanceLabelled : labelled,
+          mobile,
+        );
         const invite =
           !empty || choosing
             ? null
@@ -304,7 +329,9 @@ export function CanvasPages({
               </div>
             ) : null}
             <div
-              className={`absolute left-0 flex items-center ${labelRoom < LABEL_MIN || bare ? 'hidden' : ''}`}
+              // As tall as the title bar beside it, so the two sit on one line.
+              // None on a phone ("Beside the cog"): the name is in Contents and the cog sheet.
+              className={`absolute left-0 flex h-[34px] items-center ${labelRoom < LABEL_MIN || bare || mobile ? 'hidden' : ''}`}
               style={{
                 bottom: '100%',
                 marginBottom: 6 / zoom,
@@ -326,80 +353,133 @@ export function CanvasPages({
                     if (!drag.endsDrag()) goToPage(page);
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  className={`pointer-events-auto block max-w-full truncate whitespace-nowrap rounded px-1 py-0.5 text-xs font-medium text-slate-500 transition hover:bg-white/80 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-slate-100 ${
+                  className={`group/label pointer-events-auto block max-w-full truncate whitespace-nowrap rounded-md px-1.5 py-1 text-xs text-slate-500 transition hover:bg-white/80 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800/80 ${
                     edit && reorderable ? 'cursor-grab active:cursor-grabbing' : ''
                   }`}
                 >
-                  {label}
+                  {/* Its name leads, the size and kind after it quieter, so a row of pages scans by name. */}
+                  {labelParts.name ? (
+                    <span className="font-semibold text-slate-700 group-hover/label:text-slate-900 dark:text-slate-200 dark:group-hover/label:text-white">
+                      {labelParts.name}
+                    </span>
+                  ) : null}
+                  {labelParts.name && labelParts.rest ? ' · ' : null}
+                  <span className="font-medium group-hover/label:text-slate-600 dark:group-hover/label:text-slate-300">
+                    {labelParts.rest}
+                  </span>
                 </button>
               </HoverCard>
             </div>
             {edit ? (
               <div
-                className="absolute right-0 flex items-center gap-1"
+                className="absolute right-0 flex items-center gap-2"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
                 {invite && openId !== page.id ? (
                   <LayoutInvite wide={invite === 'wide'} onOpen={() => openLayouts(page.id)} />
                 ) : null}
-                {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
-                {logoButtons && view.logo ? (
-                  <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
-                ) : null}
-                {/* A photo page's Image, Select and Filter menus (PhotoTitleBar). */}
-                {photoButtons && view.photo ? (
-                  <PhotoTitleBar pageId={page.id} photo={view.photo} labelled={labelled} />
-                ) : null}
-                {/* A wireframe page's Device (PageDeviceButton). */}
-                {deviceButton ? (
-                  <PageDeviceButton
-                    page={page}
-                    labelled={labelled}
-                    onDevice={(patch) => edit.setDevice(page.id, patch)}
-                    frameTheme={view.frameTheme}
-                  />
-                ) : null}
-                {/* A wireframe page's Layouts (PageLayoutsButton). */}
-                {pageButtons ? (
-                  <PageLayoutsButton
-                    page={page}
-                    labelled={labelled}
-                    onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                    onPreview={(layout) =>
-                      view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
-                    }
-                  />
-                ) : null}
-                {/* A wireframe page's Background (PageBackgroundButton). */}
-                {pageButtons ? (
-                  <PageBackgroundButton
-                    page={page}
-                    labelled={labelled}
-                    themePresets={view.themeBackgrounds}
-                    onBackground={(patch) => edit.setBackground(page.id, patch)}
-                    onPreview={(patch) => setPreview(patch ? { pageId: page.id, patch } : null)}
-                    applyToAll={{
-                      reach: edit.applyToAllReach(page.id),
-                      onApply: () => edit.applyBackgroundToAll(page.id),
-                    }}
-                  />
-                ) : null}
-                {/* The page's lock, before the cog (PageLockButton). */}
-                {edit ? (
-                  <PageLockButton
-                    locked={locked}
-                    labelled={labelled}
-                    onToggle={() => edit.setLocked(page.id, !locked)}
-                  />
-                ) : null}
-                <PageCog
-                  name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
-                  open={openId === page.id}
-                  onToggle={() => toggle(page.id)}
-                  cogRef={(el) => {
-                    if (el) cogs.current.set(page.id, el);
-                    else cogs.current.delete(page.id);
-                  }}
+                {/* The page's own controls, one toolbar card (PageTitleBar): the page kind's tools,
+                    then the page itself at its corner. */}
+                <PageTitleBar
+                  groups={[
+                    [
+                      // A logo page's Tidy Up, Mirror and Guides (LogoTitleBar).
+                      logoButtons && view.logo ? (
+                        <LogoTitleBar
+                          key="logo"
+                          pageId={page.id}
+                          tools={view.logo}
+                          labelled={labelled}
+                        />
+                      ) : null,
+                      // A photo page's Image, Select and Filter menus (PhotoTitleBar).
+                      photoButtons && view.photo ? (
+                        <PhotoTitleBar
+                          key="photo"
+                          pageId={page.id}
+                          photo={view.photo}
+                          labelled={labelled}
+                        />
+                      ) : null,
+                      // On a phone a wireframe page's looks gather under Appearance, their own
+                      // controls mounted headless.
+                      mobile ? (
+                        <PageAppearanceButton
+                          key="appearance"
+                          rows={appearanceRows(buttons)}
+                          device={page.device ?? 'iphone'}
+                          labelled={appearanceLabelled}
+                          onPick={(row) => ask(page.id, row)}
+                        />
+                      ) : null,
+                      // A wireframe page's Device (PageDeviceButton).
+                      deviceButton ? (
+                        <PageDeviceButton
+                          key="device"
+                          page={page}
+                          labelled={labelled}
+                          headless={mobile}
+                          openRequest={askOf(page.id, 'device')}
+                          onDevice={(patch) => edit.setDevice(page.id, patch)}
+                          frameTheme={view.frameTheme}
+                        />
+                      ) : null,
+                      // A wireframe page's Layouts (PageLayoutsButton).
+                      pageButtons ? (
+                        <PageLayoutsButton
+                          key="layouts"
+                          page={page}
+                          labelled={labelled}
+                          headless={mobile}
+                          openRequest={askOf(page.id, 'layout')}
+                          onApply={(layout) => void edit.applyLayout(page.id, layout)}
+                          onPreview={(layout) =>
+                            view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
+                          }
+                        />
+                      ) : null,
+                      // A wireframe page's Background (PageBackgroundButton).
+                      pageButtons ? (
+                        <PageBackgroundButton
+                          key="background"
+                          page={page}
+                          labelled={labelled}
+                          headless={mobile}
+                          openRequest={askOf(page.id, 'background')}
+                          themePresets={view.themeBackgrounds}
+                          onBackground={(patch) => edit.setBackground(page.id, patch)}
+                          onPreview={(patch) =>
+                            setPreview(patch ? { pageId: page.id, patch } : null)
+                          }
+                          applyToAll={{
+                            reach: edit.applyToAllReach(page.id),
+                            onApply: () => edit.applyBackgroundToAll(page.id),
+                          }}
+                        />
+                      ) : null,
+                    ],
+                    [
+                      // No lock on a phone: the cog sheet holds it (PagePanel's actions).
+                      mobile ? null : (
+                        <PageLockButton
+                          key="lock"
+                          locked={locked}
+                          labelled={labelled}
+                          onToggle={() => edit.setLocked(page.id, !locked)}
+                        />
+                      ),
+                      <PageCog
+                        key="cog"
+                        name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
+                        open={openId === page.id}
+                        onToggle={() => toggle(page.id)}
+                        cogRef={(el) => {
+                          if (el) cogs.current.set(page.id, el);
+                          else cogs.current.delete(page.id);
+                        }}
+                      />,
+                    ],
+                  ]}
                 />
               </div>
             ) : null}
@@ -532,46 +612,6 @@ export function CanvasPages({
 }
 
 // The cog that opens the page's panel (PagePanel).
-function PageCog({
-  name,
-  open,
-  onToggle,
-  cogRef,
-}: {
-  name: string;
-  open: boolean;
-  onToggle: () => void;
-  cogRef: (el: HTMLButtonElement | null) => void;
-}) {
-  return (
-    <div
-      className="pointer-events-auto"
-      // A press here is the cog's, never the canvas's (no marquee, no deselect, no draw).
-      onPointerDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-    >
-      <Tooltip label={name}>
-        <button
-          ref={cogRef}
-          type="button"
-          aria-label={name}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          data-page-panel-trigger
-          // The Pages tour's anchor (docs/specs/007-editor/pages-tour.md); the first page's leads.
-          data-tour-id="page-cog"
-          onClick={() => onToggle()}
-          className={`touch-target-y relative flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
-            open ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-800 dark:text-slate-100' : ''
-          }`}
-        >
-          <CogIcon />
-        </button>
-      </Tooltip>
-    </div>
-  );
-}
-
 // On an empty page, beside its cog: start it from a layout. Its words show on a wide screen with
 // room in the title bar; on a phone, or when the page is small on screen, just the icon.
 function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {

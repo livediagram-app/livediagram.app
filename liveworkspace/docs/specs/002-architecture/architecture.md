@@ -61,6 +61,28 @@ error page. One shared guard does it, `@liveworkspace/api-kit/request-failure`.
 - Neither body echoes the error's text. The route words are the method and the path's known words, never an id.
 - The answer carries the Worker's usual headers, CORS included where its routes have them.
 
+## A Durable Object's alarm
+
+A Durable Object has one alarm, and each one that re-arms it from a time it worked out (every app's room, the index's
+webhook dispatcher, the Drive mirror) sets it through one shared rule, `@liveworkspace/api-kit/room-alarm`:
+
+- **Never in the past.** The alarm goes at the earliest time due, but never sooner than a second from now
+  (`roomAlarmAt`). A time already due, or one stuck in the past by a bug, waits that second rather than firing at
+  once. Unfloored, such a time fired the alarm back to back, about 20 times a second, for as long as it stayed stuck
+  (a closed socket's lapsed grant cost about 2.2 million billed alarms in a week); floored, the worst any such bug
+  can do is one alarm a second per object.
+- **Nothing people see waits on it.** What an alarm does (pushes to the index, a shared tab's copies, a Community
+  check, upkeep, a lapsed grant's close, an agent's expiry, a webhook's send, a Drive pass) is already on a wait of
+  seconds or more; a second more on a time that was already due changes nothing anyone can tell.
+- **No write for an alarm already set.** An app's room arms its alarm on many writes, and an alarm set again at the
+  same time is a storage write for nothing. The room remembers the time it last set while it is in memory and skips
+  setting the same one, or deleting an alarm it already deleted (`armRoomAlarm`). A room woken from hibernation
+  remembers nothing, so its first arm always writes. A room's purge deletes its alarm through the same helper
+  (`disarmRoomAlarm`), which forgets the time too, so the next arm after a purge always writes.
+- A request that asks for work now (a webhook queued, a Drive check or connect, an export started) still sets the
+  alarm for now: it runs once per request, never in a loop. A data export's next chunk is set at once too: each chunk
+  works up to 20 s, so a second's floor would only slow every export.
+
 ## Environments and the account
 
 Two environments, production and staging, each a `wrangler.toml` environment with its own Worker name (`-staging`),

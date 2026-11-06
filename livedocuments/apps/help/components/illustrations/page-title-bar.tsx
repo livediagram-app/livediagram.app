@@ -131,3 +131,173 @@ export function TitleButton({
     </g>
   );
 }
+
+/** The page's settings cog, drawn as a glyph like the others: it sits in the title bar card now, last at the
+ *  page's corner (PageTitleBar.tsx `PageCog`), tinted while its panel is open. */
+export function CogGlyph({ cx, cy, on }: GlyphProps) {
+  const spokes = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <g transform={`translate(${cx} ${cy})`} fill="none" className={ink(on)} strokeLinecap="round">
+      {spokes.map((a) => (
+        <line
+          key={a}
+          x1={0}
+          y1={-3.4}
+          x2={0}
+          y2={-5.4}
+          transform={`rotate(${a})`}
+          strokeWidth={1.6}
+        />
+      ))}
+      <circle r={3} strokeWidth={1.4} />
+    </g>
+  );
+}
+
+/** One control in the title bar card: its glyph, its name beside it when named, tinted while `on`. */
+export type TitleBarItem = {
+  Glyph: (props: GlyphProps) => ReactElement;
+  name?: string;
+  on?: boolean;
+};
+
+// The card's measures in figure units, scaled from the real bar (PageTitleBar.tsx: 28 px buttons, a 2 px gap,
+// 3 px edges, a 9 px divider): an icon-only cell `cell` wide, a hairline divider with its margins, the card's edge.
+const GAP = 1.5;
+const DIVIDER = 7;
+const EDGE = 2;
+
+/** Where the card and each control sit, laid out from the card's right edge at `right`: the card's left and
+ *  width, and each control's left, width and centre, group by group. A pure measure, so a figure can point at a
+ *  control (a tooltip, a popover under it) or keep its label clear of the card. */
+export function titleBarLayout(
+  right: number,
+  groups: readonly (readonly TitleBarItem[])[],
+  cell = 16,
+) {
+  const shown = groups.filter((g) => g.length > 0);
+  const widthOf = (item: TitleBarItem) => (item.name ? titleButtonWidth(item.name) : cell);
+  const inner =
+    shown.reduce((s, g) => s + g.reduce((t, it) => t + widthOf(it), 0) + (g.length - 1) * GAP, 0) +
+    (shown.length - 1) * (DIVIDER + 2 * GAP);
+  const width = inner + 2 * EDGE;
+  const left = right - width;
+  let at = left + EDGE;
+  const items: { item: TitleBarItem; x: number; w: number; cx: number }[] = [];
+  const dividers: number[] = [];
+  shown.forEach((group, gi) => {
+    if (gi > 0) {
+      dividers.push(at + GAP + DIVIDER / 2);
+      at += DIVIDER + 2 * GAP;
+    }
+    group.forEach((item, ii) => {
+      if (ii > 0) at += GAP;
+      const w = widthOf(item);
+      items.push({ item, x: at, w, cx: at + w / 2 });
+      at += w;
+    });
+  });
+  return { left, width, items, dividers };
+}
+
+/** A page's title bar as the editor draws it now (PageTitleBar.tsx): one small white card, a hairline border and
+ *  a soft shadow, its controls in groups split by short hairlines (how the page looks, then tools, then the page
+ *  itself: its padlock and its cog), its right edge at `right` (the page's right edge), centred on `cy`. `cell` is
+ *  an icon-only control's width: 16 for a page drawn small (its controls as icons alone), 22 at full size. */
+export function TitleBarCard({
+  right,
+  cy,
+  groups,
+  cell = 16,
+}: {
+  right: number;
+  cy: number;
+  groups: readonly (readonly TitleBarItem[])[];
+  cell?: number;
+}) {
+  const { left, width, items, dividers } = titleBarLayout(right, groups, cell);
+  const h = cell + 2 * EDGE;
+  const top = cy - h / 2;
+  const scale = cell >= 22 ? 1 : 0.85;
+  return (
+    <g>
+      <rect
+        x={left}
+        y={top + 1.5}
+        width={width}
+        height={h}
+        rx={h * 0.3}
+        className="fill-slate-200"
+      />
+      <rect
+        x={left}
+        y={top}
+        width={width}
+        height={h}
+        rx={h * 0.3}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      {dividers.map((x) => (
+        <line
+          key={x}
+          x1={x}
+          y1={cy - cell * 0.3}
+          x2={x}
+          y2={cy + cell * 0.3}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
+      ))}
+      {items.map(({ item, x, w, cx }, i) =>
+        item.name ? (
+          <TitleButton key={i} x={x} cy={cy} name={item.name} on={item.on} Glyph={item.Glyph} />
+        ) : (
+          <g key={i}>
+            {item.on && (
+              <rect
+                x={x}
+                y={cy - cell / 2}
+                width={w}
+                height={cell}
+                rx={cell * 0.25}
+                className="fill-brand-100"
+              />
+            )}
+            <g transform={`translate(${cx} ${cy}) scale(${scale})`}>
+              <item.Glyph cx={0} cy={0} on={item.on} />
+            </g>
+          </g>
+        ),
+      )}
+    </g>
+  );
+}
+
+/** The page's label above its top-left corner as the editor sets it: the page's name (when it has one) in strong
+ *  ink, then its size and kind muted, so a row of pages scans by name. No "Page n": the navigator says that. */
+export function PageLabel({
+  x,
+  y,
+  name,
+  rest,
+  size = 10,
+}: {
+  x: number;
+  y: number;
+  name?: string;
+  rest: string;
+  size?: number;
+}) {
+  return (
+    <Label x={x} y={y} size={size} weight={500} tone="muted">
+      {name ? (
+        <tspan className="fill-slate-700" fontWeight={600}>
+          {name}
+        </tspan>
+      ) : null}
+      {name ? ' · ' : null}
+      {rest}
+    </Label>
+  );
+}

@@ -13,14 +13,20 @@ const as = (level: 'edit' | 'participate' | 'view', ui: ReactNode) => (
 );
 
 describe('PageTidyUpButton', () => {
-  it('tidies its page on a press, its icon alone everywhere', () => {
+  it('tidies its page on a press, its icon alone by default', () => {
     const tidyPage = vi.fn();
     render(as('edit', <PageTidyUpButton pageId="p1" edit={{ tidyPage }} />));
     const button = screen.getByRole('button', { name: PAGE_TIDY_UP_TOOLTIP });
     expect(button.textContent).toBe('');
     fireEvent.click(button);
     expect(tidyPage).toHaveBeenCalledWith('p1');
-    expect(pageTidyUpRoom()).toBe(28);
+    expect(pageTidyUpRoom(false)).toBe(28);
+    expect(pageTidyUpRoom(true)).toBe(63);
+  });
+
+  it('names itself Tidy beside its icon when the bar has room for labels', () => {
+    render(as('edit', <PageTidyUpButton pageId="p1" labelled edit={{ tidyPage: vi.fn() }} />));
+    expect(screen.getByRole('button', { name: PAGE_TIDY_UP_TOOLTIP }).textContent).toBe('Tidy');
   });
 
   it('shows nothing to a Participant or a Viewer, nor without a tidy', () => {

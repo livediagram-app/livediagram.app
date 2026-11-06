@@ -21,7 +21,7 @@ export function lintLog(where: Where): LintLogger {
 // `before`, the tab as it was (null for a tab the write makes), names the colours the write set: colour-on-themed judges
 // those alone (LN17). A replace that lands a template sets none of its own: the template's colours are its design.
 export function lintResult(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'>,
+  tab: Pick<Tab, 'elements' | 'theme'>,
   where: Where,
   before: { elements: readonly Tab['elements'][number][] } | null | 'template' = null,
 ): LintReport | null {

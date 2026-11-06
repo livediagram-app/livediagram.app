@@ -6,11 +6,10 @@
 // every pointer move, and the side effects that apply preference flags
 // (reduce motion).
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useReduceMotion } from '@liveworkspace/workbench/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@liveworkspace/workbench/hooks/ui/usePanelOpacity';
 import {
-  autoRebindArrowsEnabled,
   readUserPreferences,
   fetchUserPreferences,
   PREFERENCES_CHANGED_EVENT,
@@ -62,8 +61,7 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   const { ownerId, passwordGated } = deps;
   // Missing or unparseable entries collapse to `{}`; the per-flag default then
   // depends on the consumer's comparison: `telemetryEnabled` reads via
-  // `!== false` so undefined = on, while `autoRebindArrows` (via
-  // autoRebindArrowsEnabled) and `drawToAdd` read via `=== true` so
+  // `!== false` so undefined = on, while `drawToAdd` reads via `=== true` so
   // undefined = off (matches docs/specs/007-editor/user-preferences.md's defaults).
   // The cache is followed live, this tab's writes and every other tab's. A
   // choice this session sets without writing it stands only until the cache
@@ -85,8 +83,8 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     [cachedRef],
   );
   // True once the server copy has been merged in, or failed to arrive: the
-  // point after which a one-way latch such as `powerUserOfferShown` can be
-  // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
+  // point after which a one-way latch such as a tour's seen flag can be
+  // trusted not to be stale (docs/specs/007-editor/user-preferences.md).
   const [prefsSettled, setPrefsSettled] = useState(false);
   // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css
@@ -95,10 +93,10 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // Apply the "Panel opacity" preference (docs/specs/007-editor/user-preferences.md) to the floating panels
   // via the --lvd-panel-opacity custom property.
   usePanelOpacity(userPreferences.panelOpacity);
-  // Mirror the auto-rebind flag into its own ref so the drag move
-  // handler can read it without re-attaching listeners. Defaults to
-  // ON (docs/specs/007-editor/user-preferences.md); the Settings toggle turns it off.
-  const autoRebindArrowsRef = useLatest<boolean>(autoRebindArrowsEnabled(userPreferences));
+  // Arrows always reattach after a move (docs/specs/008-canvas/arrow-anchors.md): the Auto-Attach Arrows
+  // switch left livehuddle (Work Tracker #423, part 4) and its stored value is not read. The drag and nudge
+  // handlers keep taking the flag as a ref, so their own tests can still hold it off.
+  const autoRebindArrowsRef = useRef(true);
   // Same mirror for the alignment-guide preference so the drag move
   // handler can gate the guide computation without re-attaching its
   // listeners. Defaults to true (guides on) so a fresh session shows

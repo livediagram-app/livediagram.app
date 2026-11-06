@@ -12,11 +12,9 @@ import type { Env } from '../types';
 import { setGrantVerifierForTests } from '../index-service';
 import { ITEM_GRANT_HEADER, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { networkTagFor } from '../vote-integrity';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
-import type { WorkbenchContext } from './context';
 
 const NOW = Math.floor(Date.now() / 1000);
 
@@ -78,7 +76,6 @@ const SPOOFED = {
   'X-Verified-Grant-Exp': '99999999999',
   'X-Verified-Owner': '1',
   'X-Verified-Adder': 'forged',
-  'X-Verified-Network': 'forged',
   'X-Verified-Item-Owner': 'evil',
   'X-Verified-Item-Team': 'evil',
   'X-Verified-Account': '1',
@@ -156,14 +153,16 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Role')).toBe('participate');
   });
 
-  it('caps a workbench ticket at its sealed level and stamps its pairing', async () => {
+  // livehuddle has no workbenches (docs/specs/002-project-scope/not-in-livehuddle.md): the shared ticket's level cap
+  // still holds, and no session is ever stamped as a pairing's.
+  it('caps a ticket sealed with a cap at that level, and stamps no pairing', async () => {
     const { env, seen } = roomEnv();
     const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
     const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
     const h = seen[0]!.headers;
     expect(h.get('X-Verified-Role')).toBe('view');
-    expect(h.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
+    expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
   });
 
   it('refuses a workbench ticket whose pairing or cap was changed', async () => {
@@ -215,36 +214,6 @@ describe('POST room-ticket', () => {
     );
     expect(res?.status).toBe(404);
   });
-
-  it('seals a workbench session ticket to its pairing and cap', async () => {
-    const { env, seen } = roomEnv();
-    const t = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
-    const workbench = {
-      sessionId: 'ws-1',
-      ownerId: 'user_a',
-      tokenId: 'tok',
-      pairingId: 'wp-1',
-      tabId: null,
-      origin: 'https://w.example',
-      level: 'participate',
-      expiresAt: Date.now() + 60_000,
-      scope: 'document',
-      documentId: 'p1',
-    } as unknown as WorkbenchContext;
-    const res = await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/p1/room-ticket', {
-        env,
-        workbench,
-        headers: { [ITEM_GRANT_HEADER]: t },
-        grant: null,
-      }),
-    );
-    const { ticket } = (await res!.json()) as { ticket: string };
-    expect(ticket.split('~')).toHaveLength(4);
-    await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
-    expect(seen[0]!.headers.get('X-Verified-Role')).toBe('participate');
-    expect(seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('wp-1');
-  });
 });
 
 // The headers only this app's room reads: who owns the canvas (the facilitator baton), a Participant's adder key,
@@ -277,27 +246,6 @@ describe("WebSocket upgrade: the room's own trust headers", () => {
       await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(t)}`);
       expect(seen.at(-1)!.headers.get('X-Verified-Adder')).toBe('');
     }
-  });
-
-  // docs/specs/012-collaboration/vote-integrity.md: what caps one network's poll answers, derived from the edge's
-  // client address on every upgrade, so a client can never choose its own.
-  it('stamps X-Verified-Network from the caller address, over anything the client sent', async () => {
-    const t = grantFor({ item: 'p1', sub: 'link:abc', level: 'view' });
-    const network = async (ip: string) => {
-      const { env, seen } = roomEnv();
-      await handleDocumentRoomRoutes(
-        makeTestRouteContext('GET', `/api/documents/p1/ws?t=${encodeURIComponent(t)}`, {
-          env,
-          headers: { ...SPOOFED, 'CF-Connecting-IP': ip },
-          grant: null,
-        }),
-      );
-      return seen[0]!.headers.get('X-Verified-Network');
-    };
-    const a = await network('203.0.113.7');
-    expect(a).toBe(await networkTagFor('p1', '203.0.113.7'));
-    // One IPv6 /64 is one network.
-    expect(await network('2001:db8:0:1::5')).toBe(await network('2001:db8:0:1:ffff::9'));
   });
 });
 

@@ -8,11 +8,6 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
-import {
-  AUTO_LAYOUT_CHOICES,
-  AUTO_LAYOUT_STYLE_IDS,
-  type AutoLayoutChoice,
-} from './auto-layout-choices';
 import type { ShapeMarker } from '@livehuddle/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
@@ -24,14 +19,12 @@ export type EditorCommand = CommandSearchItem & { run: () => void };
 // What the builder needs to know about the current editor to decide which
 // commands apply. Kept primitive so the builder stays pure + cheap to test.
 export type CommandContext = {
-  // View-only session (docs/specs/007-editor/command-palette.md): only the view-safe subset (zen / fit /
+  // View-only session (docs/specs/007-editor/command-palette.md): only the view-safe subset (fit /
   // export) is offered; every mutating command is withheld.
   isReadOnly: boolean;
   // Gate Undo / Redo on whether there's anything to un/redo.
   canUndo: boolean;
   canRedo: boolean;
-  // Names the zen command honestly ("Enter" vs "Exit").
-  zenMode: boolean;
   // 0 = nothing selected, 1 = single selection, >1 = multi-selection.
   selectionCount: number;
   // True when the single selection is a boxed element (rotation / note /
@@ -56,7 +49,7 @@ export type CommandContext = {
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
+  // The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table; livehuddle no longer passes it):
   // no ownership powers, so neither Share nor Delete document.
   workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
@@ -66,12 +59,6 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // Spotlight is desktop-only (hover + click-to-resize don't map to touch),
-  // so it is withheld on a phone the same way the dropdown omits it.
-  isMobile: boolean;
-  // A whiteboard (docs/specs/023-draw-mode/draw-mode.md): its dock replaces the format painter, so
-  // search does not offer it either.
-  whiteboard?: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
   tabLocked?: boolean;
@@ -100,9 +87,7 @@ export type CommandHandlers = {
   openCollaborators: () => void;
   undo: () => void;
   redo: () => void;
-  toggleZen: () => void;
   fitToScreen: () => void;
-  autoLayout: (choice?: AutoLayoutChoice) => void;
   autoAlign: () => void;
   // Number every step on the tab 1, 2, 3 in reading order (docs/specs/009-elements/step-number.md).
   renumberSteps: () => void;
@@ -132,7 +117,6 @@ export const CANVAS_TOOLS: {
   mutates?: boolean;
   // Edits the tab's elements, so it goes on a locked tab, as in the dropdown.
   editsElements?: boolean;
-  desktopOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -159,56 +143,19 @@ export const CANVAS_TOOLS: {
     mutates: true,
     editsElements: true,
   },
-  {
-    id: 'laser',
-    name: 'Laser Pointer',
-    keywords: 'laser pointer present point highlight temporary trail k',
-    needsContent: true,
-  },
-  {
-    id: 'spotlight',
-    name: 'Spotlight',
-    keywords: 'spotlight focus dim darken present attention',
-    needsContent: true,
-    desktopOnly: true,
-  },
-
-  {
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). A presenter tool like the Laser and Spotlight,
-    // so it needs content for the same reason: there is nothing to put on a
-    // slide on an empty canvas. Picking it opens the panel; Start presents.
-    // Desktop-only: the deck workbench has no room beside a phone's canvas.
-    id: 'slide-deck',
-    name: 'Slide Deck',
-    keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
-    needsContent: true,
-    desktopOnly: true,
-    // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
-    mutates: true,
-  },
-  {
-    id: 'isometric',
-    name: 'Isometric View',
-    keywords: 'isometric 3d tilt perspective depth angle i',
-    needsContent: true,
-  },
 ];
 
 // The tool switches, minus whichever tool is already in force. Grouped with
 // the view-safe commands because most of them only change how you LOOK at the
 // canvas; the two that change it (eraser, format painter) opt in via
 // `mutates` and drop out for a read-only visitor.
-const WHITEBOARD_ABSENT_TOOLS = new Set(['format']);
-
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
   return CANVAS_TOOLS.filter(
     (t) =>
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
-      !(t.desktopOnly && ctx.isMobile) &&
       !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && ctx.tabLocked) &&
-      !(ctx.whiteboard && WHITEBOARD_ABSENT_TOOLS.has(t.id)),
+      !(t.editsElements && ctx.tabLocked),
   ).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
@@ -222,12 +169,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // read-only visitors can run too. Everything below the read-only return
   // mutates the document (or opens an edit surface) and stays editor-only.
   const viewSafe: EditorCommand[] = [
-    {
-      id: 'zen',
-      name: ctx.zenMode ? 'Exit zen mode' : 'Enter zen mode',
-      keywords: 'zen focus distraction free full screen hide chrome presentation',
-      run: h.toggleZen,
-    },
     {
       id: 'fit-to-screen',
       name: 'Fit to Screen',
@@ -259,9 +200,12 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   if (!ctx.tabLocked) out.push(...selectionCommands(ctx, h));
 
+  // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history and no Tab Style.
+  const walking = ctx.canvasTool === 'avatar';
+
   // History. Offered only when there's actually something to un/redo, so
   // the palette never lists a dead verb.
-  if (ctx.canUndo) {
+  if (ctx.canUndo && !walking) {
     out.push({
       id: 'undo',
       name: 'Undo',
@@ -269,7 +213,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.undo,
     });
   }
-  if (ctx.canRedo) {
+  if (ctx.canRedo && !walking) {
     out.push({
       id: 'redo',
       name: 'Redo',
@@ -279,7 +223,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   }
 
   // --- Document / tab commands. Always available in-document (independent of
-  // the selection), so a power user can share / rename / theme without first
+  // the selection), so someone at the keyboard can share / rename / theme without first
   // clearing what's selected.
   out.push({
     id: 'create-tab',
@@ -307,18 +251,21 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.deleteDocument,
     });
   }
-  out.push({
-    id: 'open-theme',
-    name: 'Open Theme',
-    keywords: 'theme colour color scheme style appearance palette',
-    run: h.openTheme,
-  });
-  out.push({
-    id: 'open-canvas',
-    name: 'Open Canvas Options',
-    keywords: 'canvas background pattern grid options style backdrop',
-    run: h.openCanvasOptions,
-  });
+  if (!walking) {
+    out.push({
+      id: 'open-theme',
+      name: 'Open Theme',
+      keywords: 'theme colour color scheme style appearance palette',
+      run: h.openTheme,
+    });
+    out.push({
+      id: 'open-canvas',
+      name: 'Open Canvas Options',
+      keywords:
+        'canvas background floor carpet wood tiles marble concrete grass sand options style backdrop',
+      run: h.openCanvasOptions,
+    });
+  }
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
@@ -334,24 +281,9 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // Layout cleanup moves the tab's elements, so a locked tab offers none of it.
   if (!ctx.tabLocked) {
     out.push({
-      id: 'auto-layout',
-      name: AUTO_LAYOUT_CHOICES.smart.commandName,
-      keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
-      run: () => h.autoLayout(),
-    });
-    // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles").
-    for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
-      out.push({
-        id: `auto-layout-${styleId}`,
-        name: AUTO_LAYOUT_CHOICES[styleId].commandName,
-        keywords: AUTO_LAYOUT_CHOICES[styleId].keywords,
-        run: () => h.autoLayout(styleId),
-      });
-    }
-    out.push({
       id: 'auto-align',
       name: 'Auto-align to Grid',
-      keywords: 'align grid snap straighten cleanup arrange',
+      keywords: 'align grid snap straighten cleanup arrange tidy up layout',
       run: () => h.autoAlign(),
     });
     if (ctx.tabHasSteps) {
@@ -367,7 +299,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'import',
     name: 'Import…',
-    keywords: 'import markdown upload load open file',
+    keywords: 'import json upload load open file restore backup',
     run: h.openImport,
   });
   out.push({

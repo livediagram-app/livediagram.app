@@ -1,27 +1,19 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
-// grouped by what a person is using the template for (the use case), never by the shape of artefact it is. Every
-// template but the blank has exactly one primary category and may be cross-listed in others where people would
-// genuinely look for it. Read by Start a Workshop, the marketing gallery and the agents' catalogue. Pure data plus three lookups; a Record over every non-blank kind, so a new template does not
-// compile until it has a home.
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the kind of
+// place a Space is, Campus, Office, Events, Outdoor and Recreation, each holding two to seven of the eighteen Spaces
+// (docs/specs/007-editor/templates-by-mode.md "The catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
+// people would genuinely look for it. Read by Start a Space, the marketing gallery and the agents' catalogue. Pure
+// data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-export type TemplateCategory =
-  | 'ideas'
-  | 'decisions'
-  | 'goals'
-  | 'meetings'
-  | 'people'
-  | 'planning'
-  | 'product'
-  | 'games'
-  | 'retros'
-  | 'strategy'
-  | 'learning'
-  | 'spaces';
+// The Meetings & Workshops, Retrospectives, Brainstorming, Decisions, Goals & Metrics, People & Teams, Planning,
+// Product & UX, Quizzes & Games, Strategy and Teaching & Learning categories left with their templates
+// (docs/specs/002-project-scope/not-in-livehuddle.md). The one Virtual Spaces category the first four Spaces shared
+// split into four, and Campus (whole sites joined by gardens) came after.
+export type TemplateCategory = 'campus' | 'office' | 'events' | 'outdoor' | 'recreation';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
-// anywhere, so ids follow the meaning. Kanban, Finance, Spreadsheets and Forms went with Plan mode to liveplanner.
+// anywhere, so ids follow the meaning.
 // `searchWords`: what a search also finds the category's templates by, beyond its label.
 type CategoryInfo = {
   id: TemplateCategory;
@@ -32,76 +24,34 @@ type CategoryInfo = {
 
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
-    id: 'ideas',
-    label: 'Brainstorming',
-    searchWords: 'brainstorm ideation',
-    description: 'Boards for getting ideas out and sorting them.',
+    id: 'campus',
+    label: 'Campus',
+    searchWords: 'campus site whole building buildings combined grounds avatar walk room',
+    description: 'Whole sites: offices, halls and bars in a garden.',
   },
   {
-    id: 'decisions',
-    label: 'Decisions',
-    searchWords: 'priorities prioritise prioritize risk',
-    description: 'Priorities, trade-offs and the risks ahead.',
+    id: 'office',
+    label: 'Office',
+    searchWords: 'office work desk desks avatar walk room',
+    description: 'Desks, pods and meeting rooms for the workday.',
   },
   {
-    id: 'goals',
-    label: 'Goals & Metrics',
-    searchWords: 'okr okrs objectives outcomes',
-    description: 'Objectives, outcomes and the results to aim at.',
+    id: 'events',
+    label: 'Events',
+    searchWords: 'event events stage talk demo hall avatar walk room',
+    description: 'Halls and rooms for talks, demos and training.',
   },
   {
-    id: 'meetings',
-    label: 'Meetings & Workshops',
-    searchWords: 'meeting workshop session facilitation',
-    description: 'Agendas, Q&A and formats for running a session.',
+    id: 'outdoor',
+    label: 'Outdoor',
+    searchWords: 'outdoors outside garden park nature avatar walk',
+    description: 'Gardens and parks to meet in under an open sky.',
   },
   {
-    id: 'people',
-    label: 'People & Teams',
-    searchWords: 'hr roles responsibilities ownership',
-    description: 'Roles, responsibilities and stakeholders.',
-  },
-  {
-    id: 'planning',
-    label: 'Planning',
-    searchWords: 'roadmaps project plan releases',
-    description: 'Roadmaps, release slices and who does what.',
-  },
-  {
-    id: 'product',
-    label: 'Product & UX',
-    searchWords: 'design ux research discovery',
-    description: 'Personas, journeys, story maps and discovery.',
-  },
-  {
-    id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
-    description: 'Quizzes, icebreakers and games for the room.',
-  },
-  {
-    id: 'retros',
-    label: 'Retrospectives',
-    searchWords: 'retro retros look back lessons learned',
-    description: 'Look back as a team and agree what to change.',
-  },
-  {
-    id: 'strategy',
-    label: 'Strategy',
-    searchWords: 'business analysis frameworks',
-    description: 'Frameworks for where the business stands and goes.',
-  },
-  {
-    id: 'learning',
-    label: 'Teaching & Learning',
-    searchWords: 'school classroom students teachers lesson education study',
-    description: 'KWL charts and quizzes for the classroom.',
-  },
-  {
-    id: 'spaces',
-    label: 'Virtual Spaces',
-    searchWords: 'office avatar walk room',
-    description: 'Offices and halls to walk round as an avatar.',
+    id: 'recreation',
+    label: 'Recreation',
+    searchWords: 'social fun drinks bar cafe lounge avatar walk',
+    description: 'Bars and cafes to unwind in together after work.',
   },
 ];
 
@@ -117,56 +67,25 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // Every template but the blank's primary category: the job it is for. Blank Space is in none, reached from
 // Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blank"); isBlankTemplate names it.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, TemplateCategory> = {
-  // Brainstorming: getting ideas out, then sorting them.
-  brainstorm: 'ideas',
-  'affinity-map': 'ideas',
-  'crazy-eights': 'ideas',
-  // Decisions: what comes first and what could go wrong.
-  'prioritization-matrix': 'decisions',
-  'risk-matrix': 'decisions',
-  // Goals and Metrics: what to aim at.
-  'objectives-planner': 'goals',
-  // Meetings and Workshops: running a session with the room.
-  'meeting-agenda': 'meetings',
-  'workshop-board': 'meetings',
-  'lean-coffee': 'meetings',
-  'town-hall': 'meetings',
-  // People and Teams: who does what.
-  'raci-matrix': 'people',
-  // Planning: work laid out in time.
-  roadmap: 'planning',
-  // Product and UX: research, journeys and discovery.
-  journey: 'product',
-  'user-persona': 'product',
-  'empathy-map': 'product',
-  'user-story-map': 'product',
-  'opportunity-solution-tree': 'product',
-  // Quizzes and Games: the lighter end of running a room.
-  'pub-quiz': 'games',
-  'icebreaker-questions': 'games',
-  'two-truths-and-a-lie': 'games',
-  'would-you-rather': 'games',
-  'people-bingo': 'games',
-  // Retrospectives: a team looking back to change what comes next.
-  retrospective: 'retros',
-  'start-stop-continue': 'retros',
-  'mad-sad-glad': 'retros',
-  'four-ls': 'retros',
-  sailboat: 'retros',
-  'incident-postmortem': 'retros',
-  // Strategy: where the business stands and where it goes.
-  swot: 'strategy',
-  'pestle-analysis': 'strategy',
-  'business-model-canvas': 'strategy',
-  'value-proposition-canvas': 'strategy',
-  'stakeholder-map': 'strategy',
-  // Teaching and Learning: a topic taught or studied.
-  'kwl-chart': 'learning',
-  // Virtual Spaces: the spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'spaces',
-  'coworking-space': 'spaces',
-  'team-pod': 'spaces',
-  'all-hands-hall': 'spaces',
+  // Every one a Space to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  'virtual-office': 'office',
+  'coworking-space': 'office',
+  'team-pod': 'office',
+  'focus-library': 'office',
+  'all-hands-hall': 'events',
+  'training-room': 'events',
+  'rooftop-bar': 'recreation',
+  cafe: 'recreation',
+  'garden-retreat': 'outdoor',
+  'city-park': 'outdoor',
+  'company-campus': 'campus',
+  'conference-venue': 'campus',
+  'startup-hq': 'campus',
+  'school-quad': 'campus',
+  'hotel-and-suites': 'campus',
+  'coworking-tower': 'campus',
+  'expo-hall': 'events',
+  'beach-offsite': 'outdoor',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -174,26 +93,8 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // Run in a session as much as they are ways to get ideas out.
-  brainstorm: ['meetings'],
-  'crazy-eights': ['meetings', 'product'],
-  // Research synthesis is product work too.
-  'affinity-map': ['product'],
-  // An all-hands is a meeting.
-  'all-hands-hall': ['meetings'],
-  // Planned work: who does what, and the release slices.
-  'raci-matrix': ['planning'],
-  'user-story-map': ['planning'],
-  // A roadmap is strategy in time.
-  roadmap: ['strategy'],
-  // Discovery is aimed at an outcome.
-  'opportunity-solution-tree': ['goals'],
-  // A value proposition is product design.
-  'value-proposition-canvas': ['product'],
-  // Stakeholders are people.
-  'stakeholder-map': ['people'],
-  // A quiz is how a class checks what it learned.
-  'pub-quiz': ['learning'],
+  // A beach offsite is a whole site for a team's day away, so it is looked for among the Campus sites too.
+  'beach-offsite': ['campus'],
 };
 
 /** A template's primary category; null for the blank, which is in none. */

@@ -1321,11 +1321,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
   'UI|Opened|ToolbarSearchUnavailable':
     "In the Toolbar strip's Search, someone expanded the elements bound to another mode's own tools, which this mode cannot add.",
-  'UI|Opened|PowerUserOffer':
-    'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
-  'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
-  'UI|Declined|PowerUserOffer':
-    'Someone said no thanks to the power user mode offer, or closed it.',
   'UI|Opened|NewVersionPrompt':
     'An open editor learned the server now serves a newer project format and offered "A new version of liveplanner is ready".',
   'UI|Used|NewVersionPrompt':

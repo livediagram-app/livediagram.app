@@ -1,6 +1,12 @@
 import { shapeKindLabel } from './element-names';
-import type { ArrowEnds, ComponentKind, EmbedProvider, ShapeKind } from '@livedocuments/document';
-import { EMBED_PROVIDER_LABEL } from '@livedocuments/document';
+import type {
+  ArrowEnds,
+  ComponentKind,
+  EmbedProvider,
+  ShapeKind,
+  TextPresetId,
+} from '@livedocuments/document';
+import { EMBED_PROVIDER_LABEL, TEXT_PRESETS } from '@livedocuments/document';
 
 // Draw-to-size intent. Picking any element from the palette
 // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -28,7 +34,9 @@ export type PendingDraw =
       // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).
       name?: string;
     }
-  | { type: 'text' }
+  // `preset`: the Write text style the tile named (docs/specs/008-canvas/canvas-and-palette.md "Text styles"); absent, a
+  // Paragraph.
+  | { type: 'text'; preset?: TextPresetId }
   | { type: 'sticky' }
   | { type: 'image' }
   // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
@@ -93,7 +101,9 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
     case 'shape':
       return `${press} to drop or drag to draw ${shapeIntentName(intent)}`;
     case 'text':
-      return `${press} to drop or drag to place text`;
+      return `${press} to drop or drag to place ${
+        intent.preset ? `a ${TEXT_PRESETS[intent.preset].name}` : 'text'
+      }`;
     case 'sticky':
       return `${press} to drop or drag to draw a sticky note`;
     case 'image':

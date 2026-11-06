@@ -21,11 +21,12 @@ describe('StartFromTemplates', () => {
     expect(screen.getByRole('heading', { name: 'Start a Space' })).toBeTruthy();
   });
 
-  // "The Spaces lead": the first thing a new person sees is a place to walk into.
-  it('opens on the Spaces', () => {
+  // "Recommended leads": the start opens on Recommended, the blank first.
+  it('opens on Recommended', () => {
     const onTemplate = vi.fn();
     mount('workshop', onTemplate);
-    expect(document.querySelector('[data-start-card="sailboat"]')).toBeNull();
+    expect(document.querySelector('[data-start-card="focus-library"]')).toBeNull();
+    expect(document.querySelector('[data-start-card="blank-session"]')).not.toBeNull();
     fireEvent.click(document.querySelector('[data-start-card="virtual-office"]')!);
     expect(onTemplate).toHaveBeenCalledWith('virtual-office');
   });
@@ -34,8 +35,8 @@ describe('StartFromTemplates', () => {
     const onTemplate = vi.fn();
     mount('workshop', onTemplate);
     fireEvent.click(screen.getByRole('button', { name: /^Recommended/ }));
-    fireEvent.click(document.querySelector('[data-start-card="sailboat"]')!);
-    expect(onTemplate).toHaveBeenCalledWith('sailboat');
+    fireEvent.click(document.querySelector('[data-start-card="team-pod"]')!);
+    expect(onTemplate).toHaveBeenCalledWith('team-pod');
     fireEvent.click(document.querySelector('[data-start-card="blank-session"]')!);
     expect(onTemplate).toHaveBeenCalledWith('blank-session');
     expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
@@ -97,7 +98,7 @@ describe('StartFromTemplates, switching category', () => {
     mount('workshop');
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="planning"]')!);
+    fireEvent.click(document.querySelector('[data-rail="recommended"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

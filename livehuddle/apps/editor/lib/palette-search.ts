@@ -1,5 +1,5 @@
-// Assembles the palette catalogue (shapes + line-art icons + technology icons
-// + stickers) into the flat, keyword-tagged list the global search surfaces as
+// Assembles the palette catalogue (shapes + stickers; no icons or Technology
+// marks, docs/specs/002-project-scope/not-in-livehuddle.md "Icons") into the flat, keyword-tagged list the global search surfaces as
 // "Add to canvas" results (docs/specs/008-canvas/canvas-and-palette.md). Built here, not in lib/search.ts, so the
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
@@ -13,12 +13,8 @@ import {
   tileDisplayName,
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
-import {
-  getLoadedIconCatalog,
-  getLoadedStickerCatalog,
-  getLoadedTechIconCatalog,
-} from '@liveworkspace/workbench/lib/icon-registry';
-import { isLegacyEmojiIconId } from '@liveworkspace/icons';
+import { paletteCategories, SEARCH_ONLY_TILE_IDS } from '@/components/palette/palette-layouts';
+import { getLoadedStickerCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 
 // The shape-placing tiles, in palette order. Derived from the shared
 // catalogue (palette-tile-defs) rather than restated, which is what keeps search from
@@ -30,31 +26,22 @@ export const SHAPE_TILES = PALETTE_TILES.filter(
 );
 
 // One shape tile as a search item. Also read by the whiteboard's More shapes
-// search (lib/whiteboard-shape-catalogue.ts), so both searches find a shape by
+// search, so both searches find a shape by
 // the same words.
 export function shapeTileSearchItem(tile: PaletteTileDef) {
   const action = tile.action as {
     type: 'shape';
     kind: ShapeKind;
-    session?: string;
     reaction?: string;
     mode?: string;
-    estimateScale?: string;
     plan?: string;
     variant?: string;
   };
   const kind = action.kind;
   // Keyed on the CHOICE where there is one, not just the kind: the five
-  // reaction tiles and the three session tiles all place the same shape,
-  // so keying on kind alone gave eight results three distinct ids and the
-  // panel silently dropped the duplicates.
-  const choice =
-    action.session ??
-    action.reaction ??
-    action.mode ??
-    action.estimateScale ??
-    action.plan ??
-    action.variant;
+  // reaction tiles all place the same shape, so keying on kind alone gave
+  // five results one id and the panel silently dropped the duplicates.
+  const choice = action.reaction ?? action.mode ?? action.plan ?? action.variant;
   return {
     id: choice ? `shape:${kind}:${choice}` : `shape:${kind}`,
     name: tileDisplayName(tile),
@@ -65,10 +52,8 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
     add: {
       type: 'shape' as const,
       shapeKind: kind,
-      ...(action.session ? { session: action.session as never } : {}),
       ...(action.reaction ? { reaction: action.reaction as never } : {}),
       ...(action.mode ? { mode: action.mode as never } : {}),
-      ...(action.estimateScale ? { estimateScale: action.estimateScale as never } : {}),
       ...(action.variant ? { variant: action.variant } : {}),
       ...(action.plan ? { plan: action.plan } : {}),
     },
@@ -82,16 +67,25 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
 // what keeps a search add identical to clicking the tile. Dynamic icon /
 // sticker / tech tiles are left to the catalogue enumeration below.
 const OTHER_TILES = PALETTE_TILES.filter(
-  (t) =>
-    t.action.type !== 'shape' &&
-    t.action.type !== 'icon' &&
-    t.action.type !== 'tech-icon' &&
-    t.action.type !== 'sticker',
+  (t) => t.action.type !== 'shape' && t.action.type !== 'sticker',
 );
 
-// Every non-shape tile, as a search item; image tiles only when the editor takes images.
+// Search adds only what the meeting palette offers (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram
+// tools still in livehuddle's UI"): its categories' tiles and the search-only ones. The catalogue keeps every tile,
+// because a stored element of any kind still finds its tile's name and glyph. A fixed set, so built once.
+let offeredIds: ReadonlySet<string> | null = null;
+function offered(tile: PaletteTileDef): boolean {
+  offeredIds ??= new Set([
+    ...paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+    ...SEARCH_ONLY_TILE_IDS,
+  ]);
+  return offeredIds.has(tile.id);
+}
+const offeredShapeTiles = () => SHAPE_TILES.filter(offered);
+
+// Every offered non-shape tile, as a search item; image tiles only when the editor takes images.
 function otherTileItems(hasImage: boolean): PaletteSearchItem[] {
-  return OTHER_TILES.filter((t) => !t.needsImage || hasImage).map((tile) => ({
+  return OTHER_TILES.filter((t) => offered(t) && (!t.needsImage || hasImage)).map((tile) => ({
     id: `tile:${tile.id}`,
     name: tileDisplayName(tile),
     keywords: tileKeywords(tile),
@@ -118,21 +112,10 @@ export function buildPaletteSearchItems({
   // React Compiler re-runs this when they land. Before then they hold nothing to add.
   catalogues?: boolean;
 } = {}): PaletteSearchItem[] {
-  if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  const tiles = [...offeredShapeTiles().map(shapeTileSearchItem), ...otherTileItems(hasImage)];
+  if (!catalogues) return tiles;
   return [
-    ...SHAPE_TILES.map(shapeTileSearchItem),
-    ...otherTileItems(hasImage),
-    // Line art only. The catalogue still carries the legacy emoji entries so
-    // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
-    // a second way to place something that is a sticker now.
-    ...getLoadedIconCatalog()
-      .filter((i) => !isLegacyEmojiIconId(i.id))
-      .map((i) => ({
-        id: `icon:${i.id}`,
-        name: i.label,
-        keywords: `icon ${i.keywords}`,
-        add: { type: 'icon' as const, iconId: i.id },
-      })),
+    ...tiles,
     // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
     // matches on the word on its pill, so "blocked" finds BLOCKED.
     ...getLoadedStickerCatalog().map((s) => ({
@@ -140,12 +123,6 @@ export function buildPaletteSearchItems({
       name: s.label,
       keywords: `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`,
       add: { type: 'sticker' as const, stickerId: s.id },
-    })),
-    ...getLoadedTechIconCatalog().map((t) => ({
-      id: `tech:${t.id}`,
-      name: t.label,
-      keywords: `technology ${t.keywords}`,
-      add: { type: 'tech' as const, iconId: t.id },
     })),
   ];
 }

@@ -28,8 +28,14 @@ import { useEffect, useRef } from 'react';
 //      registered, just lost the race) doesn't fire too. In practice
 //      it travels with `capture`: winning the race is only half of
 //      taking the key, and every caller that passes one passes both.
-//   `preventDefault` (default false): call e.preventDefault() on the
-//      Escape keydown, for surfaces that previously open-coded that.
+//   `preventDefault` (default TRUE): call e.preventDefault() on the
+//      Escape keydown it handles, so the press is claimed. The editor's
+//      window-level shortcuts skip a claimed key, and they run after the
+//      surface has already closed (its unmount drops the modal count
+//      before the window listener sees the event), so without the claim
+//      one Escape both closed a dialog and left Avatar mode behind it.
+//      One Escape does one thing. Pass false only for a surface that
+//      wants the editor to act on the same press too.
 //
 // `onEscape` is captured through a ref so the hook doesn't re-bind
 // the listener on every render that produces a fresh callback
@@ -47,7 +53,7 @@ export function useEscape(onEscape: () => void, options: UseEscapeOptions = {}):
     enabled = true,
     capture = false,
     stopPropagation = false,
-    preventDefault = false,
+    preventDefault = true,
   } = options;
   const cbRef = useRef(onEscape);
   useEffect(() => {

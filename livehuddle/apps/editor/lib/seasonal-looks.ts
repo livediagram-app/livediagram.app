@@ -75,12 +75,12 @@ export const SEASONAL_LOOKS: readonly (TabLook & { season: Season })[] = [
     id: 'fireside',
     season: 'christmas',
     label: 'Fireside',
-    description: 'Evergreen, Professional, slab serif, drift',
+    description: 'Evergreen, Professional, slab serif, wood floor',
     theme: 'evergreen',
     finish: 'professional',
     font: 'roboto-slab',
-    pattern: 'drift',
-    patternOpacity: 0.6,
+    // Floorboards by the fire (docs/specs/011-theme/floors.md).
+    pattern: 'wood',
   },
 ];
 

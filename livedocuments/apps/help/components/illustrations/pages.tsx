@@ -1,7 +1,7 @@
 // Illustrations for the Pages articles on Working with Pages, Infographic Layouts,
 // Exporting and Presenting Pages and Writing Articles (docs/specs/018-help/help-app.md). Each draws
 // the real surface with its real labels: the pages in a row with their labels, title-bar buttons,
-// cogs and add buttons (CanvasPages.tsx, AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the
+// the title bar card with its cog (CanvasPages.tsx, PageTitleBar.tsx), the add buttons (AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the
 // page panel (PagePanel.tsx, page-panel-sections.tsx), the Layout button's
 // popover's layout gallery (PageLayoutsButton.tsx, layout-gallery/LayoutGallery.tsx), the export page picker (ExportPagePicker.tsx) and the
 // article formatting toolbar (article/PageToolbar.tsx). Composed from the shared primitives.
@@ -10,48 +10,17 @@ import type { ReactNode } from 'react';
 import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
 import {
   BackgroundGlyph,
+  CogGlyph,
   LayoutGlyph,
   PadlockGlyph,
+  PageLabel,
   TidyUpGlyph,
-  TitleButton,
-  TitleIcon,
-  titleButtonWidth,
+  TitleBarCard,
+  titleBarLayout,
+  type TitleBarItem,
 } from './page-title-bar';
 
 // --- Shared bits -------------------------------------------------------------------------------
-
-/** The page cog: a small round button with a gear. `on` marks the cog whose panel is open. */
-function Cog({ cx, cy, on = false }: { cx: number; cy: number; on?: boolean }) {
-  const spokes = [0, 45, 90, 135, 180, 225, 270, 315];
-  return (
-    <g transform={`translate(${cx} ${cy})`}>
-      <circle
-        r={9}
-        className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-300'}
-        strokeWidth={1.3}
-      />
-      {spokes.map((a) => (
-        <line
-          key={a}
-          x1={0}
-          y1={-3.4}
-          x2={0}
-          y2={-5.4}
-          transform={`rotate(${a})`}
-          className={on ? 'stroke-brand-600' : 'stroke-slate-500'}
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-      ))}
-      <circle
-        r={2.9}
-        fill="none"
-        className={on ? 'stroke-brand-600' : 'stroke-slate-500'}
-        strokeWidth={1.4}
-      />
-    </g>
-  );
-}
 
 /** A sheet of paper on the canvas, with a soft edge. */
 function Sheet({
@@ -149,16 +118,30 @@ function SolidSegments({
 
 // --- Pages in a row ----------------------------------------------------------------------------
 
-/** An infographic page's title-bar buttons as icons alone (the page too small on screen to name
- *  them): Layout, Background, Tidy and the padlock, left of the cog at `cogX`. */
-function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
+/** An infographic page's title bar, its controls as icons alone (the page too small on screen to name
+ *  them), on its one card: Layout and Background, then Tidy (when the page has something to tidy),
+ *  then the padlock and the cog, its right edge at the page's. */
+function PageBar({
+  right,
+  cy,
+  tidy = true,
+  cogOn = false,
+}: {
+  right: number;
+  cy: number;
+  tidy?: boolean;
+  cogOn?: boolean;
+}) {
   return (
-    <g>
-      <TitleIcon cx={cogX - 70} cy={cy} Glyph={LayoutGlyph} />
-      <TitleIcon cx={cogX - 54} cy={cy} Glyph={BackgroundGlyph} />
-      <TitleIcon cx={cogX - 38} cy={cy} Glyph={TidyUpGlyph} />
-      <TitleIcon cx={cogX - 22} cy={cy} Glyph={PadlockGlyph} />
-    </g>
+    <TitleBarCard
+      right={right}
+      cy={cy}
+      groups={[
+        [{ Glyph: LayoutGlyph }, { Glyph: BackgroundGlyph }],
+        tidy ? [{ Glyph: TidyUpGlyph }] : [],
+        [{ Glyph: PadlockGlyph }, { Glyph: CogGlyph, on: cogOn }],
+      ]}
+    />
   );
 }
 
@@ -169,11 +152,8 @@ export function PagesScene() {
   return (
     <Scene w={480} h={250}>
       {/* Page 1: A4 landscape, a title and a small chart */}
-      <Label x={20} y={38} size={9} weight={600} tone="body">
-        A4 · Landscape
-      </Label>
-      <PageIcons cogX={211} cy={38} />
-      <Cog cx={211} cy={38} />
+      <PageLabel x={20} y={38} size={9} rest="A4 · Landscape" />
+      <PageBar right={220} cy={38} />
       <Sheet x={20} y={52} w={200} h={141}>
         <TextBar x={36} y={68} w={110} h={9} tone="accent" />
         <TextBar x={36} y={84} w={78} />
@@ -197,11 +177,8 @@ export function PagesScene() {
         />
       </Sheet>
       {/* Page 2: a square social post */}
-      <Label x={244} y={38} size={9} weight={600} tone="body">
-        Square
-      </Label>
-      <PageIcons cogX={395} cy={38} />
-      <Cog cx={395} cy={38} />
+      <PageLabel x={244} y={38} size={9} rest="Square" />
+      <PageBar right={404} cy={38} />
       <Sheet x={244} y={52} w={160} h={160}>
         <rect x={244} y={52} width={160} height={160} rx={2} className="fill-brand-50" />
         <Label x={324} y={104} anchor="middle" size={26} weight={800} tone="accent">
@@ -318,11 +295,8 @@ export function PagePanelScene() {
   return (
     <Scene w={436} h={266}>
       {/* The page, its cog lit while its panel is open */}
-      <Label x={20} y={32} size={10} weight={600} tone="body">
-        A4 · Portrait
-      </Label>
-      <PageIcons cogX={161} cy={32} />
-      <Cog cx={161} cy={32} on />
+      <PageLabel x={20} y={32} rest="A4 · Portrait" />
+      <PageBar right={170} cy={32} tidy={false} cogOn />
       <Sheet x={20} y={46} w={150} h={212}>
         <TextBar x={36} y={70} w={90} h={9} tone="accent" />
         <TextBar x={36} y={88} w={66} />
@@ -618,11 +592,17 @@ export function LayoutGalleryScene() {
   const pageW = 360;
   const right = pageX + pageW;
   const barY = 32;
-  // The title bar from the right: the cog, the padlock, Tidy (its icon alone), then Background
-  // and Layout, named, the gaps the title bar's own.
-  const tidyCx = right - 18 - 4 - 22 - 4 - 10;
-  const bgX = tidyCx - 10 - 4 - titleButtonWidth('Background');
-  const layoutX = bgX - 4 - titleButtonWidth('Layout');
+  // The title bar card from the right: the page (its padlock and cog), then Tidy, then Layout
+  // (pressed) and Background, named, at full size.
+  const groups: TitleBarItem[][] = [
+    [
+      { Glyph: LayoutGlyph, name: 'Layout', on: true },
+      { Glyph: BackgroundGlyph, name: 'Background' },
+    ],
+    [{ Glyph: TidyUpGlyph, name: 'Tidy' }],
+    [{ Glyph: PadlockGlyph }, { Glyph: CogGlyph }],
+  ];
+  const layoutX = titleBarLayout(right, groups, 22).items[0]!.x;
   // The popover, left-aligned under the Layout button: the gallery, four tiles across.
   const cols = 4;
   const tw = THUMB_W * 2;
@@ -652,14 +632,8 @@ export function LayoutGalleryScene() {
   return (
     <Scene w={popX + popW + 12} h={popY + popH + 14}>
       {/* The title bar */}
-      <Label x={pageX} y={barY} size={10} weight={600} tone="body">
-        A4 · Landscape
-      </Label>
-      <TitleButton x={layoutX} cy={barY} name="Layout" on Glyph={LayoutGlyph} />
-      <TitleButton x={bgX} cy={barY} name="Background" Glyph={BackgroundGlyph} />
-      <TitleIcon cx={tidyCx} cy={barY} Glyph={TidyUpGlyph} />
-      <PadlockGlyph cx={right - 18 - 4 - 11} cy={barY} />
-      <Cog cx={right - 9} cy={barY} />
+      <PageLabel x={pageX} y={barY} rest="A4 · Landscape" />
+      <TitleBarCard right={right} cy={barY} groups={groups} cell={22} />
       {/* The page, with what is on it now: a layout placed over it replaces it, one Undo back */}
       <Sheet x={pageX} y={barY + 14} w={pageW} h={255}>
         <TextBar x={pageX + 18} y={barY + 34} w={78} h={10} tone="accent" />

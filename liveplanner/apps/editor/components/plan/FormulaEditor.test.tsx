@@ -87,6 +87,18 @@ const box = () => screen.getByLabelText<HTMLTextAreaElement>('Formula');
 const type = (text: string) => fireEvent.change(box(), { target: { value: text } });
 
 describe('FormulaEditor', () => {
+  // docs/specs/026-plan/item-types.md "Formula fields": Preview sits under the check line, above the chips, so Add
+  // Field's footer does not cover it on a phone.
+  it('draws Preview straight after the check line, before the Fields and Functions chips', () => {
+    withPlan([card('a', 3, { title: 'Acme', 'f-budget': 5000, 'f-spent': 2000 })]);
+    render(<Harness start={{ id: 'f-left', formula: '{f-budget} - {f-spent}' }} keep={false} />);
+    const check = screen.getByRole('status');
+    const preview = screen.getByLabelText('Preview');
+    const fields = screen.getByRole('group', { name: 'Fields' });
+    expect(check.compareDocumentPosition(preview) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(preview.compareDocumentPosition(fields) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('shows a stored formula with names, checks it as typed, and keeps it with ids', () => {
     withPlan([card('a', 3, { title: 'Acme', 'f-budget': 5000, 'f-spent': 2000 })]);
     render(<Harness start={{ id: 'f-left', formula: '{f-budget} - {f-spent}' }} keep={false} />);

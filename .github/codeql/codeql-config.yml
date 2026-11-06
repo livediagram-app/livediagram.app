@@ -1,0 +1,13 @@
+# CodeQL's configuration (docs/ci.md "CodeQL"). Test code never ships: the unit tests and the
+# Playwright e2e specs and helpers were 37% of the JavaScript and TypeScript it read (46.9 of
+# 126.1 MB, measured 2026-11-06), and alerts in them don't block a merge. Every shipped file is
+# still scanned. The default query suite only: custom queries would also rule out GitHub's
+# incremental pull request analysis once it is enabled for this repository.
+paths-ignore:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.test.js'
+  - '**/*.test.mjs'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
+  - '**/e2e/**'

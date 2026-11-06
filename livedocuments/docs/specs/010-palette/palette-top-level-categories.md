@@ -14,7 +14,9 @@ kind"](../007-editor/pages-mode.md#the-palettes-kind).
 
 **There is no Tools tab.** Each group of elements is a top-level palette category of its own: Shapes, Write,
 Concepts, Components, Devices, Icons, Stickers, Media and Data. Code Block, Checklist and Timeline sit in
-**Components**; Table in **Data**; Image and Avatar in **Media**. **Write** holds the wordy elements. There is no
+**Components**; Table in **Data**; Image and Avatar in **Media**. **Write** holds the wordy elements: the text
+styles (Title, Subtitle, Heading, Subheading, Paragraph, Quote; [Canvas and palette](../008-canvas/canvas-and-palette.md#text-element)
+"Text styles"), then the Sticky Note and the Pointer Note. There is no
 User / actor tile (see below).
 
 **The category bar has bands**, the way the canvas-tool dropdown got them

@@ -78,4 +78,11 @@ describe('arrow-behind-box', () => {
       of(lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'))), 'arrow-behind-box'),
     ).toEqual([]);
   });
+
+  // The retired templates' lifelines exercised this until Work Tracker #423 took them out.
+  it('leaves an arrow drawn over the boxes it crosses on purpose (routeBehind false)', () => {
+    const over = arrow('x', 'a', 'b', undefined, { routeBehind: false });
+    const report = lint(tabOf(box('a', 0, 0), box('m', 200, 0), box('b', 400, 0), over));
+    expect(of(report, 'arrow-behind-box')).toEqual([]);
+  });
 });

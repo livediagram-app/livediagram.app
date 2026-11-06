@@ -22,6 +22,7 @@ import type { Element, Page, PageBackground } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 const VIOLET = '#7c3aed';
 const DEEP = '#2e1065';
@@ -61,12 +62,10 @@ const ACTIONS = [
   { iconId: 'user-plus', label: `Follow ${HANDLE} for more` },
 ] as const;
 
-const GRADIENT: PageBackground = {
-  fill: { kind: 'gradient', from: '#5b21b6', to: '#be185d', angle: 135 },
-};
-const WASH: PageBackground = {
-  fill: { kind: 'gradient', from: '#faf5ff', to: '#ede9fe', angle: 160 },
-};
+// The theme's own backgrounds (template-backgrounds): its Aurora for the hook and the close, its
+// Dawn for the tips.
+const GRADIENT: PageBackground = themeGradientBackground('aurora');
+const WASH: PageBackground = themeGradientBackground('dawn');
 
 /** The carousel's pages: five Square slides, the hook and the close on the brand gradient. */
 export function socialCarouselPages(): Page[] {

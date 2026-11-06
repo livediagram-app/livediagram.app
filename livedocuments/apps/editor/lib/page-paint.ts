@@ -2,24 +2,17 @@
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
-  DUSK_BOTTOM_SHADE,
-  DUSK_TOP_SHADE,
   STEEL_GRADIENT,
   FALLBACK_THEME_ACCENT,
-  MIST_BOTTOM_TINT,
-  MIST_TOP_TINT,
-  themeAccent,
-  themeSecondaries,
   PAGE_GRADIENT_ANGLE,
   pageImageTone,
   PAGE_PATTERN_PITCH,
   pagePatternInk,
   shade,
-  tint,
-  type ThemeDefinition,
   sameFill,
   type PageBackground,
   type PageFill,
+  type ThemeBackgroundPreset,
   type PagePattern,
 } from '@livedocuments/document';
 import type { CSSProperties } from 'react';
@@ -184,48 +177,15 @@ export function pageSheetStyle(
   return style;
 }
 
-export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };
+// The theme's own gradients are the document's (page-theme-fills), shared with every path that
+// makes a page.
+export { themeBackgroundPresets, type ThemeBackgroundPreset } from '@livedocuments/document';
 
 // The theme's accent and its default page background are the document's, shared with every path
 // that makes a page.
 export { themeAccent } from '@livedocuments/document';
 const FALLBACK_ACCENT = FALLBACK_THEME_ACCENT;
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
-
-/**
- * Gradients drawn from the tab's theme (docs/specs/007-editor/pages-mode.md "Backgrounds"),
- * the Gradient category's Theme row: fourteen, seven light then seven bold and deep, from its
- * accent, its second colour and its third (a multi-colour theme's next branches, else the accent
- * deepened). Its solid colours are the Solid category's Theme Palette. Pure: theme in, presets out.
- */
-export function themeBackgroundPresets(
-  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
-): ThemeBackgroundPreset[] {
-  const a = themeAccent(theme);
-  const [b, c] = themeSecondaries(theme);
-  const g = (id: string, label: string, from: string, to: string): ThemeBackgroundPreset => ({
-    id: `theme-${id}`,
-    label: `Theme ${label}`,
-    fill: gradientFill({ from, to }),
-  });
-  return [
-    g('dawn', 'dawn', '#ffffff', tint(a, 0.8)),
-    g('mist', 'mist', tint(a, MIST_TOP_TINT), tint(a, MIST_BOTTOM_TINT)),
-    g('glow', 'glow', tint(a, 0.85), tint(b, 0.7)),
-    g('haze', 'haze', tint(b, 0.92), tint(a, 0.8)),
-    g('sorbet', 'sorbet', tint(b, 0.85), tint(c, 0.75)),
-    g('pastel', 'pastel', tint(c, 0.9), tint(a, 0.78)),
-    g('bloom', 'bloom', tint(a, 0.7), tint(b, 0.5)),
-    g('bright', 'bright', a, b),
-    g('vivid', 'vivid', tint(a, 0.15), shade(a, 0.35)),
-    g('aurora', 'aurora', shade(a, 0.3), shade(b, 0.1)),
-    g('ember', 'ember', b, shade(c, 0.5)),
-    // A new infographic page's own background (defaultPageBackground).
-    g('dusk', 'dusk', shade(a, DUSK_TOP_SHADE), shade(b, DUSK_BOTTOM_SHADE)),
-    g('twilight', 'twilight', shade(b, 0.6), shade(a, 0.8)),
-    g('ink', 'ink', shade(a, 0.75), '#0f172a'),
-  ];
-}
 
 /** The theme accent the theme's gradients were drawn from (Theme bright runs from it): a page
  *  picture's Tint, where only the presets are at hand. */

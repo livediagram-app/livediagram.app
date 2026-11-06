@@ -3,7 +3,7 @@
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'error';
 
-// An offer (docs/specs/007-editor/power-user-mode.md): a toast that asks something, so it carries two
+// An offer (docs/specs/004-interface-design/toasts.md): a toast that asks something, so it carries two
 // answers. It stays up longer than a plain toast (TOAST_ANSWER_TIMEOUT_MS), then leaves unanswered. Closing it is
 // the decline; timing out is neither answer.
 export type ToastOffer = {

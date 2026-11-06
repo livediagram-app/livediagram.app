@@ -11,7 +11,9 @@ read in the browser like any other.
 ## How it's triggered
 
 The Import dialog ([Markdown import](markdown-import.md) "How it's triggered") offers two more format cards beside
-JSON and Markdown: **Word** ("A .docx from Word or Google Docs. Becomes an article.") and **PowerPoint** ("A .pptx
+JSON and Markdown, each only on a tab of its kind or an empty one ([Markdown import](markdown-import.md) "Where it
+is offered"): **Word** on an article tab, **PowerPoint** on a slide deck tab, and both on an empty tab, where a
+`.docx` makes the tab an article and a `.pptx` makes it a slide deck. The cards are **Word** ("A .docx from Word or Google Docs. Becomes an article.") and **PowerPoint** ("A .pptx
 from PowerPoint or Google Slides. Becomes slide pages."). Neither is text, so neither opens the paste panel: each
 opens a **file panel** (`FileImportPanel`) with the same `BackBar`, the warning above it, and:
 
@@ -30,8 +32,8 @@ opens a **file panel** (`FileImportPanel`) with the same `BackBar`, the warning 
 The chosen card decides the parser, as for the text formats: a `.pptx` dropped on the Word panel is refused with
 "This is a PowerPoint file. Go back and choose PowerPoint to import it." (and the other way round).
 
-A `.docx` or `.pptx` dropped on the canvas is refused like a Markdown file is, pointing to Import in the tab
-menu.
+A `.docx` or `.pptx` dropped on the canvas is refused like a Markdown file is: pointing to Import in the tab
+menu on a tab that takes it, otherwise naming the tabs that do.
 
 ## Word becomes an article
 
@@ -50,6 +52,7 @@ document's body, in the order it is written. The article flows onto as many page
 | A hyperlink to an http, https or mailto address (relationship or field)     | A link (anything else keeps its text, unlinked)                                                                                     |
 | A page break (a break run, or "page break before" on a paragraph)           | A page break                                                                                                                        |
 | A line break                                                                | A line break in the block; a tab is a space                                                                                         |
+| A footnote                                                                  | A footnote at its reference, its text plain (paragraphs joined by a space)                                                          |
 | A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width                                                                   |
 | Paragraph alignment (centre, right, justify)                                | The same alignment                                                                                                                  |
 | A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
@@ -57,7 +60,7 @@ document's body, in the order it is written. The article flows onto as many page
 | Tracked insertions; tracked deletions                                       | Kept as written; left out                                                                                                           |
 | Content controls, smart tags, fields                                        | Their content or result                                                                                                             |
 
-What is **not** brought across, and named in the report when the document had it: footnotes and endnotes,
+What is **not** brought across, and named in the report when the document had it: endnotes,
 comments, headers and footers, text boxes and shapes, charts, diagrams (SmartArt), equations, embedded objects
 and linked pictures. Colours, fonts, highlighting and the document's page setup are not brought across and not
 reported: the article takes the tab's theme and its own style.

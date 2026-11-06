@@ -6,33 +6,33 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                             | Role                                                                             |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/document/src/web-components.ts`                        | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
-| `packages/document/src/component-factories.ts`                   | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
-| `packages/document/src/shape-factory.ts`                         | Default sizes and starting content per kind                                      |
-| `packages/document/src/svg-render-web.ts`                        | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
-| `packages/document/src/themes.ts`                                | `themeColourFields`: accent bars retheme only their stroke                       |
-| `packages/document/src/colors.ts`                                | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                           | `isSelfDrawingShape`: stat row and process carry no label                        |
-| `packages/document/src/validate.ts`                              | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
-| `packages/document/src/legacy-groups.ts`                         | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
-| `packages/document/src/stored-elements.ts`                       | `migrateStoredElements`: legacy groups, then legacy docks                        |
-| `packages/document/src/stored-tab.ts`                            | `migrateStoredTab`: every stored-tab entry point runs it                         |
-| `apps/api/src/tab-row.ts`                                        | `rowToTab` runs the migration                                                    |
-| `apps/api/src/thumbnail.ts`                                      | The thumbnail render runs the migration on the tab it parses                     |
-| `apps/editor/lib/offline/offline-store.ts`                       | `offlineLoadTab` runs the migration                                              |
-| `apps/editor/lib/import-merge.ts`                                | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
-| `apps/editor/components/canvas/web/*.tsx`                        | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | The in-place single-line editor                                                  |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`            | Routes faces; computes `editable`                                                |
-| `apps/editor/hooks/canvas/useWebComponentSetters.ts`             | Row writes, ring append, hero caption writes                                     |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/editor/components/palette/context-menu-web-editors.tsx`    | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
-| `apps/editor/components/palette/ElementContentSections.tsx`      | The image menu's "Caption Card" toggle                                           |
-| `apps/editor/components/canvas/CanvasElementsLayer.tsx`          | `WEB_ROW_ACTION`: the ring's add-row action                                      |
-| `apps/editor/lib/element-telemetry.ts`                           | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
-| `apps/editor/lib/excalidraw-scene.ts`, `excalidraw-export.ts`    | No group mapping                                                                 |
+| File                                                                         | Role                                                                             |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `packages/document/src/web-components.ts`                                    | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `packages/document/src/component-factories.ts`                               | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
+| `packages/document/src/shape-factory.ts`                                     | Default sizes and starting content per kind                                      |
+| `packages/document/src/svg-render-web.ts`                                    | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `packages/document/src/themes.ts`                                            | `themeColourFields`: accent bars retheme only their stroke                       |
+| `packages/document/src/colors.ts`                                            | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
+| `packages/document/src/data-shapes.ts`                                       | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `packages/document/src/validate.ts`                                          | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
+| `packages/document/src/legacy-groups.ts`                                     | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
+| `packages/document/src/stored-elements.ts`                                   | `migrateStoredElements`: legacy groups, then legacy docks                        |
+| `packages/document/src/stored-tab.ts`                                        | `migrateStoredTab`: every stored-tab entry point runs it                         |
+| `apps/api/src/tab-row.ts`                                                    | `rowToTab` runs the migration                                                    |
+| `apps/api/src/thumbnail.ts`                                                  | The thumbnail render runs the migration on the tab it parses                     |
+| `apps/editor/lib/offline/offline-store.ts`                                   | `offlineLoadTab` runs the migration                                              |
+| `apps/editor/lib/import-merge.ts`                                            | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
+| `apps/editor/components/canvas/web/*.tsx`                                    | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
+| `../packages/workbench/src/components/canvas/InlineTextLine.tsx`             | The in-place single-line editor                                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`                        | Routes faces; computes `editable`                                                |
+| `apps/editor/hooks/canvas/useWebComponentSetters.ts`                         | Row writes, ring append, hero caption writes                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                            | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
+| `apps/editor/components/palette/context-menu-web-editors.tsx`                | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `apps/editor/components/palette/ElementContentSections.tsx`                  | The image menu's "Caption Card" toggle                                           |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`                      | `WEB_ROW_ACTION`: the ring's add-row action                                      |
+| `apps/editor/lib/element-telemetry.ts`                                       | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
+| `../livediagram/apps/editor/lib/excalidraw-scene.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
 
 ## Domain and naming
 
@@ -287,7 +287,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/editor/lib/offline/offline-store.test.ts`                    |
 | JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/editor/lib/import-merge.test.ts`                             |
 | Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                   |
-| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `apps/editor/lib/excalidraw-import.test.ts`                        |
+| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `../livediagram/apps/editor/lib/excalidraw-import.test.ts`         |
 | ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
 | Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                         |
 | Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                              |

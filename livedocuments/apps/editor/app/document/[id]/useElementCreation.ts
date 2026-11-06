@@ -7,16 +7,16 @@ import {
   withInlineIcon,
   createShape,
   defaultIconAnimation,
-  createText,
   type BoxedElement,
   type Element,
   type LaidOutPage,
   type ShapeKind,
   type Tab,
+  type TextPresetId,
   withVariantColours,
 } from '@livedocuments/document';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { buildDrawnBoxed } from '@/lib/draw-commit';
+import { buildDrawnBoxed, presetTextAt, slideAt } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
@@ -234,9 +234,10 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'component', kind: 'avatar' });
   };
 
-  const addText = () => {
+  // A Write text style (docs/specs/008-canvas/canvas-and-palette.md "Text styles"); T arms a Paragraph.
+  const addText = (preset?: TextPresetId) => {
     if (editsBlocked) return;
-    beginDraw({ type: 'text' });
+    beginDraw(preset ? { type: 'text', preset } : { type: 'text' });
   };
   const addSticky = () => {
     if (editsBlocked) return;
@@ -354,9 +355,8 @@ export function useElementCreation(opts: {
     // hidden active layer it stamped the text onto an unrendered layer,
     // which read as "double-click does nothing".
     if (editsBlocked) return;
-    const TEXT_W = 160;
-    const TEXT_H = 48;
-    const el = createText(x - TEXT_W / 2, y - TEXT_H / 2);
+    // A Paragraph, left aligned (docs/specs/008-canvas/canvas-and-palette.md "Text element").
+    const el = presetTextAt(x, y, undefined, slideAt(activeTab, x, y));
     commitTabs((ts) =>
       ts.map((t) =>
         t.id === activeId ? { ...t, elements: [...t.elements, el], templateChosen: true } : t,

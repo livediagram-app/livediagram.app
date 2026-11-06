@@ -4,24 +4,21 @@ The frontend-only prototype phase ended once the API app landed. This spec captu
 
 ## Where we are now
 
-Eight apps, seven deployed as Cloudflare Workers (with Static Assets for the four Next.js sites) and one, the CLI, published to npm:
+Six apps, each deployed as a Cloudflare Worker (with Static Assets for the four Next.js sites). The MCP server and the CLI went later, with workbenches ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 
 - **marketing**: static landing site at `/`.
 - **editor**: the space editor (clean routes, no prefix). Statically exported Next.js.
 - **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
 - **community**: the public gallery of shared spaces at `/community`. Statically exported Next.js. See [Community](../025-community/community.md).
 - **api**: Cloudflare Worker holding the REST endpoints + one Durable Object per document, its realtime room and its durable store. liveworkspace's index files documents and decides who may open them.
-- **mcp**: Cloudflare Worker at its own host, `mcp.livehuddle.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
 - **router**: Worker that stitches marketing, editor, help, community and api under one hostname, and sends `/telemetry` to liveworkspace's dashboard filtered to livehuddle ([Telemetry](../017-telemetry/telemetry.md)).
-- **cli**: the `livehuddle` command line ([CLI](../015-api/cli.md)).
 
 The editor is real:
 
 - **Canvas primitives**: shapes (geometric primitives plus frames, progress bars / rings, star ratings, timelines, pie / bar / line charts, syntax-highlighted code blocks, and tickable checklists, plus a curated single-colour icon catalogue and a ~190-strong colour-emoji sticker set, see [Stickers](../010-palette/stickers.md)), tables, sticky notes, text, images, arrows (straight / curved / angled with draggable curve / elbow handles, configurable thickness + arrowhead size, optional labels), freehand sketches via the Freehand and Shape Pen tools (smooth SVG paths; the Shape Pen auto-converts a rough square / circle / diamond / triangle / star / line into the real element on release, see [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)), a translucent Highlighter tile beside the two pens (see [Highlighter](../008-canvas/highlighter.md)), a click-to-place polygon / polyline tool, comment threads, per-element links (including link-to-tab) + locks, and drop shadows with presets + sliders (see [Element shadows](../008-canvas/element-shadows.md)).
 - **Web components**: elements that lay themselves out (banner, callout, stat row, process, header, hero); there are no groups. See [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md).
 - **Multi-select**: marquee drag, plain-click, shift-click, format painter.
-- **Layers**: per-tab Photoshop-style layers with a dockable Layers panel (per-layer previews, hide, lock, rename, drag-to-restack); Bring to Front / Send to Back move elements between layers, and hidden layers stay out of exports. See [Layers](../006-document/layers.md).
-- **Presentation mode**: a **slide deck** over a document, run full screen. A slide is an explicit set of elements picked from one tab; the deck spans tabs, and slides reference elements rather than copying them, so editing a shape updates every slide it is on. Built and started from the Slide Deck panel. See [Presentation mode](../012-collaboration/presentation-mode.md).
+- **Presentation mode** (gone from livehuddle in Work Tracker #423 part 2; livediagram keeps it): a **slide deck** over a document, run full screen. A slide is an explicit set of elements picked from one tab; the deck spans tabs, and slides reference elements rather than copying them, so editing a shape updates every slide it is on. Built and started from the Slide Deck panel. See [Presentation mode](../012-collaboration/presentation-mode.md).
 - **Rotation**: any boxed element tilts about its centre to a preset 45° angle from the right-click Rotation menu or the search palette's Rotate actions; the angle round-trips through copy / paste / duplicate / save ([Canvas and palette](../008-canvas/canvas-and-palette.md)).
 - **Templates**: thirty-nine themed starters across twelve categories grouped by use case (pinned by `packages/templates/src/template-categories.test.ts`) (Brainstorming, Decisions, Goals & Metrics, Meetings & Workshops, People & Teams, Planning, Product & UX, Quizzes & Games, Retrospectives, Strategy, Teaching & Learning, Virtual Spaces), Workshop's and the Spaces from Blank Space and the retrospectives to SWOT, the Roadmap and the Virtual Office (build plan step 5.4 cut the rest). An empty tab opens on Start a Space ([Template starts](../007-editor/start-diagramming.md)), with the Workshop tour on the Start Tour button.
 - **One editor mode**: every tab is in **Workshop** ([Workshop mode](../012-collaboration/workshop-mode.md), for running a session with a team), with no mode switch; livediagram's Diagram and Draw modes, and the elements only they offered (flowcharts, mind maps, org charts, sequence diagrams, Sankey diagrams, entities, the concept graphics but the Timeline, device frames and Technology icons), were cut in build plan step 5.1 ([Editor modes](../007-editor/editor-modes.md)).
@@ -36,7 +33,7 @@ The editor is real:
 - **Undo and redo**: snapshot-based, personal to each editor, in the bottom-right cluster and on Cmd/Ctrl+Z. There is no per-tab Activity panel or change log ([Collaboration](../012-collaboration/README.md#no-activity-panel)).
 - **Tabs**: every document is a stack of tabs (link across them; copy a tab into another document), groupable into one-level collapsible folders ([Tab folders](../006-document/tab-folders.md)).
 - **Trash**: a deleted document waits 30 days in the Trash (Settings › Account) before it is purged; team documents go to their team Trash and Offline Mode documents to a local one. See [Trash](../013-workspace/trash.md).
-- **Folders**: nested folders in the Explorer; full-page `/explorer` for signed-in users ([Folders](../013-workspace/folders.md)). New documents land in a per-person [default folder](../013-workspace/default-folders.md) chosen by what they open as (Sessions, Retrospectives, Kanban boards); set in Settings › Documents › Default Folders.
+- **Folders**: nested folders in the Explorer; full-page `/explorer` for signed-in users ([Folders](../013-workspace/folders.md)). New documents land in a per-person [default folder](../013-workspace/default-folders.md) (one entry, Spaces); set in Settings › Spaces › Default Folders.
 - **Timeline**: the Explorer's Timeline row opens a day-grouped feed of everything that happened across your documents, teams and account (comments, assigned actions, team membership, invites, plus forward-dated expiry warnings), with an unread marker and a calendar month view. Guests included; their history migrates on sign-up. See [Timeline](../013-workspace/timeline.md).
 - **Inbox**: the Explorer section beside the Timeline that lists what is still _outstanding_ for you across every document: open actions assigned to you, open actions you assigned to others, and unresolved comment threads you are in, each row opening the document at that element with its popover ready. See [Inbox](../013-workspace/inbox.md).
 - **Sharing**: editor or view-only share links per document, with an optional password gate that applies to every link on the document; revoke individually or in bulk at any time.
@@ -51,19 +48,9 @@ The editor is real:
 - **Teams**: teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of documents. See [Teams](../013-workspace/teams.md) and [Team shared documents](../013-workspace/team-shared-documents.md).
 - **Assigned actions**: a named, described piece of work attached to any element and assigned to a teammate, optionally by email. Actions live beside comments in the Collaborate panel, so a document carries the follow-ups it generated instead of them leaking into a separate tracker. See [Assigned actions](../012-collaboration/assigned-actions.md).
 - **API tokens + public API**: signed-in users mint `lwt_` tokens and drive the REST API from outside the editor: scripts, CI, anything that can send a header. See [Public API and API tokens](../015-api/public-api-and-tokens.md).
-- **MCP server**: `mcp.livehuddle.app` connects the editor to AI tools over OAuth, so an assistant can find, read, create, and edit your documents directly. It is an OAuth front door onto the same API tokens, not a second permission model. See [MCP server](../015-api/mcp-server.md).
-- **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): the MCP server and API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
+- **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed livediagram-app/livediagram.app#343.
 - **Document views and edit operations** ([Document views](../024-agents/document-views.md), [Edit operations](../024-agents/edit-operations.md)): agents read a tab as compact text (outline, graph, layout, comments, show, find) addressed by refs, and change it with twelve intent-level operations (`add set rm move connect rewire insert wrap unwrap order layout test`) in the line form or JSON, by ref or selector, placed beside what they name, making room on insert, and answered with one result line per element. The [diagram lint](../024-agents/diagram-lint.md) checks every
   changeset's result (overlaps, crossings, arrows behind boxes, overflowing labels) and names a fix for each finding.
-- **The CLI** ([CLI](../015-api/cli.md)): `livehuddle` signs in through the browser, with a code on another device
-  (`--device`) or with a token, keeping it in the system's own keychain; reads every view, lint and diff; edits with
-  edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
-  presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
-  document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@livehuddle/cli`, by hand outside CI.
-- **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
-  person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
-  frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
@@ -82,7 +69,7 @@ The editor is real:
 
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); signed-in users key their data off their account id instead.
 - **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, eraser, laser, spotlight, avatar, presentation), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
-- **One-off prompts and counters**: the sign-in prompt and banner dismissals, the power-user offer, the last active day.
+- **One-off prompts and counters**: the sign-in prompt and banner dismissals, the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#the-visitor)).
 
 `sessionStorage` holds only the facilitator baton, per document, for the life of the browser tab ([Facilitator](../012-collaboration/facilitator.md)).
@@ -93,7 +80,7 @@ The editor is real:
 
 **Status: Planned.** Not built yet; each item's spec marks what exists today.
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), and presence built.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md), and livediagram's [Later](../../../../livediagram/docs/specs/013-workspace/share-roles.md#later), which both products share): Participant links and the look-only Viewer are built; token levels, ownership as separate powers, server-derived collaboration keys and an answers route are next.
 
 ## Later

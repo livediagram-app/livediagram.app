@@ -13,16 +13,12 @@ import type {
   ChartLegendPosition,
   ChartType,
   ChecklistItem,
-  AgendaItem,
   ChairFacing,
-  DecisionStatus,
-  EstimateScale,
   Element,
   ChartPaletteId,
   CodeThemeId,
   ElementShadow,
   Finish,
-  Layer,
   LegendItem,
   AnimationSetId,
   IconAnimation,
@@ -89,13 +85,6 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
-  // Layer section's move-to dropdown, the selection's resolved layer
-  // (null when members span layers), and the selection-wide move. The move
-  // is absent while the Layers panel is off in Settings, and its tiles with it.
-  layers: Layer[];
-  selectionLayerId: string | null;
-  onMoveSelectionToLayer?: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;
@@ -198,37 +187,22 @@ export type EditorContextMenuProps = {
   // caption card on or off.
   onSetWebRows: (rows: import('@livehuddle/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
-  // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@livehuddle/document').SelectionMode) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
   // "create the far end for me" for the common case where it doesn't exist yet.
   onSetPortalName: (name: string) => void;
   onCreateLinkedPortal: () => void;
-  // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
-  // their settings, applied to the element the menu is acting on. The session button's and the cover's are
-  // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
-  onSetSession?: (config: import('@livehuddle/document').SessionButtonConfig) => void;
-  onSetRevealed?: (revealed: boolean) => void;
-  onSetPickerSource: (source: import('@livehuddle/document').PickerSource) => void;
-  onSetPickerOptions: (options: string[]) => void;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@livehuddle/document').Reaction) => void;
-  // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
-  // check, idea box and roll call carry no settings — everything they do
-  // happens on their own faces — so they need no setter here.
-  onSetEstimateScale: (scale: EstimateScale) => void;
-  onSetAgendaItems: (
-    items: AgendaItem[],
-    moveCurrent?: (current: number) => number | undefined,
-  ) => void;
-  onSetDecisionStatus: (status: DecisionStatus) => void;
-  onSetDecisionDate: (date: string | undefined) => void;
-  onSetDecisionDrivers: (drivers: string[]) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
+  // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
+  onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
+  // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
+  onSetScreenUrl?: (url: string | undefined) => void;
+  // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
+  onSetClockZones?: (zones: import('@livehuddle/document').ClockZone[] | undefined) => void;
+  onSetJukeboxSource?: (source: string | undefined) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livehuddle/document').Tab[];

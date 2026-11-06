@@ -4,8 +4,8 @@ import { parseImportedTab } from './import-tab';
 import { mergeImportedTab } from './import-merge';
 
 // The whole journey a board takes when someone mails it to a colleague: export to JSON, import into a
-// fresh tab, and its notes must still be filed on their layer. This is the end-to-end pin for the merge
-// rule: each half was correct on its own while the join quietly dropped the layers.
+// fresh tab. A board saved while livehuddle had layers arrives as one plane (docs/specs/006-document/layers.md
+// "Documents saved with layers"): its notes land, and the layer fields do not.
 describe('export -> import round trip', () => {
   const board = (): Tab =>
     ({
@@ -28,13 +28,12 @@ describe('export -> import round trip', () => {
 
   const plainTab = (): Tab => ({ id: 'dest', name: 'Tab 1', elements: [] });
 
-  it('keeps the layer the notes are filed on, so their layerId resolves', () => {
+  it('lands the notes and drops the retired layer fields', () => {
     const parsed = parseImportedTab(tabToJsonText(board()));
     if (!parsed.ok) throw new Error('parse failed');
     const merged = mergeImportedTab(plainTab(), parsed.tab);
-    const layerIds = (merged.layers ?? []).map((l) => l.id);
-    for (const el of merged.elements) {
-      if (el.layerId) expect(layerIds).toContain(el.layerId);
-    }
+    expect(merged.elements.map((el) => el.id)).toEqual(['n1']);
+    expect('layers' in merged).toBe(false);
+    expect('layerId' in merged.elements[0]!).toBe(false);
   });
 });

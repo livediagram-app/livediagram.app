@@ -13,14 +13,11 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
   });
 
   it("names real selection modes, and none of an Editor's tools", () => {
-    const ids = buildCanvasToolOptions({
-      isMobile: false,
-      includeZen: true,
-    }).map((o) => o.id);
+    const ids = buildCanvasToolOptions({}).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
     // Avatar is every role's (docs/specs/008-canvas/avatar-mode.md "Where it lives", share-roles.md).
     expect(PARTICIPANT_CANVAS_TOOLS).toContain('avatar');
-    for (const tool of ['eraser', 'format', 'slide-deck']) {
+    for (const tool of ['eraser', 'format']) {
       expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);
     }
   });

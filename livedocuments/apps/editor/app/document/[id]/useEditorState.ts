@@ -4,7 +4,7 @@ import { useFindReplace } from '@/hooks/editor/useFindReplace';
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
-import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
+import { useDeckFollowsPages } from './useDeckFollowsPages';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
@@ -42,8 +42,6 @@ import {
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
@@ -72,7 +70,6 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
-import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
@@ -88,7 +85,6 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
-import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
@@ -101,6 +97,7 @@ import { useTabCanvas } from '@/hooks/canvas/useTabCanvas';
 import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShortcuts';
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useSlideDeck } from './useSlideDeck';
+import { deckSaveQueue, type DeckSaveQueue } from './deck-save';
 import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
@@ -337,7 +334,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
     defaultPan: embedMode,
   });
-  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -389,18 +385,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tabForTool.elements.length === 0 &&
       (tool === 'format' || tool === 'laser' || tool === 'spotlight')
     ) {
-      return;
-    }
-    // A slide deck spans tabs, so a tab-scoped session has none
-    // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
-    if (tool === 'slide-deck' && tabScopeRef.current !== null) {
-      toast.info("The slide deck isn't shared with you");
-      return;
-    }
-    // Desktop-only (docs/specs/012-collaboration/presentation-mode.md): the pickers
-    // already hide it on a phone, so this catches any path that still asks.
-    if (tool === 'slide-deck' && isMobileViewportSync()) {
-      toast.info('Slide Deck is only available on a larger screen');
       return;
     }
     // Spotlight is a non-editing presenter mode, so it clears the selection on entry.
@@ -501,10 +485,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
   });
-
-  // Per-element note popover (state + open/close/setNote handlers)
-  // lives in useEditorNotes. Invoked further down, after `commit`
-  // exists.
 
   // Right-click context menu state (cursor position + element-scoped
   // vs tab-scoped mode). See useEditorContextMenu.
@@ -665,20 +645,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
   const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
-  // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). Its shortcut
-  // counter rides the keyboard hook below.
-  const powerUserOffer = usePowerUserOffer({
-    prefs: userPreferences,
-    settled: prefsSettled,
-    editable: hydrated && !isReadOnly,
-    embed: !appChrome,
-    zen: panelLayout.zenMode,
-    apply: (next) => {
-      // Built on this render's preferences: moved onto the freshest before the whole blob is written.
-      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id));
-    },
-    offer: toast.offer,
-  });
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -1107,45 +1073,46 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
-  // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
-  const framePageRef = useRef<((pageId: string) => void) | null>(null);
-  // The deck as this editor last saved or loaded it: what its next deck save was built on.
+  // The deck as this editor last stored or loaded it: what its next deck save is built on.
   const deckBaseRef = useRef<string | null>(documentPresentation);
+  // The deck this editor last sent: coming back through documentPresentation it is no new base (the save queue moves
+  // the base itself, once the save lands).
+  const sentDeckRef = useRef<string | null | undefined>(undefined);
   useEffect(() => {
-    deckBaseRef.current = documentPresentation;
+    if (documentPresentation !== sentDeckRef.current) deckBaseRef.current = documentPresentation;
   }, [documentPresentation]);
+  // Deck saves one at a time, each built on the outcome of the one before (deck-save.ts); made on the first save.
+  const toastRef = useLatest(toast);
+  const deckSavesRef = useRef<DeckSaveQueue | null>(null);
   const slideDeck = useSlideDeck({
     prefs: userPreferences,
     // Built on this render's preferences: moved onto the freshest before the whole blob is written.
     commitPrefs: (next) =>
       setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
-    framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
-    movePage: (tabId, pageId, unitIndex) =>
-      commitTabs((ts) => tabsWithPageMoved(ts, tabId, pageId, unitIndex)),
     activeTabId: activeId,
-    setActiveId,
-    readSelection,
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
-    saveDeck: (serialised) => {
+    saveDeck: (serialised, opts) => {
       if (!hydrated || !documentId) return;
-      // The deck this one was built on goes with it, so the server keeps another person's note cards
-      // (speaker-note-cards.md "Two people writing at once"); then this save is the next one's base.
-      const presentationBase = deckBaseRef.current;
-      deckBaseRef.current = serialised;
+      sentDeckRef.current = serialised;
       setDocumentPresentation(serialised);
-      void apiSaveDocumentMeta(
-        selfParticipant.id,
-        { id: documentId, presentation: serialised, presentationBase },
-        sessionShareCode,
-      ).catch(() => {
-        // Best-effort, like every other metadata write: the deck is in
-        // state either way and the next edit retries.
-      });
+      deckSavesRef.current ??= deckSaveQueue(deckBaseRef, (message) =>
+        toastRef.current.error(message),
+      );
+      deckSavesRef.current.save(
+        serialised,
+        (presentationBase) =>
+          apiSaveDocumentMeta(
+            selfParticipant.id,
+            { id: documentId, presentation: serialised, presentationBase },
+            sessionShareCode,
+            opts,
+          ),
+        opts,
+      );
     },
-    loadAllTabs,
   });
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
   // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
@@ -1329,9 +1296,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
+  // Whether the tab's pages stand as a stack (set once pagesMode is known, below): a wheel then pans no sideways.
+  const stackedRef = useRef(false);
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
     viewport,
+    stacked: () => stackedRef.current,
   });
 
   // Capture an Inbox element deep link BEFORE the tab-entry
@@ -1510,12 +1480,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
-    framePageRef,
     frameFirstPageRef,
     documentId: documentId ?? undefined,
     viewport,
     snapSuspended: () => presenting || followingRef.current !== null,
   });
+  useAssignRef(stackedRef, !!pagesMode.cardStage);
   // What a locked page holds is inert, as on a locked layer.
   const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode.pages);
   const canvasInertIds = pageLockedIds;
@@ -1564,6 +1534,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
+  // tab's lock, which holds every element's place, not an image's picture.
+  const pictureBlocked =
+    (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1587,8 +1561,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
   });
 
-  const commit = (mapElements: (els: Element[]) => Element[]) => {
-    if (editsBlocked) return;
+  // A picture swap passes `{ picture: true }` and answers to `pictureBlocked` instead of `editsBlocked`.
+  const commit = (mapElements: (els: Element[]) => Element[], opts?: { picture?: boolean }) => {
+    if (opts?.picture ? pictureBlocked : editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
     // this `commit` — e.g. the link-card unfurl resolves a few seconds
@@ -1773,17 +1748,35 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  // A page's Add to Slides / Hide in Slides (its Contents menu) and Add Notes reach the deck (pageDeckControls).
-  // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNoteCards } = slideDeck;
+  // A page's Add to Slides / Present From Here / Hide in Slides (its Contents menu) and Notes reach the deck
+  // (pageDeckControls). Memoised so the pages' view keeps its identity across renders where nothing changed.
+  const {
+    deck: currentDeck,
+    newPageSlide,
+    toggleSlideHidden,
+    setSlideNoteCards,
+    flushDeckSave,
+    start: startDeck,
+  } = slideDeck;
   const pageDeck = useMemo(
     () =>
       pageDeckControls(currentDeck, activeId, !isReadOnly, {
         newPageSlide,
         toggleSlideHidden,
         setSlideNoteCards,
+        flushDeckSave,
+        start: startDeck,
       }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNoteCards],
+    [
+      currentDeck,
+      activeId,
+      isReadOnly,
+      newPageSlide,
+      toggleSlideHidden,
+      setSlideNoteCards,
+      flushDeckSave,
+      startDeck,
+    ],
   );
   const pagesModeView = useMemo(
     () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),
@@ -1796,6 +1789,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,
@@ -2001,6 +1995,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
+    // A locked tab still takes a picture swap (docs/specs/009-elements/images.md "Locked images").
+    pictureBlocked: pictureBlocked || isReadOnly,
+    commitPicture: (mapElements) => commit(mapElements, { picture: true }),
     getViewportCenter,
     elements: () => activeTab.elements,
     commit,
@@ -2009,11 +2006,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     sessionShareCode,
   });
-
-  // Per-element note popover (single plain-text paragraph; see
-  // packages/document BoxedElement.note). State + handlers in
-  // useEditorNotes.
-  const { noteOpenId, openNote, closeNote, setNote } = useEditorNotes({ commit });
 
   // --- Element CRUD --------------------------------------------------------
 
@@ -2113,8 +2105,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
     spawnConnectSelected,
   } = useElementSelectionActions({
     currentSelectionIds,
@@ -2479,6 +2469,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     alignmentGuidesRef,
     pageSnapBoxes: pageSnapBoxList,
     pagesMode: pagesMode.pages,
+    stackFront: pagesMode.cardStage?.pages[0]?.rect ?? null,
     isPinchingRef,
   });
 
@@ -2599,7 +2590,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
-    onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
   });
 
@@ -2779,7 +2769,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeComments,
     closeContextMenu,
     closeImagePicker,
-    closeNote,
     commentRows,
     commentThreadOpenId,
     commentThreadOpenCell,
@@ -2802,8 +2791,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     duplicateMultiSelected,
     duplicateSelected,
     // Intra-layer z-order for the selection popover (docs/specs/006-document/layers.md).
-    stackSelectedFront,
-    stackSelectedBack,
     duplicateTab,
     embedMode,
     fitToScreen,
@@ -2856,10 +2843,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     nameConfirmed,
     narrowMultiSelection,
     newDocument,
-    noteOpenId,
     openComments,
     openDocument,
-    openNote,
     participantsByTab,
     pendingDraw,
     redo,
@@ -3033,7 +3018,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFillColorSelected,
     setLinkPickerOpenForId,
     setLoadingDocument,
-    setNote,
     setOpacitySelected,
     setShadowSelected,
     setPaddingSelected,
@@ -3059,7 +3043,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     nameDocument,
     shiftDupGhostIds,
     snapGuideStore,
-    tabLoadErrors,
     tabs,
     tabSummaries,
     documentTeamId,

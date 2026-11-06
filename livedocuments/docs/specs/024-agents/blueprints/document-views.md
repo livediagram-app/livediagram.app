@@ -236,13 +236,13 @@ gives `READ_DOCUMENT_DEFAULT_BUDGET` to every view it reads unless the caller pa
 `fitOutline(model, budget)` steps down a fixed ladder; each state is entered only while the estimate exceeds the
 budget:
 
-| State                  | Entered when                     | Drops                                                                                    |
-| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| `full`                 | always first                     | nothing                                                                                  |
-| `notes-dropped`        | `full` over budget               | every `note=` attribute                                                                  |
-| `attributes-dropped`   | still over                       | every attribute, summary and state attribute except `comments=N open` (`VW38`)           |
-| `containers-collapsed` | still over; repeats              | the children of the container with the most descendants (ties: earlier in reading order) |
-| `root-collapsed`       | still over after every container | every root line                                                                          |
+| State                  | Entered when                                                  | Drops                                                                                    |
+| ---------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `full`                 | always first                                                  | nothing                                                                                  |
+| `notes-dropped`        | retired 2026-11-04: notes never print, so the ladder skips it | (none)                                                                                   |
+| `attributes-dropped`   | still over                                                    | every attribute, summary and state attribute except `comments=N open` (`VW38`)           |
+| `containers-collapsed` | still over; repeats                                           | the children of the container with the most descendants (ties: earlier in reading order) |
+| `root-collapsed`       | still over after every container                              | every root line                                                                          |
 
 - Estimates come from a per-line cost model built once: each node's line length at each detail level, and each
   subtree's total, so a step subtracts and adds lengths instead of re-rendering. O(n + c log c) for c containers.
@@ -344,16 +344,17 @@ Every other kind has no state attribute; `show` has its content.
 | Attribute        | When                                                 | Form                                                                                        |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                             |
-| `link=`          | `link` set (`VW28`)                                  | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<documentId>` |
+| `link=`          | `link` set on a link card or a video (`VW28`)        | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<documentId>` |
 | `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                               |
 | `locked`         | `locked: true`                                       | flag                                                                                        |
 | `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done           |
-| `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                                 |
+| `note=`          | retired 2026-11-04 (links-and-notes-retired.md)      | never printed                                                                               |
 | `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                      |
 | style attributes | only with `style` (`VW50`)                           | see below                                                                                   |
 
 **Style attributes** (`styleAttributesOf`): `fill=` (`fillColor`), `stroke=` (`strokeColor`), `text-color=`
-(`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`),
+(`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`; on a
+text or shape with a `textScale`, the px it draws at, `drawnTextSize`, so `text=72` for 48 × 1.5),
 `font=` (`font`), each printed only when present and different from what the kind's factory writes
 (`createShape(kind, 0, 0)`, `createText`, `createSticky`, `createTable`, `createPinnedArrow` built once per render
 with a fixed id). The keys are the edit-operations field keys, so a printed style attribute can be written back with

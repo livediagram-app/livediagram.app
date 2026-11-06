@@ -38,11 +38,19 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 - **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
-  a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
-  label over 40 characters keeps the heading and moves the full text into the note; an arrow's
+  a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `line=angled`. A shape's
+  label over 40 characters keeps the heading and the rest is cut (`note=`, `noteRich=` and an element's `link=` are
+  refused: element links and notes are retired, [links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)); an arrow's
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
+- **Text sizes follow the document's Size slider** ([Fonts](../004-interface-design/fonts.md) "In livedocuments"):
+  on a text or a shape, `text=` takes `sm`, `md`, `lg`, `scale` or a whole px from **24 to 72**; past 48 it is stored
+  as 48 with the rest as `textScale`, as the slider stores it. A note, an arrow, a table and a chart keep 6 to 48. A
+  view prints the size the words draw at (`text=72` for 48 × 1.5), so it writes back unchanged. Sizes already on a
+  page are never rewritten.
+- **A new text is a Paragraph**: `add text` makes the Write palette's Paragraph (24 px, left and top aligned, its box
+  sized to its label and wrapping at 600 px), not the diagram's 14 px centred label; a `set` field overrides any of it.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
   `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `iconWeight`, `font` (the editor's
   faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'

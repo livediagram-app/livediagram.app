@@ -3,10 +3,6 @@
 // handles document data. See docs/specs/006-document/document-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
 
-// Live session-tool types used by the `Tab.timer` / `Tab.vote` fields
-// below. Type-only import (erased at build) so the index <-> session
-// circular reference is fine. The runtime helpers are re-exported lower
-// down via `export * from './session'`.
 // Value import from the data-shapes LEAF module (it imports only types from
 // here, so no cycle at runtime) — elementSupportsText excludes the
 // self-drawing data shapes the same way the inline editor does.
@@ -14,12 +10,6 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { TabTimer, TabVote } from './session';
-
-// Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
-// import for the same erasability reason as session; the runtime layer
-// helpers are re-exported lower down via `export * from './layers'`.
-import type { Layer } from './layers';
 
 // Per-range label formatting runs (docs/specs/008-canvas/canvas-and-palette.md). Type-only import so the
 // index <-> rich-text relationship stays erasable; the runtime helpers +
@@ -98,9 +88,17 @@ export type DocumentId = string;
 import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
 // livehuddle's patterns: the shared ones plus its own (./background-pattern), Isometric among them.
 import type { BackgroundPattern } from './background-pattern';
-// The selection-mode glyphs: the shared ones plus livehuddle's own (./mode-glyphs), Isometric among them.
+// The selection-mode glyphs (./mode-glyphs).
 export { MODE_GLYPHS, type ModeGlyph } from './mode-glyphs';
 export { isBackgroundPattern, type BackgroundPattern } from './background-pattern';
+export {
+  FLOOR_PATTERNS,
+  RETIRED_PATTERN_FLOORS,
+  isFloorPattern,
+  spacePattern,
+  type FloorPattern,
+  type SpacePattern,
+} from './floors';
 export {
   PADDING_PX,
   ARROW_FLOWS,
@@ -229,18 +227,8 @@ export type Tab = {
   // loose in another. Unset / empty = loose. See tab-folders.ts for
   // the normalize + grouping helpers.
   folder?: string;
-  // Live session tools (docs/specs/012-collaboration/session-tools.md), facilitator-run + synced to every
-  // participant via the normal tab sync. `timer` is a countdown /
-  // stopwatch; `vote` is a dot-voting session. Both are edit-role
-  // controlled (the room drops view-role mutations) and absent until a
-  // facilitator starts one. See session.ts for the pure helpers.
-  timer?: TabTimer;
-  vote?: TabVote;
-  // Photoshop-style layers (docs/specs/006-document/layers.md), ordered BOTTOM -> TOP (index 0
-  // paints lowest). Absent = the tab behaves as one implicit default
-  // layer; the array is materialised lazily on the first layer
-  // operation (see layers.ts). Elements point in via `layerId`.
-  layers?: Layer[];
+  // (A stored `vote` is the retired Vote's, dropped on read: ./retired-vote; a stored `timer` the retired Session
+  // strip's, dropped on read: ./retired-timer. A meeting's clock is a Timer piece now: ./timer-pieces.)
 };
 
 // --- Type guards -----------------------------------------------------------
@@ -248,6 +236,10 @@ export type Tab = {
 export { takesTypedLabel } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './accent-edge';
+// Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kinds livehuddle no longer
+// has, their names, and the placeholder card every surface draws them as.
+export * from './retired-kinds';
+export * from './retired-placeholder';
 export * from './card';
 export * from './chip';
 export * from './attachment';
@@ -352,10 +344,8 @@ export * from './rotation';
 export * from '@liveworkspace/model-core/shape-marker';
 // Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';
+export * from './placed-kinds';
 export * from './behaviour-skin';
-// How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @livehuddle/api-schema's wire `LivePoll`.
-export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './comment-thread';
@@ -384,29 +374,35 @@ export * from './chart-types';
 export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
-// Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
-// (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
-export * from './responses';
+// The chair's facings and which kinds draw their own face (docs/specs/009-elements/chair.md). A leaf module, for the
+// factories cycle.
 export * from './collab-shapes';
-export * from './agenda-current';
-// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
-export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from '@liveworkspace/avatar/fence';
 // The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
 export * from '@liveworkspace/avatar/palette';
 export * from '@liveworkspace/avatar/pad-art';
+export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
+export * from './room-builder';
+export * from './room-snap';
+export * from './room-outline-field';
+export * from './office-garden';
+export * from './office-social';
+export * from './office-recreation';
+export * from './office-wayfinding';
+// Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
+export * from './call-geometry';
+// The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).
+export * from './meeting-pieces';
 export * from './actor-figure';
 export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
-// The Q&A board (docs/specs/012-collaboration/qa-board.md)
-export * from './qa-board';
 export * from './web-components';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
 // draw their own `…` rather than taking the shared settings one.
@@ -428,7 +424,6 @@ export * from './factories';
 export * from './whiteboard';
 export * from './whiteboard-stroke';
 export * from './graph-authoring';
-export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
@@ -456,18 +451,18 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/015-api/mcp-server.md).
+// Deterministic auto-layout for AI-generated diagrams (livediagram/docs/specs/015-api/mcp-server.md).
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements } from './auto-layout-tidy';
 
-// Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
+// Cluster-aware graph layout: a graph's groups as boundaries.
 export * from './auto-layout-clusters';
 export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
-// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
+// Authoring input the api's changesets build from (livediagram/docs/specs/015-api/mcp-server.md §4.7,
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
@@ -475,10 +470,10 @@ export { KINK_RUN, arrowEndKey } from './graph-notches';
 export * from './graph-limits';
 export * from './tab-builders';
 
-// Shared by the editor's text export + import and reusable by the api / MCP.
+// Shared by the editor's text export + import and reusable by the api.
 
-// Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
-// shared by the in-app export and the MCP worker's inline image render.
+// Headless SVG renderer (livediagram/docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
+// shared by the in-app export and the api's server-side renders.
 export * from './svg-render';
 export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
@@ -494,8 +489,8 @@ export {
 } from './svg-render-face-kit';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
-// recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
+// recolour / switch / reset / preset transforms, shared by the editor and the api.
+// The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
@@ -555,10 +550,15 @@ export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 
-// Photoshop-style layers (docs/specs/006-document/layers.md): the Layer type used by the Tab field
-// above, band-aware render ordering, and the pure layer operations.
-export * from './layers';
-export * from './layer-operations';
+// The order a tab's elements paint in (docs/specs/006-document/layers.md "Stacking"), and the drop of the layers a
+// tab saved before they were removed may carry.
+export { paintOrder } from './paint-order';
+export { dropRetiredLayers } from './retired-layers';
+// The retired Vote's stored dot vote, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Vote").
+export { dropRetiredVote } from './retired-vote';
+// The retired Session strip's tab timer, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Session
+// strip's Timer").
+export { dropRetiredTimer } from './retired-timer';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
@@ -568,7 +568,7 @@ export * from '@liveworkspace/model-core/adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once
-// (docs/specs/012-collaboration/collab-race-hardening.md): answers, ideas, checklist ticks, comments.
+// (docs/specs/012-collaboration/collab-race-hardening.md): checklist ticks and comments.
 export * from './element-deltas';
 
 // The room's record of those deltas, merged into each save so D1 keeps what
@@ -581,9 +581,8 @@ export * from './collab-ledger';
 // implementation.
 export * from './tab-folders';
 
-// Live session tools (docs/specs/012-collaboration/session-tools.md): the TabTimer / TabVote types used by the
-// Tab fields above, plus the pure timer + vote helpers.
-export * from './session';
+// The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
+export * from './timer-pieces';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import
@@ -613,8 +612,6 @@ export * from './element-refs';
 export * from './containment';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
-export { agendaFitHeight } from './svg-render-agenda';
-export * from './session-button-text';
 export { lineChars } from './svg-render-web';
 export * from './drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.

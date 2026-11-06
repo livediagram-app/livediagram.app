@@ -1,21 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import {
+  DEFAULT_STAGE_SPEAKERS,
   isFloorShape,
+  isGridOfficeShape,
   isOfficeShape,
   isRoomDoor,
+  isStageSpeakers,
   MEETING_TABLE_VIEW,
   OFFICE_ART,
   OFFICE_KINDS,
   ROOM_WALL,
   roomParts,
+  STAGE_FRONT,
+  STAGE_SPEAKER_LABELS,
+  STAGE_SPEAKERS,
+  stageParts,
+  stageTop,
 } from './office';
 import { isValidElement } from './validate';
 import { MEETING_TABLE_SEATS } from '@liveworkspace/avatar/seats';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
-  it('are seven shape kinds, each made at its drawing’s size', () => {
+  it('are eighteen shape kinds, each made at its drawing’s size', () => {
     expect(OFFICE_KINDS).toEqual([
       'room',
       'meeting-table',
@@ -24,12 +32,48 @@ describe('the office pieces', () => {
       'water-cooler',
       'coffee-machine',
       'rug',
+      'stage',
+      'office-pod',
+      'bar',
+      'bar-stool',
+      'drinks-cabinet',
+      'drinks-fridge',
+      'outdoor-plant',
+      'tree',
+      'garden-path',
+      'grass',
+      'garden-fence',
+      'door',
+      'directory',
+      'elevator',
+      // The social pieces (docs/specs/009-elements/social-pieces.md).
+      'notice-board',
+      'world-clock',
+      'jukebox',
+      'ping-pong-table',
+      'arcade-machine',
+      'fireplace',
+      'campfire',
+      'bench',
+      'picnic-table',
+      'hammock',
+      'garden-umbrella',
+      'fountain',
+      'pond',
+      'pool-table',
+      'foosball-table',
+      'dartboard',
+      'vending-machine',
+      'bean-bag',
+      'reading-nook',
     ]);
+    const sized = ['room', 'stage', 'garden-path', 'grass', 'garden-fence', 'door', 'pond'];
     for (const kind of OFFICE_KINDS) {
       expect(isOfficeShape(kind)).toBe(true);
       const el = createShape(kind, 0, 0);
       expect(isValidElement(el)).toBe(true);
-      if (kind !== 'room') {
+      expect(isGridOfficeShape(kind)).toBe(!sized.includes(kind));
+      if (isGridOfficeShape(kind)) {
         const view = OFFICE_ART[kind].front;
         expect(el.width / el.height).toBeCloseTo(view.width / view.height, 2);
         expect(el.aspectLocked).toBe(true);
@@ -43,8 +87,15 @@ describe('the office pieces', () => {
     expect(room.aspectLocked).toBeFalsy();
   });
 
-  it('puts the room and the rug on the floor, and nothing else', () => {
-    expect(OFFICE_KINDS.filter(isFloorShape)).toEqual(['room', 'rug']);
+  it('puts the room, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
+    expect(OFFICE_KINDS.filter(isFloorShape)).toEqual([
+      'room',
+      'rug',
+      'stage',
+      'garden-path',
+      'grass',
+    ]);
+    expect(isGridOfficeShape('chair')).toBe(false);
   });
 
   it('accepts only the five doorways', () => {
@@ -64,6 +115,80 @@ describe('the room', () => {
     expect(sideWall).toBeDefined();
     expect(parts.some((p) => p.role === 'rail')).toBe(true);
     expect(roomParts(800, 600, 'none').some((p) => p.role === 'rail')).toBe(false);
+  });
+});
+
+// docs/specs/009-elements/office.md "Stage"; docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage".
+describe('the stage', () => {
+  it('is made any width, named Stage on its plate, with neither setting stored', () => {
+    const stage = createShape('stage', 0, 0);
+    expect(stage).toMatchObject({
+      width: 360,
+      height: 140,
+      label: 'Stage',
+      textSize: 'sm',
+      textAlignY: 'bottom',
+    });
+    expect(stage.aspectLocked).toBeFalsy();
+    expect(stage.stageSpeakers).toBeUndefined();
+    expect(stage.stageCameras).toBeUndefined();
+    expect(DEFAULT_STAGE_SPEAKERS).toBe('edit');
+  });
+
+  it('takes Editors, or Editors and Participants, and a Show Cameras flag', () => {
+    expect(STAGE_SPEAKERS).toEqual(['edit', 'take-part']);
+    expect(STAGE_SPEAKERS.map((v) => STAGE_SPEAKER_LABELS[v])).toEqual([
+      'Editors',
+      'Editors and Participants',
+    ]);
+    for (const v of STAGE_SPEAKERS) expect(isStageSpeakers(v)).toBe(true);
+    expect(isStageSpeakers('participate')).toBe(false);
+    const stage = createShape('stage', 0, 0);
+    expect(isValidElement({ ...stage, stageSpeakers: 'take-part', stageCameras: true })).toBe(true);
+    expect(isValidElement({ ...stage, stageSpeakers: 'everyone' })).toBe(false);
+    expect(isValidElement({ ...stage, stageCameras: 'yes' })).toBe(false);
+  });
+
+  it('is drawn at its own size: a top with planks, a front face and a plate on it', () => {
+    const parts = stageParts(360, 140);
+    expect(parts[0]).toMatchObject({ tag: 'rect', role: 'panel', x: 0, y: 0, w: 360 });
+    expect(parts.filter((p) => p.role === 'rail')).toHaveLength(2);
+    const face = parts.find((p) => p.role === 'face');
+    expect(face).toMatchObject({ y: 140 - STAGE_FRONT, h: STAGE_FRONT, w: 360 });
+    const plate = parts.at(-1)!;
+    expect(plate).toMatchObject({ tag: 'rect', role: 'panel', w: 144 });
+    expect(plate.tag === 'rect' && plate.x).toBe(108);
+  });
+
+  it('keeps its plate between 64 and 160 px, and inside a narrow stage', () => {
+    const width = (w: number) => {
+      const plate = stageParts(w, 140).at(-1)!;
+      return plate.tag === 'rect' ? plate.w : 0;
+    };
+    expect(width(1000)).toBe(160);
+    expect(width(100)).toBe(64);
+    expect(width(60)).toBe(44);
+  });
+
+  it('draws no part with a negative or zero size, however small', () => {
+    for (const [w, h] of [
+      [0, 0],
+      [10, 10],
+      [16, 24],
+      [40, 30],
+    ] as const) {
+      for (const p of stageParts(w, h)) if (p.tag === 'rect') expect(p.w > 0 && p.h > 0).toBe(true);
+    }
+    expect(stageParts(10, 140).some((p) => p.role === 'rail')).toBe(false);
+  });
+
+  it('is stood on above its front edge', () => {
+    expect(stageTop({ x: 10, y: 20, width: 360, height: 140 })).toEqual({
+      x: 10,
+      y: 20,
+      width: 360,
+      height: 140 - STAGE_FRONT,
+    });
   });
 });
 

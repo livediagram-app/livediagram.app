@@ -23,6 +23,7 @@ import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
 import { MOMENTS, STATS, TEAM, YEAR, STUDIO, QUARTERS } from './template-year-review-data';
+import { themeGradientBackground } from './template-backgrounds';
 
 const INK = '#0f172a';
 const MUTED = '#475569';
@@ -34,14 +35,12 @@ const QUARTER_TEALS = ['#5eead4', '#2dd4bf', '#14b8a6', '#0f766e'];
 /** The report's pages: four A4 portrait sheets, the cover dark, the thanks warm. */
 export function yearInReviewPages(): Page[] {
   return [
-    templatePage(1, 'a4', 'portrait', 'Cover', {
-      fill: { kind: 'gradient', from: '#134e4a', to: '#1e1b4b', angle: 160 },
-    }),
-    templatePage(2, 'a4', 'portrait', 'Numbers', { fill: { kind: 'solid', color: '#f8fafc' } }),
-    templatePage(3, 'a4', 'portrait', 'Timeline', { fill: { kind: 'solid', color: '#f8fafc' } }),
-    templatePage(4, 'a4', 'portrait', 'Thanks', {
-      fill: { kind: 'gradient', from: '#fef3c7', to: '#fce7f3', angle: 160 },
-    }),
+    // The theme's own backgrounds (template-backgrounds): the cover on its Twilight, the middle
+    // pages the plain paper, the thanks on its Glow.
+    templatePage(1, 'a4', 'portrait', 'Cover', themeGradientBackground('twilight')),
+    templatePage(2, 'a4', 'portrait', 'Numbers'),
+    templatePage(3, 'a4', 'portrait', 'Timeline'),
+    templatePage(4, 'a4', 'portrait', 'Thanks', themeGradientBackground('glow')),
   ];
 }
 

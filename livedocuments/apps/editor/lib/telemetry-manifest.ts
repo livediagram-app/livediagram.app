@@ -108,11 +108,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Layer·Reordered',
   'Layer·Selected',
   'Layer·Toggled',
-  'Note·Added',
-  'Note·Changed',
-  'Note·Deleted',
-  'Note·Opened',
-  'Note·Used',
+  // Note·* left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
   'Participant·Created',
   'Participant·Returned',
   'Search·Opened',
@@ -164,8 +160,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Cleared',
   'UI·Closed',
   'UI·Copied',
-  // The power user mode offer turned down (docs/specs/007-editor/power-user-mode.md).
-  'UI·Declined',
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',

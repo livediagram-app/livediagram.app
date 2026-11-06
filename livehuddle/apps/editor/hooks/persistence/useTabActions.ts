@@ -15,19 +15,17 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { defaultTabName } from '@livehuddle/document';
+import { DEFAULT_EDITOR_MODE, defaultTabName } from '@livehuddle/document';
 import {
   normalizeFolderOrder,
   tabFolderName,
   truncateName,
-  type EditorMode,
   type Element,
   type Tab,
 } from '@livehuddle/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
+import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
-import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
@@ -37,8 +35,6 @@ import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md): a new tab opens in it.
-  editorMode: EditorMode;
   // Whether the session may change the document's structure (its tabs): false for a view link and
   // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
   canEditStructure: boolean;
@@ -102,20 +98,18 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  // `mode`: open it in that mode; else in the active tab's mode (newTabOpening).
-  const addTab = (mode?: EditorMode) => {
+  const addTab = () => {
     // A session that cannot change the document's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;
-    // The new tab takes the active tab's look (newTabSeed); its mode is newTabOpening's.
+    // The new tab takes the active tab's look (newTabSeed).
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...) (newTabOpening).
-    const opening = newTabOpening(deps.editorMode, mode);
+    // Written with the stored mode value every tab carries (docs/specs/007-editor/editor-modes.md "A new tab").
     const tab: Tab = {
       ...createTab(defaultTabName(tabs.length + 1)),
       ...seed,
-      ...(opening.opensIn ? { opensIn: opening.opensIn } : {}),
+      opensIn: DEFAULT_EDITOR_MODE,
     };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
@@ -126,15 +120,11 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
   };
 
-  // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
+  // Import (id re-mint, content replace, JSON parsing)
   // lives in useTabImport; remintTabElements is shared with the
   // Duplicate below.
-  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
     tabs,
-    createTab,
-    markTabLoaded,
-    ownerId,
-    documentId,
     activeId,
     commitTabs,
     setSelectedId,
@@ -142,19 +132,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
-    // Declared below; called only once an import runs, after this render has defined it.
-    importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
-  });
-  // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
-  // active tab, or open each board as a new whiteboard tab.
-  const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
-    tabs,
-    activeId,
-    drawMode: false,
-    ownerId,
-    documentId,
-    replaceActiveTabContent,
-    onDocumentsCreated: () => refreshDocumentList(ownerId),
   });
 
   const toggleActiveTabLock = () => {
@@ -347,8 +324,6 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    importSceneIntoActiveTab,
-    importScenesAsNewDocuments,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

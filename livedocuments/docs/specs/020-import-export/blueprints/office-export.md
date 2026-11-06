@@ -90,7 +90,10 @@ Styles carry the look (Title, Subtitle, Heading 1 to 3 with outline levels, Quot
 styles, List Paragraph, Hyperlink). Lists use two abstract numberings, bullets (•, ◦, ▪ in the accent) and numbers
 (1, a, i); each numbered run gets its own `w:num` restarting at 1 (D74). To-dos are list paragraphs led by ☐ or ☒
 (D75). Empty headings and empty non-body paragraphs are left out (D73). A wrapped zone is a `wp:anchor` with
-`wrapSquare`; an inline one an inline picture in its own aligned paragraph.
+`wrapSquare`; an inline one an inline picture in its own aligned paragraph. A footnote run (`fn`) is one
+`w:footnoteReference` per reference in the FootnoteReference style, its id the note's place in `word/footnotes.xml`
+(ids from 1, after the separator notes -1 and 0), the note one FootnoteText paragraph; the part, its relationship and
+the settings' `w:footnotePr` are written only when the article has a footnote.
 
 ### `exportOfficeFile(input, progress)` → `OfficeExportResult`
 
@@ -101,7 +104,7 @@ Never throws. No pages → `gone`; `DrawRefused` (a canvas read refused or a nul
 
 - `ExportTabDialog` takes `deck?: Deck`, passed from `EditorTabDialogs` as `slideDeck?.deck`. Its `Format` gains
   `'pptx' | 'docx'`; `PAGES_FORMATS` lists them after `gif`, filtered by `officeFormatFor(pages)`. The dialog loads
-  the images and tab windows for the PowerPoint and Word cards as for the image formats and hands them to the panel
+  the images for the PowerPoint and Word cards as for the image formats and hands them to the panel
   (`render`), with the first page's preview SVG.
 - `renderTabToCanvas(tab, { only, crop })`: with `only`, only those elements are drawn and the page's paper,
   background, motion and pattern are not; with `crop`, the canvas is exactly that rect at the scale.

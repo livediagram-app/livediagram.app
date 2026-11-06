@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
+import { onAnyPage } from '@liveworkspace/workbench/components/primitives/paged-carousel-testing';
 
 // jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
 globalThis.ResizeObserver ??= class {
@@ -25,13 +26,11 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
   patternColor: '#cccccc',
   backgroundOpacity: 1,
   backgroundPatternScale: 1,
-  backgroundAnimationSpeed: 1,
   onSetBackgroundPattern: vi.fn(),
   onSetBackgroundColor: vi.fn(),
   onSetPatternColor: vi.fn(),
   onSetBackgroundOpacity: vi.fn(),
   onSetBackgroundPatternScale: vi.fn(),
-  onSetBackgroundAnimationSpeed: vi.fn(),
   themeId: 'default',
   onSetTheme: vi.fn(),
   font: null,
@@ -108,6 +107,13 @@ describe('CanvasThemeDialog Finish tab', () => {
 describe('CanvasThemeDialog home', () => {
   const home = (over: Partial<ComponentProps<typeof CanvasThemeDialog>> = {}) =>
     render(<CanvasThemeDialog {...props} tab="looks" {...over} />);
+  // A look's card on whichever page holds it (the carousel mounts only the page on show and its neighbours).
+  const lookCard = (name: string) =>
+    onAnyPage(
+      'Looks',
+      () => screen.queryByRole('button', { name: new RegExp(`^${name}`) }),
+      fireEvent.click,
+    );
   const lookNames = [
     'Everyday',
     'Textbook',
@@ -119,7 +125,7 @@ describe('CanvasThemeDialog home', () => {
     'Doodle',
     'Editorial',
     'Midnight',
-    'Workshop',
+    'Sandstone',
     'Poster',
     'Graph Paper',
     'Daydream',
@@ -132,8 +138,8 @@ describe('CanvasThemeDialog home', () => {
   it('offers the eighteen looks, each drawn as a preview', () => {
     home();
     for (const name of lookNames) {
-      const card = screen.getByRole('button', { name: new RegExp(`^${name}`) });
-      expect(card.querySelector('svg'), name).not.toBeNull();
+      const card = lookCard(name);
+      expect(card?.querySelector('svg'), name).not.toBeNull();
     }
   });
 
@@ -156,7 +162,7 @@ describe('CanvasThemeDialog home', () => {
       themeId: 'lavender',
       finish: 'professional',
       font: 'roboto-slab',
-      backgroundPattern: 'isometric',
+      backgroundPattern: 'wood',
     });
     expect(
       screen.getByRole('button', { name: 'Looks page 3 of 5' }).getAttribute('aria-current'),
@@ -183,9 +189,7 @@ describe('CanvasThemeDialog home', () => {
     unmount();
     home({ themeId: 'brand', finish: 'sketch', font: null });
     for (const name of lookNames)
-      expect(
-        screen.getByRole('button', { name: new RegExp(`^${name}`) }).getAttribute('aria-pressed'),
-      ).toBe('false');
+      expect(lookCard(name)?.getAttribute('aria-pressed')).toBe('false');
   });
 
   it('shows each setting’s current value on its Fine-tune row and opens its panel', () => {

@@ -131,7 +131,7 @@ board over its 3 s time-to-interactive budget ([Canvas performance](../008-canva
 Measured on the reference board, with the elements' arrival change in
 [Canvas and palette](../008-canvas/canvas-and-palette.md) "Motion and animations": the median open
 went from 2.9 s (whiteboard) and 3.0 s (diagram), with runs up to 5.0 s and 4.2 s, to 2.2 s and
-1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, layers, the
+1.7 s, with no run over 2.4 s. The chrome's fades cost nothing measurable, so they stay. The panels, and the zoom cluster's button groups (history and undo / redo, the
 brush, collaborate, zoom), fade (`animate-fade-in`) rather than scale in with an overshoot
 (`pop-in`): a whole panel or toolbar popping reads as abrupt. `pop-in` stays
 on small controls, where it reads as feedback.

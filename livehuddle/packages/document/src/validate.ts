@@ -49,6 +49,7 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import { SHAPE_KINDS } from './shape-kinds';
 
 export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
@@ -70,7 +71,7 @@ export const MAX_TABLE_ROWS = 1_000;
 export const MAX_TABLE_COLS = 1_000;
 export const MAX_TABLE_CELLS = 50_000;
 
-// Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
+// Exported so the MCP schema resource (livediagram/docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.
 export const ELEMENT_TYPES = new Set([
   'shape',
@@ -87,107 +88,8 @@ export const ELEMENT_TYPES = new Set([
 ]);
 export const ANCHORS = new Set<string>(ALL_ANCHORS);
 
-// Every valid ShapeKind, as a runtime set. The editor renders only these; an
-// off-vocabulary kind (e.g. a model emitting "rectangle", which is NOT a kind —
-// the rectangular box is "square") draws no box, so callers crossing a trust
-// boundary (the MCP, AI ingest) coerce through `coerceShapeKind`. Keep in sync
-// with the ShapeKind union in index.ts.
-export const SHAPE_KINDS = new Set<string>([
-  'square',
-  'circle',
-  'diamond',
-  'cylinder',
-  'parallelogram',
-  'hexagon',
-  'document',
-  // Document element (docs/specs/009-elements/page-element.md): a paper-proportioned page you write
-  // prose into. Named 'page' internally because the flowchart output symbol
-  // above already owns 'document'.
-  'page',
-  // Lane (docs/specs/009-elements/lane.md).
-  'lane',
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
-  'banner',
-  'callout',
-  'card',
-  'badge',
-  'step',
-  'pointer-note',
-  'diagram-key',
-  'stack',
-  'boundary',
-  'stat-row',
-  'process',
-  'site-header',
-  // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
-  // into a selection mode.
-  'mode-button',
-  // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
-  'portal',
-  // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
-  'session-button',
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover you click to see what is underneath.
-  'reveal',
-  // Picker (docs/specs/012-collaboration/picker.md): rolls a random person or option.
-  'picker',
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md).
-  'reaction-pad',
-  // Comment pin (docs/specs/012-collaboration/comment-pin.md).
-  'comment-pin',
-  // Action panel (docs/specs/012-collaboration/action-panel.md).
-  'action-card',
-  // Done check (docs/specs/012-collaboration/done-check.md).
-  'done-check',
-  // Chair (docs/specs/009-elements/chair.md): an Avatar-mode character sits down in one.
-  'chair',
-  // Fence (docs/specs/009-elements/fence.md): Avatar-mode characters cannot walk through one.
-  'fence',
-  // Avatar Pad (docs/specs/009-elements/avatar-pad.md): where Avatar-mode characters start.
-  'avatar-pad',
-  // Desk and sofa (docs/specs/009-elements/chair.md "Desk and sofa").
-  'desk',
-  'sofa',
-  // The virtual office (docs/specs/009-elements/office.md).
-  'room',
-  'meeting-table',
-  'plant',
-  'bookshelf',
-  'water-cooler',
-  'coffee-machine',
-  'rug',
-  // The collaboration family (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md).
-  'estimate',
-  'temperature',
-  'idea-box',
-  'qa-board',
-  'agenda',
-  'decision',
-  'roll-call',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
-  'stadium',
-  'actor',
-  'final-state',
-  'cloud',
-  'triangle',
-  'trapezoid',
-  'star',
-  'speech-bubble',
-  'frame',
-  'progress-bar',
-  'progress-ring',
-  'timeline-rail',
-  'rating',
-  'pie-chart',
-  'bar-chart',
-  'line-chart',
-  'code-block',
-  'checklist',
-  'legend',
-  'focus-button',
-  'icon',
-  'sticker',
-]);
+// Every valid ShapeKind, as a runtime set (./shape-kinds, a leaf module so the kind predicates can read it).
+export { SHAPE_KINDS };
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /
 // synonym kind ("rectangle", "box", "oval", …) to "square" so the node always

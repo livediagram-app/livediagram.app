@@ -11,6 +11,7 @@ import {
   type HintKind,
 } from './hint-constants';
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
+import { touchedRecently, watchTouches } from './input-modality';
 import { hasVisibleText } from './trigger-text';
 
 type HintOpenSource = 'pointer' | 'focus' | 'touch';
@@ -179,7 +180,7 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
 
   const triggerProps: HintTriggerProps = {
     onPointerEnter: (e) => {
-      if (e.pointerType === 'touch') return;
+      if (e.pointerType === 'touch' || touchedRecently(Date.now())) return;
       const m = machine.current;
       m.overTrigger = true;
       clearTimers(m, 'closeTimer');
@@ -262,6 +263,9 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
   };
 
   const open = source !== null;
+
+  // Hear touches from the first hint on, so a mouse echo of a tap can be told from a mouse.
+  useEffect(watchTouches, []);
 
   // Escape dismisses without consuming the key: a menu or dialog listening
   // for it closes on the same press (spec).

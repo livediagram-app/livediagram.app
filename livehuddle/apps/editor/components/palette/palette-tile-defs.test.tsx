@@ -54,33 +54,33 @@ describe('PALETTE_TILES catalogue', () => {
 // description and decide whether it still describes what is in the tab.
 //
 // Categories filled from a catalogue or a layout rather than from tiles (Popular,
-// Icons, Stickers, Technology, My shapes) hold none, and are pinned at 0 so that stays
+// Stickers) hold none, and are pinned at 0 so that stays
 // true by intent rather than by accident.
 const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 7,
-  write: 5,
+  build: 6,
+  write: 4,
   draw: 6,
-  icons: 0,
   stickers: 0,
-  'my-shapes': 0,
-  media: 8,
+  media: 9,
   components: 11,
   data: 7,
-  // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
-  // "The palette"): 34 tiles between them.
-  'collab-ask': 7,
-  'collab-tools': 5,
-  'collab-record': 5,
-  'collab-react': 5,
-  'collab-mode': 8,
-  'collab-navigate': 15,
+  // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
+  // "The Space categories"): 53 tiles between them.
+  // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
+  'collab-travel': 6,
+  'collab-seating': 6,
+  'collab-rooms': 7,
+  'collab-amenities': 5,
+  'collab-bar': 4,
+  // Recreation and the outdoor pieces (docs/specs/009-elements/social-pieces.md).
+  'collab-recreation': 7,
+  'collab-garden': 12,
+  'collab-meeting': 6,
   // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
-  // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
-  participate: 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {
@@ -140,11 +140,13 @@ describe('the Collaborate categories', () => {
     );
   });
 
-  it('are each a catalogue category with tiles in it', () => {
+  // A Space category may wait for its first piece (Bar, Garden): the layout leaves it off until then.
+  it('are each a catalogue category, with tiles in every one but a Space category waiting for its pieces', () => {
     const catalogue = new Set(PALETTE_CATEGORIES.map((c) => c.id));
+    const waiting = new Set<string>([]);
     for (const id of ids) {
       expect(catalogue.has(id), id).toBe(true);
-      expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
+      if (!waiting.has(id)) expect(tilesForCategory(id).length, id).toBeGreaterThan(0);
     }
   });
 });
@@ -158,16 +160,6 @@ describe('palette tile glyph size', () => {
 
   it.each(glyphTiles)('%s renders at the tile step', (id, svg) => {
     expect(Number(/width="([\d.]+)"/.exec(svg)![1]), id).toBe(TILE_GLYPH_PX);
-  });
-});
-
-// docs/specs/012-collaboration/session-button.md: the Timer and Stopwatch tiles sit side by side and must not
-// wear the same glyph.
-describe('session clock tiles', () => {
-  it('draw the timer and the stopwatch differently', () => {
-    const glyph = (id: string) =>
-      renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
-    expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
   });
 });
 

@@ -412,9 +412,13 @@ describe("a Community post's drawing", () => {
     ],
   });
 
-  it("draws without the conversation the owner's drawing shows, on any tab", async () => {
+  // A stored Comment Panel is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+  // elements"): even the owner's drawing shows its placeholder, never its thread.
+  it('draws without the conversation, on any tab', async () => {
     db.getTabBody.mockResolvedValue(stored(COMMENTED, 2));
-    expect(await draw(liveDoc())).toContain('Secret launch plan');
+    const owners = await draw(liveDoc());
+    expect(owners).toContain('Comment Panel');
+    expect(owners).not.toContain('Secret launch plan');
 
     const community = await draw(liveDoc(), { community: true });
     // The rest of the board still draws (labels wrap, so one word of it).

@@ -28,10 +28,8 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livehuddle/document';
-import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
-import { isDataImageId } from '@/lib/offline/offline-images';
-import { isOfflineIdSync } from '@/lib/offline/offline-store';
+import { isBoxed, type Element } from '@livehuddle/document';
+import { apiListImages, type ImageSummary } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import type { PickedImage } from '@/lib/upload-image';
 
@@ -42,6 +40,10 @@ type EditorImagesDeps = {
   // locked tab). Mirrors the page's `editsBlocked`; the placement
   // handlers no-op when set.
   editsBlocked: boolean;
+  // What a picture swap alone answers to (docs/specs/009-elements/images.md "Locked images"): the
+  // session's guard without the tab's lock, so a locked tab's images still take Select Image. Left
+  // out, editsBlocked.
+  pictureBlocked?: boolean;
   // Whether the current viewer is a view-only visitor. Gates the
   // recent-images fetch + the onOpenPicker handle on imageContext.
   isReadOnly: boolean;
@@ -51,18 +53,11 @@ type EditorImagesDeps = {
   // throwaway per-partition guest — uploads would land in an un-owned
   // gallery nobody can manage. Everything else in the embed stays editable.
   embedMode: boolean;
-  // The editor in a workbench uploads but never reads the person's gallery
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): no recent-images fetch.
-  galleryHidden?: boolean;
-  // Viewport centre in canvas coordinates — where freshly placed
-  // images land.
-  getViewportCenter: () => { x: number; y: number };
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // Selects an element by id (or clears with null). Newly placed
-  // images select themselves so the user can immediately resize.
-  setSelectedId: (id: string | null) => void;
+  // The commit a picture swap lands through: `commit` without the tab lock's refusal. Left out, commit.
+  commitPicture?: (mapElements: (els: Element[]) => Element[]) => void;
   // The current document id (null before hydration). The picker +
   // recent-images list only operate once it's known.
   documentId: string | null;
@@ -74,8 +69,10 @@ type EditorImagesDeps = {
 };
 
 export function useEditorImages(deps: EditorImagesDeps) {
-  const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
-  const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
+  const { editsBlocked, isReadOnly, embedMode, commit } = deps;
+  const pictureBlocked = deps.pictureBlocked ?? editsBlocked;
+  const commitPicture = deps.commitPicture ?? commit;
+  const { documentId, ownerId, sessionShareCode } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -98,9 +95,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
+    if (!documentId || isReadOnly || embedMode || ownerId === 'self') return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode, galleryHidden, ownerId]);
+  }, [documentId, isReadOnly, embedMode, ownerId]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a
@@ -121,10 +118,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // element on the active tab).
   const openImagePickerFor = useCallback(
     (elementId: string) => {
-      if (editsBlocked || embedMode) return;
+      if (pictureBlocked || embedMode) return;
       setImagePickerOpenFor({ forElementId: elementId });
     },
-    [editsBlocked, embedMode],
+    [pictureBlocked, embedMode],
   );
 
   const closeImagePicker = useCallback(() => setImagePickerOpenFor(null), []);
@@ -141,9 +138,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
             ownerId,
             documentId,
             shareCode: sessionShareCode,
-            // Offered only where the picker opens: a locked tab refuses it, so its empty images
-            // show no Select Image button that would do nothing.
-            onOpenPicker: isReadOnly || embedMode || editsBlocked ? undefined : openImagePickerFor,
+            // Offered only where the picker opens. A lock (the image's own or its tab's) holds its
+            // place, not its picture, so a locked image keeps its Select Image button.
+            onOpenPicker:
+              isReadOnly || embedMode || pictureBlocked ? undefined : openImagePickerFor,
           }
         : undefined,
     [
@@ -152,7 +150,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
       sessionShareCode,
       isReadOnly,
       embedMode,
-      editsBlocked,
+      pictureBlocked,
       openImagePickerFor,
     ],
   );
@@ -167,7 +165,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // A search pick carries a credit (docs/specs/009-elements/image-search.md); any
   // other pick drops the old one so it never describes a picture that's gone.
   const applyImageToElement = (elementId: string, image: ImageDescriptor) => {
-    commit((els) =>
+    commitPicture((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { credit: _old, ...rest } = el;
@@ -192,7 +190,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // doesn't snap to stale dimensions. The element's width/height
   // stay so the user keeps the footprint they sized to.
   const removeImageFromElement = (elementId: string) => {
-    commit((els) =>
+    commitPicture((els) =>
       els.map((el) => {
         if (el.id !== elementId || !isBoxed(el) || el.type !== 'image') return el;
         const { naturalWidth: _w, naturalHeight: _h, credit: _c, ...rest } = el;
@@ -205,53 +203,10 @@ export function useEditorImages(deps: EditorImagesDeps) {
     setImagePickerOpenFor(null);
   };
 
-  // Drop a new image element pre-filled with an existing gallery
-  // image (skips the picker entirely). Fired from the Current Tab
-  // "Images" accordion thumbnails. Sizes the placeholder to the
-  // image's natural aspect ratio, capped at 240 px on the larger
-  // side so it lands at a sensible canvas footprint regardless of
-  // the original resolution. `at` centres it on a canvas point (a dropped file lands where it was released); the
-  // viewport's centre otherwise.
-  const addImageFromGallery = (image: ImageDescriptor, at?: { x: number; y: number }) => {
-    // embedMode also blocks the clipboard's paste-image upload, which
-    // funnels through this handler after uploading.
-    if (editsBlocked || embedMode) return;
-    // Offline documents must stay self-contained (docs/specs/006-document/offline-mode.md): a bare gallery
-    // id would break once the server's unused-image cleanup reaps it, so
-    // fetch the bytes and place a data-URI embed instead. Re-entry with
-    // the data URI as the id lands in the placement branch below.
-    if (documentId && isOfflineIdSync(documentId) && !isDataImageId(image.id)) {
-      void apiFetchImageDataUrl(ownerId, image.id)
-        .catch(() => null)
-        .then((href) => {
-          if (href) addImageFromGallery({ ...image, id: href }, at);
-        });
-      return;
-    }
-    const centre = at ?? getViewportCenter();
-    const max = 240;
-    const ratio = image.width / image.height;
-    const w = image.width >= image.height ? max : Math.round(max * ratio);
-    const h = image.height >= image.width ? max : Math.round(max / ratio);
-    const placed = {
-      ...createImage(centre.x - w / 2, centre.y - h / 2),
-      width: w,
-      height: h,
-      imageId: image.id,
-      naturalWidth: image.width,
-      naturalHeight: image.height,
-      alt: image.originalName,
-    };
-    commit((els) => [...els, placed]);
-    setSelectedId(placed.id);
-    track('Element', 'Added', 'Image');
-  };
-
   return {
     imagePickerOpenFor,
     recentImages,
     imageContext,
-    addImageFromGallery,
     openImagePickerFor,
     applyImageToElement,
     removeImageFromElement,

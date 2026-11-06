@@ -285,20 +285,20 @@ which crowded the same corner:
   renders as a popover); `CollaboratePanel.tsx` under `components/panels/` on
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
-  **Collaborate** button (speech-bubble glyph) sits **just before the Layers and
-  Theme strip** ([Layers](../006-document/layers.md) is the model). It shows the tab's
+  **Collaborate** button (speech-bubble glyph) sits **just before the
+  Theme strip**. It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
   (`computeDockAnchor(..., 'above')`); a second press or a press outside closes it, and it shares the
-  dock's one-open-at-a-time slot with Layers, Activity and the Explorer.
+  dock's one-open-at-a-time slot with Activity and the Explorer.
   It is never docked in a corner: a panel this tall, docked bottom-right, would run up a short
   window, and a popover never meets another corner. It renders outside the corner
-  layer, as Layers does.
+  layer.
 - **The button shows only when it is relevant: the active tab has at least
   one comment thread OR one action**, open or resolved. Nothing to
-  collaborate on, no button and no panel. Unlike Layers it is there for a
-  **view-role** visitor too (they read threads and answer them); it hides in
-  zen and during the welcome flow like the rest of the cluster ([Editor app](../007-editor/editor-app.md) "Mobile chrome").
+  collaborate on, no button and no panel. It is there for a
+  **view-role** visitor too (they read threads and answer them); it hides
+  during the welcome flow like the rest of the cluster ([Editor app](../007-editor/editor-app.md) "Mobile chrome").
 
 **Settings › Panels › Collaborate › Enable Collaborate Panel** (`collaboratePanelEnabled`,
 [User preferences](../007-editor/user-preferences.md)) turns the panel and its cluster button off, even while

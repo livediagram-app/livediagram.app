@@ -4,6 +4,7 @@ import {
   dismissQuickTour,
   expect,
   expectNoPageErrors,
+  onPage,
   startBlankDesign,
   test,
   paletteTile,
@@ -37,14 +38,16 @@ test.describe('menus by keyboard', () => {
     await startBlankDesign(page);
     await dismissQuickTour(page);
     await (await paletteTile(page, 'Add Square')).click();
-    await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
+    // On the page, framed beside the Contents sidebar (docs/specs/007-editor/pages-mode.md "Contents").
+    await page.locator('[data-canvas-a11y-root]').click({ position: await onPage(page, 0.5, 0.5) });
     const square = page.getByRole('img', { name: 'Square', exact: true });
     await expect(square).toHaveCount(1);
     const elementMenu = page.getByRole('dialog', { name: 'Element menu' });
 
     // From the keyboard (the selection toolbar's More actions on the new square) focus moves in,
     // and Escape brings it back.
-    const more = page.getByRole('button', { name: 'More actions' });
+    // Exact: the Contents sidebar's rows carry More Actions for Page N.
+    const more = page.getByRole('button', { name: 'More actions', exact: true });
     await expect(more).toHaveAttribute('aria-haspopup', 'dialog');
     await more.focus();
     await page.keyboard.press('Enter');

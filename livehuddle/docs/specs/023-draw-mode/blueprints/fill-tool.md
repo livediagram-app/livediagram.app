@@ -5,6 +5,12 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 livedesign builds the same tool on its logo pages from the same shared modules (livedesign's
 [Drawing tools](../../../../../livedesign/docs/specs/023-draw-mode/drawing-tools.md) "The Fill tool").
 
+**Status in livehuddle: retired.** Work Tracker #329 removed the editor's side of the Fill tool: the paint
+bucket (`paintBucketTarget`, `pourBucket`, `usePaintBucket`), the dock model's `fill`, `pickFill` and `setFill`, and
+the Fill button and its colour picker. The table lists what livehuddle still has; the sections below on the press
+landing, the dock model, the button and the flyout describe livediagram's build, whose own
+[Fill tool blueprint](../../../../../livediagram/docs/specs/023-draw-mode/blueprints/fill-tool.md) is the live contract for them.
+
 Scope, by file:
 
 | File                                                                  | Role                                                                                       |
@@ -14,12 +20,8 @@ Scope, by file:
 | `packages/document/src/stroke-loop-fill.ts`                           | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
 | `packages/document/src/svg-render-shapes.ts`                          | Export: a filled loop's fill path under its ink                                            |
 | `packages/document/src/whiteboard-stroke.ts`                          | The Stroke eraser touches a filled loop's fill                                             |
-| `apps/editor/lib/paint-bucket.ts`                                     | `paintBucketTarget` (what a press fills) and `pourBucket` (the element after) (pure)       |
 | `apps/editor/lib/draw-mode.ts`                                        | The `fill` intent, `isFillIntent`, `isHeldToolIntent`, its cursor and copy                 |
 | `packages/workbench/src/hooks/canvas/useFillPress.ts` (monorepo root) | The press: release within the slop, pinch and cancel rules (shared with livedesign)        |
-| `apps/editor/hooks/canvas/usePaintBucket.ts`                          | The press landing: gates, hint, one `commit`, telemetry                                    |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                           | `fill`, `pickFill`, `setFill` on the dock model                                            |
-| `apps/editor/components/canvas/whiteboard/FillColourPicker.tsx`       | The one colour picker, set for a fill                                                      |
 | `apps/editor/components/canvas/boxed-element-overlays.tsx`            | `FreehandSvg` draws a filled loop's fill under its ink                                     |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                    | `f` on a whiteboard                                                                        |
 
@@ -47,10 +49,9 @@ code (it is a fill or a pour), "Transparent" in copy (the picker's option is **N
 - Closed across the gap: `roundness = 4πA / P²` (shoelace area, perimeter including the gap)
   `>= STROKE_LOOP_MIN_ROUNDNESS` (0.1), else false. A circle is 1; a line out and back is 0.
 
-### `paintBucketTarget(elements, p, inertIds)`
+### `paintBucketTarget(elements, p)`
 
-- Walks `elements` (paint order, bottom first, from `layerBands`) from the top. Skips ids in
-  `inertIds` (hidden or locked layers).
+- Walks `elements` (paint order, bottom first) from the top.
 - Per element a verdict: `through` (keep walking), `stop` (`none`), `fill` or `loop`.
   - `arrow`, `text`: through. Anything whose box (grown to its circumscribed circle when rotated)
     misses `p`: through, before any geometry is decoded.
@@ -105,9 +106,9 @@ shows its hint (`toast.info`) and reports `FillMissed`; `canRecolour(el)` false 
 - `isStrokeLoop(points: {x,y}[], penWidth: number): boolean`; `closeStrokeLoop(points, pressures?)`
   returns `{ points, pressures }`; `loopFillPath(points, fmt?)` returns `M .. L .. Z` or `''` under
   three points.
-- `paintBucketTarget(elements, p, inertIds?) → BucketTarget`; `pourBucket(target, colour) →
+- `paintBucketTarget(elements, p) → BucketTarget`; `pourBucket(target, colour) →
 Element | null`.
-- `usePaintBucket({ pendingDraw, elements, layers, inertIds, editsBlocked, canRecolour, commit,
+- `usePaintBucket({ pendingDraw, elements, editsBlocked, canRecolour, commit,
 hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - Telemetry: `Draw·Selected·Fill`, `Draw·Changed·FillColour`, `Draw·Changed·FillMissed`,
   `Element·Changed·FillBucket`, `Element·Changed·FillLoop`, each explained on the dashboard.
@@ -126,7 +127,7 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - A loop whose ends already touch (gap at most 0.5 px): closed without a new point.
 - A rotated element: the box test grows to the circumscribed circle; `pointInsideOutline` handles
   the rotation for shapes.
-- A press on a locked element: its hint; on a locked or hidden layer: not seen at all.
+- A press on a locked element: its hint.
 - A colour equal to the current one, or No fill on an open loop: no commit, no undo step.
 
 ## Security and trust
@@ -191,7 +192,7 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 | `STROKE_LOOP_GAP_RATIO`      | 0.15                            | model-core stroke-loop |
 | `STROKE_LOOP_MIN_ROUNDNESS`  | 0.1                             | model-core stroke-loop |
 | `FILL_PRESS_SLOP_PX`         | 6                               | workbench useFillPress |
-| `FILL_CHOICE_KEY`            | `livehuddle:v2:whiteboard-fill` | useWhiteboard          |
+| `FILL_CHOICE_KEY`            | `livehuddle:v2:whiteboard-fill` | workbench fill-choice  |
 
 ## Defaults ledger
 

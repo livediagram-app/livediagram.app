@@ -1,7 +1,15 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createArrow, type Element, type StickyElement, type Tab } from '@livehuddle/document';
+import {
+  createArrow,
+  createShape,
+  doorOnRoom,
+  type Element,
+  type ShapeElement,
+  type StickyElement,
+  type Tab,
+} from '@livehuddle/document';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
 
@@ -55,6 +63,21 @@ describe('addBoxedAt', () => {
     expect(committedXs(commitTabs, ROW)).toEqual([0, 272, 544, 272]);
   });
 
+  // docs/specs/009-elements/office.md "The doorway is a Door": a dropped Room brings its Door in the same change.
+  it('drops a Room behind everything with its Door in front, in one change, the room selected', () => {
+    const { helpers, commitTabs } = harness();
+    helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y));
+    expect(commitTabs).toHaveBeenCalledTimes(1);
+    const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const els = updater([{ id: 't1', name: 'Tab 1', elements: ROW }])[0]!.elements;
+    const room = els[0] as ShapeElement;
+    const door = els[els.length - 1] as ShapeElement;
+    expect(room).toMatchObject({ shape: 'room', roomDoor: 'none' });
+    expect(door.shape).toBe('door');
+    expect(doorOnRoom(door, room)).toBe(true);
+    expect(els).toHaveLength(ROW.length + 2);
+  });
+
   it('refuses to touch the board when edits are blocked', () => {
     const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW };
     const commitTabs = vi.fn();
@@ -82,9 +105,16 @@ describe('addBoxedAt', () => {
 // The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
 // Mode alone decides whether the brush stays loaded after a paint.
 describe('applyFormatFromSource', () => {
-  function paintHarness(mode: FormatMode, source = 'a') {
+  function paintHarness(
+    mode: FormatMode,
+    source = 'a',
+    lock: { element?: string; layer?: string; tab?: boolean } = {},
+  ) {
     const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: [...ROW, line] };
+    const elements = [...ROW, line].map((el) =>
+      el.id === lock.element ? { ...el, locked: true } : el,
+    );
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements, ...(lock.tab ? { locked: true } : {}) };
     const commit = vi.fn();
     const setFormatSourceId = vi.fn();
     const { result } = renderHook(() =>
@@ -135,5 +165,31 @@ describe('applyFormatFromSource', () => {
     paint('b');
     expect(commit).not.toHaveBeenCalled();
     expect(setFormatSourceId).toHaveBeenCalledWith(null);
+  });
+
+  // docs/specs/008-canvas/format-panel.md "Locks": a lock holds an element's look as well as its place.
+
+  it('paints nothing onto a locked element, and keeps the brush loaded', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { element: 'b' });
+    telemetry.track.mockClear();
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('paints nothing on a locked tab', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { tab: true });
+    telemetry.track.mockClear();
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('still lends a locked source its look', () => {
+    const { paint, commit } = paintHarness('keep', 'a', { element: 'a' });
+    paint('b');
+    expect(commit).toHaveBeenCalledTimes(1);
   });
 });

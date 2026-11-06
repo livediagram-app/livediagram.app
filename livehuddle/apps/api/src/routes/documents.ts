@@ -162,7 +162,7 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
     if (!documentId || documentId.length > MAX_DOCUMENT_ID) return notFound();
     grant = await resolveDocumentGrant(ctx, documentId);
     // An API client's rename is the index's title too; the editor renames there itself.
-    if (segments.length === 3 && request.method === 'PUT' && (ctx.token || ctx.workbench)) {
+    if (segments.length === 3 && request.method === 'PUT' && ctx.token) {
       const body = await readBody({ ...ctx, request: request.clone() });
       if (!(body instanceof Response) && typeof body.name === 'string') renamedTo = body.name;
     }
@@ -280,7 +280,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       // anything is written.
       const dates = documentDates(body, Date.now());
       if (!dates.ok) return badRequest('invalid document dates');
-      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md).
+      // Seeded tabs given as a graph or a template are compiled first (docs/specs/015-api/api.md).
       if (Array.isArray(body.tabs)) {
         const seed = compileSeededTabs(body.tabs, body.id);
         if ('refusal' in seed) return json(seed.refusal.body, { status: seed.refusal.status });

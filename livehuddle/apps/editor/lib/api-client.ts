@@ -39,9 +39,7 @@ export {
 export * from './api/documents';
 export * from './api/tabs';
 export * from './api/changesets';
-export * from './api/qa-board';
 export * from './api/share';
-export * from './api/shape-libraries';
 export * from '@liveworkspace/workbench/lib/api/tokens';
 export * from '@liveworkspace/workbench/lib/api/oauth';
 export * from './api/self';
@@ -51,8 +49,6 @@ export * from './api/preferences';
 export * from './api/capabilities';
 export * from './api/unfurl';
 export * from './api/community';
-// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
-export * from './api/workbench';
 export * from './api/team-people';
 // The move from the old livehuddle.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests").
 export * from './api/migration';

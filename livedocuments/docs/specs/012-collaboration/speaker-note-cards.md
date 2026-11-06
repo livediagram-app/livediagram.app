@@ -6,7 +6,7 @@ the presenter flips through them while the slide is on screen. One long box of s
 of a room; a card per point is what speakers already hold in their hand.
 
 Note cards replace the single notes box of [Presentation mode](presentation-mode.md) "Presenter notes" and the
-title-bar **Add Notes** popover of [Pages](../007-editor/pages-mode.md) "Slides". They are still the slide's notes:
+title-bar **Notes** popover of [Pages](../007-editor/pages-mode.md) "Slides". They are still the slide's notes:
 written in the same places, shown in the same presenter view, exported to and imported from the same PowerPoint notes
 pages.
 
@@ -19,7 +19,7 @@ pages.
 | **card in front**   | While presenting, the note card the presenter is on. Every slide starts on its first card.                                        |
 | **flip**            | Moving to another note card while presenting, turned as a flashcard turns ([Flashcards](../007-editor/flashcards.md) "Flipping"). |
 
-The interface keeps **Notes** for the whole ("Add Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
+The interface keeps **Notes** for the whole ("Notes", "Speaker Notes"), says **card** for one of them ("Add Card",
 "Card 2 of 4"), and never calls a note card a flashcard, a page or a slide.
 
 ## How it differs from a flashcard
@@ -46,9 +46,9 @@ one point a card, the speaking time in its corner, the stack showing what is sti
 
 ## Writing note cards
 
-The cards are written in two places, both an Editor's: the slide page's title-bar **Notes** button
-([Pages](../007-editor/pages-mode.md) "Slides") and the Slide Deck panel's notes area (opened from a row's `…` menu,
-**Add notes** / **Edit notes**). Both show the same **note card list**.
+The cards are written in one place, an Editor's: the page's title-bar **Notes** button
+([Pages](../007-editor/pages-mode.md) "Slides"), on any page the deck has a slide of. It shows the **note card list**.
+(The Slide Deck panel's notes area was the second place; it is retired with the panel, 2026-11-04.)
 
 - **Desktop**: the title-bar button opens a 360 px popover under it. **Phone**: the same button (icon only) opens a
   bottom sheet. On a phone the title bar offers **Notes** for a slide in the deck even though it offers no deck
@@ -72,7 +72,7 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
   and opens it. ⌘↵ (Ctrl+Enter) in an open card adds a blank card straight after it and opens that. At 20 cards the
   button is disabled with the tooltip "A slide holds up to 20 cards" and ⌘↵ does nothing.
 - **Reorder**: drag a card by its grip (the six dots at its top left, shown on hover or focus on a desktop and always
-  on touch): a caret shows where it lands, the move commits on release, as the Slide Deck's rows reorder
+  on touch): a caret shows where it lands, the move commits on release, as Contents' rows reorder
   (`useRowReorderDrag`, pointer events, so touch works). **Move Up** and **Move Down** buttons sit beside the grip,
   and Alt+↑ / Alt+↓ move the focused card; the first card has no Move Up, the last no Move Down.
 - **Remove**: the bin button on the card. A card with words on it goes at once and a bar under the list offers
@@ -83,8 +83,6 @@ The cards are written in two places, both an Editor's: the slide page's title-ba
 - The keyboard shortcuts dialog and help list ↑ / ↓ under "While presenting" (next and previous note card).
 - Copy is Title Case on buttons and headings; every icon button has a styled Tooltip and a pointer cursor; light and
   dark both read; the list fits a 450 px wide window and a 390 px phone without sideways scrolling.
-
-The Slide Deck panel keeps the slide's **Budget** under the list, as before.
 
 ## Presenting
 
@@ -125,11 +123,52 @@ The deck is saved whole, so the server merges the slide's cards **card by card**
 - A slide still holds at most 20 cards after a merge: past that, the stored list's extras are read off by the usual
   parse.
 - A save that carries no base (an older editor, a script) is written as sent, as before.
+- **A merge never stores a deck past the deck cap** (256 KB). When this editor's deck fits but the merged one would
+  not (the other person's cards on top of a deck near the cap), the save is refused and nothing is written: the stored
+  deck keeps the other person's cards, and this editor says its notes are too long to save (below), so the speaker
+  shortens some and the next save merges again. Keeping only the sender's deck would drop the other person's cards
+  without either of them knowing.
 - New card ids are unique to the editor that made them (a counter and a few random characters), so two people adding a
   card at once never make one id for two cards.
 
 The merge is the server's: the other person's cards reach an open editor on its next load, not live (the deck has no
 room op, [Presentation mode](presentation-mode.md)). A presenter who reloads sees everyone's cards.
+
+### Saving
+
+The cards save on their own, with nothing to press. Typing saves the deck a moment after the last key (under a
+second), so a sentence is one save, not one a key. What is still waiting goes **at once** when the writing stops being
+on screen, so nothing typed is lost to the wait:
+
+- A card closes (Done, Escape, a press outside it, or another card opened).
+- The Notes popover (or the phone's sheet) closes, or it moves to another slide's notes.
+- The page goes: closed, reloaded, sent to another site or put away by the browser (`pagehide`), or the editor left
+  for another page of the app.
+
+Each save carries the deck and the deck it was built on (above), so a save is up to twice the deck. The api bounds
+the deck by the deck cap (256 KB) and the deck it was built on by four times that (1 MB), each on its own, never their
+sum, so a deck at the cap still saves with its base and is merged; the whole request stays far under the api's 8 MB
+body cap. The base's wider bound lets a deck that was stored past the cap (before merges were held to it) be saved
+again once the speaker has shortened it.
+
+**When the page goes with a large deck**, the save must still outlive the page. A browser lets a closing page send
+about 64 KB in all, so a deck past what is left of that goes as only **the slides this editor changed**, each with the
+cards it was built on, and the server merges each into the stored deck card by card exactly as above; the rest of the
+stored deck is left as it is. That holds while the slides are the same ones in the same order as the deck it was built
+on (typing notes, renaming or hiding a slide). A save that added, removed or moved slides goes whole, as before, and
+lands only if the page lives long enough.
+
+**A refused or failed save says so.** The editor keeps the speaker's cards on screen either way and shows a message:
+
+- Too big to save (past the deck cap, alone or merged): "Speaker notes are too long to save. Shorten some cards."
+- Any other failure (the connection, the server): "Couldn’t save your speaker notes. Check your connection."
+- No longer allowed to edit, or the sign-in lapsed: the same messages as a tab's save.
+
+The next save is still built on the deck that was last **stored**, not on the one that failed, so the cards in a failed
+save are sent again as this editor's changes rather than read as someone else's removals. For that, an editor's deck
+saves go **one at a time**: a save asked for while another is on its way waits for it and is built on how it ended
+(the deck it stored, or, when it failed, the deck stored before it), and only the newest waiting deck goes. The save
+as the page goes cannot wait: it goes at once, built on the deck last stored.
 
 ## PowerPoint
 
@@ -148,11 +187,11 @@ they are what the presenter means to say, not what the document shows.
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With note cards                                                                                            |
-| --------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar and the Slide Deck.           |
-| **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes or the Slide Deck. |
-| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's.                   |
+| Role            | With note cards                                                                          |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **Editor**      | Everything above: adds, writes, reorders and removes cards, in the title bar's Notes.    |
+| **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes. |
+| **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's. |
 
 The deck is document metadata saved through the document's PUT, which is `gateEdit`; the deck it was built on
 ("Two people writing at once") travels in the same PUT, under the same gate.

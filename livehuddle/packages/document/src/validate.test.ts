@@ -416,6 +416,8 @@ describe('mode button validation (docs/specs/009-elements/mode-button.md)', () =
 
   it('rejects a mode outside the vocabulary rather than silently rewriting it', () => {
     expect(isValidElement({ ...button, mode: 'teleport' })).toBe(false);
+    // A retired mode never reaches the validator from storage (legacy-mode-buttons drops it); a fresh write is junk.
+    expect(isValidElement({ ...button, mode: 'eraser' })).toBe(false);
     expect(isValidElement({ ...button, mode: 42 })).toBe(false);
   });
 });

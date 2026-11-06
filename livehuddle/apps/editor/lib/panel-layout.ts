@@ -21,24 +21,18 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // shared MovablePanel. The fixed zoom controls are deliberately absent — they
 // are not a MovablePanel and stay pinned bottom-right. The Palette, the
 // Explorer and Layers are not corner panels (the strip, and popovers off
-// their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Poll and Vote (popovers off the
-// Session strip, docs/specs/012-collaboration/session-tools.md), nor the Avatar panel (a popover off its button,
+// their buttons, docs/specs/007-editor/toolbar-layout.md), nor the retired Timer popover
+// (docs/specs/012-collaboration/session-tools.md), nor the Avatar panel (a popover off its button,
 // docs/specs/008-canvas/avatar-mode.md), nor the retired AI assistant panel: a stored layout naming them is
 // read like any unknown id.
 export type PanelId =
   | 'collaborate'
   | 'minimap'
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
+  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, present only while the Eraser
   // tool is.
-  | 'laser'
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, on the same terms.
-  | 'spotlight'
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, on the same terms.
   | 'eraser'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
-  | 'format'
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
-  | 'slide-deck';
+  | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -47,15 +41,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = [
-  'collaborate',
-  'minimap',
-  'laser',
-  'spotlight',
-  'eraser',
-  'format',
-  'slide-deck',
-];
+export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'eraser', 'format'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().
@@ -80,11 +66,8 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   minimap: 'bottom-left',
   // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
   // leaves its corner stack.
-  laser: 'bottom-right',
-  spotlight: 'bottom-right',
   eraser: 'bottom-right',
   format: 'bottom-right',
-  'slide-deck': 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livehuddle:panel-layout:v1';

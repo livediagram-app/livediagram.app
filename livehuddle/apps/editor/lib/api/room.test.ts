@@ -32,7 +32,7 @@ describe('roomQueryString (the room upgrade carries only the ticket)', () => {
 // The reconnect cursor (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). The room skips the sender when it
 // relays an op, so the client's own ops only ever reach its cursor through a
 // `cursor` frame; without one a reconnect asked for them back and re-applied
-// its own `vote` deltas, counting each dot twice.
+// its own delta ops, counting each one twice.
 describe('connectRoom reconnect cursor', () => {
   class FakeSocket {
     static OPEN = 1;
@@ -177,21 +177,33 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     const first = FakeSocket.all[0]!;
     first.fire('open');
     first.fire('close');
-    const dot = (delta: 1 | -1) =>
+    const tick = (index: number) =>
       ({
         kind: 'op',
-        op: { kind: 'vote', tabId: 't', elementId: 'e', voter: 'k', delta },
-      }) as const;
-    room.send(dot(1));
+        op: {
+          kind: 'el-delta',
+          tabId: 't',
+          elementId: 'e',
+          delta: { kind: 'check', index, text: 'x', done: true },
+        },
+      }) as never;
+    room.send(tick(1));
     room.send({ kind: 'op', op: { kind: 'cursor', x: 1, y: 2 } } as never);
-    room.send(dot(-1));
+    room.send(tick(2));
     vi.runOnlyPendingTimers();
     const second = FakeSocket.all[1]!;
     second.fire('open');
-    expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual(['hello', 'sync', 'vote', 'vote']);
-    expect(second.sent.slice(2).map((m) => (m.op as unknown as { delta: number }).delta)).toEqual([
-      1, -1,
+    expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual([
+      'hello',
+      'sync',
+      'el-delta',
+      'el-delta',
     ]);
+    expect(
+      second.sent
+        .slice(2)
+        .map((m) => (m.op as unknown as { delta: { index: number } }).delta.index),
+    ).toEqual([1, 2]);
   });
 
   // A longer outage (a laptop asleep, wifi gone for a minute) outlasts the backoff's attempts: the
@@ -459,7 +471,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       kind: 'el-delta',
       tabId: 't',
       elementId: 'e',
-      delta: { kind: 'response', participantId: 'p', value: 'done', at: 1 },
+      delta: { kind: 'check', index: 0, text: 'Agenda', done: true },
     } as const;
     const open = () => {
       const room = connectRoom(
@@ -659,25 +671,6 @@ describe('connectRoom when the document is trashed', () => {
 
     expect(onAccessChanged).toHaveBeenCalledTimes(1);
     expect(onDocumentTrashed).not.toHaveBeenCalled();
-    expect(ClosingSocket.all).toHaveLength(1);
-  });
-
-  // A workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
-  // close 4006. The page turns read-only; the connector never reconnects.
-  it('reports a workbench end once and never reconnects', () => {
-    const onWorkbenchEnded = vi.fn();
-    const onAccessChanged = vi.fn();
-    connectRoom(
-      'd1',
-      { id: 'me', name: 'Me', color: '#000' },
-      { onPresence() {}, onOp() {}, onWorkbenchEnded, onAccessChanged },
-    );
-    ClosingSocket.all[0]!.fire('open');
-    ClosingSocket.all[0]!.fire('close', { code: 4006 });
-    vi.runAllTimers();
-
-    expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
-    expect(onAccessChanged).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(1);
   });
 

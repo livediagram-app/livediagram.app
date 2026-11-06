@@ -1,18 +1,18 @@
-import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Label, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Sparkle } from '@liveworkspace/help-site/art/parts';
 import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livehuddle's helper: Auto Layout
-// tidying a sign-up flow, beside the shared appearance switch and Zen mode.
+// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livehuddle's helper: Auto-align
+// snapping a meeting's notes into line, beside the shared appearance switch (livehuddle has no Zen mode).
 export function ToolsArt() {
   return (
-    <Scene>
-      {/* Auto Layout. */}
+    <Scene zen={false}>
+      {/* Auto-align. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
         <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />
         <Sparkle cx={47} cy={33} r={3.5} className="fill-violet-300" />
         <Label x={54} y={41} size={10.5} weight={700} tone="strong">
-          Auto Layout
+          Auto-align
         </Label>
         <rect
           x={32}
@@ -24,7 +24,7 @@ export function ToolsArt() {
           strokeWidth={1.4}
         />
         <Label x={42} y={73.5} size={10} tone="body">
-          Arrange by its arrows
+          Snap to the grid
         </Label>
         <rect
           x={160}
@@ -39,28 +39,18 @@ export function ToolsArt() {
         </Label>
       </Card>
 
-      {/* The flow it lays out. */}
+      {/* The notes it lines up. */}
       <Shape
         x={262}
         y={18}
         w={104}
         h={36}
-        label="Sign up"
+        label="Agenda"
         fill="fill-violet-50"
         stroke="stroke-violet-400"
       />
-      <Shape x={262} y={88} w={104} h={36} label="Verify email" />
-      <Shape x={262} y={158} w={104} h={36} accent label="Welcome" />
-      <Arrow
-        from={[314, 54]}
-        to={[314, 85]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
-      <Arrow
-        from={[314, 124]}
-        to={[314, 155]}
-        colour={{ stroke: 'stroke-violet-400', fill: 'fill-violet-400' }}
-      />
+      <Shape x={262} y={88} w={104} h={36} label="Ideas" />
+      <Shape x={262} y={158} w={104} h={36} accent label="Next steps" />
       <Sparkle cx={372} cy={20} r={6} className="fill-amber-400" />
       <Sparkle cx={254} cy={98} r={4.5} className="fill-violet-400" />
       <Sparkle cx={378} cy={150} r={4} className="fill-amber-300" />

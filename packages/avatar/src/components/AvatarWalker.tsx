@@ -15,14 +15,33 @@ import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { avatarBindings } from '../bindings';
 import { AVATAR_FALLBACK_COLOUR, avatarScale, type AvatarConfig } from '../config';
 import type { AvatarFacing } from '../walk';
-import { AVATAR_HEIGHT, avatarBox } from '../walk';
+import {
+  AVATAR_HEIGHT,
+  AVATAR_NAME_CHIP_RISE,
+  AVATAR_STATUS_CHIP_RISE,
+  AVATAR_ZZ_RISE,
+  avatarBox,
+} from '../walk';
 import { AvatarSprite } from './avatar-sprite';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
 const AWAY_OPACITY = 0.5;
 
 // A status dot: a small circle in the status's colour with a white rim, so it reads on a name chip and on the canvas.
+// Do Not Disturb (livehuddle's calls status) is a touch larger with a white bar across it, the sign everyone knows.
 function StatusDot({ status }: { status: AvatarStatus }) {
+  if (status === 'dnd') {
+    return (
+      <span
+        aria-hidden
+        data-status-dot="dnd"
+        className="relative inline-flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full ring-[1.5px] ring-white"
+        style={{ backgroundColor: avatarStatusColour(status) }}
+      >
+        <span className="block h-[2px] w-[6px] rounded-full bg-white" />
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden
@@ -46,7 +65,7 @@ export function AvatarWalker({
   shirt,
   standingOn,
   name,
-  onStand,
+  self = false,
   status = null,
   glideMs = 0,
 }: {
@@ -78,8 +97,8 @@ export function AvatarWalker({
   // Peer name, rendered as a small chip above the head. Omitted for your own
   // character (you know who you are).
   name?: string;
-  // Stand up from a chair (docs/specs/009-elements/chair.md). Absent for peers' characters.
-  onStand?: () => void;
+  // Your own character rather than a peer's (the e2e and the Avatar tour find it by `data-avatar="self"`).
+  self?: boolean;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
   status?: AvatarStatus | null;
   // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
@@ -129,9 +148,9 @@ export function AvatarWalker({
       <div
         ref={placed}
         aria-hidden
-        data-avatar={onStand ? 'self' : 'peer'}
+        data-avatar={self ? 'self' : 'peer'}
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).
-        data-tour-id={onStand ? 'avatar-self' : undefined}
+        data-tour-id={self ? 'avatar-self' : undefined}
         data-seated={seated ? '' : undefined}
         className="pointer-events-none absolute"
         style={{
@@ -148,25 +167,33 @@ export function AvatarWalker({
       >
         {name ? (
           <div
-            className={`absolute left-1/2 z-10 flex max-w-[120px] -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${IDENTITY_FILL}`}
+            className={`absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-white ${status ? 'max-w-[180px]' : 'max-w-[120px]'} ${IDENTITY_FILL}`}
             // Pinned just above the HEAD, not the (headroom-extended) box, and
             // tracking the size choice so it hugs a small character too.
             style={{
               ...avatarBindings.identityVars(shirt ?? AVATAR_FALLBACK_COLOUR),
-              top: box.offsetY - AVATAR_HEIGHT * scale - 16,
+              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_NAME_CHIP_RISE,
             }}
           >
             {status ? <StatusDot status={status} /> : null}
             {/* Its own box, so a long name ends in an ellipsis: a flex item's bare text cannot. */}
             <span className="min-w-0 truncate">{name}</span>
+            {status ? (
+              // The dot's label ("Status": every dot is labelled): whole, the name gives way first.
+              <span aria-hidden className="shrink-0 whitespace-nowrap font-medium opacity-90">
+                · {avatarStatusLabel(status)}
+              </span>
+            ) : null}
           </div>
         ) : status ? (
-          // Your own character has no name chip: its status sits alone where the chip would be.
+          // Your own character has no name chip: its labelled status sits where the chip would be, on a quiet chip.
           <div
-            className="absolute left-1/2 z-10 -translate-x-1/2"
-            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - 22 }}
+            data-own-status
+            className="absolute left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold leading-tight text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700"
+            style={{ top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_STATUS_CHIP_RISE }}
           >
             <StatusDot status={status} />
+            <span aria-hidden>{avatarStatusLabel(status)}</span>
           </div>
         ) : null}
         {status === 'away' ? (
@@ -176,7 +203,7 @@ export function AvatarWalker({
             className="animate-avatar-zz pointer-events-none absolute z-10 text-[11px] font-bold italic text-slate-500 dark:text-slate-400"
             style={{
               left: box.offsetX + 8 * scale,
-              top: box.offsetY - AVATAR_HEIGHT * scale - 24,
+              top: box.offsetY - AVATAR_HEIGHT * scale - AVATAR_ZZ_RISE,
             }}
           >
             Zz
@@ -198,23 +225,6 @@ export function AvatarWalker({
             scale={scale}
           />
         </div>
-        {/* Stand (docs/specs/009-elements/chair.md). Arrow keys and a double-click both get you out of
-            a chair, and neither exists on a touch device — so the seat carries
-            its own press. Only for your OWN character: you cannot stand
-            somebody else up. */}
-        {seated && onStand ? (
-          <button
-            type="button"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onStand();
-            }}
-            className="pointer-events-auto absolute left-1/2 top-full -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-full bg-slate-900/85 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm"
-          >
-            Stand
-          </button>
-        ) : null}
       </div>
     </>
   );

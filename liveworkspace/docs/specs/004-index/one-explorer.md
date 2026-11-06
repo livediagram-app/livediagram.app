@@ -117,10 +117,13 @@ registers it in the index in one step, then opens it.
 Home's hero shows **what the app makes**: four small pictures, one per kind of work, each drawn in its app's brand
 colour with its name under it (`WorkKinds` in `@liveworkspace/explorer`, fed per app from its `WORK_KINDS`; the
 pictures are `@liveworkspace/ui/work-art`, the same miniatures every help centre draws a product's work with). Filtered
-to an app it shows that app's four. Under All Apps it shows one per app, that app's first kind in that app's colour,
-named by the app's kind (Canvas, Plan, Document, Design). Every set has the same layout, size and spacing: from `lg`
-up the tiles stand two by two in the hero's right column; below `lg` they sit under the search field, four across, a
-phone included (smaller there, so the hero stays short), inside the page's 16 px gutter. The same set shows on a first run, in the welcome's hero.
+to an app it shows that app's four. Under All Apps it shows one per app, five tiles, that app's first kind in that
+app's colour, named by the app's kind (Canvas, Plan, Document, Design, Space). Every app's set has the same layout,
+size and spacing: from `lg` up the tiles stand two by two in the hero's right column; below `lg` they sit under the
+search field, four across, a phone included (smaller there, so the hero stays short), inside the page's 16 px gutter.
+All's five keep the same tile: below `lg` one row of five (so the hero is no taller than an app's, and no tile wraps to
+a row of its own), a tighter 4 px gap and 11 px names below `sm` so the longest, Document, holds one line on a 390 px
+phone; from `lg` three over two in the right column, the two centred under the three, each tile the same size. The same set shows on a first run, in the welcome's hero.
 
 Each tile starts that kind of work: it is a link to the app's own New route with the template that makes it
 (`/new?template=<template>`, the address the app's welcome uses), on the app's address (the host's `templateHref`;
@@ -130,12 +133,21 @@ is fetched to draw them. They took the place of each app's fan of template previ
 manifests), which differed in number and kind from app to app, showed only on a wide screen, and showed nothing under
 All Apps.
 
-| App           | Its kinds, and the template each starts                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| livediagram   | Flowchart (`flowchart`), Mind Map (`mindmap`), Whiteboard (`whiteboard`), Workshop (`blank-session`)                          |
-| liveplanner   | Board (`kanban`), Sheet (`blank-spreadsheet`), Dashboard (`project-planner`, whose Overview tab is one), Form (`blank-form`)  |
-| livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)        |
-| livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`) |
+| App           | Its kinds, and the template each starts                                                                                          |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| livediagram   | Flowchart (`flowchart`), Mind Map (`mindmap`), Whiteboard (`whiteboard`), Workshop (`blank-session`)                             |
+| liveplanner   | Board (`kanban`), Sheet (`blank-spreadsheet`), Dashboard (`project-planner`, whose Overview tab is one), Form (`blank-form`)     |
+| livedocuments | Article (`blank-article`), Slide Deck (`blank-slide-deck`), Infographic (`blank-infographic`), Poster (`event-poster`)           |
+| livedesign    | Logo (`blank-logo`), App Wireframe (`blank-wireframe-phone`), Web Wireframe (`blank-wireframe-browser`), Photo (`photo-edit`)    |
+| livehuddle    | Virtual Office (`virtual-office`), Team Pod (`team-pod`), Coworking Space (`coworking-space`), All-Hands Hall (`all-hands-hall`) |
+
+livehuddle's kinds are its four Spaces, in Popular's order: with Blank Space they are its whole catalogue
+([templates by mode](../../../../livehuddle/docs/specs/007-editor/templates-by-mode.md)), and Blank Space is what the
+hero's New Space makes. Each is drawn as its floor plan seen from above, its rooms and furniture as the template lays
+them out, with a few people's avatars in it (an office of rooms either side of a corridor, a pod's desks beside its
+team board, an open floor with phone booths, a hall's rows facing a stage). livehuddle's editor tests that each of
+its kinds names a template its `/new` opens (`apps/editor/lib/explorer-work-kinds.test.ts`), so a kind never falls
+through to a Blank Space.
 
 #### Each app's backdrop, on Home's hero
 
@@ -232,10 +244,12 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
   panel's This Browser rows. The confirmation says it deletes only this browser's copy, the one there is, and that
   nothing in the account changes (`thisBrowserDeleteCopy`, the editors' handed-over Delete words it the same). Every
-  host has `remove`, so Delete is never missing in one app and there in another: the editor's panel deletes in place
-  (its offline store's delete); the page, which can't reach the app's offline store, asks on the page and then hands
-  over to the editor (`?convert=delete`, below), which deletes it without asking again and comes back to
-  `/explorer/offline`. Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
+  host has `remove`, so Delete is never missing in one app and there in another, and both delete **in place**: the
+  person stays where they pressed it (This Browser's view, Home's Jump Back In, the Trash drop) and the item leaves
+  the list there, with no page opened and none left (owner, 2026-11-04: Delete used to open the item in the editor,
+  delete it and come back). The editor's panel uses its offline store's delete; the page, on the app's own address
+  and so the same origin, deletes the record itself (`removeThisBrowserRecord`, @liveworkspace/explorer/this-browser,
+  below). Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
   and time in the browser's locale on hover (`title`), as the panel's rows do; with none, the page and the panel both
   say "Nothing is kept only in this browser." The view takes the filter lens like My Work (the field and chip
   row), matched in the browser over the list, since the index never sees these items.
@@ -249,13 +263,23 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   names, and hears it change. liveworkspace.app can't read it, as it can't read the list.
 - **Take Offline, Sync and Delete.** Where the app's editor runs them (the registry's `offlineConversions`), each of
   the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This
-  Browser row has **Sync** for a person signed in and **Delete** for anyone. Only the app can write its offline
-  store: in the editor's panel all three run in place; the page hands over to the app's editor at the item's own
-  address (`<itemPath><id>?convert=take-offline|sync|delete&item=<id>`, `thisBrowserConvertHref`), which takes the
-  request out of the address, checks the item is the person's to move (or, for Delete, one this browser keeps), asks
-  them to confirm, and runs the app's own conversion or delete. The page's Delete has already asked, on the page: it
-  leaves a note for that one item in this tab's session storage (`markThisBrowserDeleteConfirmed`), and the editor
-  takes the note (once, for that item) in place of asking again. A link without the note asks first. A request that
+  Browser row has **Sync** for a person signed in and **Delete** for anyone. Take Offline and Sync copy an item's
+  content, which only the app's code knows, so in the editor's panel they run in place and the page hands them over
+  to the app's editor at the item's own address (`<itemPath><id>?convert=take-offline|sync&item=<id>`,
+  `thisBrowserConvertHref`), which takes the request out of the address, checks the item is the person's to move,
+  asks them to confirm, and runs the app's own conversion. **Delete runs on the page**, in place: removing a record
+  needs no knowledge of what it holds. The registry names each app's offline store (`offlineStore`: its IndexedDB
+  database, which is also the name of the app's offline-ids BroadcastChannel, and its object store; the editors read
+  their names from it, so the two never drift). `removeThisBrowserRecord(app, id)` opens that database at whatever
+  version it is (never creating or upgrading it), deletes the one record in a single transaction, tells the app's open
+  editor tabs on its channel (`{ kind: 'remove', id }`, as the editor's own delete does) so none keeps routing writes
+  to it, drops it from This Browser's list (so every view hears it go) and its rows from the Inbox snapshot. It goes
+  for good, as the editor's This Browser delete does; nothing goes to a trash. Where the record can't be removed that
+  way (the database or store isn't there yet, an editor not opened since an upgrade renamed its store, or IndexedDB
+  fails), Delete falls back to the hand-over: the page leaves a note for that one item in this tab's session storage
+  (`markThisBrowserDeleteConfirmed`) and opens the item's address with `?convert=delete`, and the editor takes the
+  note (once, for that item) in place of asking again, deletes it and comes back to `/explorer/offline`. A
+  `?convert=delete` link without the note asks first. A request that
   reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
   editor the same way. A link alone never moves or deletes anything.
 - **This Browser in Jump Back In.** An opened This Browser item is one card among Home's others, the same size and
@@ -264,7 +288,7 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
   and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
   (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
-  where the host has `remove`, **Delete**, asked first (in place in the panel, handed over on the page). It drags as
+  where the host has `remove`, **Delete**, asked first and in place (the card leaves Jump Back In where it was). It drags as
   the others do, and each target means what it can for an item the account doesn't hold. On the **Trash** it is
   deleted for good after a confirmation, since nothing else holds it; a host without `remove` (none today, kept for
   a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's This Browser group
@@ -301,21 +325,23 @@ in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder ins
 **Members**, each named by its label and tooltip, and the app switch (the app's logo and name, All with
 liveworkspace's). There is no Open Page: the full Explorer is the menu button's own link and Home's See all.
 The panel's Home lists This Browser's opened items among Jump Back In by the page's rule (`mergeOpened`: last opened
-first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill, when
-it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
+first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill on its
+picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
 
-**The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **64rem** (1024 px) wide, kept 1rem
-inside the window, and up to **56rem** (896 px) tall, kept on the canvas below its button and 24 px short of the
+**The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **54rem** (864 px) wide, kept 1rem
+inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
 **13rem** (208 px) wide, so its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
 cards (Jump Back In, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
-wide (a tablet, a wide phone's sheet), four once it is 42rem (every desktop popover, 1280 px and up), each card's
+wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the
+full-page Explorer): a card narrower than about 12rem cuts its "This Browser" chip's time short, so the popover keeps
+three. Each card's
 picture 16:9 over a 13 px name and a quiet line; Home's Jump Back In holds up to **eight**, two full rows of four, and
 below four across shows only its first **six** (three rows of two, two rows of three: never a short last row), the
 seventh and eighth hidden with CSS so a card that is not drawn never asks for its preview.
-The Library's pictures stay five across and its shapes six. On a phone it stays the sheet it was: two cards across
-on a 390 px phone. The canvas stays in sight beside the popover at 1280 px (a quarter of the width), and the size
+The Library's pictures stay five across and its shapes six (from 38rem too). On a phone it stays the sheet it was: two cards across
+on a 390 px phone. The canvas stays in sight beside the popover at 1280 px (a third of the width), and the size
 lives once in the package (`EXPLORER_POPOVER_WIDTH`, `EXPLORER_POPOVER_HEIGHT`) for every editor. On every screen size a **scrim** sits behind it: translucent
 slate (lighter in light mode, deeper in dark), fading in where motion is allowed, over the canvas and its chrome but
 under the panel and everything the panel opens (its menus, dialogs and legends); the editor's header keeps its own
@@ -363,8 +389,15 @@ The journeys, one way each:
      pinned (no select, no ×), with why.
    - **The ⋯ menu**: Edit Team (name and organisation; admins), Leave Team (anyone but the only admin while
      others remain; leaving alone deletes the team, and says so), Delete Team (admins). Each asks once. Leaving
-     or deleting goes to My Work, with a toast.
-     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog.
+     or deleting goes to My Work, with a toast, and the keyboard lands on My Work's row in the sidebar (the
+     team's card, and the button that was focused, are gone).
+   - **Removed elsewhere.** A team the person is removed from (by an admin, or from another device) leaves the
+     sidebar without a reload: the page reads the person's teams again when they come back to the tab (at most
+     once in 30 seconds, as the Inbox does), and a team's view that finds they are no longer in it drops the team
+     from the sidebar there and then, showing Team not found. A team left here comes back only when a read of the
+     list made after the leave names it again (the person was added back elsewhere).
+     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog; leaving
+     or deleting there closes it, goes Home and puts the keyboard on the rail's Home.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
    invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
    so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**. When the teams

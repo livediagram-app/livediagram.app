@@ -151,6 +151,7 @@ export function PortalFace({
         aria-label={`${label}: go to ${targetName ?? 'the linked portal'}`}
         // A click travels; a drag just moves the portal. See usePressWithoutDrag.
         {...press}
+        data-piece-main=""
         // `relative` is load-bearing, not decoration: the hover filter and the
         // press transform each make this button a containing block, so without
         // its own positioning context the absolutely-positioned art would

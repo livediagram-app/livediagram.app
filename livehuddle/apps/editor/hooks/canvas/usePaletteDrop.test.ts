@@ -2,11 +2,10 @@
 import { renderHook } from '@testing-library/react';
 import type { DragEvent as ReactDragEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { LIBRARY_SHAPE_DND_MIME } from '@/lib/shape-library-dnd';
 import { usePaletteDrop } from './usePaletteDrop';
 
-// A file dropped on the canvas (docs/specs/020-import-export/excalidraw-import-export.md "Paste"):
-// handed over with the canvas point it was released at.
+// A file dropped on the canvas: handed over with the canvas point it was released at (what it does with it is
+// useClipboard's dropBoardFile).
 
 function setup(deps: { onDropFile?: boolean } = {}) {
   const wrapper = document.createElement('div');
@@ -65,52 +64,34 @@ describe('dropping a file on the canvas', () => {
   });
 });
 
-// A shape from My shapes (docs/specs/013-workspace/blueprints/shape-libraries.md "Behaviour and
-// state" 6): its library and item, with the canvas point.
-describe('dropping a library shape on the canvas', () => {
-  function libraryDrag(data: string) {
-    return {
+// My shapes is gone with Shape Libraries (Work Tracker #423, part 4): a library shape's drag (from a tab left open on
+// an older build) is not accepted and places nothing.
+describe('an old library shape drag', () => {
+  it('shows no drop and places nothing', () => {
+    const mime = 'application/x-livehuddle-library-shape';
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () => ({ left: 100, top: 50 }) as DOMRect;
+    const onDropPalette = vi.fn();
+    const { result } = renderHook(() =>
+      usePaletteDrop({ viewportZoom: 2, wrapperRef: { current: wrapper }, onDropPalette }),
+    );
+    const event = {
       target: document.createElement('div'),
       clientX: 300,
       clientY: 250,
       preventDefault: vi.fn(),
       dataTransfer: {
         files: [],
-        types: [LIBRARY_SHAPE_DND_MIME],
-        getData: (type: string) => (type === LIBRARY_SHAPE_DND_MIME ? data : ''),
+        types: [mime],
+        getData: (type: string) => (type === mime ? '{"libraryId":"l1","itemId":"i1"}' : ''),
         dropEffect: 'none',
       },
     } as unknown as ReactDragEvent<HTMLElement>;
-  }
-  function setupLibrary() {
-    const wrapper = document.createElement('div');
-    wrapper.getBoundingClientRect = () => ({ left: 100, top: 50 }) as DOMRect;
-    const onDropLibraryShape = vi.fn();
-    const { result } = renderHook(() =>
-      usePaletteDrop({ viewportZoom: 2, wrapperRef: { current: wrapper }, onDropLibraryShape }),
-    );
-    return { ...result.current, onDropLibraryShape };
-  }
-
-  it('hands the shape over with its canvas point, and accepts the drag', () => {
-    const h = setupLibrary();
-    const over = libraryDrag('');
-    h.onDragOver(over);
-    expect(over.dataTransfer.dropEffect).toBe('copy');
-    const drop = libraryDrag(JSON.stringify({ libraryId: 'l1', itemId: 'i1' }));
-    h.onDrop(drop);
-    expect(drop.preventDefault).toHaveBeenCalled();
-    expect(h.onDropLibraryShape).toHaveBeenCalledWith(
-      { libraryId: 'l1', itemId: 'i1' },
-      { x: 100, y: 100 },
-    );
-  });
-
-  it('ignores a payload that is not a library shape', () => {
-    const h = setupLibrary();
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    h.onDrop(libraryDrag('{"nope":1}'));
-    expect(h.onDropLibraryShape).not.toHaveBeenCalled();
+    result.current.onDragOver(event);
+    expect(event.dataTransfer.dropEffect).toBe('none');
+    result.current.onDrop(event);
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(onDropPalette).not.toHaveBeenCalled();
   });
 });
 

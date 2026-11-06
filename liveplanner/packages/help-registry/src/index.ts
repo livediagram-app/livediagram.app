@@ -110,8 +110,8 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Get your bearings in the editor: the title and tab bars, quick controls, settings, themes, undo and redo, zoom, and power user mode.',
-    articleCount: 10,
+      'Get your bearings in the editor: the title and tab bars, quick controls, settings, themes, undo and redo, and zoom.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -199,15 +199,6 @@ export const articles: Article[] = [
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
       'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new projects go plan email api tokens trash delete plans',
-    category: 'User Interface',
-    categorySlug: 'user-interface',
-  },
-  {
-    slug: 'power-user-mode',
-    title: 'Power User Mode',
-    description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
-    keywords:
-      'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

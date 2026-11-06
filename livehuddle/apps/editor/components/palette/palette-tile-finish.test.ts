@@ -19,22 +19,13 @@ describe('paletteFinishClass', () => {
   });
 
   it('wobbles full-colour art under Sketch but leaves its weight under Professional', () => {
-    for (const action of [
-      { type: 'sticker', stickerId: 'x' },
-      { type: 'tech-icon', iconId: 'x' },
-    ] as const) {
-      expect(paletteFinishClass('sketch', action as never)).toBe('palette-finish-sketch');
-      expect(paletteFinishClass('professional', action as never)).toBe('');
-    }
-    for (const action of [
-      { type: 'sticker', stickerId: 'x' },
-      { type: 'tech-icon', iconId: 'x' },
-    ] as const)
-      expect(paletteFinishClass('marker', action as never)).toBe('');
-    expect(paletteFinishClass('marker', { type: 'icon', iconId: 'x' } as never)).toBe(
-      'palette-finish-marker',
-    );
-    expect(paletteFinishClass('professional', { type: 'icon', iconId: 'x' } as never)).toBe(
+    const sticker = { type: 'sticker', stickerId: 'x' } as const;
+    expect(paletteFinishClass('sketch', sticker)).toBe('palette-finish-sketch');
+    expect(paletteFinishClass('professional', sticker)).toBe('');
+    expect(paletteFinishClass('marker', sticker)).toBe('');
+    // A line glyph (the Text tile's) takes the finish's own weight.
+    expect(paletteFinishClass('marker', { type: 'text' })).toBe('palette-finish-marker');
+    expect(paletteFinishClass('professional', { type: 'text' })).toBe(
       'palette-finish-professional',
     );
   });

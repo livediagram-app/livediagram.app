@@ -26,7 +26,6 @@ function setup(initial: Props = {}) {
         enabled: p.enabled ?? true,
         tabId: p.tabId ?? 't1',
         elements: p.elements ?? [walkIn()],
-        layers: undefined,
         loaded: p.loaded ?? true,
         walking: p.walking ?? false,
         openWalking,
@@ -41,7 +40,7 @@ describe('useOpenWalking', () => {
     const { result, openWalking } = setup();
     expect(openWalking).toHaveBeenCalledOnce();
     expect(result.current.walkIn).toMatchObject({ seq: 1 });
-    expect(result.current.walkIn?.feet.y).toBeGreaterThan(100);
+    expect(result.current.walkIn?.button).toMatchObject({ x: 100, y: 100 });
   });
 
   it('opens a tab with a pad walking, leaving the start to the pad', () => {

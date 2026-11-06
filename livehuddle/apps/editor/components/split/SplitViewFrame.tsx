@@ -68,10 +68,8 @@ export function SplitViewFrame({
     hydrated,
     loadedTabIds,
     loadAllTabs,
-    zenMode,
     embedMode,
     appChrome,
-    slideDeck,
     viewport,
     canvasMainRef,
     skipTabFitRef,
@@ -89,8 +87,8 @@ export function SplitViewFrame({
     hydrated,
     loadedTabIds,
     loadTabs: loadAllTabs,
-    // Embeds and the workbench frame (no app chrome) keep one tab, like a phone.
-    suspended: isMobile || zenMode || embedMode || !appChrome || slideDeck.presentingAt !== null,
+    // Embeds (no app chrome) keep one tab, like a phone.
+    suspended: isMobile || embedMode || !appChrome,
   });
   const { pair, editorSide } = split;
   const staticId = pair ? (editorSide === 'left' ? pair.rightId : pair.leftId) : null;
@@ -127,7 +125,7 @@ export function SplitViewFrame({
   if (wasShowing !== showing) {
     setWasShowing(showing);
     setArrived(false);
-    // A pane hidden mid leave-animation (zen, a narrow window, a deleted tab) never ends it: the next split must
+    // A pane hidden mid leave-animation (a narrow window, a deleted tab) never ends it: the next split must
     // not arrive leaving. Nor may it start from the view an earlier split handed over (it opens fitted).
     if (!showing) {
       setLeaving(false);

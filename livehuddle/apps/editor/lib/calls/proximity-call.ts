@@ -1,86 +1,149 @@
 // One browser's proximity call (docs/specs/012-collaboration/proximity-audio.md): from Join Audio to Leave Audio, it
-// mints a Realtime session through the api, publishes the microphone, hears the speakers in earshot at their
-// distance and side, detects your own voice for the equaliser, and closes the microphone while nobody is on your
-// tab. Loaded only when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill
-// switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a
-// refused mint.
-import { callsModeAllows, type CallTrackLocator, type VoiceLevel } from '@livehuddle/api-schema';
-import { apiCallSession, CallsApiError, type CallsCaller } from '@/lib/api/calls';
+// mints a Realtime session through the api, publishes the microphone (call-mic.ts), hears the speakers in earshot at
+// their distance and side (call-subscriptions.ts), and closes the microphone while nobody is on your tab. Loaded only
+// when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill switch
+// (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a refused
+// mint. The camera and a shared screen ride the same session (call-video.ts; docs/specs/012-collaboration/
+// video-and-screen-bubbles.md). A stage (meeting-rooms-and-stage.md "The stage") reaches the whole tab; its audience
+// raises a hand and may be let speak (call-staging.ts), and Do Not Disturb hears nobody. What the call tells the room
+// goes through its beacon (call-beacon.ts).
+import { callsModeAllows, type AccessLevel } from '@livehuddle/api-schema';
+import { apiCallSession, CallsApiError } from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
+import { CallBeacon, trackSignalOf } from './call-beacon';
+import { REPROVE_MS, type CallScene, type ProximityCallInput } from './call-config';
+import { CallMic } from './call-mic';
+import { stageScene } from './call-staging';
+import { CallReceiver } from './call-receiver';
+import { chooseSubscriptions } from './call-subscriptions';
+import { CallVideo } from './call-video';
 import {
+  callLevels,
+  callMaximised,
   callPeers,
   callSelf,
+  onCallHands,
+  onCallLevels,
+  onCallMaximised,
   onCallsMode,
   onCallTracks,
+  onLetSpeak,
+  onStopShare,
+  resetCallMedia,
+  SELF_MEDIA_ID,
+  setCallMedia,
   setCallSelf,
   setCallsMode,
 } from './calls-store';
-import { distance, gainAt, HEARING_RADIUS_PX, nextHeard, panAt, type Point } from './hearing';
+import { someoneHears } from './hearing';
+import { RaisedHand, stagePlace } from './raised-hand';
 import { SfuSession } from './sfu-session';
-import {
-  silenceVoice,
-  SILENT,
-  stepVoice,
-  VOICE_SAMPLE_MS,
-  type VoiceState,
-} from './voice-detector';
+import { mayLetSpeak } from './stage';
+import { zoning, type CallZoning } from './zones';
 
-/** Alone on a tab this long, the microphone closes. */
-export const MIC_IDLE_CLOSE_MS = 15_000;
-/** A speaker's locator goes out again for a new walker at most this often. */
-export const LOCATOR_RESEND_MS = 1000;
+export {
+  CALLS_CHECK_MS,
+  CAMERA_CONSTRAINTS,
+  CAMERA_ENCODINGS,
+  LOCATOR_RESEND_MS,
+  MIC_IDLE_CLOSE_MS,
+  REPROVE_MS,
+  SCREEN_CONSTRAINTS,
+  SCREEN_MAX_BITRATE,
+  SCREEN_MAX_FPS,
+  type CallScene,
+  type CallSignal,
+  type ProximityCallInput,
+} from './call-config';
 
-/** What a call sends over the room: the editor adds the tab. */
-export type CallSignal =
-  | { kind: 'avatar-voice'; level: VoiceLevel }
-  | { kind: 'call-track'; track: CallTrackLocator | null };
+// Out of the call: off every stage, hand down.
+const LEFT_STAGE = { stage: 'none', barredBy: null, hand: 'down', handsUp: 0 } as const;
 
-/** Where everyone stands, as the canvas sees it: your feet, and every other walker's on your tab. */
-export type CallScene = { tabId: string; self: Point | null; walkers: ReadonlyMap<string, Point> };
-
-export type ProximityCallInput = {
-  caller: CallsCaller;
-  canSpeak: boolean;
-  // Made in the Join press, so the browser lets it play.
-  context: AudioContext;
-  send: (signal: CallSignal) => void;
-  getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>;
-};
-
-const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-  video: false,
-};
+const documentVisible = () =>
+  typeof document === 'undefined' || document.visibilityState !== 'hidden';
 
 export class ProximityCall {
   private readonly input: ProximityCallInput;
   private readonly graph: AudioGraph;
   private sfu: SfuSession | null = null;
   private trackToken: string | null = null;
-  private mic: MediaStream | null = null;
-  private micBlocked = false;
-  private muted = false;
-  private published = false;
-  private voice: VoiceState = SILENT;
-  private sampler: ReturnType<typeof setInterval> | null = null;
-  private idleTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly mic: CallMic;
+  private readonly video: CallVideo;
+  private readonly beacon: CallBeacon;
   private heard: ReadonlySet<string> = new Set();
+  private session: { sessionId: string; sessionToken: string } | null = null;
+  private provedAt = 0;
   private scene: CallScene = { tabId: '', self: null, walkers: new Map() };
+  // Everyone's room, and who speaks from a stage, worked out once per scene and read by hearing, placing and the mic
+  // indicator.
+  private zoning: CallZoning = { self: null, of: new Map() };
+  // Whether you spoke from a stage at the last scene, so stepping on is counted once.
+  private onStage = false;
   private knownWalkers = new Set<string>();
-  private locatorSentAt = -Infinity;
-  private locatorDue: ReturnType<typeof setTimeout> | null = null;
   private stopped = false;
-  private readonly unsubscribeTracks: () => void;
-  private readonly unsubscribeMode: () => void;
+  private readonly receiver: CallReceiver;
+  private readonly unsubscribe: (() => void)[];
+  private readonly onVisibility = () => this.hear();
+  // Your raised hand (meeting-rooms-and-stage.md "Raise hand"), and Do Not Disturb (the same spec's).
+  private readonly hand: RaisedHand;
+  private dnd = false;
 
   constructor(input: ProximityCallInput) {
     this.input = input;
     this.graph = new AudioGraph(input.context);
-    this.unsubscribeTracks = onCallTracks(() => this.hear());
-    this.unsubscribeMode = onCallsMode(() => {
-      if (!callsModeAllows(callSelf().mode, 'session')) this.pause();
+    this.receiver = new CallReceiver(this.graph);
+    const sfu = () => this.sfu;
+    const trackToken = () => this.trackToken;
+    const stopped = () => this.stopped;
+    const announce = () => this.beacon.sendLocator(true);
+    this.beacon = new CallBeacon({
+      send: (signal) => this.input.send(signal),
+      trackSignal: () =>
+        trackSignalOf(this.sfu, this.trackToken, {
+          published: this.mic.published,
+          cameraAnnounced: this.video.cameraAnnounced,
+          camera: !!this.video.camera,
+          screenAnnounced: this.video.screenAnnounced,
+          screen: !!this.video.screen,
+        }),
+      publishing: () =>
+        !this.stopped && (this.mic.published || !!this.video.camera || !!this.video.screen),
     });
+    this.mic = new CallMic({
+      input,
+      graph: this.graph,
+      sfu,
+      trackToken,
+      stopped,
+      send: (signal) => this.beacon.send(signal),
+      announce,
+    });
+    this.video = new CallVideo({ input, sfu, trackToken, stopped, announce });
+    this.hand = new RaisedHand((signal) => this.beacon.send(signal));
+    this.unsubscribe = [
+      onCallTracks(() => this.hear()),
+      onCallsMode(() => this.applyMode()),
+      onCallMaximised(() => this.hear()),
+      // A peer's level changing may let them speak from the stage they stand on, or stop them.
+      onCallLevels(() => this.update(this.scene)),
+      // A hand going up, down or let speak changes who speaks and the count a speaker sees.
+      onCallHands(() => this.update(this.scene)),
+      onLetSpeak((from, on) => this.onLetSpeak(from, on)),
+      onStopShare((from) => this.onStopShare(from)),
+      // A preview turned on while the call runs (or joins) is sent the moment the call may send it.
+      ...(input.preview ? [input.preview.subscribe(() => this.adoptPreview())] : []),
+    ];
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.onVisibility);
+    }
+  }
+
+  /** Your level: an Editor may share a screen, a Participant may speak, a Viewer listens. */
+  private get level(): AccessLevel {
+    if (this.input.canShare) return 'edit';
+    return this.input.canSpeak ? 'participate' : 'view';
   }
 
   /** Whether this call has stopped (left, failed or paused); a stopped call never starts again. */
@@ -98,25 +161,67 @@ export class ProximityCall {
       // The session says what the switch allows (an older api says nothing: on).
       setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
       this.trackToken = session.trackToken ?? null;
+      this.session = { sessionId: session.sessionId, sessionToken: session.sessionToken };
       this.sfu = new SfuSession(this.input.caller, session, {
-        onTrack: (publisher, stream) => this.onTrack(publisher, stream),
-        onTrackEnded: (publisher) => {
-          const id = this.presenceOf(publisher);
-          if (id) this.graph.detach(id);
+        onTrack: (publisher, trackName, stream) => {
+          if (this.receiver.onTrack(publisher, trackName, stream)) this.place();
         },
+        onTrackEnded: (publisher, trackName) => this.receiver.onTrackEnded(publisher, trackName),
         onFailed: () => this.fail('connection'),
         onPaused: () => this.pause(),
+        onAudioOnly: () => setCallsMode('audio-only'),
+        onNotHeard: () => this.notHeard(),
       });
-      if (this.input.canSpeak && session.canSpeak) await this.openMic();
+      this.proveSession();
+      if (this.input.canSpeak && session.canSpeak) await this.mic.open();
       if (this.stopped) return;
       setCallSelf({ phase: 'live' });
       this.hear();
+      this.adoptPreview();
     } catch (error) {
       if (error instanceof CallsApiError && error.paused) {
         this.pause();
         return;
       }
       this.fail(error instanceof CallsApiError ? (error.code ?? String(error.status)) : 'start');
+    }
+  }
+
+  // The switch changed: off ends the call; audio only stops the camera and the share, and every bubble goes.
+  private applyMode(): void {
+    const mode = callSelf().mode;
+    if (!callsModeAllows(mode, 'session')) {
+      this.pause();
+      return;
+    }
+    if (!callsModeAllows(mode, 'video')) this.video.stopCamera();
+    if (!callsModeAllows(mode, 'screen')) this.video.stopScreen();
+    this.hear();
+    this.adoptPreview();
+  }
+
+  /**
+   * A live call takes the local preview's streams it may send (video-and-screen-bubbles.md "Local preview"): no second
+   * prompt, the same bubble. What the mode forbids stops, as a sent one would (the strip reads Video Paused); what
+   * your level forbids (a Participant's screen) stays a preview.
+   */
+  private adoptPreview(): void {
+    const preview = this.input.preview;
+    if (!preview || this.stopped || !this.sfu || callSelf().phase !== 'live') return;
+    const mode = callSelf().mode;
+    for (const [kind, media] of [
+      ['camera', 'video'],
+      ['screen', 'screen'],
+    ] as const) {
+      const stream = preview.stream(kind);
+      if (!stream) continue;
+      if (!callsModeAllows(mode, media)) {
+        preview.stop(kind);
+        continue;
+      }
+      const adopted =
+        kind === 'camera' ? this.video.adoptCamera(stream) : this.video.adoptScreen(stream);
+      if (adopted) preview.take(kind);
     }
   }
 
@@ -132,182 +237,169 @@ export class ProximityCall {
     debugLog('[calls] failed', why);
     if (this.stopped) return;
     this.teardown();
-    setCallSelf({ phase: 'error', mic: this.micBlocked ? 'blocked' : 'closed', level: 0 });
+    setCallSelf({
+      phase: 'error',
+      mic: this.mic.blocked ? 'blocked' : 'closed',
+      level: 0,
+      camera: 'off',
+      screen: 'off',
+      ...LEFT_STAGE,
+    });
   }
 
-  private async openMic(): Promise<void> {
-    if (this.mic || this.micBlocked || !this.sfu || !this.trackToken) return;
-    const getUserMedia =
-      this.input.getUserMedia ??
-      ((c: MediaStreamConstraints) => navigator.mediaDevices.getUserMedia(c));
-    let stream: MediaStream;
-    try {
-      stream = await getUserMedia(MIC_CONSTRAINTS);
-    } catch {
-      this.micBlocked = true;
-      setCallSelf({ mic: 'blocked' });
-      return;
-    }
-    if (this.stopped) {
-      for (const t of stream.getTracks()) t.stop();
-      return;
-    }
-    this.mic = stream;
-    const track = stream.getAudioTracks()[0]!;
-    track.enabled = !this.muted;
-    this.graph.listenTo(stream);
-    setCallSelf({ mic: 'open' });
-    this.startSampling();
-    if (this.published) {
-      await this.sfu.replaceMic(track);
-    } else {
-      this.published = true;
-      await this.sfu.publish(track);
-      this.sendLocator(true);
-    }
+  /** Turn the camera on or off. A Viewer has none; audio only pauses it. */
+  toggleCamera(): Promise<void> {
+    return this.video.toggleCamera();
   }
 
-  private closeMic(): void {
-    if (!this.mic) return;
-    for (const t of this.mic.getTracks()) t.stop();
-    this.mic = null;
-    this.graph.listenTo(null);
-    void this.sfu?.replaceMic(null);
-    this.stopSampling();
-    setCallSelf({ mic: 'closed' });
-  }
-
-  private startSampling(): void {
-    if (this.sampler) return;
-    this.sampler = setInterval(() => this.sample(), VOICE_SAMPLE_MS);
-  }
-
-  private stopSampling(): void {
-    if (this.sampler) clearInterval(this.sampler);
-    this.sampler = null;
-    this.applyVoice(silenceVoice(this.voice, performance.now()));
-  }
-
-  private sample(): void {
-    if (this.muted) return;
-    this.applyVoice(stepVoice(this.voice, this.graph.micLevel(), performance.now()));
-  }
-
-  private applyVoice(step: { state: VoiceState; send?: VoiceLevel }): void {
-    this.voice = step.state;
-    if (step.send === undefined) return;
-    this.input.send({ kind: 'avatar-voice', level: step.send });
-    setCallSelf({ level: step.send });
+  /** Share a screen, or stop sharing. An Editor's alone; audio only pauses it. */
+  toggleScreen(): Promise<void> {
+    return this.video.toggleScreen();
   }
 
   /** Mute or unmute: muted sends nothing, no audio and no equaliser. */
   toggleMute(): void {
-    this.muted = !this.muted;
-    for (const t of this.mic?.getAudioTracks() ?? []) t.enabled = !this.muted;
-    if (this.muted) this.applyVoice(silenceVoice(this.voice, performance.now()));
-    setCallSelf({ muted: this.muted });
+    this.mic.toggleMute();
   }
 
-  private sendLocator(force = false): void {
-    if (!this.sfu || !this.trackToken || !this.published) return;
-    const wait = LOCATOR_RESEND_MS - (performance.now() - this.locatorSentAt);
-    if (!force && wait > 0) {
-      this.locatorDue ??= setTimeout(() => {
-        this.locatorDue = null;
-        this.sendLocator(true);
-      }, wait);
-      return;
-    }
-    this.locatorSentAt = performance.now();
-    this.input.send({ kind: 'call-track', track: this.sfu.locator(this.trackToken) });
+  // --- Raise hand and Do Not Disturb (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb") ------------------
+
+  /** Raise your hand: a speaking level only, and only as a live stage's audience. */
+  raiseHand(): void {
+    if (this.stopped || !this.input.canSpeak || callSelf().stage !== 'audience') return;
+    if (this.hand.raise(this.zoning.self)) track('Canvas', 'Used', 'RaiseHand');
+    this.update(this.scene);
+  }
+
+  /** Lower your hand (it also ends being let speak). */
+  lowerHand(): void {
+    this.hand.lower();
+    this.update(this.scene);
+  }
+
+  // Someone let your hand speak, or pressed Done: honoured only from an Editor or someone speaking from a stage.
+  private onLetSpeak(from: string, on: boolean): void {
+    if (this.stopped) return;
+    const { walkers, stages = [] } = this.scene;
+    this.hand.letSpeak(from, on, mayLetSpeak(from, walkers, callLevels(), stages));
+    this.update(this.scene);
+  }
+
+  // An Editor asked you to stop sharing: honoured unless the room stamped them something else (it checks too).
+  private onStopShare(from: string): void {
+    if (this.stopped) return;
+    const level = callLevels().get(from);
+    if (level !== undefined && level !== 'edit') return;
+    if (!this.video.screen) return;
+    this.video.stopScreen();
+    this.input.onShareStopped?.(from);
+  }
+
+  /** Do Not Disturb: nobody's voice or bubbles reach you; you are still heard. */
+  setDoNotDisturb(on: boolean): void {
+    if (this.dnd === on) return;
+    this.dnd = on;
+    this.hear();
   }
 
   /** The canvas moved: re-decide who is heard, how loudly, and whether the microphone stays open. */
   update(scene: CallScene): void {
     if (this.stopped) return;
     this.scene = scene;
+    const zoned = zoning(scene.self, scene.walkers, scene.zones ?? []);
+    // Walking out of the room you raised it in lowers your hand.
+    this.hand.keepIn(zoned.self);
+    const staged = stageScene(scene, zoned, this.level, this.hand.letSpeakBy);
+    this.zoning = staged.zoning;
+    const onStage = staged.zoning.stage?.self === true;
+    if (onStage && !this.onStage) track('Canvas', 'Used', 'StageSpeak');
+    this.onStage = onStage;
     // A walker new to the tab learns where this microphone is.
     let arrived = false;
     for (const id of scene.walkers.keys()) if (!this.knownWalkers.has(id)) arrived = true;
     this.knownWalkers = new Set(scene.walkers.keys());
-    if (arrived) this.sendLocator();
-    this.keepMicFor(scene.walkers.size > 0);
-    const near = scene.self
-      ? [...scene.walkers.values()].some((at) => distance(scene.self!, at) <= HEARING_RADIUS_PX)
-      : false;
-    setCallSelf({ someoneNear: near });
+    if (arrived) {
+      this.beacon.sendLocator();
+      this.hand.resend();
+    }
+    this.mic.keepFor(scene.walkers.size > 0);
+    setCallSelf({
+      someoneNear: someoneHears(scene.self, scene.walkers, this.zoning),
+      stage: stagePlace(staged.zoning.stage, staged.barredBy !== null),
+      barredBy: staged.barredBy,
+      hand: this.hand.state(staged.hands.self),
+      handsUp: staged.handsUp,
+    });
     this.hear();
   }
 
-  // Open while somebody else walks the tab; closed after MIC_IDLE_CLOSE_MS alone.
-  private keepMicFor(company: boolean): void {
-    if (!this.input.canSpeak || !this.published) return;
-    if (company) {
-      if (this.idleTimer) clearTimeout(this.idleTimer);
-      this.idleTimer = null;
-      if (!this.mic) void this.openMic();
-      return;
-    }
-    if (!this.mic || this.idleTimer) return;
-    this.idleTimer = setTimeout(() => {
-      this.idleTimer = null;
-      this.closeMic();
-    }, MIC_IDLE_CLOSE_MS);
+  // Tell the room which Realtime session is this browser's, so it can answer the mint route's hearing check
+  // (meeting-rooms-and-stage.md "Trust"). Said again when the room says no, in case it restarted or the socket did.
+  private proveSession(): void {
+    if (!this.session) return;
+    this.provedAt = performance.now();
+    this.beacon.send({ kind: 'call-session', ...this.session });
+  }
+
+  private notHeard(): void {
+    track('Canvas', 'Used', 'CallNotHeard');
+    if (performance.now() - this.provedAt >= REPROVE_MS) this.proveSession();
   }
 
   private hear(): void {
     if (!this.sfu || this.stopped) return;
-    const peers = callPeers();
-    const candidates = new Map<string, Point>();
-    for (const [id, at] of this.scene.walkers) {
-      const peer = peers.get(id);
-      if (peer?.track && peer.tabId === this.scene.tabId) candidates.set(id, at);
-    }
-    this.heard = nextHeard(this.heard, this.scene.self, candidates);
+    const chosen = chooseSubscriptions({
+      prevHeard: this.heard,
+      scene: this.scene,
+      zoning: this.zoning,
+      peers: callPeers(),
+      dnd: this.dnd,
+      mode: callSelf().mode,
+      maximised: callMaximised(),
+      visible: (this.input.pageVisible ?? documentVisible)(),
+    });
+    this.heard = chosen.heard;
     setCallSelf({ heard: this.heard });
-    const locators: CallTrackLocator[] = [];
-    for (const id of this.heard) {
-      const track = peers.get(id)?.track;
-      if (track) locators.push(track);
-    }
-    this.sfu.want(locators);
-    this.place();
+    this.sfu.want(chosen.wants);
+    if (!this.dnd) this.place();
   }
 
   private place(): void {
-    const self = this.scene.self;
-    if (!self) return;
-    for (const id of this.heard) {
-      const at = this.scene.walkers.get(id);
-      if (at) this.graph.place(id, gainAt(distance(self, at)), panAt(at.x - self.x));
-    }
-  }
-
-  private presenceOf(publisherSessionId: string): string | null {
-    for (const [id, peer] of callPeers())
-      if (peer.track?.sessionId === publisherSessionId) return id;
-    return null;
-  }
-
-  private onTrack(publisherSessionId: string, stream: MediaStream): void {
-    const id = this.presenceOf(publisherSessionId);
-    if (!id) return;
-    this.graph.attach(id, stream);
-    this.place();
+    this.receiver.place(this.heard, this.scene, this.zoning);
   }
 
   private teardown(): void {
+    // Leaving the call lowers your hand, said while the room still listens.
+    this.hand.lower();
     this.stopped = true;
-    if (this.idleTimer) clearTimeout(this.idleTimer);
-    if (this.locatorDue) clearTimeout(this.locatorDue);
-    this.unsubscribeTracks();
-    this.unsubscribeMode();
-    this.stopSampling();
-    if (this.published) this.input.send({ kind: 'call-track', track: null });
-    if (this.mic) for (const t of this.mic.getTracks()) t.stop();
-    this.mic = null;
+    this.mic.clearIdle();
+    this.beacon.clear();
+    for (const unsubscribe of this.unsubscribe) unsubscribe();
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibility);
+    }
+    this.mic.stopSampling();
+    const announced =
+      this.mic.published || this.video.cameraAnnounced || this.video.screenAnnounced;
+    if (announced) {
+      this.input.send({
+        kind: 'call-track',
+        track: null,
+        ...(this.video.cameraAnnounced ? { video: null } : {}),
+        ...(this.video.screenAnnounced ? { screen: null } : {}),
+      });
+    }
+    const [camera, screen] = this.video.release();
+    for (const stream of [this.mic.release(), camera, screen]) {
+      for (const t of stream?.getTracks() ?? []) t.stop();
+    }
+    // Your own bubbles go with what the call sent; a local preview it never took stays (a Participant's screen).
+    if (camera) setCallMedia(SELF_MEDIA_ID, 'video', null);
+    if (screen) setCallMedia(SELF_MEDIA_ID, 'screen', null);
     this.sfu?.close();
     this.sfu = null;
+    this.receiver.clear();
+    resetCallMedia(SELF_MEDIA_ID);
     this.graph.close();
   }
 
@@ -322,6 +414,9 @@ export class ProximityCall {
       level: 0,
       heard: new Set(),
       someoneNear: false,
+      camera: 'off',
+      screen: 'off',
+      ...LEFT_STAGE,
     });
   }
 }

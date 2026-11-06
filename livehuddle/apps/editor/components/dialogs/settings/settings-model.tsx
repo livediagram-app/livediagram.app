@@ -18,7 +18,6 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useHideCursors } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { presetSummaryLines } from './power-user-preset-rows';
 import type {
   SettingsAppearanceRowSpec,
   SettingsCategorySpec,
@@ -41,8 +40,7 @@ import { SettingsTrashRow } from './SettingsTrashRow';
 // Whether a row's setting is one every liveworkspace app shares (ALL_SETTING_KEYS): changed here,
 // it changes in each of them (docs/specs/007-editor/user-preferences.md "Shared with every app").
 // A row's key is its preference's key, except a UI Scale part's (`uiScale-panels` is
-// `uiScalePanels`) and a Presenting option's (`presentation-loop` is a field of `presentation`):
-// settingKeyOfRow.
+// `uiScalePanels`): settingKeyOfRow.
 export function rowSharedByAllApps(rowKey: string): boolean {
   return isAllSettingRow(rowKey);
 }
@@ -56,16 +54,11 @@ export function settingsModel(
   categories: readonly SettingsCategorySpec[],
   settings: UserPreferences,
   onChange: (next: UserPreferences) => void,
-  // Row keys the dialog offers right now, across every category: the preset readout's "Change"
-  // goes only to those.
-  offered: ReadonlySet<string> = new Set(categories.flatMap((c) => c.rows.map((r) => r.key))),
 ): SettingsCategory[] {
   const ctx = { settings, onChange, track: trackSetting };
   const modelRow = (row: SettingsRowSpec): SettingsRow => {
     if (isBindableRow(row)) return bindRow(row, ctx, rowSharedByAllApps(row.key));
     switch (row.kind) {
-      case 'presetSummary':
-        return { ...row, kind: 'presetSummary', lines: presetSummaryLines(settings, offered) };
       case 'shortcutList':
         return { ...row, kind: 'shortcutList', sections: SHORTCUT_SECTIONS };
       case 'appearance':

@@ -39,10 +39,10 @@ export default function OfficeExportPanel({
   deck?: Deck;
   title: string;
   baseName: string;
-  render: Pick<ImageExportOpts, 'images' | 'resolveTabWindow' | 'tabWindowFontIds'>;
+  render: Pick<ImageExportOpts, 'images' | 'resolveTabWindow'>;
   /** The first page as the image formats preview it; empty until its images are loaded. */
   previewSvg: string;
-  /** False until the images and tab windows the pictures draw are loaded. */
+  /** False until the images the pictures draw are loaded. */
   ready: boolean;
   onDone: () => void;
   onBack: () => void;

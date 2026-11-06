@@ -10,7 +10,15 @@ import {
 } from '@/lib/calls/calls-store';
 import { CALLS_PAUSED_ANNOUNCEMENT, CallClusterButton, micIndicator } from './CallClusterButton';
 
-const actions = { join: vi.fn(), leave: vi.fn(), toggleMute: vi.fn() };
+const actions = {
+  join: vi.fn(),
+  leave: vi.fn(),
+  toggleMute: vi.fn(),
+  toggleCamera: vi.fn(),
+  toggleScreen: vi.fn(),
+  raiseHand: vi.fn(),
+  lowerHand: vi.fn(),
+};
 
 function show(patch: Partial<CallSelf>) {
   act(() => {
@@ -32,6 +40,20 @@ describe('CallClusterButton', () => {
     expect(container.innerHTML).toBe('');
     act(() => setCallSelf({ available: true }));
     expect(container.innerHTML).toBe('');
+  });
+
+  // docs/specs/018-help/contextual-help-links.md: the strip carries no help link, whatever its state.
+  it('carries no calls help link before joining, once in, or while paused', () => {
+    render(<CallClusterButton />);
+    for (const state of [
+      {},
+      { phase: 'live', mic: 'open', someoneNear: true },
+      { canSpeak: false, phase: 'live' },
+      { mode: 'off' },
+    ]) {
+      show(state as Parameters<typeof show>[0]);
+      expect(screen.queryByRole('link', { name: 'Learn about calls' })).toBeNull();
+    }
   });
 
   it('offers Join Audio to a speaker and Listen In to a Viewer', () => {
@@ -113,5 +135,160 @@ describe('CallClusterButton', () => {
     expect(micIndicator(self({ mic: 'closed' }))).toBe('closed');
     expect(micIndicator(self({ mic: 'open', someoneNear: true }))).toBe('live');
     expect(micIndicator(self({ mic: 'open', someoneNear: false }))).toBe('nobody-near');
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "The camera", "The screen share", "Share roles".
+  describe('the camera and Share Screen', () => {
+    const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
+
+    it('offers a camera to a speaker, Share Screen to an Editor, and neither to a Viewer', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', mic: 'open' });
+      fireEvent.click(button('Turn On Camera')!);
+      expect(actions.toggleCamera).toHaveBeenCalledTimes(1);
+      expect(button('Share Screen')).toBeNull();
+      show({ phase: 'live', canShare: true });
+      fireEvent.click(button('Share Screen')!);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      show({ phase: 'live', canSpeak: false, canShare: false });
+      expect(button('Turn On Camera')).toBeNull();
+      expect(button('Share Screen')).toBeNull();
+    });
+
+    it('shows the camera on, starting and blocked, and a share running', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', canShare: true, camera: 'on', screen: 'on' });
+      expect(button('Turn Off Camera')!.getAttribute('aria-pressed')).toBe('true');
+      // The strip's Stop Sharing, pressed, and the sharing bar's own.
+      const stops = screen.getAllByRole('button', { name: 'Stop Sharing' });
+      expect(stops.map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', null]);
+      expect(screen.getByRole('status').textContent).toContain('You are sharing your screen');
+      fireEvent.pointerDown(stops[1]!);
+      fireEvent.click(stops[1]!);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      show({ phase: 'live', camera: 'starting', screen: 'starting' });
+      expect(button('Turn On Camera')!.disabled).toBe(true);
+      expect(button('Share Screen')!.disabled).toBe(true);
+      expect(screen.queryByRole('status')).toBeNull();
+      show({ phase: 'live', camera: 'blocked', screen: 'off' });
+      expect(button('Turn On Camera')!.disabled).toBe(false);
+    });
+
+    it('reads one calm Video Paused while calls are audio only', () => {
+      render(<CallClusterButton />);
+      show({ phase: 'live', canShare: true, mode: 'audio-only' });
+      expect(button('Video Paused')).not.toBeNull();
+      expect(button('Turn On Camera')).toBeNull();
+      expect(button('Share Screen')).toBeNull();
+      // The microphone carries on.
+      expect(button('Mute')).not.toBeNull();
+    });
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Local preview".
+  describe('a local preview', () => {
+    const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
+    const preview = { canPreviewCamera: true, canPreviewScreen: true };
+
+    it('offers the camera and screen with no call, alone with the help link', () => {
+      render(<CallClusterButton />);
+      show({ available: false, ...preview });
+      expect(button('Join Audio')).toBeNull();
+      fireEvent.click(button('Turn On Camera')!);
+      fireEvent.click(button('Share Screen')!);
+      expect(actions.toggleCamera).toHaveBeenCalledTimes(1);
+      expect(actions.toggleScreen).toHaveBeenCalledTimes(1);
+      // A Viewer has none; nor does a browser that cannot capture.
+      show({ available: false, canSpeak: false });
+      expect(button('Turn On Camera')).toBeNull();
+      show({ available: false, canSpeak: true, canPreviewCamera: false, canPreviewScreen: false });
+      expect(button('Turn On Camera')).toBeNull();
+    });
+
+    it('says only you see a preview, in the strip and the sharing bar', () => {
+      render(<CallClusterButton />);
+      show({ available: false, ...preview, previewCamera: 'on', previewScreen: 'on' });
+      expect(button('Turn Off Camera')!.getAttribute('aria-pressed')).toBe('true');
+      expect(screen.getByRole('status').textContent).toContain('Only you see your screen');
+      expect(screen.getByRole('status').textContent).not.toContain('You are sharing');
+      show({ previewCamera: 'starting', previewScreen: 'starting' });
+      expect(button('Turn On Camera')!.disabled).toBe(true);
+      expect(button('Share Screen')!.disabled).toBe(true);
+    });
+
+    it('sits beside Join Audio and Calls Paused, and a Participant previews a screen in a call', () => {
+      render(<CallClusterButton />);
+      show({ ...preview });
+      expect(button('Join Audio')).not.toBeNull();
+      expect(button('Turn On Camera')).not.toBeNull();
+      show({ ...preview, mode: 'off' });
+      expect(button('Calls Paused')).not.toBeNull();
+      expect(button('Turn On Camera')).not.toBeNull();
+      // In a call, a Participant (no canShare) is offered the screen as a preview.
+      show({ ...preview, mode: 'on', phase: 'live', canShare: false, previewScreen: 'on' });
+      // The strip's own and the bar's.
+      expect(screen.getAllByRole('button', { name: 'Stop Sharing' })).toHaveLength(2);
+      expect(screen.getByRole('status').textContent).toContain('Only you see your screen');
+    });
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand", "The stage line" and "Do Not Disturb".
+  describe('the stage and Do Not Disturb', () => {
+    const live = { phase: 'live', mic: 'open', someoneNear: true } as const;
+
+    it('offers Raise Hand to the audience who may speak, never to a Viewer or with no stage live', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'none' });
+      expect(screen.queryByRole('button', { name: 'Raise Hand' })).toBeNull();
+      show({ ...live, stage: 'audience' });
+      fireEvent.click(screen.getByRole('button', { name: 'Raise Hand' }));
+      expect(actions.raiseHand).toHaveBeenCalledTimes(1);
+      show({ ...live, stage: 'audience', canSpeak: false });
+      expect(screen.queryByRole('button', { name: 'Raise Hand' })).toBeNull();
+    });
+
+    it('reads Lower Hand while raised, and Speaking once let speak', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'audience', hand: 'raised' });
+      const lower = screen.getByRole('button', { name: 'Lower Hand' });
+      expect(lower.getAttribute('aria-pressed')).toBe('true');
+      fireEvent.click(lower);
+      expect(actions.lowerHand).toHaveBeenCalledTimes(1);
+      show({ ...live, stage: 'speaker', hand: 'speaking' });
+      // In the brand's live tone, not the raised hand's amber.
+      expect(screen.getByRole('button', { name: 'Lower Hand' }).className).toContain(
+        'text-brand-700',
+      );
+    });
+
+    it('shows a speaker how many hands are up', () => {
+      render(<CallClusterButton />);
+      show({ ...live, stage: 'speaker', handsUp: 0 });
+      expect(screen.queryByRole('button', { name: /raised hand/ })).toBeNull();
+      show({ ...live, stage: 'speaker', handsUp: 1 });
+      expect(screen.getByRole('button', { name: '1 raised hand' })).toBeTruthy();
+      show({ ...live, stage: 'speaker', handsUp: 120 });
+      expect(screen.getByRole('button', { name: '120 raised hands' }).textContent).toContain('99+');
+    });
+
+    it('says which stage bars you, above the strip', () => {
+      const { container } = render(<CallClusterButton />);
+      const line = () => container.querySelector('[data-stage-line]')!;
+      show({ ...live, barredBy: 'edit' });
+      expect(line().textContent).toBe('Only Editors speak from this stage');
+      show({ ...live, barredBy: 'take-part' });
+      expect(line().textContent).toBe('Only Editors and Participants speak from this stage');
+      show({ ...live, barredBy: null });
+      expect(line().textContent).toBe('');
+      expect(line().getAttribute('aria-live')).toBe('polite');
+    });
+
+    it('shows Do Not Disturb in the strip, and a press clears it', () => {
+      const clear = vi.fn();
+      render(<CallClusterButton doNotDisturb onClearDoNotDisturb={clear} />);
+      show(live);
+      fireEvent.click(screen.getByRole('button', { name: 'Turn Off Do Not Disturb' }));
+      expect(clear).toHaveBeenCalledTimes(1);
+    });
   });
 });

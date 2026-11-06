@@ -18,7 +18,6 @@ import {
   lucideFolder,
   lucideHouse,
   lucideImage,
-  lucideShapes,
   lucideShare2,
 } from '@liveworkspace/icons/lucide';
 
@@ -69,7 +68,7 @@ export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?
 // The line folder: the panel tree's folders, and every menu's Change Folder / folder chip.
 export const FolderOutlineIcon = lucideGlyph(lucideFolder, 12);
 
-// Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
+// Sparkle for the synthetic "Generated" folder (AI-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {
   return <SharedSparkleIcon size={size} />;
 }
@@ -91,8 +90,6 @@ export const ClockIcon = lucideGlyph(lucideClock, 13);
 
 export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
-// Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
-export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 // A team: one drawing, shared with the landing page (@livehuddle/ui).
 export { TeamIcon } from '@livehuddle/ui';
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My

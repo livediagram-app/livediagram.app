@@ -32,16 +32,10 @@ describe('editor worker security headers', () => {
   // docs/specs/016-platform/trusted-types.md: every page enforces Trusted Types, the embed included.
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
-    for (const path of ['/document/abc', '/embed', '/oauth/consent']) {
+    for (const path of ['/document/abc', '/embed', '/explorer']) {
       const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
-  });
-
-  it('denies framing on the MCP OAuth consent screen', async () => {
-    const { env: e } = env();
-    const res = await worker.fetch(new Request('https://www.livehuddle.app/oauth/consent'), e);
-    expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
   it('leaves the embed view frameable', async () => {
@@ -50,38 +44,9 @@ describe('editor worker security headers', () => {
     expect(res.headers.get('X-Frame-Options')).toBeNull();
   });
 
-  // Workbench embeds (docs/specs/013-workspace/blueprints/workbench-embeds.md): the workbench page is
-  // framed by its workbench; no other route is (E34).
-  it('leaves the workbench page frameable, with or without a trailing slash', async () => {
+  it('denies framing on the editor and every other page', async () => {
     const { env: e } = env();
-    for (const path of ['/embed/workbench', '/embed/workbench/?d=doc-1']) {
-      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
-      expect(res.headers.get('X-Frame-Options')).toBeNull();
-    }
-  });
-
-  it('serves the workspace frame page for every place inside it, frameable', async () => {
-    const { env: e, seen } = env();
-    for (const path of [
-      '/embed/workbench/explorer',
-      '/embed/workbench/explorer/folder/f1',
-      '/embed/workbench/explorer/recent?q=x',
-      '/embed/workbench/document/doc-1?s=CODE2345',
-    ]) {
-      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
-      expect(res.headers.get('X-Frame-Options')).toBeNull();
-    }
-    expect(seen).toEqual([
-      '/embed/workbench/explorer',
-      '/embed/workbench/explorer',
-      '/embed/workbench/explorer',
-      '/embed/workbench/explorer',
-    ]);
-  });
-
-  it('denies framing on the device page and the editor', async () => {
-    const { env: e } = env();
-    for (const path of ['/oauth/device', '/document/doc-1', '/embedded']) {
+    for (const path of ['/explorer', '/document/doc-1', '/embedded']) {
       const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }
@@ -89,7 +54,7 @@ describe('editor worker security headers', () => {
 
   // The headers above only ship if the worker actually runs for page paths.
   // Static Assets serves a matching file BEFORE the worker by default, which
-  // once left every real page (consent screen included) frameable in prod.
+  // once left every real page frameable in prod.
   it('runs ahead of the static assets for every page, prod and staging', () => {
     const toml = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
     const lines = toml.match(/^run_worker_first = .*$/gm) ?? [];

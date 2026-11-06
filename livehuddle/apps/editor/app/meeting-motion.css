@@ -1,0 +1,24 @@
+/*
+ * The meeting kit's own motion: the Collaborate Panel's pressed pill. Every animation here
+ * collapses under the reduced-motion rules in globals.css (both the OS setting and the per-user preference). The
+ * Q&A board, estimate, agenda, done check and reveal motion left with those elements (Work Tracker #423 part 4).
+ */
+
+/* The vote pill's press: a quick overshoot so the count feels struck. */
+@keyframes qa-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  70% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.qa-pop {
+  animation: qa-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}

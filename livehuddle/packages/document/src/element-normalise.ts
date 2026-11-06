@@ -1,4 +1,4 @@
-// A model's raw elements made safe to author (docs/specs/015-api/mcp-server.md §4.7a). Runs BEFORE
+// A model's raw elements made safe to author (livediagram/docs/specs/015-api/mcp-server.md §4.7a). Runs BEFORE
 // validation, so a near miss draws correctly rather than failing the call (an
 // unknown code language used to reject the whole tab) or drawing wrongly (a
 // lane with no title alignment put its title strip down the middle). Every
@@ -214,7 +214,6 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
 const PLAIN_BOX_EXCLUDED = new Set([
-  'frame',
   'lane',
   'boundary',
   'code-block',
@@ -238,7 +237,7 @@ function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unkno
   );
 }
 
-// A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
+// A raw arrow pinned at both ends draws as graph input's lines do (livediagram/docs/specs/015-api/mcp-server.md): angled when it
 // names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
 // both ends square; ends that line up run straight.
 function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocElement[] {

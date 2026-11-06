@@ -59,10 +59,6 @@ export type Env = {
   // Local dev only: the origin the browser is on (the router, `http://localhost:3500`), which the
   // sign-in redirect returns to. Unset in production, where the request's own origin is right.
   AUTH_ORIGIN?: string;
-  // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
-  OAUTH_ISSUER?: string;
-  // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
-  CLI_MIN_VERSION?: string;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so deployments without the

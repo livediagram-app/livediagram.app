@@ -39,9 +39,8 @@ const INK = '#0f172a';
 const MUTED = '#475569';
 const PAPER = '#ffffff';
 
-const RESUME_PAGE = templatePage(1, 'a4', 'portrait', 'Résumé', {
-  fill: { kind: 'solid', color: PAPER },
-});
+// The plain paper: a template's backgrounds are the theme's own (template-backgrounds).
+const RESUME_PAGE = templatePage(1, 'a4', 'portrait', 'Résumé');
 
 /** The résumé's page: one A4 portrait sheet. */
 export function resumePages(): Page[] {

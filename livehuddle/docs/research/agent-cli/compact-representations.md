@@ -62,7 +62,7 @@ Two things inside this repo are prior art too:
 
 - `packages/document/src/export-tab-text.ts` (`tabToMarkdownText`) already writes a tab as Markdown, but it drops every
   unlabelled arrow (7 of 11 in the test tab), every id, notes, comments, containment and table content.
-- `packages/document/src/mermaid-serialise.ts` (`mermaidFromTab`) derives containment geometrically ("the smallest
+- `../livediagram/packages/document/src/mermaid-serialise.ts` (`mermaidFromTab`) derives containment geometrically ("the smallest
   frame containing its centre"), the same rule the outline uses below.
 
 ## 3. The benchmark
@@ -163,20 +163,20 @@ commas, refs repeat in the edge table, and indentation (which costs one token pe
 ### 4.1 Rendered
 
 ```text
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · threads 1 open/2
 text 98eb "Checkout platform: production"
-frame 048c "Edge"
+boundary 048c "Edge"
   actor b811 "Customer" → a3cf
   square a3cf "Web app" icon=nextjs → 649c
   hexagon 649c "API gateway" note="Kong. Terminates TLS, rate-limits per API key,"… → 202b "JWT", 146b
-frame c991 "Services"
+boundary c991 "Services"
   square 202b "Auth service" icon=shield
   square 146b "Orders service" icon=server note="Owns the order lifecycle and is the source of"… → e4a8 "charge", d41e, 6406 "OrderPlaced"
   stadium 6406 "Event bus" note="Kafka, 3 brokers, 7-day retention." → 12de, 0556
   square e4a8 "Payments service" icon=credit-card comments=1 resolved → e6d7 "HTTPS" ~dashed
   square 12de "Inventory service" icon=package → 822f
   square 0556 "Notification worker" icon=mail
-frame ca76 "Data"
+boundary ca76 "Data"
   cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."
   cylinder 822f "Inventory DB"
 cloud e6d7 "Stripe" link=https://stripe.com/docs/api

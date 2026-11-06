@@ -15,7 +15,6 @@ function handlers(): CommandHandlers {
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
     addComment: vi.fn(),
-    editNote: vi.fn(),
     createTab: vi.fn(),
     renameDocument: vi.fn(),
     deleteDocument: vi.fn(),
@@ -113,7 +112,7 @@ describe('buildEditorCommands — selection commands', () => {
     );
     // Single-only commands stay hidden for a multi-selection.
     expect(out).not.toContain('rotate-90');
-    expect(out).not.toContain('note');
+    expect(out).not.toContain('comment');
   });
 
   it('ranks selection commands ahead of the document/tab commands', () => {
@@ -121,24 +120,18 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out.indexOf('delete')).toBeLessThan(out.indexOf('create-tab'));
   });
 
-  it('offers rotate/note/comment for a single boxed element', () => {
+  it('offers rotate and comment for a single boxed element, and no note (element notes are retired)', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
     expect(out).toEqual(
-      expect.arrayContaining([
-        'rotate-90',
-        'rotate-180',
-        'rotate-270',
-        'rotate-0',
-        'note',
-        'comment',
-      ]),
+      expect.arrayContaining(['rotate-90', 'rotate-180', 'rotate-270', 'rotate-0', 'comment']),
     );
+    expect(out).not.toContain('note');
   });
 
   // A margin note never rotates.
-  it('offers note and comment but no Rotate for an element that does not turn', () => {
+  it('offers comment but no Rotate for an element that does not turn', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
-    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
+    expect(out).toContain('comment');
     expect(out).not.toContain('rotate-90');
     expect(out).not.toContain('rotate-0');
   });
@@ -253,7 +246,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:pan',
       'tool:laser',
       'tool:spotlight',
-      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
     ]);
   });
 
@@ -334,13 +326,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual([
-      'tool:pan',
-      'tool:format',
-      'tool:laser',
-      'tool:spotlight',
-      'tool:slide-deck',
-    ]);
+    expect(got).toEqual(['tool:pan', 'tool:format', 'tool:laser', 'tool:spotlight']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
@@ -367,9 +353,8 @@ describe('canvas tool commands', () => {
     expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
   });
 
-  it('withholds Slide Deck on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:slide-deck');
-    expect(ids(base)).toContain('tool:slide-deck');
+  it('offers no Slide Deck tool: the deck is built in Contents (pages-mode.md "Retired: the Slide Deck panel")', () => {
+    expect(ids(base)).not.toContain('tool:slide-deck');
   });
 
   it('gives a read-only visitor the presenting tools but not the editing ones', () => {

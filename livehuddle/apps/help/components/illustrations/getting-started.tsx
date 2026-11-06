@@ -1,107 +1,11 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
+import { lucideCloud } from '@liveworkspace/icons/lucide';
+import { Prims } from '@livehuddle/ui';
 import { Scene, Shape, Arrow, Label, Avatar } from '@liveworkspace/help-site/art/primitives';
-
-/** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
- *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
- *  an arrow to both. */
-export function QuickConnect() {
-  const plus: [number, number][] = [
-    [90, 54],
-    [90, 150],
-    [26, 102],
-  ];
-  return (
-    <Scene w={420} h={210}>
-      <Shape x={38} y={74} w={104} h={56} kind="rect" label="Order" />
-      <rect
-        x={34}
-        y={70}
-        width={112}
-        height={64}
-        rx={6}
-        className="stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
-        fill="none"
-      />
-      {plus.map(([cx, cy], i) => (
-        <g key={i}>
-          <circle cx={cx} cy={cy} r={8} className="fill-white stroke-brand-400" strokeWidth={1.5} />
-          <path
-            d={`M${cx - 4} ${cy} h8 M${cx} ${cy - 4} v8`}
-            className="stroke-brand-500"
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-        </g>
-      ))}
-      {/* The clicked + on the right opens one card of icon buttons beside it (QuickConnectRing):
-          Duplicate, Arrow, Pencil and Text, their names in hover cards. */}
-      <circle cx={158} cy={102} r={8} className="fill-brand-500" />
-      <path
-        d="M154 102 h8 M158 98 v8"
-        className="stroke-white help-art-as-drawn"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <rect
-        x={172}
-        y={50}
-        width={32}
-        height={106}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      {[0, 1, 2].map((i) => (
-        <line
-          key={i}
-          x1={176}
-          y1={76 + i * 26}
-          x2={200}
-          y2={76 + i * 26}
-          className="stroke-slate-100"
-          strokeWidth={1}
-        />
-      ))}
-      {/* Duplicate */}
-      <g className="fill-none stroke-slate-500" strokeWidth={1.4}>
-        <rect x={181} y={57} width={10} height={10} rx={2} />
-        <path d="M185 57 v-2 a2 2 0 0 1 2 -2 h6 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-2" />
-      </g>
-      {/* Arrow, the one being dragged */}
-      <rect x={176} y={80} width={24} height={22} rx={5} className="fill-brand-500" />
-      <path
-        d="M182 91 h11 M189 87 l4 4 l-4 4"
-        className="fill-none stroke-white help-art-as-drawn"
-        strokeWidth={1.8}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Pencil */}
-      <path
-        d="M182 124 l9 -9 l3 3 l-9 9 h-3 Z"
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.4}
-        strokeLinejoin="round"
-      />
-      {/* Text */}
-      <path
-        d="M182 137 h12 M188 137 v11"
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-      {/* Drag the Arrow option onto the second shape. */}
-      <Arrow from={[204, 91]} to={[294, 118]} kind="curved" tone="accent" />
-      <Shape x={296} y={100} w={96} h={52} kind="rect" accent label="Pay" />
-    </Scene>
-  );
-}
+import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 
 /** Side-by-side comparison: a guest tied to one browser versus an account that
  *  syncs the same library across devices. */
@@ -233,9 +137,7 @@ export function KeyboardEssentials() {
   const keys: { label: string; caption: string }[] = [
     { label: 'V', caption: 'Select' },
     { label: 'H', caption: 'Hand' },
-    { label: 'K', caption: 'Laser' },
     { label: 'E', caption: 'Eraser' },
-    { label: 'Z', caption: 'Zen' },
   ];
   return (
     <Scene w={420} h={150} bg="plain">
@@ -263,6 +165,146 @@ export function KeyboardEssentials() {
       <Label x={175} y={125} anchor="middle" size={10} weight={700} tone="muted">
         Space, hold and drag to pan
       </Label>
+    </Scene>
+  );
+}
+
+// Start a Space's rail (apps/editor/components/start/start-template-items.ts): Recommended first and open, then the
+// catalogue's categories.
+const START_RAIL = ['Recommended', 'Campus', 'Events', 'Office', 'Outdoor', 'Recreation'];
+// Recommended's first cards: the blank, then the Popular picks.
+const START_CARDS = ['Blank Space', 'Virtual Office', 'Team Pod', 'Coworking Space'];
+
+/** Start a Space over a new Space's empty board (apps/editor/components/start/StartFromTemplates.tsx): the title, the
+ *  search, the rail open on Recommended, its first template cards, and the Sync Space to Server switch in the footer. */
+export function StartASpace() {
+  const x = 20;
+  const w = 380;
+  const inX = x + 16;
+  const railW = 96;
+  const gridX = inX + railW + 12;
+  const cardW = 108;
+  const cardH = 74;
+  return (
+    <Scene w={420} h={300}>
+      <rect x={0} y={0} width={420} height={300} className="fill-slate-900/10" />
+      <rect
+        x={x}
+        y={10}
+        width={w}
+        height={280}
+        rx={14}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {/* Header: the title and its line, then Help and Close. */}
+      <Label x={inX} y={34} size={15} weight={700} tone="strong">
+        Start a Space
+      </Label>
+      <Label x={inX} y={52} size={9.5} tone="muted">
+        Walk into an office, a hall, a bar or a garden.
+      </Label>
+      <Label x={x + w - 44} y={33} anchor="middle" size={12} weight={700} tone="muted">
+        ?
+      </Label>
+      <Label x={x + w - 20} y={33} anchor="middle" size={14} tone="muted">
+        ×
+      </Label>
+      {/* The search. */}
+      <rect
+        x={inX}
+        y={62}
+        width={w - 32}
+        height={22}
+        rx={11}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1}
+      />
+      <Label x={inX + 12} y={76.5} size={9.5} tone="muted">
+        Find a template
+      </Label>
+      {/* The rail, open on Recommended. */}
+      {START_RAIL.map((name, i) => (
+        <g key={name}>
+          {i === 0 && (
+            <rect x={inX} y={94} width={railW} height={22} rx={7} className="fill-brand-50" />
+          )}
+          <Label
+            x={inX + 10}
+            y={108.5 + i * 26}
+            size={10}
+            weight={i === 0 ? 700 : 500}
+            tone={i === 0 ? 'strong' : 'body'}
+          >
+            {name}
+          </Label>
+        </g>
+      ))}
+      {/* Recommended's first cards: a preview over the name. */}
+      {START_CARDS.map((name, i) => {
+        const cx = gridX + (i % 2) * (cardW + 10);
+        const cy = 94 + Math.floor(i / 2) * (cardH + 10);
+        return (
+          <g key={name}>
+            <rect
+              x={cx}
+              y={cy}
+              width={cardW}
+              height={cardH}
+              rx={9}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1}
+            />
+            <rect
+              x={cx + 6}
+              y={cy + 6}
+              width={cardW - 12}
+              height={cardH - 30}
+              rx={6}
+              className={i === 0 ? 'fill-slate-50' : 'fill-brand-50'}
+            />
+            {i > 0 && (
+              <>
+                <rect
+                  x={cx + 14}
+                  y={cy + 14}
+                  width={34}
+                  height={20}
+                  rx={3}
+                  className="fill-brand-200"
+                />
+                <rect
+                  x={cx + 56}
+                  y={cy + 14}
+                  width={38}
+                  height={28}
+                  rx={3}
+                  className="fill-brand-100"
+                />
+              </>
+            )}
+            <Label x={cx + 8} y={cy + cardH - 10} size={9.5} weight={600} tone="strong">
+              {name}
+            </Label>
+          </g>
+        );
+      })}
+      {/* Footer: where the new Space is saved, the Sync Space to Server switch. */}
+      <line x1={x} y1={258} x2={x + w} y2={258} className="stroke-slate-100" strokeWidth={1.2} />
+      <g
+        transform={`translate(${inX} ${266}) scale(${14 / 24})`}
+        className="stroke-brand-600"
+        fill="none"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <Prims prims={lucideCloud} />
+      </g>
+      <Label x={inX + 22} y={277} size={10} weight={600} tone="strong">
+        Sync Space to Server
+      </Label>
+      <Switch x={x + w - 46} y={266} on />
     </Scene>
   );
 }

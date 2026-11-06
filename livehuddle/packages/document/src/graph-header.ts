@@ -1,4 +1,4 @@
-// A graph's title, caption and key (docs/specs/015-api/mcp-server.md §4.7 "The graph look"), as every template
+// A graph's title, caption and key (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"), as every template
 // has them: a bold heading and a muted caption above the drawing, left aligned, and on request a key beside it
 // naming what each shape kind the graph uses means, drawn in the diagram's own tones.
 
@@ -112,7 +112,7 @@ export function withHeaderAndKey(
   return [...added, ...elements];
 }
 
-// The key: a frame level with the drawing's top, one row per shape kind the drawing uses, each a miniature
+// The key: a boundary level with the drawing's top, one row per shape kind the drawing uses, each a miniature
 // in the tone the drawing gives that kind most.
 function keyCard(
   boxes: BoxedElement[],
@@ -121,7 +121,7 @@ function keyCard(
   makeId?: () => string,
 ): Element[] {
   const shapes = boxes.filter(
-    (b): b is ShapeElement => b.type === 'shape' && b.shape !== 'frame' && b.shape !== 'lane',
+    (b): b is ShapeElement => b.type === 'shape' && b.shape !== 'boundary' && b.shape !== 'lane',
   );
   const rows = KEY_MEANING.filter(([kind]) => shapes.some((s) => s.shape === kind));
   // The muted tone is a meaning of its own where it marks some boxes and not others: a row for it, in the shape most
@@ -143,12 +143,15 @@ function keyCard(
   const x = block.x + block.width + KEY_GAP;
   const top = block.y;
   const height = KEY_PAD + 40 + (rows.length + (mutedKind ? 1 : 0)) * KEY_ROW_H + KEY_PAD - 12;
-  // A frame titled "Key", so the key moves as one (a frame carries its members), in the editor or by an edit.
+  // A boundary titled "Key" (Inset, the title in its corner), so the key moves as one (a container carries its
+  // members), in the editor or by an edit.
   const out: Element[] = [
     {
       id: idOf(makeId, 'key'),
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
+      boundaryStyle: 'inset',
+      strokeStyle: 'dashed',
       x,
       y: top,
       width: KEY_W,

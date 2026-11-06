@@ -13,7 +13,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Grant resolution      | `apps/api/src/routes/document-grant.ts` `resolveDocumentGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this document plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
 | Owner-only guards     | `routes/context.ts` `ownsDocument`, `requireOwnedDocument`, `mayDeleteDocument`                                                      | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                      |
 | Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`                 | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                      |
-| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/teams.ts` (non-GET)                                              | Need `ctx.accountUserId` (a signed-in session) , so neither a guest nor any API token can reach them.                                                                                                                                           |
+| Session-only routes   | `routes/tokens.ts`, `livediagram/apps/api/src/routes/oauth.ts`, `routes/account.ts`, `routes/teams.ts` (non-GET)                     | Need `ctx.accountUserId` (a signed-in session) , so neither a guest nor any API token can reach them.                                                                                                                                           |
 | Room op gate          | `apps/api/src/document-room/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`           | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
 
 The editor mirrors this with two flags: `sessionRole` (`apps/editor/app/document/[id]/editor-page-helpers.ts`
@@ -38,7 +38,7 @@ The precise answer to the question. A view link (role `view`, all tabs, no accou
   (concurrent-selection lock, `usePresenceBroadcast.ts`; `selectElement` in `useSelectionEditing.ts` has no role
   check).
 - **Take part, partly**: answer a live poll (`poll-answer` is presence-class; `PollPromptSheet` is shown to every
-  role), add a note to a Q&A board and upvote or withdraw an upvote (`routes/qa-board-routes.ts`,
+  role), add a note to a Q&A board and upvote or withdraw an upvote (the Q&A route, gone from livehuddle in Work Tracker #423 part 4,
   `isParticipantQaAction` goes through `gateRead`).
 - **Comment, partly**: add a comment to any element's unresolved thread from the anchored popover
   (`POST .../tabs/:tabId/comments`, `gateRead`), and delete their own comment (`DELETE .../comments/:id`, author
@@ -72,7 +72,7 @@ polls and use the Q&A board, but cannot vote or answer any element-based session
 | **G**    | Guest (no account) on their own personal document. A guest on someone else's document is simply the link column they arrived through.                                  |
 | **FT**   | Full API token, whose account owner is the document's owner or a member. With `X-Share-Code` it takes that link's role instead.                                        |
 | **RO**   | Read-only API token, same owner.                                                                                                                                       |
-| **MCP**  | The MCP server (`apps/mcp/src/tools.ts`) acting with a full token: 11 tools, no share-code path, no room.                                                              |
+| **MCP**  | The MCP server (`livediagram/apps/mcp/src/tools.ts`) acting with a full token: 11 tools, no share-code path, no room.                                                  |
 
 Cell legend: **Y** allowed and offered; **N** refused; **T** on its own tab only; **S** the server allows it but
 no client offers it; **U** the editor offers it but the server refuses it; **n/a** not meaningful.
@@ -96,7 +96,7 @@ no client offers it; **U** the editor offers it but the server refuses it; **n/a
 | Follow, be followed                        | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `viewport` presence class                                                                            |
 | Bring focus                                | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `focus-here` presence class; UI gate is `runBlocked` only                                            |
 | Present locally, zen, export               | Y   | Y   | Y   | Y   | T   | T   | N    | N    | Y   | n/a | n/a | n/a | client-side; `viewSafe` commands in `buildEditorCommands`; embed hides the chrome                    |
-| Listed in "Shared with you"                | n/a | n/a | Y   | Y   | Y   | Y   | Y    | Y    | n/a | n/a | n/a | N   | `share.ts` `recordSharedAccess`; `shared.ts`                                                         |
+| Listed in "Shared with you"                | n/a | n/a | Y   | Y   | Y   | Y   | Y    | Y    | n/a | n/a | n/a | N   | `share.ts` `recordSharedAccess`; `livediagram/packages/agent-verbs/src/verbs/shared.ts`              |
 
 ### Comments
 
@@ -120,7 +120,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Dot vote: cast, retract                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `castVote` returns on `editsBlocked`; `vote` is mutation class                                      |
 | Live poll: start, end                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | mutation class plus `mayRunSession` in the room                                                     |
 | Live poll: answer                          | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | `poll-answer` presence class; `PollPromptSheet` ungated                                             |
-| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `qa-board-routes.ts`, participant actions on `gateRead`                                             |
+| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | the Q&A route (gone, #423 part 4), participant actions on `gateRead`                                |
 | Q&A: discuss, close, reopen, remove, clear | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | same route, other actions on `gateEdit`                                                             |
 | Estimate, temperature, Done check: answer  | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `respond` undefined when `isReadOnly`; `el-delta` (`response`) is mutation class                    |
 | Estimate, Done check: reveal, reset, scale | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked` in `EditorCanvasHost.tsx`                                              |
@@ -162,7 +162,7 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Set or clear the share password         | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | PUT `/share-password`                                           |
 | Change an existing link's role          | nobody: there is no route; revoke and reissue |     |     |     |     |     |      |      |     |     |     |     | n/a                                                             |
 
-³ View or edit, with expiry; no tab scope, default `view` (`packages/agent-verbs/src/mcp/schema.ts` `shareDocumentShape`).
+³ View or edit, with expiry; no tab scope, default `view` (`livediagram/packages/agent-verbs/src/mcp/schema.ts` `shareDocumentShape`).
 The editor hides Share for anyone with `isOwner` false (`EditorView.tsx` `showShare={isOwner && ...}`), which
 matches the server for members who are not the row owner.
 
@@ -248,7 +248,7 @@ dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `u
 8. **No owner override on team documents.** `X-Verified-Owner` is set only for a personal-document `?o=` upgrade,
    so a stuck baton on a team document can be cleared only by the grace timer.
 9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the MCP consent
-   screen offers the toggle (`apps/editor/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
+   screen offers the toggle (`livediagram/apps/editor/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
 10. **A link's role is immutable.** There is no route to change it; scope can change (`PUT /share/:code`), role
     cannot.
 11. **Setting a password does not end live sessions.** The password route broadcasts nothing (unlike revoke and

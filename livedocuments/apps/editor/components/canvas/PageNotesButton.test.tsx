@@ -23,6 +23,8 @@ const controls = (slide?: { id: string; hidden: boolean; noteCards: readonly Not
   add: vi.fn(),
   toggleHidden: vi.fn(),
   setNoteCards: vi.fn(),
+  flushNotes: vi.fn(),
+  present: vi.fn(),
 });
 
 describe('PageNotesButton', () => {
@@ -31,11 +33,11 @@ describe('PageNotesButton', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it("offers Add Notes, opening on the empty state, and adds the deck slide's first card", () => {
+  it("offers Notes, opening on the empty state, and adds the deck slide's first card", () => {
     const deck = controls({ id: 's1', hidden: false, noteCards: [] });
     render(<PageNotesButton pageId="p1" deck={deck} labelled />);
-    const button = screen.getByRole('button', { name: 'Add Notes' });
-    expect(button.textContent).toBe('Add Notes');
+    const button = screen.getByRole('button', { name: 'Notes' });
+    expect(button.textContent).toBe('Notes');
     fireEvent.click(button);
     expect(screen.getByText('No Notes Yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add First Card' }));
@@ -64,7 +66,7 @@ describe('PageNotesButton', () => {
     expect(screen.getByText('2 cards · 5 sec')).toBeTruthy();
   });
 
-  it('reads Add Notes while every card is blank', () => {
+  it('reads Notes, unpressed, while every card is blank', () => {
     render(
       <PageNotesButton
         pageId="p1"
@@ -72,7 +74,7 @@ describe('PageNotesButton', () => {
         labelled={false}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Add Notes' }).getAttribute('aria-pressed')).toBe(
+    expect(screen.getByRole('button', { name: 'Notes' }).getAttribute('aria-pressed')).toBe(
       'false',
     );
   });

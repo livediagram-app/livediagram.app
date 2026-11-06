@@ -29,6 +29,9 @@ export type AvatarBindings = {
   tint: (hex: string, amount: number) => string;
   /** A participant colour's fill under white text in both themes (the product's identity fill). */
   identityVars: (color: string) => CSSProperties;
+  /** Whether people choose their character's Size. Off: no Size row in the panel, and every character, yours and
+   *  every peer's whatever it stored, draws and collides at Regular. Unset is on. */
+  sizes?: boolean;
 };
 
 /** What Avatar code reads until an editor configures it: safe no-ops and an `avatar:` prefix. */
@@ -57,4 +60,7 @@ export const avatarBindings = {
   shade: (hex: string, amount: number): string => bound.shade(hex, amount),
   tint: (hex: string, amount: number): string => bound.tint(hex, amount),
   identityVars: (color: string): CSSProperties => bound.identityVars(color),
+  get sizes(): boolean {
+    return bound.sizes !== false;
+  },
 };

@@ -37,6 +37,11 @@ length), so one build of the site serves production and staging. Both ask for an
 6-digit code. Registration also asks for a **first and last name**, stored as `givenName` and
 `familyName` on the account (with `name` the two joined). Someone who signs in with a code to an
 address that has no name yet is asked for one after the code, before going back to the app.
+The card's line under the heading reads "One free account that works for every app in liveworkspace."
+
+**Turnstile** checks once per code sent. A token goes with each send and is spent by it; the widget resets only
+when the next send needs a fresh token (Resend, or a new address), so the code step doesn't show the widget again
+straight after the email step's check.
 
 **Continue with Google** sits above the email form on both pages when the Worker has a Google
 OAuth client (`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; without them the button isn't shown).
@@ -96,6 +101,17 @@ staging on every push to `main`, production through the manual gate. It is in th
 `apps/accounts/wrangler.toml`) apply before its code. Email goes out through the `EMAIL` binding to Cloudflare Email
 Service, with no key ([email.md](email.md)).
 
+Because the migrations always apply before the code, the Worker never checks the database's tables while it runs.
+Better Auth's own check would read D1's schema on every Worker's first request, before answering, which made the
+first sign-in after a quiet spell (and the status page's Accounts check) wait on several round trips to the
+database's region. The same check runs in CI instead, against a database built from the migrations, so a migration
+that leaves out a table or column Better Auth needs still fails before it ships.
+
+Better Auth answers a database failure itself, as a 500 or as no session. When D1 is unavailable during a request
+and Better Auth's answer is an error, the Worker answers `503 storage_unavailable` instead
+([architecture.md](../002-architecture/architecture.md) "When a request fails"), so an outage is retryable and never
+reads as someone signed out.
+
 What a deploy never writes, set once per environment and kept across deploys:
 
 - **Secrets**, with `wrangler secret put`: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
@@ -133,6 +149,12 @@ What a deploy never writes, set once per environment and kept across deploys:
    client's `redirectUris`. `--app` is the app the client is, which keeps it to that app's own
    settings and records ([accounts.md](accounts.md#which-app-a-client-is)); a client
    registered without one is given it with `scripts/map-clients.ts`.
+
+   A database that doesn't take the app yet (a local one built before the migration that added the app, such as
+   `0018_livehuddle.sql`) refuses to record which app the client is. Registration then removes the client it just
+   made, so nothing is left half-registered, and answers `500 client_app_refused`, naming the app and saying to
+   apply the migrations. Locally, each service's `dev` script applies its local migrations before it starts, so a
+   database catches up on its own; registering again then works.
 
 3. Wire the app up: [integrating-an-app.md](../002-architecture/integrating-an-app.md).
 

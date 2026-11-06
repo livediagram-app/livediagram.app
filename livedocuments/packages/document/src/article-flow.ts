@@ -3,6 +3,7 @@
 // page of the article (`Page.flow`). Pure data and its reading: whatever is stored is
 // read defensively, so a malformed block, run or field is dropped rather than trusted.
 import { parseArticleBand, type ArticleBand } from './article-bands';
+import { cleanFootnoteText } from './article-footnotes';
 import { parseArticleTable, type ArticleTableBlock } from './article-table';
 import type { ArticleTocBlock } from './article-toc';
 
@@ -62,6 +63,9 @@ export type ArticleRun = {
   // and which of the two it is (`nk`: 'action'; a comment when absent).
   note?: string;
   nk?: 'action';
+  // A footnote (docs/specs/007-editor/article-pages.md "Footnotes"): the note's text, each character of `text` one
+  // reference to it (ARTICLE_FOOTNOTE_REF).
+  fn?: string;
 };
 
 export type ArticleParagraphBlock = {
@@ -193,6 +197,7 @@ function parseRun(v: unknown): ArticleRun | undefined {
     run.note = r.note;
     if (r.nk === 'action') run.nk = 'action';
   }
+  if (typeof r.fn === 'string') run.fn = cleanFootnoteText(r.fn);
   return run;
 }
 
@@ -202,7 +207,8 @@ const sameFormat = (a: ArticleRun, b: ArticleRun): boolean =>
   a.color === b.color &&
   a.hl === b.hl &&
   a.note === b.note &&
-  a.nk === b.nk;
+  a.nk === b.nk &&
+  a.fn === b.fn;
 
 /** Runs read defensively, neighbours of one format merged, empty ones dropped, the text capped at
  *  `limit` characters (MAX_ARTICLE_BLOCK_TEXT) over at most `maxRuns` runs (MAX_ARTICLE_RUNS); a table's
@@ -225,8 +231,8 @@ export function normaliseRuns(
       run.text = run.text.slice(0, end);
       if (!run.text) break;
     }
-    // A link's address counts against the block's budget too, so no block outgrows a room frame.
-    left -= run.text.length + (run.href?.length ?? 0);
+    // A link's address and a footnote's note count against the block's budget too, so no block outgrows a room frame.
+    left -= run.text.length + (run.href?.length ?? 0) + (run.fn?.length ?? 0);
     const last = out[out.length - 1];
     if (last && sameFormat(last, run)) last.text += run.text;
     else if (out.length < maxRuns) out.push(run);

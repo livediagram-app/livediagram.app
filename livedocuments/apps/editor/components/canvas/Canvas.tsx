@@ -324,7 +324,7 @@ function CanvasView(props: CanvasProps) {
     node?.focus({ preventScroll: true });
   }, [mainRef]);
   return (
-    // The image store's access (page-image-access): the pages' pictures, and the Contents and Slide Deck
+    // The image store's access (page-image-access): the pages' pictures, and the Contents
     // thumbnails' pictures in the chrome.
     <PageImageAccessProvider access={props.imageContext}>
       {/* This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's. */}
@@ -468,6 +468,7 @@ function CanvasView(props: CanvasProps) {
                   // Zen and presenting show the sheets alone: no labels, cogs, or add
                   // button.
                   bare={props.zenMode === true}
+                  placing={!!pendingDraw}
                 />
               ) : null}
               {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a

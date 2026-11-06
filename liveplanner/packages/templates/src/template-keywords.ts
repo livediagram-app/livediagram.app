@@ -116,6 +116,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   ],
   'personal-goals': [
     'goals',
+    'milestones',
     'resolutions',
     'new year',
     'self improvement',

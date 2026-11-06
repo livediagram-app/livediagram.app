@@ -86,7 +86,8 @@ export function usePaletteCatalogue({
   const addIcon = (iconId: string) => armed(() => onAddIcon(iconId))();
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
-  const addText = armed(onAddText);
+  const addText = (preset?: import('@livedocuments/document').TextPresetId) =>
+    armed(() => onAddText(preset))();
   const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
   const addLinkCard = armed(onAddLinkCard);

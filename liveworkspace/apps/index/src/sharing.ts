@@ -3,9 +3,10 @@
 // member of its team. Revoking a link also tells the item at once, so its holders are dropped.
 
 import {
-  DEFAULT_LINK_LEVEL,
+  APP_DEFAULT_LINK_LEVEL,
   isApp,
   isLevel,
+  linkLevelOffered,
   SHARE_LINK_EXPIRIES,
   SHARE_LINK_EXPIRY_MS,
   SHARE_LINKS_PER_ITEM,
@@ -182,6 +183,11 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     const body = await readObject(request);
     if (!body) return badRequest();
     if (body.level !== undefined && !isLevel(body.level)) return badRequest('invalid_level');
+    const isPublic = body.public === true;
+    // A level the item's app no longer offers (livehuddle's Viewer) is refused, never mapped; a public link is
+    // always `view`, outside the table.
+    if (body.level !== undefined && !isPublic && !linkLevelOffered(row.app, body.level as Level))
+      return badRequest('level_not_offered');
     const tab = readTab(body.tabId);
     if (tab === INVALID) return badRequest('invalid_tab');
     // Left out is `never`; a value that is no expiry is refused, never read as a link that lasts for ever.
@@ -195,12 +201,12 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
     const link: LinkRow = {
       code: generateShareCode(),
       item_id: id,
-      level: (body.level as Level | undefined) ?? DEFAULT_LINK_LEVEL,
+      level: (body.level as Level | undefined) ?? APP_DEFAULT_LINK_LEVEL[row.app],
       tab_id: tab ?? null,
       expiry,
       expires_at: expiry === 'never' ? null : now + SHARE_LINK_EXPIRY_MS[expiry],
       created_at: now,
-      public: body.public === true ? 1 : 0,
+      public: isPublic ? 1 : 0,
     };
     // The cap is checked inside the insert; the event only when it made one.
     const [res] = await db.batch([
@@ -291,6 +297,13 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
     const body = await readObject(request);
     if (!body) return badRequest();
     if (body.level !== undefined && !isLevel(body.level)) return badRequest('invalid_level');
+    // A link keeps a level its app no longer offers (a legacy livehuddle Viewer link), but none changes to one.
+    if (
+      body.level !== undefined &&
+      body.level !== link.level &&
+      !linkLevelOffered(loaded.row.app, body.level as Level)
+    )
+      return badRequest('level_not_offered');
     const tab = readTab(body.tabId);
     if (tab === INVALID) return badRequest('invalid_tab');
     const next: LinkRow = {

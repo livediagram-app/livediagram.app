@@ -107,7 +107,56 @@ const ISOMETRIC_VIEW = new Set([
 ]);
 const ISOMETRIC_HELP_ID = 'isometric-mode';
 
+// The Tab Window (removed 2026-11-04, livedocuments docs/specs/009-elements/tab-window.md): one added, its tab chosen,
+// the tab opened from it, its element tour (offer, start, steps, end and Settings switch, each carrying the
+// `TabWindowTour` token as its type or its prefix) and its help article.
+const TAB_WINDOW_EVENTS = new Set([
+  'Element|Added|TabWindow',
+  'Element|Changed|TabWindowTab',
+  'UI|Used|TabWindowOpen',
+]);
+const TAB_WINDOW_HELP_ID = 'tab-windows';
+
+// Element links and notes (removed 2026-11-04, livedocuments docs/specs/009-elements/links-and-notes-retired.md):
+// the whole `Note` category (added, changed, deleted, opened, and its rich-text commands) and the Links, Notes and
+// Linking Across Tabs help articles. Link cards and videos keep their links, so Element·Linked carries on.
+const LINKS_AND_NOTES_HELP_IDS = new Set(['links', 'notes', 'linking-tabs']);
+
+function isRetiredLinksAndNotes(category: string, action: string, type: string | null): boolean {
+  if (category === 'Note') return true;
+  return (
+    (category === 'Help' || (category === 'UI' && action === 'Opened')) &&
+    LINKS_AND_NOTES_HELP_IDS.has(type ?? '')
+  );
+}
+
+function isRetiredTabWindow(category: string, action: string, type: string | null): boolean {
+  if (TAB_WINDOW_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && (type ?? '').startsWith('TabWindowTour')) return true;
+  return (
+    (category === 'Help' || (category === 'UI' && action === 'Opened')) &&
+    type === TAB_WINDOW_HELP_ID
+  );
+}
+
+// The Slide Deck panel (removed 2026-11-04, livedocuments docs/specs/007-editor/pages-mode.md "Retired: the Slide Deck
+// panel"; the deck is built in Contents): the panel opening, its slides made from a selection or copied, deleted,
+// dragged or all added at once, and the slides tour's two steps that walked it. Hiding a slide, adding a page and the
+// header's Present carry on.
+const SLIDE_DECK_PANEL_EVENTS = new Set([
+  'UI|Opened|SlideDeck',
+  'UI|Added|Slide',
+  'UI|Removed|Slide',
+  'UI|Moved|Slide',
+  'UI|Added|AllPageSlides',
+  'UI|View|PagesTourStepSlideDeck',
+  'UI|View|PagesTourStepSlideShowSettings',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredTabWindow(category, action, type)) return true;
+  if (isRetiredLinksAndNotes(category, action, type)) return true;
+  if (SLIDE_DECK_PANEL_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (
     (category === 'Help' || (category === 'UI' && action === 'Opened')) &&

@@ -47,10 +47,12 @@ A table with six chairs round it, every seat facing the table.
 - Drawn upright from the room's camera: two chairs beyond the table (their sitters face you), two in front (their
   backs to you), one at each end in profile, and the table top between them with its front edge toward you.
 - **Six seats.** A character walking into it sits on the seat **nearest where it arrived**, facing the table: the
-  far chairs face down, the near chairs up, the left end right, the right end left. Two people may share a seat,
-  as with any chair.
-- Who is sitting is presence, as for every seat: the table shows the sitters' names in a pill above it. It does not
-  ring one chair, because which seat a peer took is not in their presence.
+  far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
+  any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
+  ([Chair](chair.md) "Sitting").
+- Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
+  (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
+  "Occupancy is presence").
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
@@ -61,8 +63,9 @@ Scenery that **blocks**: a character walks round them, not through.
   drawing) blocks.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
   blocks, so it stands against a wall and you walk along in front of it.
-- A footprint blocks as a fence round its edge does (same reach, same slide). The upper part of the drawing never
-  blocks: it is what stands up from the floor, and a character in front of it is drawn in front of it.
+- A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
+  walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
+  what stands up from the floor, and a character in front of it is drawn in front of it.
 - Neither is a destination: walking up to one does not ring it.
 
 ## Water Cooler, Coffee Machine

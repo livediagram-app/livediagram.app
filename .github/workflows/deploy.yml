@@ -5,8 +5,11 @@ name: Deploy (reusable)
 # the commit being deployed with the one this environment last deployed (the `deployed/<environment>`
 # tag), asks Turborepo which workspaces that reaches, dependencies included, and keeps the ones with a
 # wrangler.toml. They deploy in three tiers, each waiting for the one before: the services and apis
-# (D1 migrations first), then the sites, then the routers in front. When every tier has
-# succeeded, the tag moves to the deployed commit, so a failed or skipped Worker is retried next time.
+# (D1 migrations first), then the sites, then the routers in front. Each tier runs a few jobs, not one
+# per Worker (deploy-group.yml): one for the services and apis, one per product's sites, one for the
+# routers, so a deploy waits for a runner a handful of times rather than once per Worker. When every
+# tier has succeeded, the tag moves to the deployed commit, so a failed or skipped Worker is retried
+# next time.
 #
 # Deploys write code and plain vars only. Each Worker's secrets were set on it with `wrangler secret
 # put` and survive a deploy; the only credential here is CLOUDFLARE_API_TOKEN (every wrangler.toml
@@ -51,6 +54,9 @@ jobs:
       tier0: ${{ steps.plan.outputs.deploys0 }}
       tier1: ${{ steps.plan.outputs.deploys1 }}
       tier2: ${{ steps.plan.outputs.deploys2 }}
+      groups0: ${{ steps.plan.outputs.groups0 }}
+      groups1: ${{ steps.plan.outputs.groups1 }}
+      groups2: ${{ steps.plan.outputs.groups2 }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -87,64 +93,87 @@ jobs:
           fi
           echo "sha=${base}" >> "${GITHUB_OUTPUT}"
 
+      # The plan's outputs are this workflow's contract, so it runs this workflow's own scripts (from
+      # github.workflow_sha) over the commit being deployed. Run from that commit instead, a deploy of a
+      # commit older than a change to both planned no groups and failed (2026-11-04). Unpacked outside the
+      # checkout, so they don't count as a change to it.
       - name: Plan
         id: plan
         env:
           PLAN_MODE: deploy
           BASE: ${{ steps.base.outputs.sha }}
           HEAD: ${{ inputs.ref }}
-        run: node .github/scripts/ci-plan.mjs > /dev/null
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          scripts="${RUNNER_TEMP}/workflow-scripts"
+          mkdir -p "${scripts}"
+          git cat-file -e "${WORKFLOW_SHA}^{commit}" 2>/dev/null || git fetch -q --depth=1 origin "${WORKFLOW_SHA}"
+          git archive "${WORKFLOW_SHA}" .github/scripts | tar -x -C "${scripts}"
+          node "${scripts}/.github/scripts/ci-plan.mjs" > /dev/null
 
   tier0:
-    name: Services and apis (${{ matrix.name }})
+    name: ${{ matrix.label }}
     needs: plan
-    if: needs.plan.outputs.tier0 != '[]'
+    if: needs.plan.outputs.groups0 != '[]'
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.tier0) }}
-    uses: ./.github/workflows/deploy-worker.yml
+        include: ${{ fromJSON(needs.plan.outputs.groups0) }}
+    uses: ./.github/workflows/deploy-group.yml
     with:
       environment: ${{ inputs.environment }}
       ref: ${{ inputs.ref }}
-      worker: ${{ toJSON(matrix) }}
+      workers: ${{ needs.plan.outputs.tier0 }}
+      group: ${{ matrix.group }}
+      label: ${{ matrix.label }}
+      history: ${{ matrix.history }}
+      timeout: ${{ matrix.timeout }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tier1:
-    name: Sites (${{ matrix.name }})
+    name: ${{ matrix.label }}
     needs: [plan, tier0]
     if: >-
-      always() && needs.plan.result == 'success' && needs.plan.outputs.tier1 != '[]' &&
+      always() && needs.plan.result == 'success' && needs.plan.outputs.groups1 != '[]' &&
       (needs.tier0.result == 'success' || needs.tier0.result == 'skipped')
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.tier1) }}
-    uses: ./.github/workflows/deploy-worker.yml
+        include: ${{ fromJSON(needs.plan.outputs.groups1) }}
+    uses: ./.github/workflows/deploy-group.yml
     with:
       environment: ${{ inputs.environment }}
       ref: ${{ inputs.ref }}
-      worker: ${{ toJSON(matrix) }}
+      workers: ${{ needs.plan.outputs.tier1 }}
+      group: ${{ matrix.group }}
+      label: ${{ matrix.label }}
+      history: ${{ matrix.history }}
+      timeout: ${{ matrix.timeout }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
   tier2:
-    name: Routers (${{ matrix.name }})
+    name: ${{ matrix.label }}
     needs: [plan, tier0, tier1]
     if: >-
-      always() && needs.plan.result == 'success' && needs.plan.outputs.tier2 != '[]' &&
+      always() && needs.plan.result == 'success' && needs.plan.outputs.groups2 != '[]' &&
       (needs.tier0.result == 'success' || needs.tier0.result == 'skipped') &&
       (needs.tier1.result == 'success' || needs.tier1.result == 'skipped')
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.tier2) }}
-    uses: ./.github/workflows/deploy-worker.yml
+        include: ${{ fromJSON(needs.plan.outputs.groups2) }}
+    uses: ./.github/workflows/deploy-group.yml
     with:
       environment: ${{ inputs.environment }}
       ref: ${{ inputs.ref }}
-      worker: ${{ toJSON(matrix) }}
+      workers: ${{ needs.plan.outputs.tier2 }}
+      group: ${{ matrix.group }}
+      label: ${{ matrix.label }}
+      history: ${{ matrix.history }}
+      timeout: ${{ matrix.timeout }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 

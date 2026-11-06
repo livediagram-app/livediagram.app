@@ -521,17 +521,6 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('polygon points="25.5,1 74.5,1 99,40 74.5,79 25.5,79 1,40"');
     });
 
-    it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {
-      // The default fill is transparent, so the contents show through...
-      const bare = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
-      expect(bare).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="transparent"/);
-      // ...and a background colour picked in the menu exports, as it paints.
-      const filled = renderElementsToSvg(
-        tab([shape('f', { shape: 'frame', fillColor: '#fef3c7' })]),
-      );
-      expect(filled).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="#fef3c7"/);
-    });
-
     it('applies element rotation about the centre', () => {
       const svg = renderElementsToSvg(tab([shape('r', { rotation: 45 })]));
       expect(svg).toContain('transform="rotate(45 50 40)"');
@@ -540,12 +529,12 @@ describe('renderElementsToSvg', () => {
 
   describe('label fidelity (docs/specs/008-canvas/canvas-and-palette.md)', () => {
     it('anchors a top-aligned label at the element top, not its vertical centre', () => {
-      // A frame-style label (top + right): the text must export at the
-      // frame's top edge — it floated at the vertical centre before.
+      // A section-title label (top + right): the text must export at the
+      // box's top edge — it floated at the vertical centre before.
       const svg = renderElementsToSvg(
         tab([
           shape('fr', {
-            shape: 'frame',
+            shape: 'square',
             width: 400,
             height: 300,
             label: 'Change Events',
@@ -815,18 +804,6 @@ describe('renderElementsToSvg — element shadows (docs/specs/008-canvas/element
     expect(svg).not.toContain('<defs>');
     expect(svg).not.toContain('feDropShadow');
   });
-
-  it('skips shadows on hidden layers (they are not rendered, so no orphan def)', () => {
-    const svg = renderElementsToSvg(
-      tab([shape('a', { shadow, layerId: 'l1' })], {
-        layers: [
-          { id: 'l0', name: 'Base' },
-          { id: 'l1', name: 'Hidden', visible: false },
-        ],
-      }),
-    );
-    expect(svg).not.toContain('feDropShadow');
-  });
 });
 
 // The arrow caption (docs/specs/008-canvas/canvas-and-palette.md). The export used to emit a fixed 12px near-black
@@ -1001,142 +978,6 @@ describe('caption colour on dark paper', () => {
     expect(render({ strokeColor: '#dc2626' })).toMatch(
       /<text[^>]*fill="#dc2626"[^>]*>(<tspan[^>]*>)?Go</,
     );
-  });
-});
-
-// The Idea box export (docs/specs/012-collaboration/idea-box.md "The look"): its count comes from the ideas
-// themselves, a closed box never prints a word of them, and an open one does.
-describe('idea box export', () => {
-  const box = (o: Partial<ShapeElement>) =>
-    renderElementsToSvg(
-      tab([
-        shape('b', { shape: 'idea-box', width: 300, height: 320, label: 'What slowed us?', ...o }),
-      ]),
-    );
-
-  it('counts the ideas and keeps a closed box sealed', () => {
-    const svg = box({ ideaCards: ['Flaky CI', 'Too many meetings'] });
-    expect(svg).toContain('2 IDEAS');
-    expect(svg).toContain('ideas sealed');
-    expect(svg).not.toContain('Flaky CI');
-  });
-
-  it('shows the ideas once the box is open', () => {
-    const svg = box({ ideaCards: ['Flaky CI'], ideasRevealed: true });
-    expect(svg).toContain('Flaky CI');
-    expect(svg).not.toContain('sealed');
-  });
-});
-
-// The Temperature check export (docs/specs/012-collaboration/temperature-check.md "The face"): the values, a
-// bar per value in its fixed hue, and the average.
-describe('temperature check export', () => {
-  const card = (values: string[]) =>
-    renderElementsToSvg(
-      tab([
-        shape('t', {
-          shape: 'temperature',
-          width: 320,
-          height: 300,
-          responses: values.map((value, i) => ({ participantId: `p${i}`, value, at: i })),
-        }),
-      ]),
-    );
-
-  it('draws the bars and the average', () => {
-    const svg = card(['4', '4', '3', '5']);
-    expect(svg).toContain('#fbbf24');
-    expect(svg).toContain('>4.0<');
-    expect(svg).toContain('4 ANSWERED');
-  });
-
-  it('says so when nobody has answered, rather than averaging zero', () => {
-    expect(card([])).toContain('No readings yet');
-  });
-});
-
-// The Estimate card export (docs/specs/012-collaboration/estimate-card.md "The look"): its own scale, hidden
-// answers stay hidden, and a revealed card shows the answers with the spread.
-describe('estimate card export', () => {
-  const card = (o: Partial<ShapeElement>) =>
-    renderElementsToSvg(tab([shape('e', { shape: 'estimate', width: 360, height: 310, ...o })]));
-  const answers = ['13', '3', '5'].map((value, i) => ({ participantId: `p${i}`, value, at: i }));
-
-  it('draws the powers scale for a powers card', () => {
-    expect(card({ estimateScale: 'powers' })).toContain('>16<');
-  });
-
-  it('keeps answers hidden until the reveal', () => {
-    const svg = card({ responses: answers });
-    // Face down in the accent with the Reveal act and its count, as the card
-    // draws it, and no spread until then.
-    expect(svg).toContain('>Reveal<');
-    expect(svg).toContain('3/3 ANSWERED');
-    expect(svg).not.toContain('Spread');
-  });
-
-  it('shows the sorted answers and the spread once revealed', () => {
-    const svg = card({ responses: answers, responsesRevealed: true });
-    expect(svg).toContain('Spread 3 → 13');
-    // Face-up cards, low to high, after the spread chip.
-    const at = (v: string) => svg.indexOf(`>${v}</text>`, svg.indexOf('Spread 3 → 13'));
-    expect(at('3')).toBeGreaterThan(0);
-    expect(at('3')).toBeLessThan(at('5'));
-    expect(at('5')).toBeLessThan(at('13'));
-  });
-});
-
-// The behaviour cards export their marks (docs/specs/020-import-export/export-fidelity.md "The behaviour
-// cards export as they look").
-describe('behaviour card marks in the export', () => {
-  const one = (o: Partial<ShapeElement>) => renderElementsToSvg(tab([shape('x', o)]));
-
-  it('an estimate with no scale exports its scale chooser, not Fibonacci', () => {
-    const svg = one({ shape: 'estimate', width: 360, height: 310 });
-    expect(svg).toContain('Choose a scale');
-    expect(svg).toContain('T-shirt');
-    expect(svg).not.toContain('>21<');
-  });
-
-  it('a temperature check draws its five faces', () => {
-    const svg = one({ shape: 'temperature', width: 320, height: 300 });
-    // One mouth path per face, from the shared shapes.
-    expect(svg).toContain('M5.2 11.4Q8 8.9 10.8 11.4');
-    expect(svg).toContain('M5 9.4Q8 13.4 11 9.4Z');
-  });
-
-  it('a roll call draws its people as initials on their colours', () => {
-    const svg = one({
-      shape: 'roll-call',
-      width: 300,
-      height: 240,
-      rollCall: [
-        { name: 'Curious Falcon', color: '#8b5cf6', at: 1 },
-        { name: 'Brave Heron', color: '#f43f5e', at: 1 },
-      ],
-    });
-    expect(svg).toContain('>CF<');
-    expect(svg).toContain('#8b5cf6');
-    expect(svg).toContain('Brave Heron');
-    expect(svg).toContain('PRESENT');
-  });
-
-  it('a decision record draws its status badge in the status hue, not a caption', () => {
-    const svg = one({ shape: 'decision', width: 320, height: 220, decisionStatus: 'accepted' });
-    expect(svg).toContain('Accepted');
-    expect(svg).toContain('#22c55e');
-    expect(svg).not.toContain('ACCEPTED');
-  });
-
-  it('a done check draws a disc with a check for each person done', () => {
-    const svg = one({
-      shape: 'done-check',
-      width: 280,
-      height: 220,
-      responses: ['a', 'b'].map((participantId) => ({ participantId, value: 'done', at: 1 })),
-    });
-    expect(svg).toContain('DONE');
-    expect(svg.match(/fill="#22c55e"/g)?.length).toBeGreaterThanOrEqual(2);
   });
 });
 

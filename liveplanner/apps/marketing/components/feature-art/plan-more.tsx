@@ -324,8 +324,16 @@ export function BoardCsvArt() {
         <g className="fa-d-land" style={{ animationDelay: '0.2s' }}>
           <PlanCard x={224} y={20} w={62} title="New logo" id="#62" type="idea" who={AK} />
         </g>
-        <text className={TEXT_MUTED} x="156" y="80" fontSize="5">
-          Import: CSV, Trello, Jira · Export: CSV, PNG, PDF
+        {/* What comes in and goes out, every tool named. On a phone the card draws small, so one larger line names
+            the four tools alone (the file on the left already says CSV). */}
+        <text className={`${TEXT_MUTED} max-sm:hidden`} x="156" y="76" fontSize="5">
+          Import: CSV, Trello, Asana, Jira, Linear
+        </text>
+        <text className={`${TEXT_MUTED} max-sm:hidden`} x="156" y="84" fontSize="5">
+          Export: CSV, PNG, PDF
+        </text>
+        <text className={`${TEXT_MUTED} sm:hidden`} x="156" y="80" fontSize="6">
+          Import: Trello, Asana, Jira, Linear
         </text>
       </Scene>
     </Frame>

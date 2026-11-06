@@ -1,6 +1,6 @@
 # Reveal zone
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/reveal-zone.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/reveal-zone.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 A panel that **covers part of the canvas until someone clicks it**. Quiz answers, a retro column nobody should read before they have written their own, an estimate you don't want anchored by the first number on the canvas.
 
@@ -8,7 +8,7 @@ A panel that **covers part of the canvas until someone clicks it**. Quiz answers
 
 The canvas is a shared surface, so everything on it is visible to everyone the moment it exists. That is usually the point, and occasionally exactly wrong: the value of an answer, an estimate, or a set of retro notes depends on people not seeing it too early.
 
-The alternatives all fail in the same way. Hiding a layer hides it from everyone including the author; moving content off-screen is a race against panning; a second tab breaks the flow of the canvas. A cover you click is the smallest thing that works, and it reads as intentional: "there is something here, and it is not for you yet".
+The alternatives all fail in the same way. Hiding content hides it from everyone including the author; moving content off-screen is a race against panning; a second tab breaks the flow of the canvas. A cover you click is the smallest thing that works, and it reads as intentional: "there is something here, and it is not for you yet".
 
 ## Under a facilitator ([Facilitator](../012-collaboration/facilitator.md))
 
@@ -54,7 +54,7 @@ A locally-revealed cover that is then revealed for everyone stays revealed; a lo
 ## What it is not
 
 - **Not a permission.** Anything underneath is in the document, so it is in the export, in the API response, and visible to anyone who moves the cover aside. A reveal zone hides content from a reader's eye, not from a determined reader; the help article says as much, and this spec is the honest record of it. Real secrets do not belong on a shared canvas.
-- Not a layer. Layers ([Layers](../006-document/layers.md)) hide content for the person who toggles them, permanently and for editing too; a cover is about timing, not workspace.
+- Not a way to hide work. A cover is about timing, not workspace: it hides nothing from editing, and anyone can open it.
 
 ## Telemetry
 

@@ -4,25 +4,14 @@ import {
   HIDE_CURSORS_HINT,
   HIDE_CURSORS_LABEL,
 } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
-import {
-  AUTO_ADVANCE_CHOICES,
-  readPresentationConfig,
-  SLIDE_SPEEDS,
-  SLIDE_TRANSITIONS,
-  SLIDE_ZOOMS,
-  withPresentationConfig,
-  type PresentationConfig,
-} from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import type { TelemetryCategory } from '@livehuddle/api-schema';
 import {
-  autoRebindArrowsEnabled,
   panelEnabled,
   type MapSize,
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import {
   ELEMENT_TOUR_KINDS,
   elementTourSeen,
@@ -92,8 +81,7 @@ function emailSwitch(
 // the Palette / Layers / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
-// popovers held, and the Slide Deck popover stays because its contents are
-// deck state rather than user preferences.
+// popovers held.
 //
 // This is a flat catalogue, so it stays one file however long it gets.
 
@@ -102,16 +90,12 @@ function emailSwitch(
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
-// Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  powerUserMode?: boolean;
   preferences?: UserPreferences;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  workbench?: boolean;
   // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
   // "Only where cursors are drawn"); absent reads as drawn.
   cursorsDrawn?: boolean;
@@ -144,13 +128,13 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Canvas and Mouse rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
   // The key of a row in the same category this one belongs to: it renders
   // directly beneath that row, indented, in a group named after it
-  // (docs/specs/007-editor/power-user-mode.md#in-settings).
+  // (docs/specs/007-editor/user-preferences.md).
   parent?: string;
   // A setting with no effect on a phone-sized viewport, holding the note that
   // says so there. The row stays visible (so Settings reads the same on every
@@ -258,10 +242,6 @@ export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
 
-// What power user mode's preset set, as a live readout: each line's value is
-// its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
-export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsChoiceRowSpec
@@ -277,8 +257,7 @@ export type SettingsRowSpec =
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
   | SettingsRetiredPartsRowSpec
-  | SettingsDefaultFoldersRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -417,40 +396,7 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey = 'workshopTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
-
-// A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
-// lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
-// cog's change already sends, `Presentation-<field>`.
-type PresentingKey = Exclude<keyof PresentationConfig, 'autoAdvanceSeconds'>;
-function presentingToggle(
-  field: { [K in PresentingKey]: PresentationConfig[K] extends boolean ? K : never }[PresentingKey],
-  row: Pick<SettingsToggleRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'alsoIn'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', on: `Presentation-${field}On`, off: `Presentation-${field}Off` },
-  };
-}
-function presentingChoice(
-  field: 'transition' | 'speed' | 'zoom',
-  row: Pick<SettingsChoiceRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'options'>,
-): SettingsChoiceRowSpec {
-  return {
-    kind: 'choice',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', changed: `Presentation-${field}` },
-  };
-}
+type TourSeenKey = 'avatarTourSeen' | 'elementToursSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -470,21 +416,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.alignmentGuides !== false,
         write: (p, v) => ({ ...p, alignmentGuides: v }),
         event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'autoRebindArrows',
-        keywords: 'connector reattach sticky arrows connections',
-        section: 'Canvas',
-        label: 'Auto-Attach Arrows',
-        description:
-          'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
-        helpArticle: 'autoAttachArrows',
-        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
-        // same helper, so the switch and the behaviour cannot disagree.
-        read: autoRebindArrowsEnabled,
-        write: (p, v) => ({ ...p, autoRebindArrows: v }),
-        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
       },
       {
         // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
@@ -508,20 +439,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       {
         kind: 'toggle',
-        key: 'quickAddOnHover',
-        keywords: 'plus menu hover add shortcut',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Quick-Add on Hover',
-        description:
-          "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
-        helpArticle: 'quickAddOnHover',
-        read: (p) => p.quickAddOnHover === true,
-        write: (p, v) => ({ ...p, quickAddOnHover: v }),
-        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
-      },
-      {
-        kind: 'toggle',
         key: 'middleMousePan',
         keywords: 'scroll wheel drag pan navigate mouse',
         section: 'Mouse',
@@ -533,136 +450,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
-      {
-        // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
-        // recommended values once; switching off restores the untouched ones.
-        kind: 'toggle',
-        key: 'powerUserMode',
-        keywords: 'power user expert advanced pro minimal chrome fewer labels declutter',
-        section: 'Power User',
-        label: 'Power User Mode',
-        description:
-          'Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever you did not change since.',
-        helpArticle: 'powerUserMode',
-        read: isPowerUserMode,
-        write: (p, v) => setPowerUserMode(p, v).prefs,
-        event: { category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'minimalChrome',
-        keywords: 'minimal chrome hide labels captions titles hints icons only declutter',
-        section: 'Power User',
-        label: 'Minimal Chrome',
-        description:
-          'Hides captions, panel titles and hints. Every control stays, and shows its name on hover.',
-        helpArticle: 'powerUserMode',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
-        read: (p) => p.minimalChrome !== false,
-        write: (p, v) => ({ ...p, minimalChrome: v }),
-        event: { category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' },
-      },
-      {
-        kind: 'presetSummary',
-        key: 'powerUserPreset',
-        keywords: 'power user preset recommended defaults restore',
-        section: 'Power User',
-        label: 'Set By Power User Mode',
-        description: 'Change any of them in its own row.',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
-      },
-    ],
-  },
-  {
-    // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): how slides change, how
-    // the deck plays and what shows while presenting. They follow the account; the cog in a running presentation
-    // keeps only Transition, Speed and the two clocks, the things changed in front of the room.
-    id: 'presenting',
-    label: 'Presenting',
-    parent: 'editor',
-    rows: [
-      presentingChoice('transition', {
-        section: 'Slides',
-        label: 'Transition',
-        description: 'How one slide gives way to the next.',
-        keywords: 'slide transition animation fade cut move present presentation',
-        options: SLIDE_TRANSITIONS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('speed', {
-        section: 'Slides',
-        label: 'Speed',
-        description: 'How long a transition takes.',
-        keywords: 'transition speed quick slow duration present presentation',
-        options: SLIDE_SPEEDS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('zoom', {
-        section: 'Slides',
-        label: 'Slide Size',
-        description:
-          'Fill Screen blows a small slide up to fill the screen; Actual Size never zooms past 100%.',
-        keywords: 'zoom fill screen actual size scale present presentation',
-        options: SLIDE_ZOOMS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      {
-        kind: 'choice',
-        key: 'presentationAutoAdvance',
-        section: 'Playback',
-        label: 'Auto-Advance',
-        description:
-          'Move to the next slide on its own after this long; Off moves only when you say.',
-        keywords: 'auto advance timer kiosk loop slideshow seconds present presentation',
-        helpArticle: 'slideDeck',
-        options: AUTO_ADVANCE_CHOICES.map((c) => ({ id: String(c.seconds), label: c.label })),
-        read: (p) => String(readPresentationConfig(p).autoAdvanceSeconds),
-        write: (p, v) => withPresentationConfig(p, { autoAdvanceSeconds: Number(v) }),
-        event: { category: 'UI', changed: 'Presentation-autoAdvanceSeconds' },
-      },
-      presentingToggle('advanceOnClick', {
-        section: 'Playback',
-        label: 'Click to Advance',
-        description: "Off if you'd rather only the keys and buttons move the deck.",
-        keywords: 'click advance next mouse present presentation',
-      }),
-      presentingToggle('loop', {
-        section: 'Playback',
-        label: 'Loop the Deck',
-        description: 'After the last slide, start again rather than ending.',
-        keywords: 'loop repeat kiosk restart present presentation',
-      }),
-      presentingToggle('showPosition', {
-        section: 'While Presenting',
-        label: 'Show Position',
-        description: "The 7 / 23 counter and the slide's name.",
-        keywords: 'position counter slide number name hud present presentation',
-      }),
-      presentingToggle('keepControls', {
-        section: 'While Presenting',
-        label: 'Keep Controls Visible',
-        description: 'Stop the controls fading out when the pointer rests.',
-        keywords: 'controls hud fade visible present presentation',
-      }),
-      presentingToggle('hidePointer', {
-        section: 'While Presenting',
-        label: 'Hide the Pointer',
-        description: 'A still cursor left on a projector is a distraction.',
-        keywords: 'cursor pointer mouse hide projector present presentation',
-      }),
-      presentingToggle('showElapsed', {
-        section: 'While Presenting',
-        label: 'Show Elapsed Time',
-        description: 'A clock counting from the moment you started.',
-        keywords: 'clock timer elapsed time pacing present presentation',
-        alsoIn: "a presentation's cog",
-      }),
-      presentingToggle('showBudget', {
-        section: 'While Presenting',
-        label: 'Show Slide Budget',
-        description: 'Time on this slide against the minutes it was given.',
-        keywords: 'budget minutes pacing timer slide time present presentation',
-        alsoIn: "a presentation's cog",
-      }),
     ],
   },
   {
@@ -686,11 +473,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'dockButtonNames',
         keywords:
-          'button labels names text captions bottom bar corner buttons zoom layers style tidy up icons only',
+          'button labels names text captions bottom bar corner buttons zoom style tidy up icons only',
         section: 'Interface',
         label: 'Button Labels',
         description:
-          'Names the buttons along the bottom (Search, Settings, the theme, Layers, Style) beside their icons.',
+          'Names the buttons along the bottom (Search, Settings, the theme, Style) beside their icons.',
         desktopOnly:
           'Phones always show these buttons as icons. Your choice still applies on a larger screen.',
         read: (p) => p.dockButtonNames !== false,
@@ -716,7 +503,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       uiScalePartRow('panels', {
         label: 'Panel Scale',
-        keywords: 'panels explorer palette layers popover size bigger smaller zoom panel scale',
+        keywords: 'panels explorer palette popover size bigger smaller zoom panel scale',
         description: 'Every panel, docked or opened from a button.',
         changed: 'UiScalePanels',
       }),
@@ -728,8 +515,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller scale',
-        description: 'Undo and Redo, Layers, Style and zoom.',
+        keywords: 'undo redo zoom controls theme corner buttons size bigger smaller scale',
+        description: 'Undo and Redo, Style and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -779,54 +566,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.panelOpacity ?? 1,
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-    ],
-  },
-  {
-    id: 'layers',
-    label: 'Layers',
-    parent: 'panels',
-    rows: [
-      panelSwitch('layersPanelEnabled', {
-        label: 'Enable Layers Panel',
-        keywords: 'layers panel enable hide show turn off remove move to layer',
-        description:
-          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
-        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
-      }),
-      {
-        kind: 'toggle',
-        key: 'layersShowPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'thumbnail preview layer picture',
-        illustration: 'layerThumbnails',
-        label: 'Layer Thumbnails',
-        description: 'A small preview of what each layer holds.',
-        read: (p) => p.layersShowPreview !== false,
-        write: (p, v) => ({ ...p, layersShowPreview: v }),
-        event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layersShowCount',
-        parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer element counts',
-        label: 'Layer Element Counts',
-        description: 'How many elements each layer holds, beside its name.',
-        read: (p) => p.layersShowCount !== false,
-        write: (p, v) => ({ ...p, layersShowCount: v }),
-        event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layerHoverPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview solo',
-        label: 'Preview Layer on Hover',
-        description: 'Shows only that layer on the canvas while you rest on its row.',
-        read: (p) => p.layerHoverPreview !== false,
-        write: (p, v) => ({ ...p, layerHoverPreview: v }),
-        event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
       },
     ],
   },
@@ -907,21 +646,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'quickStyle',
-    label: 'Quick Style',
-    parent: 'panels',
-    rows: [
-      panelSwitch('quickStylePanelEnabled', {
-        label: 'Enable Quick Style Panel',
-        keywords:
-          'quick style colour color stroke fill width panel selection enable hide show turn off',
-        description:
-          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
-        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
-      }),
-    ],
-  },
-  {
     id: 'accessibility',
     label: 'Accessibility',
     rows: [
@@ -963,13 +687,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('workshopTourSeen', {
-        label: 'Workshop Tour',
-        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-        description: 'In Workshop.',
-        helpArticle: 'workshopTour',
-      }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',
         event: { category: 'UI', on: 'AvatarTourSeenOff', off: 'AvatarTourSeenOn' },
@@ -988,54 +705,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Show Me on Every Element',
           event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element timeline chart how to use learn replay',
+          keywords: 'tour walkthrough tutorial element portal how to use learn replay',
           description: 'Every element’s Show Me at once.',
         },
         ELEMENT_TOURS_SECTION,
       ),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'With a timeline selected.',
-        helpArticle: 'timelineRail',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'With a chart selected.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'With a stack selected.',
-        helpArticle: 'stacks',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'With a lane selected.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'With a boundary selected.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'With a diagram key selected.',
-        helpArticle: 'diagramKeys',
-      }),
       elementTourSwitch('portal', {
         label: 'Portal',
         event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
@@ -1075,9 +749,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Default Folders',
         label: 'Where New Spaces Go',
         keywords:
-          'default folder where new spaces canvases documents go save location place file automatically always save placement template retrospective kanban',
-        description:
-          'New spaces you make without choosing a place are saved in these folders: one for every space, and one for each template family.',
+          'default folder where new spaces canvases documents go save location place file automatically always save placement',
+        description: 'New spaces you make without choosing a place are saved in this folder.',
       },
     ],
   },
@@ -1114,7 +787,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
         description:
           'Pages, boards and designs from this browser that now belong in livedocuments, liveplanner or livedesign. They wait here until you move them.',
-        available: (ctx) => (ctx.retiredParts ?? 0) > 0 && !ctx.workbench,
+        available: (ctx) => (ctx.retiredParts ?? 0) > 0,
       },
       {
         kind: 'deleteAccount',
@@ -1211,10 +884,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'tokens',
         key: 'apiTokens',
-        keywords: 'api token key mcp integration script developer access create revoke secret',
+        keywords: 'api token key integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Let your scripts, and AI tools connected over MCP, use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
+          'Let your scripts use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
       },
     ],
@@ -1269,30 +942,12 @@ export function settingsSectionId(section: string): string {
 // those that apply. A category left with no applicable rows drops out entirely rather than
 // becoming a row that pushes a blank pane.
 export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
-    .map((c) => ({
-      ...c,
-      rows: c.rows.filter(
-        (r) =>
-          (!r.available || r.available(ctx)) &&
-          parentSwitchOn(c, r, ctx.preferences) &&
-          // The workbench sets the frame's scheme (WB15), so the frame offers no choice of its own.
-          !(ctx.workbench && r.kind === 'appearance'),
-      ),
-    }))
-    .filter((c) => c.rows.length > 0);
-}
-
-// What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
-// goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens', 'webhooks']);
-
-function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
-  return (
-    WORKBENCH_HIDDEN_CATEGORIES.has(category.id) ||
-    (category.parent !== undefined && WORKBENCH_HIDDEN_CATEGORIES.has(category.parent))
-  );
+  return SETTINGS_CATEGORIES.map((c) => ({
+    ...c,
+    rows: c.rows.filter(
+      (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+    ),
+  })).filter((c) => c.rows.length > 0);
 }
 
 // A row nested under a switch (`parent`) is offered only while that switch is

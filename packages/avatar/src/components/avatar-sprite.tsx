@@ -533,7 +533,13 @@ function TorsoProfile({
 
 const CUP_WHITE = '#f8fafc';
 const CUP_EDGE = '#94a3b8';
-const DRINK_TOP: Record<DrinkKind, string> = { water: '#7dd3fc', coffee: '#78350f' };
+const DRINK_TOP: Record<DrinkKind, string> = {
+  water: '#7dd3fc',
+  coffee: '#78350f',
+  // livehuddle's bar (its docs/specs/009-elements/office.md "Drinks Cabinet, Drinks Fridge").
+  juice: '#fb923c',
+  soda: '#ef4444',
+};
 
 // A cup in the hand (docs/specs/009-elements/office.md "Using it"): water or coffee, lifted for a sip every few
 // seconds, a coffee steaming. In the right hand from the front, the one visible hand in profile; from behind it

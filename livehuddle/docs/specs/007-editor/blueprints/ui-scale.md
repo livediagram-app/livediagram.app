@@ -61,7 +61,7 @@ Writes go through a patch so the live preview can reuse it:
 - `withUiScalePatch(prefs, patch)` spreads the patch and deletes the keys it
   set to `undefined`, so a cleared part is absent, not stored as null.
 
-`UiScaleProvider` is mounted in `EditorView` beside `MinimalChromeProvider`,
+`UiScaleProvider` is mounted in `EditorView` beside `DockNamesProvider`,
 fed `resolveUiScales({ ...userPreferences, ...preview }, { mobile })`, where
 `preview` is the dragged slider's patch (see Interfaces). `useUiScale(part)`
 returns `1` outside a provider, so the Explorer page and `/new` are
@@ -124,7 +124,7 @@ What makes room for a scaled surface:
 - `toolbarTopClearancePx(scale)` in `CanvasChrome`: `12 + 46 × scale + 10` at
   the toolbar's scale, the top corners' offset while the strip spans them.
 - `useStripCrowdsCorners` takes a `scaleKey` (`"<toolbar>/<panels>"`) and
-  `useStripTileLimit` the toolbar's `scale`, as effect dependencies: they
+  `useBarLabels` the toolbar's `scale`, as effect dependencies: they
   measure in screen px already, but a zoom change resizes no observed box.
   The tile limit's first-paint fallback reads `viewportWidth / scale`.
 - `useQuickStylePlacement` needs nothing: releasing the slider is a captured

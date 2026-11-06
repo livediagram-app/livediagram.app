@@ -3,12 +3,11 @@
 // reaches the board, not the shape; a double-click there still means the shape. So does the
 // double-click on a selected shape whose first click put it down.
 import {
-  layerBands,
+  paintOrder,
   opensInlineLabelEditor,
   pickedByOutline,
   pointInsideOutline,
   type Element,
-  type Layer,
   type ShapeElement,
 } from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -17,17 +16,12 @@ type Point = { x: number; y: number };
 
 /**
  * The topmost outline-picked shape whose drawn inside holds `p` (canvas px) and whose label can be
- * edited there, or null. `elements` is in paint order, bottom first; `inertIds` are on a hidden or
- * locked layer.
+ * edited there, or null. `elements` is in paint order, bottom first.
  */
-export function shapeToEditAt(
-  elements: readonly Element[],
-  p: Point,
-  inertIds: ReadonlySet<string>,
-): ShapeElement | null {
+export function shapeToEditAt(elements: readonly Element[], p: Point): ShapeElement | null {
   for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]!;
-    if (!pickedByOutline(el) || el.locked || inertIds.has(el.id)) continue;
+    if (!pickedByOutline(el) || el.locked) continue;
     if (!opensInlineLabelEditor(el.shape)) continue;
     if (pointInsideOutline(el, p, 0)) return el;
   }
@@ -42,19 +36,11 @@ export function routeBoardDoubleClick(
   board: {
     whiteboard: boolean;
     elements: Element[];
-    layers: Layer[] | undefined;
-    inertIds: ReadonlySet<string>;
   },
   p: Point,
   to: { edit: (id: string) => void; board: (x: number, y: number) => void },
 ): void {
-  const target = board.whiteboard
-    ? shapeToEditAt(
-        layerBands(board.elements, board.layers).flatMap((band) => band.elements),
-        p,
-        board.inertIds,
-      )
-    : null;
+  const target = board.whiteboard ? shapeToEditAt(paintOrder(board.elements), p) : null;
   if (!target) {
     to.board(p.x, p.y);
     return;

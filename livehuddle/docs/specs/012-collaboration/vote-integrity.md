@@ -1,6 +1,6 @@
 # Vote integrity
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/vote-integrity.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/vote-integrity.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 A live poll answer and a Q&A upvote each count one person once. This spec says who "one person"
 is on each path, and what stops one browser from posing as many people or changing somebody else's answer.
@@ -60,8 +60,8 @@ votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`)
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 
-The ledger is `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
-Object, `apps/api/src/document-room/document-schema.ts`), one row per guest voter per network, removed with the
+The ledger was `guest_voters (document_id, network_tag, person_tag)` in the document's own store (its Durable
+Object, `apps/api/src/document-room/document-schema.ts`; a new room no longer creates it, Work Tracker #514), one row per guest voter per network, removed with the
 document. `person_tag` is `personTagFor(documentId, ownerId)`; no owner id is stored. Admission is one batch: a
 conditional insert, then a read of the caller's row.
 

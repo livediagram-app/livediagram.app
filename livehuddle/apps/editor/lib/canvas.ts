@@ -63,10 +63,7 @@ export function inheritedSizeFor(
   // whatever box happened to be selected — a wide banner, a thin rail — hands
   // you something that doesn't read as the thing you asked for, and for a
   // fixed-size control it is simply not resizable afterwards.
-  if (
-    base.type === 'shape' &&
-    (base.shape === 'portal' || base.shape === 'reveal' || isFixedSizeShape(base.shape))
-  ) {
+  if (base.type === 'shape' && (base.shape === 'portal' || isFixedSizeShape(base.shape))) {
     return { width: base.width, height: base.height };
   }
   // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
@@ -112,12 +109,10 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Stable reorder that puts frames FIRST (lowest paint / z-order): a frame
-// is a section backdrop that must sit behind its contents so they stay
-// visible + clickable (docs/specs/008-canvas/canvas-and-palette.md). Both the on-canvas render layer and the
-// exporters route element lists through this, so frame ordering is one
-// rule in one place and never depends on array position. Returns the input
-// array unchanged when there are no frames (cheap no-op).
+// Stable reorder that puts containers (lanes, boundaries, stacks) FIRST (lowest paint / z-order): a container
+// is a backdrop that must sit behind its contents so they stay visible + clickable. Both the on-canvas render
+// layer and the exporters route element lists through this, so container ordering is one rule in one place and
+// never depends on array position. Returns the input array unchanged when there are no containers (cheap no-op).
 export function framesFirst<T extends Element>(elements: T[]): T[] {
   if (!elements.some(isContainer)) return elements;
   return [...elements.filter(isContainer), ...elements.filter((el) => !isContainer(el))];
@@ -157,12 +152,6 @@ export {
 } from './resize-geometry';
 
 export type ArrowEnd = 'from' | 'to';
-
-// Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
-// quick-action targets, and which action the radial ring fired. 'duplicate'
-// clones the source; 'text' drops a label to the side.
-export type { QuickConnectDirection } from '@liveworkspace/workbench/lib/quick-connect';
-export type QuickConnectKind = 'duplicate' | 'text';
 
 export const SNAP_THRESHOLD = 24;
 // Pixel range within which a dragged element's edges/centres snap to

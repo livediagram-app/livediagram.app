@@ -59,6 +59,9 @@ id, name, role }`).
    resource; `require_pkce: true`; `skip_consent: true`.
 4. A failure: `400 registration_failed { status, detail }` (only an admin sees it).
 5. `INSERT INTO oauth_client_app (clientId, app)`; answer `{ client_id, client_secret, redirect_uris, resource, app }`.
+   If the insert is refused (the table's `CHECK` doesn't take the app: a database behind on its migrations), the new
+   `oauthClient` row is deleted (its resources go with it, `ON DELETE CASCADE`) and the answer is
+   `500 client_app_refused { message }`, naming the app and `db:migrate:local`.
 6. The registrar's session is deleted whatever happened.
 
 ### Client credentials on the account API (`verifiedClient`)

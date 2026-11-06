@@ -3,9 +3,8 @@ import { expect, test, expectNoPageErrors, openBlankSession, openStartBlank } fr
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Palette strip
 // (docs/specs/007-editor/toolbar-layout.md "The category bar"): a tile in a category's flyout drags onto the canvas
-// like the tile it stands for, whatever its catalogue: a shape from Shapes' flyout, a line icon and
-// a sticker found by searching their own catalogue's body (Stickers are Workshop's,
-// docs/specs/012-collaboration/workshop-mode.md).
+// like the tile it stands for, whatever its catalogue: a sticky note from Write's flyout, and a sticker found by
+// searching its catalogue's body (no Icons in livehuddle, docs/specs/002-project-scope/not-in-livehuddle.md "Icons").
 
 const CANVAS = '[data-canvas-a11y-root]';
 
@@ -33,17 +32,10 @@ async function dragTileOntoCanvas(page: Page, tileName: string, at: { x: number;
 test.describe('Toolbar strip drag', () => {
   for (const { category, query, tile, placedAs, open } of [
     {
-      category: 'Shapes',
+      category: 'Write',
       query: undefined,
-      tile: 'Add Speech Bubble',
-      placedAs: /speech bubble/i,
-      open: openStartBlank,
-    },
-    {
-      category: 'Icons',
-      query: 'speech',
-      tile: 'Add Message',
-      placedAs: /^Icon$/,
+      tile: 'Add Sticky Note',
+      placedAs: /^Sticky note$/,
       open: openStartBlank,
     },
     {

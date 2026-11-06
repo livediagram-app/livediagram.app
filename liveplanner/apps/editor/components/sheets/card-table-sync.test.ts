@@ -204,6 +204,28 @@ describe('rows to cards', () => {
     });
   });
 
+  // docs/specs/026-plan/plan-agents.md "Clearing a field": the editor's own write clears as an agent's does.
+  it('clears a field that holds several when its cell holds only commas', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const withReviewers = {
+      ...task,
+      fields: [...task.fields, 'f-rev'],
+      custom: [
+        ...(task.custom ?? []),
+        { id: 'f-rev', label: 'Reviewers', kind: 'person' as const, multiple: true },
+      ],
+    };
+    const p = { ...items(), types: ITEM_TYPES.map((t) => (t.id === 'task' ? withReviewers : t)) };
+    const base = sheetOf({ '1,0': 1, '1,1': 'Write', '1,2': 'To Do', '1,4': 'Task' });
+    const reviewersTable = {
+      ...table,
+      cols: table.cols.map((col) => (col.field === 'Due' ? { ...col, field: 'Reviewers' } : col)),
+    };
+    const before = { ...base, layout: { ...base.layout, cardTables: [reviewersTable] } };
+    const out = save(before, [{ r: R[1]!, c: C[3]!, i: { s: ' , ' } }], R[1]!, p);
+    expect(out).toEqual({ kind: 'patch', id: 'i1', patch: { clear: ['f-rev'] } });
+  });
+
   it("keeps a card's title and state when their cells are cleared", () => {
     const before = sheetOf({
       '1,0': 1,

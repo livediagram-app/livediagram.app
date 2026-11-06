@@ -25,36 +25,23 @@ export const HELP_ARTICLES = {
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
-  autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/lane.md and
-  // docs/specs/009-elements/embed-providers.md, only the embed has a surface that links its article (the link picker,
-  // when it is restricted to a URL). Lanes had a key here and no placement, so it was removed; its element tour
-  // brought it back, below.
-  embedElements: 'palette/embed-elements',
+  // The diagram tools left livehuddle (Work Tracker #423 part 3, docs/specs/002-project-scope/not-in-livehuddle.md):
+  // their articles went, but a stored element of a leaving kind still draws and its surfaces still link, so these keys
+  // land on the nearest article that stays (the router redirects the old addresses the same way).
+  embedElements: 'canvas/links',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
-  quickAddOnHover: 'palette/quick-add-on-hover',
-  isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
   avatarMode: 'selection-modes/avatar-mode',
-  laser: 'selection-modes/laser',
-  spotlight: 'selection-modes/spotlight',
   eraser: 'selection-modes/eraser',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
-  // AI
-  connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
   exportingSpaces: 'account-and-data/exporting-spaces',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
-  markdownImport: 'tools/markdown-import',
-  microsoftWhiteboardImport: 'explorer/microsoft-whiteboard-import',
-  drawioImport: 'explorer/drawio-import',
-  shapeLibraries: 'explorer/shape-libraries',
   linkingTabs: 'tabs/linking-tabs',
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
@@ -62,22 +49,18 @@ export const HELP_ARTICLES = {
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
-  workshopTour: 'canvas/workshop-mode/workshop-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
+  // The call strip's `?` (CallClusterButton); the article links on to Cameras and Screen Sharing.
   assignedActions: 'collaboration/assigned-actions',
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  layers: 'canvas/layers',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
   layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
-  sessionPolls: 'collaboration/session-tools/polls',
-  sessionVoting: 'collaboration/session-tools/voting',
-  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
@@ -93,21 +76,15 @@ export const HELP_ARTICLES = {
   recent: 'explorer/recent',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
-  dataElements: 'palette/tools/data-elements',
-  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'palette/stacks',
-  lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
+  dataElements: 'palette/tools',
+  // The Portal tour's closing card (docs/specs/007-editor/element-tours.md).
   portals: 'palette/tools/portals',
-  timelineRail: 'palette/timeline-rail',
   palette: 'palette',
   // Settings
-  powerUserMode: 'user-interface/power-user-mode',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-space',
+  yourFirstSpace: 'getting-started/your-first-space',
   templates: 'canvas/templates',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -124,10 +101,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  workshopTour: {
-    title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
   avatarTour: {
     title: 'Learn about the Avatar Tour',
     description: 'What the tour shows you and how replaying works.',
@@ -148,13 +121,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Community',
     description: 'Sharing a space publicly, and how people find and copy it.',
   },
-  autoAttachArrows: {
-    title: 'Learn about auto-attach arrows',
-    description: 'How arrows re-pin to shapes as they move.',
-  },
   embedElements: {
-    title: 'Learn about embeds',
-    description: 'Which services can be embedded, and how they load.',
+    title: 'Learn about links',
+    description: 'Links to tabs, spaces and the web.',
   },
   alignmentGuides: {
     title: 'Learn about alignment guides',
@@ -164,25 +133,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
   },
-  quickAddOnHover: {
-    title: 'Learn about quick-add on hover',
-    description: 'Open the element + menu by hovering instead of clicking.',
-  },
-  isometricMode: {
-    title: 'Learn about the isometric view',
-    description: 'How the isometric projection works and when to use it.',
-  },
   avatarMode: {
     title: 'Learn about Avatar mode',
     description: 'Tips for walking the canvas as an avatar and leading a session.',
-  },
-  laser: {
-    title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the canvas.',
-  },
-  spotlight: {
-    title: 'Learn about the Spotlight',
-    description: 'Tips for dimming everything but the part you are talking about.',
   },
   eraser: {
     title: 'Learn about the Eraser',
@@ -191,14 +144,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your canvas.',
-  },
-  connectAiTool: {
-    title: 'Learn about connecting AI tools',
-    description: 'Drive your spaces from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingSpaces: {
     title: 'Learn about exporting',
@@ -215,22 +160,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   importTabs: {
     title: 'Learn about importing tabs',
     description: 'What you can import and how it replaces the tab.',
-  },
-  microsoftWhiteboardImport: {
-    title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a space.',
-  },
-  shapeLibraries: {
-    title: 'Learn about shape libraries',
-    description: 'How libraries are made, placed from My shapes, and managed.',
-  },
-  drawioImport: {
-    title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a space.',
-  },
-  markdownImport: {
-    title: 'Learn about Markdown import',
-    description: 'How headings and lists become a themed tree diagram.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',
@@ -273,25 +202,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description:
       'Tips for laying a diagram out in one press, and choosing the style that suits it.',
   },
-  layers: {
-    title: 'Learn about layers',
-    description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
-  },
-  sessionPolls: {
-    title: 'Learn about polls',
-    description: 'Tips for asking the room a question and sharing the results.',
-  },
-  sessionVoting: {
-    title: 'Learn about voting',
-    description: 'Tips for running a quick vote across the elements on the canvas.',
-  },
-  sessionTimer: {
-    title: 'Learn about the timer',
-    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
@@ -342,40 +255,16 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'The library every liveworkspace app shares: sections, views and search.',
   },
   dataElements: {
-    title: 'Learn about data elements',
-    description: 'Charts and data-driven elements, and how to edit their data.',
-  },
-  stacks: {
-    title: 'Learn about stacks',
-    description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  lanes: {
-    title: 'Learn about lanes',
-    description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
-  },
-  boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
-  },
-  diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
+    title: 'Learn about the palette',
+    description: 'Where each element lives, category by category.',
   },
   portals: {
     title: 'Learn about portals',
     description: 'Linked rings that take you across the canvas or to another tab.',
   },
-  timelineRail: {
-    title: 'Learn about timelines',
-    description: 'Milestones along a line, each with when and what, and editing its rows.',
-  },
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  powerUserMode: {
-    title: 'Learn about power user mode',
-    description: 'The recommended settings it applies, and Minimal chrome.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',
@@ -385,7 +274,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Offline Mode',
     description: 'Spaces saved only in this browser, and how to sync them.',
   },
-  yourFirstDiagram: {
+  yourFirstSpace: {
     title: 'Learn about your first Space',
     description: 'A short walkthrough of opening your first Space and meeting in it.',
   },

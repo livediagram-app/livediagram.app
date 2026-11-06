@@ -60,39 +60,7 @@ export function SizeButton({
   return label ? <Tooltip label={label}>{button}</Tooltip> : button;
 }
 
-export function PatternButton({
-  active,
-  onClick,
-  label,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  children: React.ReactNode;
-}) {
-  // w-full so every button fills its grid cell — the active/hover box
-  // is then a uniform width regardless of how long the label is.
-  const base =
-    'flex w-full cursor-pointer flex-col items-center gap-1 rounded-md px-1 py-2 transition';
-  const styled = active
-    ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-200'
-    : TOOLBAR_CONTROL_REST;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      aria-label={label}
-      className={`${base} ${styled}`}
-    >
-      {children}
-      <span className="w-full truncate text-center text-[10px] font-medium">{label}</span>
-    </button>
-  );
-}
-
-// The background-pattern catalogue lives in its own data module;
+// The floor catalogue (docs/specs/011-theme/floors.md) lives in its own data module;
 // re-exported here so existing import sites stay unchanged.
 export { PATTERNS, type PatternEntry } from './palette-patterns';
 

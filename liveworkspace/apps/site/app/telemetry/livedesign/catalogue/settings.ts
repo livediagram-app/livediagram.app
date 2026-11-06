@@ -98,20 +98,6 @@ export const EDITOR_SETTINGS = settingsStack(
         'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
       rising: 'neutral',
     },
-    toggle(
-      'UI',
-      'PowerUserModeOn',
-      'PowerUserModeOff',
-      'Power User Mode',
-      'The recommended-settings preset, from Settings or the offer.',
-    ),
-    toggle(
-      'UI',
-      'MinimalChromeOn',
-      'MinimalChromeOff',
-      'Minimal Chrome',
-      'Labels and hints hidden, for power users.',
-    ),
   ],
 );
 

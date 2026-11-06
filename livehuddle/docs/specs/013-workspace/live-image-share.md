@@ -58,7 +58,7 @@ no `document`, so it runs in the Worker.
 **Label fidelity rules** (the renderer mirrors the editor's DOM layout):
 labels inset by the element's **padding preset** and wrap to the remaining
 width; the wrapped block hangs off the element's **`textAlignY`** anchor (a
-top-aligned frame label exports at the frame's top, a bottom icon caption
+top-aligned room label exports at the room's top, a bottom icon caption
 stacks upward INTO the box rather than spilling below it, which the PNG
 rasteriser would clip); alignment **defaults follow the element type** (sticky
 notes top-left); and **rich (per-run) labels wrap too**, each word measured

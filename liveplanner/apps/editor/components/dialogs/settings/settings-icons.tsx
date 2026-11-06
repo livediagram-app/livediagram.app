@@ -17,7 +17,6 @@ import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/col
 export type SettingsIconId =
   | 'account'
   | 'projects'
-  | 'editor'
   | 'appearance'
   | 'keyboard'
   | 'panels'
@@ -37,7 +36,6 @@ export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
 export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
   account: 'account',
   projects: 'folder',
-  editor: 'editor',
   appearance: 'appearance',
   keyboard: 'keyboard',
   panels: 'panels',

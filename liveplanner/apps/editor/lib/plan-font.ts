@@ -1,6 +1,6 @@
-// The lettering a Plan board, card, Dashboard or Sheet takes from its tab (docs/specs/004-interface-design/fonts.md
-// "On boards and cards"). On a board and a card only the headings (the board's title, column and swimlane names, card
-// titles) take the tab's face; everything else is the UI face, since most faces in the catalogue are display or
+// The lettering a Plan board, card, Dashboard or plan view takes from its tab (docs/specs/004-interface-design/fonts.md
+// "On boards and cards" and "On Dashboards and views"). Only the headings (a board's title, column and swimlane names,
+// card titles, a view's title, a Dashboard card's heading) take the tab's face; everything else is the UI face, since most faces in the catalogue are display or
 // hand-lettered faces that read poorly at a card's 11 to 13 px. The root carries the face as custom properties and
 // each heading opts in with PLAN_HEADING_STYLE; an unset property is invalid at computed-value time, so a heading on
 // a board with no tab font inherits the UI face.
@@ -70,8 +70,9 @@ export function planTextScaleVars(textScale: number): CSSProperties {
   return textScale !== 1 ? ({ '--plan-text-scale': String(textScale) } as CSSProperties) : {};
 }
 
-/** A board's or a Plan card's root: the UI face at its own size (a Dashboard's handwriting lift stays off its slot
- *  boards' small text), with the tab face handed to its headings and the tab's text scale to every text size on it. */
+/** A Plan surface's root (a board, a Plan card, a plan view, a Dashboard page): the UI face at its own size, with the
+ *  tab face handed to its headings and, on a board or a card, the tab's text scale to every text size on it. With no
+ *  face (a view in a Dashboard slot) it sets no heading variable, so its headings take the one the page hands down. */
 export function planBoardFontStyle(fontFamily: string | undefined, textScale = 1): CSSProperties {
   return {
     fontFamily: PLAN_UI_FONT,
@@ -79,14 +80,4 @@ export function planBoardFontStyle(fontFamily: string | undefined, textScale = 1
     ...headingVars(fontFamily),
     ...planTextScaleVars(textScale),
   };
-}
-
-/** A whole surface lettered in the tab's face (a Dashboard page); it hands the face to the boards in its slots too.
- *  Empty when it takes the editor's own, or the face is one liveplanner does not draw. */
-export function planFontStyle(fontFamily: string | undefined): CSSProperties {
-  const vars = headingVars(fontFamily);
-  if (!fontFamily || !('--plan-heading-font' in vars)) return {};
-  return HAND_LETTERED_STACKS.has(fontFamily)
-    ? { fontFamily, fontSizeAdjust: `ex-height ${PLAN_HANDWRITING_EX}`, ...vars }
-    : { fontFamily, ...vars };
 }

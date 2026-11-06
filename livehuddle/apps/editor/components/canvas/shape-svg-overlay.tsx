@@ -1,7 +1,6 @@
 import {
   SHAPE_DETAIL_STROKE_PX,
   SHAPE_KINDS,
-  isCollabPanelShape,
   isWebComponentShape,
   shapeGeometry,
   type ShapeKind,
@@ -57,16 +56,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // nothing.
     kind !== 'focus-button' &&
     kind !== 'portal' &&
-    kind !== 'session-button' &&
-    kind !== 'reveal' &&
-    kind !== 'picker' &&
-    // A reaction pad (docs/specs/009-elements/reaction-pad.md) is a filled rounded box with a glyph on top.
-    kind !== 'reaction-pad' &&
-    // A comment pin (docs/specs/012-collaboration/comment-pin.md) draws its own bubble; the wrapper box behind it
-    // must not also paint a square.
-    kind !== 'comment-pin' &&
-    // An action panel (docs/specs/012-collaboration/action-panel.md) is the same card, for an assigned action.
-    kind !== 'action-card' &&
     // This predicate is allow-BY-DEFAULT, so a new CSS-drawn kind that isn't listed here renders as a
     // transparent nothing.
     // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box
@@ -80,11 +69,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'diagram-key' &&
     // A stack (docs/specs/009-elements/stack.md) is a CSS box (a dashed outline) behind what it holds.
     kind !== 'stack' &&
-    // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded
-    // cards with their own face drawn on top — the CSS box path, like every
-    // kind above. Left off this list they rendered as a transparent nothing,
-    // exactly as the comment above warns.
-    !isCollabPanelShape(kind) &&
     // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
     // self-painting, so the box path gives them a bare wrapper).

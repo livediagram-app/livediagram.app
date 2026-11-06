@@ -36,6 +36,7 @@ import {
   SANKEY_NAME_MAX,
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
+  RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
@@ -47,7 +48,8 @@ export const SCHEMA_RESOURCE_URI = 'livedocuments://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
-const shapeKinds = [...SHAPE_KINDS].join(', ');
+// The kinds an agent may write: a retired one (a tab window, docs/specs/009-elements/tab-window.md) is not offered.
+const shapeKinds = [...SHAPE_KINDS].filter((k) => !RETIRED_SHAPE_KINDS.has(k)).join(', ');
 const themeIds = THEMES.map((t) => t.id).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
@@ -129,8 +131,7 @@ const STYLE_FIELDS =
   'width and style included, so it outranks a "strokeStyle" given with it; ghost and outline are dashed, dotted ' +
   'and dash-dot as named: theme, soft, ' +
   'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
-  'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
-  'shown on the element); on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
+  'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; on text, wordmark type: "letterSpacing" (em between letters, -0.2 to 1), ' +
   '"fontWeight" (400, 500, 700), "textCase" (upper, lower), "textArc" (bends one line along a circle, -360 to ' +
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
@@ -152,8 +153,9 @@ const ELEMENT_SCHEMA_HINT =
   `${shapeKinds}. The default box is "square" (there is NO "rectangle"); use ` +
   '"diamond" for a decision, "cylinder" for a datastore, "stadium" for start/end. ' +
   'type "text" is BARE text with no box; use it only for a title, caption, or ' +
-  'legend, never for a node; it is centred in its box, so a left-aligned heading or caption sets ' +
-  '"textAlignX": "left". type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
+  'legend, never for a node; it reads from the left and top of its box (a Paragraph: "textSize" 24, ' +
+  '"textAlignX": "left", "textAlignY": "top" unless given), and "textSize" on a text or a shape takes 24 to 72 px, ' +
+  'a document\'s sizes (a Title 64, a Heading 48). type "freehand" is a HAND-DRAWN stroke: give "points" as canvas ' +
   'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
@@ -538,8 +540,8 @@ export const updateDocumentShape = {
         'inside:<stack>, align:<x>, at:x,y; inside:<stack> right-of:<x> places beside x in that stack. A box placed ' +
         'beside one inside a stack joins it (the stack grows); to stay outside, place it against the ' +
         'stack itself (below:<stack>), with align:<x> to line it up with a member (below:<stack> align:<x>). ' +
-        'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
-        'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
+        'Keys: label= shape= fill=theme|red|orange|yellow|green|blue|' +
+        'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg|<px> (24-72 on a text or a shape, 6-48 else) border=solid|dashed|' +
         'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
         'Coordinates are relative to the content origin, as the layout view prints them.',
     ),

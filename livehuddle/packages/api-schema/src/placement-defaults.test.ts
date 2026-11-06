@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livehuddle/document';
 import {
   DEFAULT_FOLDER_OPTIONS,
   SPECIFIC_TAB_KINDS,
@@ -13,15 +12,14 @@ import {
 // creation intent a create carries.
 
 describe('DEFAULT_FOLDER_OPTIONS', () => {
-  it('has one entry per editor mode, and no specific tab kinds', () => {
-    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual(
-      EDITOR_MODES.map((mode) => `mode:${mode}`),
-    );
+  // Work Tracker #507: the Workshop mode's entry repeated the app's own (Spaces), and the retrospectives left.
+  it('has no entry beside the app’s own: no mode, no specific tab kind', () => {
+    expect(DEFAULT_FOLDER_OPTIONS).toEqual([]);
     expect(SPECIFIC_TAB_KINDS).toEqual([]);
   });
 
-  it('has the one template family, the retrospective', () => {
-    expect(TEMPLATE_FAMILIES).toEqual(['retrospective']);
+  it('has no template family', () => {
+    expect(TEMPLATE_FAMILIES).toEqual([]);
   });
 });
 
@@ -55,11 +53,10 @@ describe('creationIntentOf', () => {
     });
   });
 
-  it('carries the template family it was made from', () => {
-    expect(creationIntentOf({ kind: 'diagram' }, 'retrospective')).toEqual({
+  it('carries no family for a template with none', () => {
+    expect(creationIntentOf({ kind: 'diagram' }, null)).toEqual({
       mode: 'workshop',
       tabKind: 'diagram',
-      templateFamily: 'retrospective',
     });
   });
 
@@ -102,7 +99,7 @@ describe('readCreationIntent', () => {
     });
   });
 
-  it('reads every field', () => {
+  it('reads every field, and the retired retrospective family as none', () => {
     expect(
       readCreationIntent({
         mode: 'diagram',
@@ -111,7 +108,7 @@ describe('readCreationIntent', () => {
       }),
     ).toEqual({
       ok: true,
-      intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
+      intent: { mode: 'workshop', tabKind: 'diagram' },
     });
   });
 
@@ -125,7 +122,7 @@ describe('readCreationIntent', () => {
   it.each([
     ['a string', 'mode:draw'],
     ['an array', ['diagram']],
-    ['a missing mode', { templateFamily: 'retrospective' }],
+    ['a missing mode', { templateFamily: 'mindmap' }],
     ['an unknown mode', { mode: 'pixel' }],
     ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
     ['a kind this product does not have', { mode: 'draw', tabKind: 'event-storming' }],
@@ -140,13 +137,6 @@ describe('readCreationIntent', () => {
 describe('indexIntentOf', () => {
   it('joins the parts the intent names, mode first', () => {
     expect(indexIntentOf({ mode: 'workshop', tabKind: 'diagram' })).toBe('workshop:diagram');
-    expect(
-      indexIntentOf({
-        mode: 'workshop',
-        tabKind: 'diagram',
-        templateFamily: 'retrospective',
-      }),
-    ).toBe('workshop:diagram:retrospective');
   });
 
   it('is null for no intent', () => {

@@ -11,26 +11,6 @@ import {
 import { arrowBetween, shapeAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
-  ['estimate', { responses: [{ participantId: 'p', value: '5', at: 0 }], responsesRevealed: true }],
-  ['temperature', { responses: [] }],
-  ['done-check', { responses: [{ participantId: 'p', value: 'done', at: 0 }] }],
-  ['idea-box', { ideaCards: ['a', 'b'] }],
-  ['qa-board', { qaNotes: [] }],
-  [
-    'agenda',
-    {
-      agendaItems: [
-        { label: 'Intro', minutes: 5 },
-        { label: 'Demo', minutes: 10 },
-      ],
-      agendaCurrent: 1,
-    },
-  ],
-  ['decision', { decisionStatus: 'accepted' }],
-  ['roll-call', { rollCall: [] }],
-  ['quiz', { quizStartedAt: 1 }],
-  ['picker', { pickerResult: 'Sam' }],
-  ['reveal', { revealed: true }],
   ['stat-row', {}],
   ['process', {}],
   ['site-header', {}],
@@ -52,7 +32,7 @@ export function edgeCasesTab(): Tab {
       label: 'Line one\nsays "hi" → there | here',
     }),
     { ...shapeAt('square', 'tilted', ...cell(2)), rotation: 30 },
-    { ...shapeAt('square', 'secret', ...cell(3)), layerId: 'hidden' },
+    shapeAt('square', 'secret', ...cell(3)),
     {
       id: 'holo',
       type: 'hologram',
@@ -92,20 +72,16 @@ export function edgeCasesTab(): Tab {
   return {
     id: 'edge-tab',
     name: 'Edge cases',
-    layers: [
-      { id: 'default', name: 'Default' },
-      { id: 'hidden', name: 'Hidden', visible: false },
-    ],
     elements: [
       // Two frames of equal area overlapping: the earlier holds what sits in both (E4).
-      shapeAt('frame', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
-      shapeAt('frame', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
+      shapeAt('boundary', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
+      shapeAt('boundary', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
       shapeAt('square', 'both', 400, 175, 100, 50, { label: 'In both' }),
       // Larger than the frame its centre is in (E5).
       shapeAt('square', 'huge', -10, -10, 620, 420, { label: 'Huge' }),
       ...grid,
       { id: 'nowhere', type: 'hologram', label: 'No geometry' } as unknown as Element,
-      // Parallel arrows, a self-loop, an arrow to a hidden element, free and on-arrow ends (E7 to E10).
+      // Parallel arrows, a self-loop, an arrow to a plain element, free and on-arrow ends (E7 to E10).
       arrowBetween('par-1', 'bare', 'quoted', { label: 'one' }),
       arrowBetween('par-2', 'bare', 'quoted', {
         label: 'two',

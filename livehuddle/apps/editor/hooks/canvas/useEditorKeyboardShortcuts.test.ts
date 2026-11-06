@@ -16,13 +16,9 @@ function spyLive() {
   const calls: string[] = [];
   const live = {
     setCanvasTool: (t: string) => calls.push(`tool:${t}`),
-    onToggleZen: () => calls.push('zen'),
-    onBeginFreehand: () => calls.push('pencil'),
-    onBeginShapePen: () => calls.push('shape-pen'),
     addShape: (k: string) => calls.push(`shape:${k}`),
     addText: () => calls.push('text'),
     addSticky: () => calls.push('sticky'),
-    addArrow: () => calls.push('arrow'),
   };
   // The actions only touch the subset of deps above; cast through unknown
   // so we don't have to stub the whole EditorKeyboardShortcutsDeps bag.
@@ -50,14 +46,12 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
+  it('binds nothing to K, I or Z: the Laser, Isometric and Zen left livehuddle', () => {
+    expect(VIEW_TOOL_KEYS.k).toBeUndefined();
     expect(VIEW_TOOL_KEYS.l).toBeUndefined();
-  });
-
-  it('keeps Isometric on I and Zen on Z', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
-    expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
+    expect(VIEW_TOOL_KEYS.i).toBeUndefined();
+    expect(VIEW_TOOL_KEYS.z).toBeUndefined();
   });
 
   it('has no key into Avatar mode (a Selection Mode button is its one way in)', () => {
@@ -67,10 +61,8 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Pencil to P and number 7, and Frame to F', () => {
-    expect(fired(EDIT_KEYS, 'p')).toBe('pencil');
-    expect(fired(EDIT_KEYS, '7')).toBe('pencil');
-    expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
+  it('binds nothing to F (livehuddle has no Frame)', () => {
+    expect(EDIT_KEYS.f).toBeUndefined();
   });
 
   it('binds Eraser to E and number 0', () => {
@@ -78,23 +70,16 @@ describe('EDIT_KEYS (mutating tools / element adds)', () => {
     expect(fired(EDIT_KEYS, '0')).toBe('tool:eraser');
   });
 
-  it('maps the flowchart shape letters and their Excalidraw number aliases', () => {
-    expect(fired(EDIT_KEYS, 'r')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, '2')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, 'o')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, '4')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, 'd')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, '3')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, 'c')).toBe('shape:cylinder');
-    expect(fired(EDIT_KEYS, 'g')).toBe('shape:parallelogram');
-  });
-
-  it('binds Text (T / 8), Note (N), and Arrow (A / 5)', () => {
+  it('binds Text (T / 8) and Note (N)', () => {
     expect(fired(EDIT_KEYS, 't')).toBe('text');
     expect(fired(EDIT_KEYS, '8')).toBe('text');
     expect(fired(EDIT_KEYS, 'n')).toBe('sticky');
-    expect(fired(EDIT_KEYS, 'a')).toBe('arrow');
-    expect(fired(EDIT_KEYS, '5')).toBe('arrow');
+  });
+
+  // docs/specs/012-collaboration/workshop-mode.md "The palette": the diagram tools' keys left with the tools.
+  it('binds no diagram tool: no pencil, shape pen, flowchart shape or arrow key', () => {
+    for (const key of ['p', 'r', 'o', 'd', 'c', 'g', 'a', '2', '3', '4', '5', '6', '7'])
+      expect(EDIT_KEYS[key], key).toBeUndefined();
   });
 
   it('no longer binds Hexagon to H (H is the Hand tool now)', () => {
@@ -121,11 +106,11 @@ type ModEvent = {
   prevented?: boolean;
 };
 
-function modLive(isReadOnly = false, participant = false) {
+function modLive(isReadOnly = false, canvasTool = 'select') {
   const calls: string[] = [];
   const live = {
     isReadOnly,
-    participant,
+    canvasTool,
     onZoomIn: () => calls.push('zoom-in'),
     onZoomOut: () => calls.push('zoom-out'),
     onZoomReset: () => calls.push('zoom-reset'),
@@ -146,9 +131,9 @@ function modLive(isReadOnly = false, participant = false) {
 function chord(
   ev: ModEvent,
   isReadOnly = false,
-  participant = false,
+  canvasTool = 'select',
 ): { hit: string | null; prevented: boolean } {
-  const { live, calls } = modLive(isReadOnly, participant);
+  const { live, calls } = modLive(isReadOnly, canvasTool);
   let prevented = false;
   const e = {
     key: ev.key,
@@ -185,11 +170,23 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
 
   // docs/specs/013-workspace/share-roles.md: a Participant undoes and redoes its own changes; a Viewer does not, and
   // neither gets the Editor's chords.
-  it("gives a Participant undo and redo and nothing else of an Editor's", () => {
-    expect(chord({ key: 'z' }, true, true).hit).toBe('undo');
-    expect(chord({ key: 'z', shiftKey: true }, true, true).hit).toBe('redo');
-    expect(chord({ key: 'd' }, true, true).hit).toBeNull();
-    expect(chord({ key: 'z' }, true, false).hit).toBeNull();
+  // A Participant is read-only to the keyboard, as a Viewer (docs/specs/013-workspace/share-roles.md "A Participant
+  // walks"): no undo, redo or duplicate.
+  // docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking": an Editor walking has no undo or redo
+  // either, and the key is not dispatched, so the browser's own undo is swallowed by the caller too.
+  it('gives an Editor walking no undo or redo, and still zooms and searches', () => {
+    expect(chord({ key: 'z' }, false, 'avatar')).toEqual({ hit: null, prevented: false });
+    expect(chord({ key: 'z', shiftKey: true }, false, 'avatar').hit).toBeNull();
+    expect(chord({ key: 'y' }, false, 'avatar').hit).toBeNull();
+    expect(chord({ key: '=' }, false, 'avatar').hit).toBe('zoom-in');
+    expect(chord({ key: 'k' }, false, 'avatar').hit).toBe('search');
+    expect(chord({ key: 'z' }, false, 'pan').hit).toBe('undo');
+  });
+
+  it('gives a read-only session, a Participant included, no undo, redo or duplicate', () => {
+    expect(chord({ key: 'z' }, true).hit).toBeNull();
+    expect(chord({ key: 'z', shiftKey: true }, true).hit).toBeNull();
+    expect(chord({ key: 'd' }, true).hit).toBeNull();
   });
 
   it('binds the clipboard and selection verbs', () => {

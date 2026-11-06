@@ -9,7 +9,6 @@ import {
   writeSettingsView as writeView,
 } from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { setPowerUserMode } from '@/lib/power-user-mode';
 
 const VIEW_KEY = 'liveplanner:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
@@ -58,28 +57,23 @@ afterEach(() => {
 });
 
 describe('SettingsDialog', () => {
-  it('goes from the power user preset readout to the setting in its own category', () => {
+  it('shows no Editor category or Power User rows, and keeps the other settings, for a blob with the retired keys', () => {
+    // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences": the Editor category held only
+    // the mode's rows, so it goes with them.
     setViewport(false);
-    Element.prototype.scrollIntoView = vi.fn();
-    renderDialog(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Forms Tour in Tours' }));
-    // Tours is open, with the Forms Tour row ringed.
-    expect(screen.getByRole('switch', { name: /Forms Tour/ })).toBeTruthy();
-    const ringed = document.querySelector('[data-settings-row="formTourSeen"]');
-    expect(ringed?.className).toContain('ring-2');
-  });
-
-  it('shows Minimal Chrome only while power user mode is on', () => {
-    setViewport(false);
-    const { onChange } = renderDialog();
+    renderDialog({
+      powerUserMode: true,
+      minimalChrome: true,
+      formTourSeen: true,
+    } as UserPreferences);
+    expect(screen.queryByRole('button', { name: 'Editor' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    expect(screen.queryByText('Power User')).toBeNull();
+    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
     expect(screen.queryByRole('switch', { name: 'Minimal Chrome' })).toBeNull();
-    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
-    const next = onChange.mock.calls[0]![0] as UserPreferences;
-    expect(next.powerUserMode).toBe(true);
-    expect(next.formTourSeen).toBe(true);
-    cleanup();
-    renderDialog(next);
-    expect(screen.getByRole('switch', { name: 'Minimal Chrome' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: /Forms Tour/ }).getAttribute('aria-checked')).toBe(
+      'false',
+    );
   });
 
   it('opens on desktop with the rail and the first category already showing', () => {
@@ -112,15 +106,15 @@ describe('SettingsDialog', () => {
     renderDialog();
     fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
     expect(screen.getByRole('switch', { name: 'Send Anonymous Usage Events' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Tours' })).toBeTruthy();
   });
 
   it('opens on a phone at the root list, with no pane showing', () => {
     setViewport(true);
     renderDialog();
-    expect(screen.getByRole('button', { name: 'Editor' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Tours' })).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
   });
 
   it('opens on a named category when one is asked for', () => {
@@ -140,14 +134,14 @@ describe('SettingsDialog', () => {
   it('pushes a pane on a phone and comes back to the root list', () => {
     setViewport(true);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    expect(screen.getByRole('switch', { name: 'Power User Mode' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    expect(screen.getByRole('switch', { name: /Forms Tour/ })).toBeTruthy();
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
-    expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
+    expect(screen.queryByRole('switch', { name: /Forms Tour/ })).toBeNull();
   });
 
   it('reaches the Panels sub-categories on a phone through the Panels pane', () => {
@@ -174,9 +168,9 @@ describe('SettingsDialog', () => {
   it('writes the flipped preference through the catalogue', () => {
     setViewport(false);
     const { onChange } = renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Power User Mode' }));
-    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ powerUserMode: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    fireEvent.click(screen.getByRole('switch', { name: /Forms Tour/ }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ formTourSeen: true }));
   });
 
   describe('reopening where it was left', () => {
@@ -199,10 +193,10 @@ describe('SettingsDialog', () => {
           settings={{}}
           onChange={() => {}}
           onClose={() => {}}
-          initialCategoryId="editor"
+          initialCategoryId="tours"
         />,
       );
-      expect(screen.getByRole('switch', { name: 'Power User Mode' })).toBeTruthy();
+      expect(screen.getByRole('switch', { name: /Forms Tour/ })).toBeTruthy();
     });
 
     it('reopens a phone on the pushed pane it was closed on', () => {
@@ -276,11 +270,11 @@ describe('SettingsDialog', () => {
   it('describes each switch with its own footnote, for screen readers too', () => {
     setViewport(false);
     renderDialog();
-    fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
-    const sw = screen.getByRole('switch', { name: 'Power User Mode' });
+    fireEvent.click(screen.getByRole('button', { name: 'Tours' }));
+    const sw = screen.getByRole('switch', { name: /Forms Tour/ });
     const describedBy = sw.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)?.textContent).toMatch(/recommended settings/i);
+    expect(document.getElementById(describedBy!)?.textContent).toMatch(/On a Form tab/);
   });
 });
 

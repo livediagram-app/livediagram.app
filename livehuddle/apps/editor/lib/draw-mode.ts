@@ -5,10 +5,7 @@ import type {
   ArrowEnds,
   ComponentKind,
   EmbedProvider,
-  EstimateScale,
-  Reaction,
   SelectionMode,
-  SessionTool,
   ShapeKind,
 } from '@livehuddle/document';
 import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livehuddle/document';
@@ -27,21 +24,18 @@ export type PendingDraw =
   // drag to size) instead of dropping at a fixed size.
   // `stickerId` rides the same intent for the `sticker` kind (docs/specs/010-palette/stickers.md), the
   // way `iconId` does for `icon`.
-  // `session` (docs/specs/012-collaboration/session-button.md) and `reaction` (docs/specs/009-elements/reaction-pad.md) ride the same intent for
-  // the same reason: both kinds are ONE element with a mode field, and the
-  // palette offers a tile per mode rather than one tile you then reconfigure.
-  // Carrying the choice on the intent is what lets "Add poll" place a poll
-  // instead of placing a timer you have to go and change.
+  // `mode` (docs/specs/009-elements/mode-button.md) rides the same intent for
+  // the same reason: each kind is ONE element with a field, and the
+  // palette offers a tile per choice rather than one tile you then reconfigure.
+  // Carrying the choice on the intent is what lets "Add Hearts" place hearts
+  // instead of placing confetti you have to go and change.
   | {
       type: 'shape';
       kind: ShapeKind;
       iconId?: string;
       stickerId?: string;
       label?: string;
-      session?: SessionTool;
-      reaction?: Reaction;
       mode?: SelectionMode;
-      estimateScale?: EstimateScale;
       // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
       // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
@@ -63,7 +57,7 @@ export type PendingDraw =
   // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
   | { type: 'table' }
   | { type: 'link-card' }
-  // `provider` rides the intent the way `session` / `reaction` do above: the
+  // `provider` rides the intent the way `mode` does above: the
   // Media tab offers a tile per service and they are all one `video` kind, so
   // the choice has to survive the gesture or "Add Loom" would place a bare
   // embed the user then has to go and re-point.
@@ -112,6 +106,9 @@ export type PendingDraw =
   // the start vertex or double-click / Enter commits a
   // straight-edged FreehandElement.
   | { type: 'polygon' }
+  // The Room Builder (docs/specs/009-elements/room-builder.md): the polygon's click-to-place, drawing walls
+  // snapped to 45 degrees, always closed into a custom-shaped Room.
+  | { type: 'room-walls' }
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a vector pen held on a whiteboard. Clicks
   // place corner nodes and drags pull out curves; the canvas keeps the path being drawn
   // (usePathDrawGesture) and the tool stays in hand after each path lands.
@@ -124,7 +121,7 @@ export type PendingDraw =
 /** The choices a tile hands `addShape` along with its kind: they ride the shape intent through the gesture. */
 export type AddShapeOptions = Pick<
   Extract<PendingDraw, { type: 'shape' }>,
-  'session' | 'reaction' | 'mode' | 'estimateScale' | 'variant' | 'name'
+  'mode' | 'variant' | 'name'
 >;
 
 // The shape the banner names ("Click to drop or drag to draw Square"), as the tile the person just picked names it.
@@ -189,11 +186,9 @@ export function isWhiteboardOnlyIntent(intent: PendingDraw | null | undefined): 
   return (intent.type === 'shape' || intent.type === 'arrow') && intent.board === true;
 }
 
-// Whether a freshly drawn element drops straight into typing. A text box is
-// only useful once typed into; on a whiteboard a sticky is too, as on a real
-// board (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-export function opensForTyping(intent: PendingDraw, whiteboard: boolean): boolean {
-  return intent.type === 'text' || (whiteboard && intent.type === 'sticky');
+// Whether a freshly drawn element drops straight into typing: a text box is only useful once typed into.
+export function opensForTyping(intent: PendingDraw): boolean {
+  return intent.type === 'text';
 }
 
 // A pen held in the hand rather than armed for one gesture: a whiteboard pen
@@ -217,6 +212,7 @@ export function dropsOnTap(intent: PendingDraw | null | undefined): intent is Pe
   return (
     intent.type !== 'freehand' &&
     intent.type !== 'polygon' &&
+    intent.type !== 'room-walls' &&
     intent.type !== 'path' &&
     intent.type !== 'fill'
   );
@@ -290,6 +286,8 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       return isMobile
         ? 'Tap to place points'
         : 'Click to place points, click the start to close, double-click to finish';
+    case 'room-walls':
+      return isMobile ? 'Tap to place corners' : 'Click to place corners, click the start to close';
   }
 }
 
@@ -381,7 +379,7 @@ export function drawIntentCursor(intent: PendingDraw): string {
       );
     }
     if (intent.variant === 'whiteboard') {
-      // The canvas draws the look chosen in the dock (useWhiteboardPenCursor);
+      // The canvas draws the pen's own look;
       // this is its default, on the light board.
       return penCursor(
         DEFAULT_PEN_CURSOR,
@@ -400,6 +398,12 @@ export function drawIntentCursor(intent: PendingDraw): string {
     // instrument", same as the palette button below.
     return drawCursorFromGlyph(
       `<path d="M14 22 L20 16 L23 19 L17 25 Z M20 16 L22 14 M14 22 L13 25" stroke="black" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none" />`,
+    );
+  }
+  if (intent.type === 'room-walls') {
+    // A floor plan's corner: two thick walls meeting, reads as "place a corner".
+    return drawCursorFromGlyph(
+      `<path d="M14 25 L14 15 L24 15" stroke="black" stroke-width="2.6" stroke-linejoin="miter" fill="none" /><circle cx="14" cy="15" r="1.4" fill="white" stroke="black" stroke-width="1" />`,
     );
   }
   if (intent.type === 'polygon') {

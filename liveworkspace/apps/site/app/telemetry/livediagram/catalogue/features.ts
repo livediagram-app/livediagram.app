@@ -574,7 +574,7 @@ export const MODE_METRICS: readonly Metric[] = SELECTION_MODES.map((mode) =>
     'Canvas',
     'Used',
     MODE_TITLES[mode] ?? mode,
-    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase()} mode switched on from the palette.`,
+    `The ${(MODE_TITLES[mode] ?? mode).toLowerCase().replace(/ mode$/, '')} mode switched on from the palette.`,
     { types: [mode] },
   ),
 );
@@ -748,14 +748,6 @@ export const ELEMENT_TOURS_OFFERED = opened(
   'Element Tours Offered',
   'An element tour offered beside a selected element, once per kind per visit. Since 25 October 2026, the Start Tour button in the footer showing it.',
   (t) => elementTourTokens('Offer').includes(t ?? ''),
-);
-
-// The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
-// the Visitors tab.
-export const POWER_USER_OFFERED = opened(
-  'Power User Mode Offered',
-  'The offer shown, after 20 editing days or 50 shortcuts on one device.',
-  (t) => t === 'PowerUserOffer',
 );
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads

@@ -10,7 +10,6 @@
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';
-import { REACTIONS, type Reaction } from '@liveworkspace/avatar/reaction-bursts';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -207,7 +206,46 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'bookshelf' ||
     kind === 'water-cooler' ||
     kind === 'coffee-machine' ||
-    kind === 'rug'
+    kind === 'rug' ||
+    // The bar and the garden (office.md): scenery and machines likewise; a pod and a stool keep theirs.
+    kind === 'bar' ||
+    kind === 'drinks-cabinet' ||
+    kind === 'drinks-fridge' ||
+    kind === 'outdoor-plant' ||
+    kind === 'tree' ||
+    kind === 'garden-path' ||
+    kind === 'grass' ||
+    kind === 'garden-fence' ||
+    // The social pieces (docs/specs/009-elements/social-pieces.md) have nothing to write on.
+    kind === 'notice-board' ||
+    kind === 'world-clock' ||
+    kind === 'jukebox' ||
+    kind === 'ping-pong-table' ||
+    kind === 'arcade-machine' ||
+    kind === 'fireplace' ||
+    kind === 'campfire' ||
+    kind === 'bench' ||
+    kind === 'picnic-table' ||
+    kind === 'hammock' ||
+    kind === 'garden-umbrella' ||
+    kind === 'fountain' ||
+    kind === 'pond' ||
+    kind === 'pool-table' ||
+    kind === 'foosball-table' ||
+    kind === 'dartboard' ||
+    kind === 'vending-machine' ||
+    kind === 'bean-bag' ||
+    kind === 'reading-nook' ||
+    // A door (docs/specs/009-elements/room-builder.md) is a doorway, with nothing to write on.
+    kind === 'door' ||
+    // The Directory (docs/specs/009-elements/directory.md) draws its own words; an Elevator keeps its name.
+    kind === 'directory' ||
+    // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): a sign's name is its room's.
+    kind === 'screen' ||
+    kind === 'room-sign' ||
+    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md) draw their own time.
+    kind === 'timer' ||
+    kind === 'stopwatch'
   );
 }
 
@@ -227,53 +265,6 @@ export function clampRating(value: number): number {
 // (@liveworkspace/model-core/progress-label), so the clamp-and-round can't drift.
 export { clampPercent } from '@liveworkspace/model-core/progress-label';
 
-// Reaction pads (docs/specs/009-elements/reaction-pad.md). The five reactions, their names and glyphs, are
-// @liveworkspace/avatar's: a walking character throws the same bursts (docs/specs/008-canvas/avatar-mode.md).
+// The five reactions a walking character throws (docs/specs/008-canvas/avatar-mode.md "Reactions"), their names and
+// glyphs, are @liveworkspace/avatar's.
 export * from '@liveworkspace/avatar/reaction-bursts';
-
-// Each reaction's colour, a pair of hues from one end of its glow to the other
-// (docs/specs/009-elements/reaction-pad.md "The look"). Fixed rather than the theme's: the reaction's
-// feeling is its identity. Shared by the canvas face and the export.
-export const REACTION_HUES: Record<Reaction, readonly [string, string]> = {
-  confetti: ['#fbbf24', '#fb7185'],
-  sparkles: ['#a78bfa', '#22d3ee'],
-  hearts: ['#f472b6', '#a855f7'],
-  applause: ['#fbbf24', '#fb923c'],
-  fireworks: ['#818cf8', '#e879f9'],
-};
-
-/** One line on what the reaction is FOR, for the menu tile. */
-export const REACTION_HINT: Record<Reaction, string> = {
-  confetti: 'A result worth celebrating',
-  sparkles: 'A good idea, nicely done',
-  hearts: 'Warmth for a person, not a result',
-  applause: 'Thanks for the talk or the demo',
-  fireworks: 'It shipped',
-};
-
-/**
- * The pad's own caption per reaction (docs/specs/009-elements/reaction-pad.md).
- *
- * The palette offers a tile per reaction, so a placed pad should already say
- * what pressing it does — "Celebrate" over a confetti pad, "Thanks" over an
- * applause one. Naming the ACT rather than repeating the glyph.
- */
-export const REACTION_PAD_LABEL: Record<Reaction, string> = {
-  confetti: 'Celebrate',
-  sparkles: 'Nice one',
-  hearts: 'Show some love',
-  applause: 'Thanks',
-  fireworks: 'It shipped',
-};
-
-export const REACTION_DEFAULT: Reaction = 'confetti';
-
-export function isReaction(value: unknown): value is Reaction {
-  return typeof value === 'string' && (REACTIONS as readonly string[]).includes(value);
-}
-
-/** A pad's reaction as it plays and draws: a stored one this build does not know (a newer build's, or a
- *  hand-edited file) falls back to the default, as the validator leaves cosmetic values for the renderer to read. */
-export function reactionOf(value: unknown): Reaction {
-  return isReaction(value) ? value : REACTION_DEFAULT;
-}

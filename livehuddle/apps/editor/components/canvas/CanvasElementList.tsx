@@ -1,11 +1,5 @@
 import { Fragment, memo, type ComponentProps } from 'react';
-import {
-  arrowLabelFontStack,
-  exportFontFamily,
-  isBoxed,
-  isVotableInVote,
-  type Element,
-} from '@livehuddle/document';
+import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livehuddle/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
@@ -42,8 +36,6 @@ export type BoxedShared = Omit<
   | 'isMultiSelected'
   | 'showHandles'
   | 'showAnchors'
-  | 'isoDepth'
-  | 'votableInVote'
   | 'layerOpacity'
   | 'remoteSelectors'
   | 'isEditing'
@@ -51,11 +43,6 @@ export type BoxedShared = Omit<
   | 'movable'
   | 'writable'
   | 'resizable'
-  | 'isVoteFocus'
-  | 'commentActions'
-  | 'actionActions'
-  | 'revealedForMe'
-  | 'reactionBurst'
   | 'fontFamily'
 >;
 
@@ -88,15 +75,10 @@ type CanvasElementListProps = Pick<
   | 'tabLocked'
   | 'readOnly'
   | 'shiftDupGhostIds'
-  | 'tabVote'
-  | 'tabLayers'
   | 'remoteSelectionsByElement'
   | 'canMove'
   | 'canWriteText'
   | 'canResize'
-  | 'voteReview'
-  | 'revealedIds'
-  | 'reactionBursts'
   | 'tabFont'
   | 'tabFinish'
 > & {
@@ -108,17 +90,11 @@ type CanvasElementListProps = Pick<
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
   arrowLabels: ArrowLabels;
-  commentActionsFor: ((id: string) => BoxedViewProp<'commentActions'>) | null;
-  actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
   // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
   stackedIds: ReadonlySet<string>;
 };
-
-type BoxedViewProp<K extends string> = K extends keyof Parameters<typeof SelectableBoxedView>[0]
-  ? Parameters<typeof SelectableBoxedView>[0][K]
-  : never;
 
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
@@ -136,17 +112,10 @@ export const CanvasElementList = memo(function CanvasElementList({
   tabLocked,
   readOnly,
   shiftDupGhostIds,
-  tabVote,
-  tabLayers,
   remoteSelectionsByElement,
   canMove,
   canWriteText,
   canResize,
-  voteReview,
-  commentActionsFor,
-  actionActionsFor,
-  revealedIds,
-  reactionBursts,
   tabFont,
   tabFinish,
   stackedIds,
@@ -157,7 +126,7 @@ export const CanvasElementList = memo(function CanvasElementList({
     // changing restyles this node and not the board beneath it.
     // Its parent holds every node a riding element's offset is written to (useLayerDragPreview).
     <div data-element-plane="" className="contents" ref={attachPlane}>
-      {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
+      {shownOrder.map(({ element: listed, layerOpacity }) => (
         <PreviewedElement
           key={listed.id}
           store={previewStore}
@@ -173,13 +142,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 <Fragment key={element.id}>
                   <svg
                     className="absolute inset-0 h-full w-full"
-                    // Tagged so isometric mode can lift arrows just off the base
-                    // plane (globals.css [data-iso] rule): an arrow's surface is
-                    // coplanar with the boxes it crosses under preserve-3d, and
-                    // coplanar layers z-fight — which is what made a FLOWING arrow
-                    // shimmer in isometric while a static one looked fine (the
-                    // animation repaints every frame, so the fight is visible
-                    // continuously rather than only while the camera orbits).
                     data-arrow-svg=""
                     // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
                     data-ride-id={element.id}
@@ -237,16 +199,9 @@ export const CanvasElementList = memo(function CanvasElementList({
                 editingId={editingId}
                 {...boxedShared}
                 element={element}
-                // Paint index, used only by isometric mode to stagger each element
-                // onto its own z-plane (globals.css --iso-z): coplanar layers
-                // z-fight under preserve-3d, which is the flicker.
-                isoDepth={isoDepth}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
                 stackGlide={stackedIds.has(element.id) && entry === undefined}
-                // Resolved once here, where both the vote and the tab's layers
-                // are in scope, rather than threading `layers` down to the
-                // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
-                votableInVote={isVotableInVote(element, tabVote, tabLayers)}
+
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}
                 remoteSelectors={
                   remoteSelectionsByElement.get(element.id) ?? EMPTY_REMOTE_SELECTORS
@@ -256,11 +211,7 @@ export const CanvasElementList = memo(function CanvasElementList({
                 movable={!readOnly || canMove?.(element) === true}
                 writable={!readOnly || canWriteText?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
-                isVoteFocus={voteReview?.focusId === element.id}
-                commentActions={commentActionsFor?.(element.id)}
-                actionActions={actionActionsFor?.(element.id)}
-                revealedForMe={revealedIds?.has(element.id)}
-                reactionBurst={reactionBursts?.get(element.id)}
+
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}
               />

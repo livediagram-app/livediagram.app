@@ -4,7 +4,7 @@ import {
   safeJson,
   writeLocalStorageSafe,
 } from '@liveworkspace/workbench/lib/local-storage-safe';
-import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
+import { withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Plan tour's pure parts (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md): its relaunch
@@ -28,12 +28,15 @@ export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
 export type BoardSheetTrack = Exclude<PlanTourTrack, 'dashboards'>;
 
 // The tracks taken (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists them, for Settings and
-// for which track the Start Tour button names first; `planTourSeen` counts both only for a power user (tourTrackSeen).
+// for which track the Start Tour button names first. The older single flag `planTourSeen` counts none: an answer given
+// to the single tour before it split stands for no track in particular, so each is offered once more. The one place it
+// meant "every track" was the retired Power user mode's preset, and that is folded into the list as the blob is read
+// (upgradeLegacyPreferences in @liveplanner/api-schema).
 export function planTrackSeen(
   prefs: UserPreferences | null | undefined,
   track: PlanTourTrack,
 ): boolean {
-  return tourTrackSeen(prefs, prefs?.planTourTracks, prefs?.planTourSeen, track);
+  return (prefs?.planTourTracks ?? []).includes(track);
 }
 
 /** The preferences with `tracks` answered. */

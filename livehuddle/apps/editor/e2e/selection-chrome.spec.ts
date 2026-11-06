@@ -1,6 +1,7 @@
 // docs/specs/008-canvas/canvas-performance.md "A selection change re-renders what it touches": the
 // selection chrome reads the selection store, and follows it through select, reselect, select-all,
-// a free arrow, delete and undo.
+// a free arrow, delete and undo. livehuddle draws no quick-connect pluses
+// (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect), so the resize grips stand for the chrome.
 import { expect, expectNoPageErrors, seedTab, startBlankDocument, test } from './fixtures';
 
 const square = (id: string, label: string, x: number, y: number) => ({
@@ -34,34 +35,35 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
   await startBlankDocument(page);
   await seedTab(page, board);
   const plus = page.getByRole('button', { name: 'Quick add and connect' });
+  const grip = page.getByRole('button', { name: /^Resize/ });
   const box = (id: string) => page.locator(`[data-element-id="${id}"]`).first();
   const centre = async (id: string) => {
     const b = (await box(id).boundingBox())!;
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
 
-  // Nothing selected: no pluses, no frame, no union box.
-  await expect(plus).toHaveCount(0);
+  // Nothing selected: no grips, no frame, no union box.
+  await expect(grip).toHaveCount(0);
   await shot(page, '0-none');
 
-  // A single box: pluses and its resize grips.
+  // A single box: its resize grips, and never a plus.
   const a = await centre('a');
   await page.mouse.click(a.x, a.y);
-  await expect(plus.first()).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Resize/ }).first()).toBeVisible();
+  await expect(grip.first()).toBeVisible();
+  await expect(plus).toHaveCount(0);
   await shot(page, '1-single');
 
-  // Another box: the pluses follow it.
+  // Another box: the grips follow it.
   const b = await centre('b');
   await page.mouse.click(b.x, b.y);
-  await expect(plus.first()).toBeVisible();
-  const plusBox = (await plus.first().boundingBox())!;
-  expect(Math.abs(plusBox.x - b.x)).toBeLessThan(200);
+  await expect(grip.first()).toBeVisible();
+  const gripBox = (await grip.first().boundingBox())!;
+  expect(Math.abs(gripBox.x - b.x)).toBeLessThan(200);
   await shot(page, '2-reselect');
 
   // Escape: everything goes.
   await page.keyboard.press('Escape');
-  await expect(plus).toHaveCount(0);
+  await expect(grip).toHaveCount(0);
 
   // Select all: the union box and the multi toolbar; no pluses.
   await page.keyboard.press('ControlOrMeta+a');
@@ -85,18 +87,18 @@ test('the selection chrome follows the selection', async ({ page, pageErrors }) 
   await page.mouse.click(a.x, a.y);
   await page.keyboard.press('Delete');
   await expect(box('a')).toHaveCount(0);
-  await expect(plus).toHaveCount(0);
+  await expect(grip).toHaveCount(0);
   await page.keyboard.press('ControlOrMeta+z');
   await expect(box('a')).toHaveCount(1);
 
   // A tab switch leaves nothing selected, here or back on the first tab.
   await page.mouse.click(b.x, b.y);
-  await expect(plus.first()).toBeVisible();
+  await expect(grip.first()).toBeVisible();
   await page.locator('[data-tour-id="add-tab"]').click();
-  await expect(plus).toHaveCount(0);
+  await expect(grip).toHaveCount(0);
   await page.locator('[data-tab-key]', { hasText: /^Tab 1$/ }).click();
   await expect(box('b')).toBeVisible();
-  await expect(plus).toHaveCount(0);
+  await expect(grip).toHaveCount(0);
   await expect(page.getByTestId('arrow-move-frame')).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });

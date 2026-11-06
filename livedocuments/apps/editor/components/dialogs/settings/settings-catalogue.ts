@@ -22,7 +22,6 @@ import {
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
-import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { PAGES_TOUR_KINDS, pagesKindSeen } from '@/lib/pages-tour';
 import type { PageKind } from '@livedocuments/document';
 import {
@@ -99,8 +98,7 @@ function emailSwitch(
 // the Palette / Layers / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
-// popovers held, and the Slide Deck popover stays because its contents are
-// deck state rather than user preferences.
+// popovers held.
 //
 // This is a flat catalogue, so it stays one file however long it gets.
 
@@ -109,13 +107,11 @@ function emailSwitch(
 // nothing can send, AND a signed-in account, or there is no address to send
 // to. A guest flipping them would be writing preferences that can never
 // apply, so they are absent rather than dead.
-// Power-user-only rows (docs/specs/007-editor/power-user-mode.md) need the mode on; absent otherwise.
 // `preferences` (the live values) lets a nested row follow its parent switch
 // for the same reason: a setting for a panel that is off has nothing to act on.
 type SettingsRowContext = {
   emailEnabled: boolean;
   signedIn: boolean;
-  powerUserMode?: boolean;
   preferences?: UserPreferences;
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
   workbench?: boolean;
@@ -148,13 +144,13 @@ type RowBase = {
   // description: a test fails if a row that needs them has none.
   keywords?: string;
   // Sub-heading this row sits under, within its category. A category holding
-  // several unrelated clusters (Editor's Power User rows) reads as one long undifferentiated list without them. Rows
+  // several unrelated clusters (Editor's Canvas and Mouse rows) reads as one long undifferentiated list without them. Rows
   // sharing a section must be ADJACENT; the pane groups consecutive runs, so
   // a section cannot be split and silently re-headed further down.
   section?: string;
   // The key of a row in the same category this one belongs to: it renders
   // directly beneath that row, indented, in a group named after it
-  // (docs/specs/007-editor/power-user-mode.md#in-settings).
+  // (docs/specs/007-editor/user-preferences.md).
   parent?: string;
   // A setting with no effect on a phone-sized viewport, holding the note that
   // says so there. The row stays visible (so Settings reads the same on every
@@ -277,10 +273,6 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
 
-// What power user mode's preset set, as a live readout: each line's value is
-// its own row's, changed in that row (docs/specs/007-editor/power-user-mode.md#in-settings).
-export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
-
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
   | SettingsToggleGroupRowSpec
@@ -296,8 +288,7 @@ export type SettingsRowSpec =
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
   | SettingsTrashRowSpec
-  | SettingsDefaultFoldersRowSpec
-  | SettingsPresetSummaryRowSpec;
+  | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
   id: SettingsCategoryId;
@@ -419,8 +410,8 @@ const ELEMENT_TOURS_SECTION = 'Show Me';
 
 // One page kind's track of the Pages tour (lib/tour-tracks.ts), as its own row nested under Pages Tours, the switch
 // over every kind (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on
-// forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag (set by Power user
-// mode) is folded into the answered list first, so turning one track back on leaves the others as they were.
+// forgets its answer. Each track is named for itself ("Slides Tour"). The tour's single seen flag is cleared, so only the
+// answered list speaks for the tracks.
 function pagesTourTrackSwitch(
   kind: PageKind,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
@@ -579,46 +570,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.middleMousePan !== false,
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
-      },
-      {
-        // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
-        // recommended values once; switching off restores the untouched ones.
-        kind: 'toggle',
-        key: 'powerUserMode',
-        keywords: 'power user expert advanced pro minimal chrome fewer labels declutter',
-        section: 'Power User',
-        label: 'Power User Mode',
-        description:
-          'Applies recommended settings for experienced users and hides the tours. Switching it off puts back whatever you did not change since.',
-        helpArticle: 'powerUserMode',
-        read: isPowerUserMode,
-        write: (p, v) => setPowerUserMode(p, v).prefs,
-        event: { category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'minimalChrome',
-        keywords: 'minimal chrome hide labels captions titles hints icons only declutter',
-        section: 'Power User',
-        label: 'Minimal Chrome',
-        description:
-          'Hides captions, panel titles and hints. Every control stays, and shows its name on hover.',
-        helpArticle: 'powerUserMode',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
-        read: (p) => p.minimalChrome !== false,
-        write: (p, v) => ({ ...p, minimalChrome: v }),
-        event: { category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' },
-      },
-      {
-        kind: 'presetSummary',
-        key: 'powerUserPreset',
-        keywords: 'power user preset recommended defaults restore',
-        section: 'Power User',
-        label: 'Set By Power User Mode',
-        description: 'Change any of them in its own row.',
-        parent: 'powerUserMode',
-        available: (ctx) => ctx.powerUserMode === true,
       },
     ],
   },
@@ -1179,13 +1130,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'stack row column grid layout container reflow tour',
         description: 'With a stack selected.',
         helpArticle: 'stacks',
-      }),
-      elementTourSwitch('tab-window', {
-        label: 'Tab Window',
-        event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
-        keywords: 'tab window live slide embed another tab tour',
-        description: 'With a tab window selected.',
-        helpArticle: 'tabWindows',
       }),
     ],
   },

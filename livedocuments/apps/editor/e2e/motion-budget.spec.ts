@@ -4,6 +4,7 @@ import {
   test,
   dismissQuickTour,
   expectNoPageErrors,
+  onPage,
   paletteTile,
   serverNewUrl,
 } from './fixtures';
@@ -99,7 +100,8 @@ async function toggle(page: Page, name: string): Promise<void> {
 
 async function tourTheChrome(page: Page): Promise<void> {
   await (await paletteTile(page, 'Add Square')).click();
-  await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
+  // On the page, framed beside the Contents sidebar (docs/specs/007-editor/pages-mode.md "Contents").
+  await page.locator('[data-canvas-a11y-root]').click({ position: await onPage(page, 0.5, 0.5) });
   const square = page.getByRole('img', { name: 'Square', exact: true });
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);

@@ -4,36 +4,27 @@
 // An element change otherwise leaves a browser as an `el` `update` op that
 // replaces the whole element on every receiver (docs/specs/012-collaboration/realtime-conflict-resolution.md). That is fine for an
 // author editing a shape, which the selection lock makes a one-writer affair,
-// and wrong for a done check the whole room presses in the same second: each
-// receiver took the other's copy, and one mark vanished. It is the dot-vote's
-// bug (docs/specs/012-collaboration/session-tools.md) on element fields, fixed the same way. A delta names one
-// person's answer, one idea, one tick or one comment, so concurrent deltas
-// commute and every peer lands on the same element.
+// and wrong for a checklist the whole room ticks in the same second: each
+// receiver took the other's copy, and one tick vanished. A delta names one
+// tick or one comment, so concurrent deltas commute and every peer lands on the same element.
 //
 // Three pieces, all pure:
 //   - `applyElementDelta`: the one place a delta changes an element, run by
 //     the sender and by every receiver, so they cannot disagree.
 //   - `mergeIncomingElement`: a whole-element update keeps the receiver's copy
-//     of these fields, because every change to them arrived as a delta. Only a
-//     new round (a clear) replaces them.
+//     of these fields, because every change to them arrived as a delta.
 //   - `elementChangeIsDeltaOnly`: the sender skips the whole-element update
 //     when nothing else changed, since the delta already said it.
 //
-// A LEAF module: runtime imports come only from other leaves, for the same
-// module-cycle reason as responses.ts.
+// A LEAF module: runtime imports come only from other leaves, so the index <-> factories module cycle never reaches
+// it.
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
-import {
-  RESPONSES_MAX,
-  RESPONSE_VALUE_MAX,
-  clearResponse,
-  setResponse,
-  type ParticipantResponse,
-} from './responses';
-import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, alignedIdeaCardIds, isIdeaCardId } from './collab-shapes';
+import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
   commentWithReactions,
@@ -43,25 +34,12 @@ import {
   type CommentReactionId,
 } from '@liveworkspace/model-core/comment-reactions';
 
-// Bound on the round id, which is otherwise opaque.
-export const COLLAB_ROUND_MAX = 64;
 // Bounds on a comment arriving in a delta. Generous: the editor's own limits
 // are tighter, this only stops a hand-crafted frame from bloating a peer.
 const COMMENT_MAX_TEXT = 5000;
 export const COMMENTS_MAX = 500;
 
 export type ElementDelta =
-  // Cast (value) or withdraw (null) ONE participant's answer (docs/specs/012-collaboration/participant-responses.md).
-  | {
-      kind: 'response';
-      participantId: string;
-      value: string | null;
-      at: number;
-      round?: string;
-    }
-  // Drop one anonymous idea into the box (docs/specs/012-collaboration/idea-box.md). No author, still: `id`
-  // is the card's own random id, which lets its poster take it back after losing the race for the last card.
-  | { kind: 'idea'; text: string; round?: string; id?: string }
   // Tick or untick one checklist row (docs/specs/009-elements/checklist.md). Rows have no ids, so the row
   // is named by its index AND its text: a peer who reordered or retitled the
   // rows meanwhile gets the row with that text, or nothing.
@@ -82,11 +60,15 @@ export type ElementDelta =
       by: string;
       name: string;
       on: boolean;
-    };
-
-function sameRound(el: ShapeElement, round: string | undefined): boolean {
-  return (el.collabRound ?? undefined) === (round ?? undefined);
-}
+    }
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): pin one, or take one down by id.
+  // An unpin names the note's signer too, and removes the note only while that is still its `by`: the room lets a
+  // Participant send only its own key there, so it can unpin only what it pinned.
+  | { kind: 'notice-pin'; note: NoticeNote }
+  | { kind: 'notice-unpin'; noteId: string; by: string }
+  // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "How a change travels"): the whole
+  // new state, so the last press in the room's order wins on every screen. Names nobody: anyone who takes part runs it.
+  | { kind: 'piece-timer'; state: PieceTimer };
 
 export function isComment(value: unknown): value is Comment {
   if (!value || typeof value !== 'object') return false;
@@ -116,50 +98,26 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
   return (thread ? { ...rest, commentThread: thread } : rest) as Element;
 }
 
+// A notice board that takes note changes: a locked board refuses them, on every screen alike.
+function openNoticeBoard(el: Element): ShapeElement | null {
+  return el.type === 'shape' && el.shape === 'notice-board' && el.locked !== true ? el : null;
+}
+
+// The board with its notes set, the field dropped when none are left.
+function withNotes(el: ShapeElement, notes: NoticeNote[]): ShapeElement {
+  const { noticeNotes: _drop, ...rest } = el;
+  return notes.length > 0 ? { ...rest, noticeNotes: notes } : rest;
+}
+
 const holdsComment = (el: Element, commentId: string): boolean =>
   !!threadOf(el)?.comments?.some((c) => c.id === commentId);
 
-// Apply one delta. Returns the SAME element when nothing changes (a delta for
-// another round, a withdraw of an answer that isn't there, a malformed frame),
+// Apply one delta. Returns the SAME element when nothing changes (a tick that is
+// already so, a comment that isn't there, a malformed frame),
 // so callers keep identity and the autosave sees no phantom change. Validated
 // here because a delta is the one element write that skips `validate.ts`.
 export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   switch (delta.kind) {
-    case 'response': {
-      if (el.type !== 'shape' || !sameRound(el, delta.round)) return el;
-      if (typeof delta.participantId !== 'string') return el;
-      if (delta.value === null) {
-        const had = (el.responses ?? []).some((r) => r.participantId === delta.participantId);
-        return had ? { ...el, responses: clearResponse(el.responses, delta.participantId) } : el;
-      }
-      if (typeof delta.value !== 'string' || delta.value.length > RESPONSE_VALUE_MAX) return el;
-      if (typeof delta.at !== 'number' || !Number.isFinite(delta.at)) return el;
-      const current = el.responses ?? [];
-      const mine = current.find((r) => r.participantId === delta.participantId);
-      if (mine && mine.value === delta.value) return el;
-      if (!mine && current.length >= RESPONSES_MAX) return el;
-      return {
-        ...el,
-        responses: setResponse(current, delta.participantId, delta.value, delta.at),
-      };
-    }
-    case 'idea': {
-      if (el.type !== 'shape' || !sameRound(el, delta.round)) return el;
-      if (typeof delta.text !== 'string') return el;
-      const text = delta.text.trim();
-      if (!text || text.length > IDEA_MAX_TEXT) return el;
-      const cards = el.ideaCards ?? [];
-      const id = isIdeaCardId(delta.id) ? delta.id : null;
-      // A card this box already holds (a replay of its delta) is a no-op.
-      if (id && el.ideaCardIds?.includes(id)) return el;
-      if (cards.length >= IDEA_MAX_CARDS) return el;
-      if (!id && !el.ideaCardIds) return { ...el, ideaCards: [...cards, text] };
-      return {
-        ...el,
-        ideaCards: [...cards, text],
-        ideaCardIds: [...alignedIdeaCardIds(el), id ?? ''],
-      };
-    }
     case 'check': {
       if (el.type !== 'shape' || !el.checklistItems) return el;
       const items = el.checklistItems;
@@ -231,45 +189,37 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       });
       return changed ? withThread(el, { ...thread, comments }) : el;
     }
+    case 'notice-pin': {
+      const board = openNoticeBoard(el);
+      if (!board || !isNoticeNote(delta.note)) return el;
+      const notes = board.noticeNotes ?? [];
+      // A replay, or a board already full: the note does not land (two pins racing for the last place settle in
+      // the room's order).
+      if (notes.length >= NOTES_MAX || notes.some((n) => n.id === delta.note.id)) return el;
+      return withNotes(board, [...notes, delta.note]);
+    }
+    case 'notice-unpin': {
+      const board = openNoticeBoard(el);
+      if (!board || typeof delta.noteId !== 'string' || typeof delta.by !== 'string') return el;
+      const notes = board.noticeNotes ?? [];
+      const at = notes.findIndex((n) => n.id === delta.noteId && n.by === delta.by);
+      if (at === -1) return el;
+      return withNotes(
+        board,
+        notes.filter((_, i) => i !== at),
+      );
+    }
+    case 'piece-timer': {
+      if (el.type !== 'shape' || !isTimerPieceShape(el.shape)) return el;
+      // Locked or not: a lock fixes the piece in place, it does not freeze its clock.
+      if (!isPieceTimer(delta.state, el.shape)) return el;
+      if (el.pieceTimer && samePieceTimer(el.pieceTimer, delta.state)) return el;
+      const { running, startedAt, accumulatedMs, durationMs } = delta.state;
+      return { ...el, pieceTimer: { running, startedAt, accumulatedMs, durationMs } };
+    }
     default:
       return el;
   }
-}
-
-// The box without the card of this id (both lists), or the same element when it holds no such card.
-export function withoutIdeaCard(el: Element, id: string): Element {
-  if (el.type !== 'shape' || !id || !el.ideaCardIds) return el;
-  const ids = alignedIdeaCardIds(el);
-  const at = ids.indexOf(id);
-  if (at === -1) return el;
-  return {
-    ...el,
-    ideaCards: (el.ideaCards ?? []).filter((_, i) => i !== at),
-    ideaCardIds: ids.filter((_, i) => i !== at),
-  };
-}
-
-// A peer's delta, applied by a browser that may have its own idea posts to this box still waiting for the
-// room's answer (docs/specs/012-collaboration/idea-box.md "Racing for the last card"). A peer's card that
-// reaches a FULL box while one of `pending` (this browser's own unanswered card ids, oldest first) is in it was
-// numbered by the room before that post: so the newest such card comes out and the peer's goes in, and the box
-// ends as every other copy has it. Anything else applies as `applyElementDelta` does, `yielded` null.
-export function yieldIdeaToPeer(
-  el: Element,
-  delta: ElementDelta,
-  pending: readonly string[],
-): { el: Element; yielded: string | null } {
-  const plain = { el: applyElementDelta(el, delta), yielded: null };
-  if (delta.kind !== 'idea' || el.type !== 'shape' || pending.length === 0) return plain;
-  if (!sameRound(el, delta.round) || typeof delta.text !== 'string') return plain;
-  const text = delta.text.trim();
-  if (!text || text.length > IDEA_MAX_TEXT) return plain;
-  if ((el.ideaCards ?? []).length < IDEA_MAX_CARDS) return plain;
-  if (isIdeaCardId(delta.id) && el.ideaCardIds?.includes(delta.id)) return plain;
-  const ids = el.ideaCardIds ?? [];
-  const yielded = [...pending].reverse().find((id) => ids.includes(id));
-  if (!yielded) return plain;
-  return { el: applyElementDelta(withoutIdeaCard(el, yielded), delta), yielded };
 }
 
 // Carry our `done` flags onto an incoming list of checklist rows, matched by
@@ -291,8 +241,7 @@ export function keepLocalTicks(local: ChecklistItem[], incoming: ChecklistItem[]
 // `tab` op), folded into ours. Everything the peer changed is taken, EXCEPT the
 // delta-carried fields: those reached us one delta at a time and ours is
 // already the merged copy, where theirs is a snapshot from their last save that
-// can be missing somebody's answer. A different round means the peer cleared
-// or reset, and then their (empty) answers and ideas are the new truth.
+// can be missing somebody's tick or comment.
 export function mergeIncomingElement(local: Element, incoming: Element): Element {
   if (local.type !== incoming.type) return incoming;
   let next = incoming;
@@ -301,42 +250,38 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
   if (localThread !== incomingThread) next = withThread(next, localThread);
   if (local.type === 'shape' && next.type === 'shape') {
     const shape: ShapeElement = next;
-    let patched = shape;
-    if ((local.collabRound ?? undefined) === (shape.collabRound ?? undefined)) {
-      patched = keepField(patched, 'responses', local.responses);
-      patched = keepField(patched, 'ideaCards', local.ideaCards);
-      patched = keepField(patched, 'ideaCardIds', local.ideaCardIds);
-    }
     if (local.checklistItems && shape.checklistItems) {
       const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
-      if (items !== shape.checklistItems) patched = { ...patched, checklistItems: items };
+      if (items !== shape.checklistItems) next = { ...shape, checklistItems: items };
     }
-    next = patched;
+    // A notice board's notes are ours whole: every pin and unpin reached us as a delta, so a peer's update (an
+    // Editor moving the board) never carries its older list over somebody's new note.
+    if (local.noticeNotes !== shape.noticeNotes) {
+      next = local.noticeNotes ? { ...next, noticeNotes: local.noticeNotes } : withoutNotes(next);
+    }
+    // A Timer's clock likewise: every press reached us as a delta, so a peer moving the piece never stops it.
+    if (local.pieceTimer !== next.pieceTimer) {
+      next = local.pieceTimer ? { ...next, pieceTimer: local.pieceTimer } : withoutPieceTimer(next);
+    }
   }
   return next;
 }
 
-function keepField<K extends 'responses' | 'ideaCards' | 'ideaCardIds'>(
-  el: ShapeElement,
-  key: K,
-  value: ShapeElement[K],
-): ShapeElement {
-  if (el[key] === value) return el;
-  const { [key]: _drop, ...rest } = el;
-  return (value === undefined ? rest : { ...rest, [key]: value }) as ShapeElement;
+function withoutPieceTimer(el: ShapeElement): ShapeElement {
+  const { pieceTimer: _drop, ...rest } = el;
+  return rest;
+}
+
+function withoutNotes(el: ShapeElement): ShapeElement {
+  const { noticeNotes: _drop, ...rest } = el;
+  return rest;
 }
 
 // Everything about an element EXCEPT what deltas carry, for comparing.
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const {
-    responses: _r,
-    ideaCards: _i,
-    ideaCardIds: _ii,
-    checklistItems,
-    ...shape
-  } = rest as ShapeElement;
+  const { checklistItems, noticeNotes: _n, pieceTimer: _p, ...shape } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;
@@ -356,24 +301,4 @@ export function checklistDeltaFor(el: Element, index: number): ElementDelta | nu
   const item = el.checklistItems?.[index];
   if (!item) return null;
   return { kind: 'check', index, text: item.text, done: !item.done };
-}
-
-// The response a delta would record, for a sender deciding what to send. A
-// press on your own answer withdraws it (docs/specs/012-collaboration/participant-responses.md).
-export function responseDeltaFor(
-  el: ShapeElement,
-  participantId: string,
-  value: string,
-  at: number,
-): ElementDelta {
-  const already = (el.responses ?? []).find(
-    (r: ParticipantResponse) => r.participantId === participantId,
-  );
-  return {
-    kind: 'response',
-    participantId,
-    value: already?.value === value ? null : value,
-    at,
-    ...(el.collabRound ? { round: el.collabRound } : {}),
-  };
 }

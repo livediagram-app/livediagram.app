@@ -194,7 +194,7 @@ export function TeamCard({
             <button
               type="button"
               onClick={() => setAsking({ kind: 'link' })}
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+              className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
             >
               <LinkIcon size={12} />
               Invite by Link
@@ -207,7 +207,7 @@ export function TeamCard({
               rel="noreferrer noopener"
               aria-label="Help: team roles and invites"
               title="Help"
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              className="relative touch-target-y inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
             >
               ?
             </a>

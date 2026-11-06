@@ -4,12 +4,14 @@
 
 import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@liveplanner/ui';
 import type { OfflineProjectRecord } from './offline-store';
+import { APP_ITEMS } from '@liveworkspace/sites';
 
-const DB_NAME = 'liveplanner-offline';
+// The names are the registry's, which the Explorer page deletes a This Browser item by.
+const DB_NAME = APP_ITEMS.liveplanner.offlineStore.db;
 // Version 2, the first liveplanner opened (docs/specs/006-project/offline-mode.md). Never lowered: a browser that
 // holds version 2 refuses an open that asks for less.
 const DB_VERSION = 2;
-const STORE = 'projects';
+const STORE = APP_ITEMS.liveplanner.offlineStore.store;
 
 // What a read-modify-write gets: the stored record (undefined when there is none), and what it
 // answers: the record to store, 'delete' to remove it, or undefined to write nothing. Synchronous, because IndexedDB

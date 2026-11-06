@@ -1,6 +1,6 @@
 # Per-participant responses
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/participant-responses.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/participant-responses.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 Status: **implemented**.
 
@@ -39,7 +39,7 @@ and the id of who cast it (see below; it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/document/src/responses.ts`: a leaf module (types
+Helpers live in `../livediagram/packages/document/src/responses.ts`: a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id
@@ -149,22 +149,22 @@ the distinction comes from **form**: a folded corner, a punched margin, a torn
 edge, a rotated stamp, which survives any hue, any theme, and light or dark
 mode, none of which a per-kind colour would.
 
-| Element         | Object             | What draws it                                                                                                        |
-| --------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Done check      | (moved on)         | none: a progress ring and two rosters ([The Done check](done-check.md#reading-the-card))                             |
-| Idea box        | (moved on, below)  | none: rebuilt on the Q&A board's look ([Idea box](idea-box.md#the-look))                                             |
-| Estimate        | (moved on)         | none: cards to pick, face down then face up ([Estimate card](estimate-card.md#the-look))                             |
-| Temperature     | (moved on)         | none: faces, bars and a mood meter ([Temperature check](temperature-check.md#the-face))                              |
-| Agenda          | (moved on)         | none: a run-of-show stepper with a live countdown ([Agenda](agenda.md#the-face))                                     |
-| Decision record | (moved on)         | none: a status badge and glow, drivers as reasons ([Decision record](decision-record.md#the-face))                   |
-| Roll call       | (moved on)         | none: a count, an avatar stack and attendee chips ([Roll call](roll-call.md#the-face))                               |
-| Comment panel   | a quoted remark    | none (the left-edge rail it had read as a stray bar and went)                                                        |
-| Picker          | a reel in a window | shaded at the lip, clear in the middle                                                                               |
-| Timer           | a dial             | minute ticks along the edge you read                                                                                 |
-| Session button  | a tally sheet      | five-bar gate marks (not on a timer)                                                                                 |
-| Reveal zone     | (moved on)         | none: an accent-lit cover with a lock ([Reveal zone](../009-elements/reveal-zone.md#the-look))                       |
-| Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../009-elements/reaction-pad.md#the-look)) |
-| Mode button     | a keycap           | lit top, shaded skirt, a drop below it                                                                               |
+| Element         | Object             | What draws it                                                                                                                                        |
+| --------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done check      | (moved on)         | none: a progress ring and two rosters ([The Done check](done-check.md#reading-the-card))                                                             |
+| Idea box        | (moved on, below)  | none: rebuilt on the Q&A board's look ([Idea box](idea-box.md#the-look))                                                                             |
+| Estimate        | (moved on)         | none: cards to pick, face down then face up ([Estimate card](estimate-card.md#the-look))                                                             |
+| Temperature     | (moved on)         | none: faces, bars and a mood meter ([Temperature check](temperature-check.md#the-face))                                                              |
+| Agenda          | (moved on)         | none: a run-of-show stepper with a live countdown ([Agenda](agenda.md#the-face))                                                                     |
+| Decision record | (moved on)         | none: a status badge and glow, drivers as reasons ([Decision record](decision-record.md#the-face))                                                   |
+| Roll call       | (moved on)         | none: a count, an avatar stack and attendee chips ([Roll call](roll-call.md#the-face))                                                               |
+| Comment panel   | a quoted remark    | none (the left-edge rail it had read as a stray bar and went)                                                                                        |
+| Picker          | a reel in a window | shaded at the lip, clear in the middle                                                                                                               |
+| Timer           | a dial             | minute ticks along the edge you read                                                                                                                 |
+| Session button  | a tally sheet      | five-bar gate marks (not on a timer)                                                                                                                 |
+| Reveal zone     | (moved on)         | none: an accent-lit cover with a lock ([Reveal zone](../009-elements/reveal-zone.md#the-look))                                                       |
+| Reaction pad    | (moved on)         | none: a glow and a spotlight in the reaction's colour ([The Reaction Pad](../../../../livediagram/docs/specs/009-elements/reaction-pad.md#the-look)) |
+| Mode button     | a keycap           | lit top, shaded skirt, a drop below it                                                                                                               |
 
 **The kit is being retired, one element at a time.** The [Q&A board](qa-board.md) set a newer
 direction: a flat card lit by the tab theme's accent, rounded rows, a composer at the foot, and

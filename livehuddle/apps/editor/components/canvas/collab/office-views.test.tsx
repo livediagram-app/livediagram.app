@@ -5,10 +5,12 @@ import {
   createShape,
   OFFICE_TONES,
   ROOM_DOOR_WIDTH,
+  STAGE_FRONT,
   type ShapeElement,
 } from '@livehuddle/document';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { RoomView } from './RoomView';
+import { StageView } from './StageView';
 
 afterEach(cleanup);
 
@@ -17,7 +19,7 @@ const shape = (kind: Parameters<typeof createShape>[0], over: Partial<ShapeEleme
 
 // docs/specs/009-elements/office.md
 describe('the office views', () => {
-  it('draws every piece but the room from the furniture table', () => {
+  it('draws every piece but the room and the stage from the furniture table', () => {
     for (const kind of [
       'meeting-table',
       'plant',
@@ -34,6 +36,7 @@ describe('the office views', () => {
       unmount();
     }
     expect(isFurnitureViewShape('room')).toBe(false);
+    expect(isFurnitureViewShape('stage')).toBe(false);
   });
 
   it('keeps a plant green whatever the theme', () => {
@@ -50,16 +53,16 @@ describe('the office views', () => {
     expect(container.innerHTML).toContain('#bbf7d0');
   });
 
-  it('names who sits at a meeting table, without a ring round one chair', () => {
+  it('names who sits at a meeting table and rings the one chair they hold', () => {
     const { container, getByText } = render(
       <FurnitureView
         element={shape('meeting-table')}
         stroke="#64748b"
-        sitters={[{ name: 'Sam', color: '#8b5cf6' }]}
+        sitters={[{ name: 'Sam', color: '#8b5cf6', seat: 4 }]}
       />,
     );
     expect(getByText('Sam')).toBeTruthy();
-    expect(container.querySelector('ellipse[stroke="#8b5cf6"]')).toBeNull();
+    expect(container.querySelectorAll('ellipse[stroke="#8b5cf6"]')).toHaveLength(1);
   });
 
   it('draws a room at its own size, with a gap in the wall its doorway is in', () => {
@@ -76,5 +79,25 @@ describe('the office views', () => {
       Number(backTops[1]!.getAttribute('x')) - Number(backTops[0]!.getAttribute('width')),
     ).toBe(ROOM_DOOR_WIDTH);
     expect(svg.getAttribute('aria-label')).toBe('Room, Room');
+  });
+
+  // docs/specs/009-elements/office.md "Stage".
+  it('draws a stage at its own size: its top in its fill, planks, a shaded front edge and a plate', () => {
+    const stage = shape('stage', { width: 500, height: 150 });
+    const { container } = render(<StageView element={stage} stroke="#64748b" floor="#fbf7ef" />);
+    const svg = container.querySelector('svg')!;
+    expect(svg.getAttribute('viewBox')).toBe('0 0 500 150');
+    expect(svg.querySelectorAll('path')).toHaveLength(2);
+    const face = [...svg.querySelectorAll('rect')].filter(
+      (r) => r.getAttribute('y') === String(150 - STAGE_FRONT),
+    );
+    // The face and its shade.
+    expect(face).toHaveLength(2);
+    expect(svg.querySelector('rect')!.getAttribute('fill')).toBe('#fbf7ef');
+    expect(svg.getAttribute('aria-label')).toBe('Stage, Stage');
+    const unnamed = render(
+      <StageView element={{ ...stage, label: '' }} stroke="#64748b" floor="#fbf7ef" />,
+    );
+    expect(unnamed.container.querySelector('svg')!.getAttribute('aria-label')).toBe('Stage');
   });
 });

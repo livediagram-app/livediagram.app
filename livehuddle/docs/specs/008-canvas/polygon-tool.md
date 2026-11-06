@@ -6,7 +6,7 @@ A click-to-place vertex tool that fills the geometry gap between the Pencil (fre
 
 ## Model
 
-A committed polygon **is a `FreehandElement`**: normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, layers, theming via `strokeColor`/`fillColor`, history, sync, export, eraser). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
+A committed polygon **is a `FreehandElement`**: normalised `points`, `closed` flag, everything inherited (selection, resize, rotate, lock, theming via `strokeColor`/`fillColor`, history, sync, export, eraser). No new element type and no new fields: a polygon is just a freehand whose points happen to be sparse straight-line vertices.
 
 One rendering nuance: freehand paths are smoothed through `catmullRomToBezierPath`, which would round off deliberate corners. Both renderers (canvas `FreehandSvg`, headless `svgFreehandShape`) therefore render **straight `M/L` segments when the element has ≤ some vertex-count heuristic?** No: heuristics drift. Instead the element carries one new optional field:
 

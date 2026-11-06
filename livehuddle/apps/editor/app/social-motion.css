@@ -1,0 +1,221 @@
+/* The social pieces' loops (docs/specs/009-elements/social-pieces.md): a ping-pong rally, the arcade's screen, a fire's
+   flicker, the fountain's water, the jukebox's lights and a pond's ripple. Transform and opacity only, so the
+   compositor runs them; every one holds still under reduced motion, the OS setting or the preference. */
+
+.lh-social-anim {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* The rally: across the table and back, bouncing on each half. */
+.lh-rally-x {
+  transform-origin: 50% 50%;
+  animation: lh-rally-x 1.2s ease-in-out infinite alternate;
+}
+.lh-rally-y {
+  transform-origin: 50% 50%;
+  animation: lh-rally-y 0.6s ease-in-out infinite;
+}
+@keyframes lh-rally-x {
+  from {
+    transform: translateX(-46px);
+  }
+  to {
+    transform: translateX(46px);
+  }
+}
+@keyframes lh-rally-y {
+  0%,
+  100% {
+    transform: translateY(6px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* The arcade: a slow shimmer, the invader hopping, a blinking cursor. */
+.lh-arcade-glow {
+  animation: lh-arcade-glow 2.4s ease-in-out infinite alternate;
+}
+@keyframes lh-arcade-glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+.lh-arcade-hop {
+  animation: lh-arcade-hop 1.6s steps(2, end) infinite;
+}
+@keyframes lh-arcade-hop {
+  from {
+    transform: translateX(-3px);
+  }
+  to {
+    transform: translateX(3px);
+  }
+}
+.lh-blink {
+  animation: lh-blink 1s steps(1, end) infinite;
+}
+@keyframes lh-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* A fire: two flame layers out of step, and a glow breathing on the ground. */
+.lh-flicker-a {
+  animation: lh-flicker 0.9s ease-in-out infinite alternate;
+}
+.lh-flicker-b {
+  animation: lh-flicker 0.65s ease-in-out -0.3s infinite alternate-reverse;
+}
+@keyframes lh-flicker {
+  from {
+    transform: scale(0.9, 0.82);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.04, 1.1);
+    opacity: 0.95;
+  }
+}
+.lh-glow {
+  transform-origin: 50% 50%;
+  animation: lh-glow 2.2s ease-in-out infinite alternate;
+}
+@keyframes lh-glow {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 0.26;
+  }
+}
+
+/* The fountain: spray rising and falling, a shimmer drifting across the basin. */
+.lh-spray {
+  transform-origin: 50% 0%;
+  animation: lh-spray 1.8s ease-in-out infinite alternate;
+}
+@keyframes lh-spray {
+  from {
+    transform: scaleY(0.9);
+    opacity: 0.55;
+  }
+  to {
+    transform: scaleY(1.06);
+    opacity: 0.95;
+  }
+}
+.lh-shimmer {
+  transform-origin: 50% 50%;
+  animation: lh-shimmer 3s ease-in-out infinite alternate;
+}
+@keyframes lh-shimmer {
+  from {
+    transform: translateX(-4px);
+    opacity: 0.3;
+  }
+  to {
+    transform: translateX(4px);
+    opacity: 0.7;
+  }
+}
+
+/* The jukebox while it plays for you: lights pulsing, notes drifting up. */
+.lh-jukebox-lights {
+  transform-origin: 50% 50%;
+  animation: lh-jukebox-lights 1.4s ease-in-out infinite alternate;
+}
+@keyframes lh-jukebox-lights {
+  from {
+    opacity: 0.1;
+  }
+  to {
+    opacity: 0.6;
+  }
+}
+.lh-note-a,
+.lh-note-b,
+.lh-note-c {
+  opacity: 0;
+  animation: lh-note 2.4s ease-out infinite;
+}
+.lh-note-b {
+  animation-delay: -0.8s;
+}
+.lh-note-c {
+  animation-delay: -1.6s;
+}
+@keyframes lh-note {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-22px);
+    opacity: 0;
+  }
+}
+
+/* A pond: a ripple drifting across the water. */
+.lh-ripple {
+  transform-origin: 50% 50%;
+  animation: lh-ripple 4s ease-in-out infinite alternate;
+}
+@keyframes lh-ripple {
+  from {
+    transform: translateX(-6px) scaleX(0.9);
+    opacity: 0.25;
+  }
+  to {
+    transform: translateX(6px) scaleX(1.1);
+    opacity: 0.6;
+  }
+}
+
+/* The Insert Coin bubble rising into place. */
+.lh-coin-bubble {
+  animation: lh-coin-bubble 0.25s ease-out both;
+}
+@keyframes lh-coin-bubble {
+  from {
+    transform: translate(-50%, 6px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* A Timer that ran out (docs/specs/009-elements/timer-and-stopwatch.md "The time"): its display flashes three times,
+   then holds a steady red. */
+.lh-timer-flash {
+  animation: lh-timer-flash 1s ease-in-out 3;
+}
+@keyframes lh-timer-flash {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-social-anim,
+  .lh-coin-bubble,
+  .lh-timer-flash {
+    animation: none !important;
+  }
+}
+:root.reduce-motion .lh-social-anim,
+:root.reduce-motion .lh-coin-bubble,
+:root.reduce-motion .lh-timer-flash {
+  animation: none !important;
+}

@@ -1,5 +1,7 @@
 # Import image pipeline: blueprint
 
+> **In livehuddle, image search alone uses this pipeline**: the board importers that also did are gone ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#imports-from-other-tools)), with `attachImportImages` and the import report. Where this page names them, it records what livehuddle had.
+
 Derived from [Import image pipeline](../import-image-pipeline.md). The spec decides; this file only
 adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
@@ -274,28 +276,28 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 
 ## Testing
 
-| Rule                                                  | Test                                                         |
-| ----------------------------------------------------- | ------------------------------------------------------------ |
-| Longest side 2048, never upscale                      | `policy.test.ts` scale cases                                 |
-| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts`                          |
-| WebP within size kept                                 | `policy.test.ts`                                             |
-| GIF kept when it fits, flattened when not             | `policy.test.ts`                                             |
-| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                                             |
-| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts`                          |
-| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts`                          |
-| Data URL parsing, MIME sniff                          | `source.test.ts`                                             |
-| Upload error mapping                                  | `upload-error.test.ts`                                       |
-| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                            |
-| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                                            |
-| Offline embed + budget                                | `session.test.ts`                                            |
-| Concurrency never above 3                             | `session.test.ts`                                            |
-| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                             |
-| Report copy                                           | `report.test.ts`                                             |
-| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                                               |
-| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                               |
-| Detection remembered; failed load retried             | `webp.test.ts`                                               |
-| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                            |
-| Safari path end to end, in Chromium and WebKit        | `apps/editor/e2e/import-images.spec.ts` (canvas answers PNG) |
+| Rule                                                  | Test                                                                        |
+| ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| Longest side 2048, never upscale                      | `policy.test.ts` scale cases                                                |
+| PNG/JPEG within size: encode, keep if smaller         | `policy.test.ts`, `prepare.test.ts`                                         |
+| WebP within size kept                                 | `policy.test.ts`                                                            |
+| GIF kept when it fits, flattened when not             | `policy.test.ts`                                                            |
+| SVG raster size from intrinsic/hint/default           | `policy.test.ts`                                                            |
+| WebP fallback type                                    | `policy.test.ts`, `prepare.test.ts`                                         |
+| 50 MB source cap, 10 MB output cap                    | `source.test.ts`, `prepare.test.ts`                                         |
+| Data URL parsing, MIME sniff                          | `source.test.ts`                                                            |
+| Upload error mapping                                  | `upload-error.test.ts`                                                      |
+| Unavailable short-circuit; cap keeps trying           | `session.test.ts`                                                           |
+| 409 `upload_conflict` retried once, then placeholder  | `session.test.ts`                                                           |
+| Offline embed + budget                                | `session.test.ts`                                                           |
+| Concurrency never above 3                             | `session.test.ts`                                                           |
+| Key dedupe, element patch, report invariant, progress | `attach.test.ts`                                                            |
+| Report copy                                           | `report.test.ts`                                                            |
+| Canvas WebP used when present; WASM never loaded      | `webp.test.ts`                                                              |
+| No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                                              |
+| Detection remembered; failed load retried             | `webp.test.ts`                                                              |
+| No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                                           |
+| Safari path end to end, in Chromium and WebKit        | `../livediagram/apps/editor/e2e/import-images.spec.ts` (canvas answers PNG) |
 
 All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; the browser codec is
 proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.

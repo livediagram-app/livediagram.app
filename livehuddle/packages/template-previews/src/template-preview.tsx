@@ -1,17 +1,8 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livehuddle/templates';
-import { templatePreviewGroup2 } from './template-preview-2';
-import { templatePreviewGroup3 } from './template-preview-3';
-import { templatePreviewGroup4 } from './template-preview-4';
-import { templatePreviewGroup6 } from './template-preview-6';
-import { templatePreviewGroup7 } from './template-preview-7';
-import { templatePreviewGroup8 } from './template-preview-8';
-import { templatePreviewGroup9 } from './template-preview-9';
-import { templatePreviewGroup10 } from './template-preview-10';
 import { templatePreviewGroup17 } from './template-preview-17';
-import { templatePreviewGroup19 } from './template-preview-19';
-import { templatePreviewGroup22 } from './template-preview-22';
 import { templatePreviewGroup23 } from './template-preview-23';
+import { templatePreviewGroup24 } from './template-preview-24';
 import { templatePreviewGroup25 } from './template-preview-25';
 import { templatePreviewGroup26 } from './template-preview-26';
 
@@ -22,23 +13,15 @@ import { templatePreviewGroup26 } from './template-preview-26';
 // switch case in a group file plus adding the kind to TEMPLATES in
 // @livehuddle/templates; template-preview.test.ts fails until both exist.
 
-// The per-kind SVGs are split across template-preview-{2..26}.tsx (each a
-// switch returning null for kinds it doesn't own) to keep every file under the
-// ~1000-line budget; we try each group in turn.
+// The per-kind SVGs are split across group files (each a switch returning null for kinds it doesn't own) to keep every
+// file under the ~1000-line budget; we try each group in turn. Group 17 draws Blank Space, group 23 the first four
+// Spaces, group 24 the six that followed, group 25 the first Campus Spaces, group 26 the five after them;
+// the other groups left with their templates (docs/specs/007-editor/templates-by-mode.md "The catalogue").
 export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement | null {
   return (
-    templatePreviewGroup2(kind) ??
-    templatePreviewGroup3(kind) ??
-    templatePreviewGroup4(kind) ??
-    templatePreviewGroup6(kind) ??
-    templatePreviewGroup7(kind) ??
-    templatePreviewGroup8(kind) ??
-    templatePreviewGroup9(kind) ??
-    templatePreviewGroup10(kind) ??
     templatePreviewGroup17(kind) ??
-    templatePreviewGroup19(kind) ??
-    templatePreviewGroup22(kind) ??
     templatePreviewGroup23(kind) ??
+    templatePreviewGroup24(kind) ??
     templatePreviewGroup25(kind) ??
     templatePreviewGroup26(kind)
   );

@@ -1,7 +1,7 @@
 # Proximity audio
 
-Status: **built for staging** (Work Tracker #315), under the calls kill switch (Work Tracker #316). Still off in
-production; see [Turning calls on](#turning-calls-on).
+Status: **built** (Work Tracker #315), under the calls kill switch (Work Tracker #316). On wherever its secrets are set,
+production included; see [Turning calls on](#turning-calls-on).
 
 People in a Space talk by walking up to each other. You hear the characters near yours and nobody else; the voice
 fades as they walk away and sits left or right of you as they stand. A character too far away to hear still shows
@@ -15,7 +15,8 @@ sharing stay [Future work](../005-project-roadmap/future-work.md).
 
 Audio rides [Avatar mode](../008-canvas/avatar-mode.md): only a walking character has a place on the board, so only
 someone in the mode hears or is heard. Leaving the mode, changing tab or closing the page leaves the call. A board
-that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls.
+that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls; the
+camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
 
 - **Join Audio.** Entering the mode does not open the microphone by itself. A **Join Audio** button sits in the
   bottom-right cluster beside Avatar while calls are on. Pressing it is the gesture a browser needs before it plays
@@ -43,12 +44,16 @@ that is not shared (a This Browser Space, or one with no room) has nobody to tal
 ## Hearing
 
 Every speaker publishes their microphone once (ingress is free). Each listener subscribes only to the speakers in
-earshot, from the positions the room already shares in the `avatar` op:
+earshot, from the positions the room already shares in the `avatar` op.
+
+**Rooms come first** ([Meeting rooms and the stage](meeting-rooms-and-stage.md#rooms-are-calls-part-1-built), Work
+Tracker #319, #436): an [Office Room](../009-elements/office.md#room) is walled off: nobody outside it hears anyone
+inside, and walls block sound fully. Inside a room, as on the open floor, the rules below apply (owner, 2026-11-06):
 
 - **Hearing radius: 260 canvas px**, feet to feet. A speaker inside it is subscribed.
 - **Release radius: 300 canvas px.** A subscribed speaker is let go only beyond it, so somebody standing on the edge
   does not flicker in and out.
-- **Volume fades with distance**: full within 90 canvas px, then an equal-power fade to silence at the release
+- **Volume fades with distance** (in the open; full in a shared room): full within 90 canvas px, then an equal-power fade to silence at the release
   radius, so letting go of a speaker makes no audible step.
 - **Pans by position**: a speaker to your left is heard on the left, up to 80% of the way at the hearing radius.
 - Volume and pan glide over 120 ms as people walk, so steps are never heard.
@@ -63,8 +68,9 @@ earshot, from the positions the room already shares in the `avatar` op:
   Alone on a tab for 15 seconds, the microphone closes (the browser's recording light goes out) and the button says so;
   it opens again the moment somebody arrives.
 - **The mic indicator** on the button shows, at a glance:
-  - **Live** (a soft brand ring and your own small level meter): somebody is in earshot and hears you.
-  - **Nobody Near**: your microphone is open but nobody is within the hearing radius; your equaliser still shows to
+  - **Live** (a soft brand ring and your own small level meter): somebody is in earshot and hears you (in a room,
+    anyone else in it).
+  - **Nobody Near**: your microphone is open but nobody hears you (in the open, nobody within the hearing radius); your equaliser still shows to
     the people further away.
   - **Muted** (a struck-through microphone).
   - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it. You still hear
@@ -96,17 +102,13 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 
 ### Do Not Disturb
 
-[Do Not Disturb](../008-canvas/avatar-mode.md#status) (Work Tracker #319) still shows **your** bars to others but
-hides **theirs** from you. Until #319 lands, the hook takes a `doNotDisturb` flag that is always false.
-
-## Hide cursors
-
-A [hide-cursors vote](session-tools.md#hide-participant-cursors-default-on) hides **cursors only** (owner,
-2026-11-03): characters, their speech bubbles, their equalisers and the audio carry on through a vote.
+[Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-built) (Work Tracker #319, part 3) still shows
+**your** bars to others but hides **theirs** from you, and closes every subscription (no voice, no bubble, not even a
+stage's). Your microphone carries on under its own Mute, so you are heard if you speak.
 
 ## The wire
 
-Two presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room
+Three presence ops in `@livehuddle/api-schema` (`call-voice.ts`), each with a field-by-field parser shared by the room
 and the editor:
 
 - `avatar-voice`: `{ kind, tabId, level }`, `level` an integer 0 to 4, 0 meaning stopped. A **sample**, like `avatar`
@@ -118,7 +120,17 @@ and the editor:
   the speaker starts publishing and again whenever a new walker appears on their tab (a late joiner never receives a
   replay), at most once a second. Relayed to the whole room, unbatched.
 
-The room drops either op from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
+- `calls-check`: `{ kind, tabId }`, sent by a publishing call that has sent the room nothing for 5 seconds, so a
+  silent room still reads the kill switch ([Calls kill switch](../016-platform/calls-kill-switch.md#the-room-tells-its-clients)).
+  Consumed by the room, never relayed.
+
+The room drops any of them from a Viewer, and drops one that fails its parser, as it drops a Viewer's `avatar-say`.
+
+- `call-session`: `{ kind, tabId, sessionId, sessionToken }`, sent once a call has its session (a listener's too),
+  and again after a subscribe was refused. It proves to the room which Realtime session is this connection's, so the
+  mint route can ask the room who may hear whom ([Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)).
+  The room checks the token as the mint route does, keeps the session on the connection, and never relays the op;
+  one that fails its parser or its token is dropped. From any level: a Viewer subscribes too.
 
 ## The mint route
 
@@ -131,7 +143,9 @@ TURN key, and makes every call on the browser's behalf, after checking the calle
 - `POST /api/documents/:id/calls/tracks`: publish this browser's microphone (an offer and its `mid`; Editor or
   Participant only), or subscribe to speakers' microphones (their `call-track` locators). A locator's `token` is the
   api's signature over the Space and the publishing session, so a listener can only subscribe to a microphone
-  published in the same Space.
+  published in the same Space. Each subscription is then checked with the room (#483,
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)): a track the subscriber may not hear now is
+  answered with `errorCode: 'not_heard'` in its place, and the rest are subscribed as asked.
 - `PUT /api/documents/:id/calls/renegotiate`: the browser's answer to an offer the SFU made.
 - `PUT /api/documents/:id/calls/close`: stop subscriptions or the microphone, by `mid`.
 
@@ -141,18 +155,17 @@ checks every session and track against its mode ([Calls kill switch](../016-plat
 
 ## Turning calls on
 
-Calls are on only where everything below holds; the editor learns it from `/api/capabilities` (`callsEnabled`) and
-shows no audio controls otherwise.
+Calls run on any deployment, production (`www.livehuddle.app`) included, where both of these hold (the owner lifted
+the earlier off flag for production on 2026-11-05); the editor learns it from `/api/capabilities` (`callsEnabled`) and
+shows no audio controls otherwise (the camera and screen buttons stay, as a
+[local preview](video-and-screen-bubbles.md#local-preview) only you see).
 
-- **Never in production yet.** The mint route refuses every session on the production deployment
-  (`www.livehuddle.app`), whatever is configured. The kill switch (#316) is a further gate beside this flag, not its
-  replacement; lifting the flag is a later, deliberate change.
 - **The secrets are set**: the Realtime app's id and token, and a TURN key's id and API token. They are the owner's to
   create; unset, calls are off.
 - **The kill switch allows it** ([Calls kill switch](../016-platform/calls-kill-switch.md)): `off` pauses calls, and
   the controls read **Calls Paused** rather than going away; `audio-only` leaves audio as it is.
 
-`/api/capabilities` answers `callsEnabled` (this deployment has calls: not production, secrets set) and `callsMode`
+`/api/capabilities` answers `callsEnabled` (this deployment has calls: its secrets are set) and `callsMode`
 (the switch: `on`, `audio-only` or `off`).
 
 ## Cost
@@ -163,13 +176,15 @@ hour. The equaliser adds no Realtime cost, only small presence messages.
 
 ## Telemetry
 
-`track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on joining (by the door: speaker or listener),
+`track('Canvas', 'Used', 'CallNotHeard')` when the mint route refuses a subscription as not heard (#483: counts
+false refusals). `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on joining (by the door: speaker or listener),
 `track('UI', 'Changed', 'AudioMute')` on a mute or unmute, and `track('Canvas', 'Used', 'WalkToTalker')` on pressing
 someone's bars. Never who, never how long, never anything heard.
 
 ## Out of scope
 
-- Room walls deciding who hears whom (an [Office](../009-elements/office.md) room as one call), the All-Hands Hall's
-  stage, and video or screen sharing: [Future work](../005-project-roadmap/future-work.md).
+- Rooms as calls, the stage, raise hand and Do Not Disturb have their own spec:
+  [Meeting rooms and the stage](meeting-rooms-and-stage.md). Video and screen sharing ride the same call:
+  [Video and screen share bubbles](video-and-screen-bubbles.md).
 - Muting someone else (an Editor's act in the future-work role table) and per-person volume.
 - Any recording, transcript or history: nothing said is stored anywhere.

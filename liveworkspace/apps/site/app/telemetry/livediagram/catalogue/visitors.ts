@@ -12,7 +12,6 @@ import {
   DRAW_TOUR_OFFERED,
   AVATAR_TOUR_OFFERED,
   ELEMENT_TOURS_OFFERED,
-  POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
@@ -522,31 +521,6 @@ export const ONBOARDING_TOURS: MetricStack = {
     SHOW_ME_TOURS_STARTED,
   ],
   seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
-};
-
-// The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.
-export const POWER_USER_OFFER_ACCEPTED = chart(
-  'UI',
-  'Used',
-  'Power User Offer Accepted',
-  'Try It, pressed on the power user mode offer.',
-  { types: ['PowerUserOffer'] },
-);
-
-export const POWER_USER_OFFER_DECLINED = chart(
-  'UI',
-  'Declined',
-  'Power User Offer Declined',
-  'No Thanks, or the power user mode offer closed.',
-  { types: ['PowerUserOffer'], rising: 'neutral' },
-);
-
-export const POWER_USER_OFFER: MetricStack = {
-  stack: true,
-  title: 'Power User Offer',
-  blurb: 'The one-time offer of power user mode: shown, then accepted or declined.',
-  members: [POWER_USER_OFFERED, POWER_USER_OFFER_ACCEPTED, POWER_USER_OFFER_DECLINED],
-  headline: POWER_USER_OFFER_ACCEPTED,
 };
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md): offered, then reloaded.

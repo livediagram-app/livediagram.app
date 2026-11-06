@@ -71,7 +71,7 @@ router). Wrangler does not inherit bindings into a named environment, so a bindi
 block, or a `service =` that lost its `-staging` suffix and points the staging router at **production**, is neither
 a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-The root `e2e.yml` runs liveplanner's smoke build and three smoke shards, its sites audit and its signed-in specs through
+The root `e2e.yml` runs liveplanner's smoke build and two smoke shards, its sites audit and its signed-in specs through
 `e2e-product.yml` when a change reaches the editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)).
 `canvas-perf.yml` runs the canvas performance probe nightly against `main`
 ([Canvas performance](../008-canvas/canvas-performance.md)). It never blocks anything: a miss opens or comments on
@@ -81,12 +81,13 @@ one issue, **Canvas performance budget: liveplanner**, which the first all-pass 
 `package.json` scripts and `vitest` to their `devDependencies`; turbo picks the task up. Tests live next to the
 source they cover as `*.test.ts` files.
 
-### Runs on main are never cancelled
+### Runs on main cancel older ones
 
-`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main`
-every commit runs to the end, each in a concurrency group of its own (keyed by the commit), so a failure can be
-pinned on its commit and every pull request has a base to compare coverage against. Runs on `main` finishing out of
-order are handled by the staging deploy, which skips a commit `main` has moved past.
+CI, E2E and CodeQL keep one run per branch. On a pull request a newer push cancels the older run, which would otherwise hold runners for a result nobody reads. On `main` a run that has started always finishes: a newer push waits behind it and a still newer one replaces the one waiting, so at most one runs and one waits, and a run on `main` completes however often merges land (cancelling the running one too, as `main` did for an hour on 2026-11-06, meant no run finished while merges came faster than a run takes, and staging never deployed). A run started by hand is never cancelled. So that the commits a replaced run skipped are still checked, a push to `main` is planned against the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit just before it: each run takes in every commit since the last green one, and with none (a first run, or a force-push) everything runs.
+
+A failure on `main` is therefore pinned on the commits since the last green one, not on a single commit. The [Coverage report](../003-system-architecture/testing.md#coverage-report) reads its base from the newest run on `main` that still holds each coverage artifact, so a cancelled run leaves it a slightly older base, never none. The staging deploy deploys the newest commit on `main` whose CI passed, whichever run that is ([Staging environment](staging-environment.md)).
+
+Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On the free plan's 20 concurrent jobs, a burst of merges then queued ahead of open pull requests: jobs waited a median 16 minutes for a runner (p90 37) on 2026-11-05 and 06, against 3 to 4 minutes of work.
 
 ## Deploy
 
@@ -110,7 +111,9 @@ everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and
    a new editor never calls an api that lacks its routes and the mcp worker's binding to the api exists.
 3. **Routers**: `liveplanner-router`, whose service bindings target the workers above.
 
-`deploy-worker.yml` deploys each Worker: its build when it serves static assets (the help site from full history,
+`deploy-group.mjs` deploys each Worker, run by `deploy-group.yml` for each group of Workers (the api with the other
+services and apis, liveplanner's sites and MCP in a job of their own, the router with the other routers, each Worker
+after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): its build when it serves static assets (the help site from full history,
 since its sitemap dates each article by its last commit), then `pnpm exec wrangler deploy`, with `--env staging` on
 staging. A save that fails while old and new versions briefly serve side by side is retried on its own
 ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)). A plan's schema only moves forward (a

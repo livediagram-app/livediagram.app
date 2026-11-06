@@ -4,20 +4,16 @@
 // it says on the headers only it can set, and the room asks for a fresh one before it lapses (document-room.ts).
 
 import {
-  capWorkbenchRole,
   isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
-import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
 import { indexService, linkCodeOf } from '../index-service';
 import { personTagFor } from '../person-tag';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
-import { networkTagFor } from '../vote-integrity';
-import { noteWorkbenchRoom } from '../auth/workbench-session';
 import { type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 import type { Env } from '../types';
@@ -48,7 +44,7 @@ async function adderKeyOf(
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
   // POST /api/documents/<id>/room-ticket: the ticket for the grant the request carries (the editor's) or one
-  // fetched for the caller (an API token's CLI, a workbench session), and the caller's own adder key, so their
+  // fetched for the caller (an API token's script), and the caller's own adder key, so their
   // editor knows which stickies are theirs to delete. It says nothing about anybody else.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
@@ -57,22 +53,9 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (!grant) return notFound();
     if (grant.trashed) return documentTrashed();
     if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
-    const workbench = ctx.workbench ?? null;
-    const ticket = await sealRoomTicket(
-      env,
-      grant.token,
-      workbench ? { pairing: workbench.pairingId, cap: workbench.level } : null,
-    );
-    // A workspace session joins many rooms; each is recorded at liveworkspace, off the response's path, so ending
-    // its access closes them all (WB55).
-    if (workbench?.scope === 'workspace') {
-      const noted = noteWorkbenchRoom(env, workbench, id);
-      if (ctx.waitUntil) ctx.waitUntil(noted);
-      else await noted;
-    }
-    const level = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
+    const ticket = await sealRoomTicket(env, grant.token, null);
     const person = linkCodeOf(grant.sub) ? null : grant.sub;
-    const adderKey = await adderKeyOf(id, level, person);
+    const adderKey = await adderKeyOf(id, grant.level, person);
     const answer: RoomTicketResponse = adderKey ? { ticket, adderKey } : { ticket };
     return json(answer);
   }
@@ -81,7 +64,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const id = segments[2]!;
     const opened = await openRoomTicket(indexService, env, url.searchParams.get('t'), id);
     if (!opened) return forbidden();
-    const { claims, workbench } = opened;
+    const { claims } = opened;
     if (claims.trashed) return documentTrashed();
     const role: AccessLevel = roomTicketLevel(opened);
     const linkCode = linkCodeOf(claims.sub);
@@ -105,16 +88,14 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // The person tag (docs/specs/024-agents/agent-changesets.md, CS39): how the room tells one person's sessions
     // from everyone else's without holding their id. Empty = none.
     forwarded.headers.set('X-Verified-Person', person ? await personTagFor(id, person) : '');
-    // Whether a verified account holds this session (not a guest, a link visitor or an API token's CLI, which
+    // Whether a verified account holds this session (not a guest, a link visitor or an API token's script, which
     // reaches the room as its account but draws no avatars): only such a session may publish a Google picture
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
-    forwarded.headers.set('X-Verified-Workbench-Pairing', workbench?.pairing ?? '');
+    // livehuddle has no workbenches: no session is ever a pairing's, and a client's own header is overwritten.
+    forwarded.headers.set('X-Verified-Workbench-Pairing', '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
     forwarded.headers.set('X-Verified-Document', id);
-    // The caller's network, hashed with the canvas id (docs/specs/012-collaboration/vote-integrity.md): what caps
-    // a poll's answers from one network.
-    forwarded.headers.set('X-Verified-Network', await networkTagFor(id, clientRateKey(request)));
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket
     // after (document-room.ts).
     forwarded.headers.set('X-Verified-Grant-Exp', String(claims.exp));

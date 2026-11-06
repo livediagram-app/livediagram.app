@@ -3,10 +3,9 @@
 // Pages mode's Contents as state (docs/specs/007-editor/pages-mode.md "Contents"): the shared hook
 // (@liveworkspace/workbench/hooks/ui/usePageContents) bound to this editor's pages. What is
 // livedocuments' own is handed in here: the rows (a slide's place in the deck, an article's title, a
-// card's speaking time), the words on each page (an article's writing too), where a dropped page
-// lands (an article's pages move as one), the page's place in the deck on its ⋯ menu, and the
-// pictures, drawn as the Slide Deck draws them.
-import { useCallback, useMemo } from 'react';
+// card's speaking time), where a dropped page lands (an article's pages move as one), the page's place in the deck on its ⋯ menu, and the
+// pictures, each page framed as its slide.
+import { useMemo } from 'react';
 import { MAX_PAGES, type LaidOutPage, type PageKind } from '@livedocuments/document';
 import {
   usePageContents as useSharedPageContents,
@@ -15,7 +14,9 @@ import {
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { contentsDropUnit, contentsRows, type ContentsRow } from '@/lib/page-contents';
-import { pageTexts } from '@/lib/page-texts';
+import { elementsByPage } from '@/lib/elements-by-page';
+import { pageTitleOf } from '@/lib/page-title';
+import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 import { track } from '@/lib/telemetry';
 import { pageRowSlides } from '@/components/canvas/page-row-slides';
 import { requestPagePanel } from '@/lib/page-panel-request';
@@ -37,7 +38,15 @@ export function usePageContents({
   onWent?: () => void;
 }): PageContents {
   const { pages, deck } = view;
-  const flows = view.articles?.flows;
+  // Each unnamed slide's and infographic's title, read from its words as they settle (not every frame
+  // of a drag or every key of a peer's typing): one pass over the tab's elements, O(n log n).
+  const settled = useSettledElements(tab.elements);
+  const titles = useMemo(() => {
+    const unnamed = pages.filter((p) => !p.name?.trim() && !p.flow);
+    if (unnamed.length === 0) return null;
+    const byPage = elementsByPage(pages, settled);
+    return new Map(unnamed.map((p) => [p.id, pageTitleOf(byPage.get(p.id) ?? [])]));
+  }, [pages, settled]);
   const rows = useMemo(
     () =>
       contentsRows(pages, {
@@ -48,17 +57,13 @@ export function usePageContents({
             }
           : {}),
         ...(view.articles ? { articles: view.articles.flows } : {}),
+        ...(titles ? { titleOf: (id: string) => titles.get(id) } : {}),
       }),
-    [pages, deck, view.articles],
-  );
-  const readTexts = useCallback(
-    () => pageTexts(pages, tab.elements, flows),
-    [pages, tab.elements, flows],
+    [pages, deck, view.articles, titles],
   );
   const contents = useSharedPageContents({
     view,
     rows,
-    readTexts,
     dropUnit: (id, drop) => contentsDropUnit(pages, id, drop),
     // Another page like the last (its kind and shape).
     lastPage: pages.at(-1),

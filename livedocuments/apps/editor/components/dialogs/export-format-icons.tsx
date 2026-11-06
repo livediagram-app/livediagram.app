@@ -72,6 +72,36 @@ export function FormatIcon({ kind }: { kind: Format }) {
           <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
         </svg>
       );
+    case 'print':
+      // A printer with a sheet coming out.
+      return (
+        <svg width="30" height="28" viewBox="0 0 30 28" aria-hidden>
+          <path
+            d="M8 2h14v7H8z"
+            fill="rgb(241 245 249)"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <rect
+            x="2"
+            y="9"
+            width="26"
+            height="11"
+            rx="2"
+            fill="rgb(226 232 240)"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.25"
+          />
+          <circle cx="23" cy="13" r="1.1" fill="rgb(71 85 105)" />
+          <path
+            d="M8 16h14v10H8z"
+            fill="rgb(255 255 255)"
+            stroke="rgb(100 116 139)"
+            strokeWidth="1.25"
+          />
+          <path d="M11 20h8M11 23h6" stroke="rgb(148 163 184)" strokeWidth="1.1" />
+        </svg>
+      );
     case 'gif':
       // A picture with frames behind it: an image that moves.
       return (

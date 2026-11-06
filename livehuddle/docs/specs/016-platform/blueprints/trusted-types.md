@@ -27,7 +27,6 @@ Derived from [Trusted Types](../trusted-types.md).
 | `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                                                                                                               |
 | Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                                                                                                             |
 | Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                                                                                                   |
-| `apps/editor/lib/drawio/{envelope,label,library}.ts`         | `parseInert` in place of `new DOMParser().parseFromString`                                                                                                                                                                |
 
 ## Behaviour and state
 

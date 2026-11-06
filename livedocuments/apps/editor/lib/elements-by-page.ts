@@ -1,6 +1,5 @@
-// Which page each element is on (docs/specs/007-editor/pages-mode.md "Contents"): the rule Contents' Find a Page
-// and the tab's Find and Replace (docs/specs/007-editor/find-and-replace.md "What is searched") both read. Apart
-// from the find helpers, so a caller that needs only the pages never loads them.
+// Which page each element is on: the rule the tab's Find and Replace (docs/specs/007-editor/find-and-replace.md
+// "What is searched") reads. Apart from the find helpers, so a caller that needs only the pages never loads them.
 import {
   buildElementIndex,
   elementAnchorPoint,

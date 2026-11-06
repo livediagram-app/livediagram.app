@@ -26,6 +26,8 @@ Document
 
 ## Cross-tab links
 
+**Retired in livedocuments 2026-11-04** ([links-and-notes-retired.md](../009-elements/links-and-notes-retired.md)): kept for the record and for the other products.
+
 Any element on any canvas can **link to** something on another tab:
 
 - A link can target **a tab** (open that tab when clicked).

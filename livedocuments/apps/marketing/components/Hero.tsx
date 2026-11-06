@@ -13,11 +13,12 @@ const BADGE =
 
 export function Hero() {
   return (
-    // On a wide screen its height is its content's, with room to breathe; on a phone it fills the
+    // From `sm` it fills the first screen under the header, up to a cap (hero-tall.css in
+    // @liveworkspace/marketing-site), the extra shared above and below the copy; on a phone it fills the
     // screen under the header, the fan along its foot.
-    <section className="hero-band relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
+    <section className="hero-band hero-tall relative bg-(--hero-bg) text-(--hero-ink) max-sm:flex max-sm:min-h-[calc(100svh-72px)] max-sm:flex-col">
       <div aria-hidden className="hero-band-ruled pointer-events-none absolute inset-0" />
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
+      <div className="hero-tall-copy relative mx-auto flex w-full max-w-6xl flex-col px-4 max-sm:flex-1 max-sm:justify-center pt-16 text-center sm:px-6 sm:pt-36 lg:pt-44">
         {/* An arrow drawn on load from the end of the question down onto the search. */}
         <HeroConnectors />
         {/* Two promises, each its own badge and each true today (free, MIT, no account needed). A
@@ -34,13 +35,13 @@ export function Hero() {
         </ul>
         <h1
           data-hero-anchor="title"
-          className="mx-auto mt-7 max-w-4xl text-balance text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
+          className="mx-auto mt-7 max-w-4xl text-balance sm:mt-8 text-[clamp(2.5rem,7vw,5rem)] font-semibold leading-[1.02] tracking-tight"
         >
           <HeroVerb before="What are you" after="today?" />
         </h1>
         <p
           data-hero-anchor="lead"
-          className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
+          className="mx-auto mt-6 sm:mt-7 max-w-2xl text-pretty text-lg leading-relaxed text-(--hero-muted) sm:text-xl"
         >
           Pick a starting point and make it on pages. Write an article, build a deck, lay out an
           infographic, then share one link and finish it together.

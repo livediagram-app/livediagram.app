@@ -18,13 +18,13 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("avatar-mode")}
 >
 
-Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Pick **Avatar** from the Selection Mode menu, just below Hand, or press a [Selection Mode button](/help/palette/behaviour/mode-buttons/) set to Avatar on the board. Search finds it too: type "avatar". It has no keyboard shortcut, since the arrow keys belong to the walk. A space made from a Spaces template (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) opens with you already walking, just below its **Walk In** button. While you walk the Selection Mode menu shows **Avatar**, so you can see where you are and pick another mode to leave.
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Pick **Avatar** from the Selection Mode menu, just below Hand, or press a [Selection Mode button](/help/palette/behaviour/mode-buttons/) set to Avatar on the board. Search finds it too: type "avatar". It has no keyboard shortcut, since the arrow keys belong to the walk. A space made from a Spaces template (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) opens with you already walking, standing just below its **Walk In** button, clear of its label. While you walk the Selection Mode menu shows **Avatar**, so you can see where you are and pick another mode to leave.
 
 If the board has an [Avatar Pad](/help/palette/avatar-pads/), you start on the pad, beamed in, instead of beside the button.
 
 ## Walking
 
-**Click anywhere on the canvas and the character walks there**, in a straight line, facing the way it is going. Click somewhere else while it is still walking and it turns and heads for the new spot instead. Walk onto a [Chair, Desk or Sofa](/help/palette/chairs/) and the character sits; press an arrow key or double-click to stand. A [Fence](/help/palette/fences/) stops it: characters cannot walk through one, nor through a room's walls (only its doorway). Walk up to a water cooler or a coffee machine and your character gets a drink; see [Virtual Office](/help/palette/virtual-office/). Walk onto a [Reaction Pad](/help/palette/behaviour/reaction-pads/) and it throws its burst.
+**Click anywhere on the canvas and the character walks there**, in a straight line, facing the way it is going. Click somewhere else while it is still walking and it turns and heads for the new spot instead. Walk onto a [Chair, Desk or Sofa](/help/palette/chairs/) and the character sits; press an arrow key or double-click to stand. A [Fence](/help/palette/fences/) stops it: characters cannot walk through one, nor through a room's walls (only its doorway). Walk up to a water cooler or a coffee machine and your character gets a drink; see [Virtual Office](/help/palette/virtual-office/).
 
 **The arrow keys steer it directly**: hold one and the character walks that way for as long as you hold it, and holding two walks a diagonal. Release and it stops where it stands. On a touchscreen, tapping is the way to move it.
 
@@ -42,9 +42,11 @@ Press **`Space`** and the character hops, waving a small flag on the way up and 
 
 One press is one hop: holding the key down will not pogo, and pressing again mid-air does nothing until the character is back on the ground.
 
+While you walk you are in the room rather than editing it, so **Undo**, **Redo** and **Tab Style** step out of the bottom-right corner, and Cmd/Ctrl+Z does nothing. Leave Avatar mode and they come straight back.
+
 ## Make the character yours
 
-Whenever Avatar mode is on, an **Avatar** button sits next to **Undo** and **Redo** at the bottom right. Press it to open the Avatar panel: a character sheet with a portrait of your character and four choices, each one a row you expand:
+Whenever Avatar mode is on, an **Avatar** button sits in the bottom-right corner. Press it to open the Avatar panel: a character sheet with a portrait of your character and four choices, each one a row you expand:
 
 - **Gender**: male or female.
 - **Clothing**: sixteen outfits: T-shirt, stripes, jumper, hoodie, vest, suit, dress, skirt, polo, flannel, overalls, lab coat, Hawaiian, varsity, turtleneck, or apron.
@@ -75,7 +77,7 @@ Under the customisation rows are two more rows you expand, each a list of one-cl
 
 They are quick on purpose (a gesture, not a cutscene), and everyone else on a shared space sees the performance too. Starting one stops whatever walk was in progress, so the character performs where it stands.
 
-**Reactions** throws a burst around your character: **Confetti**, **Sparkles**, **Hearts**, **Applause** or **Fireworks**, the same five a [Reaction Pad](/help/palette/behaviour/reaction-pads/) throws. The burst plays on your own screen.
+**Reactions** throws a burst around your character: **Confetti**, **Sparkles**, **Hearts**, **Applause** or **Fireworks**. The burst plays on your own screen.
 
 On a keyboard, each action is a single key, so you can perform without opening the panel. Each button shows its key:
 
@@ -119,7 +121,7 @@ Press **`Esc`** (or pick another mode) to put the character away. Panning still 
 
 ## Availability
 
-Avatar mode is available on desktop and touch, and to view-only visitors, since it changes nothing: anyone can pick it or press a board's Avatar button. A space with a Walk In button or an Avatar Pad opens walking once each visit, for everyone; leave the mode and it stays left until you come back. An embedded space never opens walking.
+Avatar mode is available on desktop and touch, and to view-only visitors, since it changes nothing: anyone can pick it or press a board's Avatar button. Everyone also has a **Walk** button in the bottom-right corner: press it to start walking on any board, and press it again to stop. It is the only way in for a view-only visitor, who has no palette. A space with a Walk In button or an Avatar Pad opens walking once each visit, for everyone; leave the mode and it stays left until you come back. An embedded space never opens walking.
 
 While you walk as an avatar, press Start Avatar Tour in the bar along the bottom of the editor, just left of **Search**, for a short [Avatar Tour](/help/selection-modes/avatar-mode/avatar-tour/) of all this.
 
@@ -128,8 +130,8 @@ While you walk as an avatar, press Start Avatar Tour in the bar along the bottom
   characters. See [Walking Together](/help/selection-modes/walking-together/).
 </Tip>
 
-To make a board a place to walk round, drop an **Avatar** mode button on the canvas (the **Selection Mode** group of the palette's
-**Session** category). It reads "Switch to Avatar", so one click puts a visitor in
+To make a board a place to walk round, drop an **Avatar Button** on the canvas (the palette's **Travel**
+category; the Spaces templates call theirs **Walk In**). It reads "Switch to Avatar", so one click puts a visitor in
 the mode, and the character appears right at the button they pressed, or on the board's
 [Avatar Pad](/help/palette/avatar-pads/) when it has one. Pressing it again while in the
 mode hands them back the tool they were using. See [Selection Mode Buttons](/help/palette/behaviour/mode-buttons/).

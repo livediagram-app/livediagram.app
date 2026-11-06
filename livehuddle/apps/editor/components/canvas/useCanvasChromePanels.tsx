@@ -2,26 +2,19 @@
 
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
-import { participantKey } from '@/lib/identity';
+
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { loadLayersPanel } from '@/lib/editor-deferred-code';
-import { visibleLayerElements } from '@livehuddle/document';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { tidyUpOffered } from './tidy-up-actions';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
-
-// Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
-// editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
-const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
 // least one element with comments. It stacks below the Palette (the
@@ -32,12 +25,6 @@ const CollaboratePanel = dynamic(
   () => import('@/components/panels/CollaboratePanel').then((m) => m.CollaboratePanel),
   { ssr: false },
 );
-
-// Lazy for the same reason: the Session strip's popovers (docs/specs/012-collaboration/session-tools.md
-// "The Session strip") load on the first press of a Timer, Vote or Poll button.
-const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.SessionPopover), {
-  ssr: false,
-});
 
 // Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
 // loads on the first press of its button.
@@ -62,37 +49,30 @@ function LazyPopover({ onError, children }: { onError: () => void; children: Rea
 // the stable handler bundles for the memo'd panels, the docking-aware
 // wiring per panel, the palette's theme tint, and each panel's element with
 // its own visibility gate. CanvasChrome distributes the returned map into
-// the corner stacks (docking) or renders the elements inline (zen). The
+// the corner stacks (docking) or renders the elements inline (an embed). The
 // Explorer and the cluster popovers render beside the corner layer. The
 // tool-config panels, on screen only while
 // their own tool is active, live in useCanvasToolPanels.
 
 export function useCanvasChromePanels({
   props,
-  stripTools,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
-  // The tools the mode's Session strip offers (sessionStripTools), as CanvasChrome drew them.
-  stripTools: SessionStripTools | null;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
   // Which panels are on in Settings (docs/specs/007-editor/user-preferences.md), read by CanvasChrome
   // so each panel and its cluster button agree.
-  panelsOn: { layers: boolean; collaborate: boolean };
+  panelsOn: { collaborate: boolean };
 }): {
   panelEls: Partial<Record<PanelId, ReactNode>>;
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
-  // Layers, a popover over its cluster button, rendered outside the corner layer.
-  layersEl: ReactNode;
   collaborateEl: ReactNode;
-  // The Session strip's open popover (Timer, Vote or Poll), over its button.
-  sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button.
   tidyUpPopoverEl: ReactNode;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
@@ -109,31 +89,6 @@ export function useCanvasChromePanels({
     currentShareCode,
     onRenameCurrentDocument,
     elements,
-    layers,
-    activeLayerId,
-    layerCounts,
-    pollPanel,
-    tabVote,
-    voteResults,
-    onJumpToVoteResult,
-    isVoteHost,
-    participantCount,
-    voteReview,
-    onNextVoteResult,
-    onPrevVoteResult,
-    onDoneVoteReview,
-    onSelectLayer,
-    onAddLayer,
-    onRemoveLayer,
-    onRenameLayer,
-    onToggleLayerVisibility,
-    onToggleLayerLock,
-    onReorderLayer,
-    onMergeLayer,
-    onSetLayerOpacity,
-    onClearLayer,
-    onHideOtherLayers,
-    onPreviewLayer,
     onMoveCommentsPanel,
     onNewDocument,
     explorerMenuActions,
@@ -142,14 +97,12 @@ export function useCanvasChromePanels({
     activeTabId,
     onOpenCommentsForElement,
     onResetCommentsPanel,
-    readOnly,
-    takePart,
-    selfParticipant,
+
     setActiveDockAnchor,
     setActiveDockPanel,
     settings,
     tabThemeId,
-    zenMode,
+    chromeAway,
   } = props;
   // The Inbox's Mark Done for an action on this tab (lib/explorer-inbox-host): the canvas's own verb, through a
   // stable wrapper so the panel's props stay the same while the editor re-renders.
@@ -197,21 +150,20 @@ export function useCanvasChromePanels({
   const { paletteTheme, paletteTint } = usePaletteChrome({ tabThemeId });
 
   // --- Corner panels as elements (docs/specs/007-editor/panel-docking.md) ---
-  // Built once with docking-aware wiring, then rendered either inline (zen)
+  // Built once with docking-aware wiring, then rendered either inline (an embed)
   // or distributed into corner stacks. Each keeps its own visibility gate.
   const collaborateWiring = panelWiringFor(
     'collaborate',
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  // The six tool-config panels (avatar / laser / spotlight / eraser / format /
-  // slide deck), see useCanvasToolPanels. They share one contract: on screen
+  // The tool-config panels (avatar / eraser / format), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Tidy Up popover belongs to its button: leaving for Zen or a locked-out session closes it.
+  // The Tidy Up popover belongs to its button: an embed or a locked-out session closes it.
   const tidyUp = props.tidyUp;
   const tidyUpShown = tidyUpOffered({
     actions: tidyUp,
-    zenMode: !!zenMode,
+    chromeAway: !!chromeAway,
   });
   const tidyUpOpen = activeDockPanel === 'tidy-up' && tidyUpShown && !chromeHidden;
   useEffect(() => {
@@ -237,7 +189,7 @@ export function useCanvasChromePanels({
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, [avatarOpen, closeDockPanel]);
-  const { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  const { avatarEl, eraserEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
@@ -251,11 +203,11 @@ export function useCanvasChromePanels({
   const explorerOpen = activeDockPanel === 'explorer';
   const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
   if (explorerOpen && !explorerOpened) setExplorerOpened(true);
-  // Withheld (the workbench frame, a phone held sideways), an open Explorer closes.
+  // Withheld (a phone held sideways), an open Explorer closes.
   const explorerHidden = !!props.explorerHidden;
   useWithheldExplorerCloses(explorerHidden, explorerOpen, closeDockPanel);
   const explorerEl =
-    zenMode || explorerHidden || !explorerOpened ? null : (
+    chromeAway || explorerHidden || !explorerOpened ? null : (
       <LazyExplorer
         currentDocumentId={currentDocumentId}
         inboxOpenAction={inboxOpenAction}
@@ -301,60 +253,16 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
-  // layers; visibility / lock still shape what they see via the render
-  // path). A popover over its bottom-right cluster button, always mounted so
-  // that button can pop it open (popoverOpen gates the actual render).
-  // Its Settings switch removes it outright; layers themselves keep applying.
-  const layersOpen = activeDockPanel === 'layers';
-  const [layersOpened, setLayersOpened] = useState(layersOpen);
-  if (layersOpen && !layersOpened) setLayersOpened(true);
-  const layersEl =
-    !chromeHidden && !readOnly && panelsOn.layers && layersOpened ? (
-      <LayersPanel
-        layers={layers}
-        tabFont={props.tabFont}
-        activeLayerId={activeLayerId}
-        counts={layerCounts}
-        elements={elements}
-        popoverOpen={layersOpen}
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-        onSelectLayer={onSelectLayer}
-        onAddLayer={onAddLayer}
-        onRemoveLayer={onRemoveLayer}
-        onRenameLayer={onRenameLayer}
-        onToggleVisibility={onToggleLayerVisibility}
-        onToggleLock={onToggleLayerLock}
-        onReorderLayer={onReorderLayer}
-        onMergeLayer={onMergeLayer}
-        onSetLayerOpacity={onSetLayerOpacity}
-        onClearLayer={onClearLayer}
-        onHideOtherLayers={onHideOtherLayers}
-        onPreviewLayer={onPreviewLayer}
-        hoverPreviewEnabled={settings?.layerHoverPreview !== false}
-        showPreview={settings?.layersShowPreview !== false}
-        showCount={settings?.layersShowCount !== false}
-      />
-    ) : null;
-
   // Minimap (docs/specs/008-canvas/minimap.md) routed through docking like the other panels: it
   // docks in the bottom-left and snaps / persists the same way. Desktop-only, gated on the map
-  // setting + a few elements; hidden in zen / welcome (chromeHidden).
+  // setting + a few elements; hidden in an embed / welcome (chromeHidden).
   const mapEnabled = settings?.showMinimap !== false;
   const mapAccent = paletteTheme.elementStroke;
   const minimapWiring = panelWiringFor('minimap', props.mapPosition, props.onResetMap);
-  // Hidden layers (docs/specs/006-document/layers.md) drop out of the miniature too, so the map
-  // matches the canvas. Memoised: with a hidden layer the filter returns a new array, which would
-  // rebuild the Map's whole drawing on every render (docs/specs/008-canvas/canvas-performance.md).
-  const mapElements = useMemo(
-    () => visibleLayerElements(elements, props.tabLayers),
-    [elements, props.tabLayers],
-  );
   const minimapEl =
     !chromeHidden && !isMobile && mapEnabled && elements.length >= 4 ? (
       <ViewMinimap
-        elements={mapElements}
+        elements={elements}
         tabFont={props.tabFont}
         setViewportOffset={props.setViewportOffset}
         setViewportZoom={props.setViewportZoom}
@@ -370,84 +278,12 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  // The Session strip's popovers (docs/specs/012-collaboration/session-tools.md "The Session strip"). A
-  // segment whose button has gone (a view-role visitor's tool ended, a poll dismissed) closes its
-  // popover rather than leaving it floating with no button under it.
-  const sessionSegment =
-    activeDockPanel === 'session-timer' ||
-    activeDockPanel === 'session-vote' ||
-    activeDockPanel === 'session-poll'
-      ? activeDockPanel
-      : null;
-  // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const sessionTools = stripTools ? props.sessionTools : undefined;
-  const sessionButtonGone = stripSegmentGone({
-    segment: sessionSegment,
-    tools: sessionTools ? stripTools : null,
-    readOnly: !!readOnly,
-    running: { timer: !!sessionTools?.timer, vote: !!tabVote, poll: !!pollPanel },
-  });
-  useEffect(() => {
-    if (sessionButtonGone) closeDockPanel();
-  }, [sessionButtonGone, closeDockPanel]);
-  // A running tool's popover stays up until its button closes it, and goes when the activity ends
-  // (docs/specs/012-collaboration/session-tools.md "The Session strip"), rather than turning back
-  // into the set-up under the facilitator's pointer.
-  const sessionRunning =
-    sessionSegment === 'session-timer'
-      ? !!sessionTools?.timer
-      : sessionSegment === 'session-vote'
-        ? !!tabVote
-        : sessionSegment === 'session-poll'
-          ? !!sessionTools?.livePoll
-          : false;
-  // Per segment: switching from a running tool's popover to an idle one is not an ending.
-  const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
-  useEffect(() => {
-    const prev = wasRunning.current;
-    wasRunning.current = { segment: sessionSegment, running: sessionRunning };
-    if (sessionSegment && prev.segment === sessionSegment && prev.running && !sessionRunning)
-      closeDockPanel();
-  }, [sessionRunning, sessionSegment, closeDockPanel]);
-  const sessionPopoverEl =
-    !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
-      <LazyPopover onError={closeDockPanel}>
-        <SessionPopover
-          segment={sessionSegment}
-          anchor={activeDockAnchor ?? undefined}
-          onClose={closeDockPanel}
-          session={sessionTools}
-          readOnly={!!readOnly}
-          canVote={!readOnly || !!takePart}
-          holdOpen={!isMobile}
-          voteSelfId={participantKey(selfParticipant)}
-          pollPanel={pollPanel}
-          vote={{
-            tabVote,
-            elements,
-            participantCount,
-            results: voteResults,
-            reviewIndex: voteReview ? voteReview.index : null,
-            onJumpToResult: onJumpToVoteResult,
-            isHost: isVoteHost,
-            review: voteReview,
-            onNextResult: onNextVoteResult,
-            onPrevResult: onPrevVoteResult,
-            onDoneReview: onDoneVoteReview,
-          }}
-        />
-      </LazyPopover>
-    ) : null;
-
   // Map of panel id → element for the docked-layout distribution.
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
     minimap: minimapEl,
-    laser: laserEl,
-    spotlight: spotlightEl,
     eraser: eraserEl,
-    'slide-deck': slideDeckEl,
     format: formatEl,
   };
   return {
@@ -467,8 +303,6 @@ export function useCanvasChromePanels({
           />
         </LazyPopover>
       ) : null,
-    layersEl,
-    sessionPopoverEl,
     paletteTint,
   };
 }

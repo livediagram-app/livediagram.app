@@ -41,10 +41,7 @@ const panel = (page: Page, edit = edits()) => {
       page={layOutPages([page])[0]!}
       count={1}
       getAnchor={() => undefined}
-      initialTab="page"
-      themeBackgrounds={[]}
       edit={edit}
-      onPreview={vi.fn()}
       onClose={vi.fn()}
     />,
   );

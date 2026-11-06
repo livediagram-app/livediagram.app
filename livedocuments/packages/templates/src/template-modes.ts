@@ -5,7 +5,7 @@ import type { TemplateKind } from './templates';
  *  what it is for. */
 export const BLANK_TEMPLATE: TemplateKind = 'blank-illustration';
 
-// The blanks beyond Blank Illustration (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): one empty
+// The blanks beyond Blank Illustration (docs/specs/007-editor/start-diagramming.md "Groups"): one empty
 // page of a chosen kind, beside Blank Illustration, in the order the landing page's Blank Slate lists them.
 export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-slide-deck',

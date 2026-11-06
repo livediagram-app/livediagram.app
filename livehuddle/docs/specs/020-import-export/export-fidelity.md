@@ -12,7 +12,7 @@ That applies to all four surfaces the headless renderer feeds, because they are
 all "a picture of the document" to whoever is looking at one: the SVG / PNG / PDF
 export, the Explorer's preview thumbnails, the public live-image share link
 ([Live image share link](../013-workspace/live-image-share.md)), and the inline images the MCP server
-returns ([MCP server](../015-api/mcp-server.md)).
+returns ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
 
 ## Why it kept breaking
 
@@ -64,6 +64,10 @@ to its box edge (`strokeInside`: diamond, parallelogram, hexagon, document, cyli
 cloud) is inset the same way, so its outline never crosses the box edge. A self-painting
 kind keeps the wrapper's 4px corners (the Reveal cover).
 
+> **Gone from livehuddle (part 4)**: the Collaborate cards' kit (`svg-render-collab-parts.ts`, `collabCard`,
+> `collabAccent`, `COLLAB_DONE_COLOR`) and every card face below it are deleted. A stored card of a deleted kind is a
+> retired element and exports as its placeholder (see "A retired element exports as a placeholder").
+
 **The Collaborate cards share one kit.** Every card is laid out in the canvas
 panel's design units (`collabCard`: 16/14 padding, a 24px header row, the body
 10px under it), takes its accent from the element's stroke exactly as
@@ -77,8 +81,7 @@ Agenda, Roll call) lay out at the element's own size rather than scaling.
 
 **Every export draws an arrow the same way.** The SVG and the PNG / PDF both
 hand `svgArrow` the elements the export draws as its occluders, so a line
-breaks only behind a box that is in the picture (never one on a hidden layer
-or off the page), and the export's paper (the tab's background) as the fill of a hollow head, as the canvas fills it.
+breaks only behind a box that is in the picture (never one off the page), and the export's paper (the tab's background) as the fill of a hollow head, as the canvas fills it.
 
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
@@ -107,7 +110,20 @@ would be worse than the gap:
   track; the export keeps the element's fill on dark paper so its percentage
   stays readable.
 
+### A retired element exports as a placeholder
+
+A stored element of a kind livehuddle no longer has ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md))
+exports, in the SVG, the PNG / PDF (which rasterise its SVG) and the thumbnail, as a placeholder card in its own box:
+a dashed 1.5px muted outline on a muted fill that follows the paper, its name centred (`retiredElementName`),
+`RETIRED_ELEMENT_NOTE` smaller beneath it, and its stored label beneath that, escaped and cut with an ellipsis. Its
+stored colours, face and fields are not drawn. The layout is `retiredPlaceholderLayout` in `@livehuddle/document`
+(`retired-placeholder.ts`), drawn by `svg-render-retired.ts`, so the canvas can draw the same card.
+
 ### The behaviour cards export as they look
+
+> **Gone from livehuddle (part 4)**: the Temperature check, Estimate card, Roll call, Done check, Decision record,
+> Reveal zone, Idea box, Agenda, Q&A board, Comment panel, Action panel, Session button and Picker faces below are
+> deleted; only the Mode button, Portal, Reaction pad, chair and Page still export so.
 
 The Behaviour and Collaborate cards moved onto one modern look (flat, lit by
 the tab theme's accent, [Participant responses](../012-collaboration/participant-responses.md)), and their exports

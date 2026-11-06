@@ -1,8 +1,8 @@
 # Edit operations
 
 **Status: built.** `@livehuddle/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
-verdict, and the [CLI](../015-api/cli.md) sends the same operations as changesets.
+selector, through the changeset route. A result's footer names the [lint](diagram-lint.md)
+verdict.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -11,29 +11,29 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 
 ## The vocabulary
 
-| Operation | Line form                                                                         | Does                                                                                              |
-| --------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                                   | Creates an element, sized for its label by the kind's factory                                     |
-| `set`     | `set <selector> key=value… [all]`                                                 | Changes the named fields; `key=` unsets one                                                       |
-| `rm`      | `rm <selector> [all] [keep-arrows]`                                               | Removes; arrows pinned to it go too and are listed, or stay with free ends with `keep-arrows`     |
-| `move`    | `move <selector> <placement> \| by=dx,dy [all]`                                   | Moves; pinned arrows follow; a frame or lane carries its members; membership changes are reported |
-| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                         | A pinned arrow, anchors chosen facing each other; a second arrow a→b needs `again`                |
-| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `to=<y>`                                    | Moves one or both ends of an arrow to other elements                                              |
-| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                              | Puts a node on the a→b arrow: that arrow becomes a→new, a new arrow new→b copies its style        |
-| `wrap`    | `wrap <selector…> in frame\|lane [id=<id>] key=value… [tidy] [absorb\|make-room]` | Draws a frame or lane around the members; `tidy` lays them out compactly first                    |
-| `unwrap`  | `unwrap <frame>`                                                                  | Removes the frame or lane and keeps its members where they are                                    |
-| `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                              | Changes stacking; frames and lanes stay behind their contents                                     |
-| `layout`  | `layout <selector> [style=flow\|tree] [direction=down\|right]`                    | Lays out only the selection, keeping its top-left corner                                          |
-| `test`    | `test <selector> key=value…`                                                      | Fails the changeset unless the element holds these values                                         |
+| Operation | Line form                                                                            | Does                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                                      | Creates an element, sized for its label by the kind's factory                                        |
+| `set`     | `set <selector> key=value… [all]`                                                    | Changes the named fields; `key=` unsets one                                                          |
+| `rm`      | `rm <selector> [all] [keep-arrows]`                                                  | Removes; arrows pinned to it go too and are listed, or stay with free ends with `keep-arrows`        |
+| `move`    | `move <selector> <placement> \| by=dx,dy [all]`                                      | Moves; pinned arrows follow; a boundary or lane carries its members; membership changes are reported |
+| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                            | A pinned arrow, anchors chosen facing each other; a second arrow a→b needs `again`                   |
+| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `to=<y>`                                       | Moves one or both ends of an arrow to other elements                                                 |
+| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                                 | Puts a node on the a→b arrow: that arrow becomes a→new, a new arrow new→b copies its style           |
+| `wrap`    | `wrap <selector…> in boundary\|lane [id=<id>] key=value… [tidy] [absorb\|make-room]` | Draws a boundary or lane around the members; `tidy` lays them out compactly first                    |
+| `unwrap`  | `unwrap <container>`                                                                 | Removes the boundary or lane and keeps its members where they are                                    |
+| `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                                 | Changes stacking; boundaries and lanes stay behind their contents                                    |
+| `layout`  | `layout <selector> [style=flow\|tree] [direction=down\|right]`                       | Lays out only the selection, keeping its top-left corner                                             |
+| `test`    | `test <selector> key=value…`                                                         | Fails the changeset unless the element holds these values                                            |
 
 - **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template` or `elements`, exactly
-  as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
+  as the MCP takes them ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
   a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new
   element takes the slug of its label, or of its kind when it has none (`arrow`, `arrow-2`).
 - **Fields** are named by the aliases below or by any stored field of the element's type, as the
-  [element format](../015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
+  [element format](../../../../livediagram/docs/specs/015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
   responses, ideas) are not changed by edit operations; comments have their own endpoints. A named `x`, `y`,
   `width` or `height` is a stored, absolute coordinate.
 - **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
@@ -50,8 +50,8 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`;
   `ELEMENT_FIELD_VALUES` in `@livehuddle/document`) refuses a value off it as `invalid_value`, naming the values it
   takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does, so a `textSize=xl` is never stored and drawn as tiny overlapping text.
-- **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
-  element on a locked layer (`element_locked`).
+- **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element
+  (`element_locked`).
 
 ## Two forms, one model
 
@@ -72,7 +72,7 @@ filters ([Explorer filters](../013-workspace/explorer-filters.md)), one value a 
 | `146b`, `orders`               | That element (ref, prefix or id)                                          |
 | `"Orders service"`             | The element with that label, ignoring case; `label~orders` is a substring |
 | `type:sticky`, `shape:diamond` | By kind as the outline prints it or element type, or by shape             |
-| `in:c991`                      | Members of a frame or lane                                                |
+| `in:c991`                      | Members of a boundary or lane                                             |
 | `n3->n4`, `from:n3`, `to:n4`   | Arrows by their ends                                                      |
 | `downstream:n3`, `upstream:n4` | Elements reachable along arrows                                           |
 | `selected`                     | What the agent's owner has selected in an open editor                     |
@@ -82,21 +82,21 @@ labels; several matches are refused with the candidates. `selected` with nothing
 `layout` act on many by nature: `wrap`'s members are each ref or quoted label given, plus whatever its other tokens
 match together.
 
-**Membership** is the smallest frame or lane holding an element's centre, the rule [views](document-views.md) nest
-by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
+**Membership** is the smallest boundary or lane holding an element's centre, the rule [views](document-views.md) nest
+by; it decides `in:`, what `wrap` would capture, what a moved boundary carries and the membership lines of a result.
 The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an agent's
 `move` and a person's drag take the same elements along.
 
 ## Placement
 
 `add` and `move` take one of: `right-of:<x>`, `left-of:<x>`, `above:<x>`, `below:<x>` (with `gap:<n>`),
-`after:<x>` (along the flow of x's outgoing arrows), `inside:<frame>` (the next free slot), `align:<x>` (sharing x's
-centre on the axis the element is already nearer it), `at:x,y`. `inside:<frame>` may also go with a side
-(`inside:<frame> right-of:<x>`): beside x, which must be inside that frame or lane (refused, naming the frame,
+`after:<x>` (along the flow of x's outgoing arrows), `inside:<container>` (the next free slot), `align:<x>` (sharing x's
+centre on the axis the element is already nearer it), `at:x,y`. `inside:<container>` may also go with a side
+(`inside:<container> right-of:<x>`): beside x, which must be inside that boundary or lane (refused, naming the boundary,
 otherwise), the way a model writes "in the group, next to x". A side may also take `align:<x>`
-(`below:<frame> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
+(`below:<container> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
 it, lined up with one of its members. Without one, a new element goes beside the last one added, or right of the
-content. To place beside a group but outside it, place against the frame or lane itself. An occupied spot moves along the placement axis until free. Coordinates shown and
+content. To place beside a group but outside it, place against the boundary or lane itself. An occupied spot moves along the placement axis until free. Coordinates shown and
 taken are rounded and relative to the tab's content origin.
 
 ## Layout on edit
@@ -111,9 +111,9 @@ The layout an agent did not ask to change stays put:
   wear the template look, and the label is measured as that look measures, from their size: a short label takes
   their size exactly, never the palette's taller square, and keeps their height while its label holds one line. On
   a tab with no box of that shape, it takes the template's proportions graph input draws
-  ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
+  ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.7, 180×64 for a square). Either way the label is measured at the box's
   own text size, and a label written over several lines line by line.
-- **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
+- **A new box placed beside a member joins its boundary or lane**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
   instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the
   container holds, and what sat past the container on the side it grew, within its span, moves on by the growth, never
@@ -124,7 +124,7 @@ The layout an agent did not ask to change stays put:
   angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
   leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
   to the row hangs off the gateway's bar like its siblings rather than running sideways behind them.
-- **A member moved out leaves no hole.** `move` that takes a box out of its frame or lane gives back the room it
+- **A member moved out leaves no hole.** `move` that takes a box out of its boundary or lane gives back the room it
   had stretched: on each side but the top (the heading's), where the box reached past what stays, the container
   comes in to what stays with its padding (`narrower`, `shorter`), and what lay past that edge moves back with it,
   as growing moved it on. A container left empty keeps its size.
@@ -133,8 +133,8 @@ The layout an agent did not ask to change stays put:
   re-anchors with one end's box moved and the other not: kept, its old bend ran the line through the moved box.
   An arrow whose two ends moved together moved whole, and keeps its route.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
-  frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
-  (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.
+  boundary or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
+  (reported as moves), whatever room there already was. A boundary or lane holding shifted members grows with them.
   Several a→b arrows are refused as `target_ambiguous`.
 - `wrap` refuses to capture an element that is not a member (`frame_captures`) unless told `absorb` or `make-room`.
 - Only `layout` and `replace` lay out many elements, and only those they name.
@@ -185,7 +185,7 @@ nothing was applied
 | `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`                                                                                                                                                                                        | The existing arrow                     |
 | `not_connected`      | `insert between a b` with no a→b arrow                                                                                                                                                                                                            | The arrows touching a and b            |
 | `frame_captures`     | `wrap` would capture a non-member                                                                                                                                                                                                                 | The bystanders                         |
-| `element_locked`     | The tab, a target or its layer is locked                                                                                                                                                                                                          | Each locked element or the tab         |
+| `element_locked`     | The tab or a target is locked                                                                                                                                                                                                                     | Each locked element or the tab         |
 | `test_failed`        | A `test` does not hold                                                                                                                                                                                                                            | Expected and actual                    |
 | `changeset_conflict` | A target changed since the base                                                                                                                                                                                                                   | Each element as read and as now        |
 | `elements_held`      | A target is selected by a person                                                                                                                                                                                                                  | Each element and who holds it          |

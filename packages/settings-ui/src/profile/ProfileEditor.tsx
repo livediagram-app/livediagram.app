@@ -11,13 +11,15 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { avatarFill, initials } from '@liveworkspace/account-menu/initials';
+import { initials } from '@liveworkspace/account-menu/initials';
+import { contrastRatio, shade } from '@liveworkspace/brand/colour';
 import {
   cleanProfileName,
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
 } from '@liveworkspace/settings/presence';
 import { PictureDisc, SwitchRow } from '@liveworkspace/ui';
+import { createIdentityFill, IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { settingsApiErrorMessage } from '../store';
 import { useSavedFlash } from '../useSavedFlash';
 import { colourLabel } from './ProfileHeader';
@@ -37,15 +39,10 @@ export const NAME_SAVE_DELAY_MS = 800;
 export const SETTINGS_INPUT =
   'w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:border-white dark:focus:ring-white/10';
 
-// A runtime colour under white text: the colour itself in light, its deep shade in dark, from the custom properties
-// presenceVars sets.
-const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';
-
-// The two shades IDENTITY_FILL reads: a palette colour's own dark shade, or a custom one darkened until white reads
-// (the account menu's avatarFill).
-function presenceVars(color: string): CSSProperties {
-  return { '--identity': color, '--identity-deep': avatarFill('', color) } as CSSProperties;
-}
+// A runtime colour under its initials: the colour itself in light, its deep shade in dark, each under white where white
+// reads and the dark ink where it does not, as every app paints one (@liveworkspace/ui's identity fill), on the shared
+// colour maths.
+const { identityVars: presenceVars } = /* @__PURE__ */ createIdentityFill({ shade, contrastRatio });
 // The fill for no colour of their own: slate, as the header's avatar is.
 const AUTOMATIC_FILL =
   'bg-gradient-to-br from-slate-600 to-slate-900 dark:from-slate-300 dark:to-slate-500';

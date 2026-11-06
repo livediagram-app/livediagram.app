@@ -19,7 +19,6 @@ describe('panel-layout', () => {
     const layout = defaultPanelLayout();
     // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
     expect(layout.corners['top-left']).toEqual([]);
-    // Vote and Poll open over the Session strip (docs/specs/012-collaboration/session-tools.md), not here.
     // The tool panels home bottom-right (docs/specs/007-editor/panel-docking.md "Default layout").
     expect(layout.corners['top-right']).toEqual([]);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
@@ -32,9 +31,9 @@ describe('panel-layout', () => {
     // Left its old corner...
     expect(next.corners['bottom-right']).toEqual([]);
     // ...and joined below whatever is in the target corner.
-    expect(dockPanel(next, 'laser', 'top-right').corners['top-right']).toEqual([
+    expect(dockPanel(next, 'eraser', 'top-right').corners['top-right']).toEqual([
       'collaborate',
-      'laser',
+      'eraser',
     ]);
   });
 
@@ -60,22 +59,22 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'laser', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'laser']);
+    const stacked = dockPanel(defaultPanelLayout(), 'eraser', 'bottom-right');
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'eraser']);
     const next = dockPanel(stacked, 'collaborate', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['laser']);
+    expect(next.corners['bottom-right']).toEqual(['eraser']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
-    expect(resolvePlacement(layout, 'laser')).toEqual({
+    expect(resolvePlacement(layout, 'eraser')).toEqual({
       mode: 'corner',
       corner: 'bottom-right',
     });
   });
 
   it('homes every tool panel bottom-right', () => {
-    for (const id of ['laser', 'spotlight', 'eraser', 'format', 'slide-deck'] as const)
+    for (const id of ['eraser', 'format'] as const)
       expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
   });
 
@@ -84,16 +83,16 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['format', 'bogus', 'format'],
-          'top-right': ['format', 'laser'],
+          'top-right': ['format', 'eraser'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['format']);
-      // format already seen in top-left, so top-right keeps only laser.
-      expect(layout.corners['top-right']).toEqual(['laser']);
+      // format already seen in top-left, so top-right keeps only eraser.
+      expect(layout.corners['top-right']).toEqual(['eraser']);
     });
 
-    // Poll and Vote moved to the Session strip (docs/specs/012-collaboration/session-tools.md).
+    // Poll and Vote moved to the Session strip, then left (docs/specs/002-project-scope/not-in-livehuddle.md).
     it('ignores the Poll and Vote panels in a stored layout', () => {
       const layout = normalizePanelLayout({
         corners: { 'top-right': ['vote', 'poll', 'format'] },

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { makeItem } from '../test/fakeClient';
-import { createItemOverlay, OVERLAY_BASE_MAX } from './overlay';
+import { createItemOverlay, OVERLAY_BASE_MAX, OVERLAY_PLACEMENTS_MAX } from './overlay';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('createItemOverlay', () => {
   it('lays a patch over an item and keeps unpatched items as they are', () => {
@@ -119,9 +120,54 @@ describe('createItemOverlay', () => {
     const overlay = createItemOverlay();
     const items = Array.from({ length: 5000 }, (_, i) => makeItem(i));
     for (const item of items.slice(0, 400)) overlay.patch(item.id, { title: 'x' }).settle();
-    const t = performance.now();
-    for (let r = 0; r < 20; r++) overlay.observe(items, overlay.stamp());
-    expect(performance.now() - t).toBeLessThan(500);
+    const ms = cpuMsOf(() => {
+      for (let r = 0; r < 20; r++) overlay.observe(items, overlay.stamp());
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
+  });
+
+  it('names a read that raced a move: started after it was laid, before the index took it', () => {
+    const overlay = createItemOverlay();
+    const before = overlay.stamp();
+    const move = overlay.patch('a', { folderId: 'f1' });
+    const during = overlay.stamp();
+    const listener = vi.fn();
+    overlay.subscribe(listener);
+    expect(overlay.raced(during)).toBe(false);
+    move.settle();
+    // Settling a move tells the lists, so a raced one reads again.
+    expect(listener).toHaveBeenCalledTimes(1);
+    const after = overlay.stamp();
+    expect(overlay.raced(during)).toBe(true);
+    expect(overlay.raced(before)).toBe(false);
+    expect(overlay.raced(after)).toBe(false);
+    // Settled twice: remembered once, said once.
+    move.settle();
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('never calls a read raced by a change that does not move anything, nor after clear', () => {
+    const overlay = createItemOverlay();
+    const rename = overlay.patch('a', { title: 'x' });
+    const during = overlay.stamp();
+    rename.settle();
+    expect(overlay.raced(during)).toBe(false);
+    const trash = overlay.patch('a', { trashedAt: 5 });
+    const later = overlay.stamp();
+    trash.settle();
+    expect(overlay.raced(later)).toBe(true);
+    overlay.clear();
+    expect(overlay.raced(later)).toBe(false);
+  });
+
+  it('remembers at most OVERLAY_PLACEMENTS_MAX moves', () => {
+    const overlay = createItemOverlay();
+    const first = overlay.patch('a', { folderId: 'f0' });
+    const during = overlay.stamp();
+    first.settle();
+    for (let i = 0; i < OVERLAY_PLACEMENTS_MAX; i++)
+      overlay.patch(`b${i}`, { gone: true }).settle();
+    expect(overlay.raced(during)).toBe(false);
   });
 
   it('tells subscribers and bumps its version on every change', () => {

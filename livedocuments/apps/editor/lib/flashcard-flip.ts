@@ -1,17 +1,22 @@
-// The flip (docs/specs/007-editor/flashcards.md "Flipping"): going to another card in a stack turns
-// the card in front over its top edge instead of gliding the view along the row. Drawn over the
-// canvas as a picture of the cards (a copy of their sheet and writing, inert), so the real card in
-// front is ready for the caret and presses at once. One flip at a time: a second finishes the first.
+// The flip (docs/specs/007-editor/flashcards.md "Flipping"): going to another page in a stack (flashcards, infographic
+// pages) turns the page in front over its top edge instead of gliding the view along the row. Drawn over the canvas
+// as a picture of the pages (a copy of their sheet and writing, or an infographic page's elements, inert), so the real
+// page in front is ready for the caret and presses at once. One flip at a time: a second finishes the first.
 import type { PageRect } from '@livedocuments/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
-export const FLASHCARD_FLIP_MS = 420;
-// In canvas px (the world is scaled by the zoom): deep enough that the turn reads as a card's.
+// Short and small (flashcards.md "Flipping"): a flip happens again and again while someone talks, so it reads at a
+// glance and never pulls the eye.
+export const FLASHCARD_FLIP_MS = 240;
+// In canvas px (the world is scaled by the zoom): deep enough that the slight tilt reads as a card's.
 const PERSPECTIVE = 2400;
-// How far over the top edge the card turns before it has faded away.
-const TURNED = 'rotateX(78deg)';
-const FLAT = 'rotateX(0deg)';
+// Where the card leaving forward has gone once it has faded: tipped back a little over its top edge, lifted a touch and a shade
+// smaller, as a card picked off the top of a pile.
+const LIFTED = 'rotateX(14deg) translateY(-3%) scale(0.985)';
+// Going back, the card leaving sinks toward the stack instead: tipped the other way, lowered a touch.
+const SUNK = 'rotateX(-10deg) translateY(2%) scale(0.985)';
+const FLAT = 'rotateX(0deg) translateY(0) scale(1)';
 
 type FlipPage = { id: string; rect: PageRect; flow?: string | undefined };
 
@@ -24,6 +29,8 @@ const SCRUB = [
   'id',
   'data-page-id',
   'data-article-flow',
+  'data-element-id',
+  'data-page-clip',
   'data-tour-id',
   'data-add-page-like',
   'contenteditable',
@@ -56,6 +63,9 @@ export function pictureCard(page: FlipPage, root: ParentNode = document): CardPi
     ? root.querySelector(`.article-flow[data-article-flow="${CSS.escape(page.flow)}"]`)
     : null;
   if (flow) inner.appendChild(scrubbed(flow));
+  // An infographic page's elements: the element layer, cut to the page in front (PageClip shows that page alone).
+  const clip = page.flow ? null : world.querySelector('[data-page-clip]');
+  if (clip) inner.appendChild(scrubbed(clip));
   const el = document.createElement('div');
   el.setAttribute('aria-hidden', 'true');
   el.setAttribute('data-flashcard-flip', '');
@@ -85,8 +95,9 @@ export function finishFlip(): void {
 }
 
 /** Flips from the card that was in front (`from`, its picture taken before it went) to `to`, the
- *  card now in front. Forward, `from` turns away over its top edge, uncovering `to`; back, `to`
- *  comes over its top edge onto `from`. Nothing under reduced motion, or without a picture. */
+ *  card now in front. Only the card leaving moves: the real card now in front is drawn under it from the first frame,
+ *  its writing on, so nothing waits for the flip to end. Forward, the leaving card lifts away over its top edge; back,
+ *  it sinks away toward the stack. Nothing under reduced motion, or without a picture. */
 export function flipCard(
   from: CardPicture | null,
   to: FlipPage,
@@ -105,22 +116,15 @@ export function flipCard(
     layers.push(el);
   };
   place(from.el);
-  const turned = { transform: `perspective(${PERSPECTIVE}px) ${TURNED}`, opacity: 0 };
-  const flat = { transform: `perspective(${PERSPECTIVE}px) ${FLAT}`, opacity: 1 };
-  let moving = from.el;
-  let frames = [flat, turned];
-  if (!forward) {
-    // Back: the card that was in front stays put while the earlier card comes back over it.
-    const next = pictureCard(to, from.world);
-    if (next) {
-      place(next.el);
-      moving = next.el;
-      frames = [turned, flat];
-    }
-  }
+  const moving = from.el;
+  const frames = [
+    { transform: `perspective(${PERSPECTIVE}px) ${FLAT}`, opacity: 1 },
+    { transform: `perspective(${PERSPECTIVE}px) ${forward ? LIFTED : SUNK}`, opacity: 0 },
+  ];
   const anim = moving.animate?.(frames, {
     duration: FLASHCARD_FLIP_MS,
-    easing: 'ease-in-out',
+    // Settles quickly: most of the move is over in the first half, so the next card is readable at once.
+    easing: 'cubic-bezier(0.2, 0, 0, 1)',
     fill: 'forwards',
   });
   const done = () => {

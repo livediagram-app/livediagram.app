@@ -12,35 +12,19 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
-import { setWorkbenchConfinement } from './api/workbench-confinement';
 import { __resetPreferencesSync } from './preferences-sync';
 import {
   __resetFetchedPreferences,
-  autoRebindArrowsEnabled,
   fetchUserPreferences,
   PREFERENCES_CHANGED_EVENT,
   readUserPreferences,
   STORAGE_KEY,
   writeUserPreferences,
+  type UserPreferences,
 } from './user-preferences';
 
 const mockedGet = vi.mocked(apiGetPreferences);
 const mockedPut = vi.mocked(apiPutPreferences);
-
-// "Auto-Attach Arrows" is on by default (docs/specs/007-editor/user-preferences.md): a fresh profile
-// (missing key) must read as ON, and only an explicit false turns the
-// on-move rebind off. This helper is the single home for that default; the
-// palette settings popover and useEditorPreferences both consume it,
-// so pinning it here pins the shipped behaviour everywhere.
-describe('autoRebindArrowsEnabled', () => {
-  it('defaults to on for a fresh profile (missing key)', () => {
-    expect(autoRebindArrowsEnabled({})).toBe(true);
-  });
-  it('is off only when explicitly disabled', () => {
-    expect(autoRebindArrowsEnabled({ autoRebindArrows: true })).toBe(true);
-    expect(autoRebindArrowsEnabled({ autoRebindArrows: false })).toBe(false);
-  });
-});
 
 // Minimal in-memory `Storage` polyfill. Matches the parts of the
 // Web Storage interface this module actually uses (getItem /
@@ -120,7 +104,7 @@ describe('readUserPreferences (no window)', () => {
   });
 
   it('writeUserPreferences is a no-op without window (no throw)', () => {
-    expect(() => writeUserPreferences({ autoRebindArrows: false })).not.toThrow();
+    expect(() => writeUserPreferences({ alignmentGuides: false })).not.toThrow();
     expect(readUserPreferences()).toEqual({});
   });
 });
@@ -133,19 +117,19 @@ describe('readUserPreferences (with localStorage)', () => {
 
   it('round-trips a valid preferences object via write + read', () => {
     mockBrowser();
-    writeUserPreferences({ autoRebindArrows: false, telemetryEnabled: false });
+    writeUserPreferences({ alignmentGuides: false, telemetryEnabled: false });
     expect(readUserPreferences()).toEqual({
-      autoRebindArrows: false,
+      alignmentGuides: false,
       telemetryEnabled: false,
     });
   });
 
   it('uses a single shared storage key (no per-document suffix anymore)', () => {
     const { storage } = mockBrowser();
-    writeUserPreferences({ autoRebindArrows: false });
+    writeUserPreferences({ alignmentGuides: false });
     // The spec says the key lives at exactly one place; this asserts
     // there's no per-id suffix leakage from the earlier shape.
-    expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify({ autoRebindArrows: false }));
+    expect(storage.getItem(STORAGE_KEY)).toBe(JSON.stringify({ alignmentGuides: false }));
   });
 
   it('returns {} when the stored JSON is malformed (graceful, no throw)', () => {
@@ -172,15 +156,18 @@ describe('readUserPreferences (with localStorage)', () => {
     // writes back, otherwise an older browser tab would silently
     // strip flags the user set in a newer tab.
     const { storage } = mockBrowser();
-    storage.setItem(STORAGE_KEY, JSON.stringify({ autoRebindArrows: false, futureFlag: 'yes' }));
-    const read = readUserPreferences() as {
-      autoRebindArrows?: boolean;
-      futureFlag?: string;
-    };
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ autoRebindArrows: false, quickAddOnHover: true, futureFlag: 'yes' }),
+    );
+    // `autoRebindArrows` is also unknown now: the Auto-Attach Arrows setting left livehuddle (Work Tracker #423,
+    // part 4), and an old browser's stored value stays in place, unread. So does `quickAddOnHover`, gone with
+    // Quick Connect (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
+    const read: UserPreferences & { futureFlag?: string } = readUserPreferences();
     expect(read.futureFlag).toBe('yes');
     writeUserPreferences(read);
     const stored: unknown = JSON.parse(storage.getItem(STORAGE_KEY)!);
-    expect(stored).toEqual({ autoRebindArrows: false, futureFlag: 'yes' });
+    expect(stored).toEqual({ autoRebindArrows: false, quickAddOnHover: true, futureFlag: 'yes' });
   });
 
   it('handles an empty object correctly (the every-default-on state)', () => {
@@ -222,7 +209,7 @@ describe('writeUserPreferences (server sync)', () => {
     // Editor-page passes `selfParticipant?.id ?? null` so this branch
     // gets hit before identity resolves on a slow network.
     mockBrowser();
-    writeUserPreferences({ autoRebindArrows: false }, null);
+    writeUserPreferences({ alignmentGuides: false }, null);
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
@@ -230,23 +217,8 @@ describe('writeUserPreferences (server sync)', () => {
   // 'self' placeholder, which is nobody's preferences row.
   it("keeps the write local under the 'self' placeholder", () => {
     mockBrowser();
-    writeUserPreferences({ autoRebindArrows: false }, 'self');
+    writeUserPreferences({ alignmentGuides: false }, 'self');
     expect(mockedPut).not.toHaveBeenCalled();
-  });
-
-  // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/blueprints/
-  // workbench-embeds.md, I9): the local write and the event stay.
-  it('keeps the write local under a workbench session', () => {
-    const { storage, events } = mockBrowser();
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
-    try {
-      writeUserPreferences({ showMinimap: false }, 'user_1');
-    } finally {
-      setWorkbenchConfinement(null);
-    }
-    expect(mockedPut).not.toHaveBeenCalled();
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
-    expect(events).toEqual([PREFERENCES_CHANGED_EVENT]);
   });
 
   it('still writes to localStorage when the PUT path runs (cache first, sync second)', () => {
@@ -322,6 +294,6 @@ describe('writeUserPreferences quota / failure handling', () => {
       localStorage: storage,
       dispatchEvent: () => true,
     } as unknown as Window;
-    expect(() => writeUserPreferences({ autoRebindArrows: false })).not.toThrow();
+    expect(() => writeUserPreferences({ alignmentGuides: false })).not.toThrow();
   });
 });

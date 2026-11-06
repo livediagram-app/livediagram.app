@@ -3,11 +3,10 @@ import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@livehuddle/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
-import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
+import type { UserPreferences } from '@/lib/user-preferences';
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
-const SWITCHES = TOGGLES;
 const CHOICES = ALL_ROWS.filter((r) => r.kind === 'choice');
 const SLIDERS = ALL_ROWS.filter((r) => r.kind === 'slider');
 const BOTH_CONTEXTS = [
@@ -27,13 +26,11 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
-  it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
-    // A fresh profile has the feature OFF; the switch has to say so, or the
-    // first click flips a switch that looked on to the off it already was.
-    const row = TOGGLES.find((r) => r.key === 'autoRebindArrows')!;
-    for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
-      expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
-    }
+  // The Auto-Attach Arrows setting left livehuddle (Work Tracker #423, part 4): arrows always reattach after a
+  // move, and the stored key is left unread.
+  it('offers no Auto-Attach Arrows setting', () => {
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key ?? ''));
+    expect(keys).not.toContain('autoRebindArrows');
   });
 
   it('round-trips every toggle through read/write in both directions', () => {
@@ -61,33 +58,15 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Workshop tour row the same way', () => {
-    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
-    expect(row.read({ workshopTourSeen: true })).toBe(false);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).workshopTourSeen).toBe(false);
-    expect(row.write({}, false).workshopTourSeen).toBe(true);
-    expect(row.event.on).toBe('WorkshopTourSeenOff');
-    expect(row.event.off).toBe('WorkshopTourSeenOn');
-  });
-
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
-      ['elementTour-timeline', 'toggle', 'Timeline', 'timelineRail'],
-      ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
-      ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
-      ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
-      ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
-      ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
       ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
@@ -100,26 +79,20 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
-        ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['ChartTourSeenOff', 'ChartTourSeenOn'],
-        ['StackTourSeenOff', 'StackTourSeenOn'],
-        ['LaneTourSeenOff', 'LaneTourSeenOn'],
-        ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
-        ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
         ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
   });
 
-  // A phone has no hover and no middle button: the Mouse section's rows are inert there, as the Map's are.
+  // A phone has no middle button: the Mouse section's row is inert there, as the Map's are.
   it('makes the Mouse section desktop only', () => {
     const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
       (r) => 'section' in r && r.section === 'Mouse',
     );
-    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover', 'middleMousePan']);
+    // Quick-Add on Hover left with Quick Connect (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect).
+    expect(rows.map((r) => r.key)).toEqual(['middleMousePan']);
     for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
   });
 
@@ -162,31 +135,14 @@ describe('settings catalogue', () => {
       'elementTour-funnel': ['elementTourKinds'],
       'elementTour-cycle': ['elementTourKinds'],
       'elementTour-hub': ['elementTourKinds'],
-      'elementTour-onion': ['elementTourKinds'],
-      'elementTour-timeline': ['elementTourKinds'],
-      'elementTour-chevrons': ['elementTourKinds'],
-      'elementTour-mind-node': ['elementTourKinds'],
-      'elementTour-flowchart': ['elementTourKinds'],
-      'elementTour-org-chart': ['elementTourKinds'],
-      'elementTour-sequence': ['elementTourKinds'],
-      'elementTour-chart': ['elementTourKinds'],
-      'elementTour-stack': ['elementTourKinds'],
-      'elementTour-entity': ['elementTourKinds'],
-      'elementTour-lane': ['elementTourKinds'],
-      'elementTour-boundary': ['elementTourKinds'],
-      'elementTour-diagram-key': ['elementTourKinds'],
       'elementTour-portal': ['elementTourKinds'],
     };
-    // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
-    // exactly the preset's settings, pinned by its own test below.
-    for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
+    for (const row of TOGGLES) {
       const after = row.write(before, !row.read(before));
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      // A presenter switch writes the one `presentation` object (lib/presentation-config).
-      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
-      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
+      expect(changed, row.key).toEqual(own[row.key] ?? [row.key]);
     }
   });
 
@@ -228,21 +184,13 @@ describe('settings catalogue', () => {
     }
   });
 
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account and tokens, and the Appearance choice, out of a workbench', () => {
-    const ctx = { emailEnabled: true, signedIn: true, workbench: true };
-    const categories = visibleCategories(ctx);
-    const ids = categories.map((c) => c.id);
-
-    for (const hidden of ['account', 'notifications', 'tokens']) {
-      expect(ids).not.toContain(hidden);
-    }
-    expect(ids).toContain('editor');
+  it('offers the account, its tokens and the Appearance choice to a signed-in person', () => {
+    const categories = visibleCategories({ emailEnabled: true, signedIn: true });
+    expect(categories.map((c) => c.id)).toEqual(
+      expect.arrayContaining(['account', 'tokens', 'editor']),
+    );
     const appearance = categories.find((c) => c.id === 'appearance')!;
-    expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
-    expect(appearance.rows.length).toBeGreaterThan(0);
-    const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['account', 'tokens']));
+    expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(true);
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -271,8 +219,6 @@ describe('settings catalogue', () => {
     ]);
     const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
     expect(ids).not.toContain('webhooks');
-    const workbench = visibleCategories({ emailEnabled: false, signedIn: false, workbench: true });
-    expect(workbench.map((c) => c.id)).not.toContain('webhooks');
   });
 
   it('points every link row at a category that exists', () => {
@@ -306,32 +252,6 @@ describe('settings catalogue', () => {
     expect(notifyRows(without)).toContain('notificationsEnabled');
   });
 
-  it('offers Minimal chrome only while power user mode is on', () => {
-    const editorRows = (powerUserMode: boolean) =>
-      visibleCategories({ emailEnabled: false, signedIn: false, powerUserMode })
-        .find((c) => c.id === 'editor')!
-        .rows.map((r) => r.key);
-    expect(editorRows(false)).toContain('powerUserMode');
-    expect(editorRows(false)).not.toContain('minimalChrome');
-    expect(editorRows(true)).toEqual(expect.arrayContaining(['powerUserMode', 'minimalChrome']));
-  });
-
-  it('switches power user mode through the preset, not a bare flag', () => {
-    const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ alignmentGuides: false }, true);
-    expect(on.alignmentGuides).toBe(true);
-    expect(on.minimalChrome).toBe(true);
-    expect(row.read(on)).toBe(true);
-    const off = row.write(on, false);
-    expect(off).toEqual({ alignmentGuides: false });
-    expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
-  });
-
-  it('names the Minimal chrome flips in telemetry', () => {
-    const row = TOGGLES.find((r) => r.key === 'minimalChrome')!;
-    expect(row.event).toEqual({ category: 'UI', on: 'MinimalChromeOn', off: 'MinimalChromeOff' });
-  });
-
   it('never offers a category with no rows', () => {
     // An empty category is a dead end: a row that pushes a blank pane.
     for (const ctx of BOTH_CONTEXTS) {
@@ -344,32 +264,22 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests Presenting under Editor, directly after it', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['presenting']);
-    const at = ids.indexOf('editor');
-    expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
+  // livehuddle has no presenting (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2).
+  it('offers no Presenting settings', () => {
+    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
+    const keys = SETTINGS_CATEGORIES.flatMap((c) => c.rows.map((r) => r.key ?? ''));
+    expect(keys.filter((k) => k.startsWith('presentation'))).toEqual([]);
   });
 
   it('keeps every setting that acts in both modes on Editor itself', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual([
-      'alignmentGuides',
-      'autoRebindArrows',
-      'elementIndicatorStyle',
-      'quickAddOnHover',
-      'middleMousePan',
-      'powerUserMode',
-      'minimalChrome',
-      'powerUserPreset',
-    ]);
+    expect(keys).toEqual(['alignmentGuides', 'elementIndicatorStyle', 'middleMousePan']);
   });
 
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
+    expect(children).toEqual(['map', 'collaborate']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -384,10 +294,8 @@ describe('settings sub-categories', () => {
   it('opens every panel sub-category with its Enable switch, on by default', () => {
     const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
     const switches: Record<string, [string, string]> = {
-      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
       map: ['showMinimap', 'Enable Map'],
       collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
-      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
     };
     for (const [id, [key, label]] of Object.entries(switches)) {
       const row = first(id);
@@ -403,13 +311,6 @@ describe('settings sub-categories', () => {
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === id)!
         .rows.map((r) => r.key);
-    expect(rows('layers', {})).toEqual([
-      'layersPanelEnabled',
-      'layersShowPreview',
-      'layersShowCount',
-      'layerHoverPreview',
-    ]);
-    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
     expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
     expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });

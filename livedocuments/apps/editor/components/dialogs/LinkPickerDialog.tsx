@@ -126,13 +126,10 @@ export function LinkPickerDialog({
             : 'Jump to a tab, open another document, or go to a web address.'
         }
       >
-        {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
-            it points at the embed article rather than the generic links one:
-            "which links work here" is the question being asked. */}
-        <HelpArticleLink
-          size="md"
-          article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
-        />
+        {/* The picker sets a link card's, a video's or a table cell's link (element links are retired,
+            docs/specs/009-elements/links-and-notes-retired.md, and their articles with them), so it points at
+            the embed article: "which links work here" is the question being asked. */}
+        <HelpArticleLink size="md" article="embedElements" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
 

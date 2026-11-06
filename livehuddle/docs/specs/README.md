@@ -32,16 +32,16 @@ place. The specs themselves are unnumbered and named by subject.
 - ./003-system-architecture/README.md - when touching where livehuddle keeps its data or how its apps fit together (one Durable Object per space, no D1), source layout, the test setup, console logging, or cross-cutting code structure
 - ./004-interface-design/README.md - when working on the visual language: colour, fonts, motion, accessibility, shared UI mechanics
 - ./005-project-roadmap/README.md - when asking how livehuddle gets built, what comes after v1 (audio, video, screen sharing), what the owner still has to decide, and what the forked code holds today
-- ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, layers, storage, snapshots, offline documents, stroke points
-- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, side by side tabs, preferences, power user mode, panels, tours (incl. Show Me), AI, command palette
-- ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, finishes (Flexible / Professional / Sketch / Marker), tool panels and the Quick Style Panel
+- ./006-document/README.md - when working on the document model and its domain language: tabs, tab kinds, storage, snapshots, offline documents, stroke points
+- ./007-editor/README.md - when working on the live editor shell: routes, editor modes, side by side tabs, preferences, panels, tours (incl. Show Me), AI, command palette
+- ./008-canvas/README.md - when working on canvas tools and gestures: drawing, arrows, snapping, sizing, corner radius, finishes (Flexible / Professional / Sketch / Marker), and tool panels
 - ./009-elements/README.md - when adding or changing an element kind or its content
 - ./010-palette/README.md - when working on the palette: categories, per-mode layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in and multi-colour themes
-- ./012-collaboration/README.md - when working on realtime, the meeting board, the Timer, the quick vote, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
+- ./012-collaboration/README.md - when working on realtime, the meeting board, Bring Focus, facilitation, comments, actions, proximity audio, or a Collaborate spec marked Leaving livehuddle
 - ./013-workspace/README.md - when gating any feature by share role (Editor, Participant and Viewer in livehuddle), or working on the Explorer, its filters, folders, default folders, teams, favourites, tags, shape libraries, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
-- ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
+- ./015-api/README.md - when working on the api worker, its OpenAPI document, or tokens (livehuddle has no MCP server or CLI)
 - ./016-platform/README.md - when registering livehuddle with liveworkspace (sites, accounts, index, telemetry, media, CI, DNS and the 3500 port block), or working on routing, deployment or the staging environment, the new version prompt and stale builds, or web performance (what a page loads up front)
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links

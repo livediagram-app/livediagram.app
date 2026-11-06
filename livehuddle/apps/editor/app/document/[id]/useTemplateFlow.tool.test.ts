@@ -43,7 +43,7 @@ async function pick(
 
 describe('chooseTemplate and the tool in hand', () => {
   it('puts the tool down when a template lands its board', async () => {
-    expect(await pick('retrospective')).toHaveBeenCalledOnce();
+    expect(await pick('team-pod')).toHaveBeenCalledOnce();
   });
 
   it('leaves the tool in hand on the blank, which lands nothing', async () => {

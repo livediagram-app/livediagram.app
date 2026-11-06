@@ -17,11 +17,14 @@
 // The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
 // commit the environment last deployed: every affected workspace with a wrangler.toml is a Worker to
 // build and deploy, in three tiers (services and apis, then the sites, then the routers in front).
-// A change to .github/ or the format config alone redeploys nothing.
+// Each tier's Workers deploy in a few jobs, one per group (deploy-group.mjs): `deploys<tier>` lists
+// the Workers and `groups<tier>` the jobs. A change to .github/ or the format config alone redeploys
+// nothing.
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { readersReached, repoReaders } from './ci-readers.mjs';
+import { deployGroups, groupOf } from './deploy-group.mjs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
 // TURBO_CMD='corepack pnpm exec turbo'.
@@ -64,7 +67,7 @@ const GROUPS = [
     dirs: ['livehuddle/'],
     editor: '@livehuddle/editor',
     editorDir: 'livehuddle/apps/editor',
-    cli: 'livehuddle/apps/cli',
+    cli: null,
   },
   {
     group: 'platform',
@@ -240,6 +243,8 @@ function deployOf(p) {
     dir: p.path,
     product,
     tier,
+    // The job it deploys in: the tier's one, or for a site its product's.
+    group: groupOf({ tier, product }),
     d1,
     // A static site serves its build (`[assets]`); a Worker's own build is the bundle wrangler makes anyway.
     build: /^\[assets\]/m.test(config),
@@ -254,8 +259,14 @@ const deploys = packages.map(deployOf).filter(Boolean);
 const plan = { reason, groups, editors, e2e, deploys, any: groups.length > 0 };
 console.error(`[ci-plan] ${reason}; ${packages.length} workspaces`);
 for (const g of groups) console.error(`[ci-plan]   ${g.group}: ${g.count}${g.cli ? ', CLI' : ''}`);
-if (deployMode)
+if (deployMode) {
   console.error(`[ci-plan]   Workers: ${deploys.map((d) => d.name).join(', ') || 'none'}`);
+  for (const tier of [0, 1, 2])
+    for (const g of deployGroups(deploys, tier))
+      console.error(
+        `[ci-plan]   job ${g.label}: ${g.count} Worker${g.count === 1 ? '' : 's'}, ${g.timeout} min limit`,
+      );
+}
 console.error(
   `[ci-plan]   editor shards: ${[...new Set(editors.map((e) => e.group))].join(', ') || 'none'}`,
 );
@@ -269,6 +280,7 @@ if (process.env.GITHUB_OUTPUT) {
     ...[0, 1, 2].map(
       (tier) => `deploys${tier}=${JSON.stringify(deploys.filter((d) => d.tier === tier))}`,
     ),
+    ...[0, 1, 2].map((tier) => `groups${tier}=${JSON.stringify(deployGroups(deploys, tier))}`),
     `any=${plan.any}`,
   ];
   appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);

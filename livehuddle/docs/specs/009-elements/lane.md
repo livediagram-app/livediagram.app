@@ -8,7 +8,7 @@ A **Lane**: a horizontal band with a titled gutter down its left edge, for
 swimlane documents: a role, a team, or a system per band, with the steps laid
 inside it.
 
-Dragging a lane carries everything inside it, exactly as a frame does.
+Dragging a lane carries everything inside it, exactly as a boundary does.
 
 ## Why
 

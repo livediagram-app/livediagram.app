@@ -168,9 +168,13 @@ export function bubbleWidth(text: string): number {
   );
 }
 
+// How far in from a leaning bubble's edge its tail points down at the speaker: as far to one side as the tail goes.
+export const BUBBLE_TAIL_INSET = 18;
+
 /**
- * Where a bubble stands over its speaker, relative to the speaker's feet: centred over the head, or leaning off the
- * copy's side when centring would put it in the keep-clear column. `tail` is the tail's x within the bubble.
+ * Where a bubble stands over its speaker, relative to the speaker's feet: centred over the head, or leaning to the
+ * walker's `lean` side, or off the copy's side when centring would put it in the keep-clear column. `tail` is the
+ * tail's x within the bubble.
  */
 export function bubbleBox(
   stage: FloorStage,
@@ -181,7 +185,12 @@ export function bubbleBox(
   const head = FIGURE_HEIGHT - (walker.seated ? SEATED_DROP : 0);
   const top = -head - BUBBLE_GAP - BUBBLE_HEIGHT;
   const feet = seg.to;
-  let left = -width / 2;
+  let left =
+    walker.lean === 'left'
+      ? BUBBLE_TAIL_INSET - width
+      : walker.lean === 'right'
+        ? -BUBBLE_TAIL_INSET
+        : -width / 2;
   const { clear } = stage;
   const overlaps = (l: number) =>
     feet.x + l < clear.x + clear.width &&
@@ -193,7 +202,7 @@ export function bubbleBox(
       feet.x < clear.x + clear.width / 2
         ? clear.x - feet.x - width - 4
         : clear.x + clear.width - feet.x + 4;
-  const tail = Math.min(width - 18, Math.max(18, -left));
+  const tail = Math.min(width - BUBBLE_TAIL_INSET, Math.max(BUBBLE_TAIL_INSET, -left));
   return { left: Math.round(left), top: Math.round(top), width, tail: Math.round(tail) };
 }
 

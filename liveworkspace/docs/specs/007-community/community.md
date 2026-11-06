@@ -46,13 +46,18 @@ category must be one of its own app's (`invalid_category` otherwise). A gallery 
 (`?category=architecture` or `category:architecture` on livedesign's) reads as no category, keeping the rest of
 the search.
 
+An app can retire a category. Its stored posts keep the old id, untouched: they read as `other` (Something Else)
+wherever a post is shown, even when another app still has that id (livehuddle's posts filed under `workshops` before
+it became a product for meeting in Spaces, Work Tracker #423, read as Something Else; livediagram's stay Workshops).
+They still count towards the gallery's total, and a link naming the retired id reads as no category.
+
 | App                 | Categories (id: label)                                                                                                                                                                                                                                                                                      |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `livediagram.app`   | `architecture`: Architecture, `flows`: Flows & Processes, `planning`: Planning, `workshops`: Workshops, `mindmaps`: Mind Maps, `design`: Design & Wireframes, `data`: Data & Databases, `learning`: Learning & Teaching, `infographics`: Infographics, `art`: Drawing & Art, `other`: Something Else        |
 | `liveplanner.app`   | `projects`: Project Plans, `roadmaps`: Roadmaps & Timelines, `workflows`: Kanban & Workflows, `trackers`: Trackers & Sheets, `budgets`: Budgets & Finance, `events`: Events & Schedules, `forms`: Forms & Surveys, `dashboards`: Dashboards & Reports, `personal`: Personal & Home, `other`: Something Else |
 | `livedocuments.app` | `articles`: Articles & Reports, `decks`: Slide Decks, `infographics`: Infographics, `guides`: Guides & How-Tos, `proposals`: Proposals & Briefs, `newsletters`: Newsletters & Updates, `learning`: Learning & Teaching, `other`: Something Else                                                             |
 | `livedesign.app`    | `logos`: Logos & Branding, `wireframes`: Wireframes & Mockups, `photos`: Photo Edits, `social`: Social & Marketing, `posters`: Posters & Flyers, `illustrations`: Icons & Illustrations, `other`: Something Else                                                                                            |
-| `livehuddle.app`    | `offices`: Offices & Spaces, `meetings`: Meetings, `retrospectives`: Retrospectives, `workshops`: Workshops, `decisions`: Votes & Decisions, `games`: Quizzes & Games, `learning`: Learning & Teaching, `other`: Something Else                                                                             |
+| `livehuddle.app`    | `offices`: Offices & Spaces, `meetings`: Meetings, `socials`: Socials & Events, `communities`: Communities & Clubs, `learning`: Learning & Teaching, `other`: Something Else                                                                                                                                |
 
 Each category's one-line description (shown under the publish dialog's chips) is in the product spec.
 

@@ -32,10 +32,9 @@ describe('gateClientOp', () => {
     expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
-  it('keeps a viewer from taking part: answers, reactions, speech and focus', () => {
-    for (const op of [{ kind: 'poll-answer' }, { kind: 'reaction' }, say, { kind: 'focus-here' }])
+  it('keeps a viewer from taking part: speech and focus', () => {
+    for (const op of [say, { kind: 'focus-here' }])
       expect(gateClientOp(op, as('view'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'reaction' }, as('participate'))).toEqual(relay(true));
     expect(gateClientOp(say, as('participate'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'focus-here' }, as('participate'))).toEqual(DROP);
   });
@@ -62,14 +61,47 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
 
-  it("routes a participant's element op through the content rule, and relays its own answers", () => {
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles": a Viewer never raises a hand or lets one
+  // speak; an Editor and a Participant may, and only well formed.
+  it('relays a hand and a let-speak from an Editor or a Participant only, and only well formed', () => {
+    const hand = { kind: 'avatar-hand', tabId: 't', raised: true };
+    const letSpeak = { kind: 'avatar-let-speak', tabId: 't', targetId: 'p2', on: true };
+    for (const op of [hand, letSpeak]) {
+      expect(gateClientOp(op, as('view'))).toEqual(DROP);
+      expect(gateClientOp(op, as('participate'))).toEqual(relay(true));
+      expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    }
+    expect(gateClientOp({ ...hand, raised: 'yes' }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...letSpeak, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/016-platform/calls-kill-switch.md "The room tells its clients": a silent publisher's nudge.
+  it('lets a calls-check through from a speaker only, and only well formed', () => {
+    const check = { kind: 'calls-check', tabId: 't' };
+    expect(gateClientOp(check, as('view'))).toEqual(DROP);
+    expect(gateClientOp(check, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(check, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp({ kind: 'calls-check' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles": a camera is taking part, a screen an Editor's.
+  it('relays a camera from a speaker, a screen from an Editor only, and never a slot holding another track', () => {
+    const at = (trackName: string) => ({ sessionId: 's', trackName, token: 'k' });
+    const camera = { kind: 'call-track', tabId: 't', track: null, video: at('cam') };
+    const screen = { kind: 'call-track', tabId: 't', track: null, screen: at('screen') };
+    expect(gateClientOp(camera, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp(camera, as('view'))).toEqual(DROP);
+    expect(gateClientOp(screen, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(screen, as('participate'))).toEqual(DROP);
+    // Stopping a share is not sharing one.
+    expect(gateClientOp({ ...screen, screen: null }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ ...camera, video: at('screen') }, as('edit'))).toEqual(DROP);
+  });
+
+  it("routes a participant's element op through the content rule", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
-    expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(
-      relay(false, true),
-    );
-    expect(gateClientOp({ kind: 'vote', voter: 'you' }, as('participate'))).toEqual(DROP);
     expect(
       gateClientOp({ kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } }, as('participate')),
     ).toEqual(DROP);
@@ -87,6 +119,32 @@ describe('gateClientOp', () => {
     expect(gateClientOp(react('me'), as('participate'))).toEqual(relay(false, true));
     expect(gateClientOp(react('you'), as('participate'))).toEqual(DROP);
     expect(gateClientOp(react('me'), as('view'))).toEqual(DROP);
+  });
+
+  // docs/specs/009-elements/social-pieces.md "Notice Board": a Participant pins and unpins as itself, signed with its
+  // server-verified adder key, never its claimed collab key.
+  it('relays a notice board pin or unpin from a Participant only when signed with its adder key', () => {
+    const op = (delta: Record<string, unknown>) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'nb',
+      delta,
+    });
+    const note = (by: string) => ({ id: 'n', text: 'Hi', author: 'Me', by, at: 1 });
+    const pin = (by: string) => op({ kind: 'notice-pin', note: note(by) });
+    const unpin = (by: string) => op({ kind: 'notice-unpin', noteId: 'n', by });
+    const participant = as('participate', { adderKey: 'adder' });
+    for (const mine of [pin('adder'), unpin('adder')]) {
+      expect(gateClientOp(mine, participant)).toEqual(relay(false, true));
+      expect(gateClientOp(mine, as('edit'))).toEqual(relay(false));
+      expect(gateClientOp(mine, as('view', { adderKey: 'adder' }))).toEqual(DROP);
+    }
+    // Another's key, its claimed collab key, or no adder key at all.
+    for (const other of [pin('someone'), unpin('someone'), pin('me'), unpin('me')])
+      expect(gateClientOp(other, participant)).toEqual(DROP);
+    expect(gateClientOp(pin('adder'), as('participate'))).toEqual(DROP);
+    expect(gateClientOp(unpin(''), as('participate', { adderKey: '' }))).toEqual(DROP);
+    expect(gateClientOp(op({ kind: 'notice-pin', note: null }), participant)).toEqual(DROP);
   });
 
   it("shows only an editor's drag preview", () => {
@@ -137,9 +195,16 @@ describe('gateClientOp', () => {
     ).toEqual(relay(false));
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote": an old client's dot is dropped from every level.
+  it('drops the retired vote op from every level', () => {
+    for (const level of ['edit', 'participate', 'view'] as const) {
+      expect(gateClientOp({ kind: 'vote', tabId: 't', voter: 'me' }, as(level))).toEqual(DROP);
+    }
+  });
+
   it('decides a tab op in well under a microsecond (it runs on every op)', () => {
     const op = { kind: 'tab', tabId: 't1', tab: { id: 't1', elements: [] } };
-    const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null, vote: null } };
+    const meta = { kind: 'tab-meta', tabId: 't1', patch: { timer: null } };
     const sender = as('edit', { tabScope: 't1' });
     const n = 200_000;
     const start = performance.now();
@@ -150,5 +215,40 @@ describe('gateClientOp', () => {
     const perOpUs = ((performance.now() - start) * 1000) / (2 * n);
     // Measured about 0.1 µs per op; the budget leaves room for a busy CI machine.
     expect(perOpUs).toBeLessThan(5);
+  });
+
+  // docs/specs/012-collaboration/proximity-audio.md "The wire": a call proves its session from any level.
+  it('takes a call-session op from every level, and only well formed', () => {
+    const op = { kind: 'call-session', tabId: 't', sessionId: 's', sessionToken: 'l.x' };
+    for (const role of ['edit', 'participate', 'view'])
+      expect(gateClientOp(op, as(role))).toEqual(relay(true));
+    expect(gateClientOp({ ...op, sessionToken: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles" (#469): an Editor's alone.
+  it('relays a stop-share from an Editor only, and only well formed', () => {
+    const op = { kind: 'call-stop-share', tabId: 't', targetId: 'p2' };
+    expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    expect(gateClientOp(op, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(op, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ ...op, targetId: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/knock.md "Share roles": a knock and its answer are presence from every level.
+  it('relays a knock and its answer from every level, and only well formed', () => {
+    const knock = { kind: 'avatar-knock', tabId: 't', roomId: 'room-1' };
+    const answer = {
+      kind: 'avatar-knock-answer',
+      tabId: 't',
+      targetId: 'p2',
+      roomId: 'room-1',
+      answer: 'in',
+    };
+    for (const role of ['edit', 'participate', 'view']) {
+      expect(gateClientOp(knock, as(role))).toEqual(relay(true));
+      expect(gateClientOp(answer, as(role))).toEqual(relay(true));
+    }
+    expect(gateClientOp({ ...knock, roomId: '' }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...answer, answer: 'maybe' }, as('view'))).toEqual(DROP);
   });
 });

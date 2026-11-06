@@ -64,14 +64,26 @@ A fence has no state of its own. Per walking character, every frame of `useAvata
 - `from` at or beyond `FENCE_REACH` from the fence line → refused iff the step segment comes
   within `FENCE_REACH` of it (`segmentDistance`), so no step tunnels through and gaps narrower than
   `2 * FENCE_REACH` are sealed.
-- `from` inside the reach → refused iff the step crosses the line or ends nearer to it.
+- `from` inside the reach → refused iff the step crosses the line or ends nearer to it, except that
+  `from` within `FENCE_ON_LINE` of the line (on the fence itself) is never refused, so it may step off either side.
+- `fence.solid` set (a footprint's edge, from `fenceSegments`) and `from` inside that box → refused iff `to` is
+  deeper in it (`depthIn`: distance to the box's nearest side), whatever the reach, so a character inside walks out.
 
 Invariants:
 
 - **I1:** no blocking state is written to the document, the room, the index or undo.
 - **I2:** a character outside every fence's reach never ends a frame inside one.
-- **I3:** a character inside a fence's reach can always move away from it.
-- **I4:** teleports (portal), seating snaps and spawns do not pass through `fenceStep`.
+- **I3:** a character inside a fence's reach can always move away from it; one within `FENCE_ON_LINE` is not
+  held at all, so it can also cross it, toward a click on either side.
+- **I3a:** a character inside a footprint's box can always move: along it at the same depth or out of it, never
+  deeper. Nothing leaves one stuck in scenery (a seat tucked into a counter, scenery dropped on it).
+- **I4:** teleports (portal), seating snaps and spawns do not pass through `fenceStep`. Entering the mode
+  places the character through `clearOfFences`: off each fence whose reach it is inside but not within
+  `FENCE_ON_LINE` of, to the side its feet were on; left where it is when a nudge would cross another fence or
+  `FENCE_CLEAR_ROUNDS` nudges do not clear it. A footprint's edges never nudge a point inside its box (the nudge would push it
+  deeper); it walks out under I3a.
+- **I5:** no walk ends within `FENCE_ON_LINE` of a line: it is under every size's reach, so only a spawn or an
+  edit (a fence or room moved onto a character) puts one there.
 
 ## Interfaces and contracts
 
@@ -128,6 +140,12 @@ export function fenceStep(
   fences: readonly FenceSegment[],
   reach?: number,
 ): { pos: FencePoint; blocked: boolean };
+export const FENCE_ON_LINE = 8;
+export function clearOfFences(
+  p: FencePoint,
+  fences: readonly FenceSegment[],
+  reach?: number,
+): FencePoint;
 ```
 
 | Input                          | Handling                                           |
@@ -150,6 +168,8 @@ export function fenceStep(
 | #   | Case                                 | Handling                                                 |
 | --- | ------------------------------------ | -------------------------------------------------------- |
 | E1  | Fence dropped on a character         | Character may step away, never across (I3)               |
+| E1b | Character on the line (a wall)       | Crosses toward a click on either side (I3, I5)           |
+| E1c | Mode entered beside a wall, in reach | Nudged clear to the side the feet were on (I4)           |
 | E2  | Gap between fence ends `< 2 * reach` | Sealed                                                   |
 | E3  | Diagonal walk into a fence           | Slides along it                                          |
 | E4  | Click-walk target behind a fence     | Slides toward the target's foot, then stops on stall     |
@@ -204,21 +224,25 @@ click-walk stops against a fence.
 
 ## Testing
 
-| Rule                                        | Test                                             | File                                              |
-| ------------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
-| Run follows the longer side                 | "runs along the longer side, across when square" | `../packages/avatar/src/fence.test.ts`            |
-| End posts inset; even spacing               | `fencePostCentres` block                         | `../packages/avatar/src/fence.test.ts`            |
-| Rails full length; corner posts coincide    | `fenceParts` block                               | `../packages/avatar/src/fence.test.ts`            |
-| Fence line, rotated                         | `fenceLine` block                                | `../packages/avatar/src/fence.test.ts`            |
-| Refused from either side; open past the end | `fenceRefuses` block                             | `../packages/avatar/src/collision.test.ts`        |
-| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"  | `../packages/avatar/src/collision.test.ts`        |
-| No tunnelling (I2)                          | "cannot tunnel through with one long step"       | `../packages/avatar/src/collision.test.ts`        |
-| Slide                                       | "slides along a fence walked into at an angle"   | `../packages/avatar/src/collision.test.ts`        |
-| Enclosure keeps people out, outside open    | "walks all the way round the outside …"          | `../packages/avatar/src/collision.test.ts`        |
-| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                | `../packages/avatar/src/collision.test.ts`        |
-| Worst-case budget                           | "keeps a frame within budget …"                  | `../packages/avatar/src/collision.test.ts`        |
-| Self-drawing (no label)                     | "claims exactly the kinds its members claim …"   | `packages/document/src/data-shapes.test.ts`       |
-| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                  | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx` |
+| Rule                                        | Test                                               | File                                                        |
+| ------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| Run follows the longer side                 | "runs along the longer side, across when square"   | `../packages/avatar/src/fence.test.ts`                      |
+| End posts inset; even spacing               | `fencePostCentres` block                           | `../packages/avatar/src/fence.test.ts`                      |
+| Rails full length; corner posts coincide    | `fenceParts` block                                 | `../packages/avatar/src/fence.test.ts`                      |
+| Fence line, rotated                         | `fenceLine` block                                  | `../packages/avatar/src/fence.test.ts`                      |
+| Refused from either side; open past the end | `fenceRefuses` block                               | `../packages/avatar/src/collision.test.ts`                  |
+| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"    | `../packages/avatar/src/collision.test.ts`                  |
+| Off a wall it overlaps (I3, I5)             | "a character overlapping a room's wall …"          | `../packages/avatar/src/collision.test.ts`                  |
+| Entry nudge (I4)                            | "clearOfFences …"                                  | `../packages/avatar/src/collision.test.ts`                  |
+| Out of a footprint, never deeper (I3a)      | "a stool tucked under a bar", "inside a footprint" | `../packages/avatar/src/collision.solid.test.ts`            |
+| Stand up from a tucked stool and walk away  | "walks away from the bar after standing up …"      | `../packages/avatar/src/hooks/useAvatarWalk.solid.test.tsx` |
+| No tunnelling (I2)                          | "cannot tunnel through with one long step"         | `../packages/avatar/src/collision.test.ts`                  |
+| Slide                                       | "slides along a fence walked into at an angle"     | `../packages/avatar/src/collision.test.ts`                  |
+| Enclosure keeps people out, outside open    | "walks all the way round the outside …"            | `../packages/avatar/src/collision.test.ts`                  |
+| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                  | `../packages/avatar/src/collision.test.ts`                  |
+| Worst-case budget                           | "keeps a frame within budget …"                    | `../packages/avatar/src/collision.test.ts`                  |
+| Self-drawing (no label)                     | "claims exactly the kinds its members claim …"     | `packages/document/src/data-shapes.test.ts`                 |
+| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                    | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`           |
 
 ## Constants and configuration
 
@@ -232,5 +256,7 @@ click-walk stops against a fence.
 | `FENCE_RAIL_OPACITY`   | 0.78                  | Rails behind posts                              |
 | `FENCE_WOOD`           | `#8a5a33` / `#c08a5b` | Wood brown per paper (D201)                     |
 | `FENCE_REACH`          | 12                    | Feet half-width at Regular size; 8 to 20 (D202) |
+| `FENCE_ON_LINE`        | 8                     | Under Small's 9.2 px reach, so walk-proof       |
+| `FENCE_CLEAR_ROUNDS`   | 4                     | Entry nudges; a corner needs two                |
 | `FENCE_STALL`          | 0.25                  | Canvas px; below visible motion                 |
 | `FENCE_APPROACH_STEPS` | 7                     | 13 px step to 0.1 px                            |

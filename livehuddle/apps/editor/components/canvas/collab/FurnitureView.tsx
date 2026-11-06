@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { seatPillBottom, seatRing, type Sitter } from '@liveworkspace/avatar/chair-sitters';
+import { useEffect, useId, useRef } from 'react';
+import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
+import { hasSocialArt, SocialArt } from './SocialArt';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
   chairSeatFill,
@@ -18,10 +21,12 @@ import {
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
+  POD_DOOR,
   RUG_FILL,
+  seatsACharacter,
   seatingFacing,
   type FurniturePart,
-  type OfficeKind,
+  type GridOfficeKind,
   type SeatingKind,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -39,12 +44,12 @@ const MACHINE_ANSWER_MS = 1500;
 // own label renders under it. WHO is sitting is presence, never the element
 // (docs/specs/008-canvas/avatar-mode.md): the canvas passes the sitters it knows about.
 
-export type ChairSitter = { name: string; color: string };
+export type ChairSitter = Sitter;
 
 // The plant, the bookshelf, the machines, the meeting table and the rug (docs/specs/009-elements/office.md) are
 // drawn the same way, from OFFICE_ART: one drawing for every side.
 
-const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
+const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   chair: 'Chair',
   desk: 'Desk',
   sofa: 'Sofa',
@@ -54,9 +59,37 @@ const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
   'water-cooler': 'Water cooler',
   'coffee-machine': 'Coffee machine',
   rug: 'Rug',
+  'office-pod': 'Office pod',
+  bar: 'Bar',
+  'bar-stool': 'Bar stool',
+  'drinks-cabinet': 'Drinks cabinet',
+  'drinks-fridge': 'Drinks fridge',
+  'outdoor-plant': 'Outdoor plant',
+  tree: 'Tree',
+  directory: 'Directory',
+  elevator: 'Elevator',
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  'notice-board': 'Notice board',
+  'world-clock': 'World clock',
+  jukebox: 'Jukebox',
+  'ping-pong-table': 'Ping-pong table',
+  'arcade-machine': 'Arcade machine',
+  fireplace: 'Fireplace',
+  campfire: 'Campfire',
+  bench: 'Bench',
+  'picnic-table': 'Picnic table',
+  hammock: 'Hammock',
+  'garden-umbrella': 'Garden umbrella',
+  fountain: 'Fountain',
+  'pool-table': 'Pool table',
+  'foosball-table': 'Foosball table',
+  dartboard: 'Dartboard',
+  'vending-machine': 'Vending machine',
+  'bean-bag': 'Bean bag',
+  'reading-nook': 'Reading nook',
 };
 
-/** Whether FurnitureView draws this kind: seating, and every office piece but the room (RoomView). */
+/** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
 export function isFurnitureViewShape(kind: string): kind is keyof typeof NOUN {
   return kind in NOUN;
 }
@@ -78,20 +111,37 @@ export function FurnitureView({
   const kind = element.shape;
   if (!isFurnitureViewShape(kind)) return null;
   const seating = isSeatingShape(kind);
-  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as Exclude<OfficeKind, 'room'>];
+  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as GridOfficeKind];
   const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
   const frame = furnitureFrame(art, facing);
   const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);
-  const occupied = seating && sitters.length > 0;
+  // Seating and the fixed seats (an Office Pod, a Bar Stool: docs/specs/009-elements/office.md) take sitters.
+  const sits = seatsACharacter(kind);
+  const occupied = sits && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
   const noun = NOUN[kind];
-  const { parts, ring, ringUnder = parts.length } = frame.view;
-  // A soft ring in the first sitter's colour, on the seat and under what stands nearer the camera (ringUnder). A
-  // meeting table names its sitters without a ring: which seat a peer took is not in their presence.
-  const ringView =
-    occupied && kind !== 'meeting-table' ? (
-      <ellipse key="ring" {...ring} fill="none" stroke={ringColor} strokeWidth="3" opacity="0.85" />
-    ) : null;
+  const { parts, ring, ringUnder = parts.length, seats } = frame.view;
+  // Soft rings on the seat and under what stands nearer the camera (ringUnder): a one-seat piece's own ring in its
+  // sitter's colour; on a piece with several (a sofa, a meeting table, a pod) a ring on each taken seat, in that
+  // sitter's colour, at the seat their presence holds (docs/specs/009-elements/chair.md "Occupancy is presence").
+  const rings = !occupied
+    ? []
+    : seats.length > 1
+      ? sitters.flatMap((s, i) => {
+          const at = seatRing(frame.view, s.seat);
+          return at ? [{ ...at, color: s.color, key: `${s.seat}-${i}` }] : [];
+        })
+      : [{ ...ring, color: ringColor, key: 'piece' }];
+  const ringView = rings.map(({ key, color, ...at }) => (
+    <ellipse
+      key={`ring-${key}`}
+      {...at}
+      fill="none"
+      stroke={color}
+      strokeWidth="3"
+      opacity="0.85"
+    />
+  ));
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -99,7 +149,7 @@ export function FurnitureView({
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
         aria-label={
-          !seating
+          !sits
             ? noun
             : occupied
               ? `${noun}, ${sitters.map((s) => s.name).join(' and ')} sitting`
@@ -113,20 +163,68 @@ export function FurnitureView({
             <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
           ])}
           {ringUnder >= parts.length ? ringView : null}
+          {kind === 'office-pod' ? (
+            <PodDoor closed={podClosed(sitters.length)} stroke={stroke} />
+          ) : null}
         </g>
+        {hasSocialArt(kind) ? (
+          <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
+        ) : null}
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
         ) : null}
       </svg>
       {occupied ? (
         <span
-          className={`absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
-          style={identityVars(ringColor)}
+          className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+          // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).
+          style={{ ...identityVars(ringColor), top: seatPillBottom(element, frame.view, sitters) }}
         >
           {sitters.map((s) => s.name).join(', ')}
         </span>
       ) : null}
     </div>
+  );
+}
+
+// An Office Pod's sliding glass door (docs/specs/009-elements/office.md "Office Pod"): shut across the doorway while
+// both seats are held, slid away behind the front wall otherwise. Clipped to the doorway, so sliding open it goes
+// out of sight; the slide is a CSS transition, none under reduced motion.
+function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
+  const clip = useId();
+  const { x, y, w, h } = POD_DOOR;
+  return (
+    <g aria-hidden data-pod-door={closed ? 'closed' : 'open'}>
+      <clipPath id={clip}>
+        <rect x={x} y={y - 2} width={w} height={h + 4} />
+      </clipPath>
+      <g clipPath={`url(#${clip})`}>
+        <g
+          className="lh-pod-door motion-reduce:transition-none"
+          style={{ transform: `translateX(${closed ? 0 : w}px)` }}
+        >
+          <rect
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+            rx={2}
+            fill="#e0f2fe"
+            fillOpacity={0.85}
+            stroke={stroke}
+            strokeWidth={FURNITURE_PANEL_STROKE}
+          />
+          <path
+            d={`M${x + 8} ${y + h - 2}L${x + 16} ${y + 2}M${x + 18} ${y + h - 2}L${x + 26} ${y + 2}`}
+            stroke={FURNITURE_GLINT.stroke}
+            strokeWidth={FURNITURE_RAIL_STROKE}
+            opacity={FURNITURE_GLINT.opacity}
+            strokeLinecap="round"
+          />
+          <rect x={x + 6} y={y + h / 2 - 1} width={6} height={2} rx={1} fill={stroke} />
+        </g>
+      </g>
+    </g>
   );
 }
 
@@ -175,7 +273,7 @@ function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; 
   );
 }
 
-function FurniturePartView({
+export function FurniturePartView({
   part,
   seat,
   stroke,
@@ -193,6 +291,9 @@ function FurniturePartView({
         return { fill: part.fill ?? seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
       case 'floor':
         return { fill: seat };
+      // A small unstroked mark in its own colour (docs/specs/009-elements/social-pieces.md).
+      case 'mark':
+        return { fill: part.fill ?? stroke };
       case 'line':
         return {
           fill: 'none',

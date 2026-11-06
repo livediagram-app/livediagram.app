@@ -6,7 +6,13 @@
 
 import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import { officePlan, walkIn, type OfficePiece, type OfficeRoom } from './template-office-parts';
+import {
+  officePlan,
+  walkIn,
+  WALK_IN_BUTTON_W,
+  type OfficePiece,
+  type OfficeRoom,
+} from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
@@ -37,16 +43,16 @@ function plan(
 function deskCluster(x: number, y: number): OfficePiece[] {
   return [
     { kind: 'desk', x, y, facing: 'n' },
-    { kind: 'desk', x: x + 140, y, facing: 'n' },
+    { kind: 'desk', x: x + 130, y, facing: 'n' },
     { kind: 'desk', x, y: y + 112, facing: 's' },
-    { kind: 'desk', x: x + 140, y: y + 112, facing: 's' },
+    { kind: 'desk', x: x + 130, y: y + 112, facing: 's' },
   ];
 }
 
 // --- Coworking Space -----------------------------------------------------------
 
 const COWORK_W = 1100;
-const COWORK_H = 560;
+const COWORK_H = 680;
 
 export function buildCoworkingSpace(cx: number, cy: number): Element[] {
   const width = COWORK_W;
@@ -62,19 +68,20 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       h: COWORK_H,
       door: 's',
       pieces: [
+        // Two clusters an aisle apart, the lounge an aisle below them.
         ...deskCluster(50, 56),
-        ...deskCluster(380, 56),
+        ...deskCluster(440, 56),
         // The coffee bar.
         { kind: 'coffee-machine', x: 50, y: 390 },
         { kind: 'water-cooler', x: 140, y: 376 },
         { kind: 'plant', x: 220, y: 410 },
         // The lounge.
-        { kind: 'rug', x: 420, y: 390 },
-        { kind: 'sofa', x: 454, y: 310, facing: 'n' },
-        { kind: 'chair', x: 330, y: 400, facing: 'w' },
-        { kind: 'chair', x: 660, y: 400, facing: 'e' },
-        { kind: 'plant', x: 740, y: 440 },
-        { kind: 'bookshelf', x: 690, y: 46 },
+        { kind: 'rug', x: 420, y: 480 },
+        { kind: 'sofa', x: 454, y: 400, facing: 'n' },
+        { kind: 'chair', x: 330, y: 490, facing: 'w' },
+        { kind: 'chair', x: 660, y: 490, facing: 'e' },
+        { kind: 'plant', x: 760, y: 560 },
+        { kind: 'bookshelf', x: 720, y: 46 },
       ],
     },
     // Two phone booths along the right, for a call without the room. Their doors face the open floor: a door in a
@@ -86,7 +93,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
     {
       name: 'Booth 2',
@@ -95,7 +102,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 62, y: 90, facing: 's' }],
+      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
     },
   ];
   return plan(
@@ -149,6 +156,7 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   // The team's board on the wall beside the pod: four stickies to fill in together.
   const bx = x0 + POD_W + BOARD_GAP;
   const by = y0 + HEAD;
+  const boardBottom = by + 44 + 2 * 154 - 8;
   const board: Element[] = [
     {
       ...createText(bx, by),
@@ -176,12 +184,15 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
-      // Under the pod, not the whole plan: the button is where the character lands, so it waits by the pod's door
-      // rather than under the board, a long walk from the way in.
+      // Under the board, beside the pod (docs/specs/012-collaboration/virtual-office-template.md "Spaces"), not under
+      // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
+      // the bottom-right cluster floats, and a button under the pod sat under the cluster. Here it is level with the
+      // pod's lower half, with open floor under it and a short walk round to the door.
       ...walkIn(
-        x0 + POD_W,
-        y0 + HEAD + POD_H + BELOW / 2,
-        'Press Walk In (or W), take a desk, and meet round the table for the stand-up.',
+        x0 + width,
+        (boardBottom + y0 + HEAD + POD_H) / 2,
+        'Press Walk In (or W), take a desk, and meet at the table for the stand-up.',
+        BOARD_W - WALK_IN_BUTTON_W - 20,
       ),
     ],
   );
@@ -190,12 +201,15 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
 // --- All-Hands Hall ----------------------------------------------------------------
 
 const HALL_W = 1000;
-const HALL_H = 730;
+const HALL_H = 1100;
 const SEAT_XS = [90, 175, 260, 345, 580, 665, 750, 835];
-const ROW_YS = [290, 390, 490, 590];
-// The stage: the rug at its own 5:3, centred across the hall.
-const STAGE_W = 360;
-const STAGE_H = 216;
+// A row's chairs side by side, an aisle (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy") between
+// rows: a chair's 84 px and 120 px of floor, so walking along a row to a seat never brushes the row in front.
+const ROW_YS = [290, 494, 698, 902];
+// The stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way in"): a real Stage, centred
+// across the hall, its front edge well clear of the first row.
+const STAGE_W = 400;
+const STAGE_H = 160;
 const STAGE_X = (HALL_W - STAGE_W) / 2;
 
 export function buildAllHandsHall(cx: number, cy: number): Element[] {
@@ -212,34 +226,21 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       h: HALL_H,
       door: 's',
       pieces: [
-        // The stage, and rows of chairs facing it either side of an aisle.
-        { kind: 'rug', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H },
+        // The stage, and rows of chairs facing it either side of an aisle. Whoever speaks from it is heard by the
+        // whole hall, and seen: the hall exists for a presenter everyone watches.
+        { kind: 'stage', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H, stageCameras: true },
         ...ROW_YS.flatMap((y) =>
           SEAT_XS.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })),
         ),
         { kind: 'plant', x: 24, y: 60 },
         { kind: 'plant', x: 920, y: 60 },
-        { kind: 'water-cooler', x: 24, y: 540 },
+        { kind: 'water-cooler', x: 24, y: HALL_H - 220 },
       ],
     },
   ];
   const top = y0 + HEAD;
-  const stage: Element[] = [
-    {
-      ...createText(x0 + STAGE_X, top + 48 + (STAGE_H - 40) / 2),
-      width: STAGE_W,
-      height: 40,
-      label: 'Stage',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'center',
-      // No ink of its own: the rug under it is drawn per half, pale on light and deep brown on dark.
-    },
-    // The presenter's Bring Focus, so the room looks where they point.
-    {
-      ...createShape('focus-button', x0 + 720, top + 70),
-    },
-  ];
+  // The presenter's Bring Focus, so the room looks where they point. The stage names itself on its plate.
+  const focus: Element = createShape('focus-button', x0 + 720, top + 70);
   return plan(
     x0,
     y0,
@@ -250,7 +251,7 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'emoji-raised-hands',
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
-      ...stage,
+      focus,
       ...walkIn(
         x0 + width,
         y0 + HEAD + HALL_H + BELOW / 2,

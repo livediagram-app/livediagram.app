@@ -21,27 +21,10 @@ const SIGNED_IN_PORTS = {
   index: '9117',
   media: '9116',
 };
-// The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
-// NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
-// (`pnpm test:e2e:workbench`) on its own ports. Pairing, tickets and sessions are liveworkspace's now
-// (liveworkspace/docs/specs/011-workbench/workbench.md), so the suite also needs liveworkspace's accounts Worker and site, which the
-// stack does not start yet: until it does, the suite stops at its first mint.
-const workbench = process.env.E2E_WORKBENCH === '1';
-const WORKBENCH_PORTS = {
-  live: '3521',
-  api: '9121',
-  marketing: '3522',
-  index: '9118',
-  media: '9122',
-};
 const BASE_URL =
   process.env.E2E_BASE_URL ??
-  (signedIn
-    ? `http://localhost:${SIGNED_IN_PORTS.live}`
-    : workbench
-      ? `http://localhost:${WORKBENCH_PORTS.live}`
-      : 'http://localhost:3502');
-const runName = signedIn ? '-signed-in' : workbench ? '-workbench' : '';
+  (signedIn ? `http://localhost:${SIGNED_IN_PORTS.live}` : 'http://localhost:3502');
+const runName = signedIn ? '-signed-in' : '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -89,7 +72,6 @@ export default defineConfig({
         /perf\//,
         /optical-audit-sites\.spec\.ts/,
         /marketing-header-fit\.spec\.ts/,
-        /workbench-(embed|workspace)\.spec\.ts/,
       ],
     },
     // The optical audit of the help centre, telemetry dashboard, Community and marketing site, and the marketing
@@ -100,15 +82,6 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testMatch: /(optical-audit-sites|marketing-header-fit)\.spec\.ts/,
     },
-    ...(workbench
-      ? [
-          {
-            name: 'workbench',
-            use: { ...devices['Desktop Chrome'], colorScheme: 'dark' as const },
-            testMatch: /workbench-(embed|workspace)\.spec\.ts/,
-          },
-        ]
-      : []),
     ...(signedIn
       ? [
           {
@@ -129,20 +102,6 @@ export default defineConfig({
             testMatch: /perf\/.*\.perf\.ts/,
             // One long measurement: a retry would only run it all again (and double the time).
             retries: 0,
-          },
-        ]
-      : []),
-    // Opt-in (E2E_WEBKIT=1, after `playwright install webkit`): the image import
-    // pipeline's Safari path (docs/specs/020-import-export/import-image-pipeline.md) and the quick
-    // style panel's swatch rows, which fit or wrap by the engine's layout
-    // (docs/specs/008-canvas/quick-style-panel.md). Kept out of CI's default run to spare its
-    // minutes; the same specs run in Chromium.
-    ...(process.env.E2E_WEBKIT === '1'
-      ? [
-          {
-            name: 'webkit',
-            use: { ...devices['Desktop Safari'] },
-            testMatch: /(import-images|quick-style-swatch-rows)\.spec\.ts/,
           },
         ]
       : []),
@@ -167,14 +126,6 @@ export default defineConfig({
           E2E_INDEX_PORT: SIGNED_IN_PORTS.index,
           E2E_MEDIA_PORT: SIGNED_IN_PORTS.media,
         }
-      : workbench
-        ? {
-            E2E_EDITOR_PORT: WORKBENCH_PORTS.live,
-            E2E_API_PORT: WORKBENCH_PORTS.api,
-            E2E_MARKETING_PORT: WORKBENCH_PORTS.marketing,
-            E2E_INDEX_PORT: WORKBENCH_PORTS.index,
-            E2E_MEDIA_PORT: WORKBENCH_PORTS.media,
-          }
-        : {},
+      : {},
   },
 });

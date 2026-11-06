@@ -36,8 +36,10 @@ card as every other tour, so the tours read as one product. Where this spec is s
   track it ran is taken, and it is written as the run starts too, so a reload mid-tour leaves it taken. That
   record picks which track the button names, takes a taken track off the button, and feeds Settings' rows: turning
   a track's row back on puts it back on the button. Until 1 November 2026 it never hid the button (Work Tracker
-  #177). The old single flag `planTourSeen` stands for both
-  tracks only while [Power user mode](../007-editor/power-user-mode.md) is on.
+  #177). The old single flag `planTourSeen` stands for no
+  track on its own (`apps/editor/lib/plan-tour.ts`). Someone who had the retired
+  [Power user mode](../007-editor/power-user-mode.md) on keeps every track taken: its preset's flag is folded into
+  `planTourTracks` as the stored preferences are read.
 - **Replayable from Settings**: in Settings' **Tours** category, **Plan Tours** switches every track at once, and
   one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (never
   "Plan Tour"). On means that track is not yet taken; a track's switch off marks that track alone, on forgets it
@@ -175,6 +177,8 @@ The editor tours' funnel, with its own tokens, so the tours chart apart:
 - The tour sends no `Element`, `Plan` or `Sheet` events: opening a card's panel from the tour is not counted as
   the person opening it.
 
-## Power user mode
+## Power user mode (retired)
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Plan tour seen alongside the Diagram tour.
+The retired [Power user mode](../007-editor/power-user-mode.md) marked the Plan tour seen. It stays seen for someone
+who had it on: `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) adds every track to
+`planTourTracks` when it drops the mode's keys.

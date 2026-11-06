@@ -93,13 +93,11 @@ const BOARD: Element[] = [a, b, c, ab];
 const NONE = { layout: null, knockouts: [] };
 const STABLE = {
   arrowLabels: { renderOf: () => NONE, labelRectOf: () => null, draftLayout: () => null },
-  collab: { selfKey: 'me', participants: [] },
   chairSitters: () => [],
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
   remoteCursors: [],
   remoteSelectionsByElement: new Map(),
-  laserTrails: [],
   selectionInput: {
     elements: BOARD,
     editingId: null,
@@ -109,8 +107,8 @@ const STABLE = {
   },
 };
 
-// What one editor render hands the layer: the same data, every handler a fresh closure, the panel
-// action bags fresh objects, as the editor mints them per render.
+// What one editor render hands the layer: the same data and every handler a fresh closure, as the
+// editor mints them per render.
 function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
   const fresh = () => vi.fn();
   return {
@@ -125,22 +123,8 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     isPaintMode: false,
     canvasTool: 'select',
     drawDrag: null,
-    quickRingOpen: null,
-    setQuickRingOpen: fresh(),
-    commentSelfId: 'me',
-    commentPanelActions: { add: fresh(), remove: fresh(), resolve: fresh(), unresolve: fresh() },
-    actionSelfId: 'me',
-    actionPanelActions: { configure: fresh(), complete: fresh(), reopen: fresh() },
-    onPauseTimer: fresh(),
-    onResumeTimer: fresh(),
-    onResetTimer: fresh(),
-    onClearTimer: fresh(),
-    onSetTimerDuration: fresh(),
-    onSetSessionConfig: fresh(),
     onOpenElementSettings: fresh(),
     onEnterPortal: fresh(),
-    onFireReaction: fresh(),
-    onReactionBurstDone: fresh(),
     handleArrowSelect: fresh(),
     handleElementClick: fresh(),
     handleElementContextSelect: fresh(),

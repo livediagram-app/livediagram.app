@@ -21,7 +21,6 @@ import { timelineTourSteps } from './timeline-tour-steps';
 import { chevronsTourSteps } from './chevrons-tour-steps';
 import { chartTourSteps } from './chart-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
-import { tabWindowTourSteps } from './tab-window-tour-steps';
 import type { ElementTourApi } from '@liveworkspace/workbench/components/tour/element-tour-api';
 import {
   sankeyElementTourSteps,
@@ -32,7 +31,6 @@ import {
   stepTelemetryType,
   type TourStepOf,
 } from '@liveworkspace/workbench/components/tour/tour-step';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
 type ElementTourEnv = {
@@ -55,10 +53,6 @@ type ElementTourDef = {
 };
 
 const conceptRows = (el: Element) => (el as ShapeElement).conceptRows ?? [];
-
-// Whether a part of the element is on screen when Play is pressed (a tab window's Open button).
-const inDom = (selector: string) =>
-  typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
 export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
   sankey: {
@@ -149,17 +143,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         elementId: el.id,
         direction: stackSettingsOf(el as ShapeElement).direction,
         firstChildId: stackChildren(env.elements, el as ShapeElement)[0]?.id ?? null,
-        touch: env.touch,
-      }),
-  },
-  'tab-window': {
-    token: 'TabWindowTour',
-    eyebrow: 'Tab window tour',
-    helpArticle: 'tabWindows',
-    steps: (el, env) =>
-      tabWindowTourSteps({
-        elementId: el.id,
-        chosen: inDom(elementSelector(el.id, '[data-tab-window-open]')),
         touch: env.touch,
       }),
   },

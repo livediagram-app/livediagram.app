@@ -1,12 +1,12 @@
 // Binds the contextual command catalogue (lib/editor-commands.ts) to the live
-// editor so the SearchPanel can surface a power-user action palette (docs/specs/008-canvas/canvas-and-palette.md
+// editor so the SearchPanel can surface a keyboard-first action palette (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Reads the selection + the editor's existing action
 // handlers off EditorContext, returns the searchable `commandItems` the
 // panel matches against plus a `runCommand` dispatcher.
 //
 // Each handler delegates to the SAME editor action the context menu / toolbar
 // / header uses (so behaviour + telemetry can't drift); view-only sessions
-// get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
+// get the view-safe subset only (fit / export, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
@@ -16,7 +16,6 @@ import { isBoxed, renumberSteps, supportsRotation } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -51,9 +50,7 @@ const INERT_HANDLERS: CommandHandlers = {
   openCollaborators: noop,
   undo: noop,
   redo: noop,
-  toggleZen: noop,
   fitToScreen: noop,
-  autoLayout: noop,
   autoAlign: noop,
   openExport: noop,
   openImport: noop,
@@ -74,8 +71,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  // Draw mode, which had no format painter, is gone (docs/specs/007-editor/editor-modes.md).
-  const whiteboard = false;
   const {
     isReadOnly,
     canShareDocument,
@@ -106,10 +101,7 @@ export function useEditorCommands(open: boolean): {
     redo,
     canUndo,
     canRedo,
-    zenMode,
-    toggleZenMode,
     fitToScreen,
-    autoLayoutTab,
     autoAlignTab,
     setExportOpen,
     setExportScope,
@@ -118,15 +110,11 @@ export function useEditorCommands(open: boolean): {
     openSettingsOn,
     canvasTool,
     setCanvasTool,
-    workbenchMode,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDocument(documentId);
-  // Spotlight is desktop-only, so the tool commands need the same viewport
-  // answer the palette's tool dropdown uses.
-  const isMobile = useIsMobileViewport();
 
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
@@ -155,7 +143,6 @@ export function useEditorCommands(open: boolean): {
       isReadOnly,
       canUndo,
       canRedo,
-      zenMode,
       selectionCount,
       singleIsBoxed,
       singleRotates,
@@ -165,21 +152,17 @@ export function useEditorCommands(open: boolean): {
       marker,
       canShare: canShareDocument,
       isOffline,
-      workbench: workbenchMode,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
       canvasEmpty,
-      isMobile,
-      whiteboard,
       tabLocked,
     }),
     [
       isReadOnly,
       canUndo,
       canRedo,
-      zenMode,
       selectionCount,
       singleIsBoxed,
       singleRotates,
@@ -189,11 +172,8 @@ export function useEditorCommands(open: boolean): {
       marker,
       canShareDocument,
       isOffline,
-      workbenchMode,
       canvasTool,
       canvasEmpty,
-      isMobile,
-      whiteboard,
       tabLocked,
     ],
   );
@@ -248,14 +228,12 @@ export function useEditorCommands(open: boolean): {
     // which is what the presence-stack entry point passes. The opener tracks
     // its own UI·Opened·Collaborators, so this adds none.
     openCollaborators: () => ctx.openCollaborators(null),
-    // The remaining handlers track internally (undo/redo, zen, fit,
-    // auto layout/align) or have untracked entry points everywhere
+    // The remaining handlers track internally (undo/redo, fit,
+    // auto-align) or have untracked entry points everywhere
     // (export / import / templates), so no extra telemetry here.
     undo,
     redo,
-    toggleZen: toggleZenMode,
     fitToScreen,
-    autoLayout: autoLayoutTab,
     autoAlign: autoAlignTab,
     openExport: () => {
       setExportScope('tab');

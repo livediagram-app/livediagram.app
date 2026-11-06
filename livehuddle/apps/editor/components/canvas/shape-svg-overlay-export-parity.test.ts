@@ -12,7 +12,7 @@ import type { ShapeKind } from '@livehuddle/document';
 // `ShapeSvgOverlay` (this directory) draws the silhouettes the browser sees;
 // `svg-render-shapes.ts` in packages/document redraws them headlessly for the
 // SVG / PNG / PDF exports, the Explorer thumbnails, the share image and the
-// inline images the MCP server returns. Both now draw from one geometry table
+// api's tab renders. Both now draw from one geometry table
 // (shape-geometry.ts in packages/document), and shape-svg-overlay.test.tsx +
 // the package's shape-geometry.test.ts pin each side to its exact paths.
 //
@@ -38,7 +38,7 @@ describe('canvas silhouettes survive the headless export', () => {
   it('extracted a plausible set of overlay kinds', () => {
     // Guards the list itself: a table that lost its entries must fail
     // loudly here rather than let the real assertion pass over nothing.
-    expect(OVERLAY_KINDS.length).toBeGreaterThan(12);
+    expect(OVERLAY_KINDS.length).toBeGreaterThanOrEqual(12);
     expect(OVERLAY_KINDS).toContain('hexagon');
     expect(OVERLAY_KINDS).toContain('actor');
   });

@@ -1,0 +1,79 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StageHall, StageSettings } from '@/components/illustrations/stage';
+
+export const metadata = helpMetadata({
+  title: 'Stage',
+  description:
+    'Put a Stage in a livehuddle Space for an all-hands: whoever stands on it is heard by everyone on the tab. Choose who may speak and whether cameras show.',
+  path: '/help/palette/virtual-office/stage/',
+});
+
+<ArticleLayout
+  title="Stage"
+  description="A raised platform for an all-hands: whoever speaks from it is heard by everyone on the tab."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Virtual Office', slug: 'virtual-office' }}
+  subArticles={getSubArticles('virtual-office').filter((a) => a.slug !== 'stage')}
+>
+
+In a Space you usually hear the people near you, and walls keep each room private ([Proximity Audio](/help/collaboration/proximity-audio/)). An all-hands needs something else: one person heard by the whole Space. A **Stage** is that. Walk your character onto it and everyone on the tab hears you, in any room or none, as clearly as if they were standing beside you.
+
+<Note>
+  Calls are not switched on everywhere yet. Where they are off, a Stage is still there to stand on,
+  and everything else in the Space works as usual.
+</Note>
+
+## Adding a stage
+
+<Step n={1}>Open **Rooms** on the palette strip.</Step>
+
+<Step n={2}>
+  Pick **Stage**, beside the Room, among the office pieces. It goes in behind everything, like a
+  room or a rug, so chairs you have already placed stand in front of it.
+</Step>
+
+<Step n={3}>
+  Resize it to any width. Its name sits on a plate on its front edge: double-click to rename it
+  "Main Stage" or "Demo Corner".
+</Step>
+
+The **All-Hands Hall** template comes with a stage already standing at the front of the hall, rows of seats facing it and a Bring Focus button for the presenter ([Templates](/help/canvas/templates/)).
+
+## Speaking from the stage
+
+<Figure caption="A speaker on the stage is heard by everyone on the tab: the seats in the hall, and someone in the corridor outside.">
+  <StageHall />
+</Figure>
+
+- **Stand on its top.** Your feet must be on the stage itself; the front edge you see, and the outline round it, count as off it. Walk off and you are back in the room's own call straight away.
+- **Everyone on the tab hears you**, at full volume and centred, wherever they are. Two speakers on a stage, or on two stages, hear each other as one room does.
+- **The audience is muted to the stage.** While someone speaks from it, everyone else in the stage's room is its audience: the stage does not hear them, and they hear each other only by distance, so neighbours can whisper without the whole hall hearing. The walls still stand: a meeting room next door keeps its own call.
+- **Somebody in the audience can ask to speak** with **Raise Hand**, and the stage can **Let Speak** ([Proximity Audio](/help/collaboration/proximity-audio/)).
+- **Your microphone reads Live** while anyone else walks the tab, because they all hear you.
+
+## Who Can Speak and Show Cameras
+
+<Figure caption="Right-click a stage and open its Stage section to choose who may speak from it and whether their camera shows.">
+  <StageSettings />
+</Figure>
+
+Right-click the stage and open its **Stage** section:
+
+- **Who Can Speak**: **Editors** (the default), or **Editors and Participants** for a panel, a demo from the floor or a show-and-tell. Anyone else can still stand on the stage; they are heard as the audience is, and a short line above the call strip tells them only Editors speak from it.
+- **Show Cameras**: when it is on, everyone on the tab sees a speaker's camera and shared screen, not just the people near them ([Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/)). When it is off, the stage is heard but not seen. It is off on a new stage, and on in the All-Hands Hall.
+
+Select several stages to set them all at once.
+
+## Who can do what
+
+| What                                   | Editor | Participant                           | Viewer |
+| -------------------------------------- | ------ | ------------------------------------- | ------ |
+| Place, move, rename and set up a stage | Yes    | No                                    | No     |
+| Speak from a stage                     | Yes    | When it lets Editors and Participants | No     |
+| Hear a stage                           | Yes    | Yes                                   | Yes    |
+| Raise a hand in its audience           | Yes    | Yes                                   | No     |
+
+</ArticleLayout>

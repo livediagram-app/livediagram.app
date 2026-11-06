@@ -8,7 +8,9 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 // stylesheets listed here, which the guard does not read.
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
-  'app/qa-board.css',
+  'app/meeting-motion.css',
+  // The social pieces' own loops: flames, water, notes (docs/specs/009-elements/social-pieces.md).
+  'app/social-motion.css',
   // The animation sets (docs/specs/028-animation/element-animations.md).
   'app/motion-shape.css',
   'app/motion-text.css',

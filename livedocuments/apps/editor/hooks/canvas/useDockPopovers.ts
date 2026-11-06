@@ -18,20 +18,16 @@ const POPOVER_WIDTH = 256;
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
-  slides: 420,
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 960,
 };
 
-// 'slides': the Slide Deck panel over its cluster button in Pages mode.
 export type DockPanel =
   | 'explorer'
   | 'layers'
   | 'collaborate'
-  | 'slides'
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents").
   | 'contents';
 
@@ -43,7 +39,6 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
   else if (id === 'contents') track('UI', 'Opened', 'PageContents');
 }
 

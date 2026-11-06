@@ -1,18 +1,21 @@
+import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { describe, expect, it } from 'vitest';
 
 import { SHAPE_KINDS } from '@livehuddle/document';
 
-import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
+import { paletteElementTiles } from '@/components/palette/palette-tile-search';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { SHAPE_KEYWORDS } from '@/lib/palette-tile-keywords';
 
 // Drift guard. The "Add to canvas" catalogue used to be a hand-written list of
 // shapes, and it had fallen 22 kinds behind the palette without anything
 // failing: every Devices, Data, Media and Behaviour element was unfindable
-// from the search panel. It now derives from PALETTE_TILES, and these tests
-// exist so that stays true.
+// from the search panel. It now derives from the meeting palette's tiles, and these tests
+// exist so that stays true. It offers only what that palette offers
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The diagram tools still in livehuddle's UI").
 
-const shapeTiles = PALETTE_TILES.filter(
+const OFFERED = paletteElementTiles();
+const shapeTiles = OFFERED.filter(
   (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
 );
 
@@ -21,46 +24,51 @@ describe('buildPaletteSearchItems', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
     const missing = shapeTiles
       .map((t) => {
-        // Tiles that differ only by their creation-time choice (the five
-        // reactions, the three session tools) each get their own id, or the
+        // Tiles that differ only by their creation-time choice (the mode
+        // buttons) each get their own id, or the
         // panel would show one of them and silently drop the rest.
         const a = t.action as {
           kind: string;
-          session?: string;
-          reaction?: string;
           mode?: string;
-          estimateScale?: string;
           plan?: string;
         };
-        const choice = a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.plan;
+        const choice = a.mode ?? a.plan;
         return choice ? `shape:${a.kind}:${choice}` : `shape:${a.kind}`;
       })
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
   });
 
-  it('offers every non-shape palette tile too (text, arrow, table, embeds, ...)', () => {
+  it('offers every non-shape palette tile too (text, sticky, frame, ...)', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    const missing = PALETTE_TILES.filter(
-      (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
-    )
+    const missing = OFFERED.filter((t) => !['shape', 'sticker'].includes(t.action.type))
       .map((t) => `tile:${t.id}`)
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
-    for (const id of [
-      'tile:tools:text',
-      'tile:tools:arrow',
-      'tile:tools:table',
-      'tile:tools:sticky',
-    ])
-      expect(ids).toContain(id);
+    for (const id of ['tile:tools:text', 'tile:tools:sticky']) expect(ids).toContain(id);
   });
 
-  it('hides the image-upload tiles when the editor has no image support', () => {
-    const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
-    const imageTiles = PALETTE_TILES.filter((t) => t.needsImage && t.action.type !== 'shape');
-    expect(imageTiles.length).toBeGreaterThan(0);
-    for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
+  it('offers no diagram tool the meeting palette left out', () => {
+    const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
+    for (const id of [
+      'shape:square',
+      'shape:lane',
+      'shape:stack',
+      'shape:bar-chart',
+      'tile:tools:arrow',
+      'tile:tools:table',
+      'tile:tools:pencil',
+    ])
+      expect(ids).not.toContain(id);
+  });
+
+  it('offers no Image or Link card, image support or not (not-in-livehuddle.md "Media")', () => {
+    for (const hasImage of [true, false]) {
+      const ids = buildPaletteSearchItems({ hasImage }).map((i) => i.id);
+      expect(ids).not.toContain('tile:tools:image');
+      expect(ids).not.toContain('tile:tools:link-card');
+    }
+    expect(OFFERED.filter((t) => t.needsImage)).toEqual([]);
   });
 
   it('covers the element types the palette added most recently', () => {
@@ -68,27 +76,24 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'page', 'bar-chart', 'portal']) {
+    for (const kind of ['portal', 'chair', 'room']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
-    // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
-    for (const id of [
-      'shape:session-button:timer',
-      'shape:session-button:vote',
-      'shape:session-button:poll',
-      'shape:reaction-pad:confetti',
-      'shape:reaction-pad:fireworks',
-    ]) {
-      expect(ids.has(id)).toBe(true);
-    }
+    // The Page left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md, Work Tracker #423 part 2): no
+    // search result places one, though a stored Page still draws.
+    expect([...ids].filter((id) => id === 'shape:page' || id === 'tile:tools:page')).toEqual([]);
+    // The one Selection Mode button left, the Avatar one (docs/specs/009-elements/mode-button.md "Only Avatar").
+    expect([...ids].filter((id) => id.startsWith('shape:mode-button'))).toEqual([
+      'shape:mode-button:avatar',
+    ]);
   });
 
   it('names each entry from the tile, not from its id', () => {
-    const lane = buildPaletteSearchItems().find((i) => i.id === 'shape:lane');
-    expect(lane?.name).toBe('Lane');
-    // The tile's description feeds the keywords, so the sentence the palette
-    // already writes about an element is searchable without being restated.
-    expect(lane?.keywords).toContain('swimlane');
+    const portal = buildPaletteSearchItems().find((i) => i.id === 'shape:portal');
+    expect(portal?.name).toBe('Portal');
+    // The tile's keywords and description feed the search, so the words the palette
+    // already writes about an element are searchable without being restated.
+    expect(portal?.keywords).toContain('teleport');
   });
 
   it('emits no duplicate ids', () => {
@@ -132,5 +137,14 @@ describe('buildPaletteSearchItems', () => {
     expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
     const after = buildPaletteSearchItems();
     expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
+  });
+
+  // No Icons category in livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Icons"): the panel adds no
+  // line-art icon; Stickers stay.
+  it('offers no line-art icon, and still offers the stickers', async () => {
+    await ensureIconCatalogs();
+    const items = buildPaletteSearchItems();
+    expect(items.some((i) => i.id.startsWith('icon:'))).toBe(false);
+    expect(items.some((i) => i.id.startsWith('sticker:'))).toBe(true);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createShape, type Element } from './index';
+import type { Element } from './index';
 import {
   applyElementOp,
   applyElementOps,
@@ -108,35 +108,30 @@ describe('concurrent different-element edits merge (the Level 0 win)', () => {
   });
 });
 
-// The dot vote's old failure (docs/specs/012-collaboration/session-tools.md), on the Q&A board (docs/specs/012-collaboration/qa-board.md): a peer
-// moves the board with a copy taken before a vote reached them, and their
-// `el` update must not send that vote back out of existence.
-describe('applyElementOp on a Q&A board', () => {
-  const board = (rev: number, voters: string[], x = 0) => ({
-    ...createShape('qa-board', x, 0),
-    id: 'b',
-    qaRev: rev,
-    qaNotes: [{ id: 'n1', text: 'q', at: 1, voters }],
-  });
+// A stored Q&A board is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a
+// peer's update replaces it whole, like any element, its stored notes and rev with it.
+describe('applyElementOp on a retired element', () => {
+  const board = (rev: number, x = 0) =>
+    ({
+      id: 'b',
+      type: 'shape',
+      shape: 'qa-board',
+      x,
+      y: 0,
+      width: 360,
+      height: 460,
+      qaRev: rev,
+      qaNotes: [{ id: 'n1', text: 'q', at: 1, voters: ['a'] }],
+    }) as unknown as Element;
 
-  it('keeps votes a stale peer update never saw, but takes the move', () => {
-    const local = [board(5, ['a', 'b', 'c'])];
-    const stale = board(4, ['a', 'b'], 300);
-    const [out] = applyElementOp(local, { kind: 'update', element: stale }) as ReturnType<
-      typeof board
-    >[];
-    expect(out!.x).toBe(300);
-    expect(out!.qaNotes[0]!.voters).toEqual(['a', 'b', 'c']);
-    expect(out!.qaRev).toBe(5);
-  });
-
-  it('takes a newer board state from a peer', () => {
-    const local = [board(5, ['a'])];
-    const [out] = applyElementOp(local, {
-      kind: 'update',
-      element: board(6, ['a', 'z']),
-    }) as ReturnType<typeof board>[];
-    expect(out!.qaNotes[0]!.voters).toEqual(['a', 'z']);
+  it('takes the incoming copy as it is', () => {
+    const incoming = board(4, 300);
+    const [out] = applyElementOp([board(5)], { kind: 'update', element: incoming });
+    expect(out).toBe(incoming);
+    const [added] = applyElementOp([board(5)], { kind: 'add', element: incoming, at: 0 });
+    expect(added).toBe(incoming);
+    const [batched] = applyElementOps([board(5)], [{ kind: 'update', element: incoming }]);
+    expect(batched).toBe(incoming);
   });
 });
 

@@ -20,7 +20,7 @@ import {
 } from '../data/viewLists';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { EmptyState } from '@liveworkspace/ui';
-import { FOCUS_RING, MUTED, RENAME_INPUT } from '../ui/classes';
+import { FOCUS_RING, MUTED, RENAME_INPUT, SECTION_LINK, SKELETON } from '../ui/classes';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { useItemDrag, useThisBrowserDrag } from '../drag/drag';
 import { ChevronRightIcon, ClockIcon, ItemIcon } from '../ui/icons';
@@ -67,8 +67,6 @@ export const HOME_COPY = {
 
 const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
-const SECTION_LINK =
-  'inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';
 const GROUP_LABEL =
   'mb-2.5 h-4 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-slate-500 dark:text-slate-400';
 const PANEL_SURFACE =
@@ -78,7 +76,6 @@ const LARGE_GRID = 'grid grid-cols-2 gap-4 lg:grid-cols-4';
 const COMPACT_GRID = 'grid grid-cols-2 gap-2.5 lg:grid-cols-4';
 const THUMB_EDGE =
   'flex items-center justify-center overflow-hidden border border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-900';
-const SKELETON = 'rounded-md bg-slate-200/70 motion-safe:animate-pulse dark:bg-slate-800';
 // Readable over a thumbnail: a frosted chip rather than the row button's bare glyph.
 const MENU_CHIP =
   '!absolute bg-white/90 shadow-sm ring-1 ring-slate-200 pointer-fine:group-focus-within:opacity-100 dark:bg-slate-900/90 dark:ring-slate-700';
@@ -555,14 +552,17 @@ const LocalCard = memo(function LocalCard({
       attrs={{ 'data-this-browser-card': '' }}
       large={large}
       app={showApp ? app : null}
-      thumb={<LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />}
-      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
-      line={
-        <span className="flex min-w-0 items-center gap-1.5">
-          <ThisBrowserPill inLink />
-          <OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />
+      // The pill on the picture's corner, as the editors' panel has it, so the line keeps its width.
+      thumb={
+        <span className="relative block h-full w-full">
+          <LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />
+          <span className="absolute left-1.5 top-1.5">
+            <ThisBrowserPill inLink />
+          </span>
         </span>
       }
+      name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
+      line={<OpenedLine item={item} id={`jbi-${item.id}-${large ? 'l' : 'c'}`} large={large} />}
       link={(className, body) => (
         <a href={host?.itemHref(item)} aria-label={title} className={className}>
           {body}

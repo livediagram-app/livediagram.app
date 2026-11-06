@@ -9,7 +9,7 @@ import {
   sayOneLine,
   withinSayLimits,
 } from '@liveworkspace/api-schema/avatar-say';
-import { AVATAR_HEIGHT, type AvatarPoint } from './walk';
+import { AVATAR_FOLLOW_MARGIN, AVATAR_HEIGHT, type AvatarPoint } from './walk';
 
 // Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.
 const SPEECH_BASE_MS = 4000;
@@ -147,6 +147,11 @@ export function screenX(x: number, zoom: number, offsetX: number, viewWidth: num
   return zoom * (x + offsetX) + (viewWidth / 2) * (1 - zoom);
 }
 
+/** Where a canvas y is on screen: `screenX`'s formula on the other axis. */
+export function screenY(y: number, zoom: number, offsetY: number, viewHeight: number): number {
+  return screenX(y, zoom, offsetY, viewHeight);
+}
+
 /** Screen px kept clear between a bubble and the view's left or right edge. */
 export const SPEECH_EDGE_MARGIN = 8;
 
@@ -163,6 +168,22 @@ export function edgeShift(centre: number, width: number, viewWidth: number): num
   return shift;
 }
 
+/**
+ * Screen px kept clear above a bubble: the canvas's top edge carries the header's palette strip floating over it, so a
+ * bubble keeps below it by the same margin the walk's camera follow keeps a character in (AVATAR_FOLLOW_MARGIN).
+ */
+export const SPEECH_TOP_CLEAR = AVATAR_FOLLOW_MARGIN;
+
+/**
+ * The downward shift, in screen px, that keeps a card whose top is at screen y `top` at least SPEECH_TOP_CLEAR below
+ * the view's top edge, clear of the chrome floating there. Zero while it already fits: a bubble rises until it meets
+ * that line, then holds there as it fades, and one over a character standing under the chrome starts there rather
+ * than behind it.
+ */
+export function topShift(top: number): number {
+  return Math.max(0, SPEECH_TOP_CLEAR - top);
+}
+
 /** How far from a card's corners its tail keeps, so it never rides onto the rounded corner. */
 const SPEECH_TAIL_INSET = 14;
 
@@ -174,6 +195,42 @@ export function tailOffset(shift: number, width: number): number {
   const reach = Math.max(0, width / 2 - SPEECH_TAIL_INSET);
   // `+ 0` turns a negative zero into a plain one.
   return Math.min(reach, Math.max(-reach, -shift)) + 0;
+}
+
+/** A canvas rect a bubble keeps clear of: livehuddle's camera and screen bubbles. */
+export type SpeechObstacle = { left: number; top: number; right: number; bottom: number };
+
+/** Canvas px kept between a lifted bubble and the obstacle under it. */
+export const SPEECH_CLEAR_GAP = 8;
+/** How quickly a bubble eases up when something moves into its path, in ms (a time constant). */
+export const SPEECH_LIFT_EASE_MS = 50;
+
+/**
+ * Canvas px a bubble rising from `from` must start higher by so that, all the way up, it never crosses an obstacle
+ * (docs/specs/012-collaboration/video-and-screen-bubbles.md "Close together"). `halfWidth` is half the card's
+ * width with its sway and `reach` how far its top travels over the flight, both in canvas px. The obstacles across
+ * its width are taken nearest first: one still in its path lifts its start to SPEECH_CLEAR_GAP over that obstacle,
+ * which may bring the next into its path.
+ */
+export function speechLift(
+  from: AvatarPoint,
+  halfWidth: number,
+  reach: number,
+  obstacles: readonly SpeechObstacle[],
+): number {
+  const across = obstacles
+    .filter((o) => o.right > from.x - halfWidth && o.left < from.x + halfWidth)
+    .sort((a, b) => b.bottom - a.bottom);
+  let lift = 0;
+  for (const o of across) {
+    const start = from.y - lift;
+    // Wholly below where it starts: it rises away from it.
+    if (o.top >= start) continue;
+    // Beyond its reach, and so is every one after (they end higher still).
+    if (o.bottom <= start - reach) break;
+    lift = from.y - o.top + SPEECH_CLEAR_GAP;
+  }
+  return lift;
 }
 
 /** The bubbles still flying at `now`. */

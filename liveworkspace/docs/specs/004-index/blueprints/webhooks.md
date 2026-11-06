@@ -81,7 +81,8 @@ Scope, by file:
 ### Sending (`dispatch.ts`, `durable-object.ts`)
 
 - `kick()`: `setAlarm(now)` unless an alarm is set within `KICK_SLACK_MS` (500 ms).
-- `alarm()`: `dispatch`, then `setAlarm(max(nextAt, now))` when `nextAt` is not null.
+- `alarm()`: `dispatch`, then `setAlarm(roomAlarmAt(nextAt, now))` when `nextAt` is not null: never sooner than a
+  second from now (`@liveworkspace/api-kit/room-alarm`), so a row stuck due can't fire the alarm back to back.
 - `dispatch`: without a `WEBHOOK_KEY` that imports, nothing. Reads the due rows (`next_at <= now`, webhook live)
   oldest first, `LIMIT DISPATCH_BATCH` (50); groups them by webhook; runs `DISPATCH_CONCURRENCY` (6) webhooks at once,
   each webhook's rows in order:

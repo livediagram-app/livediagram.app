@@ -12,8 +12,10 @@ import { officePlan, walkIn, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
-const CORRIDOR = 130;
+// Deep enough for the Walk In button and the figure that opens below it (see the test), without reaching a room.
+const CORRIDOR = 270;
 const GAP = 60;
+const WALK_IN_TOP = 10;
 const HEAD = 96;
 const WIDTH = 1560;
 const HEIGHT = HEAD + ROW_H * 2 + CORRIDOR;
@@ -43,15 +45,17 @@ const ROOMS: RoomSpec[] = [
     w: 620,
     door: 's',
     pieces: [
-      { kind: 'desk', x: 30, y: 48, facing: 's' },
-      { kind: 'desk', x: 180, y: 48, facing: 's' },
-      { kind: 'desk', x: 330, y: 48, facing: 's' },
+      // One bench of desks, the near row facing the back row across it, so the floor round it is open aisle
+      // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
+      { kind: 'desk', x: 20, y: 48, facing: 's' },
+      { kind: 'desk', x: 140, y: 48, facing: 's' },
+      { kind: 'desk', x: 260, y: 48, facing: 's' },
       { kind: 'bookshelf', x: 480, y: 40 },
       // The near row leaves the doorway's column (262..358) clear, so walking in never lands at a desk: two desks
-      // side by side as a bench on the left, one on the right.
-      { kind: 'desk', x: 20, y: 190, facing: 's' },
-      { kind: 'desk', x: 140, y: 190, facing: 's' },
-      { kind: 'desk', x: 400, y: 190, facing: 's' },
+      // on the left, and one on the right an aisle away.
+      { kind: 'desk', x: 20, y: 160, facing: 'n' },
+      { kind: 'desk', x: 140, y: 160, facing: 'n' },
+      { kind: 'desk', x: 400, y: 190, facing: 'n' },
       { kind: 'plant', x: 540, y: 230 },
     ],
   },
@@ -77,8 +81,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'water-cooler', x: 30, y: 52 },
       { kind: 'coffee-machine', x: 110, y: 68 },
       { kind: 'plant', x: 440, y: 52 },
-      { kind: 'chair', x: 170, y: 200, facing: 'w' },
-      { kind: 'chair', x: 290, y: 200, facing: 'e' },
+      // Two chairs facing each other an aisle apart.
+      { kind: 'chair', x: 150, y: 200, facing: 'w' },
+      { kind: 'chair', x: 346, y: 200, facing: 'e' },
     ],
   },
   {
@@ -93,8 +98,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'rug', x: 150, y: 180 },
       { kind: 'bookshelf', x: 22, y: 40 },
       { kind: 'sofa', x: 174, y: 200, facing: 'n' },
-      { kind: 'chair', x: 70, y: 196, facing: 'w' },
-      { kind: 'chair', x: 354, y: 196, facing: 'e' },
+      // The chairs either side of the sofa, one seating group.
+      { kind: 'chair', x: 86, y: 196, facing: 'w' },
+      { kind: 'chair', x: 338, y: 196, facing: 'e' },
       { kind: 'plant', x: 420, y: 52 },
     ],
   },
@@ -132,10 +138,11 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
     [
-      // At the corridor's end: the way in, and what to do once you are.
+      // At the corridor's end: the way in, and what to do once you are. Its top sits WALK_IN_TOP under the top row, so
+      // the character that opens below it stands in the corridor, clear of the bottom row's walls and furniture.
       ...walkIn(
         x0 + WIDTH - 20,
-        top + ROW_H + CORRIDOR / 2,
+        top + ROW_H + WALK_IN_TOP + 48,
         'Press Walk In (or W) to walk round. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
       ),
     ],

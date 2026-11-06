@@ -1,9 +1,11 @@
 import {
   alignmentGuides,
   distributionSnap,
+  snapRoomWalls,
   snapToAlignment,
   type AlignmentGuide,
   type DistributionGuide,
+  SHAPE_DEFAULT_SIZE,
   type Element,
 } from '@livehuddle/document';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
@@ -25,6 +27,7 @@ export function paletteDragSnapAt({
   width,
   height,
   elements,
+  room = false,
 }: {
   // The cursor in canvas coords. The footprint is CENTRED on it, matching
   // where the drop actually places the element.
@@ -33,6 +36,8 @@ export function paletteDragSnapAt({
   width: number;
   height: number;
   elements: Element[];
+  // A Room being placed also snaps wall to wall (docs/specs/009-elements/office.md "Rooms line up").
+  room?: boolean;
 }): {
   dx: number;
   dy: number;
@@ -45,7 +50,17 @@ export function paletteDragSnapAt({
     width,
     height,
   };
-  const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
+  const edge = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
+  // Sharing a neighbouring room's wall line wins an axis over the box-edge snap when as near (a double wall otherwise).
+  const walls = room ? snapRoomWalls(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD) : null;
+  const wallX = !!walls?.snappedX && (!edge.snappedX || Math.abs(walls.dx) <= Math.abs(edge.dx));
+  const wallY = !!walls?.snappedY && (!edge.snappedY || Math.abs(walls.dy) <= Math.abs(edge.dy));
+  const snap = {
+    dx: wallX ? walls.dx : edge.dx,
+    dy: wallY ? walls.dy : edge.dy,
+    snappedX: edge.snappedX || wallX,
+    snappedY: edge.snappedY || wallY,
+  };
   let dx = snap.dx;
   let dy = snap.dy;
   // Equal-spacing (distribution) helpers fill the axes alignment didn't
@@ -64,10 +79,31 @@ export function paletteDragSnapAt({
   // exactly when a snap is in effect — the same derivation the move /
   // resize path uses.
   const snapped = { ...candidate, x: candidate.x + dx, y: candidate.y + dy };
-  const guides = alignmentGuides(snapped, elements, NO_EXCLUDE);
+  const guides = [
+    ...alignmentGuides(snapped, elements, NO_EXCLUDE),
+    ...(walls && (wallX || wallY)
+      ? snapRoomWalls(snapped, elements, NO_EXCLUDE, 0.5).guides.filter((g) =>
+          g.axis === 'x' ? wallX : wallY,
+        )
+      : []),
+  ];
   // Only for the axis distribution actually drove.
   const distGuides = dist.guides.filter((g) =>
     g.axis === 'x' ? !snap.snappedX && dist.dx !== 0 : !snap.snappedY && dist.dy !== 0,
   );
   return { dx, dy, guides, distGuides };
+}
+
+// Where an armed Room lands with the pointer at `at`: its default box centred there, snapped to its neighbours' edges
+// and wall lines (paletteDragSnapAt with `room`). Shared by the preview and the tap's commit.
+export function armedRoomSnap(at: { x: number; y: number }, elements: readonly Element[]) {
+  const { width, height } = SHAPE_DEFAULT_SIZE.room;
+  return paletteDragSnapAt({
+    canvasX: at.x,
+    canvasY: at.y,
+    width,
+    height,
+    elements: elements as Element[],
+    room: true,
+  });
 }

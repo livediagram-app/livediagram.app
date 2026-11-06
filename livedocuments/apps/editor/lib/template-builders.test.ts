@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livedocuments/document';
+import { followedFill, getBuiltInTheme, layOutPages, type Element } from '@livedocuments/document';
 import { templateCanvasOverrides, type TemplateKind } from '@livedocuments/templates';
 import { primsBounds } from '@liveworkspace/icons';
 import { ICON_CATALOG_1 } from '@liveworkspace/icons/icon-catalog-1';
@@ -212,9 +212,21 @@ describe('buildTemplatedTab', () => {
   it('carries the template’s canvas overrides: its mode and its pages', () => {
     // Catches the regression where the templateCanvasOverrides spread stops reaching the returned tab, or the
     // theme's defaults overwrite it.
+    // Its backgrounds land on the theme it is applied in (canvas-and-palette.md "Templates on pages").
     const tab = buildTemplatedTab('slide-deck', 'slate', 'tab-1', 'deck');
     const o = templateCanvasOverrides('slide-deck');
-    expect(tab.pages).toEqual(o.pages);
+    const slate = getBuiltInTheme('slate');
+    const def = getBuiltInTheme(undefined);
+    expect(tab.pages).toEqual(
+      o.pages!.map((p) =>
+        p.background?.fill
+          ? {
+              ...p,
+              background: { ...p.background, fill: followedFill(p.background.fill, def, slate) },
+            }
+          : p,
+      ),
+    );
   });
 });
 

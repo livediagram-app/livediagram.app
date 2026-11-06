@@ -76,11 +76,11 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
   },
 ];
 
-const DOCS: { title: string; kind: 'flow' | 'board' | 'slide' | 'sticky' | 'tree' | 'sheet' }[] = [
+const DOCS: { title: string; kind: 'flow' | 'board' | 'room' | 'sticky' | 'tree' | 'sheet' }[] = [
   { title: 'Roadmap', kind: 'board' },
   { title: 'Team Pod', kind: 'flow' },
-  { title: 'Team retro', kind: 'sticky' },
-  { title: 'All-Hands', kind: 'slide' },
+  { title: 'Team stand-up', kind: 'sticky' },
+  { title: 'All-Hands', kind: 'room' },
   { title: 'Brainstorm', kind: 'tree' },
   { title: 'Agenda', kind: 'sheet' },
 ];
@@ -172,19 +172,28 @@ function Thumb({ x, y, kind }: { x: number; y: number; kind: (typeof DOCS)[numbe
           ))}
         </g>
       );
-    case 'slide':
+    case 'room':
+      // A meeting room seen from above: its walls, the table, and the people round it.
       return (
         <g>
-          <rect x={x + 8} y={y + 5} width={48} height={26} rx={2} className="fill-brand-500" />
           <rect
-            x={x + 13}
-            y={y + 11}
-            width={24}
-            height={4}
-            rx={2}
-            className="fill-white help-art-as-drawn"
+            x={x + 8}
+            y={y + 4}
+            width={48}
+            height={28}
+            rx={3}
+            className="fill-white stroke-brand-400"
+            strokeWidth={1}
           />
-          <rect x={x + 13} y={y + 19} width={16} height={3} rx={1.5} className="fill-brand-200" />
+          <rect x={x + 22} y={y + 14} width={20} height={8} rx={4} className="fill-brand-200" />
+          {[
+            [x + 26, y + 10, 'fill-violet-400'],
+            [x + 38, y + 10, 'fill-amber-400'],
+            [x + 26, y + 26, 'fill-emerald-400'],
+            [x + 38, y + 26, 'fill-rose-400'],
+          ].map(([cx, cy, c], i) => (
+            <circle key={i} cx={cx as number} cy={cy as number} r={2.5} className={c as string} />
+          ))}
         </g>
       );
     case 'tree':

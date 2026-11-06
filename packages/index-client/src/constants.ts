@@ -206,6 +206,28 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 // A link made without a level grants this.
 export const DEFAULT_LINK_LEVEL: Level = 'edit';
 
+// The levels a new link to each app's items may grant, most capable first (the Share dialog's order), and what one
+// made without a level grants. livehuddle offers no new Viewer link: a space is shared to bring people into a
+// meeting. A link already holding a level no longer offered keeps working; a public link is always `view`.
+const EVERY_LINK_LEVEL: readonly Level[] = ['edit', 'participate', 'view'];
+export const APP_LINK_LEVELS: Record<App, readonly Level[]> = {
+  livediagram: EVERY_LINK_LEVEL,
+  liveplanner: EVERY_LINK_LEVEL,
+  livedocuments: EVERY_LINK_LEVEL,
+  livedesign: EVERY_LINK_LEVEL,
+  livehuddle: ['edit', 'participate'],
+};
+export const APP_DEFAULT_LINK_LEVEL: Record<App, Level> = {
+  livediagram: DEFAULT_LINK_LEVEL,
+  liveplanner: DEFAULT_LINK_LEVEL,
+  livedocuments: DEFAULT_LINK_LEVEL,
+  livedesign: DEFAULT_LINK_LEVEL,
+  livehuddle: 'participate',
+};
+// Whether a new link to one of `app`'s items may grant `level`.
+export const linkLevelOffered = (app: App, level: Level): boolean =>
+  APP_LINK_LEVELS[app].includes(level);
+
 export const ITEM_SOURCES = ['person', 'ai', 'import', 'template'] as const;
 export type ItemSource = (typeof ITEM_SOURCES)[number];
 
@@ -235,6 +257,8 @@ export const INDEX_ERRORS = [
   'invalid_folder',
   'invalid_team',
   'invalid_level',
+  // A new link's level, or a link changed to one, that the item's app does not offer (APP_LINK_LEVELS).
+  'level_not_offered',
   'invalid_tab',
   'invalid_expiry',
   'invalid_key',
@@ -296,18 +320,51 @@ export const placementDimensionKey = (app: App, dimension: PlacementDimension, v
 
 const INTENT_PART = /^[A-Za-z0-9_.-]+$/;
 
-/** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app. */
+/** Default keys an app no longer offers an entry for, in the order they are read. Never dropped: each reads as the
+ *  app's own key, after it (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Retired default keys").
+ *  livehuddle's Workshop mode entry repeated its app entry, and its retrospective templates left (Work Tracker #507). */
+export const RETIRED_PLACEMENT_KEYS: Partial<Record<App, readonly string[]>> = {
+  livehuddle: ['livehuddle:mode:workshop', 'livehuddle:template:retrospective'],
+};
+
+const NO_KEYS: readonly string[] = [];
+const retiredKeysOf = (app: App): readonly string[] => RETIRED_PLACEMENT_KEYS[app] ?? NO_KEYS;
+
+/** The keys a create of this app with this creation intent tries, most specific first: kind, template, mode, app,
+ *  then the app's retired keys. */
 export function placementDefaultKeysFor(app: App, intent: string | null | undefined): string[] {
   const parts = intent ? intent.split(':') : [];
   const [mode, kind, family] =
     parts.length === 1 ? [null, null, parts[0]] : [parts[0], parts[1], parts[2] ?? null];
+  const retired = retiredKeysOf(app);
   const keys: string[] = [];
   const add = (dimension: PlacementDimension, value: string | null | undefined) => {
-    if (value && INTENT_PART.test(value)) keys.push(placementDimensionKey(app, dimension, value));
+    if (!value || !INTENT_PART.test(value)) return;
+    const key = placementDimensionKey(app, dimension, value);
+    if (!retired.includes(key)) keys.push(key);
   };
   add('kind', kind);
   add('template', family);
   add('mode', mode);
-  keys.push(placementDefaultKey(app));
+  keys.push(placementDefaultKey(app), ...retired);
   return keys;
+}
+
+/** A person's defaults as every surface reads them: an app's own key, when it holds none, takes its first retired
+ *  key's folder. The retired keys stay in the map, so clearing the app's entry can clear them too. */
+export function foldRetiredDefaults(
+  rows: readonly { key: string; folderId: string }[],
+): Map<string, string> {
+  const map = new Map(rows.map((d) => [d.key, d.folderId]));
+  for (const [app, retired = NO_KEYS] of Object.entries(RETIRED_PLACEMENT_KEYS)) {
+    if (map.has(app)) continue;
+    const folderId = retired.map((key) => map.get(key)).find((id) => id !== undefined);
+    if (folderId) map.set(app, folderId);
+  }
+  return map;
+}
+
+/** The retired keys this key's entry clears with it: an app's own key's, else none. */
+export function retiredKeysClearedWith(key: string): readonly string[] {
+  return (APPS as readonly string[]).includes(key) ? retiredKeysOf(key as App) : NO_KEYS;
 }

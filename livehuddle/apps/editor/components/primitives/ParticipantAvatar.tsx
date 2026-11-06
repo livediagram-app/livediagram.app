@@ -14,7 +14,7 @@ import { AgentIcon, HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '
 // It is drawn as a box-shadow, which reserves no space, so an avatar is
 // visually this much wider than the `size` you asked for. Any flex gap next to
 // one loses this much on that side: a `gap-1` beside an avatar renders as zero
-// clearance, which is exactly how the Estimate card ended up with a vote value
+// clearance, which is exactly how the Estimate card ended up with its value
 // touching the ring. Rule of thumb: a gap between an avatar and text wants
 // 8px+, and between two avatars 12px+.
 const AVATAR_RING_OVERHANG_PX = 4;

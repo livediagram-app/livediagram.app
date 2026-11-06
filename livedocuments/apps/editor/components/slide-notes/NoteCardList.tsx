@@ -1,7 +1,7 @@
 'use client';
 
 // A slide's speaker notes as note cards (docs/specs/012-collaboration/speaker-note-cards.md "Writing note cards"):
-// the list the title bar's Notes popover (or a phone's bottom sheet) and the Slide Deck panel both show. One card open
+// the list the title bar's Notes popover (or a phone's bottom sheet) shows. One card open
 // for writing at a time; add, reorder (drag by the grip, the Move buttons or Alt+arrows) and remove with an Undo.
 // Every change hands the whole list to `onChange`, which writes the deck.
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
@@ -52,16 +52,15 @@ export function noteCardsSummary(cards: readonly NoteCard[]): string | null {
 export function NoteCardList({
   cards,
   onChange,
-  compact = false,
-  heading = true,
+  onSettle,
   takeEscape,
 }: {
   cards: readonly NoteCard[];
   onChange: (cards: readonly NoteCard[]) => void;
-  // The Slide Deck panel's narrower list: smaller gaps, no line under it.
-  compact?: boolean;
-  // The "Speaker Notes" heading and summary; off where the surface names it (a phone's sheet, the panel).
-  heading?: boolean;
+  // The writing paused: a card closed, or the list went (its popover closed, or it moved to another slide). The deck
+  // saves what it still holds then (docs/specs/012-collaboration/speaker-note-cards.md "Saving"). After any change the
+  // close made.
+  onSettle?: () => void;
   // Given what Escape does here (null on unmount), for a surface whose own Escape is taken first (a popover, a
   // sheet): it closes the open card and says so, else says it left Escape alone. Keep it stable.
   takeEscape?: (escape: (() => boolean) | null) => void;
@@ -73,7 +72,7 @@ export function NoteCardList({
   const counted = useRef<string | null>(null);
   const list = useRef<HTMLDivElement>(null);
   // The newest cards for the unmount below, which runs after the props it closed over.
-  const latest = useLatest({ cards, openId, onChange });
+  const latest = useLatest({ cards, openId, onChange, onSettle });
 
   const write = (next: readonly NoteCard[], action?: 'add' | 'remove' | 'move' | 'restore') => {
     if (next === cards) return;
@@ -92,6 +91,7 @@ export function NoteCardList({
       // Back on the card it wrote, so the keyboard carries on from there.
       focusCard(current.id);
     }
+    onSettle?.();
   };
 
   const open = (id: string) => {
@@ -101,6 +101,8 @@ export function NoteCardList({
     counted.current = null;
     if (current && isBlankNoteCard(current))
       write(removeNoteCard(cards, current.id).cards, 'remove');
+    // The card it leaves is closed: its words save now.
+    if (current) onSettle?.();
   };
 
   const add = (afterIndex: number | null) => {
@@ -190,12 +192,14 @@ export function NoteCardList({
     return () => window.removeEventListener('pointerdown', onDown, true);
   }, [editing]);
 
-  // Leaving with a blank card open (the popover closed round it) takes the blank card away.
+  // Leaving with a blank card open (the popover closed round it) takes the blank card away; then what the deck still
+  // holds saves.
   useEffect(
     () => () => {
-      const { cards: last, openId: id, onChange: commit } = latest.current;
+      const { cards: last, openId: id, onChange: commit, onSettle: settle } = latest.current;
       const blank = last.find((c) => c.id === id);
       if (blank && isBlankNoteCard(blank)) commit(removeNoteCard(last, blank.id).cards);
+      settle?.();
     },
     [latest],
   );
@@ -217,7 +221,7 @@ export function NoteCardList({
   if (cards.length === 0) {
     return (
       <div data-note-card-list="" className="flex flex-col gap-2">
-        {heading ? <ListHeading summary={null} /> : null}
+        <ListHeading summary={null} />
         <CompactEmptyState
           size="small"
           icon={<NoteCardsIcon />}
@@ -236,19 +240,15 @@ export function NoteCardList({
   }
 
   return (
-    <div
-      ref={list}
-      data-note-card-list=""
-      className={`flex flex-col ${compact ? 'gap-1.5' : 'gap-2'}`}
-    >
-      {heading ? <ListHeading summary={summary} /> : null}
+    <div ref={list} data-note-card-list="" className="flex flex-col gap-2">
+      <ListHeading summary={summary} />
       {/* A long stack scrolls inside the popover or panel rather than running off the screen; no text is
           selected while a card is dragged. */}
       <div
         data-note-card-scroller=""
-        className={`-mx-1 flex max-h-[min(55vh,30rem)] flex-col overflow-y-auto overscroll-contain px-1 py-0.5 ${
-          compact ? 'gap-1.5' : 'gap-2'
-        } ${drag.draggingId ? 'select-none' : ''}`}
+        className={`-mx-1 flex max-h-[min(55vh,30rem)] flex-col gap-2 overflow-y-auto overscroll-contain px-1 py-0.5 ${
+          drag.draggingId ? 'select-none' : ''
+        }`}
       >
         {cards.map((card, i) => (
           <div key={card.id} className="flex flex-col gap-1">

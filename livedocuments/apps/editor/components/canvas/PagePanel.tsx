@@ -2,22 +2,18 @@
 
 // A page's panel (docs/specs/007-editor/pages-mode.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
-// Its name, then its tabs: Page (size, orientation; absent where the page has neither), Background
-// (every hover over a swatch previews on the page itself); then the page's
-// actions. An article page's Style, Text and Background sit beside its cog (PageArticleButtons). It closes on an outside press, Escape, or the canvas
+// Its name, then its Page section (size, orientation; absent where the page has neither), then the
+// page's actions. A page's Background, an infographic or slide page's Layouts, and an article's Style
+// and Text sit beside its cog on the title bar, never here too. It closes on an outside press, Escape, or the canvas
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   PAGE_NAME_MAX,
   pageHasOrientation,
-  pageKindOf,
   pageSizeChoices,
   type LaidOutPage,
-  type PageBackground,
 } from '@livedocuments/document';
 import {
-  ACTIVE_SEGMENT,
-  SEGMENT_TRACK,
   ChevronLeftIcon,
   ChevronRightIcon,
   DuplicateIcon,
@@ -27,19 +23,20 @@ import {
   useClickOutside,
   useEscape,
   Portal,
+  lucideGlyph,
 } from '@livedocuments/ui';
-import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
+import { lucideLock, lucideLockOpen } from '@liveworkspace/icons/lucide';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { useCardOverflow } from '@/lib/flashcard-overflow-store';
 import { cardSplitLabel } from '@/lib/flashcard-split';
-import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import { OrientationSection, SizeSection } from './page-panel-sections';
-import { ApplyBackgroundToAll } from './page-background-apply-all';
-import { BackgroundSection } from './page-background-section';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+
+const LockIcon = lucideGlyph(lucideLock, 16);
+const UnlockIcon = lucideGlyph(lucideLockOpen, 16);
 import type { HelpArticleKey } from '@/lib/help-articles';
 
 const WIDTH = 304;
@@ -47,26 +44,12 @@ const GAP = 6;
 // The sheets' own ease (CanvasPages).
 const PAGE_EASE_MS = 200;
 
-type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'background';
+// The panel's one section (the request API's `tab`, kept so a caller still names what it opens).
+export type PagePanelTab = 'page';
 
-const TAB_LABEL: Record<PagePanelTab, string> = {
-  page: 'Page',
-  background: 'Background',
-};
-
-// The page's tabs: Page while it has a size or orientation to choose, then Background (not on an
-// infographic or article page, whose Background sits beside its cog). An infographic or slide
-// page's Layouts, and an article's Style and Text, sit beside its cog.
-export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
-  const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
-  // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
-  // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
-  const kind = pageKindOf(page);
-  return [
-    ...(hasPage ? (['page'] as const) : []),
-    ...(kind !== 'infographic' && !page.flow ? (['background'] as const) : []),
-  ];
+/** Whether the page has a size or an orientation to choose: its Page section shows only then. */
+export function pageHasPageSection(page: LaidOutPage): boolean {
+  return pageSizeChoices(page).length > 1 || pageHasOrientation(page);
 }
 
 export function PagePanel({
@@ -74,10 +57,8 @@ export function PagePanel({
   count,
   heldByLock = false,
   getAnchor,
-  initialTab,
-  themeBackgrounds,
+  titleName,
   edit,
-  onPreview,
   onClose,
   showMe,
 }: {
@@ -90,17 +71,15 @@ export function PagePanel({
   heldByLock?: boolean;
   // The cog the panel hangs from, looked up when placed.
   getAnchor: () => HTMLElement | undefined;
-  initialTab: PagePanelTab;
-  themeBackgrounds: ThemeBackgroundPreset[];
+  // An article page's or card's article title: its name until it is given one of its own, so the
+  // name field shows it as its placeholder (typing a name still overrides it).
+  titleName?: string | undefined;
   edit: PageEdits;
-  onPreview: (preview: PagePreview) => void;
   onClose: (restoreFocus: boolean) => void;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const mobile = useIsMobileViewport();
-  const tabs = pagePanelTabs(page);
-  // A tab a page of this kind lacks (Background on an infographic page) opens as its first.
-  const [tab, setTab] = useState<PagePanelTab>(tabs.includes(initialTab) ? initialTab : tabs[0]!);
+  const pageSection = pageHasPageSection(page);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   // The anchor lookup is a fresh closure each render: read through a ref so placing stays stable.
@@ -167,13 +146,8 @@ export function PagePanel({
     window.addEventListener('wheel', onWheel, { capture: true, passive: true });
     return () => window.removeEventListener('wheel', onWheel, { capture: true });
   }, [onClose]);
-  // The previews are the panel's: closing it puts the page back.
-  useEffect(() => () => onPreview(null), [onPreview]);
-
-  const preview = (patch: Partial<PageBackground> | null) =>
-    onPreview(patch ? { pageId: page.id, patch } : null);
   const placeLabel = `Page ${page.index + 1}`;
-  const title = page.name ?? (count > 1 ? placeLabel : 'Page');
+  const title = page.name || titleName || (count > 1 ? placeLabel : 'Page');
   // A locked page's panel says so, its name and sections unavailable (docs/specs/007-editor/
   // pages-mode.md "Locking a page"); moving and duplicating it still work. A page of an
   // article another of whose pages is locked is held too, all but its own name.
@@ -187,7 +161,9 @@ export function PagePanel({
           className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
         >
           {selfLocked
-            ? 'This page is locked. Unlock it beside the cog to change it.'
+            ? mobile
+              ? 'This page is locked. Unlock it below to change it.'
+              : 'This page is locked. Unlock it beside the cog to change it.'
             : "A page of this article is locked. Unlock it to change the article's pages."}
         </p>
       ) : null}
@@ -201,24 +177,13 @@ export function PagePanel({
         <NameField
           key={page.id}
           name={page.name ?? ''}
-          placeholder={count > 1 ? placeLabel : 'Untitled page'}
+          placeholder={titleName ?? (count > 1 ? placeLabel : 'Untitled page')}
+          placeholderIsName={!!titleName}
           onRename={(name) => edit.rename(page.id, name)}
         />
       </div>
       <div inert={locked} className={locked ? 'opacity-50' : undefined}>
-        {/* One tab (an infographic page's Page) needs no switch. */}
-        {tabs.length > 1 ? (
-          <PanelTabs
-            tab={tab}
-            tabs={tabs}
-            onTab={(next) => {
-              // Leaving Background takes a hovered swatch's preview off the page.
-              if (next !== 'background') onPreview(null);
-              setTab(next);
-            }}
-          />
-        ) : null}
-        {tab === 'page' ? (
+        {pageSection ? (
           <>
             <SizeSection page={page} onSize={(size) => edit.setSize(page.id, size)} />
             <OrientationSection
@@ -226,29 +191,15 @@ export function PagePanel({
               onOrientation={(o) => edit.setOrientation(page.id, o)}
             />
           </>
-        ) : tab === 'background' ? (
-          <>
-            <BackgroundSection
-              page={page}
-              themePresets={themeBackgrounds}
-              onBackground={(patch) => {
-                edit.setBackground(page.id, patch);
-                onPreview(null);
-              }}
-              onPreview={preview}
-            />
-            <ApplyBackgroundToAll
-              page={page}
-              reach={edit.applyToAllReach(page.id)}
-              onApply={() => {
-                onPreview(null);
-                edit.applyBackgroundToAll(page.id);
-              }}
-            />
-          </>
         ) : null}
       </div>
-      <PageActions page={page} locked={locked} edit={edit} onClose={() => onClose(false)} />
+      <PageActions
+        page={page}
+        locked={locked}
+        edit={edit}
+        lockHere={mobile}
+        onClose={() => onClose(false)}
+      />
     </>
   );
   const label = `${title} settings`;
@@ -296,54 +247,19 @@ export function PagePanel({
   );
 }
 
-// The page's tabs (pagePanelTabs): the shared segmented control, its highlight sliding between them.
-const GRID_COLS = ['grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'];
-function PanelTabs({
-  tab,
-  tabs,
-  onTab,
-}: {
-  tab: PagePanelTab;
-  tabs: PagePanelTab[];
-  onTab: (t: PagePanelTab) => void;
-}) {
-  return (
-    <div className="px-3 pt-2">
-      <div
-        role="group"
-        aria-label="Page panel section"
-        className={`relative grid ${GRID_COLS[tabs.length - 1]} rounded-lg p-0.5 ${SEGMENT_TRACK}`}
-      >
-        <SegmentSlider count={tabs.length} index={tabs.indexOf(tab)} className={ACTIVE_SEGMENT} />
-        {tabs.map((id) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={tab === id}
-            onClick={() => onTab(id)}
-            className={`relative z-10 rounded-md py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
-              tab === id
-                ? 'text-white'
-                : 'text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-            }`}
-          >
-            {TAB_LABEL[id]}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // The page's name, renamed as you leave the field, press Enter or close the panel (an outside
 // press closes it before the field would blur, so the close commits it too).
 function NameField({
   name,
   placeholder,
+  placeholderIsName = false,
   onRename,
 }: {
   name: string;
   placeholder: string;
+  // The placeholder is the name the page goes by (its article's title), so it reads in the name's
+  // own ink rather than as an empty field's hint.
+  placeholderIsName?: boolean;
   onRename: (name: string) => void;
 }) {
   const [draft, setDraft] = useState(name);
@@ -375,7 +291,7 @@ function NameField({
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur();
         }}
-        className="w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-900 outline-none transition placeholder:font-medium placeholder:text-slate-400 hover:border-slate-200 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100 dark:text-slate-100 dark:hover:border-slate-700 dark:focus:bg-slate-900 dark:focus:ring-brand-500/30"
+        className={`w-full rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-semibold text-slate-900 outline-none transition ${placeholderIsName ? 'placeholder:font-semibold placeholder:text-slate-900 dark:placeholder:text-slate-100' : 'placeholder:font-medium placeholder:text-slate-400'} hover:border-slate-200 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-100 dark:text-slate-100 dark:hover:border-slate-700 dark:focus:bg-slate-900 dark:focus:ring-brand-500/30`}
       />
     </div>
   );
@@ -412,11 +328,14 @@ function PageActions({
   page,
   locked,
   edit,
+  lockHere = false,
   onClose,
 }: {
   page: LaidOutPage;
   // The page, or its article, is held by a lock: no split and no delete.
   locked: boolean;
+  // A phone's bar has no padlock ("Beside the cog"): Lock or Unlock sits here instead.
+  lockHere?: boolean;
   edit: PageEdits;
   onClose: () => void;
 }) {
@@ -427,7 +346,9 @@ function PageActions({
   const overflow = useCardOverflow(card ? page.flow : undefined);
   const split = card && overflow && !locked ? edit.cardSplitState(page.id) : 'fits';
   return (
-    <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+    // Under an empty body (a page with no size or turn to choose) the name field's hairline already
+    // parts it from the name, so it draws none of its own: never two lines in a row.
+    <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800 [:empty+&]:mt-0 [:empty+&]:border-t-0">
       {split !== 'fits' && (
         <ActionButton
           label={cardSplitLabel(split)}
@@ -464,6 +385,14 @@ function PageActions({
       >
         <ChevronRightIcon className="h-4 w-4" />
       </ActionButton>
+      {lockHere ? (
+        <ActionButton
+          label={page.locked ? 'Unlock page' : 'Lock page'}
+          onClick={() => edit.setLocked(page.id, !page.locked)}
+        >
+          {page.locked ? <UnlockIcon /> : <LockIcon />}
+        </ActionButton>
+      ) : null}
       <ActionButton
         label={`Delete ${noun}`}
         onClick={

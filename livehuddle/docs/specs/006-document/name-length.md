@@ -49,7 +49,7 @@ import, or an API-driven change.
 The api worker applies `truncateName` to every document and tab name it is asked
 to store, so the cap holds for every caller: the editor, an API-token script
 ([Public API and API tokens](../015-api/public-api-and-tokens.md)), an AI tool
-through the [MCP server](../015-api/mcp-server.md), or an Offline Mode sync.
+through the [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md), or an Offline Mode sync.
 The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:
@@ -86,7 +86,6 @@ already the stored name without waiting on a round trip:
 
 - `useSelectionEditing`: the auto-name path.
 - `useTabActions.renameTab`, and `useTabActions.duplicateTab`'s `<name> copy`, which can itself run past the cap.
-- The ms-whiteboard importer's board name (`lib/ms-whiteboard/board-identity.ts`).
 - `EditorView`'s header rename.
 
 A rename from the Explorer is the shared Explorer's ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)); the

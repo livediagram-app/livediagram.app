@@ -7,6 +7,7 @@ import {
   createSticky,
   createTable,
   createText,
+  drawnTextSize,
   SHAPE_KINDS,
   styleKeysFor,
   type Element,
@@ -57,10 +58,17 @@ function printable(value: unknown): string | null {
   return null;
 }
 
+function viewTextSize(el: Element): unknown {
+  const size = fieldOf(el, 'textSize');
+  if (size === undefined || !('textScale' in el)) return size;
+  return drawnTextSize(el, 'sm');
+}
+
 export function styleAttributesOf(el: Element, baselineOf: StyleBaselines): ViewAttribute[] {
   const baseline = baselineOf(el);
   return styleKeysFor(el.type).flatMap(({ key, field }) => {
-    const value = printable(fieldOf(el, field));
+    // A text's size is the size its words draw at (a 48 px text scaled 1.5 is text=72), so it writes back unchanged.
+    const value = printable(field === 'textSize' ? viewTextSize(el) : fieldOf(el, field));
     if (value === null) return [];
     if (baseline !== null && printable(fieldOf(baseline, field)) === value) return [];
     return [{ key, value, text: `${key}=${attrValue(value)}` }];

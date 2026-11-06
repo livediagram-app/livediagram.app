@@ -1,7 +1,7 @@
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): every shape kind whose content arrives at
-// RUNTIME rather than being drawn by the author — the ones that do something
-// when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect what
-// the room thinks (docs/specs/012-collaboration/participant-responses.md to docs/specs/009-elements/chair.md, docs/specs/012-collaboration/comment-pin.md).
+// RUNTIME rather than being drawn by the author: the ones that do something
+// when pressed (docs/specs/009-elements/mode-button.md, docs/specs/012-collaboration/bring-focus.md) and the ones a walking character uses (docs/specs/009-elements/chair.md,
+// docs/specs/009-elements/office.md).
 //
 // A LEAF module (a set and two predicates) for the same reason
 // `collab-shapes.ts` is one.
@@ -11,6 +11,7 @@
 // once: does this element carry a `…` on its face?
 
 import { isOfficeShape } from './office';
+import { isMeetingPieceShape } from './meeting-pieces';
 import { isSeatingShape } from './seating';
 import type { ShapeKind } from './index';
 
@@ -18,10 +19,6 @@ import type { ShapeKind } from './index';
 export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'mode-button',
   'portal',
-  'session-button',
-  'reveal',
-  'picker',
-  'reaction-pad',
   'chair',
   // Fence (docs/specs/009-elements/fence.md): it does nothing until a character walks into it.
   'fence',
@@ -38,18 +35,49 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'water-cooler',
   'coffee-machine',
   'rug',
-  'done-check',
-  'estimate',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
-  'temperature',
-  'idea-box',
-  'qa-board',
-  'agenda',
-  'decision',
-  'roll-call',
-  'comment-pin',
-  'action-card',
+  'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  // The social pieces (docs/specs/009-elements/social-pieces.md). Walked to, round, sat at or used.
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
+  // The Door (docs/specs/009-elements/room-builder.md): walked through.
+  'door',
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
+  'directory',
+  'elevator',
+  // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a Screen pressed to open large, a Room
+  // Sign knocked on.
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): what it does only happens when somebody presses
   // it, which is the whole of what makes a kind a Behaviour.
   'focus-button',
@@ -60,34 +88,9 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
 }
 
 /**
- * Does this kind draw its OWN `…` menu, with quick settings in it?
- *
- * The ones that do earned it: a Timer's length, a Vote's dots and a Poll's
- * question are the settings you change mid-session, and a Done check's round
- * and an Idea box's contents are reset from the same place, as are a Q&A
- * board's spotlight and notes (docs/specs/012-collaboration/qa-board.md). Everything else in
- * the family gets the shared settings `…` instead, which opens the element's
- * context menu.
- *
- * The distinction matters because the two must never both render — they sit in
- * the same corner of the same card, and two ellipses side by side is a bug you
- * can see from across the room.
- */
-export function drawsOwnElementMenu(kind: ShapeKind): boolean {
-  return (
-    kind === 'session-button' ||
-    kind === 'done-check' ||
-    kind === 'idea-box' ||
-    kind === 'qa-board' ||
-    kind === 'quiz'
-  );
-}
-
-/**
  * Does this kind carry the shared settings `…` at all (docs/specs/008-canvas/canvas-and-palette.md)?
  *
- * Most of the family does, beyond the ones that draw their own richer `…`
- * above. Three do not:
+ * Most of the family does. These do not:
  *
  * - Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a button whose whole behaviour is "press me".
  *   Its colours and label are reached the ordinary way, by right-clicking the
@@ -96,14 +99,7 @@ export function drawsOwnElementMenu(kind: ShapeKind): boolean {
  * - A chair (docs/specs/009-elements/chair.md) is furniture, not a card. Its one setting, which way it
  *   faces, is set from the element menu, and an ellipsis floating over the
  *   backrest read as a control on the seat.
- * - A reveal zone (docs/specs/009-elements/reveal-zone.md) is a cover whose whole face says what it
- *   does ("Double-click to reveal"); a `…` in its corner was a control on
- *   something meant to read as closed. Reveal for everyone is on its
- *   right-click menu, where it always was.
- * - The Comment and Action panels (docs/specs/012-collaboration/comment-pin.md, action-panel.md) have
- *   no settings of their own: everything they do is on the card (reply,
- *   resolve, complete, edit), and their right-click menu is the ordinary
- *   element menu. A `…` opening that menu was a control with nothing behind it.
+ * - The fence, the Avatar Pad and the office pieces, for the chair's reason.
  */
 export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
   if (
@@ -112,10 +108,8 @@ export function carriesSharedSettingsMenu(kind: ShapeKind): boolean {
     kind === 'fence' ||
     kind === 'avatar-pad' ||
     isOfficeShape(kind) ||
-    kind === 'reveal' ||
-    kind === 'comment-pin' ||
-    kind === 'action-card'
+    isMeetingPieceShape(kind)
   )
     return false;
-  return isBehaviourShape(kind) && !drawsOwnElementMenu(kind);
+  return isBehaviourShape(kind);
 }

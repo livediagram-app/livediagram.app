@@ -180,7 +180,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'personal-goals',
     title: 'Personal Goals',
     description:
-      'Four tabs: your Goals on a timeline, the Key Results that measure each, a Habits sheet and an Overview dashboard.',
+      'Four tabs: your Goals on a timeline, the Milestones on the way to each, a Habits sheet and an Overview dashboard.',
     extra: true,
   },
   {

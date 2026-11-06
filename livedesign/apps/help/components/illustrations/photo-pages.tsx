@@ -8,7 +8,7 @@
 // tab's blend mode, opacity and rows (PhotoPanel.tsx, PhotoLayersTab.tsx). Composed from the shared primitives.
 
 import { Label, Panel, Scene, Tabs, TextBar } from '@liveworkspace/help-site/art/primitives';
-import { PadlockGlyph, TitleButton } from './page-title-bar';
+import { CogGlyph, PadlockGlyph, PageLabel, TitleBarCard } from './page-title-bar';
 
 type GlyphProps = { cx: number; cy: number; on?: boolean };
 const stroke = (on?: boolean) => (on ? 'stroke-brand-600' : 'stroke-slate-500');
@@ -47,30 +47,6 @@ function FilterGlyph({ cx, cy, on }: GlyphProps) {
       strokeWidth={1.3}
       strokeLinejoin="round"
     />
-  );
-}
-
-/** The page cog: a small round button with a gear. */
-function Cog({ cx, cy }: { cx: number; cy: number }) {
-  const spokes = [0, 45, 90, 135, 180, 225, 270, 315];
-  return (
-    <g transform={`translate(${cx} ${cy})`}>
-      <circle r={8} className="fill-white stroke-slate-300" strokeWidth={1.2} />
-      {spokes.map((a) => (
-        <line
-          key={a}
-          x1={0}
-          y1={-3}
-          x2={0}
-          y2={-4.8}
-          transform={`rotate(${a})`}
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-      ))}
-      <circle r={2.5} fill="none" className="stroke-slate-500" strokeWidth={1.3} />
-    </g>
   );
 }
 
@@ -207,15 +183,21 @@ export function PhotoPagesScene() {
         Brush Presets
       </Label>
 
-      {/* The page's label and its title bar: Image, Select, Filter, the padlock and the cog. */}
-      <Label x={sx} y={sy - 10} size={10} tone="muted">
-        1920 x 1080 · Photo
-      </Label>
-      <TitleButton x={sx + 108} cy={sy - 10} name="Image" Glyph={ImageGlyph} />
-      <TitleButton x={sx + 162} cy={sy - 10} name="Select" Glyph={SelectGlyph} on />
-      <TitleButton x={sx + 222} cy={sy - 10} name="Filter" Glyph={FilterGlyph} />
-      <PadlockGlyph cx={sx + 296} cy={sy - 10} />
-      <Cog cx={sx + 318} cy={sy - 10} />
+      {/* The page's label and its title bar card: Image, Select, Filter, then the padlock and the cog. */}
+      <PageLabel x={sx} y={sy - 15} size={9} rest="1920 x 1080 · Photo" />
+      <TitleBarCard
+        right={sx + sw}
+        cy={sy - 15}
+        cell={22}
+        groups={[
+          [
+            { Glyph: ImageGlyph, name: 'Image' },
+            { Glyph: SelectGlyph, name: 'Select', on: true },
+            { Glyph: FilterGlyph, name: 'Filter' },
+          ],
+          [{ Glyph: PadlockGlyph }, { Glyph: CogGlyph }],
+        ]}
+      />
 
       {/* The photo: a sky, a sun, two hills and a lake, the same in a dark theme. */}
       <rect x={sx + 2} y={sy + 3} width={sw} height={sh} rx={2} className="fill-slate-200" />

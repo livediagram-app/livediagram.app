@@ -14,6 +14,22 @@ describe('dropImportHint', () => {
     expect(dropImportHint({ name: 'pitch.pptx' })).toContain('a PowerPoint deck');
   });
 
+  it("names the tabs that take a file this tab's Import does not", () => {
+    expect(dropImportHint({ name: 'notes.md' }, ['json', 'powerpoint'])).toBe(
+      'A Markdown file imports into an article or an empty tab.',
+    );
+    expect(dropImportHint({ name: 'Report.docx' }, ['json'])).toBe(
+      'A Word document imports into an article or an empty tab.',
+    );
+    expect(dropImportHint({ name: 'pitch.pptx' }, ['json', 'markdown', 'word'])).toBe(
+      'A PowerPoint deck imports into a slide deck or an empty tab.',
+    );
+    expect(dropImportHint({ name: 'pitch.pptx' }, ['json', 'powerpoint'])).toBe(
+      'To bring in a PowerPoint deck, use Import in the tab menu.',
+    );
+    expect(dropImportHint({ name: 'tab.json' }, ['json'])).toContain('use Import');
+  });
+
   it('says nothing for any other file', () => {
     expect(dropImportHint({ name: 'photo.jpg' })).toBeNull();
     expect(dropImportHint({ name: 'json' })).toBeNull();

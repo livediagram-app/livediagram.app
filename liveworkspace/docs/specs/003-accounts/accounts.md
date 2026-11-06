@@ -412,7 +412,10 @@ background request one day, but neither works in every browser, so the bounce st
 ### An app's signed-in cookies
 
 Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps four readable cookies on its
-whole site, so its public pages can tell who is signed in without loading the session:
+whole site, so its public pages can tell who is signed in without loading the session. Every app has a prefix of its own (`ld_` livediagram, `lp_` liveplanner, `ldoc_`
+livedocuments, `ldes_` livedesign, `lh_` livehuddle), on these and on its refresh, PKCE and silent sign-in cookies,
+because cookies ignore the port: every app on `localhost` in development shares one cookie jar, and two apps with one
+name would read and overwrite each other's session:
 
 - `<prefix>signed_in`: `1` with a session, `0` once it ends. It says whether.
 - `<prefix>account`: the account's name as a header shows it (given name, else full name, else email;
@@ -733,6 +736,19 @@ every app; `splitSettings` also deletes the writing app's old copy (a `null` in 
 shows the one from the app the panel was opened for, else the first app in the apps' order that has one. No
 migration job runs: the accounts Worker stores keys without knowing what they mean, and the copies left in app
 scopes are a few bytes each.
+
+### Retired shared keys
+
+A shared key whose feature is gone leaves `ALL_SETTING_KEYS` for `RETIRED_ALL_SETTING_KEYS` (`@liveworkspace/settings`),
+so no app or panel shows or marks it, and its stored copy goes the way each app's retired keys go: dropped on read,
+cleared by the next write, never reverted and never written on load. `joinSettings` still carries a retired key from
+`all` (or, without one there, from the app's own scope), so the editor's record of the server's blob has it; the
+editor's own read drops it (each app's `upgradeLegacyPreferences`), so its next write names it with a `null`; and
+`splitSettings` sends that `null` to `all`, and to the app's scope too, so neither copy survives the write. Nothing
+else changes: an untouched blob keeps the few stale bytes until its owner next changes a setting in any editor.
+
+Retired so far: `powerUserMode` and `minimalChrome`, with Power user mode (5 November 2026, Work Tracker #500; each
+editor's `docs/specs/007-editor/power-user-mode.md`).
 
 ### Writing is per key
 

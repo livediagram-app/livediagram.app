@@ -28,28 +28,21 @@ describe('arrow-dangling', () => {
     expect(of(report, 'arrow-dangling').map((f) => f.refs[0])).toEqual(['x', 'y']);
   });
 
-  it('stays quiet for a pinned arrow, a half-free one, one on an arrow, and one to a hidden layer (N4)', () => {
+  it('stays quiet for a pinned arrow, a half-free one, and one on an arrow (N4)', () => {
     const half = { ...arrow('half', 'a', 'b'), to: { kind: 'free', x: 400, y: 0 } } as Element;
     const onArrow = {
       ...arrow('on', 'a', 'b'),
       to: { kind: 'on-arrow', arrowId: 'link', t: 0.5 },
     } as Element;
-    const hidden = { ...box('h', 0, 300), layerId: 'off' } as Element;
-    const tab = {
-      ...tabOf(
-        box('a', 0, 0),
-        box('b', 300, 0),
-        arrow('link', 'a', 'b'),
-        half,
-        onArrow,
-        hidden,
-        arrow('toHidden', 'a', 'h'),
-      ),
-      layers: [
-        { id: 'default', name: 'Base' },
-        { id: 'off', name: 'Off', visible: false },
-      ],
-    };
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 300, 0),
+      arrow('link', 'a', 'b'),
+      half,
+      onArrow,
+      box('h', 0, 300),
+      arrow('toH', 'a', 'h'),
+    );
     expect(of(lint(tab), 'arrow-dangling')).toEqual([]);
   });
 

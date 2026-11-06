@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Default Folders',
   description:
-    'Send new spaces to a folder you choose instead of My Work, by mode, kind or template, set from a folder menu or Settings.',
+    'Send new spaces to a folder you choose instead of My Work, set from a folder menu or in Settings, and see where each new space lands.',
   path: '/help/explorer/folders/default-folders/',
 });
 
@@ -24,9 +24,7 @@ A **default folder** is where your new spaces go when you create one without cho
 
 Open a folder's menu (its **⋯** button, or right-click the folder) and choose **Use as Default for…**. Under **New spaces that open as**, tick what this folder should collect:
 
-- **Spaces**: every new space that no more specific entry claims.
-- **Sessions**: new spaces that open in Workshop.
-- **Retrospective spaces**: new spaces made from a Retrospective template.
+- **Spaces**: every new space.
 
 Each entry points at one folder, so ticking it here moves it from wherever it was; unticking it sends those spaces back to My Work. One folder can hold several entries.
 
@@ -36,14 +34,13 @@ You can use a team's folders too, as long as you are a member of the team. A tea
 
 ## Seeing your defaults
 
-A default folder shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel. Hover it to read what it collects, such as "Default folder for new spaces and sessions".
+A default folder shows a small mark after its name, in the sidebar, the Explorer's lists and cards, and the editor's Explorer panel. Hover it to read what it collects, such as "Default folder for new spaces".
 
 ## When you create a space
 
-**New Space** never asks where a space goes: it is filed in the default folder for the most specific entry that has one (its kind, then its template, then its mode, then **Spaces**), or in My Work when none does.
+**New Space** never asks where a space goes: it is filed in your **Spaces** default folder, or in My Work when you have none.
 
 - Starting from inside a folder or a team keeps you there: that folder wins over your defaults.
-- A template picked on a new space's start screen counts too: pick a Retrospective template on a space you just made, and the space goes to the Retrospective spaces default folder (or your Spaces default), with a note saying where. A space you made inside a folder stays there.
 - To file one space somewhere else, use **Change Folder** on it afterwards.
 - As a guest it works the same way, and your folders and defaults move to your account when you sign in.
 

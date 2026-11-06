@@ -731,6 +731,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "type": "string"
       },
+      "fn": {
+        "type": "string"
+      },
       "hl": {
         "type": "string"
       },
@@ -1822,15 +1825,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "art",
       "articles",
       "budgets",
+      "communities",
       "dashboards",
       "data",
-      "decisions",
       "decks",
       "design",
       "events",
       "flows",
       "forms",
-      "games",
       "guides",
       "illustrations",
       "infographics",
@@ -1847,9 +1849,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "posters",
       "projects",
       "proposals",
-      "retrospectives",
       "roadmaps",
       "social",
+      "socials",
       "trackers",
       "wireframes",
       "workflows",
@@ -2982,7 +2984,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FindField": {
     "enum": [
       "label",
-      "note",
       "edge",
       "cell",
       "item",
@@ -4549,6 +4550,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "orientation"
     ],
     "type": "object"
+  },
+  "PageArrangement": {
+    "description": "How a tab's pages stand (pages-mode.md \"Stacked or side by side\"): one page in front with the rest fanned behind it, or side by side.",
+    "enum": [
+      "stack",
+      "row"
+    ],
+    "type": "string"
   },
   "PageBackground": {
     "additionalProperties": false,
@@ -7036,6 +7045,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "pageArrangement": {
+        "$ref": "#/components/schemas/PageArrangement"
+      },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"
       },
@@ -7139,6 +7151,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "orderIndex": {
         "type": "number"
+      },
+      "pageArrangement": {
+        "$ref": "#/components/schemas/PageArrangement"
       },
       "pageOrientation": {
         "$ref": "#/components/schemas/PageOrientation"

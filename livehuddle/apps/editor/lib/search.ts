@@ -102,21 +102,16 @@ type ElementItem = {
 // this back so the editor routes it to the matching add handler (which arms
 // the same tap-to-drop / drag-to-size placement the palette uses).
 export type PaletteAdd =
-  // `session` / `reaction` are the creation-time choice for the two kinds
-  // that have one (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md). The palette offers a tile per choice,
-  // so search has to as well: typing "poll" should place a poll, not a timer.
+  // `mode` is the creation-time choice for the Mode button
+  // (docs/specs/009-elements/mode-button.md). The palette offers a tile per
+  // choice, so search has to as well: typing "hearts" should place hearts, not confetti.
   | {
       type: 'shape';
       shapeKind: ShapeKind;
-      session?: import('@livehuddle/document').SessionTool;
-      reaction?: import('@livehuddle/document').Reaction;
       mode?: import('@livehuddle/document').SelectionMode;
-      estimateScale?: import('@livehuddle/document').EstimateScale;
       plan?: string;
       variant?: string;
     }
-  | { type: 'icon'; iconId: string }
-  | { type: 'tech'; iconId: string }
   // A sticker (docs/specs/010-palette/stickers.md) is its own element kind, so it adds through its own
   // handler rather than the icon one.
   | { type: 'sticker'; stickerId: string }

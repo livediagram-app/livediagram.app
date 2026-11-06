@@ -1,24 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { editorModeLabel, type EditorMode, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livehuddle/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { track } from '@/lib/telemetry';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
-import { ToolbarSearchAccordion } from './ToolbarSearchAccordion';
 import { PaletteTileGrid, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { mergeByName, searchElementTiles } from './palette-tile-search';
 import { searchCatalogueTiles } from './palette-catalogue-search';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import { markerTiles } from './palette-marker-tiles';
-import { loadWhiteboardPrefs } from '@/lib/whiteboard-prefs';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // a button at the strip's far right, and the body of the popover it opens. The popover's card,
 // placement and dismissal are the strip's (ToolbarStripPopover); the match is palette-tile-search.
+// It finds only what the meeting palette offers (docs/specs/012-collaboration/workshop-mode.md "The palette"): an
+// element livehuddle no longer offers is placed from nowhere, so it is not listed.
 
 /** Marks the button and the popover, for the popover's outside-press check. */
 export const TOOLBAR_SEARCH_SELECTOR = '[data-toolbar-search], [data-toolbar-search-button]';
@@ -55,7 +52,7 @@ export function ToolbarSearchButton({
     <HoverCard
       disabled={open}
       title="Search Elements"
-      description="Find any element by name, from every category and every mode. Shortcut: S."
+      description="Find any element in the palette by name. Shortcut: S."
     >
       {button}
     </HoverCard>
@@ -63,42 +60,27 @@ export function ToolbarSearchButton({
 }
 
 export function ToolbarSearchPanel({
-  mode,
   actions,
   pendingDraw,
   tabElements,
 }: {
-  mode: EditorMode;
   // The tab's elements: before anything is typed, the panel lists the element types on it.
   tabElements: readonly Element[];
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  // Mounted only while the popover is open, so both reset each time it opens.
+  // Mounted only while the popover is open, so it resets each time it opens.
   const [query, setQuery] = useState('');
-  const [othersOpen, setOthersOpen] = useState(false);
-  // Draw mode's markers as this browser last set them, read once per opening.
-  const [pens] = useState(loadWhiteboardPrefs);
-  const surface = useCanvasSurface();
-  // Icons, Stickers and Technology load as a chunk of their own: re-rendered when it lands.
+  // Stickers load as a chunk of their own: re-rendered when it lands.
   const cataloguesLoaded = useIconCatalogs();
-  const elements = searchElementTiles({
-    query,
-    mode,
-    hasImage: actions.hasImage,
-    tabElements,
-    drawTiles: markerTiles(pens, surface),
-  });
-  const catalogues = searchCatalogueTiles({ query, mode, tabElements, loaded: cataloguesLoaded });
-  // One ranking per section across element types and catalogue entries: name matches first.
-  const here = mergeByName(query, elements.here, catalogues.here);
-  const elsewhere = mergeByName(query, elements.elsewhere, catalogues.elsewhere);
-  const below = elsewhere.length;
+  const elements = searchElementTiles({ query, hasImage: actions.hasImage, tabElements });
+  const catalogues = searchCatalogueTiles({ query, tabElements, loaded: cataloguesLoaded });
+  // One ranking across element types and catalogue entries: name matches first. Only what the palette offers.
+  const here = mergeByName(query, elements, catalogues);
   const browsing = !query.trim();
-  const modeName = editorModeLabel(mode);
 
-  // Enter uses the best match: this mode's first, else the open accordion's first.
-  const best = here[0] ?? (othersOpen ? elsewhere[0] : undefined);
+  // Enter places the best match.
+  const best = here[0];
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !best) return;
     e.preventDefault();
@@ -128,34 +110,12 @@ export function ToolbarSearchPanel({
         <CompactEmptyState
           size="small"
           icon={<SearchIcon />}
-          title={
-            below > 0 ? `No ${modeName} elements on this tab yet` : 'No elements on this tab yet'
-          }
+          title="No elements on this tab yet"
           description="Type to find any element."
-        />
-      ) : below > 0 ? (
-        <NoMatches
-          things={`${modeName} elements`}
-          query={query}
-          hint={`Other modes have ${below} below.`}
         />
       ) : (
         <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
-      {elsewhere.length > 0 ? (
-        <ToolbarSearchAccordion
-          title="Elements From Other Modes"
-          description="Elements other modes offer. Any of them works here too."
-          count={elsewhere.length}
-          open={othersOpen}
-          onToggle={() => {
-            if (!othersOpen) track('UI', 'Opened', 'ToolbarSearchOtherModes');
-            setOthersOpen(!othersOpen);
-          }}
-        >
-          <PaletteTileGrid tiles={elsewhere} actions={actions} pendingDraw={pendingDraw} />
-        </ToolbarSearchAccordion>
-      ) : null}
     </div>
   );
 }

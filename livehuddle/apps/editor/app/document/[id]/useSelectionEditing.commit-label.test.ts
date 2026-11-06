@@ -30,14 +30,11 @@ function setup(
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
       tabLocked,
-      layerInertIds: new Set(),
-      adoptLayerName: vi.fn(),
       formatSourceId: null,
       formatToolActive: false,
       documentName,
       tabs: [tab],
       activeTab: tab,
-      drawMode: true,
       editingId,
       commit: (fn) => {
         elements = fn(elements);
@@ -151,7 +148,7 @@ describe('Escape on a text box', () => {
     expect(s.all()).toEqual([worded]);
   });
 
-  it('keeps an empty fixed text box, as Diagram mode makes', () => {
+  it('keeps an empty fixed text box', () => {
     const fixed = { ...createText(0, 0), id: 'fixed', label: '' } as Element;
     const s = setup(fixed, false, 'fixed');
     s.editing.cancelEdit();

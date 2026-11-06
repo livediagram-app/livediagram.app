@@ -392,15 +392,15 @@ export function SearchTabsAndElements() {
 export function SearchAddToCanvas() {
   return (
     <SearchOverlay
-      query="cylinder"
+      query="coffee"
       groups={[
         {
           title: 'Spaces',
-          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
+          rows: [{ icon: <DocumentIcon />, label: 'Coffee chat space', active: true }],
         },
         {
           title: 'Add to canvas',
-          rows: [{ icon: <AddIcon />, label: 'Cylinder' }],
+          rows: [{ icon: <AddIcon />, label: 'Coffee Machine' }],
         },
       ]}
     />
@@ -434,13 +434,7 @@ export function SearchCommandPalette() {
       groups={[
         {
           title: 'Actions',
-          rows: [
-            { icon: <CommandIcon />, label: 'Auto Layout (tidy up)', active: true },
-            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (down)' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (right)' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Tree' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Mindmap' },
-          ],
+          rows: [{ icon: <CommandIcon />, label: 'Auto-align to Grid', active: true }],
         },
         {
           title: 'Help',

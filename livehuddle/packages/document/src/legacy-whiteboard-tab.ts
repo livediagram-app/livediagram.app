@@ -1,14 +1,16 @@
-// Loading a tab saved as `kind: 'whiteboard'` (docs/specs/007-editor/editor-modes.md "Existing
-// whiteboards"). Whiteboarding is an editor mode now, so such a tab becomes a general tab that
-// OPENS in Draw mode. Runs where stored tabs enter (./stored-tab), never in `stampTabKind`.
+// Loading a tab saved as `kind: 'whiteboard'` (docs/specs/007-editor/editor-modes.md "What a tab
+// written elsewhere keeps"). A whiteboard is no kind of tab any more, so such a tab becomes a general
+// tab, which livehuddle opens on its one meeting board (livehuddle has no Draw mode). Runs where
+// stored tabs enter (./stored-tab), never in `stampTabKind`.
 //
 // "One look": a board drew its unpainted shapes, lines and paths in the ink with no fill, as a
-// display projection. Diagram mode has no such projection, so those colours are written onto the
-// elements here, Ink by name (adaptive per appearance), so the board looks unchanged in either
-// mode and to every collaborator. Pen strokes and text with no colour of their own draw in Ink in
-// both modes already, so they keep their colour unset; a stroke only loses a fill it never showed.
+// display projection. A general tab has no such projection, so those colours are written onto the
+// elements here, Ink by name (adaptive per appearance), so the board looks unchanged to every
+// collaborator and in livediagram's Draw mode too. Pen strokes and text with no colour of their own
+// draw in Ink already, so they keep their colour unset; a stroke only loses a fill it never showed.
 // A board's text boxes hugged their text, so each keeps hugging (`sizing`, docs/specs/007-editor/
-// editor-modes.md "A text box's sizing"): an auto width fits its words, any other wraps at its width.
+// editor-modes.md "What a tab written elsewhere keeps"): an auto width fits its words, any other
+// wraps at its width.
 // An unset background read as Plain on a board and the theme's pattern on a general tab, so it is
 // written down as Plain.
 import { INK_PEN_COLOUR } from './pen-colours';

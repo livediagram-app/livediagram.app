@@ -19,6 +19,8 @@ export const HINT_LONG_PRESS_MS = 500;
 export const HINT_LONG_PRESS_SLOP_PX = 10;
 // How long a long-pressed hint stays up after the finger lifts.
 export const HINT_TOUCH_LINGER_MS = 1500;
+// A mouse event this soon after a touch is the browser's echo of the tap, not a mouse.
+export const HINT_TOUCH_COMPAT_MS = 1000;
 
 export const TOOLTIP_GAP_PX = 6;
 export const TOOLTIP_ARROW_PX = 8;

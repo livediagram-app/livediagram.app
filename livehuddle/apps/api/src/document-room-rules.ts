@@ -60,7 +60,7 @@ export function helloPresence(
     role: session.verifiedRole,
   };
   if (typeof c.tabId === 'string') presence.tabId = c.tabId.slice(0, MAX_TAB_ID_LEN);
-  // The document-write key (docs/specs/012-collaboration/participant-responses.md) is RELAYED, not overridden — the one
+  // The document-write key (docs/specs/013-workspace/share-roles.md "Integrity") is RELAYED, not overridden: the one
   // claimed field on the roster. It has to survive a reconnect to be any use
   // (it is what joins a saved answer to the person who gave it), so the server
   // cannot mint it the way it mints `id`. Nothing is granted by holding it and
@@ -144,20 +144,35 @@ export function admitFrame(
   return { admit: true, rate: { count: rate.count + 1, windowStart: rate.windowStart } };
 }
 
-// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a dot names its voter,
-// a response its participant and a comment reaction its reactor, and each must be the key its own hello published.
-// An idea names nobody. The key is still the one the session claimed at hello (server-derived keys are Later), so
-// this stops a Participant voting in someone else's name in the same room, not one that claimed another's key from
+// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a comment reaction
+// names its reactor, and it must be the key its own hello published. The key is still the one
+// the session claimed at hello (server-derived keys are Later), so
+// this stops a Participant reacting in someone else's name in the same room, not one that claimed another's key from
 // the start.
-export function answersAsSelf(op: unknown, key: string | undefined): boolean {
+//
+// A notice board note is signed with the server-verified adder key instead (docs/specs/009-elements/social-pieces.md
+// "Notice Board"): a pin's note and an unpin must both name it. Every screen, and the room's write into the stored
+// board, removes a note only while the unpin's `by` is still its signer, so a Participant unpins only what it
+// pinned.
+export function answersAsSelf(
+  op: unknown,
+  key: string | undefined,
+  adderKey: string | null = null,
+): boolean {
   if (typeof op !== 'object' || op === null) return false;
-  const o = op as { kind?: unknown; voter?: unknown; delta?: unknown };
-  if (o.kind === 'vote') return key !== undefined && o.voter === key;
+  const o = op as { kind?: unknown; delta?: unknown };
   if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
-  const d = o.delta as { kind?: unknown; participantId?: unknown; by?: unknown };
-  if (d.kind === 'idea') return true;
-  if (d.kind === 'response') return key !== undefined && d.participantId === key;
+  const d = o.delta as { kind?: unknown; by?: unknown; note?: unknown };
   // A reaction names its reactor (docs/specs/012-collaboration/comment-reactions.md).
   if (d.kind === 'comment-react') return key !== undefined && d.by === key;
+  const signer = adderKey !== null && adderKey !== '' ? adderKey : null;
+  if (d.kind === 'notice-pin') {
+    const note = d.note as { by?: unknown } | null | undefined;
+    return signer !== null && typeof note === 'object' && note !== null && note.by === signer;
+  }
+  if (d.kind === 'notice-unpin') return signer !== null && d.by === signer;
+  // A Timer's or Stopwatch's press names nobody (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"):
+  // anyone who takes part runs it, so there is no one to impersonate.
+  if (d.kind === 'piece-timer') return true;
   return false;
 }

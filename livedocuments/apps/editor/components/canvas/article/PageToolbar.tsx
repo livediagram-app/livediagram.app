@@ -66,6 +66,7 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
+import { insertFootnote } from '@/lib/article/article-footnotes';
 import {
   insertTable,
   tableCommand,
@@ -249,6 +250,8 @@ export function PageToolbar({
   const insertBlock = (what: BlockInsert) => {
     if (what === 'table') {
       if (!handle.run(insertTable)) return;
+    } else if (what === 'footnote') {
+      if (!handle.run(insertFootnote)) return;
     } else
       handle.insert(
         what === 'toc'
@@ -309,7 +312,8 @@ export function PageToolbar({
         aria-haspopup="menu"
         aria-expanded={open === 'style'}
         onClick={() => toggleOpen('style')}
-        className={`flex h-9 ${phone ? '' : 'min-w-[124px]'} shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
+        // As wide as its style's name needs ("Text" stays short): no fixed width leaving space after a short name.
+        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
           open === 'style' ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_TRIGGER_TONE
         }`}
       >

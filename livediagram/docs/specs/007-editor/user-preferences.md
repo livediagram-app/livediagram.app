@@ -285,7 +285,8 @@ type UserPreferences = {
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
   // Surfaced in Settings as Tours › Show Me, one switch per kind (inverted).
   elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as taken while Power user mode is on; written by its preset.
+  // Counts every element tour as taken: Settings' Show Me on Every Element, switched off, writes it (as did the
+  // retired Power user mode's preset).
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
   // read through lib/presentation-config. Surfaced in Settings as Editor › Presenting. Missing === what this
@@ -329,25 +330,6 @@ type UserPreferences = {
   // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
   // anything else, is Grid (lib/whiteboard-dock-prefs).
   drawPattern?: 'blank' | 'grid' | 'graph';
-
-  // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
-  // Switching it on applies the preset once; see powerUserBaseline.
-  powerUserMode?: boolean;
-  // What switching the mode on changed, per preset setting: the values
-  // before (a key absent here was absent then) and the values written.
-  // Switching off restores `before` for every setting whose current
-  // values still equal `applied`, then deletes this. Present only while
-  // the mode is on.
-  powerUserBaseline?: Record<
-    string,
-    { before: Partial<UserPreferences>; applied: Partial<UserPreferences> }
-  >;
-  // Minimal chrome, a power-user-only setting. Honoured only while
-  // powerUserMode is on; the preset writes true.
-  minimalChrome?: boolean;
-  // True once the power user mode offer has been shown, answered or not,
-  // so it is made once per account.
-  powerUserOfferShown?: boolean;
 };
 ```
 
@@ -427,7 +409,10 @@ Missing key === undefined === default behaviour. Concretely:
   [Editor modes](editor-modes.md#every-mode-always-offered)), `skipLocationStep` (the New Document wizard never asks
   where a document goes, [New document route](new-document-route.md#one-step-wizard)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
-  [MCP server](../015-api/mcp-server.md)). Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
+  [MCP server](../015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
+  `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever
+  the mode's preset wrote (alignment guides, auto-attach arrows, the tours' seen flags) stays as it is, and only
+  Minimal chrome, which nothing reads any more, goes. Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
   `contentsPlacement`, the logo guide switches) are read by nothing here
   ([Editor modes](editor-modes.md#stored-tabs-from-other-products-modes)).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
@@ -461,16 +446,6 @@ Missing key === undefined === default behaviour. Concretely:
   breakage. The gate is read fresh on each toast push (a synchronous
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
   applies immediately with no subscription.
-
-- `powerUserMode` undefined / false → the mode is off (the default). Switching it
-  on applies the preset and records `powerUserBaseline`; switching it off restores
-  every preset setting the user did not change and deletes the baseline
-  ([Power user mode](power-user-mode.md)). Emits `UI`/`Toggled`/`PowerUserMode{On,Off}`.
-- `minimalChrome` → honoured only while `powerUserMode` is on, where undefined /
-  true is on. Off the mode it has no effect whatever its value. Emits
-  `UI`/`Toggled`/`MinimalChrome{On,Off}`.
-- `powerUserOfferShown` undefined → the offer may still be made, once its
-  thresholds are met.
 
 Empty (or missing entirely) localStorage entry, AND no settings kept
 for this owner, is therefore the "everything on" state.
@@ -586,8 +561,7 @@ and the dialog stays as the one complete, browsable index of them.
   **It is the central place to find every preference.** Categories:
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
-  pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-categories
+  pan; with the sub-categories
   **Draw** (dock position, Top or Bottom) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
@@ -611,8 +585,7 @@ and the dialog stays as the one complete, browsable index of them.
   account-shaped things belong.
 
   **A link row** (`kind: 'link'`) opens another category of the same dialog
-  in place, the way the power user preset readout goes to a row: it names the
-  category it opens and never navigates the page.
+  in place: it names the category it opens and never navigates the page.
 
   **Every signed-out message links to sign in.** Wherever a Settings row says
   something needs an account (the guest identity card, Delete Account, the
@@ -625,7 +598,7 @@ and the dialog stays as the one complete, browsable index of them.
   that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
   since only Draw mode has a dock. A setting that applies in both modes
   stays on Editor itself; quick-add on hover, alignment guides, auto-attach
-  arrows, middle-mouse pan and power user mode all act in both. There is no
+  arrows and middle-mouse pan all act in both. There is no
   **Diagram** sub-category while no setting applies only to Diagram mode: a
   category with no rows is never shown, and one is added beside Draw the day
   a Diagram-only setting lands. **Account** holds **Notifications** and
@@ -652,9 +625,8 @@ and the dialog stays as the one complete, browsable index of them.
   switch** ("Enable Layers Panel", "Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
-  switch (`parent`) and are offered only while it is on, the way power
-  user mode's rows follow that mode: a setting for a panel you have
-  turned off has nothing to act on. The Map's switch keeps its stored key
+  switch (`parent`) and are offered only while it is on: a setting for a
+  panel you have turned off has nothing to act on. The Map's switch keeps its stored key
   (`showMinimap`) and its telemetry tokens, only its label changed. A parent's sub-categories follow it directly in the catalogue. In the
   list the parent is an **accordion**: its sub-categories sit indented beneath
   it only while it is expanded, so they do not take up the list all the time.
@@ -685,7 +657,7 @@ and the dialog stays as the one complete, browsable index of them.
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
-  holding several clusters (Editor's Power User rows) gets a sub-heading per
+  holding several clusters (Editor's Canvas and Mouse rows) gets a sub-heading per
   cluster. Sections group CONSECUTIVE runs, so one cannot be split and
   silently re-headed further down.
 
@@ -807,8 +779,8 @@ and the dialog stays as the one complete, browsable index of them.
   `@liveworkspace/settings-ui` (`packages/settings-ui` at the monorepo root) draws the header with its
   back bar, the rail, the pane, search and its "no matches" state, the view memory and scroll
   anchor, sections, collapsed sections, nested rows, the desktop-only note and every generic row
-  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note`, the power user
-  preset readout and the shortcut list). It knows nothing of this app: it is driven by a plain model
+  (`toggle`, `choice` with its illustration, `slider`, `toggleGroup`, `link`, `note` and the shortcut
+  list). It knows nothing of this app: it is driven by a plain model
   (categories with an icon, rows with a value and an `onChange`) and is handed the app's pieces (the
   search box, close button, help link, Sign In link, illustrations) through `SettingsUiKit`. The app
   keeps `SettingsDialog.tsx` (the frame, the tours it relaunches on close, the footer),
@@ -858,13 +830,10 @@ and the dialog stays as the one complete, browsable index of them.
   ([Transactional & lifecycle email](../014-identity/transactional-email.md)) and the reader is signed in - a guest has no address, so those
   switches could never apply. A category left with no applicable rows drops
   out entirely rather than becoming a row that pushes a blank pane.
-  **Power-user-only rows** (Minimal chrome) are absent the same way unless
-  power user mode is on ([Power user mode](power-user-mode.md)); they appear the
-  moment the mode's row is switched on, without reopening the dialog.
 
   A row may have a **parent** row: its children render directly beneath it,
-  indented, as one group named "<parent label> settings" (the power user mode
-  row's Minimal Chrome and its preset readout). A child whose parent is not
+  indented, as one group named "<parent label> settings" (Show Me on Every
+  Element's switch per kind). A child whose parent is not
   among the rows shown (a search match) renders on its own.
 
   (Element add is a single always-on tap-or-drag gesture with no setting, see

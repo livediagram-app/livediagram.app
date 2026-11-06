@@ -204,6 +204,14 @@ export function FormulaEditor({
           <span className="min-w-0 break-words">{status.line}</span>
         </p>
       </div>
+      {/* Under the check line, above the chips: in view over Add Field's footer on a phone. */}
+      <CalculatedPreview
+        typeId={draft.typeId}
+        typeLabel={draft.typeId ? type.label : undefined}
+        type={type}
+        field={previewed}
+        waiting="Waiting for a formula that works"
+      />
       <ChipRow label="Fields" id={`${ids}-fields`}>
         {scope.fields
           .filter((f) => f.id !== field.id)
@@ -225,13 +233,6 @@ export function FormulaEditor({
           </button>
         ))}
       </ChipRow>
-      <CalculatedPreview
-        typeId={draft.typeId}
-        typeLabel={draft.typeId ? type.label : undefined}
-        type={type}
-        field={previewed}
-        waiting="Waiting for a formula that works"
-      />
     </div>
   );
 }

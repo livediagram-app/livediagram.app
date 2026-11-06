@@ -1,5 +1,12 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import {
+  expect,
+  test,
+  expectNoPageErrors,
+  openStartBlank,
+  serverNewUrl,
+  seedTab,
+} from './fixtures';
 
 // Appearance (docs/specs/007-editor/editor-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -11,14 +18,6 @@ import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from 
 
 const CANVAS = '[data-canvas-a11y-root]';
 
-// The wizard's Skip path (docs/specs/007-editor/new-document-route.md): a blank document on the Default colour
-// scheme, in one click. What this suite needs is a default tab, not the wizard.
-async function startBlank(page: import('@playwright/test').Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
-  await page.locator(CANVAS).waitFor();
-  await dismissQuickTour(page);
-}
 const DARK_CANVAS = DARK_CANVAS_BACKGROUND_COLOR;
 const LIGHT_CANVAS = DEFAULT_BACKGROUND_COLOR;
 
@@ -58,7 +57,8 @@ async function canvasColour(page: import('@playwright/test').Page): Promise<stri
 test.describe('Appearance', () => {
   test('opens on the device setting, then cycles', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await startBlank(page);
+    // Made on the server, so a stored square can be written into it below.
+    await openStartBlank(page);
 
     // A first-time visitor on a dark machine lands dark: System is the default
     // (docs/specs/007-editor/editor-app.md), and the pre-hydration script resolves it before first paint.
@@ -68,12 +68,13 @@ test.describe('Appearance', () => {
     // stored colours to contradict the viewer.
     await expect.poll(() => canvasColour(page)).toBe(rgb(DARK_CANVAS));
 
-    // Drop a shape. On the Default scheme it carries NO colours of its own, so
-    // what it is drawn in is entirely the canvas's ink — the thing the merge
-    // depends on, and the thing a unit test can't see reach a memoised view.
+    // A stored shape (livehuddle's palette draws none, Work Tracker #423, but a stored one still draws). On the
+    // Default scheme it carries NO colours of its own, so what it is drawn in is entirely the canvas's ink — the
+    // thing the merge depends on, and the thing a unit test can't see reach a memoised view.
+    await seedTab(page, [
+      { id: 'sq', type: 'shape', shape: 'square', x: 300, y: 200, width: 120, height: 120 },
+    ]);
     const square = page.getByRole('img', { name: 'Square', exact: true });
-    await (await paletteTile(page, 'Add Square')).click();
-    await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
     await expect(square).toHaveCount(1);
     await expect
       .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })
@@ -112,7 +113,7 @@ test.describe('Appearance', () => {
     // pick time: switching chrome is not an edit. If it were, one reader's
     // appearance would travel to everyone else on the tab.
     await page.emulateMedia({ colorScheme: 'light' });
-    await startBlank(page);
+    await openStartBlank(page);
     await page.waitForTimeout(1500); // let the create-time autosave settle
 
     const writes: string[] = [];
@@ -136,13 +137,13 @@ test.describe('Appearance', () => {
     // Asserted on the rendered page, not the metadata object: Next drops a meta
     // whose content is empty, and a unit test on the object passed while the
     // page carried nothing.
-    await page.goto('/new');
+    await page.goto(await serverNewUrl(page, '/new'));
     await expect(page.locator('head meta[name="darkreader-lock"]')).toHaveCount(1);
   });
 
   test('remembers the setting across a reload, before first paint', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await startBlank(page);
+    await openStartBlank(page);
     await appearanceButton(page).click(); // System -> Light
     await appearanceButton(page).click(); // Light -> Dark
     await expect(page.locator('html')).toHaveClass(/dark/);

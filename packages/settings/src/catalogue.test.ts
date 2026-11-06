@@ -62,15 +62,6 @@ const SOURCE: SourceCategory[] = [
       { kind: 'appearance', key: 'appearance', label: 'Appearance', description: 'Device.' },
       {
         kind: 'toggle',
-        key: 'powerOnly',
-        label: 'Power only',
-        description: 'Power users.',
-        available: (ctx) => ctx.powerUserMode === true,
-        read: (p) => p.powerOnly === true,
-        write: (p, v) => ({ ...p, powerOnly: v }),
-      },
-      {
-        kind: 'toggle',
         key: 'guestOnly',
         label: 'Guests',
         description: 'Never for a signed-in person.',
@@ -139,7 +130,6 @@ describe('deriveCatalogue', () => {
     expect(rows.map((row) => row.id)).toEqual([
       'guides',
       'tourSeen',
-      'powerOnly',
       'presentation-loop',
       'presentation-speed',
       'zoom',
@@ -150,15 +140,15 @@ describe('deriveCatalogue', () => {
     expect(rows[0]).toMatchObject({ key: 'guides', on: true, off: false, fallback: true });
     expect(rows[0]).toHaveProperty('section', 'Canvas');
     expect(rows[1]).toMatchObject({ key: 'tourSeen', on: false, off: true, fallback: true });
-    expect(rows[3]).toMatchObject({ key: 'presentation', field: 'loop', on: true, off: false });
-    expect(rows[4]).toMatchObject({
+    expect(rows[2]).toMatchObject({ key: 'presentation', field: 'loop', on: true, off: false });
+    expect(rows[3]).toMatchObject({
       kind: 'choice',
       key: 'presentation',
       field: 'speed',
       fallback: 'normal',
       when: { key: 'presentation', field: 'loop', on: true },
     });
-    expect(rows[5]).toMatchObject({
+    expect(rows[4]).toMatchObject({
       kind: 'slider',
       key: 'zoom',
       labels: ['50%', '75%', '100%'],
@@ -171,7 +161,7 @@ describe('deriveCatalogue', () => {
     // Only a top-level category draws a tile.
     expect(editor).toHaveProperty('tile', 'editor');
     expect(presenting).not.toHaveProperty('tile');
-    expect(rows[4]).toMatchObject({ keywords: 'pace tempo', parent: 'presentation-loop' });
+    expect(rows[3]).toMatchObject({ keywords: 'pace tempo', parent: 'presentation-loop' });
     // Notes for sections it shows, as text.
     expect(presenting).toMatchObject({
       sectionNotes: { Timing: 'Per slide.' },
@@ -188,10 +178,6 @@ describe('deriveCatalogue', () => {
         tiles: { empty: 'tours' },
       }).categories[0],
     ).toHaveProperty('tile', 'tours');
-  });
-
-  it('marks a row only offered to power users', () => {
-    expect(rows[2]).toMatchObject({ id: 'powerOnly', powerUser: true });
   });
 
   it('leaves shared keys, lists, non-preferences and unavailable rows to the app', () => {

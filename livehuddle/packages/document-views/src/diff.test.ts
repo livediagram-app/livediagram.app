@@ -28,7 +28,7 @@ describe('diffView (R17, VW36)', () => {
   // An added id sharing a 4-character prefix lengthens refs (0bcd → 0bcd1): nothing else changed, and the diff
   // compares ids, so it says only what was added.
   it('reports only the added element when its id lengthens other refs', () => {
-    const frame = shapeAt('frame', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
+    const frame = shapeAt('boundary', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
     const inside = shapeAt('square', 'n1', 10, 10, 100, 50, { label: 'In' });
     const target = shapeAt('square', 'n2', 600, 0, 100, 50, { label: 'Out' });
     const arrow = arrowBetween('a1', '0bcd1111-x', 'n2');
@@ -45,29 +45,26 @@ describe('diffView (R17, VW36)', () => {
   });
 
   it('names kind, label, note, container, summary and attribute changes', () => {
-    const frame = shapeAt('frame', 'f', 0, 0, 500, 500, { label: undefined });
+    const frame = shapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
     const a = shapeAt('square', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
     const b = shapeAt('checklist', 'b', 10, 100, 100, 50, {
       checklistItems: [{ text: 'x', done: false }],
     });
     const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
-    const d = shapeAt('estimate', 'd', 700, 0, 100, 50, { responses: [] });
     expect(
       changeLines(
-        [frame, a, b, c, d],
+        [frame, a, b, c],
         [
           frame,
           { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
           { ...b, checklistItems: [{ text: 'x', done: true }] },
           { ...c, note: 'new', locked: true, label: 'C' },
-          { ...d, responses: [{ participantId: 'p', value: '3', at: 0 }], responsesRevealed: true },
         ],
       ),
     ).toEqual([
       '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
       '~ checklist b done=0/1 → done=1/1',
       '~ square c label none → "C" · note changed · locked none → on',
-      '~ estimate d votes 0 → 1 · revealed none → on',
     ]);
     expect(
       changeLines(
@@ -125,19 +122,20 @@ describe('diffView (R17, VW36)', () => {
     ).toEqual(['~ arrow r to arrow:ab → arrow:ba']);
   });
 
-  // A card's id moves with its card: the ideas count speaks for both, no "other field".
-  it('reads an idea with its card id as one change to the ideas', () => {
-    const box = { ...shapeAt('idea-box', 'i', 0, 0), ideaCards: ['a'] } as Element;
-    const lines = changeLines(
-      [box],
-      [{ ...box, ideaCards: ['a', 'b'], ideaCardIds: ['', 'x'] } as Element],
-    );
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).not.toContain('other field');
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md) has no state attribute: a change to what
+  // it stored is an other field.
+  it('reads a change to a retired element as other fields', () => {
+    const box = {
+      ...shapeAt('square', 'i', 0, 0),
+      shape: 'idea-box',
+      ideaCards: ['a'],
+    } as unknown as Element;
+    const lines = changeLines([box], [{ ...box, ideaCards: ['a', 'b'] } as unknown as Element]);
+    expect(lines).toEqual(['~ ? idea-box i +1 other field']);
   });
 
   it('lists removals in the before order and additions under an unlabelled container', () => {
-    const frame = shapeAt('frame', 'f', 0, 0, 500, 500, { label: undefined });
+    const frame = shapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
     const gone = shapeAt('square', 'gone', 600, 0, 100, 50, { label: 'Gone' });
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     expect(

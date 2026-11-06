@@ -65,13 +65,13 @@ export function useCanvasDrawTools({
       wrapperRef,
       viewportZoom,
       onCommitPolygon,
+      onCommitRoomWalls: props.onCommitRoomWalls,
     });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md), in front of both: see usePathTool.
   const pathTool = usePathTool({
     pendingDraw,
     canvasTool,
     elements,
-    inertIds: props.layerInertIds,
     wrapperRef,
     viewportZoom,
     activeTabId: props.activeTabId,

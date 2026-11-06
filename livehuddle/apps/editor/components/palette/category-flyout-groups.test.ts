@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   barLabel,
-  CATEGORY_BAR_MODES,
   flyoutCardColumns,
   flyoutColumns,
   flyoutGroups,
@@ -9,13 +8,13 @@ import {
   flyoutLayout,
   SHORT_CARD_LIST,
 } from './category-flyout-groups';
-import { paletteCategoriesFor } from './palette-layouts';
+import { paletteCategories } from './palette-layouts';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'workshop', id: string): PaletteTileDef[] =>
-  paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
+const tiles = (id: string): PaletteTileDef[] =>
+  paletteCategories().find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
   id,
@@ -28,13 +27,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Workshop’s strip', () => {
-    expect([...CATEGORY_BAR_MODES]).toEqual(['workshop']);
-  });
-
   it('names every category in one word', () => {
     expect(barLabel('write', 'Write & Build')).toBe('Write');
-    expect(barLabel('my-shapes', 'My shapes')).toBe('Library');
     expect(barLabel('shapes', 'Shapes')).toBe('Shapes');
   });
 });
@@ -57,31 +51,30 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
-    expect(flyoutGroups('shapes', tiles('workshop', 'shapes')).map((g) => g.title)).toEqual([
-      'Basics',
-      'Flowchart',
-      'More Shapes',
-    ]);
-    expect(flyoutGroups('draw', tiles('workshop', 'draw')).map((g) => g.title)).toEqual([
-      'Pens',
-      'Connectors',
-    ]);
-    expect(flyoutGroups('layout', tiles('workshop', 'layout')).map((g) => g.title)).toEqual([
-      'Containers',
-      'Parts',
-    ]);
-    expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
-      'Charts',
-      'Meters',
+  it('shows each Space category but Rooms as one block, unheaded', () => {
+    for (const id of ['collab-travel', 'collab-seating', 'collab-amenities']) {
+      const groups = flyoutGroups(id, tiles(id));
+      expect(groups, id).toHaveLength(1);
+      expect(groups[0]!.title, id).toBeNull();
+    }
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
+  it('opens Rooms on its Build group (Room, Room Builder, Door), then Floor', () => {
+    const groups = flyoutGroups('collab-rooms', tiles('collab-rooms'));
+    expect(groups.map((g) => g.title)).toEqual(['Build', 'Floor']);
+    expect(groups[0]!.tiles.map((t) => t.id)).toEqual([
+      'tools:room',
+      'tools:room-builder',
+      'tools:wall-door',
     ]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {
-    const groups = flyoutGroups('write', tiles('workshop', 'write'));
+    const groups = flyoutGroups('write', tiles('write'));
     expect(groups).toHaveLength(1);
     expect(groups[0]!.title).toBeNull();
-    expect(groups[0]!.tiles).toHaveLength(tiles('workshop', 'write').length);
+    expect(groups[0]!.tiles).toHaveLength(tiles('write').length);
     expect(flyoutGroups('x', [tile('a', true), tile('b')])).toEqual([
       {
         id: 'a',
@@ -92,7 +85,7 @@ describe('a flyout’s groups', () => {
   });
 
   it('never splits Popular, and has nothing to show for no tiles', () => {
-    expect(flyoutGroups('popular', tiles('workshop', 'popular'))).toHaveLength(1);
+    expect(flyoutGroups('popular', tiles('popular'))).toHaveLength(1);
     expect(flyoutGroups('shapes', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
     expect(flyoutGroups('shapes', [tile('shapes:square')])[0]!.title).toBeNull();

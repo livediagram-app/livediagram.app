@@ -6,7 +6,7 @@ import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hov
 import { FontGlyph } from '@liveworkspace/workbench/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';
 import { TextSizeControl, type PresetPx } from './TextSizeControl';
-import { FONTS, legendFontPx, resolveFontStack } from '@livedocuments/document';
+import { FONTS, legendFontPx, resolveFontStack, type TextPxRange } from '@livedocuments/document';
 import type { Padding, TextSize } from '@livedocuments/document';
 
 // The typography controls — Font / Size / Padding — as three collapsible
@@ -42,6 +42,7 @@ export function TypographySections({
   currentFont,
   currentSize,
   presetPx,
+  sizeRange,
   padding,
   onSetFont,
   onSetSize,
@@ -57,6 +58,8 @@ export function TypographySections({
   currentSize: TextSize | null;
   // The scale the selection's presets draw on (presetPxFor), for the slider's thumb and readout.
   presetPx: PresetPx;
+  // The slider's range for the selection (textPxRangeFor).
+  sizeRange?: TextPxRange;
   padding: Padding;
   onSetFont: (font: string | null) => void;
   onSetSize: (size: TextSize) => void;
@@ -99,6 +102,7 @@ export function TypographySections({
         <TextSizeControl
           current={currentSize}
           presetPx={presetPx}
+          range={sizeRange}
           onSet={onSetSize}
           onPreview={onPreviewSize}
           onPreviewEnd={onPreviewEnd}

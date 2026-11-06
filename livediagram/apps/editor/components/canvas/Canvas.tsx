@@ -746,7 +746,7 @@ function CanvasView(props: CanvasProps) {
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}
                 standingOn={avatarStandingOn}
-                onStand={avatar.standUp}
+                self
               />
             ) : null}
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
@@ -758,7 +758,12 @@ function CanvasView(props: CanvasProps) {
                 bubbles={speechBubbles}
                 activeTabId={props.activeTabId ?? ''}
                 zoom={viewportZoom}
-                view={{ offsetX: viewportOffset.x, width: mainSize.width }}
+                view={{
+                  offsetX: viewportOffset.x,
+                  width: mainSize.width,
+                  offsetY: viewportOffset.y,
+                  height: mainSize.height,
+                }}
                 peers={props.remoteAvatars}
                 self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
                 composer={

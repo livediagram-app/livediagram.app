@@ -3,6 +3,7 @@
 // reading, bounded so one table always fits one sync frame; and the cell-by-cell changes between two
 // versions of a table, so two people writing in different cells never overwrite each other.
 import { isArticleId, normaliseRuns, sameArticleValue, type ArticleRun } from './article-flow';
+import { articleRunsText } from './article-footnotes';
 
 export const MAX_ARTICLE_TABLE_ROWS = 500;
 export const MAX_ARTICLE_TABLE_COLS = 20;
@@ -162,7 +163,8 @@ export function newArticleTable(
   return tableFromGrid(id, grid, header)!;
 }
 
-const cellText = (runs: readonly ArticleRun[]) => runs.map((r) => r.text).join('');
+// A cell's text as read, its footnote references left out.
+const cellText = articleRunsText;
 
 /** A table's text: its cells joined by tabs, its rows by newlines (find, word counts, views). */
 export function articleTableText(block: ArticleTableBlock): string {

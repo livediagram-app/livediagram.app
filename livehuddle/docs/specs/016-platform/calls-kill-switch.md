@@ -41,7 +41,7 @@ spending that does not wait for a deploy, and a guard that acts when nobody is w
   (`CALLS_MODE_CACHE_MS`), so a burst of joins costs one KV read, and a flip reaches every isolate within KV's own
   propagation (up to about a minute at the edge) plus those 5 seconds.
 - **What it reads as.** No key, or no `CALLS_SWITCH` binding (a fork, local dev), reads as `on`: the switch is a
-  brake, never a prerequisite, and production's own off flag for calls lives with the mint route (#315). A value it
+  brake, never a prerequisite: with the secrets set, production runs calls exactly as staging does (#315). A value it
   does not know reads as `off`, so a typo stops spending rather than starting it. `audio_only` and `audio` are
   accepted for `audio-only`, and case and spaces are ignored. If KV cannot be read, the last answer this isolate had
   stands; with none, `on`.
@@ -117,8 +117,8 @@ state while it is off (an Editor's and a Participant's Join Audio, a Viewer's Li
 ### What each mode allows
 
 One rule, `callsModeAllows(mode, kind)`, decides every mint, for a `session` or a track of one kind: `audio`,
-`video` or `screen`. A track's kind comes from its name (`callTrackKind`): the microphone (`mic`) is audio; video
-(#317) and screen sharing (#318) add their own names and kinds, and get this rule for free.
+`video` or `screen`. A track's kind comes from its name (`callTrackKind`): the microphone (`mic`) is audio, the camera
+(`cam`, #317) video and a shared screen (`screen`, #318) screen.
 
 | Mode         | Session | Audio | Video | Screen |
 | ------------ | ------- | ----- | ----- | ------ |
@@ -130,7 +130,7 @@ The rule and the track names live in `@livehuddle/api-schema`, so the api and th
 
 ### The mint route
 
-The switch is an extra gate after the calls gate, never a replacement: production's own hard off and the unset
+The switch is an extra gate after the calls gate, never a replacement: the unset
 secrets ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)) are checked first and still
 refuse whatever the switch says.
 
@@ -138,7 +138,9 @@ refuse whatever the switch says.
   (`on` or `audio-only`), so a browser that joins learns it.
 - **Publish and subscribe.** Each track asked for is checked against the mode by its kind: `off` refuses with reason
   `paused`, a video or screen track under `audio-only` with reason **`audio-only`**. A refusal is the whole request's
-  (nothing is half-made).
+  (nothing is half-made). The switch is checked first; past it, the room's hearing check
+  ([meeting rooms](../012-collaboration/meeting-rooms-and-stage.md) "Trust") may answer single subscribed tracks
+  `not_heard`, which is not a pause and never shows Calls Paused.
 - **Renegotiate** is refused while `off`: it finishes setting up a subscription.
 - **Close** is always allowed while the calls gate is open, `off` included: closing tracks never costs anything, and
   lets a browser leave cleanly.
@@ -155,9 +157,19 @@ switch while a call is under way in it:
   system op.
 - A client in a call that no longer allows it closes it at once: the microphone is released, every subscription and
   the session end. A client not in a call only changes its button.
-- A room where nobody talks or arrives sends no ops and so learns nothing new; it needs nothing, because muted and
-  silent speakers send no audio, and the next subscription a walker makes is refused by the mint route, which the
-  client treats exactly like the push.
+- **A silent room still hears within about 5 seconds** (Work Tracker #463). A call that publishes (a microphone, a
+  camera or a screen) and has sent the room nothing for about 5 seconds (just past a talking speaker's level
+  refresh, so someone talking never sends one) sends a `calls-check` op: no payload but its tab,
+  never relayed, consumed by the room as one more reason to read the switch (the same 5-second throttle). So a flip
+  reaches every call within about 5 seconds of the room's read, plus the switch's own caching, whether or not anyone
+  talks. A Viewer, who publishes nothing, sends none (nothing it receives exists without a publisher, whose check
+  covers it), and the room drops one from a Viewer like its other call ops.
+- **Why a check from the call, not a poll or an alarm.** A poll of `/api/capabilities` would be a Worker request per
+  listener every 5 seconds. An alarm on the room would be a Durable Object alarm and a storage write every 5 seconds
+  per room, and memory the room loses when it hibernates. The check rides the socket each publisher already holds:
+  one inbound message per publisher per 5 seconds of silence (Cloudflare bills inbound WebSocket messages at 20 to 1,
+  so about 36 billed requests per publisher-hour), none while it talks (its levels already reach the room), and no
+  state kept anywhere.
 
 ### Calls Paused
 
@@ -172,8 +184,9 @@ push, or from a refused mint):
   paused".
 - Text, avatars, the equaliser bars already on screen and the Space carry on.
 
-`audio-only` changes nothing visible while calls are audio alone; video (#317) and screen sharing (#318) show their
-own "Video is paused" state from the same mode.
+`audio-only` leaves audio as it is; the camera and Share Screen buttons ([Video and screen share
+bubbles](../012-collaboration/video-and-screen-bubbles.md#the-kill-switch), #317 and #318) read **Video Paused**, a
+camera or share that was on stops, and every bubble closes.
 
 ### Sign-in to publish
 
@@ -183,6 +196,6 @@ part like anyone else.
 
 ### Later
 
-The per-person cap on video bubbles received and the screen share's resolution and frame-rate caps belong to video
-(#317) and screen sharing (#318), which add those media. A maximum call length is not set: the TURN credentials
+The per-person cap on video bubbles received (the nearest 6) and the screen share's resolution and frame-rate caps
+(1080p, 5 to 15 fps) are set in [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md). A maximum call length is not set: the TURN credentials
 already last 4 hours, and the budget poll guards the month.

@@ -11,7 +11,16 @@ import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
 
-afterEach(() => cleanup());
+// A phone or a desktop (useIsMobileViewport), a desktop unless a test says otherwise.
+const phone = vi.hoisted(() => ({ on: false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => phone.on,
+}));
+
+afterEach(() => {
+  cleanup();
+  phone.on = false;
+});
 
 const tools = (over: Partial<LogoToolsView> = {}) =>
   ({
@@ -64,6 +73,13 @@ describe('LogoTitleBar', () => {
     const ctx = show(tools(), true);
     fireEvent.click(screen.getByRole('button', { name: /^Tidy:/ }));
     expect(ctx.tidyUpSelected).toHaveBeenCalled();
+  });
+
+  it('never offers Tidy on a phone (pages-mode.md "Beside the cog"), keeping Mirror and Guides', () => {
+    phone.on = true;
+    show(tools(), true);
+    expect(screen.queryByRole('button', { name: /^Tidy:/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Mirror' })).toBeTruthy();
   });
 
   it('renders Mirror and Guides alone outside an editor, and reserves room for what shows', () => {

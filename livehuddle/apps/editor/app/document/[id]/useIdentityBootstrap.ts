@@ -32,8 +32,6 @@ import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progre
 import { track } from '@/lib/telemetry';
 import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
 import { errorNameToken, errorTypeToken } from '@livehuddle/api-schema';
-import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -64,9 +62,6 @@ export function useIdentityBootstrap(opts: {
   accountDisplayName: string | null | undefined;
   // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
   embed: boolean;
-  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
-  // names the document and the person; see workbench-bootstrap.ts.
-  workbench: WorkbenchDocumentSession | null;
   activeId: string;
   selfParticipant: Participant;
   resetTabs: Dispatch<SetStateAction<Tab[]>>;
@@ -81,7 +76,6 @@ export function useIdentityBootstrap(opts: {
     setActiveId: SetState<string>;
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
-    setDocumentPresentation: SetState<string | null>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
@@ -117,7 +111,6 @@ export function useIdentityBootstrap(opts: {
     accountUserId,
     accountDisplayName,
     embed,
-    workbench,
     activeId,
     selfParticipant,
     refs,
@@ -154,7 +147,6 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setDocumentId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentNotFound,
       setLoadError,
       setDocumentTrashed,
@@ -184,8 +176,8 @@ export function useIdentityBootstrap(opts: {
     // see seed-fetched-document.ts.
     const seedOnce = makeSeedFetchedDocument({
       activeId,
-      // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
-      recordOpen: !embed && workbench === null,
+      // An embed's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+      recordOpen: !embed,
       resetTabs,
       lastSavedTabsRef,
       lastSavedNameRef,
@@ -193,7 +185,6 @@ export function useIdentityBootstrap(opts: {
       noteChangesetSeen,
       setActiveId,
       setDocumentName,
-      setDocumentPresentation,
       setDocumentOwnerColor,
       setDocumentOwnerId,
       setDocumentOwnerName,
@@ -250,35 +241,6 @@ export function useIdentityBootstrap(opts: {
           if (live()) noteDocumentLoadEnded();
         }
       })();
-    if (workbench) {
-      const watchdog = armWatchdog();
-      run(watchdog, async () => {
-        await loadWorkbenchDocument({
-          workbench,
-          seed: seedFetchedDocument,
-          lastPersistedSelfRef,
-          set: {
-            setSelfParticipant,
-            setDocumentId,
-            setDocumentTrashed,
-            setLoadError,
-            setDocumentNotFound,
-            setDocumentServerStored,
-            setIsOwner,
-            setSessionRole,
-            setNameConfirmed,
-            setHydrated,
-            setLoadingDocument,
-            setSessionShareCode,
-            setSessionTabScope,
-            setSharePasswordGate,
-          },
-        });
-        setLoadStep('done');
-        if (watchdog.finish()) setLoadError(false);
-      });
-      return;
-    }
     // The post-mount hydration is async (the API is HTTP) so we run it
     // inside an IIFE. UI stays at the placeholder during the fetch;
     // the welcome modal is gated on `hydrated` so it doesn't flash the
@@ -555,10 +517,10 @@ export function useIdentityBootstrap(opts: {
     run(watchdog, load);
   });
   // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a document in
-  // This Browser opens straight from this browser. Share links, embeds and workbenches always wait.
+  // This Browser opens straight from this browser. Share links and embeds always wait.
   const earlyOpen = useRef(false);
   const tryEarlyOpen = useEffectEvent(async () => {
-    if (authLoaded || hydrated || embed || workbench) return;
+    if (authLoaded || hydrated || embed) return;
     const url = new URL(window.location.href);
     const { id } = documentIdFromPath(url.pathname);
     if (!id || url.searchParams.has('s')) return;

@@ -6,13 +6,14 @@ import {
   isAccessLevel,
   readDocumentConversion,
 } from '@livehuddle/api-schema';
-import type { ShareLinkExpiry } from '@liveworkspace/index-client';
+import { linkLevelOffered, type ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { countCommunityCopy } from '../community-service';
 import { documentRoom } from '../document-client';
 import { capStoredName } from '../names';
 import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
+import { INDEX_APP } from '../index-service';
 import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
 
 // GET /api/documents.
@@ -70,6 +71,11 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
       return json({ document: { ...summaryOf(item), tabs: [] } }, { status: 201 });
     }
     const level = isAccessLevel(body.role) ? body.role : undefined;
+    // livehuddle offers no new Viewer link (docs/specs/013-workspace/share-roles.md "What a new share offers"): a
+    // client asking for one is told so, never handed a Participant link that lets people speak and write. The
+    // index's own code for it, so a client reads one refusal whichever side gave it.
+    if (level && !linkLevelOffered(INDEX_APP, level))
+      return json({ error: 'level_not_offered' }, { status: 400 });
     const expiry = typeof body.expiry === 'string' ? (body.expiry as ShareLinkExpiry) : undefined;
     const tabId = typeof body.tabId === 'string' ? body.tabId : undefined;
     const { link } = await client.createShareLink(id, {

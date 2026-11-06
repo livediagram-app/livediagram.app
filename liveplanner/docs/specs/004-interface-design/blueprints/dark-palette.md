@@ -29,26 +29,26 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term                | Identifier                                               | Meaning                                                       |
-| ------------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
-| Dark palette        | `.dark` block in `theme.css`                             | The token overrides that make dark mode Steel                 |
-| Steel ramp          | `--color-brand-50` ... `--color-brand-950` under `.dark` | The brand ramp's dark-mode values                             |
-| Dark surfaces       | `--color-slate-800/900/950` under `.dark`                | The blue-slate chrome                                         |
-| Solid brand fill    | `SOLID_BRAND_DARK`                                       | `dark:bg-brand-600`, a static fill under white text           |
-| Solid brand control | `SOLID_BRAND_DARK_CONTROL`                               | `dark:bg-brand-600 dark:hover:bg-brand-700`, a clickable fill |
-| Wordmark accent     | `dark:text-violet-400` on the "live" span                | The one vivid note in dark chrome                             |
-| Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                           | `#0d121a`                                                     |
-| Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                              | `#1c2735`, the opaque blend of `#2e4057` at 45 %              |
-| Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)  | Unpainted element colours on dark paper                       |
-| Caption colour      | `defaultArrowLabelColor(arrow, surface)`                 | An arrow caption's colour when it carries no `textColor`      |
-| Dark selection ring | `DARK_SELECTION_RING`                                    | Blue ring, glow and transparent offset on a single selection  |
-| Resize handle       | `RESIZE_HANDLE_CLASS`                                    | The corner handle's classes, both appearances                 |
-| Accent tint CSS     | `editorAccentCss(accent)`                                | The `<style>` text `useEditorAccent` injects                  |
-| Identity fill       | `identityDeep`, `identityVars`, `IDENTITY_FILL`          | A runtime colour under white text, deepened in dark mode      |
-| Contrast audit      | `auditContrast(page)`, `contrast-audit.spec.ts`          | The Playwright guard                                          |
+| Term                | Identifier                                                     | Meaning                                                          |
+| ------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Dark palette        | `.dark` block in `theme.css`                                   | The token overrides that make dark mode Steel                    |
+| Steel ramp          | `--color-brand-50` ... `--color-brand-950` under `.dark`       | The brand ramp's dark-mode values                                |
+| Dark surfaces       | `--color-slate-800/900/950` under `.dark`                      | The blue-slate chrome                                            |
+| Solid brand fill    | `SOLID_BRAND_DARK`                                             | `dark:bg-brand-600`, a static fill under white text              |
+| Solid brand control | `SOLID_BRAND_DARK_CONTROL`                                     | `dark:bg-brand-600 dark:hover:bg-brand-700`, a clickable fill    |
+| Wordmark accent     | `dark:text-violet-400` on the "live" span                      | The one vivid note in dark chrome                                |
+| Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                                 | `#0d121a`                                                        |
+| Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                                    | `#1c2735`, the opaque blend of `#2e4057` at 45 %                 |
+| Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)        | Unpainted element colours on dark paper                          |
+| Caption colour      | `defaultArrowLabelColor(arrow, surface)`                       | An arrow caption's colour when it carries no `textColor`         |
+| Dark selection ring | `DARK_SELECTION_RING`                                          | Blue ring, glow and transparent offset on a single selection     |
+| Resize handle       | `RESIZE_HANDLE_CLASS`                                          | The corner handle's classes, both appearances                    |
+| Accent tint CSS     | `editorAccentCss(accent)`                                      | The `<style>` text `useEditorAccent` injects                     |
+| Identity fill       | `identityDeep`, `identityInk`, `identityVars`, `IDENTITY_FILL` | A runtime colour under text, deepened in dark mode, with its ink |
+| Contrast audit      | `auditContrast(page)`, `contrast-audit.spec.ts`                | The Playwright guard                                             |
 
 Banned: "night mode"; "Steel theme" for the palette (Steel is also a colour scheme id: say "the dark palette", its ramp
-"the Steel ramp"); "identity ink" (the text stays white; it is the fill that changes).
+"the Steel ramp").
 
 ## Behaviour and state
 
@@ -60,13 +60,14 @@ and the canvas surface (`canvasSurface(backdrop)`).
 - **B2:** with a themed tab open, `editorAccentCss` wins over B1 for the stops it sets, in both appearances.
 - **B3:** on a dark surface, an element with no stored colour paints from `DARK_INK`; an arrow with no stored stroke
   from `DARK_INK.stroke`; its caption, with no `textColor` and no `strokeColor`, from `#94a3b8`.
-- **B4:** an element carrying `IDENTITY_FILL` paints `--identity` in light and `--identity-deep` in dark.
+- **B4:** an element carrying `IDENTITY_FILL` paints `--identity` under `--identity-ink` in light and `--identity-deep`
+  under `--identity-deep-ink` in dark; each ink is white where white reaches 4.5:1 on its fill, else slate-950.
 
 Invariants:
 
 - **I1 (light untouched):** the `@theme` block's values, and every class a component carries without a `dark:`
-  prefix, are unchanged. Every addition is `dark:`-prefixed, scoped to `.dark`, or a colour moved from an inline
-  style into `--identity` with the same light value.
+  prefix, are unchanged, but for the identity fill's ink (B4). Every addition is `dark:`-prefixed, scoped to
+  `.dark`, or a colour moved from an inline style into `--identity` with the same light value.
 - **I2:** every string carrying a solid brand fill (`bg-brand-500` / `bg-brand-600`, any `hover:` / `group-hover:`
   prefix, no opacity) together with `text-white` also carries the pairing.
 - **I3:** every string carrying `text-brand-500`...`text-brand-950` also carries a `dark:text-*` token.
@@ -92,8 +93,10 @@ export function editorAccentCss(accent: string): string; // `html:root{--color-b
 
 // ../packages/ui/src/identity-fill.ts
 export function identityDeep(color: string): string;
-export function identityVars(color: string): CSSProperties; // { '--identity', '--identity-deep' }
-export const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';
+export function identityInk(fill: string): string; // '#ffffff' at 4.5:1 or more, else IDENTITY_DARK_INK (#020617)
+export function identityVars(color: string): CSSProperties; // { '--identity', '--identity-deep', and each one's ink }
+export const IDENTITY_FILL =
+  'bg-(--identity) text-[color:var(--identity-ink,#fff)]! dark:bg-(--identity-deep) dark:text-[color:var(--identity-deep-ink,#fff)]!';
 
 // apps/editor/e2e/contrast.ts
 export function auditContrast(page: Page): Promise<ContrastReport>; // { measured, failures, skipped }
@@ -152,7 +155,7 @@ border-radius: inherit; pointer-events: none }`.
 - Optical centring: see the [optical alignment blueprint](optical-alignment.md); the heights D12 probed
   are the ones its hosts pin.
 - Secondary text in dark: `dark:text-slate-400`, dropped where the base class is already `text-slate-400` (D21).
-- Identity colours: `identityVars(color)` in style, `IDENTITY_FILL` in class, text stays `text-white`.
+- Identity colours: `identityVars(color)` in style, `IDENTITY_FILL` in class; its ink wins over any `text-white`.
 
 ## Accessibility
 

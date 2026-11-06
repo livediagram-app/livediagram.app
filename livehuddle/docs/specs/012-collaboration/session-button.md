@@ -1,6 +1,6 @@
 # Session button
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/session-button.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/session-button.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 Status: **implemented**.
 
@@ -163,7 +163,7 @@ a timer somewhere else. It renders the timer.
 It is the **same timer as the pill in the top chrome**, in every sense worth
 having: the same `TabTimer` on the same tab field, the same pure
 `timerDisplayMs`, and, since the look was extracted into
-`components/chrome/timer-pill.tsx`, literally the same clock, drain and
+the chrome's timer pill (since deleted), literally the same clock, drain and
 controls. Pausing on the canvas pauses in the chrome. Every client computes the
 value locally off an absolute anchor, so there is no per-second network traffic
 and no drift between machines.
@@ -201,7 +201,7 @@ Session category.
 | **Vote**  | Dots each (1, 2, 3, 5, 8)                                         |
 | **Poll**  | The question, the answer style, and, for Choices, the list itself |
 
-The answer-style picker is `PollStyleTiles` (`apps/editor/components/panels/session-studio/PollStyleTiles.tsx`),
+The answer-style picker is `PollStyleTiles` (`../livediagram/apps/editor/components/panels/session-studio/PollStyleTiles.tsx`),
 shared by every place a poll is composed, the right-click Session section included: they configure the same button,
 so a style named differently in one of them would describe two products. Each tile previews the
 answers the style produces ("Yes No Abstain"), following the estimate card's

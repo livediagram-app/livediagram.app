@@ -1,61 +1,46 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TimerControl } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
-  title: 'The Timer',
-  description: 'A per-tab countdown or stopwatch that every participant sees tick in sync.',
+  title: 'Timer and Stopwatch',
+  description: 'Place a Timer or a Stopwatch in a room and run it together, in sync for everyone.',
   path: '/help/collaboration/session-tools/timer/',
 });
 
-<ArticleLayout title="The Timer" description="Time-box a workshop activity with a shared countdown or stopwatch, synced to everyone." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "timer")}>
+<ArticleLayout title="Timer and Stopwatch" description="Place a Timer or a Stopwatch in a room and run it together, in sync for everyone." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "timer")}>
 
-The timer time-boxes an activity for the whole room. Set it going and the **Timer** button in the bottom bar shows the clock for every participant, ticking in sync. It comes in two flavours: a **countdown** for "you have five minutes", and a **stopwatch** for "let us see how long this takes".
+The **Timer** and the **Stopwatch** are pieces you place in a room, like a Screen or a World Clock. A Timer counts down ("you have ten minutes"); a Stopwatch counts up ("let's see how long this takes"). Put one on the wall of each meeting room, and every room can keep its own time.
 
-## Setting it up
+## Placing one
 
-Press the **Timer** button in the bottom bar (in [Workshop](/help/canvas/workshop-mode/) mode) to open the set-up above it. You need edit access to run it, and while someone is the [facilitator](/help/collaboration/facilitator/) it is theirs to run.
+Both are in the palette's **Meeting** category, beside the Screen, Room Sign, Notice Board and World Clock, and search finds them too. Pick one and click where it goes, as with any other piece. Move, resize, lock or delete it like any piece; it keeps its shape.
 
-You can also put the timer **on the canvas**: a [session button](/help/palette/behaviour/session-buttons/) set to Timer counts down where it sits, carrying its own pause, resume and reset. It is the same timer as the **Timer** button's, not a second one, which is what lets a template ship its own running order.
+## Running it
 
-<Figure caption="Drag round the dial to set a countdown's length, or tap a preset. One lap of the dial is an hour.">
-  <TimerControl />
-</Figure>
+Under each piece sit its own buttons. Pressing them never selects or moves the piece, and in Avatar mode they work without walking over.
 
-<Step n={1}>
-  Choose **Countdown** or **Stopwatch**. For a countdown, set the length by dragging the handle
-  round the dial (the coloured wedge is the time; one lap is an hour), tapping a preset (1, 3, 5,
-  10, 15, or 30 minutes), or using the **−** and **+** buttons for a minute at a time, from one
-  minute up to two hours (past an hour, the dial shows an extra ring). The dial also takes the arrow
-  keys, with **Home** for one minute and **End** for an hour.
-</Step>
+- **Start** sets it going, **Pause** stops it where it is, and **Reset** puts it back to the start.
+- On a Timer, **Set** opens its length: tap **5**, **10**, **15** or **25 min**, or type the minutes (1 to 120) and use **−** and **+**, then press **Set Timer**. A new length starts a new round.
+- When a Timer reaches **0:00** its display turns red and flashes three times (no flash if you've asked your device for less motion), its word reads **Time's Up**, and **Restart** runs it again.
 
-<Step n={2}>
-  Press the start button, which names what it will do (**Start 5 min countdown**, or **Start
-  stopwatch**). While it runs the dial becomes the clock, the wedge shrinking as time goes, with a
-  **Running**, **Paused** or **Time's up** label above it. Underneath you can **Pause** and
-  **Resume**, **Reset** back to the start, or **End** the timer altogether. A countdown also offers
-  **+30s**, **+1 min**, and **+5 min** to give the room a little longer without starting over, and
-  **Again** once it reaches zero.
-</Step>
+The word under the time says where it is: **Ready**, **Running**, **Paused** or **Time's Up**. A Stopwatch runs until you pause it.
 
-While it runs, the wedge turns amber in the last minute and red at zero, so the dial reads at a glance. A tab runs one timer at a time: while one exists the panel shows it rather than the set-up, and you end it to start a different kind. The timer is scoped to the tab, so each tab can have its own. Because it syncs like everything else, anyone who joins late or reloads sees the current time straight away rather than a fresh clock.
+## The chime
 
-## What everyone sees
+A Timer plays a short, gentle chime when it reaches zero. While you're walking in [Avatar mode](/help/selection-modes/avatar-mode/), you hear the chime of a Timer in the room you're standing in; otherwise you hear every Timer on the tab. It plays once, on time, and never late: open the tab after a Timer ran out and you see 0:00 in silence. Your browser only lets a page play sound once you've pressed something on it.
 
-The live clock shows on the **Timer** button in the bottom bar, right after Undo and Redo, ticking smoothly while it runs. A countdown also **drains**: the button starts fully tinted and empties from left to right as the time goes, so someone across the room can read how long is left without parsing the digits. It turns red and **flashes when it reaches 0:00** so the room knows time is up. A stopwatch has no end to work towards, so it gets no fill. There is no sound.
+## Who can run it
 
-Press the button to open the timer above it. People with edit access get the dial with **+30s**, **+1 min** and **+5 min**, plus **Reset**, **Pause** or **Resume**, and **End**; view-only visitors get the same dial to read. While no timer runs, the button shows just its icon, and pressing it opens the set-up, so you can start one from there too.
+Anyone with an **Editor** or **Participant** pass can start, pause, reset and set a Timer or Stopwatch, even while someone is the [facilitator](/help/collaboration/facilitator/). A **Viewer** sees the time tick but gets no buttons. Placing, moving and deleting the pieces is an Editor's.
 
 ## How it stays in sync
 
-Rather than sending a tick across the network every second, each participant's clock works out the time locally from a shared anchor point: the moment a countdown will end, or the instant a stopwatch started. Everyone computes the same value from that anchor, so the clock stays in step without constant network chatter. Pausing freezes the value, and resuming re-anchors it.
+Rather than sending a tick every second, each screen works the time out from its own clock and the moment the piece was started. Everyone sees the same time, people who join late or reload see it straight away, and moving the piece never stops it. Starting or pausing is not something [Undo](/help/canvas/undo/) takes back. A downloaded picture of the tab shows the time as it was when you saved it.
 
 <Note>
-  The clock is shared but not second-perfect across machines: tiny differences in device clocks are
-  fine for a workshop timer. It is there to keep the room roughly together, not to referee a
-  stopwatch race.
+  The time is shared but not second-perfect across machines: tiny differences between device clocks
+  are fine for keeping a meeting together.
 </Note>
 
 </ArticleLayout>

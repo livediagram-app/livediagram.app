@@ -54,22 +54,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 17.5h.01" />
     </Glyph>
   ),
-  // A terminal prompt in a window: the article is about the command line.
-  cli: (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M6.5 9.5l3 2.5-3 2.5" />
-      <path d="M12 15h5" />
-    </Glyph>
-  ),
-  // A window with a smaller pane framed inside it: a diagram open inside another tool.
-  workbenches: (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M2.5 8h19" />
-      <rect x="10" y="11" width="8.5" height="6" rx="1" />
-    </Glyph>
-  ),
   // ---- Account and data ----
   // A ticket with the secret punched into it. The key belongs to
   // `authentication`, which is the article about using one.
@@ -77,14 +61,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M3 7.5A1.5 1.5 0 014.5 6h15A1.5 1.5 0 0121 7.5v2a2.5 2.5 0 000 5v2a1.5 1.5 0 01-1.5 1.5h-15A1.5 1.5 0 013 16.5z" />
       <path d="M7 12h.01M10 12h.01M13 12h.01" />
-    </Glyph>
-  ),
-  // A plug: the article is about connecting an outside tool.
-  'connect-ai-mcp': (
-    <Glyph>
-      <path d="M9 3.5v5M15 3.5v5" />
-      <path d="M6.5 8.5h11v3a5.5 5.5 0 01-11 0z" />
-      <path d="M12 17v3.5" />
     </Glyph>
   ),
   // An envelope with the bell that decides whether it is sent.
@@ -188,13 +164,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M12 3.5l1.6 4.4L18 9.5l-4.4 1.6L12 15.5l-1.6-4.4L6 9.5l4.4-1.6z" />
       <path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
-    </Glyph>
-  ),
-  'presenting-well': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="12" rx="1.5" />
-      <path d="M12 16v4M8.5 20h7" />
-      <path d="M10 8.5l4 2.5-4 2.5z" />
     </Glyph>
   ),
 
@@ -324,15 +293,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M7 11h6.5a3 3 0 010 6H12" />
     </Glyph>
   ),
-  'ai-clients': (
-    <Glyph>
-      <circle cx="12" cy="11" r="2.5" />
-      <rect x="2.5" y="2.5" width="6" height="6" rx="1.5" />
-      <rect x="15.5" y="2.5" width="6" height="6" rx="1.5" />
-      <rect x="9" y="16" width="6" height="5.5" rx="1.5" />
-      <path d="M8.5 7.5l1.6 1.8M15.5 7.5l-1.6 1.8M12 13.5V16" />
-    </Glyph>
-  ),
   'edit-operations': (
     <Glyph>
       <path d="M3.5 6h3M5 4.5v3" />
@@ -353,14 +313,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
       <path d="M2.5 9.5h19M12 3.5v17M2.5 15h9.5" />
       <path d="M13.5 18.5l2.5-3 2 2 1.5-1.5 1.5 2.5" />
-    </Glyph>
-  ),
-  'building-a-workbench': (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M2.5 8h19" />
-      <path d="M7 12.5h9M14 10.5l2 2-2 2" />
-      <path d="M17 16.5H8M10 14.5l-2 2 2 2" />
     </Glyph>
   ),
   'telemetry-dashboard': (

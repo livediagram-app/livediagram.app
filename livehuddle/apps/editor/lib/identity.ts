@@ -45,11 +45,12 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
-  // Server-verified share-code role inside this document. Set by the
-  // api worker at WS upgrade time; clients can't forge it. Optional
-  // because guest / private-document sessions don't have a role. The
-  // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
-  // their name.
+  // Server-verified role inside this document. The api worker stamps it on
+  // every socket at WS upgrade time; clients can't forge it. Optional only
+  // for a socket from before the stamp (kept open across a hibernation),
+  // which reads as a Viewer's, as the room's facilitator check reads it
+  // (Work Tracker #362). The hover card uses it to tag a peer as 'Editor' /
+  // 'Viewer' alongside their name.
   role?: AccessLevel;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, on its own row, shown in the hover card, the Collaborators row and the accessible name.
@@ -68,37 +69,6 @@ export type Participant = {
 // is a great deal better than crashing the join on an undefined.
 export function participantKey(participant: Participant): string {
   return participant.key ?? participant.id;
-}
-
-// One row per person, by `participantKey`: the same person in two tabs (or
-// re-joined on a new socket) shares a key but not an id, so deduping on `id`
-// counted them twice (docs/specs/012-collaboration/participant-responses.md).
-// The first row for a key wins, so ourselves (listed first) stays ourselves.
-export function uniqueParticipants(participants: readonly Participant[]): Participant[] {
-  const seen = new Set<string>();
-  return participants.filter((p) => {
-    const key = participantKey(p);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-}
-
-// Ourselves as a row of the room, carrying our own level as every peer's row carries theirs (the room stamps a
-// peer's server-verified role on presence; our own row is local and had none). Without it a Viewer's own screen
-// counted the Viewer among those who can answer, so its Done check waited on it forever.
-export function selfInRoom(self: Participant, level: AccessLevel): Participant {
-  return { ...self, role: level };
-}
-
-// The keys of everyone in the room who CAN answer a per-participant card
-// (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
-// person, leaving out view-link guests (who can't write) and agent rows (never
-// counted as a person). What a Done check waits on and an Estimate counts.
-export function answeringKeys(participants: readonly Participant[]): string[] {
-  return uniqueParticipants(participants)
-    .filter((p) => p.role !== 'view' && !p.agent)
-    .map(participantKey);
 }
 
 // What a screen reader hears for an avatar: "Webber (Online)", and their agent's status line after it

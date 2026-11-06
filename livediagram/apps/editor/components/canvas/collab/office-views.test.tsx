@@ -50,16 +50,16 @@ describe('the office views', () => {
     expect(container.innerHTML).toContain('#bbf7d0');
   });
 
-  it('names who sits at a meeting table, without a ring round one chair', () => {
+  it('names who sits at a meeting table and rings the one chair they hold', () => {
     const { container, getByText } = render(
       <FurnitureView
         element={shape('meeting-table')}
         stroke="#64748b"
-        sitters={[{ name: 'Sam', color: '#8b5cf6' }]}
+        sitters={[{ name: 'Sam', color: '#8b5cf6', seat: 4 }]}
       />,
     );
     expect(getByText('Sam')).toBeTruthy();
-    expect(container.querySelector('ellipse[stroke="#8b5cf6"]')).toBeNull();
+    expect(container.querySelectorAll('ellipse[stroke="#8b5cf6"]')).toHaveLength(1);
   });
 
   it('draws a room at its own size, with a gap in the wall its doorway is in', () => {

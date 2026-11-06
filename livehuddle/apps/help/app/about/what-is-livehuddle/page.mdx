@@ -6,40 +6,50 @@ import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collabor
 export const metadata = helpMetadata({
   title: 'What is livehuddle?',
   description:
-    'livehuddle is a free, open-source place to meet and run workshops together: shared Spaces your team walks round as characters, with no sign-in needed.',
+    'livehuddle is a free, open-source place for a team to meet: shared Spaces everyone walks round as a character, right in the browser, with no sign-in needed.',
   path: '/help/about/what-is-livehuddle/',
 });
 
-<ArticleLayout title="What is livehuddle?" description="Meet and run workshops together: a free, open-source Space your team walks into, talks in and works on, live, right in the browser." categoryTitle="About livehuddle" categorySlug="about">
+<ArticleLayout title="What is livehuddle?" description="A free, open-source Space your team meets in: walk in as your character, find each other in the rooms, and see everyone live, right in the browser." categoryTitle="About livehuddle" categorySlug="about">
 
-livehuddle is a web app where teams **meet and run workshops together**. You open a **Space**, a shared place in the browser, and everyone who joins walks in as a little character: they can gather round a table, say hello in a speech bubble, and put their ideas on the board in front of them. Everyone sees everyone else's moves and edits as they happen.
+livehuddle is a web app where a team **meets in a shared Space**. You open a **Space**, a place in the browser laid out like an office or a hall, and everyone who joins walks in as a little character: they walk to the room they want, sit round a table, say hello in a speech bubble and show at a glance whether they are free. Everyone sees everyone else's moves as they happen.
 
 ## A Space to meet in
 
-A Space holds one or more **boards** (its tabs), and a board can be a room to meet in, a wall of sticky notes, or both. Start from one of the Spaces (a Virtual Office, a Coworking Space, a Team Pod or an All-Hands Hall) and it opens with you walking, in [Avatar mode](/help/selection-modes/avatar-mode/).
+A Space is a floor plan of rooms and furniture. It holds one or more tabs, each a floor of its own. Start from one of the Spaces, a **Virtual Office**, a **Team Pod**, an **All-Hands Hall** or a whole **Company Campus** of buildings and floors, and it opens with you walking, in [Avatar mode](/help/selection-modes/avatar-mode/). Or start from a **Blank Space** and furnish it yourself. See [Templates](/help/canvas/templates/).
 
-<Figure caption="Avatar mode: your character walks to the part of the board you are talking about, and everyone can see where you are.">
+<Figure caption="Avatar mode: your character walks to the part of the Space you are talking about, and everyone can see where you are.">
   <AvatarMode />
 </Figure>
 
 - **Characters** you walk with a click or the arrow keys, dress how you like, and sit at a desk or round a table. See [Avatar Mode](/help/selection-modes/avatar-mode/).
-- **Speech bubbles, waves and reactions** so a quick hello or a round of applause needs no call.
-- **Portals** between boards, so a Space can have a lobby, a meeting room and a breakout corner. See [Portals](/help/palette/tools/portals/).
-- **Real-time presence**: live cursors, who has what selected, and an element someone else is editing locked for everyone else.
+- **Rooms and furniture**: rooms with walls and doors, meeting tables, desks, sofas, a water cooler and a coffee machine. See [Virtual Office](/help/palette/virtual-office/).
+- **Portals** between tabs, so a Space can have a lobby, a meeting room and a breakout floor. See [Portals](/help/palette/tools/portals/).
+- **Presence**: everyone's character, cursor and name, and a status on each character (such as Available, Focusing or Away), so you can see who is free to talk. See [Walking Together](/help/selection-modes/walking-together/).
 
-## Workshops on the board
+## Talking in a Space
 
-The same board is where a session happens. Drop sticky notes, group them, then decide together:
+- **Speech bubbles**: press `Enter` while walking and what you type floats up over your character for everyone to read.
+- **Reactions**: wave, cheer or dance on the spot, or throw a burst of confetti or applause round your character.
+- **Comments** pinned where they matter, with replies and mentions, for anything that should outlast the meeting. See [Comments](/help/collaboration/comments/).
 
-- **Session tools** to run a retro or a workshop, with timers, dot votes and polls for the whole room. See [Workshop Mode](/help/canvas/workshop-mode/).
-- **Templates** for retrospectives, stand-ups, brainstorms, quizzes and icebreakers, so you rarely start from an empty board. See [Templates](/help/canvas/templates/).
-- **Shapes, arrows, frames and lanes** when a session needs a little structure. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
+Calls by proximity, where you hear the people near you, are built in but not switched on everywhere yet. Where they are off, the bubbles, reactions and comments carry the conversation. See [Proximity Audio](/help/collaboration/proximity-audio/).
+
+## Keeping a meeting moving
+
+A few light tools help whoever is running the meeting, and nothing more:
+
+- **Timer** and **Stopwatch**: pieces you place in a room, a shared countdown to keep an item short or a clock counting up, running in sync for everyone. See [Session Tools](/help/collaboration/session-tools/).
+- **The facilitator**: one person takes the role, so the room has one host and the timer answers to them. See [Facilitator](/help/collaboration/facilitator/).
+- **Bring Focus** offers everyone a jump to one spot, and **Follow** takes your view wherever someone else's goes. See [Bring Focus](/help/palette/behaviour/bring-focus/) and [Follow Along](/help/canvas/follow-along/).
+
+On the walls there is room for light content: sticky notes, text and stickers, for the notes a meeting leaves behind and for decoration. livehuddle has no diagramming or drawing tools; those are livediagram's job.
 
 ## Built for teams
 
-livehuddle is for teams who would rather be in the room together: remote and hybrid teams keeping a place to bump into each other, facilitators running retros and workshops, and anyone hosting a stand-up, an all-hands or a quiz. The unit of value is the team, not the single author.
+livehuddle is for people who would rather be in the room together: remote and hybrid teams keeping a place to bump into each other, anyone hosting a stand-up, a one-to-one or an all-hands, and communities that want somewhere to gather. The unit of value is the group in the room, not the single author.
 
-To make that frictionless, the Space **always works without signing in**. You can open a Space, set up the board, and hand the link to a colleague who walks straight in, no account required. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
+To make that frictionless, a Space **always works without signing in**. You can open a Space, set it up, and hand the link to a colleague who walks straight in, no account required. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
 
 <Figure caption="Everyone in a Space sees each other's live cursors and presence at once.">
   <LiveCursors />

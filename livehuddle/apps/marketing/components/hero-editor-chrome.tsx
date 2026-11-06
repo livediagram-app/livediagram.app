@@ -5,12 +5,10 @@
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
-import { lucideChartColumn, lucideCircleCheck, lucideTimer } from '@liveworkspace/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
   Glyph,
-  LayersStackIcon,
   MenuIcon,
   Prims,
   RedoIcon,
@@ -40,14 +38,12 @@ function Lucide({
   );
 }
 
-// The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
-// tools (timer, votes, poll).
-const MODE_GROUP: Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]> = {
-  workshop: [lucideTimer, lucideCircleCheck, lucideChartColumn],
-};
+// The extra group a mode adds to the cluster, as CanvasChrome lays it out: none since the Timer and Stopwatch
+// became pieces on the board.
+const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {};
 
 // The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, the mode's own group,
-// Layers with the Tab Style brush, and the zoom readout.
+// the Tab Style brush, and the zoom readout.
 export function CanvasCluster({ className, mode }: { className: string; mode: HeroMode }) {
   const group = MODE_GROUP[mode];
   return (
@@ -71,9 +67,6 @@ export function CanvasCluster({ className, mode }: { className: string; mode: He
       ) : null}
       <span className={`${CARD} overflow-hidden`}>
         <span className={CELL}>
-          <LayersStackIcon size={12} />
-        </span>
-        <span className={`${CELL} ${SPLIT}`}>
           <ThemeLookIcon size={12} />
         </span>
       </span>

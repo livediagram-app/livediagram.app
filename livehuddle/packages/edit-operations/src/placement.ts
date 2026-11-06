@@ -25,7 +25,7 @@ type Side = 'right-of' | 'left-of' | 'above' | 'below';
 export type Placed = {
   x: number;
   y: number;
-  // The element placed against, whose layer a new element takes.
+  // The element placed against.
   ref?: Element;
   // A container `inside:` had to grow to hold the element (EO27).
   grow?: { container: Element; height: number };
@@ -188,7 +188,7 @@ function sideAfter(state: EditState, ref: Element, refBox: Box): Side {
   return dy >= 0 ? 'below' : 'above';
 }
 
-// `inside:frame`: the first free slot of the interior, in rows top to bottom and left to right in
+// `inside:<container>`: the first free slot of the interior, in rows top to bottom and left to right in
 // steps of the gap; none free: below the lowest member, the container growing to hold it (EO27).
 function insideSlot(
   container: Box,
@@ -290,12 +290,12 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
-  // `inside:<frame> right-of:<x>`: x must be inside that frame or lane, at any depth.
+  // `inside:<container> right-of:<x>`: x must be inside that boundary or lane, at any depth.
   if (placement.within !== undefined) {
     const holder = resolveOne(state, placement.within, operation);
     if ('rejection' in holder) return holder;
     if (!isContainer(holder.el))
-      return refusal(`is placed inside ${placement.within}, which is not a frame or lane`);
+      return refusal(`is placed inside ${placement.within}, which is not a boundary or lane`);
     const holders = holdersOf(state);
     const inside = (id: ElementId): boolean => {
       const h = holders.get(id);
@@ -307,7 +307,7 @@ export function resolvePlacement(
   const taken = occupiers(state, moving);
   switch (placement.rel) {
     case 'inside': {
-      if (!isContainer(ref)) return refusal('is not a frame or lane');
+      if (!isContainer(ref)) return refusal('is not a boundary or lane');
       const slot = insideSlot(refBox, size, taken, PLACEMENT_GAP);
       return {
         x: Math.round(slot.box.x),
@@ -327,7 +327,7 @@ export function resolvePlacement(
       const among =
         placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
       let start = beside(refBox, side, size, gap);
-      // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
+      // `below:<container> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {
         const to = resolveOne(state, placement.alignTo, operation);
         if ('rejection' in to) return to;

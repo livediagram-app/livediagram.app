@@ -1,13 +1,20 @@
 // /api/documents/<id>/calls/*: proximity audio's mint route (docs/specs/012-collaboration/proximity-audio.md "The
-// mint route"). The browser never holds the Realtime secret or the TURN key: every session, track, renegotiation and
+// mint route"), with the camera and a shared screen beside the microphone (docs/specs/012-collaboration/
+// video-and-screen-bubbles.md "The mint route"). The browser never holds the Realtime secret or the TURN key: every session, track, renegotiation and
 // close is made here, after the grant on the Space, the calls gate, and the session's own token. The calls kill switch
 // (docs/specs/016-platform/calls-kill-switch.md "The mint route") checks every session and track against its mode.
 import {
+  CALL_SCREEN_TRACK_NAME,
   CALL_TRACK_NAME,
+  CALL_VIDEO_TRACK_NAME,
+  isCallLayer,
+  isCallTrackName,
   levelAtLeast,
   parseCallTrackLocator,
+  type AccessLevel,
+  type CallLayer,
   type CallSessionResponse,
-  type CallTrackLocator,
+  type CallSubscribeLocator,
   type CallsErrorCode,
 } from '@livehuddle/api-schema';
 import { callsGate } from '../calls/calls-gate';
@@ -25,9 +32,15 @@ import {
   newTracks,
   RealtimeError,
   renegotiate,
+  simulcastFor,
   turnIceServers,
+  updateTracks,
   type RealtimeEnv,
+  type RealtimeRemoteTrack,
 } from '../calls/realtime-api';
+import type { HearingAnswer, HearingAsk } from '../calls/room-calls';
+import { splitByHearing, withRefusals } from '../calls/subscribe-hearing';
+import { documentRoom } from '../document-client';
 import { documentTrashed, json, notFound } from '../responses';
 import type { RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
@@ -111,26 +124,62 @@ async function provenSession(
   return { sessionId: body.sessionId, role };
 }
 
-// Every locator well formed and signed for this Space, or null.
+// Every locator well formed and signed for this Space, or null. A camera's carries the layer asked for (the small
+// one when absent); any other track's may not ask for one.
 async function provenLocators(
   env: RealtimeEnv,
   documentId: string,
   raw: unknown,
-): Promise<CallTrackLocator[] | null> {
+): Promise<CallSubscribeLocator[] | null> {
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_SUBSCRIBE_BATCH) return null;
-  const locators: CallTrackLocator[] = [];
+  const locators: CallSubscribeLocator[] = [];
   for (const entry of raw) {
     const locator = parseCallTrackLocator(entry);
     if (!locator) return null;
+    const layer = (entry as { layer?: unknown }).layer;
+    if (
+      layer !== undefined &&
+      (locator.trackName !== CALL_VIDEO_TRACK_NAME || !isCallLayer(layer))
+    ) {
+      return null;
+    }
     if (
       !(await trackTokenHolds(env.REALTIME_APP_TOKEN, documentId, locator.sessionId, locator.token))
     ) {
       console.warn('[calls] token', 'track');
       return null;
     }
-    locators.push(locator);
+    locators.push(layer === undefined ? locator : { ...locator, layer });
   }
   return locators;
+}
+
+// What Realtime is asked for one subscription: a camera's with its simulcast layer.
+function remoteTrack(locator: CallSubscribeLocator): RealtimeRemoteTrack {
+  const track: RealtimeRemoteTrack = {
+    location: 'remote',
+    sessionId: locator.sessionId,
+    trackName: locator.trackName,
+  };
+  if (locator.trackName === CALL_VIDEO_TRACK_NAME)
+    track.simulcast = simulcastFor(locator.layer ?? 'h');
+  return track;
+}
+
+/**
+ * Who may publish a track (video-and-screen-bubbles.md "Share roles"): the microphone and the camera are taking part,
+ * an Editor's or a Participant's; a shared screen is an Editor's alone.
+ */
+export function publishRefused(
+  trackName: string,
+  level: AccessLevel,
+  role: CallRole,
+): Response | null {
+  if (!levelAtLeast(level, 'participate') || role !== 's') return refuse(403, 'calls_listen_only');
+  if (trackName === CALL_SCREEN_TRACK_NAME && !levelAtLeast(level, 'edit')) {
+    return refuse(403, 'calls_editor_only');
+  }
+  return null;
 }
 
 async function mintSession(
@@ -159,31 +208,38 @@ async function mintSession(
   );
 }
 
+/** Asks the Space's room which tracks a call session may hear (calls/room-calls.ts). */
+type Hearing = (subscriberSession: string, asks: HearingAsk[]) => Promise<HearingAnswer[]>;
+
 async function tracks(
   env: RealtimeEnv,
   documentId: string,
   body: Record<string, unknown>,
-  canSpeak: boolean,
+  level: AccessLevel,
   mode: Exclude<CallsMode, 'off'>,
+  hearing: Hearing,
 ): Promise<Response> {
   const session = await provenSession(env, documentId, body);
   if (!session) return invalid();
-  const publish = body.publish as { sdp?: unknown; mid?: unknown } | undefined;
+  const publish = body.publish as { sdp?: unknown; mid?: unknown; trackName?: unknown } | undefined;
   if (publish !== undefined && body.subscribe === undefined) {
-    // A listener's session stays one, even if its grant has since grown.
-    if (!canSpeak || session.role !== 's') return refuse(403, 'calls_listen_only');
     if (
       typeof publish !== 'object' ||
       publish === null ||
       !isSdp(publish.sdp) ||
-      !isMid(publish.mid)
+      !isMid(publish.mid) ||
+      (publish.trackName !== undefined && !isCallTrackName(publish.trackName))
     ) {
       return invalid();
     }
-    const paused = mediaRefused(mode, [CALL_TRACK_NAME]);
+    const trackName = publish.trackName ?? CALL_TRACK_NAME;
+    // A listener's session stays one, even if its grant has since grown.
+    const refused = publishRefused(trackName, level, session.role);
+    if (refused) return refused;
+    const paused = mediaRefused(mode, [trackName]);
     if (paused) return paused;
     const offer = { type: 'offer' as const, sdp: publish.sdp };
-    const tracks = [{ location: 'local' as const, mid: publish.mid, trackName: CALL_TRACK_NAME }];
+    const tracks = [{ location: 'local' as const, mid: publish.mid, trackName }];
     return upstream(
       () => newTracks(env, session.sessionId, { sessionDescription: offer, tracks }),
       (answer) => json(answer),
@@ -197,17 +253,64 @@ async function tracks(
       locators.map((l) => l.trackName),
     );
     if (paused) return paused;
-    const tracks = locators.map((l) => ({
-      location: 'remote' as const,
-      sessionId: l.sessionId,
-      trackName: l.trackName,
-    }));
+    // The room says which of them this session may hear now (#483); the rest are answered `not_heard`.
+    const { allowed, refused } = await splitByHearing(locators, (asks) =>
+      hearing(session.sessionId, asks),
+    );
+    if (allowed.length === 0) return json(withRefusals(locators, refused, null));
+    const tracks = allowed.map(remoteTrack);
     return upstream(
       () => newTracks(env, session.sessionId, { tracks }),
-      (answer) => json(answer),
+      (answer) => json(withRefusals(locators, refused, answer)),
     );
   }
   return invalid();
+}
+
+// `layer`: switch this session's camera subscriptions between the small and the large layer (a maximise or a
+// restore), with Realtime's `tracks/update`. Camera tracks only: nothing else is published in layers.
+async function layer(
+  env: RealtimeEnv,
+  documentId: string,
+  body: Record<string, unknown>,
+  mode: Exclude<CallsMode, 'off'>,
+): Promise<Response> {
+  const session = await provenSession(env, documentId, body);
+  if (!session) return invalid();
+  const raw = body.tracks;
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_SUBSCRIBE_BATCH) return invalid();
+  const tracks: (RealtimeRemoteTrack & { mid: string })[] = [];
+  for (const entry of raw as unknown[]) {
+    const t = entry as {
+      mid?: unknown;
+      sessionId?: unknown;
+      trackName?: unknown;
+      layer?: unknown;
+    } | null;
+    if (
+      !t ||
+      !isMid(t.mid) ||
+      !isId(t.sessionId) ||
+      t.trackName !== CALL_VIDEO_TRACK_NAME ||
+      !isCallLayer(t.layer)
+    ) {
+      return invalid();
+    }
+    const chosen: CallLayer = t.layer;
+    tracks.push({
+      location: 'remote',
+      mid: t.mid,
+      sessionId: t.sessionId,
+      trackName: t.trackName,
+      simulcast: simulcastFor(chosen),
+    });
+  }
+  const paused = mediaRefused(mode, [CALL_VIDEO_TRACK_NAME]);
+  if (paused) return paused;
+  return upstream(
+    () => updateTracks(env, session.sessionId, tracks),
+    (answer) => json(answer),
+  );
 }
 
 /**
@@ -223,6 +326,7 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
     (segments[4] === 'session' && method === 'POST') ||
     (segments[4] === 'tracks' && method === 'POST') ||
     (segments[4] === 'renegotiate' && method === 'PUT') ||
+    (segments[4] === 'layer' && method === 'PUT') ||
     (segments[4] === 'close' && method === 'PUT');
   if (!known) return notFound();
   const documentId = segments[2]!;
@@ -248,8 +352,11 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   const body = await bodyOf(request);
   if (!body) return invalid();
   if (gate.open && segments[4] === 'tracks') {
-    return tracks(realtime, documentId, body, canSpeak, gate.mode);
+    return tracks(realtime, documentId, body, grant.level, gate.mode, (subscriber, asks) =>
+      documentRoom(env, documentId).callsHearing(subscriber, asks),
+    );
   }
+  if (gate.open && segments[4] === 'layer') return layer(realtime, documentId, body, gate.mode);
   const session = await provenSession(realtime, documentId, body);
   if (!session) return invalid();
   if (segments[4] === 'renegotiate') {

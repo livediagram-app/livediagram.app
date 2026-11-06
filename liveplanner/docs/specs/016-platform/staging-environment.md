@@ -122,8 +122,7 @@ shared by the staging api and staging mcp ([Secrets policy](../002-project-scope
 `deploy-production.yml` and `deploy-staging.yml` call it. A staging deploy that has drifted from production's tests
 nothing, so the two run byte-identical steps.
 
-`deploy-staging.yml` triggers on `workflow_run` (CI completing on `main`), not on `push`. Every commit on `main`
-runs CI to the end ([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so runs can finish out of order: a
+`deploy-staging.yml` triggers on `workflow_run` (CI completing on `main`), not on `push`. A newer push to `main` cancels an older CI run ([Deployment](deployment.md#runs-on-main-cancel-older-ones)), and the runs left can still finish out of order: a
 first job (**Still main's tip**) lets a run deploy only when its commit is still `main`'s tip, and the newer
 commit's run deploys both, since the plan diffs against what staging last deployed. Both callers queue
 (`cancel-in-progress: false`), so a deploy is never cut off halfway.

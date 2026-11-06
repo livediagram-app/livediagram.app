@@ -29,7 +29,6 @@ function draw(element: BoxedElement, fontFamily?: string) {
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
-      isoDepth={0}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabLocked={false}
@@ -101,15 +100,15 @@ describe('in WebKit', () => {
 
 describe("an element's words", () => {
   it("are all in the element's face, so a face that writes its own wears it", () => {
-    const { container } = draw(shape('idea-box'), "'Caveat', cursive");
-    const wrapper = container.querySelector<HTMLElement>('[data-element-id="idea-box"]');
+    const { container } = draw(shape('checklist'), "'Caveat', cursive");
+    const wrapper = container.querySelector<HTMLElement>('[data-element-id="checklist"]');
     expect(wrapper?.style.fontFamily).toContain('Caveat');
   });
 
   it('keep the editor default when nothing picks a face', () => {
-    const { container } = draw(shape('idea-box'));
+    const { container } = draw(shape('checklist'));
     expect(
-      container.querySelector<HTMLElement>('[data-element-id="idea-box"]')?.style.fontFamily,
+      container.querySelector<HTMLElement>('[data-element-id="checklist"]')?.style.fontFamily,
     ).toBe('');
   });
 });

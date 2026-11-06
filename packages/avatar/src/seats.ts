@@ -5,7 +5,7 @@
 // character without importing livediagram's document package. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import type { SeatingKind } from './office-geometry';
+import { isFixedSeatShape, type FixedSeatKind, type SitKind } from './office-geometry';
 import type { AvatarFacing } from './walk';
 
 /** Where a piece's back is: 'n' at the top, so its sitter faces down the canvas. */
@@ -22,14 +22,23 @@ export const SEAT_SITTER_FACING: Readonly<Record<SeatFacing, AvatarFacing>> = {
 // Where a new one's back is. A chair and a sofa face the reader; a desk is placed with its desk at the top and its
 // chair in front, so the sitter faces up, at the computer, with their back to you. The meeting table reads the same
 // from every side and does not turn.
-export const DEFAULT_SEATING_FACING: Readonly<Record<SeatingKind, SeatFacing>> = {
+export const DEFAULT_SEATING_FACING: Readonly<Record<SitKind, SeatFacing>> = {
   chair: 'n',
   sofa: 'n',
   desk: 's',
   'meeting-table': 'n',
+  // The fixed seats never turn; every seat names its own facing.
+  'office-pod': 'n',
+  'bar-stool': 'n',
+  'ping-pong-table': 'n',
+  bench: 'n',
+  'picnic-table': 'n',
+  hammock: 'n',
+  'bean-bag': 'n',
+  'reading-nook': 'n',
 };
 
-export function seatingFacing(el: { shape: SeatingKind; chairFacing?: SeatFacing }): SeatFacing {
+export function seatingFacing(el: { shape: SitKind; chairFacing?: SeatFacing }): SeatFacing {
   return el.chairFacing ?? DEFAULT_SEATING_FACING[el.shape];
 }
 
@@ -102,7 +111,7 @@ const SOFA_SEATS: Record<SeatView, SeatGrid> = {
 
 /** Every seating kind that turns with its facing: its three drawings' grids and seats. */
 export const SEAT_GRIDS: Readonly<
-  Record<Exclude<SeatingKind, 'meeting-table'>, Readonly<Record<SeatView, SeatGrid>>>
+  Record<'chair' | 'desk' | 'sofa', Readonly<Record<SeatView, SeatGrid>>>
 > = { chair: CHAIR_SEATS, desk: DESK_SEATS, sofa: SOFA_SEATS };
 
 /** A meeting table's seat, which also says which way its sitter faces: always toward the table. */
@@ -126,24 +135,111 @@ export const MEETING_TABLE_SEATS: { width: number; height: number; seats: readon
   ],
 };
 
+/** A piece that never turns: its grid and its seats, each with the way its sitter faces. */
+export type FixedSeatGrid = { width: number; height: number; seats: readonly TableSeat[] };
+
+// An Office Pod (livehuddle's docs/specs/009-elements/office.md "Office Pod"): two benches facing each other across a
+// table, inside the pod's walls (pod.ts draws the walls on this grid).
+export const POD_SEATS: FixedSeatGrid = {
+  width: 176,
+  height: 144,
+  seats: [
+    { u: 30 / 176, v: 104 / 144, facing: 'right' },
+    { u: 146 / 176, v: 104 / 144, facing: 'left' },
+  ],
+};
+
+// A Bar Stool (office.md "Bar, Bar Stool"): one seat, its sitter facing up the canvas, toward the bar.
+export const BAR_STOOL_SEATS: FixedSeatGrid = {
+  width: 44,
+  height: 64,
+  seats: [{ u: 0.5, v: 0.4, facing: 'up' }],
+};
+
+// livehuddle's social pieces (its docs/specs/009-elements/social-pieces.md): a player at each end of a ping-pong
+// table facing the table, two side by side on a bench facing you, six round a picnic table facing it, one in a hammock.
+export const PING_PONG_SEATS: FixedSeatGrid = {
+  width: 184,
+  height: 112,
+  seats: [
+    { u: 14 / 184, v: 70 / 112, facing: 'right' },
+    { u: 170 / 184, v: 70 / 112, facing: 'left' },
+  ],
+};
+
+export const BENCH_SEATS: FixedSeatGrid = {
+  width: 136,
+  height: 64,
+  seats: [
+    { u: 44 / 136, v: 40 / 64, facing: 'down' },
+    { u: 92 / 136, v: 40 / 64, facing: 'down' },
+  ],
+};
+
+export const PICNIC_TABLE_SEATS: FixedSeatGrid = {
+  width: 200,
+  height: 152,
+  seats: [
+    { u: 50 / 200, v: 34 / 152, facing: 'down' },
+    { u: 100 / 200, v: 34 / 152, facing: 'down' },
+    { u: 150 / 200, v: 34 / 152, facing: 'down' },
+    { u: 50 / 200, v: 120 / 152, facing: 'up' },
+    { u: 100 / 200, v: 120 / 152, facing: 'up' },
+    { u: 150 / 200, v: 120 / 152, facing: 'up' },
+  ],
+};
+
+export const HAMMOCK_SEATS: FixedSeatGrid = {
+  width: 152,
+  height: 80,
+  seats: [{ u: 0.5, v: 46 / 80, facing: 'down' }],
+};
+
+// The breakout seating (social-pieces.md "Bean Bag, Reading Nook"): one sitter sunk in a bean bag, one in a reading
+// nook's armchair, both facing down the canvas.
+export const BEAN_BAG_SEATS: FixedSeatGrid = {
+  width: 64,
+  height: 56,
+  seats: [{ u: 0.5, v: 36 / 56, facing: 'down' }],
+};
+
+export const READING_NOOK_SEATS: FixedSeatGrid = {
+  width: 160,
+  height: 112,
+  seats: [{ u: 76 / 160, v: 64 / 112, facing: 'down' }],
+};
+
+const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
+  'office-pod': POD_SEATS,
+  'bar-stool': BAR_STOOL_SEATS,
+  'ping-pong-table': PING_PONG_SEATS,
+  bench: BENCH_SEATS,
+  'picnic-table': PICNIC_TABLE_SEATS,
+  hammock: HAMMOCK_SEATS,
+  'bean-bag': BEAN_BAG_SEATS,
+  'reading-nook': READING_NOOK_SEATS,
+};
+
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */
-export type SeatedBox = Rect & { shape: SeatingKind; chairFacing?: SeatFacing };
+export type SeatedBox = Rect & { shape: SitKind; chairFacing?: SeatFacing };
 
 /** A seat's feet point in canvas coordinates; a meeting table's seat also says which way its sitter faces. */
 export type Seat = { x: number; y: number; facing?: AvatarFacing };
 
 /** Every seat's feet point, in canvas coordinates, from the drawing its facing shows. */
 export function seatPoints(el: SeatedBox): Seat[] {
-  if (el.shape === 'meeting-table') {
-    const drawn = drawnRect(el, MEETING_TABLE_SEATS);
-    return MEETING_TABLE_SEATS.seats.map(({ u, v, facing }) => ({
+  const shape = el.shape;
+  if (shape === 'meeting-table' || isFixedSeatShape(shape)) {
+    const grid = shape === 'meeting-table' ? MEETING_TABLE_SEATS : FIXED_SEATS[shape];
+    const drawn = drawnRect(el, grid);
+    return grid.seats.map(({ u, v, facing }) => ({
       x: drawn.x + drawn.width * u,
       y: drawn.y + drawn.height * v,
       facing,
     }));
   }
   const { view: name, mirrored } = facingView(seatingFacing(el));
-  const view = SEAT_GRIDS[el.shape][name];
+  const view = SEAT_GRIDS[shape][name];
   const drawn = drawnRect(el, view);
   return view.seats.map(({ u, v }) => ({
     x: drawn.x + drawn.width * (mirrored ? 1 - u : u),
@@ -154,7 +250,7 @@ export function seatPoints(el: SeatedBox): Seat[] {
 // Where the drawing actually lies in the box: every renderer fits its grid whole and centred (preserveAspectRatio
 // meet), so a box of other proportions (a quarter turn written without swapping the box, an aspect unlocked and
 // stretched) letterboxes it, and a seat measured on the whole box would miss the drawn cushion.
-function drawnRect(box: Rect, view: { width: number; height: number }): Rect {
+export function drawnRect(box: Rect, view: { width: number; height: number }): Rect {
   const scale = Math.min(box.width / view.width, box.height / view.height);
   const width = view.width * scale;
   const height = view.height * scale;

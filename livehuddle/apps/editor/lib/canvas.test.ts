@@ -183,10 +183,10 @@ describe('inheritedSizeFor', () => {
 });
 
 describe('framesFirst', () => {
-  it('moves frames ahead of everything else, preserving relative order', () => {
-    const frameA = createShape('frame', 0, 0);
+  it('moves containers ahead of everything else, preserving relative order', () => {
+    const frameA = createShape('boundary', 0, 0);
     const box = createShape('square', 0, 0);
-    const frameB = createShape('frame', 9, 9);
+    const frameB = createShape('boundary', 9, 9);
     const ordered = framesFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
   });
@@ -197,7 +197,7 @@ describe('framesFirst', () => {
     expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
   });
 
-  it('returns the same array reference when there are no frames (no-op)', () => {
+  it('returns the same array reference when there are no containers (no-op)', () => {
     const arr = [createShape('square', 0, 0)];
     expect(framesFirst(arr)).toBe(arr);
   });

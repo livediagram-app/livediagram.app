@@ -1,4 +1,4 @@
-// An author's colour under the white initial in dark mode: @liveworkspace/ui's identity fill on the shared colour
+// An author's colour under a readable initial in both modes: @liveworkspace/ui's identity fill on the shared colour
 // maths (@liveworkspace/brand), so the Community's pieces depend on no app's document model.
 import { contrastRatio, shade } from '@liveworkspace/brand/colour';
 import { createIdentityFill } from '@liveworkspace/ui/identity-fill';

@@ -55,11 +55,13 @@ The root `codeql.yml` scans the whole repository with CodeQL on every pull reque
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files. Most workspaces are opted in (`pnpm turbo run test --dry` lists them); a workspace mirrors the pattern when it adds its first test.
 
-### Runs on main are never cancelled
+### Runs on main cancel older ones
 
-`ci.yml` and `e2e.yml` cancel a run only on a pull request, where a newer push makes the older run moot. On `main` every commit runs to the end, each in a concurrency group of its own (keyed by the commit), because a shared group keeps only one pending run and a burst of merges would still drop the middle ones. Cancelling there left most merges without a result (37 of 42 CI runs on `main` cancelled in the 11 hours to 2026-10-15), so a failure could not be pinned on its commit, and a pull request whose base had no finished run had no coverage to compare against in its [Coverage report](../003-system-architecture/testing.md#coverage-report).
+CI, E2E and CodeQL keep one run per branch. On a pull request a newer push cancels the older run, which would otherwise hold runners for a result nobody reads. On `main` a run that has started always finishes: a newer push waits behind it and a still newer one replaces the one waiting, so at most one runs and one waits, and a run on `main` completes however often merges land (cancelling the running one too, as `main` did for an hour on 2026-11-06, meant no run finished while merges came faster than a run takes, and staging never deployed). A run started by hand is never cancelled. So that the commits a replaced run skipped are still checked, a push to `main` is planned against the newest commit that workflow last passed on `main` (`.github/scripts/main-base.mjs`), not the commit just before it: each run takes in every commit since the last green one, and with none (a first run, or a force-push) everything runs.
 
-The cost is runner time: a merge on `main` runs CI's jobs and E2E's for every group it reaches, so a burst of merges queues for runners alongside open pull requests' runs. Runs on `main` finishing out of order are handled by the staging deploy, which deploys the newest commit on `main` whose CI passed, whichever run finishes ([Staging environment](staging-environment.md)).
+A failure on `main` is therefore pinned on the commits since the last green one, not on a single commit. The [Coverage report](../003-system-architecture/testing.md#coverage-report) reads its base from the newest run on `main` that still holds each coverage artifact, so a cancelled run leaves it a slightly older base, never none. The staging deploy deploys the newest commit on `main` whose CI passed, whichever run that is ([Staging environment](staging-environment.md)).
+
+Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On the free plan's 20 concurrent jobs, a burst of merges then queued ahead of open pull requests: jobs waited a median 16 minutes for a runner (p90 37) on 2026-11-05 and 06, against 3 to 4 minutes of work.
 
 ## Deploy
 
@@ -76,7 +78,7 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 2. **Sites and MCP**: `livediagram-marketing`, `livediagram-editor`, `livediagram-help`, `livediagram-community` and `livediagram-mcp`, so a new editor never calls an api that lacks its routes, and the community's and mcp's bindings to the api exist.
 3. **Routers**: `livediagram-router`, whose service bindings target the five workers above.
 
-**One Worker** (the root `deploy-worker.yml`): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
+**One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livediagram's sites and MCP in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 
 **What a deploy writes.** Code and plain vars. Secrets are set on each Worker with `wrangler secret put` and survive a deploy (see [Credentials and secrets](#credentials-and-secrets)).
 

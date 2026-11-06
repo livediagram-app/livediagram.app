@@ -1,3 +1,5 @@
+// docs/specs/013-workspace/share-roles.md: livehuddle makes no new Viewer link, so the Viewer cases below are a legacy
+// Viewer link's ("Legacy Viewer links"), which keeps every gate it had.
 import { describe, expect, it } from 'vitest';
 import { elementSupportsText, type Element } from '@livehuddle/document';
 import { CANVAS_TOOLS } from '@/lib/editor-commands';
@@ -7,13 +9,10 @@ import {
   roleGates,
   type EditorCapabilities,
 } from '@/lib/editor-capabilities';
-import {
-  PARTICIPANT_CANVAS_TOOLS,
-  paletteCategoriesFor,
-  participantPaletteCategories,
-} from '@/components/palette/palette-layouts';
+import { PARTICIPANT_CANVAS_TOOLS, paletteCategories } from '@/components/palette/palette-layouts';
 import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
+import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
 import { avatarTourSteps } from '@/components/tour/avatar-tour-steps';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the editor renders it: one block per row of
@@ -38,17 +37,18 @@ const canFor = (level: Level): EditorCapabilities =>
 const gatesFor = (level: Level) => roleGates(canFor(level), false);
 // A read-only session (a Participant or a Viewer) gets the participant selection modes; an Editor every tool.
 const toolsFor = (level: Level): readonly string[] => {
-  const all = buildCanvasToolOptions({ isMobile: false, includeZen: true }).map((o) => o.id);
+  const all = buildCanvasToolOptions({}).map((o) => o.id);
   return level === 'edit' ? all : all.filter((id) => PARTICIPANT_CANVAS_TOOLS.includes(id));
 };
-// The palette strip: an Editor's full one, a Participant's own (it holds an adder key), none for a Viewer
-// (CanvasChrome's `paletteShown`).
+// The palette strip: an Editor's alone, none for a Participant or a Viewer (CanvasChrome's `paletteShown`,
+// `!readOnly`; share-roles.md "A Participant walks").
 const paletteTileIdsFor = (level: Level): string[] => {
-  if (level === 'view') return [];
-  const categories =
-    level === 'participate' ? participantPaletteCategories() : paletteCategoriesFor('workshop');
-  return categories.flatMap((c) => (c.tiles ?? []).map((t) => t.id));
+  if (level !== 'edit') return [];
+  return paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 };
+// What the Walk button and the mode buttons can do for each level: EditorCanvasHost draws the Walk button where
+// `!can.alwaysWalks`, and gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds a Participant
+// in Avatar mode (`holdWalking(can.alwaysWalks)`).
 
 const expectPerLevel = (
   name: string,
@@ -61,7 +61,8 @@ const expectPerLevel = (
     }
   });
 
-const NAVIGATE_TILES = tilesForCategory('collab-navigate').map((t) => t.id);
+// The Space categories' tiles (docs/specs/010-palette/palette-top-level-categories.md "The Space categories").
+const NAVIGATE_TILES = SPACE_CATEGORIES.flatMap((c) => tilesForCategory(c.id)).map((t) => t.id);
 const NAVIGATE_ELEMENTS = [
   shape('portal', { label: 'Kitchen' }),
   shape('chair'),
@@ -80,6 +81,20 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     { edit: true, participate: true, view: true },
   );
 
+  // An Editor and a Viewer enter and leave Avatar mode on any board through the cluster's Walk button
+  // (docs/specs/008-canvas/avatar-mode.md "The Walk button"), an Editor on its strip too. A Participant is always
+  // walking, with no way out (share-roles.md "A Participant walks"). Work Tracker #361.
+  expectPerLevel(
+    'Enter and leave Avatar mode on any board',
+    (level) => {
+      const can = canFor(level);
+      if (can.alwaysWalks) return 'always walking';
+      const picker = level === 'edit' && toolsFor(level).includes('avatar');
+      return picker ? 'walk button and picker' : 'walk button';
+    },
+    { edit: 'walk button and picker', participate: 'always walking', view: 'walk button' },
+  );
+
   // useCanvasAvatar's `canSpeak` and the Avatar tour's Say Something step both read `can.takePart`.
   expectPerLevel(
     'Speak in a speech bubble',
@@ -89,6 +104,24 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     },
     { edit: [true, true], participate: [true, true], view: [false, false] },
   );
+
+  // Video and screen share bubbles (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles"):
+  // useCanvasCall's `canSpeak` (the camera) reads `can.takePart`; EditorCanvasHost's `canShareScreen` reads
+  // `gates.shape`. Seeing and maximising a bubble has no gate: everyone in a call sees the people near them.
+  expectPerLevel(
+    'Turn on a camera, share a screen',
+    (level) => [gatesFor(level).takePart, gatesFor(level).shape],
+    { edit: [true, true], participate: [true, false], view: [false, false] },
+  );
+
+  // A local preview (video-and-screen-bubbles.md "Local preview") sends nothing: anyone who may take part has one
+  // (useProximityCall's `canPreviewCamera`/`canPreviewScreen` read `canSpeak`, `can.takePart`), and sending still
+  // follows the row above, so a Participant's screen stays a preview.
+  expectPerLevel('Preview your own camera or screen', (level) => gatesFor(level).takePart, {
+    edit: true,
+    participate: true,
+    view: false,
+  });
 
   // Pushing, sitting and a drink are the character's own presence: in Avatar mode, which every role has, with no
   // gate of their own (EditorCanvasHost wires `onAvatarPush` and the seat and drink for every session).
@@ -158,7 +191,7 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     });
   });
 
-  describe('Take part in a session tool (vote, answer, react)', () => {
+  describe('Take part in a session tool (answer, react)', () => {
     expectPerLevel('with the baton free', (level) => gatesFor(level).takePart, {
       edit: true,
       participate: true,
@@ -178,11 +211,13 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     view: false,
   });
 
-  describe('Add, write and arrange stickies and text', () => {
+  // A Participant adds, writes, arranges and deletes nothing, its own earlier stickies included (share-roles.md
+  // "A Participant walks"); the room refuses it too (apps/api/src/share-roles.test.ts).
+  describe('Add, write, arrange or delete stickies and text', () => {
     expectPerLevel(
       'the Sticky and Text tiles on the palette',
       (level) => ['tools:sticky', 'tools:text'].map((id) => paletteTileIdsFor(level).includes(id)),
-      { edit: [true, true], participate: [true, true], view: [false, false] },
+      { edit: [true, true], participate: [false, false], view: [false, false] },
     );
     expectPerLevel(
       'add, write on, move and recolour a sticky; remove its own; write on text',
@@ -199,11 +234,22 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
       },
       {
         edit: [true, true, true, true, true, true],
-        participate: [true, true, true, true, true, true],
+        participate: [false, false, false, false, false, false],
         view: [false, false, false, false, false, false],
       },
     );
   });
+
+  // The pieces a Participant keeps (share-roles.md "A Participant walks"): a Door's swing where it is unlocked.
+  // Pinning its own notes on a Notice Board goes through the board's popover (NoticeBoardPopover, its adder key).
+  expectPerLevel(
+    'Swing an unlocked door, not a locked one',
+    (level) => {
+      const can = canFor(level);
+      return [can.swingDoor(shape('door')), can.swingDoor(shape('door', { locked: true }))];
+    },
+    { edit: [true, true], participate: [true, false], view: [false, false] },
+  );
 
   // The comment popover's `canComment` and the Comment panel's actions read `can.takePart` (EditorAnchoredPopovers,
   // EditorCanvasHost).
@@ -215,8 +261,8 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
 
   // Every look-only tool is in every role's selection modes; export is a read, with no gate.
   expectPerLevel(
-    'Pan, zoom, laser, spotlight, export',
-    (level) => ['pan', 'laser', 'spotlight'].every((tool) => toolsFor(level).includes(tool)),
+    'Pan, zoom, export',
+    (level) => ['select', 'pan'].every((tool) => toolsFor(level).includes(tool)),
     { edit: true, participate: true, view: true },
   );
 

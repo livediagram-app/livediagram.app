@@ -1,4 +1,4 @@
-// Arrow SVG emitters (docs/specs/015-api/mcp-server.md §5), split from svg-render.ts alongside
+// Arrow SVG emitters (livediagram/docs/specs/015-api/mcp-server.md §5), split from svg-render.ts alongside
 // the -primitives / -shapes / -table / -labels siblings: the arrowhead
 // <marker> builder, the per-arrow path + label emitter, and the
 // head-reference resolution that keeps heads tangent to curved / angled
@@ -172,8 +172,8 @@ export function svgArrow(
   // inlines several renders of the same arrow (thumbnails, the minimap) gives
   // each its own prefix so no render borrows another's mask.
   maskIdPrefix = 'lvd-ko-',
-  // The boxes an arrow may pass behind: the ones this render draws. An export
-  // that leaves hidden layers out must not break a line around a box that
+  // The boxes an arrow may pass behind: the ones this render draws. A render
+  // that leaves some boxes out must not break a line around a box that
   // isn't in the picture. Defaults to every element.
   occluders: Iterable<Element> = elements,
   // The paper a hollow head is filled with; the surface's default canvas colour unless the caller

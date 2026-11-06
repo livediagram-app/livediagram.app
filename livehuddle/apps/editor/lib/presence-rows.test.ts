@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { Participant } from './identity';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import {
-  buildLaserTrailRows,
   buildParticipantsByTab,
   buildRemoteAvatarRows,
   buildRemoteCursorRows,
@@ -233,6 +232,18 @@ describe('buildRemoteAvatarRows', () => {
     expect(rows[0]?.glideMs).toBe(50);
   });
 
+  // A peer who travelled (avatar-mode.md "Changing tab") leaves their last packet here; their tab-focus moved on.
+  it('drops a peer whose tab-focus has left the tab their character was on', () => {
+    const peer = p('peer');
+    const avatars = new Map([['peer', entry('t1')]]);
+    expect(
+      buildRemoteAvatarRows(avatars, byId(peer), 'me', 't1', new Map([['peer', 't2']])),
+    ).toEqual([]);
+    expect(
+      buildRemoteAvatarRows(avatars, byId(peer), 'me', 't1', new Map([['peer', 't1']])),
+    ).toHaveLength(1);
+  });
+
   it('drops self, other tabs, and participants who have left the room', () => {
     const peer = p('peer');
     const rows = buildRemoteAvatarRows(
@@ -246,26 +257,6 @@ describe('buildRemoteAvatarRows', () => {
       't1',
     );
     expect(rows).toEqual([]);
-  });
-});
-
-describe('buildLaserTrailRows', () => {
-  it('puts the local trail first, then active-tab present peers', () => {
-    const self = p('me', { color: '#fff' });
-    const a = p('a', { color: '#aaa' });
-    const rows = buildLaserTrailRows({
-      localLaserTrail: [{ x: 0, y: 0, t: 1 }],
-      remoteLaserTrails: new Map([
-        ['a', { tabId: 't1', points: [{ x: 1, y: 1, t: 2 }] }],
-        ['b', { tabId: 't2', points: [{ x: 2, y: 2, t: 3 }] }], // other tab -> dropped
-      ]),
-      livePresenceById: byId(self, a),
-      selfId: 'me',
-      selfColor: '#fff',
-      activeId: 't1',
-    });
-    expect(rows.map((r) => r.participantId)).toEqual(['me', 'a']);
-    expect(rows[0]!.color).toBe('#fff');
   });
 });
 

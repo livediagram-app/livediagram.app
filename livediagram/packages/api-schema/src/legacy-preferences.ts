@@ -31,6 +31,12 @@ const RETIRED: ReadonlySet<string> = new Set([
   // with the AI Tools Settings category.
   'aiAssistanceEnabled',
   'aiSuggestedPrompts',
+  // Power user mode, its Minimal chrome and its one-time offer (docs/specs/007-editor/power-user-mode.md): retired.
+  // Whatever its preset wrote stays; only these go.
+  'powerUserMode',
+  'powerUserBaseline',
+  'minimalChrome',
+  'powerUserOfferShown',
 ]);
 
 export function upgradeLegacyPreferences<T extends Record<string, unknown>>(prefs: T): T {

@@ -1,40 +1,10 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { ICON_CATEGORIES } from '@/lib/icons';
-import { STICKER_CATEGORIES } from '@liveworkspace/workbench/lib/stickers';
-import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
+import { describe, expect, it, vi } from 'vitest';
+import { CatalogueGroupTile } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 
-// docs/specs/007-editor/toolbar-layout.md "More": Icons, Stickers and Technology show their browse groups on the
-// strip, each opening the browse on that group.
-
-beforeAll(() => ensureIconCatalogs());
-
-describe('catalogueStripGroups', () => {
-  it('is the browse groups for the two catalogues, in their order', () => {
-    expect(catalogueStripGroups('icons')?.map((g) => g.id)).toEqual(
-      ICON_CATEGORIES.map((c) => c.id),
-    );
-    expect(catalogueStripGroups('stickers')?.map((g) => g.id)).toEqual(
-      STICKER_CATEGORIES.map((c) => c.id),
-    );
-    expect(catalogueStripGroups('technology')).toBeNull();
-  });
-
-  it('is built once the catalogues have loaded, not on every strip render', () => {
-    expect(catalogueStripGroups('icons')).toBe(catalogueStripGroups('icons'));
-    const t = performance.now();
-    for (let i = 0; i < 1000; i++) catalogueStripGroups('icons');
-    expect(performance.now() - t).toBeLessThan(50);
-  });
-
-  it('is null for a category of tiles', () => {
-    expect(catalogueStripGroups('shapes')).toBeNull();
-    expect(catalogueStripGroups('my-shapes')).toBeNull();
-  });
-});
+// docs/specs/007-editor/toolbar-layout.md: a group tile toggles its popover, and the browse opens on a group.
 
 describe('CatalogueGroupTile', () => {
   it('toggles from its own tile, marked as the popover’s button', () => {

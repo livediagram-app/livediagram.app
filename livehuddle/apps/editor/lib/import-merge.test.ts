@@ -11,9 +11,9 @@ describe('mergeImportedTab', () => {
     expect(out.name).toBe('Mine');
   });
 
-  it('carries the imported LAYERS, so element layerIds still resolve', () => {
-    const layers = [{ id: 'layer:notes', name: 'Notes' }];
-    expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);
+  it('drops the layers a file saved while livehuddle had them (docs/specs/006-document/layers.md)', () => {
+    const old = { ...tab(), layers: [{ id: 'layer:notes', name: 'Notes' }] } as Tab;
+    expect('layers' in mergeImportedTab(tab(), old)).toBe(false);
   });
 
   it('leaves an ordinary import where it was', () => {
@@ -40,11 +40,9 @@ describe('mergeImportedTab', () => {
     const mine = tab({
       theme: 'midnight',
       kind: 'diagram',
-      layers: [{ id: 'a', name: 'A' }],
     });
     const out = mergeImportedTab(mine, tab());
     expect(out.theme).toBe('midnight');
     expect(out.kind).toBe('diagram');
-    expect(out.layers).toEqual([{ id: 'a', name: 'A' }]);
   });
 });

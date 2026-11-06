@@ -23,7 +23,6 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
-import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
@@ -61,24 +60,13 @@ export function MultiPlacementSections({
   const turnable = boxedSel.filter(supportsRotation);
   return (
     <>
-      {/* Layer — front/back, opacity and (for boxed members) the
-                  aspect-ratio lock, selection-wide, mirroring the single
-                  menu's pinned-first Layer section. */}
-      <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('m-layer')}>
+      {/* Arrange: front/back, opacity and (for boxed members) the aspect-ratio lock, selection-wide,
+          mirroring the single menu's pinned-first Arrange section. */}
+      <MenuAccordionSection title="Arrange" icon={<LayersGlyph />} {...sectionProps('m-layer')}>
         <MenuTileGrid cols={2}>
           <MenuTile icon={<LayerUpIcon />} label="Bring to Front" onClick={props.onBringToFront} />
           <MenuTile icon={<LayerDownIcon />} label="Send to Back" onClick={props.onSendToBack} />
         </MenuTileGrid>
-        {/* Move the whole selection to a named layer (docs/specs/006-document/layers.md). */}
-        {props.onMoveSelectionToLayer ? (
-          <MoveToLayerRow
-            layers={props.layers}
-            elements={props.elements}
-            tabFont={props.tabFont}
-            currentLayerId={props.selectionLayerId}
-            onMove={props.onMoveSelectionToLayer}
-          />
-        ) : null}
         <ContextMenuDivider />
         <OpacityRow
           value={(sel[0] as { opacity?: number } | undefined)?.opacity ?? 1}

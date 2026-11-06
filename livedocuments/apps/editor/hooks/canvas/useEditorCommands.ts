@@ -1,5 +1,5 @@
 // Binds the contextual command catalogue (lib/editor-commands.ts) to the live
-// editor so the SearchPanel can surface a power-user action palette (docs/specs/008-canvas/canvas-and-palette.md
+// editor so the SearchPanel can surface a keyboard-first action palette (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"). Reads the selection + the editor's existing action
 // handlers off EditorContext, returns the searchable `commandItems` the
 // panel matches against plus a `runCommand` dispatcher.
@@ -40,7 +40,6 @@ const INERT_HANDLERS: CommandHandlers = {
   renumberSteps: noop,
   setMarker: noop,
   addComment: noop,
-  editNote: noop,
   createTab: noop,
   renameDocument: noop,
   deleteDocument: noop,
@@ -94,7 +93,6 @@ export function useEditorCommands(open: boolean): {
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
-    openNote,
     addTab,
     deleteDocument,
     setShareDialogOpen,
@@ -220,9 +218,6 @@ export function useEditorCommands(open: boolean): {
     // Never on a Plan item.
     addComment: () => {
       if (selectedId) openComments(selectedId);
-    },
-    editNote: () => {
-      if (selectedId) openNote(selectedId);
     },
     createTab: addTab,
     renameDocument: requestRenameDocument,

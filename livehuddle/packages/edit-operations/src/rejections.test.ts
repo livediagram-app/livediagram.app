@@ -138,10 +138,6 @@ describe('rejection builders', () => {
       details: ['the tab is locked'],
       hint: 'unlock it in the editor, or leave it out of the changeset',
     });
-    expect(elementLocked(2, byId('n3'), { scope: 'layer', layer: 'Base' }).details).toEqual([
-      'locked:',
-      '  n3  square "Login" (layer "Base")',
-    ]);
     expect(elementLocked(2, byId('n3'), { scope: 'element' }).details[1]).toBe(
       '  n3  square "Login" (element)',
     );

@@ -49,7 +49,8 @@ describe('explorer help', () => {
     const { explorerHelpHref } = await import('./explorer-host');
     expect(explorerHelpHref({ kind: 'home' })).toBe('/help/explorer/timeline/');
     expect(explorerHelpHref({ kind: 'gallery' })).toBe('/help/explorer/image-gallery/');
-    expect(explorerHelpHref({ kind: 'shape-libraries' })).toBe('/help/explorer/shape-libraries/');
+    // Shape Libraries left livehuddle (Work Tracker #423, part 4): no article to point at.
+    expect(explorerHelpHref({ kind: 'shape-libraries' })).toBeUndefined();
     expect(explorerHelpHref({ kind: 'invites' })).toBeUndefined();
   });
 });

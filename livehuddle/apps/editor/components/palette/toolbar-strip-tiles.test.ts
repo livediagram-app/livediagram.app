@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tilesForCategory } from './palette-tile-defs';
-import { paletteCategoriesFor } from './palette-layouts';
+import { paletteCategories } from './palette-layouts';
 import {
   STRIP_TILE_LIMIT,
   desktopStripTileLimit,
@@ -15,7 +15,7 @@ import {
 
 const NONE = { hasImage: true };
 // Workshop's Popular, as its palette layout fills it.
-const workshopPopular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!.tiles!;
+const workshopPopular = paletteCategories().find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -33,9 +33,8 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The two searchable catalogues and My shapes (no strip tiles of its own) can only be fully
-    // reached through More.
-    for (const id of ['icons', 'stickers', 'my-shapes']) {
+    // The searchable catalogue can only be fully reached through More.
+    for (const id of ['stickers']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -67,7 +66,6 @@ describe('stripTilesFor', () => {
   // "Fixed dividers": each category's groups, between the tiles shown.
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
-    ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
     ['media', ['media:embed-website']],
     ['data', ['data:legend']],
@@ -79,7 +77,8 @@ describe('stripTilesFor', () => {
     const components = stripTilesFor('components', NONE);
     expect(components.tiles).toHaveLength(11);
     expect([...components.dividersAfter]).toEqual([]);
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(7);
+    // Six since the Frame left (not-in-livehuddle.md "The Frame").
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(6);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {
@@ -89,14 +88,14 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Workshop's Popular divides after the text (the third tile). With room
-    // for 4.26 tiles, four tiles and that divider (4.2) fit.
+    // The meeting palette's Popular divides after Text (the second tile). With room
+    // for 6.26 tiles, six tiles and that divider (6.2) fit.
     const popular = { ...NONE, tiles: workshopPopular };
-    const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
-    expect(roomy.tiles).toHaveLength(4);
+    const roomy = stripTilesFor('popular', { ...popular, limit: 6.26 });
+    expect(roomy.tiles).toHaveLength(6);
     expect([...roomy.dividersAfter]).toEqual(['tools:text']);
-    // Without the slack the divider costs the fourth tile, as before.
-    expect(stripTilesFor('popular', { ...popular, limit: 4 }).tiles).toHaveLength(3);
+    // Without the slack the divider costs the sixth tile, as before.
+    expect(stripTilesFor('popular', { ...popular, limit: 6 }).tiles).toHaveLength(5);
   });
 
   it('drops the dividers before any tile when only the tiles fit', () => {

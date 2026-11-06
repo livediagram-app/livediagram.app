@@ -7,8 +7,7 @@
 //
 // It owns NO placement, commit, or focus policy: when to commit, where a
 // floating toolbar sits, what a blur means, and how the caret starts out are
-// host concerns and stay in the host hook (useRichTextSession for labels,
-// useNoteRichTextSession for notes).
+// host concerns and stay in the host hook (useRichTextSession).
 //
 // The invariant everything rests on is the one rich-text-dom.ts documents:
 // runs paint as a flat list of sibling <span>s with literal '\n' text, so

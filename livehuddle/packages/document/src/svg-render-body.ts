@@ -9,7 +9,6 @@
 // SVG and a plain box in a PNG. That is the exact bug docs/specs/020-import-export/export-fidelity.md exists to stop,
 // and keeping the pair in one module is how it is stopped.
 
-import { isCollabPanelShape } from './collab-shapes';
 import {
   isBarShape,
   isLineShape,
@@ -23,7 +22,7 @@ import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
 import { svgPageMasthead } from './svg-render-page';
 import { progressTrackColour } from './progress-colours';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
-import { svgCollabFace } from './svg-render-collab-faces';
+import { SHAPE_KINDS } from './shape-kinds';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
 import { isChipShape } from './chip';
@@ -44,8 +43,9 @@ import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
 export function shapeHasBespokeBody(kind: ShapeKind): boolean {
   return (
     isSelfDrawingShape(kind) ||
-    isCollabPanelShape(kind) ||
     BEHAVIOUR_FACE_SHAPES.has(kind) ||
+    // A retired element's placeholder (svg-render-retired.ts), which the canvas drawers know nothing of.
+    !SHAPE_KINDS.has(kind) ||
     isWebComponentShape(kind) ||
     isChipShape(kind) ||
     kind === 'boundary' ||
@@ -80,7 +80,8 @@ export function svgElementBody(
     surface?: CanvasSurface;
     /** Resolves an icon id to its art, for a card's media glyph. */
     resolveIconArt?: ResolveIconArt;
-    /** Resolves an emoji to its art, for a face that writes one (a reaction pad). */
+    /** Resolves an emoji to its art. No livehuddle face writes one since the Reaction Pad left; kept so the shared
+     *  preview resolvers (@liveworkspace/icons/resolve) still fit. */
     resolveEmojiArt?: ResolveEmojiArt;
     // The tab's tag colours (docs/specs/009-elements/tag-colours.md), for a card's tinted tag chips.
     tagColours?: readonly TagColour[];
@@ -135,12 +136,10 @@ export function svgElementBody(
     });
   if (el.shape === 'page')
     return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
-  // The Behaviour + Collaborate faces (docs/specs/009-elements/mode-button.md to /137), which all exported
-  // as the same blank labelled box as each other.
+  // The Behaviour faces (docs/specs/009-elements/mode-button.md to /137), which all exported as the same blank
+  // labelled box as each other.
   return svgFace(
-    svgBehaviourFace(el, label, labelColor, stroke, o.surface, o.fill, o.resolveEmojiArt) ??
-      svgCollabFace(el, label, labelColor, stroke, o.fill) ??
-      '',
+    svgBehaviourFace(el, label, labelColor, stroke, o.fill, o.surface) ?? '',
     fontFamily,
   );
 }

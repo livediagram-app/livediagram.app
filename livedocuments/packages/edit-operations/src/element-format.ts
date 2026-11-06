@@ -5,10 +5,10 @@
 import {
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
+  RETIRED_SHAPE_KINDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
-  TEXT_PX_MAX,
-  TEXT_PX_MIN,
+  textPxRangeFor,
   THEMES,
   type Element,
   withArticle,
@@ -35,9 +35,12 @@ function wrapped(words: readonly string[], indent: string, sep = ' '): string[] 
   return lines.map((line) => `${indent}${line}`);
 }
 
+// The shape kinds `add` makes: all but the retired ones (a tab window, docs/specs/009-elements/tab-window.md).
+const addableShapeKinds = () => [...SHAPE_KINDS].filter((k) => !RETIRED_SHAPE_KINDS.has(k));
+
 // Every kind `add` makes: the boxed kinds, then the shape kinds.
 export function addableKinds(): string[] {
-  return [...OTHER_KINDS, ...SHAPE_KINDS];
+  return [...OTHER_KINDS, ...addableShapeKinds()];
 }
 
 export function elementKindsText(): string {
@@ -45,7 +48,7 @@ export function elementKindsText(): string {
     'Element kinds: add <kind> makes one; livedocuments schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
-    ...wrapped([...SHAPE_KINDS], '    ', ', '),
+    ...wrapped(addableShapeKinds(), '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
       .filter((k) => k !== 'arrow')
@@ -61,7 +64,6 @@ const fillValues = (el: Element) =>
 function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): string {
   switch (alias) {
     case 'label':
-    case 'note':
       return '<text>';
     case 'shape':
       return '<shape kind>';
@@ -73,13 +75,21 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
     case 'border':
       return BORDER_STYLES.join('|');
     case 'text':
-      return `${TEXT_SIZES.join('|')}|${TEXT_PX_MIN}-${TEXT_PX_MAX}`;
+      return `${TEXT_SIZES.join('|')}|${textPxRangeFor(el.type).min}-${textPxRangeFor(el.type).max}`;
     case 'line':
       return ARROW_STYLES.join('|');
   }
 }
 
-const HIDDEN_FIELDS: ReadonlySet<string> = new Set(['id', 'type', ...LIVE_ELEMENT_FIELDS]);
+// Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): never offered. A link
+// card's and a video's link is their content, named by their own kind's fields.
+const HIDDEN_FIELDS: ReadonlySet<string> = new Set([
+  'id',
+  'type',
+  'note',
+  'noteRich',
+  ...LIVE_ELEMENT_FIELDS,
+]);
 
 // A shape's stored fields cover every shape kind at once, more than one kind's budget: a shape names the fields
 // every shape uses, then its kind's own (its content, as the MCP's schema describes it).
@@ -100,7 +110,6 @@ export const SHAPE_COMMON_FIELDS = [
   'opacity',
   'rotation',
   'shadow',
-  'link',
   'iconId',
   'padding',
 ] as const;
@@ -146,13 +155,14 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'site-header': ['navLinks'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  // docs/specs/009-elements/tab-window.md: which tab the window shows.
-  'tab-window': ['windowTabId'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {
   if (el.type === 'shape') return [...SHAPE_COMMON_FIELDS, ...(SHAPE_KIND_FIELDS[kind] ?? [])];
-  return ELEMENT_FIELD_NAMES[el.type].filter((f) => !HIDDEN_FIELDS.has(f));
+  const ownLink = el.type === 'link-card' || el.type === 'video';
+  return ELEMENT_FIELD_NAMES[el.type].filter(
+    (f) => !HIDDEN_FIELDS.has(f) && (f !== 'link' || ownLink),
+  );
 }
 
 // One kind's format, or null for a kind `add` and `connect` do not know.

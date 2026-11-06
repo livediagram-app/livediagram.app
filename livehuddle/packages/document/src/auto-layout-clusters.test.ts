@@ -46,7 +46,12 @@ describe('layoutClusteredGraph', () => {
     };
     const els = layoutClusteredGraph(graph, { makeEdgeId: makeIds() });
     const frame = byId(els, 's1');
-    expect(frame).toMatchObject({ type: 'shape', shape: 'frame', label: 'Group' });
+    expect(frame).toMatchObject({
+      type: 'shape',
+      shape: 'boundary',
+      boundaryStyle: 'inset',
+      label: 'Group',
+    });
     for (const id of ['a', 'b', 'c']) expect(contains(frame, byId(els, id))).toBe(true);
     expect(contains(frame, byId(els, 'free'))).toBe(false);
     // The frame renders behind its members.
@@ -158,7 +163,7 @@ describe('layoutClusteredGraph', () => {
     };
     const els = layoutClusteredGraph(graph, { makeEdgeId: makeIds() });
     expect(
-      els.filter((e) => e.type === 'shape' && 'shape' in e && e.shape === 'frame'),
+      els.filter((e) => e.type === 'shape' && 'shape' in e && e.shape === 'boundary'),
     ).toHaveLength(0);
   });
 

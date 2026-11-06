@@ -14,16 +14,8 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 // The tour's step card: a press on it is the tour's, never an outside press that closes the popover under it.
 const TOUR_CARD = '[data-tour-popover]';
 
-/** The title-bar controls' look: the cog's size, named beside the icon when `labelled`, tinted while on. */
-export function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
-  return `flex h-6 items-center justify-center rounded-md transition ${
-    labelled ? 'gap-1 px-1.5 text-[11px] font-medium' : 'w-6'
-  } focus-visible:outline-2 focus-visible:outline-brand-600 ${
-    on
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-  }`;
-}
+// The title-bar controls' look is the shared bar's (PageTitleBar), so every editor's reads the same.
+export { titleBarButtonClass as titleButtonClass } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
 
 export function TitlePopoverButton({
   name,
@@ -35,6 +27,7 @@ export function TitlePopoverButton({
   padded = true,
   onOpen,
   openRequest = 0,
+  headless = false,
   children,
 }: {
   // The control's name: its label, its tooltip and the popover's name (on or off is aria-pressed).
@@ -51,8 +44,11 @@ export function TitlePopoverButton({
   padded?: boolean;
   // Called as the popover opens (its telemetry).
   onOpen?: () => void;
-  // Opens the popover from elsewhere each time it changes (an article toolbar's Style command); 0 never does.
+  // Opens the popover from elsewhere each time it rises (a phone's Appearance sheet); 0 never does.
   openRequest?: number;
+  // No trigger of its own: opened only by openRequest (a phone's Appearance sheet, PageAppearanceButton, opens it as
+  // a bottom sheet). Only on a phone, where the sheet needs no anchor.
+  headless?: boolean;
   // The popover's body, or a function of its close (a body that closes itself, Layouts).
   children: ReactNode | ((close: () => void) => ReactNode);
 }) {
@@ -61,7 +57,8 @@ export function TitlePopoverButton({
   const [seenRequest, setSeenRequest] = useState(openRequest);
   if (openRequest !== seenRequest) {
     setSeenRequest(openRequest);
-    if (openRequest) setOpen(true);
+    // Only a rise opens it: a request that falls back (another page asked) never does.
+    if (openRequest > seenRequest) setOpen(true);
   }
   const mobile = useIsMobileViewport();
   const close = () => setOpen(false);
@@ -69,25 +66,27 @@ export function TitlePopoverButton({
   return (
     <>
       {/* Its name: whether it is on is aria-pressed and the pressed look. */}
-      <Tooltip label={name}>
-        <button
-          ref={setAnchor}
-          type="button"
-          aria-label={name}
-          aria-haspopup="dialog"
-          data-title-popover-trigger=""
-          aria-expanded={open}
-          {...(on === undefined ? {} : { 'aria-pressed': on })}
-          onClick={() => {
-            if (!open) onOpen?.();
-            setOpen(!open);
-          }}
-          className={className(on ?? open, labelled)}
-        >
-          {icon}
-          {labelled ? <span aria-hidden>{name}</span> : null}
-        </button>
-      </Tooltip>
+      {headless ? null : (
+        <Tooltip label={name}>
+          <button
+            ref={setAnchor}
+            type="button"
+            aria-label={name}
+            aria-haspopup="dialog"
+            data-title-popover-trigger=""
+            aria-expanded={open}
+            {...(on === undefined ? {} : { 'aria-pressed': on })}
+            onClick={() => {
+              if (!open) onOpen?.();
+              setOpen(!open);
+            }}
+            className={className(on ?? open, labelled)}
+          >
+            {icon}
+            {labelled ? <span aria-hidden>{name}</span> : null}
+          </button>
+        </Tooltip>
+      )}
       {open && mobile ? (
         <TitleSheet name={name} onClose={close}>
           {body}

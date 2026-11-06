@@ -195,21 +195,11 @@ its own (**Timeline**).
 - **Teams and folders** start collapsed. My Work, a team or a folder with no subfolders shows no chevron.
 - Expansion is session-local (a reload starts afresh) and shared between the desktop sidebar and the mobile drawer.
 
-## Group titles and separators
+## Group titles
 
-The groups are told apart in one of two ways, following **Minimal chrome**
-([Power user mode](../007-editor/power-user-mode.md#minimal-chrome)), the spec's one flag for "words that teach go":
-
-- **Minimal chrome off** (the default, and always when power user mode is off): each group opens with its **title**, a
-  small uppercase section heading: **Overview**, **Spaces**, **More**.
-- **Minimal chrome on**: the titles are replaced by thin **hairline separators** between the groups. There is no
-  separator above the first group, and no space kept for one: Home sits at the top. Each title stays in the design as
-  visually hidden text and still names its group for assistive technology.
-
-Below the first group, a title and its hairline occupy the same box, so switching moves nothing below Home's group;
-only the first title's own height comes or goes. Switching happens at render, from the preference, read once the page
-has hydrated (the render that hydrates the sidebar matches its prerendered HTML);
-nothing moves on its own.
+Each group opens with its **title**, a small uppercase section heading: **Overview**, **Spaces**, **More**. (The
+hairline separators that replaced them under the retired [Power user mode](../007-editor/power-user-mode.md)'s
+Minimal chrome are gone.)
 
 ## Alignment
 
@@ -286,10 +276,10 @@ Top to bottom:
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Design card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
-   line), dismissible as the sign-in notice is. Minimal chrome drops it.
+   line), dismissible as the sign-in notice is.
 
-**Size and scrim.** On a desktop or tablet the panel is up to **64rem** wide (kept 1rem inside the window) and
-**56rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
+**Size and scrim.** On a desktop or tablet the panel is up to **54rem** wide (kept 1rem inside the window) and
+**45rem** tall (kept on the canvas below the menu button, 24 px short of its bottom), the rail and pane filling the
 rest, the rail 13rem wide; the pane's preview cards are compact, three across once it is 24rem wide and four once it
 is 42rem (every desktop popover). A dimmed **scrim** (translucent slate, a fade
 where motion is allowed) sits behind it on every screen size, over the canvas and its chrome and under the panel and
@@ -312,7 +302,7 @@ team's card in a dialog, where the team is run as on the page.
 - **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
   marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
 - **First open** shows **Home**.
-- Group titles and separators follow Minimal chrome as in the sidebar.
+- Each group opens with its title, as in the sidebar.
 
 ### The pane
 

@@ -3,6 +3,7 @@ import { articlesOf } from './article-flow';
 import { withPageKindChosen } from './article-pages';
 import {
   pageAdded,
+  pageAddedLike,
   pageBackgroundSet,
   pageDuplicated,
   pageLaidOut,
@@ -187,6 +188,63 @@ describe('painting', () => {
 });
 
 describe('adding', () => {
+  // pages-mode.md "Adding a page": after the person's current page, its whole article when it is an article's.
+  describe('after the current page', () => {
+    const ids = (out: PageEdit<Tab>) => pagesAfter(out).map((p) => p.id);
+
+    it('goes right after the page named, its content staying on its own pages', () => {
+      const pages = [slide('s1'), slide('s2'), slide('s3'), slide('s4')];
+      const on3 = onPage(pages, 2, 'on3');
+      const out = ok(pageAdded(tabOf(pages, [on3]), 'slide', 'n', 'f', 's2'));
+      expect(pagesOf(out).map((p) => p.id)).toEqual(['s1', 's2', 'n', 's3', 's4']);
+      // The box on s3 moved along with s3, now the fourth page.
+      expect(out.elements[0]).toEqual(onPage(pagesOf(out), 3, 'on3'));
+    });
+
+    it('goes last after the last page, and last when the page named is unknown or none is', () => {
+      const tab = tabOf([slide('s1'), slide('s2')]);
+      expect(ids(pageAdded(tab, 'slide', 'n', 'f', 's2'))).toEqual(['s1', 's2', 'n']);
+      expect(ids(pageAdded(tab, 'slide', 'n', 'f', 'gone'))).toEqual(['s1', 's2', 'n']);
+      expect(ids(pageAdded(tab, 'slide', 'n', 'f'))).toEqual(['s1', 's2', 'n']);
+    });
+
+    it('wears the background of the page it follows', () => {
+      const fill = { kind: 'solid' as const, color: '#fde68a' };
+      const tab = tabOf([slide('s1', { background: { fill } }), slide('s2')]);
+      const pages = pagesAfter(pageAdded(tab, 'slide', 'n', 'f', 's1'));
+      expect(pages[1]!.background).toEqual({ fill });
+    });
+
+    it('puts a new article after the current article, never inside it', () => {
+      let tab = articleTab(a4('a1'), 'f');
+      tab = ok(pageAdded(tab, 'article', 'b1', 'g'));
+      // The first article runs onto a second page.
+      tab = {
+        ...tab,
+        pages: [...pagesOf(tab).slice(0, 1), article('a2', 'f'), ...pagesOf(tab).slice(1)],
+      };
+      const out = pagesAfter(pageAdded(tab, 'article', 'n', 'h', 'a1'));
+      expect(out.map((p) => p.id)).toEqual(['a1', 'a2', 'n', 'b1']);
+      expect(out[2]!.flow).toBe('h');
+    });
+
+    it('puts a new card after the card in front', () => {
+      let tab = withPageKindChosen(tabOf([a4('c1')]), 'c1', 'flashcard', 'f1')!;
+      tab = ok(pageAdded(tab, 'flashcard', 'c2', 'f2'));
+      tab = ok(pageAdded(tab, 'flashcard', 'c3', 'f3'));
+      const out = pagesAfter(pageAdded(tab, 'flashcard', 'n', 'fn', 'c1'));
+      expect(out.map((p) => p.id)).toEqual(['c1', 'n', 'c2', 'c3']);
+      expect(out[1]!.flow).toBe('fn');
+    });
+
+    it('adds a page like another right after it', () => {
+      const tab = tabOf([a4('p1'), a4('p2', { size: 'a3' }), a4('p3')]);
+      const out = pagesAfter(pageAddedLike(tab, 'p2', 'n', 'f', 'p2'));
+      expect(out.map((p) => p.id)).toEqual(['p1', 'p2', 'n', 'p3']);
+      expect(out[2]!.size).toBe('a3');
+    });
+  });
+
   it('adds an infographic page like the last one, A4 after Fit to Content', () => {
     const like = pagesAfter(
       pageAdded(

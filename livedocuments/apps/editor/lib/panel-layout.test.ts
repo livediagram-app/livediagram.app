@@ -74,8 +74,17 @@ describe('panel-layout', () => {
   });
 
   it('homes every tool panel bottom-right', () => {
-    for (const id of ['laser', 'spotlight', 'format', 'slide-deck'] as const)
+    for (const id of ['laser', 'spotlight', 'format'] as const)
       expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
+  });
+
+  it('drops a stored layout\'s retired Slide Deck panel (pages-mode.md "Retired: the Slide Deck panel")', () => {
+    const layout = normalizePanelLayout({
+      corners: { 'bottom-right': ['slide-deck', 'format'] },
+      free: { 'slide-deck': { x: 4, y: 4 } },
+    });
+    expect(layout.corners['bottom-right']).toEqual(['format']);
+    expect(layout.free).toEqual({});
   });
 
   describe('normalize', () => {

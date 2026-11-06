@@ -205,7 +205,7 @@ export function EditorHeader({
         {present ? (
           <HoverCard
             title="Present"
-            description={`Present the slide deck: ${present.slideCount} ${
+            description={`Present this tab: ${present.slideCount} ${
               present.slideCount === 1 ? 'slide' : 'slides'
             }.`}
           >

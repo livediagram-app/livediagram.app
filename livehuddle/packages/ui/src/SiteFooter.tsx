@@ -7,16 +7,18 @@ import { REPO_URL } from './site';
 const NewIcon = /* @__PURE__ */ lucideGlyph(lucidePenTool, 16);
 
 // The public site footer (the marketing pages, the help centre, the telemetry dashboard): @liveworkspace/ui's
-// SiteFooter with this product's logo, tagline and first link, carrying its Community link, the GitHub link and the contributors' credits.
+// SiteFooter with this product's logo, tagline and first link, carrying its Community link, the GitHub link and the contributors' credits,
+// and no AI & MCP link (livehuddle has no MCP server, docs/specs/002-project-scope/not-in-livehuddle.md).
 export function SiteFooter() {
   return (
     <SharedFooter
       app={BRAND_APP}
-      tagline="Free Spaces to meet and run workshops, for teams who think together."
+      tagline="Free Spaces to meet in, for teams who like being together."
       newLabel="New Space"
       newIcon={NewIcon}
       community={<CommunityFooterLink className={SITE_FOOTER_LINK} />}
       repoUrl={REPO_URL}
+      buildWithAi={false}
     />
   );
 }

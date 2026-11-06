@@ -42,8 +42,7 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   drawn at all. It comes back when its switch in Settings' **Tours** category is turned on again (on means "offer
   me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
   also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
-  reads, so the button and the row never disagree, and Power user mode, which answers every tour, clears the button
-  too. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
+  reads, so the button and the row never disagree. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
   tour is taken, and a taken tour is never published. Until 1 November 2026 a taken tour stayed on the button for
   good (Work Tracker #177).
 - **A press starts the first step.** There is no welcome card: the button already said what it starts. A press

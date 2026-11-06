@@ -278,7 +278,8 @@ Apply points (user-drawn only), each passing the built element through `styleNew
 `useQuickStylePlacement(panelRef, active) => { left, top } | null`
 measures `main[data-canvas-a11y-root]` (area), the panel and obstacles
 `[data-tour-id="palette"], [data-floating-panel], [data-zoom-cluster]` with a
-non-empty rect, in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
+non-empty rect (the cluster by its child strips, `obstacleBoxes`, since its row can stretch over empty canvas),
+in a layout effect before paint, then again on: `ResizeObserver` (area, panel,
 obstacles, so a resizing panel is followed), `resize`, `pointerup` / `keyup`
 (capture), `transitionend` on the panel or an obstacle (one elsewhere on the canvas is ignored), and
 `livedocuments:panel-layout-changed`; coalesced to one run per
@@ -313,7 +314,7 @@ Transitions are driven by selection and those flags only; the panel owns no stat
 - Row order (D52): Stroke, Background, Text colour, Stroke width, Stroke style, Text alignment, Icon
   alignment, then Actions.
 - Section: title `text-[10px] font-semibold uppercase tracking-wider text-slate-500
-dark:text-slate-400` (always shown, Minimal chrome included; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
+dark:text-slate-400` (always shown; a caller may pass `showTitles={false}`), then the row; `gap-2.5` between sections;
   a divider above Actions.
 - Colour row: 24 × 24 px target buttons, each drawing the colour picker's `SwatchChip` (20 px, a
   selected swatch a 2 px ring in `brand-500`, an overridden one its `marked` corner dot), touching,

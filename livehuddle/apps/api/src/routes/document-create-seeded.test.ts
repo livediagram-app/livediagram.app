@@ -7,7 +7,7 @@ import { asUser } from './test-route-context';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
 import { indexIntentOf } from '@livehuddle/api-schema';
 
-// A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
+// A create's seeded tabs given as a graph or a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
 
 let db: SqliteD1;
@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 describe('seeded tabs compiled on create', () => {
-  it('lays out a graph and a Mermaid tab, and records the CLI as the source', async () => {
+  it('lays out a graph tab, and records the CLI as the source', async () => {
     const res = await create(
       [
         {
@@ -46,31 +46,26 @@ describe('seeded tabs compiled on create', () => {
             edges: [{ from: 'web', to: 'api' }],
           },
         },
-        { id: 't2', name: 'Flow', mermaid: 'flowchart LR\n  a[Cart] --> b[Pay]' },
       ],
       { source: 'cli' },
     );
     expect(res.status).toBe(201);
     const arch = await getTab(db.env, 'd1', 't1');
     expect(arch?.elements.map((e) => e.type).sort()).toEqual(['arrow', 'shape', 'shape']);
-    expect((await getTab(db.env, 'd1', 't2'))?.elements.length).toBe(3);
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
   });
 
   // The intent is the index's (it files the create by it, docs/specs/013-workspace/default-folders.md): what the
   // api owns is working it out from the create.
-  it('builds a template tab and derives the intent the index files it by, a retro by its family', async () => {
-    expect(
-      (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
-    ).toBe(201);
+  // No template in the catalogue carries a family since the retro formats left (Work Tracker #423).
+  it('builds a template tab and derives the intent the index files it by', async () => {
+    expect((await create([{ id: 't1', name: 'Pod', template: 'team-pod' }])).status).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
-    expect(seedIntentOf([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).toBe(
-      'retrospective',
-    );
+    expect(seedIntentOf([{ id: 't1', name: 'Pod', template: 'team-pod' }])).toBeNull();
     expect(
-      compileSeededTabs([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], 'd1'),
+      compileSeededTabs([{ id: 't1', name: 'Pod', template: 'team-pod' }], 'd1'),
     ).toMatchObject({
-      intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
+      intent: { mode: 'workshop', tabKind: 'diagram' },
     });
   });
 
@@ -108,8 +103,8 @@ describe('compileSeededTabs', () => {
   it('passes through what is not a single source: elements, two sources, no id, not a tab', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
-      { id: 'b', name: 'B', graph: { nodes: [] }, mermaid: 'graph TD' },
-      { name: 'C', template: 'swot' },
+      { id: 'b', name: 'B', graph: { nodes: [] }, template: 'team-pod' },
+      { name: 'C', template: 'team-pod' },
       'not a tab',
     ];
     expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });
@@ -134,7 +129,7 @@ describe('compileSeededTabs', () => {
   });
 });
 
-// A tree takes a direction as a flow does (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+// A tree takes a direction as a flow does (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
 describe('a seeded tree graph', () => {
   const tree = (direction?: 'down' | 'right') => ({
     id: 't1',

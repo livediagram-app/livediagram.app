@@ -1,7 +1,7 @@
 // `add <kind> [id=] key=value… [<placement>]` (docs/specs/024-agents/blueprints/edit-operations.md
 // "Operations", EO15, EO17, EO26 to EO29): the kind's factory element, sized for its label as graph
-// input sizes it, its fields written as `set` writes them, painted with the tab's theme, placed, put
-// on the placement reference's layer (or the active one when that is locked) and appended.
+// input sizes it, its fields written as `set` writes them, painted with the tab's theme, placed and
+// appended.
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
@@ -19,7 +19,6 @@ import {
   labelBoxSize,
   labelFontPx,
   recolourElementForTheme,
-  resolveActiveLayerId,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -28,11 +27,10 @@ import {
 } from '@livehuddle/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
-import { layerLockOf } from '../locks';
 import { growContainer, HOLD_PAD } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
-import { type EditState, holdersOf, refuseLocked, writeFields } from '../state';
+import { type EditState, holdersOf, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
@@ -55,6 +53,13 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
 // The kinds besides the shape kinds that `add` makes.
 export const OTHER_KINDS: readonly string[] = Object.keys(FACTORIES);
 
+// The shape kinds an agent may make (docs/specs/002-project-scope/not-in-livehuddle.md): every one but the Page,
+// which stays a shape kind only so a stored one still draws. `add page` makes a square, as an unknown kind does.
+const NOT_FOR_AGENTS: ReadonlySet<string> = new Set(['page']);
+export const AGENT_SHAPE_KINDS: readonly string[] = [...SHAPE_KINDS].filter(
+  (kind) => !NOT_FOR_AGENTS.has(kind),
+);
+
 export type Built = { el: BoxedElement; coerced: string | null };
 
 // The factory element of a kind, unplaced and without an id; an unknown kind is coerced to a shape
@@ -64,22 +69,22 @@ export function buildKind(kind: string): Built | { refusal: string } {
   if (refused !== undefined) return { refusal: refused };
   const factory = FACTORIES[kind];
   if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
-  const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
+  const shape = kind === 'shape' || NOT_FOR_AGENTS.has(kind) ? 'square' : coerceShapeKind(kind);
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
-    coerced: kind === 'shape' || SHAPE_KINDS.has(kind) ? null : shape,
+    coerced: kind === 'shape' || shape === kind ? null : shape,
   };
 }
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
-// has none of that shape (frames and lanes never count, they are containers).
+// has none of that shape (boundaries and lanes never count, they are containers).
 function peerLook(
   state: EditState,
   shape: string,
 ): { textSize: TextSize; width: number; height: number } | null {
   const peers = [...state.byId.values()].filter(
     (e): e is Extract<Element, { type: 'shape' }> =>
-      e.type === 'shape' && e.shape === shape && shape !== 'frame' && shape !== 'lane',
+      e.type === 'shape' && e.shape === shape && shape !== 'boundary' && shape !== 'lane',
   );
   if (peers.length === 0) return null;
   // A preset or an exact px size, counted as it is stored.
@@ -178,14 +183,6 @@ export function createKind(
   return { el, placed };
 }
 
-// The layer a new element goes on: its placement reference's, unless that layer is locked (EO29).
-export function layerFor(state: EditState, ref: Element | undefined): string | undefined {
-  const layers = state.tab.layers;
-  if (!layers || layers.length === 0) return undefined;
-  if (ref?.layerId !== undefined && !layerLockOf(layers, ref.layerId)) return ref.layerId;
-  return resolveActiveLayerId(layers, null);
-}
-
 // Grows the container `inside:` filled, so the element sits in it (EO27): what sat under it moves on rather than
 // being taken in (grow-container.ts).
 function growInto(state: EditState, placed: Placed, held: ElementId, operation: number): void {
@@ -196,20 +193,14 @@ function growInto(state: EditState, placed: Placed, held: ElementId, operation: 
   growContainer(state, container, { x, y, width, height }, held, operation);
 }
 
-// A made element onto its layer, refused when that layer is locked, then added.
+// A made element, added.
 export function commitNew(
   state: EditState,
   made: { el: BoxedElement; placed: Placed },
-  verb: 'add' | 'insert',
   index: number,
-): EditRejection | null {
-  const layerId = made.el.layerId ?? layerFor(state, made.placed.ref);
-  const el = layerId === undefined ? made.el : { ...made.el, layerId };
-  const lock = layerLockOf(state.tab.layers, el.layerId);
-  if (lock) return refuseLocked(state, verb, index, el, lock);
-  writeFields(state, el, index, []);
-  state.created.push(el.id);
-  return null;
+): void {
+  writeFields(state, made.el, index, []);
+  state.created.push(made.el.id);
 }
 
 export function applyAddKind(
@@ -223,15 +214,14 @@ export function applyAddKind(
     });
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
-  const refused = commitNew(state, made, 'add', index);
-  if (refused) return refused;
+  commitNew(state, made, index);
   growInto(state, made.placed, made.el.id, index);
   if (operation.place && operation.place.rel !== 'at' && operation.place.rel !== 'inside')
     growToHold(state, made.placed.ref, made.el, index);
   return null;
 }
 
-// A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
+// A box placed beside a member of a boundary or lane joins it: the container grows to hold it, as an insertion grows
 // one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and
 // what sat past it moves on rather than being taken in (grow-container.ts).
 function growToHold(

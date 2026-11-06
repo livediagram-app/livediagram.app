@@ -116,12 +116,6 @@ export type CanvasProps = {
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): the deck builder, present only while its tool
-  // is picked. The deck itself rides `slideDeck`.
-  slideDeckPanelPosition?: { x: number; y: number } | null;
-  onMoveSlideDeckPanel?: (x: number, y: number) => void;
-  onResetSlideDeckPanel?: () => void;
-  slideDeck?: import('@/app/document/[id]/useSlideDeck').SlideDeckState;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -386,7 +380,6 @@ export type CanvasProps = {
   // read-only sessions too — visitors may read an action; the popover
   // gates its mutations itself.
   onOpenAction: (elementId: string) => void;
-  onOpenNote?: (elementId: string) => void;
   // Drop a palette icon onto a shape: set its inline iconId and the
   // position (which side of the text) derived from where it was dropped.
   // Optional so read-only / pre-identity Canvas mounts can omit it.

@@ -13,13 +13,10 @@ test('editing a label at the bottom edge leaves the corner chrome where it is', 
   const cluster = page.locator('[data-zoom-cluster]');
   const before = await cluster.boundingBox();
 
-  // A square straddling the bottom edge, then type its label: the editor sits below the edge.
+  // A sticky note straddling the bottom edge, then type its words: the editor sits below the edge.
   await page.mouse.click(viewport.width / 2, viewport.height / 2);
-  await page.keyboard.press('r');
-  await page.mouse.move(viewport.width / 2 - 60, viewport.height - 100);
-  await page.mouse.down();
-  await page.mouse.move(viewport.width / 2 + 80, viewport.height - 10, { steps: 6 });
-  await page.mouse.up();
+  await page.keyboard.press('n');
+  await page.mouse.click(viewport.width / 2, viewport.height - 40);
   await page.keyboard.type('Hello there');
   await page.keyboard.press('Escape');
 

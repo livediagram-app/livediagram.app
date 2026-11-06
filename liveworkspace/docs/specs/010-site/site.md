@@ -36,7 +36,10 @@ The APIs are Workers on more specific routes of the same origin, so the pages ca
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
 (the current site highlighted), links to Our Apps and Telemetry, each with its icon, and the account
 control. On a phone the wordmark and the account control show; the footer has the rest. The
-Appearance toggle is never in the header: it is on the rail.
+Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
+address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the
+switcher (`HeaderLogo`), so the person stays in the app they came from; the page's first render, before it knows its
+address, is liveworkspace's.
 
 ### The rail
 
@@ -107,7 +110,10 @@ moves between them, and the one account that joins them.
    clockwise in the
    order work moves through them, and a collaborator's cursor at each. Each app there is a link to its
    site that lifts and rings in its accent on hover, and holds still while pointed at. On phones (below
-   `sm`) it is left out, and the hero's words, calls to action and promises are centred.
+   `sm`) it is left out, and the hero's words, calls to action and promises are centred. **Height:** from `sm`
+   it fills the first screen under the 64px header, capped at 72rem and never shorter than its content, the words
+   and the prism centred in it (the products' shared `hero-tall` stylesheet from `@liveworkspace/marketing-site`,
+   the header's height handed over as `--hero-tall-header`); a phone keeps its content's height.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
@@ -310,6 +316,9 @@ built once here. It is shown here and, through each switched-on app's router, at
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). Signing out here asks again.
+  Until the answer comes (seconds on a slow session) the page shows the Explorer's own skeleton under the header
+  (`ExplorerSkeleton`: the sidebar's rows and a pane of cards, pulsing, `aria-busy`), never a blank page; a failed
+  answer says so, with the reload to try again.
 - **Which app.** The app the person came from: `?from=`, then the referrer. The page wears that app's colours (its
   brand ramp, light and dark) and opens filtered to its items, with **All Apps** one click away. The switch reads the
   app's own name ("livediagram") and **All Apps**, each with its logo: the app's prism in its accent, and

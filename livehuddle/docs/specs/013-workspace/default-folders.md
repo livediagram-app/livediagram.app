@@ -10,22 +10,27 @@ sets, shows and clears them.
 
 ## Entries
 
-The list a person sets defaults from is titled **New canvases that open as**, and holds, in this order:
+The list a person sets defaults from is titled **New spaces that open as**, and holds one entry:
 
-| Entry                  | Key                                 |
-| ---------------------- | ----------------------------------- |
-| Canvases               | `livehuddle`                        |
-| Retrospective canvases | `livehuddle:template:retrospective` |
+| Entry  | Key          |
+| ------ | ------------ |
+| Spaces | `livehuddle` |
 
-The app's own entry holds every new canvas; the mode's entry (Sessions, `mode:workshop`) the canvases that
-open in Workshop, which is every one (the `mode:diagram` and `mode:draw` entries went with Diagram and Draw,
-[Editor modes](../007-editor/editor-modes.md)) (livehuddle has no specific tab kind, so no kind entries); a
-template family's entry the canvases made from that family (`defaultEntries('livehuddle', …,
-CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`, `apps/editor/lib/canvas-template-families.ts`,
-`DEFAULT_FOLDER_OPTIONS` in `@livehuddle/api-schema`). The
-families are livehuddle's `TEMPLATE_FAMILIES`: every retrospective format (Retrospective, Start / Stop / Continue,
-Mad / Sad / Glad, 4Ls, Sailboat) is `retrospective`, every other template none (Kanban boards left with Plan mode)
-(`templateFamilyOf` in `@livehuddle/templates`). A new template is not complete until it is mapped.
+Every new space opens in Workshop and livehuddle has no specific tab kind and no template family, so the app's own
+entry holds every new space (`defaultEntries('livehuddle', …, CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`,
+`apps/editor/lib/canvas-template-families.ts`, `DEFAULT_FOLDER_OPTIONS` in `@livehuddle/api-schema`, both empty).
+A specific tab kind or a template family added later brings its own entry (`KIND_WORDS`, `TEMPLATE_FAMILIES`), and a
+new template is not complete until `templateFamilyOf` in `@livehuddle/templates` maps it.
+
+### Retired entries
+
+Two entries left (Work Tracker #507): the Workshop mode's entry (Sessions, later Spaces, `livehuddle:mode:workshop`),
+which repeated the app's own, and Retrospective spaces (`livehuddle:template:retrospective`), whose templates left
+with [Not in livehuddle](../002-project-scope/not-in-livehuddle.md). A default a person stored under either is kept
+and reads as **Spaces** (`RETIRED_PLACEMENT_KEYS` in `@liveworkspace/index-client`): while Spaces holds no default of
+its own, Default Folders shows that folder for it and a create files there, the mode's before the retrospective's.
+Clear on Spaces clears them with it; Change sets Spaces, which wins over them from then on. A create or a recorded
+intent naming the retired `retrospective` family reads as no family, never a refusal.
 
 ## Filing on create
 
@@ -37,7 +42,7 @@ is in a team the person has left, is skipped; with none left the canvas lands at
 folder drops the defaults that point at it.
 
 - `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default. The
-  wizard never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)).
+  `/new` never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#no-welcome-screen)).
 - A template link (`/new?template=`) is filed by its template's family at creation.
 - An API or MCP create that names no place is filed by the template family of its first seeded tab
   (`apps/api/src/routes/document-seed.ts`).
@@ -47,17 +52,17 @@ folder drops the defaults that point at it.
 
 ### A template picked after creation
 
-The wizard makes the chosen mode's blank, and the template is picked afterwards on the new canvas's start screen
+`/new` makes a Blank Space, and the template is picked afterwards on the new canvas's start screen
 ([Template starts](../007-editor/start-diagramming.md)), so a template family's default can only answer then
 (`apps/editor/components/start/useTemplatePickMove.ts`, over the shared Explorer's `template-pick`).
 
-- **The wizard leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
-  chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made from a
-  mode's blank, never for This Browser or a template link.
+- **`/new` leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
+  chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made as a
+  Blank Space, never for This Browser or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's family, then the app's, and the canvas
-  goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Retros**, your default
-  folder for retrospective canvases."
+  goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Meetings**, your default
+  folder for spaces."
 - **Once per canvas:** the note is taken at the first pick, and dropped when the tab gains content any other way
   first. Only an Editor picks from a start screen, so only an Editor's pick files a canvas.
 - A failure (a list that cannot be read, a refused move) leaves the canvas where it is.
@@ -88,4 +93,4 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 
 [Folders](folders.md), [Team shared documents](team-shared-documents.md),
 [Dedicated route for new-document creation](../007-editor/new-document-route.md),
-[MCP server](../015-api/mcp-server.md).
+[MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md).

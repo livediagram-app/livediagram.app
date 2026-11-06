@@ -2,9 +2,14 @@
 // state"): every peer's talking level and microphone locator, as the room connection hands them over, and this
 // browser's own call, which the bottom-right control reads and drives. A module store, like the speech bubbles', so
 // the room connection, the canvas and the chrome share it without threading it through the editor's state. Memory
-// only: nothing here is written anywhere.
+// only: nothing here is written anywhere. Video and screen bubbles (docs/specs/012-collaboration/
+// video-and-screen-bubbles.md) add each peer's camera and screen locators, the streams the bubbles draw, and the one
+// bubble this viewer has maximised. The stage (meeting-rooms-and-stage.md "The stage") adds each peer's level, as the
+// room stamped it on their presence, for who may speak from one; raise hand (the same spec's "Raise hand") adds every
+// peer's raised hand and the hands this browser let speak.
 import { useSyncExternalStore } from 'react';
 import {
+  parseAvatarHand,
   parseAvatarVoice,
   parseCallsModeOp,
   parseCallTrack,
@@ -13,6 +18,40 @@ import {
   type VoiceLevel,
 } from '@livehuddle/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import { pruneHands, resetHands, setCallLevels, setHand } from './calls-hands-store';
+
+export {
+  callHands,
+  callLetByMe,
+  callLevels,
+  HANDS_MAX,
+  noteLetSpeak,
+  onCallHands,
+  onCallLevels,
+  onLetSpeak,
+  receiveLetSpeak,
+  setCallLevels,
+  useCallHands,
+  type CallHand,
+  type CallHandsView,
+} from './calls-hands-store';
+export {
+  callMaximised,
+  callMedia,
+  onCallMaximised,
+  onStopShare,
+  receiveStopShare,
+  resetCallMedia,
+  SELF_MEDIA_ID,
+  setCallMaximised,
+  setCallMedia,
+  shareStoppedNotice,
+  useCallMaximised,
+  useCallMedia,
+  type CallMaximised,
+  type CallMedia,
+  type CallMediaStreams,
+} from './calls-media-store';
 
 /** A level not refreshed for this long reads as stopped: a lost stop clears itself. */
 export const VOICE_STALE_MS = 8000;
@@ -24,8 +63,20 @@ export type CallPeer = {
   tabId: string | null;
   level: VoiceLevel;
   levelAt: number;
+  // The microphone's locator; null while it is not published.
   track: CallTrackLocator | null;
+  // The camera's and the shared screen's, null while off.
+  video: CallTrackLocator | null;
+  screen: CallTrackLocator | null;
 };
+
+export type CameraState = 'off' | 'starting' | 'on' | 'blocked';
+export type ScreenState = 'off' | 'starting' | 'on';
+
+/** Where you stand towards a live stage (meeting-rooms-and-stage.md): the call strip reads it. */
+export type StagePlace = 'none' | 'audience' | 'speaker' | 'barred';
+/** Your own hand: down, raised, or let speak. */
+export type HandState = 'down' | 'raised' | 'speaking';
 
 export type CallPhase = 'off' | 'joining' | 'live' | 'error';
 export type MicState = 'closed' | 'open' | 'blocked';
@@ -46,6 +97,22 @@ export type CallSelf = {
   someoneNear: boolean;
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md): `off` shows Calls Paused.
   mode: CallsMode;
+  // This session may share a screen (an Editor).
+  canShare: boolean;
+  camera: CameraState;
+  screen: ScreenState;
+  // A local preview (video-and-screen-bubbles.md "Local preview"): whether the browser can capture each kind here (in
+  // Avatar mode, for someone who may take part), and the preview's own camera and screen, beside the call's above.
+  canPreviewCamera: boolean;
+  canPreviewScreen: boolean;
+  previewCamera: CameraState;
+  previewScreen: ScreenState;
+  // Raise hand (meeting-rooms-and-stage.md "Raise hand"): where you stand towards a live stage, the Who Can Speak of
+  // a stage you stand on that bars you (for the stage line), your hand, and the hands up on the tab.
+  stage: StagePlace;
+  barredBy: 'edit' | 'take-part' | null;
+  hand: HandState;
+  handsUp: number;
 };
 
 /** What the control's buttons do; set by the running call, absent while there is none to drive. */
@@ -53,6 +120,10 @@ export type CallActions = {
   join: () => void;
   leave: () => void;
   toggleMute: () => void;
+  toggleCamera: () => void;
+  toggleScreen: () => void;
+  raiseHand: () => void;
+  lowerHand: () => void;
 };
 
 const EMPTY_HEARD: ReadonlySet<string> = new Set();
@@ -66,6 +137,17 @@ const OFF: CallSelf = {
   heard: EMPTY_HEARD,
   someoneNear: false,
   mode: 'on',
+  canShare: false,
+  camera: 'off',
+  screen: 'off',
+  canPreviewCamera: false,
+  canPreviewScreen: false,
+  previewCamera: 'off',
+  previewScreen: 'off',
+  stage: 'none',
+  barredBy: null,
+  hand: 'down',
+  handsUp: 0,
 };
 
 let peers = new Map<string, CallPeer>();
@@ -100,20 +182,36 @@ function notifyPeers(soon = true) {
 }
 
 function peerOf(id: string): CallPeer {
-  return peers.get(id) ?? { tabId: null, level: 0, levelAt: 0, track: null };
+  return (
+    peers.get(id) ?? { tabId: null, level: 0, levelAt: 0, track: null, video: null, screen: null }
+  );
 }
 
 /** A peer's `avatar-voice` or `call-track`, as the room relayed it. Anything malformed is ignored. */
 export function receiveCallOp(from: string, op: unknown): void {
+  const hand = parseAvatarHand(op);
+  if (hand) {
+    setHand(from, hand.raised ? { tabId: hand.tabId, letSpeak: hand.letSpeak ?? null } : null);
+    return;
+  }
   const voice = parseAvatarVoice(op);
   if (voice) {
-    peers.set(from, { ...peerOf(from), tabId: voice.tabId, level: voice.level, levelAt: now() });
+    const prev = peerOf(from);
+    const at = now();
+    peers.set(from, { ...prev, tabId: voice.tabId, level: voice.level, levelAt: at });
     notifyPeers();
     return;
   }
   const track = parseCallTrack(op);
   if (!track) return;
-  peers.set(from, { ...peerOf(from), tabId: track.tabId, track: track.track });
+  // An op from before video and screens carries neither: both read as off.
+  peers.set(from, {
+    ...peerOf(from),
+    tabId: track.tabId,
+    track: track.track,
+    video: track.video ?? null,
+    screen: track.screen ?? null,
+  });
   notifyPeers(false);
   trackListeners.notify();
 }
@@ -139,8 +237,9 @@ export function onCallsMode(listener: () => void): () => void {
   return modeListeners.subscribe(listener);
 }
 
-/** A peer left the mode: their level and microphone go with their character. */
+/** A peer left the mode: their level, microphone and hand go with their character. */
 export function forgetCallPeer(id: string): void {
+  setHand(id, null);
   if (!peers.delete(id)) return;
   notifyPeers(false);
   trackListeners.notify();
@@ -148,6 +247,7 @@ export function forgetCallPeer(id: string): void {
 
 /** Keep only the peers still in the room (the presence list's prune). */
 export function pruneCallPeers(present: ReadonlySet<string>): void {
+  pruneHands(present);
   let changed = false;
   for (const id of [...peers.keys()]) {
     if (!present.has(id)) {
@@ -186,6 +286,11 @@ export function callSelf(): CallSelf {
   return self;
 }
 
+/** Subscribe to this browser's call changing (a hook that selects one small part of it). */
+export function onCallSelf(listener: () => void): () => void {
+  return selfListeners.subscribe(listener);
+}
+
 export function useCallSelf(): CallSelf {
   return useSyncExternalStore(selfListeners.subscribe, callSelf, callSelf);
 }
@@ -220,6 +325,8 @@ export function resetCallPeers(): void {
   peers = new Map();
   publishPeers();
   trackListeners.notify();
+  setCallLevels([]);
+  resetHands();
 }
 
 /** Back to no call at all (the hook unmounting). */

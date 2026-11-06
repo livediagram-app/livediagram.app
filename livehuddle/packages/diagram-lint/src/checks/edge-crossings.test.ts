@@ -15,6 +15,13 @@ function crossed(n: number): Element[] {
 }
 
 describe('edge-crossings', () => {
+  it('counts no crossing for a line drawn over what it crosses on purpose (routeBehind false)', () => {
+    const els = crossed(2).map((e) =>
+      e.id === 'x0' ? ({ ...e, routeBehind: false } as Element) : e,
+    );
+    expect(lint(tabOf(...els)).measures.crossings).toBe(0);
+  });
+
   it('fires above a quarter of a crossing per arrow, naming the most crossed', () => {
     const report = lint(tabOf(...crossed(4)));
     expect(report.measures.crossings).toBe(6);

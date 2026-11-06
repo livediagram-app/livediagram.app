@@ -8,7 +8,8 @@ page records what that needs, so v1 is built not to stand in its way. Each featu
 ## Audio calls
 
 **Built for staging**: [Proximity audio](../012-collaboration/proximity-audio.md) (Work Tracker #315), within a radius
-in the open; a room as one call and the All-Hands Hall's stage are still ahead.
+in the open, and a room as one call ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md),
+#319 part 1, #436), with the All-Hands Hall's stage, raise hand and Do Not Disturb (#319 parts 2 to 4).
 
 People near each other on the board hear each other: **proximity audio**. A character's position already rides the
 room ([Avatar mode](../008-canvas/avatar-mode.md#realtime)), so the board can decide
@@ -17,10 +18,16 @@ a radius in the open, and everyone in the All-Hands Hall hearing the stage.
 
 ## Video calls
 
+**Built for staging**: [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md) (Work
+Tracker #317), a camera bubble above the character for the people in earshot, maximised on a press.
+
 A small camera tile beside a character, or a face in the character's head, for the people one is talking to; the
 same proximity rule picks whose video is sent.
 
 ## Screen sharing
+
+**Built for staging**: [Video and screen share bubbles](../012-collaboration/video-and-screen-bubbles.md) (Work
+Tracker #318), as a bubble above the sharer rather than a frame on the board (the card's choice); an Editor's act.
 
 One person shares a screen or a window into a frame on the board (an Editor's act, like Bring Focus), and everyone in
 range watches it there.
@@ -66,3 +73,14 @@ In the [Share roles](../013-workspace/share-roles.md) ladder; the audio rows are
 - Presence carries position, tab and status already; nothing in v1 assumes a meeting has no sound.
 - Avatar Status keeps **In a Meeting**, which a call can later set for you.
 - No v1 data model holds a call; a call is never stored, so adding one needs no migration.
+
+## Social pieces
+
+From [Social pieces](../009-elements/social-pieces.md):
+
+- **A built-in jukebox list.** v1 is link only. A short list of always-on streams, each checked to be CC0 or licensed
+  royalty-free for any use (and its licence linked from the menu), becomes the Jukebox section's first choice.
+- **Mini-games.** A playable rally at the Ping-Pong Table, a frame of pool, a foosball match, a round of darts and a
+  game on the Arcade Machine, each for the people at it (Work Tracker #528).
+- **A snack from the Vending Machine.** Walking up to it hands you a can or a snack, as the Drinks Fridge does; it
+  needs a held-snack drawing and a way to use a piece that blocks.

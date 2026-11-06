@@ -224,8 +224,7 @@ describe('the changeset seen revision', () => {
     expect(new Headers(calls[0]!.init.headers).get('X-Changeset-Seen')).toBe('9');
   });
 
-  // The selection reference names the revision the editor knows (docs/specs/013-workspace/blueprints/
-  // workbench-embeds.md "The selection reference"): a save answers the one it wrote.
+  // A save answers the revision it wrote (docs/specs/015-api/api.md).
   it('a save answers the revision it wrote, or null when the answer names none', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(Response.json({ tab: { id: 'a', rev: 12 } }));
     expect(await apiSaveTab('owner-1', 'diag-1', makeTab('a'))).toBe(12);

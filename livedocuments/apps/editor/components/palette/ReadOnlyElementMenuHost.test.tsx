@@ -32,7 +32,6 @@ function open(level: 'view' | 'participate', target: Element, over: Record<strin
     embedMode: false,
     lockedByOther: () => false,
     openComments: vi.fn(),
-    openNote: vi.fn(),
     followLink: vi.fn(),
     beginEdit: vi.fn(),
     ...over,
@@ -48,7 +47,9 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('ReadOnlyElementMenuHost', () => {
-  it('gives a Participant comments, its words and what the element carries', () => {
+  // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): no Open Link or View
+  // Note for a stored one.
+  it('gives a Participant comments and its words, and no row for a stored link or note', () => {
     open(
       'participate',
       square({
@@ -58,7 +59,7 @@ describe('ReadOnlyElementMenuHost', () => {
       }),
     );
     expect(screen.getByText('Square')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Edit Text', 'Open Link', 'View Note', 'Copy Text']);
+    expect(rows()).toEqual(['Add Comment', 'Edit Text', 'Copy Text']);
   });
 
   it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
@@ -84,8 +85,11 @@ describe('ReadOnlyElementMenuHost', () => {
   });
 
   it('runs each row with the editor’s own handler', () => {
-    const link = { kind: 'url', url: 'https://example.com' };
-    const el = square({ label: 'Hi', link, note: 'n' });
+    const el = square({
+      label: 'Hi',
+      link: { kind: 'url', url: 'https://example.com' },
+      note: 'n',
+    });
     open('participate', el);
     fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
     expect(ctx.openComments).toHaveBeenCalledWith('sq');
@@ -95,19 +99,21 @@ describe('ReadOnlyElementMenuHost', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit Text' }));
     expect(ctx.beginEdit).toHaveBeenCalledWith('sq');
     cleanup();
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'Open Link' }));
-    expect(ctx.followLink).toHaveBeenCalledWith(link);
-    cleanup();
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'View Note' }));
-    expect(ctx.openNote).toHaveBeenCalledWith('sq');
-    cleanup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     open('participate', el);
     fireEvent.click(screen.getByRole('button', { name: 'Copy Text' }));
     expect(writeText).toHaveBeenCalledWith('Hi');
+  });
+
+  it('keeps Open Link on a link card and a video, whose link is their content', () => {
+    const link = { kind: 'url', url: 'https://example.com' };
+    for (const type of ['link-card', 'video']) {
+      open('view', { ...square({ link }), type } as unknown as Element);
+      fireEvent.click(screen.getByRole('button', { name: 'Open Link' }));
+      expect(ctx.followLink).toHaveBeenCalledWith(link);
+      cleanup();
+    }
   });
 
   it('attaches nothing to an arrow', () => {

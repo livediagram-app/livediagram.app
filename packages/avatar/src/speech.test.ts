@@ -5,12 +5,17 @@ import {
   bubbleMotion,
   edgeShift,
   screenX,
+  screenY,
+  topShift,
+  SPEECH_TOP_CLEAR,
   flightMs,
   headPoint,
   nextDraft,
   liveBubbles,
   SeenIds,
   tailOffset,
+  speechLift,
+  SPEECH_CLEAR_GAP,
   SPEECH_FADE_FRACTION,
   SPEECH_MAX_MS,
   SPEECH_OVERFLOW_FADE_MS,
@@ -115,6 +120,35 @@ describe('headPoint', () => {
   });
 });
 
+// docs/specs/012-collaboration/video-and-screen-bubbles.md "Close together": speech bubbles stay clear.
+describe('speechLift', () => {
+  const box = (left: number, top: number, w = 120, h = 68) => ({
+    left,
+    top,
+    right: left + w,
+    bottom: top + h,
+  });
+  const from = { x: 100, y: 300 };
+
+  it('stays at the head with nothing in the way', () => {
+    expect(speechLift(from, 60, 200, [])).toBe(0);
+    // Beside its path, below where it starts, and beyond its reach.
+    expect(speechLift(from, 60, 200, [box(170, 200), box(40, 310), box(40, -100)])).toBe(0);
+  });
+
+  it('starts over a bubble on its way up, its own speaker’s or a neighbour’s', () => {
+    expect(speechLift(from, 60, 200, [box(40, 182)])).toBe(300 - 182 + SPEECH_CLEAR_GAP);
+    // One straddling the head lifts it too.
+    expect(speechLift(from, 60, 200, [box(140, 280)])).toBe(20 + SPEECH_CLEAR_GAP);
+  });
+
+  it('climbs past a stack, each lift bringing the next into reach', () => {
+    // The second is out of reach from the head but in reach once lifted over the first.
+    const lift = speechLift(from, 60, 100, [box(0, -300), box(40, 182), box(60, 40)]);
+    expect(lift).toBe(300 - 40 + SPEECH_CLEAR_GAP);
+  });
+});
+
 describe('SeenIds', () => {
   it('answers whether an id is new, forgetting the oldest past its cap', () => {
     const seen = new SeenIds(2);
@@ -136,6 +170,20 @@ describe('nextDraft (typing past the limit is refused, a paste is clamped)', () 
   });
   it('clamps a paste past the limits', () => {
     expect(nextDraft('', words(80), true)).toBe(fifty);
+  });
+});
+
+describe('topShift (a bubble stays below the top chrome, Work Tracker #394)', () => {
+  it('leaves a card whose top is clear of the top chrome', () => {
+    expect(topShift(SPEECH_TOP_CLEAR)).toBe(0);
+    expect(topShift(300)).toBe(0);
+  });
+  it('drops a card rising into the top chrome back below it', () => {
+    expect(topShift(100)).toBe(20);
+    expect(topShift(-30)).toBe(150);
+  });
+  it('reads a canvas y on screen as screenX reads an x', () => {
+    expect(screenY(100, 2, 7.5, 390)).toBe(screenX(100, 2, 7.5, 390));
   });
 });
 

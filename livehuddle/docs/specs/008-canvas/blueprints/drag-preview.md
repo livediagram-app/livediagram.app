@@ -134,7 +134,7 @@ arrowLinks, stackedIds)`: a changed boxed element whose every field but `x` and 
   A new frame with rides cancels that drop.
 - Labels of affected arrows are laid out with `draftLayout(arrow, label, virtualElements)`; others
   keep the document's label pass.
-- The selection chrome derives the selection (bounds, union resize, quick-connect pluses) from
+- The selection chrome derives the selection (bounds, union resize) from
   `applyOverlay(elements, overlay)` while a preview lasts, so the union handles follow a
   multi-resize: `useCanvasSelectionView(input, tabId)` reads `usePreviewedElements` itself, so
   `Canvas` does not render for a preview frame. the selection's `showPlus` (`lib/canvas-selection.ts`)

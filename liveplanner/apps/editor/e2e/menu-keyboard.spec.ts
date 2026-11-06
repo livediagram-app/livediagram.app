@@ -108,6 +108,47 @@ test.describe('menus by keyboard', () => {
     expectNoPageErrors(pageErrors);
   });
 
+  // Start Planning's code loads when it is first drawn, so on a busy machine it mounts after the keyboard has opened
+  // the tab menu. Its search takes focus as it opens only while focus is free (docs/specs/007-editor/start-panel.md
+  // "Keyboard"): here its chunk is held until focus is in the menu, and the menu keeps it.
+  test('a late Start Planning never takes focus from the open tab menu', async ({
+    page,
+    pageErrors,
+  }) => {
+    let release!: () => void;
+    const released = new Promise<void>((resolve) => (release = resolve));
+    let held = 0;
+    await page.route('**/_next/static/chunks/**', async (route) => {
+      const response = await route.fetch();
+      const body = await response.text();
+      if (body.includes('Find a board, sheet, form or layout')) {
+        held += 1;
+        await released;
+      }
+      await route.fulfill({ response, body });
+    });
+    await startBlankProject(page);
+    const tabMenu = page.getByRole('button', { name: 'Tab menu' });
+    await expect(tabMenu).toHaveAttribute('aria-haspopup', 'dialog');
+    // The panel's chunk is the one held, so the panel is still to come.
+    await expect.poll(() => held).toBe(1);
+    await expect(page.getByRole('region', { name: 'Start Planning' })).toHaveCount(0);
+    await tabMenu.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'Tab menu' });
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(() => dialog.evaluate((el) => el.contains(document.activeElement)))
+      .toBe(true);
+    release();
+    await expect(page.getByRole('region', { name: 'Start Planning' })).toBeVisible();
+    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(tabMenu).toBeFocused();
+    expectNoPageErrors(pageErrors);
+  });
+
   // In an editor the logo is a plain link, with no site switcher: no chevron to reach, and hovering it opens no
   // card (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows").
   test('the editor logo opens no site switcher, on hover or from the keyboard', async ({

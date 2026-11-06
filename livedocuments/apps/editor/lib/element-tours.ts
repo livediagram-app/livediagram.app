@@ -5,8 +5,8 @@ import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one complex element type, on the footer's
-// Start Tour button while one is selected. The synced `elementTourKinds` lists the kinds taken, for Settings alone; `elementToursSeen` counts them all only for a power
-// user (tourTrackSeen), as the Pages tour's kinds do.
+// Start Tour button while one is selected. The synced `elementTourKinds` lists the kinds taken, for Settings alone;
+// `elementToursSeen` counts them all (tourTrackSeen).
 
 export const ELEMENT_TOUR_KINDS = [
   'sankey',
@@ -20,7 +20,6 @@ export const ELEMENT_TOUR_KINDS = [
   'timeline',
   'chart',
   'stack',
-  'tab-window',
 ] as const;
 
 export type ElementTourKind = (typeof ELEMENT_TOUR_KINDS)[number];
@@ -38,7 +37,6 @@ export const ELEMENT_TOUR_NAMES: Record<ElementTourKind, string> = {
   timeline: 'timeline',
   chart: 'chart',
   stack: 'stack',
-  'tab-window': 'tab window',
 };
 
 // The toured kind an element is, or null when its type has no tour.
@@ -55,7 +53,6 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
   if (el.shape === 'timeline-rail') return 'timeline';
   if (isChartShape(el.shape)) return 'chart';
   if (el.shape === 'stack') return 'stack';
-  if (el.shape === 'tab-window') return 'tab-window';
   return null;
 }
 
@@ -70,10 +67,8 @@ export function canTourElement(
     case 'sankey':
       return canEditSankey(can, el);
     // A concept graphic's rows are structure, an Editor's on an unlocked element
-    // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data, a stack's arrangement and
-    // the tab a window shows.
+    // (docs/specs/009-elements/concept-graphics.md "Share roles"); so are a chart's data and a stack's arrangement.
     case 'layer-stack':
-    case 'tab-window':
     case 'stack':
     case 'chart':
     case 'chevrons':
@@ -91,7 +86,7 @@ export function elementTourSeen(
   prefs: UserPreferences | null | undefined,
   kind: ElementTourKind,
 ): boolean {
-  return tourTrackSeen(prefs, prefs?.elementTourKinds, prefs?.elementToursSeen, kind);
+  return tourTrackSeen(prefs?.elementTourKinds, prefs?.elementToursSeen, kind);
 }
 
 /** The preferences with `kind` answered. */
@@ -103,8 +98,8 @@ export function markElementTourSeen(
 }
 
 /**
- * The preferences with `kind` offered again (the Settings switch turned on): its answer forgotten, and the power
- * user's blanket flag lifted, which would otherwise keep counting it as seen. Every other kind answered stays so.
+ * The preferences with `kind` offered again (the Settings switch turned on): its answer forgotten, and the blanket
+ * flag lifted, which would otherwise keep counting it as seen. Every other kind answered stays so.
  */
 export function offerElementTourAgain(
   prefs: UserPreferences,

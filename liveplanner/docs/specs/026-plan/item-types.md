@@ -20,7 +20,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **built-in field**  | A field liveplanner knows by its own id (`assignee`, `due`, `labels`...), which the features using that role read; one per type     | ready-made field, preset    |
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards           | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a project made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the twelve more a template uses               | preset type, built-in type  |
+| **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the thirteen more a template uses             | preset type, built-in type  |
 | **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
 | **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                  | unknown field, broken field |
@@ -700,7 +700,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **The expression** names fields by the names the card panel gives them, ignoring case. A name of plain words
     (letters, digits and `_`, one space between words: `Budget`, `Story Points`) is written as it is; any name may be
     written in braces (`{Children Done (%)}`), which a name holding other characters, or one that is also `true`,
-    `false` or a function's name, needs. It reads the type's custom fields (all but Image, Comments and Votes), the
+    `false` or a function's name, needs. Inside braces `\}` stands for a `}` and `\\` for a `\`, so a label holding
+    braces (`Cost {est}`) is written `{Cost {est\}}`; the label itself stays as it was typed, and inserting a field
+    from the list escapes it. It reads the type's custom fields (all but Image, Comments and Votes), the
     built-in Title, Estimate (or Points), Start Date (or Start), Due Date (or Due), Priority, Assignee, Labels,
     Colour and Checklist when the type offers them, and every card's **Number** and **Type**. A custom field's name
     wins over a built-in's other name. Status is not read (its names belong to the boards). Text is written in
@@ -761,7 +763,10 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     count into a Formula): a **Result** menu (and **Currency** for a Currency result, **Show as Percent Bar** for a Percent one), a monospaced **Formula** box, the type's
     fields as chips under it (pressing one writes its name at the caret), and a line that checks the formula as it is
     typed: "Works" with a tick, or the problem in red. **Preview** works it out on a real card: the type's first
-    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Add {Name} waits until the formula
+    live card ("On #12 Website: £2,500"), or "No {Type} card to try it on yet". Preview sits straight under that
+    line, above the chips, so on a 390 px phone it is in view above the footer's Add button without scrolling (a
+    Rollup's and a Lookup's sit straight under their menus, above the line saying what they work out, for the same
+    reason). Add {Name} waits until the formula
     works ("Write a formula that works"). In an existing field's form, a formula that doesn't work is not kept: the
     field keeps its last working one, and the line says so ("Not saved: Unknown field "Spnt"").
   - **Agents**: `change_card_types` takes `formula` (by names) and `result` on `custom`, `addCustom` and
@@ -790,7 +795,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       field whose result is a Date. Count and Count Done read none. The menu lists the fields of the card types
       that link here through the chosen field (any of them for All Linked Cards), each once, by name.
     - A child without the field, or with it empty, is skipped; so is a child whose own worked-out value is an error.
-      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0.
+      With nothing left Sum, Average, Min, Max, Earliest and Latest read no value; Count and Count Done read 0 (Count Done too on a board with no done columns, and wherever no done rule is held: none done).
   - **Lookup** shows one field of the card a Card field links to. Its settings: **Through** (`through`), one of this
     type's own Card fields (required), and **Field** (`source`), any field of the card types that field links to
     that a [Formula](#formula-fields) can read (Title, Number, Type, Estimate, Start and Due Date, Priority,

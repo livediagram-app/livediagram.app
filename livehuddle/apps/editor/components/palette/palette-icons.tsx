@@ -14,15 +14,9 @@
 import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livehuddle/document';
 import {
   lucideArmchair,
-  lucideChartNoAxesColumnIncreasing,
-  lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
-  lucideLightbulb,
   lucidePenTool,
-  lucideScanEye,
-  lucideSpade,
-  lucideThermometer,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@livehuddle/ui';
 
@@ -104,17 +98,6 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
 }
 
-export function LaserIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="laser" size={size} />;
-}
-
-// Isometric view tool (docs/specs/008-canvas/isometric-view.md): a cube drawn in isometric projection —
-// a top rhombus plus the two front faces — signalling "see the canvas in
-// 3-D, tilted". The shared vertical edge hints at the extruded depth.
-export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="isometric" size={size} />;
-}
-
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
 // The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.
@@ -124,18 +107,6 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
 // one it wore as a selection mode, kept in MODE_GLYPHS.
 export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="highlighter" size={size} />;
-}
-
-// Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
-// deck IS. Deliberately not a "play" triangle — the tool opens the workbench
-// where you build slides, and only the Start button inside it presents.
-export function SlideDeckIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <rect x="1.5" y="4.5" width="10" height="7.5" rx="1.2" />
-      <path d="M4.5 2.5h8a1.2 1.2 0 0 1 1.2 1.2v6.3" />
-    </Glyph>
-  );
 }
 
 export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
@@ -154,44 +125,11 @@ export { ThemeLookIcon } from '@livehuddle/ui';
 // (pick a base, then tap targets).
 export { FormatPainterIcon } from '@livehuddle/ui';
 
-// Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
-// by a circle with short rays beaming outward, reading as "the cursor
-// emits light" without copying the laser-pointer beam.
-export function SpotlightIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="spotlight" size={size} />;
-}
-
 // Avatar mode (docs/specs/008-canvas/avatar-mode.md): footprints, so the picker entry reads as "a
 // character that walks" rather than a person / profile photo (which is what the
 // palette's Avatar ELEMENT tile means).
 export function AvatarModeIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="avatar" size={size} />;
-}
-
-// Zen / focus mode (docs/specs/007-editor/zen-mode.md): an "expand to fullscreen" glyph (four
-// corner arrows pushing outward) for the palette enter button.
-export function ZenIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M6 2H2v4" />
-      <path d="M10 2h4v4" />
-      <path d="M14 10v4h-4" />
-      <path d="M2 10v4h4" />
-    </Glyph>
-  );
-}
-
-// "Exit fullscreen" / compress glyph (corner arrows pulling inward) for
-// the exit-zen control next to the zoom controls.
-export function ZenExitIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M2 6h4V2" />
-      <path d="M14 6h-4V2" />
-      <path d="M14 10h-4v4" />
-      <path d="M2 10h4v4" />
-    </Glyph>
-  );
 }
 
 export function NonePaddingIcon() {
@@ -251,78 +189,7 @@ export function AlignIcon({ x, y }: { x: TextAlignX; y: TextAlignY }) {
   );
 }
 
-// --- Session tools (docs/specs/012-collaboration/session-button.md) ------------------------------------------------
-// 14px, not 13, like every small glyph in this file: an odd size centred in
-// an even tile lands on a half pixel and its strokes blur (docs/specs/007-editor/toolbar-layout.md).
-// The three glyphs a Session button wears, in the same 16-grid, 1.4-stroke
-// house style as the mode icons above so a row of Behaviour tiles matches.
-
-// The Timer counts down, so it wears an hourglass; the Stopwatch counts up, so it wears the stopwatch. One
-// clock face for both left the two tiles side by side in the palette looking identical.
-export function TimerIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* an hourglass: two caps, the glass pinched at the waist, sand settled at the bottom */}
-      <path d="M4 1.6h8" />
-      <path d="M4 14.4h8" />
-      <path d="M5.2 1.6c0 3.2 2.8 4.4 2.8 6.4s-2.8 3.2-2.8 6.4" />
-      <path d="M10.8 1.6c0 3.2-2.8 4.4-2.8 6.4s2.8 3.2 2.8 6.4" />
-      <path d="M6.4 13.6h3.2L8 11.6z" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* a stopwatch: crown, dial, and a hand at ten past */}
-      <path d="M6.4 1.6h3.2" />
-      <path d="M8 1.6v1.6" />
-      <circle cx="8" cy="9" r="5" />
-      <path d="M8 9V6.4" />
-      <path d="M8 9l2 1.6" />
-    </Glyph>
-  );
-}
-
-// Vote and Poll: the same glyphs as their context-menu categories.
-export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
-
-export const PollIcon = lucideGlyph(lucideChartNoAxesColumnIncreasing, 14);
-
-// --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
-
-export function RevealIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideScanEye} />
-    </Glyph>
-  );
-}
-
-export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={16}>
-      {/* a die mid-roll */}
-      <rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.2" />
-      <circle cx="5.8" cy="5.8" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="10.2" cy="10.2" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="8" cy="8" r="0.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-// --- Chair + the collaboration family (docs/specs/009-elements/chair.md, docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) -----
-// In-house members share one 16-unit frame; the rest are Lucide (chair, estimate card, thermometer,
-// light bulb).
-
-function CollabGlyph({ size, children }: { size: number; children: React.ReactNode }) {
-  return (
-    <Glyph size={size} units={16}>
-      {children}
-    </Glyph>
-  );
-}
+// --- Chair (docs/specs/009-elements/chair.md) -----
 
 export function ChairIcon({ size = 14 }: IconSizeProps = {}) {
   return (
@@ -361,6 +228,30 @@ export function RoomIcon({ size = 14 }: IconSizeProps = {}) {
       <path d="M3 4h18v16h-6M9 20H3V4" />
       <path d="M3 8h18" />
       <path d="M10 20h4" strokeDasharray="1.5 1.5" />
+    </Glyph>
+  );
+}
+
+// The Room Builder (docs/specs/009-elements/room-builder.md): an L-shaped plan with a 45-degree corner and its
+// corners marked, reads as "draw your own room".
+export function RoomBuilderIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3 3h11v7h7v7l-4 4H3z" />
+      <circle cx="3" cy="3" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="14" cy="10" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="17" cy="21" r="1.5" fill="currentColor" stroke="none" />
+    </Glyph>
+  );
+}
+
+// A Door (docs/specs/009-elements/room-builder.md "Door"): a wall broken by a door standing open and its swing.
+export function DoorIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M2 8h4M18 8h4" />
+      <path d="M6 8v12" />
+      <path d="M18 8a12 12 0 0 1-12 12" strokeDasharray="2 2" />
     </Glyph>
   );
 }
@@ -424,6 +315,19 @@ export function RugIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// The Stage (docs/specs/009-elements/office.md "Stage"): a platform seen from the room's camera, its top and the
+// front face you see, with a microphone on a stand.
+export function StageIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M4.5 13.5h15L22 17H2z" />
+      <path d="M2 17v3.5h20V17" />
+      <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
+      <path d="M12 8v5.5" />
+    </Glyph>
+  );
+}
+
 export function FenceIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
@@ -445,104 +349,28 @@ export function AvatarPadIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
-export function EstimateIcon({ size = 14 }: IconSizeProps = {}) {
+// Directory (docs/specs/009-elements/directory.md): a stand on a post, a sign across its head and rows of rooms.
+export function DirectoryIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
-      <Prims prims={lucideSpade} />
+      <rect x="4" y="2" width="16" height="14" rx="2" />
+      <path d="M4 6h16M7.5 9.5h1M11 9.5h5.5M7.5 12.5h1M11 12.5h4M12 16v4M8 21.5h8" />
     </Glyph>
   );
 }
 
-export function TemperatureIcon({ size = 14 }: IconSizeProps = {}) {
+// Elevator (docs/specs/009-elements/elevator.md): two doors meeting in the middle under an up and a down arrow.
+export function ElevatorIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>
-      <Prims prims={lucideThermometer} />
-    </Glyph>
-  );
-}
-
-export function IdeaBoxIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <Glyph size={size} units={24}>
-      <Prims prims={lucideLightbulb} />
-    </Glyph>
-  );
-}
-
-export function QaBoardIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a ranked list with an upvote chevron on the top row */}
-      <path d="M2.4 5.6l1.6-1.6 1.6 1.6" />
-      <path d="M7.4 4.8h6.2" />
-      <path d="M7.4 8.4h5" />
-      <path d="M7.4 12h3.6" />
-      <path d="M3.4 8.6v.1" />
-      <path d="M3.4 12.2v.1" />
-    </CollabGlyph>
-  );
-}
-
-export function AgendaIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a run of segments, each with its time against it */}
-      <path d="M2.6 4.4h6.2" />
-      <path d="M2.6 8h6.2" />
-      <path d="M2.6 11.6h6.2" />
-      <circle cx="12.6" cy="8" r="2.6" />
-      <path d="M12.6 6.8V8l.9.7" />
-    </CollabGlyph>
-  );
-}
-
-export function DecisionIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* a record card with a tick in its corner chip */}
-      <rect x="2.4" y="2.8" width="11.2" height="10.4" rx="1.6" />
-      <path d="M4.8 6.2h4.4" />
-      <path d="M4.8 9h2.6" />
-      <path d="M9.4 10.6l1.3 1.3 2.2-2.6" />
-    </CollabGlyph>
-  );
-}
-
-export function RollCallIcon({ size = 14 }: IconSizeProps = {}) {
-  return (
-    <CollabGlyph size={size}>
-      {/* three heads: who was here, not who is here */}
-      <circle cx="5" cy="5.6" r="2" />
-      <circle cx="11.2" cy="5.6" r="2" />
-      <path d="M1.8 12.4a3.4 3.4 0 0 1 6.4 0" />
-      <path d="M8.6 12.4a3.4 3.4 0 0 1 5.6-1.5" />
-    </CollabGlyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): dot voting, drawn as dots landing on a card. */
-export function SessionVoteIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <rect x="3" y="5" width="18" height="14" rx="2.2" />
-      <circle cx="8.5" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="11" r="1.9" fill="currentColor" stroke="none" />
-      <circle cx="11.2" cy="15.4" r="1.9" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
-
-/** Session tools (docs/specs/012-collaboration/session-button.md): a poll, drawn as answer bars of different lengths. */
-export function SessionPollIcon() {
-  return (
-    <Glyph size={18} units={24} strokeLinejoin="miter">
-      <path d="M4 6.5h15M4 12h9.5M4 17.5h12.5" />
+      <rect x="3.5" y="7" width="17" height="15" rx="1.5" />
+      <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
     </Glyph>
   );
 }
 
 // A selection-mode glyph drawn from the data (MODE_GLYPHS in @livehuddle/document:
-// the shared @liveworkspace/icons table plus Isometric), the ONE drawing the palette, the Mode button face and
+// the shared @liveworkspace/icons table), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;

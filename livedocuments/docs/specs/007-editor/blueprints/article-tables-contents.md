@@ -128,7 +128,9 @@ decision. The rest of the writing (its model, ops, editor, toolbar, zones, expor
   `y0`, the header row's height `hh` and each row's height, walks the rows from row 1: a row that would end past
   `H - REPEAT_SLACK` while something other than a repeated header is above it in its column starts a new column,
   where `y` restarts at `hh`. Returns the indexes of the rows that start a page.
-- `ArticleEditor.measure` calls `measureRepeats(view, rootTop, z)` for every table with `header`: the first row's
+- A page whose footnotes end its text early (article-pages blueprint "Footnotes") has that foot as its `H`
+  (`heightAt`, from the footnote layout's `limits` by page), so a row moves on, with its header, above the notes.
+- `ArticleEditor.measure` calls `measureRepeats(view, rootTop, z, foot)` for every table with `header`: the first row's
   rect against the box top (divided by the screen scale) for `y0`, each row's `offsetHeight`, the box's height
   for `H`. When the result differs from `repeatHeaderPlugin`'s state it dispatches the breaks as `repeatHeaderKey` meta (only,
   never committed); the plugin draws, before each break row, a widget `tr.article-table-repeat`

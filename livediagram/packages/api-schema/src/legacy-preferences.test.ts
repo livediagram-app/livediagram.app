@@ -50,6 +50,28 @@ describe('upgradeLegacyPreferences', () => {
     ).toEqual({ theme: 'dark' });
   });
 
+  // docs/specs/007-editor/power-user-mode.md "What happens to stored preferences": the mode's keys go, and
+  // everything its preset wrote stays as it is.
+  it('drops the retired Power user mode keys and keeps what its preset set', () => {
+    expect(
+      upgradeLegacyPreferences({
+        powerUserMode: true,
+        powerUserBaseline: { alignmentGuides: { before: {}, applied: { alignmentGuides: true } } },
+        minimalChrome: true,
+        powerUserOfferShown: true,
+        alignmentGuides: true,
+        autoRebindArrows: false,
+        tourSeen: true,
+        elementToursSeen: true,
+      }),
+    ).toEqual({
+      alignmentGuides: true,
+      autoRebindArrows: false,
+      tourSeen: true,
+      elementToursSeen: true,
+    });
+  });
+
   it('drops the retired Activity panel keys', () => {
     expect(
       upgradeLegacyPreferences({

@@ -1,6 +1,6 @@
 # Q&A board
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/qa-board.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/qa-board.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 Status: **implemented**.
 
@@ -256,8 +256,8 @@ Both boards start **empty**. A session template is used live, and example
 questions would be the first thing a facilitator had to delete in front of the
 room; the board's own empty state already says what to do. The scaffolding
 around each board (the steps, the panel, the agenda) carries the worked
-example instead. Neither ships layers: everything on a session board is used
-live, so there is no scaffold to lock.
+example instead. Neither ships locked scaffolding: everything on a session board is used
+live, so there is nothing to lock.
 
 ## Export and render
 

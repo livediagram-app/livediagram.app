@@ -66,7 +66,7 @@ describe('whether Tidy shows', () => {
     expect(harness(tidy).edits().canTidy!('page-1')).toBe(false);
     // An empty page has nothing to tidy.
     expect(harness(tidy).edits().canTidy!('page-2')).toBe(false);
-    const messy = pageTab([box('a', -200, -300), box('b', -196, -100)]);
+    const messy = pageTab([box('a', -200, -300), box('b', -188, -100)]);
     const h = harness(messy);
     expect(h.edits().canTidy!('page-1')).toBe(true);
     h.edits().tidyPage!('page-1');
@@ -74,7 +74,7 @@ describe('whether Tidy shows', () => {
   });
 
   it('remembers the answer for the same board, so a re-render reruns no tidy', () => {
-    const h = harness(pageTab([box('a', -200, -300), box('b', -196, -100)]));
+    const h = harness(pageTab([box('a', -200, -300), box('b', -188, -100)]));
     tidyRuns.count = 0;
     // Each render builds its edits afresh, with a fresh page list.
     for (let i = 0; i < 100; i++) h.edits().canTidy!('page-1');
@@ -83,7 +83,7 @@ describe('whether Tidy shows', () => {
 
   it("keeps a page's answer through an edit on another page", () => {
     const other = box('far', 794 + 96 + 13, 0);
-    const tab = pageTab([box('a', -200, -300), box('b', -196, -100), other]);
+    const tab = pageTab([box('a', -200, -300), box('b', -188, -100), other]);
     const h = harness(tab);
     h.edits().canTidy!('page-1');
     tidyRuns.count = 0;
@@ -103,7 +103,7 @@ describe('whether Tidy shows', () => {
 describe('Tidy Up a page', () => {
   it('lines up the page’s elements in one edit, tracked, leaving other pages alone', () => {
     const other = box('far', 794 + 96 + 13, 0);
-    const h = harness(pageTab([box('a', -200, -300), box('b', -196, -100), other]));
+    const h = harness(pageTab([box('a', -200, -300), box('b', -188, -100), other]));
     h.edits().tidyPage!('page-1');
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
     expect(xOf(h.tab(), 'a')).toBe(xOf(h.tab(), 'b'));
@@ -113,7 +113,7 @@ describe('Tidy Up a page', () => {
   });
 
   it('tidies, and does not call the page tidy, when the commit runs later', () => {
-    const tab = pageTab([box('a', -200, -300), box('b', -196, -100)]);
+    const tab = pageTab([box('a', -200, -300), box('b', -188, -100)]);
     const later: ((ts: Tab[]) => Tab[])[] = [];
     const toastInfo = vi.fn();
     pageEdits({
@@ -143,13 +143,13 @@ describe('Tidy Up a page', () => {
   });
 
   it('leaves a locked page, and a locked layer’s elements, alone', () => {
-    const locked = harness(pageTab([box('a', -200, -300), box('b', -196, -100)], { locked: true }));
+    const locked = harness(pageTab([box('a', -200, -300), box('b', -188, -100)], { locked: true }));
     locked.edits().tidyPage!('page-1');
-    expect(xOf(locked.tab(), 'b')).toBe(-196);
+    expect(xOf(locked.tab(), 'b')).toBe(-188);
     const layered = harness({
       ...pageTab([
         box('a', -200, -300, { layerId: 'L' }),
-        box('b', -337, -100, { layerId: 'base' }),
+        box('b', -329, -100, { layerId: 'base' }),
       ]),
       layers: [
         { id: 'base', name: 'Base' },
@@ -163,7 +163,7 @@ describe('Tidy Up a page', () => {
 
   it('tidies infographic and slide pages', () => {
     const slide = harness(
-      pageTab([box('a', -200, -100), box('b', -196, 60)], {
+      pageTab([box('a', -200, -100), box('b', -188, 60)], {
         kind: 'slide',
         orientation: 'landscape',
       }),
@@ -174,7 +174,7 @@ describe('Tidy Up a page', () => {
   });
 
   it('previews the tidied page without writing, and puts it back', () => {
-    const h = harness(pageTab([box('a', -200, -300), box('b', -196, -100)]));
+    const h = harness(pageTab([box('a', -200, -300), box('b', -188, -100)]));
     h.edits().previewTidy!('page-1');
     expect(h.commitTabs).not.toHaveBeenCalled();
     expect(localPreview()?.tabId).toBe('t');

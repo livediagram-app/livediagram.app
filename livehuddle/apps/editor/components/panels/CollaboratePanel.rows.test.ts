@@ -25,11 +25,15 @@ const mk = (name: string, status: 'open' | 'done' = 'open'): ElementAction => ({
   status,
 });
 
-const card = (actions: ElementAction[]): BoxedElement => ({
-  ...createShape('action-card', 0, 0),
-  id: 'card',
-  actions,
-});
+// A retired Action panel (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") as stored: its list
+// still lists here, so nothing on it goes missing.
+const card = (actions: ElementAction[]): BoxedElement =>
+  ({
+    ...createShape('square', 0, 0),
+    shape: 'action-card',
+    id: 'card',
+    actions,
+  }) as unknown as BoxedElement;
 
 const openIds = (els: BoxedElement[]) =>
   rowsFor('open', 'all', [], actionRowsFromElements(els, null)).map((r) =>
@@ -60,7 +64,8 @@ describe('actionRowsFromElements', () => {
 
   it('still lists a legacy single `action` on a card or a plain element', () => {
     const legacyCard = {
-      ...createShape('action-card', 0, 0),
+      ...createShape('square', 0, 0),
+      shape: 'action-card',
       id: 'old',
       action: mk('Legacy'),
     } as unknown as BoxedElement;

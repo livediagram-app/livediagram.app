@@ -1,4 +1,4 @@
-// The public catalogues (docs/specs/015-api/blueprints/cli.md "Catalogue routes", CLI72): the template library and one
+// The public catalogues (livediagram/docs/specs/015-api/blueprints/cli.md "Catalogue routes", CLI72): the template library and one
 // template as an outline, icon search, and the element format. Pure functions over bundled data; no identity, GET
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 

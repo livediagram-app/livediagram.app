@@ -26,17 +26,18 @@ small modules beside it. Each rule below names its home.
 
 ## Constants and configuration
 
-| Constant                     | Value     | Where                | Why                                                                        |
-| ---------------------------- | --------- | -------------------- | -------------------------------------------------------------------------- |
-| card size                    | 900 x 540 | `PAGE_SIZES.card`    | A 5:3 index card; Narrow margins leave 804 x 420 px, a title and ~15 lines |
-| `FLASHCARD_WORDS_PER_MINUTE` | 130       | `flashcards.ts`      | Talks run 120 to 150 wpm                                                   |
-| `SPEAKING_STEP_S`            | 5         | `flashcards.ts`      | Under a minute, said to the next 5 s (at most "55 sec")                    |
-| `CONTINUED_TITLE_MAX`        | 120       | `flashcards.ts`      | A continued card's title stays a title                                     |
-| `FLASHCARD_STACK_MAX`        | 6         | `flashcard-stack.ts` | Enough depth to read "many", little enough to stay a card                  |
-| `FLASHCARD_STACK_STEP_Y`     | 10        | `flashcard-stack.ts` | Canvas px each card behind sits lower                                      |
-| `FLASHCARD_STACK_INSET_X`    | 14        | `flashcard-stack.ts` | Canvas px each card behind is narrower each side                           |
-| `FLASHCARD_MOUNT_SPAN`       | 1         | `flashcard-stack.ts` | Cards each side of the card in front whose writing stays mounted; 1 to 3   |
-| `FLASHCARD_FLIP_MS`          | 420       | `flashcard-flip.ts`  | Long enough to read as a turn, inside the 500 ms motion budget             |
+| Constant                     | Value     | Where                | Why                                                                           |
+| ---------------------------- | --------- | -------------------- | ----------------------------------------------------------------------------- |
+| card size                    | 900 x 540 | `PAGE_SIZES.card`    | A 5:3 index card; Narrow margins leave 804 x 420 px, a title and ~15 lines    |
+| `FLASHCARD_WORDS_PER_MINUTE` | 130       | `flashcards.ts`      | Talks run 120 to 150 wpm                                                      |
+| `SPEAKING_STEP_S`            | 5         | `flashcards.ts`      | Under a minute, said to the next 5 s (at most "55 sec")                       |
+| `CONTINUED_TITLE_MAX`        | 120       | `flashcards.ts`      | A continued card's title stays a title                                        |
+| `FLASHCARD_STACK_MAX`        | 6         | `flashcard-stack.ts` | Enough depth to read "many", little enough to stay a card                     |
+| `FLASHCARD_STACK_STEP_Y`     | 10        | `flashcard-stack.ts` | Px each note card behind sits lower (presenter's straight stack)              |
+| `FLASHCARD_STACK_INSET_X`    | 14        | `flashcard-stack.ts` | Px each note card behind is narrower each side (presenter's straight stack)   |
+| `FLASHCARD_FAN`              | 6 steps   | `flashcard-stack.ts` | Each depth's turn (degrees) and nudge (canvas px) in the canvas's fan         |
+| `FLASHCARD_MOUNT_SPAN`       | 1         | `flashcard-stack.ts` | Cards each side of the card in front whose writing stays mounted; 1 to 3      |
+| `FLASHCARD_FLIP_MS`          | 240       | `flashcard-flip.ts`  | A quick lift-away that reads at a glance; the presenter's note cards share it |
 
 ## Data and persistence
 
@@ -85,8 +86,9 @@ small modules beside it. Each rule below names its home.
   Otherwise the picture (copies of the card's sheet `[data-page-id]` and writing `.article-flow[data-article-flow]`,
   their ids, roles and tour anchors stripped, `inert`, `aria-hidden`) is placed in canvas space over the new card in
   front (`[data-flashcard-flip]`, overflow hidden), so it pans and zooms with the view. Forward: it turns
-  `rotateX(0 → 78deg)` about its top edge and fades (`FLASHCARD_FLIP_MS`, ease-in-out, perspective 2400 canvas px).
-  Back: it stays still under a picture of the target card, which turns `rotateX(78deg → 0)` and fades in. The pictures
+  `rotateX(0 → 14deg) translateY(0 → -3%) scale(1 → 0.985)` and fades (`FLASHCARD_FLIP_MS`, `cubic-bezier(0.2, 0, 0, 1)`,
+  perspective 2400 canvas px). Back: the same picture sinks instead (`rotateX(-10deg) translateY(2%)`) and fades; the
+  real card now in front is never pictured, so its writing shows throughout. The pictures
   are removed when the animation ends; a new flip finishes the last at once.
 
 ### Text only
@@ -167,7 +169,7 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
 
 ## Presentation and UX
 
-Copy: "Flashcards", "Flashcard (5:3)", "Add Another Card", "Card 3 of 10", "45 sec", "Too long for this card",
+Copy: "Flashcards", "Flashcard (5:3)", "Add Card", "Card 3 of 10", "45 sec", "Too long for this card",
 "Split Onto a New Card", "One paragraph fills this card: shorten it to split", "Flashcards hold text only.",
 "Card Style", "Duplicate card", "Move card left", "Move card right", "Delete card".
 

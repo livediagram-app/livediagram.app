@@ -8,9 +8,12 @@ import type { CSSProperties } from 'react';
 import '../app/hero-scenes/space-floor.css';
 import '../app/hero-scenes/space-floor.generated.css';
 import {
+  BACK_ROW_SPAN,
   FLOOR_CAST_HREF,
+  FLOOR_ONLY,
   FLOOR_STAGES,
   floorArtHref,
+  onBackRow,
   type FloorStage,
   type Walker,
 } from './hero-space-floor-cast';
@@ -26,11 +29,16 @@ import {
 
 const stageOf = (key: FloorStage['key']) => FLOOR_STAGES.find((s) => s.key === key)!;
 
+// Which widths a walker shows at: a wide-stage walker with a floor path of its own walks it below lg instead
+// (FLOOR_ONLY, space-floor.css), so the two are never both shown.
+type Shown = 'hsf-lg-only' | 'hsf-below-lg' | '';
+type Placed = { stage: FloorStage; walker: Walker; shown: Shown };
+
 /** One character: its film strip in a one-still window, its feet on the box's origin, its name chip under it. */
-function Character({ stage, walker }: { stage: FloorStage; walker: Walker }) {
+function Character({ stage, walker, shown }: Placed) {
   const keys = stillKeysOf(walker);
   return (
-    <div className={`hsf-walker ${floorClass(stage, walker)}`}>
+    <div className={`hsf-walker ${floorClass(stage, walker)} ${shown}`.trimEnd()}>
       <div
         className="hsf-frame"
         style={{ left: -FRAME.feetX, top: -FRAME.feetY, width: FRAME.width, height: FRAME.height }}
@@ -61,7 +69,7 @@ function Character({ stage, walker }: { stage: FloorStage; walker: Walker }) {
 }
 
 /** Each line the character says, in the editor's bubble look, over where it stands as it says it. */
-function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
+function Bubbles({ stage, walker, shown }: Placed) {
   return timelineOf(walker)
     .filter((seg) => seg.say)
     .map((seg, i) => {
@@ -69,7 +77,7 @@ function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
       return (
         <div
           key={seg.say}
-          className={`hsf-say ${floorClass(stage, walker, `say-${i}`)}`}
+          className={`hsf-say ${floorClass(stage, walker, `say-${i}`)} ${shown}`.trimEnd()}
           style={
             {
               left: seg.to.x + box.left,
@@ -90,27 +98,54 @@ function Bubbles({ stage, walker }: { stage: FloorStage; walker: Walker }) {
     });
 }
 
-/** A stage, 1:1 in px: the furniture, the characters further back first, then every bubble over them all. */
+/**
+ * A stage, 1:1 in px: the furniture, the characters further back first, then every bubble over them all. The wide
+ * stage also holds its floor paths (FLOOR_ONLY), shown below lg in place of the walkers they stand in for. `part`
+ * splits the wide stage's characters: the back row's players live on its own layer (HeroSpaceBackRow), the rest on
+ * the stage.
+ */
 export function HeroSpaceFloor({
   stage: key,
   className,
+  part = 'stage',
+  top,
 }: {
-  stage: FloorStage['key'];
+  stage: Exclude<FloorStage['key'], 'floor'>;
   className: string;
+  part?: 'stage' | 'back';
+  top?: number;
 }) {
   const stage = stageOf(key);
-  const cast = [...stage.cast].sort((a, b) => a.from.y - b.from.y);
+  const back = part === 'back';
+  const twins = key === 'wide' && !back ? FLOOR_ONLY.cast : [];
+  const cast: Placed[] = [
+    ...stage.cast
+      .filter((walker) => key !== 'wide' || onBackRow(walker) === back)
+      .map((walker) => ({
+        stage,
+        walker,
+        shown: (walker.floorBeats ? 'hsf-lg-only' : '') as Shown,
+      })),
+    ...twins.map((walker) => ({ stage: FLOOR_ONLY, walker, shown: 'hsf-below-lg' as Shown })),
+  ].sort((a, b) => a.walker.from.y - b.walker.from.y);
   return (
+    // Decorative and in motion (aria-hidden), so the optical audit skips it: a moving chip's text lands on a
+    // different sub-pixel each frame. The chips still centre their names (text-optical-line, #1273).
     <div
       aria-hidden
+      data-optical-ignore
       className={`hsf-stage pointer-events-none select-none ${className}`}
-      style={{ width: stage.width, height: stage.height }}
+      style={{ width: stage.width, height: stage.height, top }}
     >
+      {/* Lazy, so only the drawing shown is fetched: a browser never fetches a lazy image that isn't rendered, and
+          the other appearance's (display: none) and the other stage's (under a hidden parent) never are. */}
       <img
         src={floorArtHref(key, 'light')}
         alt=""
         width={stage.width}
         height={stage.height}
+        loading="lazy"
+        decoding="async"
         className="hsf-art dark:hidden"
       />
       <img
@@ -118,13 +153,15 @@ export function HeroSpaceFloor({
         alt=""
         width={stage.width}
         height={stage.height}
+        loading="lazy"
+        decoding="async"
         className="hsf-art hidden dark:block"
       />
-      {cast.map((walker) => (
-        <Character key={walker.name} stage={stage} walker={walker} />
+      {cast.map((placed) => (
+        <Character key={`${placed.stage.key}-${placed.walker.name}`} {...placed} />
       ))}
-      {cast.map((walker) => (
-        <Bubbles key={walker.name} stage={stage} walker={walker} />
+      {cast.map((placed) => (
+        <Bubbles key={`${placed.stage.key}-${placed.walker.name}`} {...placed} />
       ))}
     </div>
   );
@@ -140,6 +177,27 @@ export function HeroSpaceStage() {
       stage="wide"
       className="hsf-floor-only absolute bottom-0 left-1/2 -translate-x-1/2 max-sm:hidden"
     />
+  );
+}
+
+/**
+ * The back of the office: a window onto the wide stage's y 144..324 (its drawing and its two players), its own layer
+ * so it shows whole or not at all (space-floor.css `.hsf-back`). The same drawing as the stage, so nothing more is
+ * fetched.
+ */
+export function HeroSpaceBackRow() {
+  return (
+    <div
+      className="hsf-back pointer-events-none absolute left-1/2 -translate-x-1/2 overflow-hidden max-sm:hidden"
+      style={{ width: stageOf('wide').width, height: BACK_ROW_SPAN.foot - BACK_ROW_SPAN.top }}
+    >
+      <HeroSpaceFloor
+        stage="wide"
+        part="back"
+        className="absolute left-0"
+        top={-BACK_ROW_SPAN.top}
+      />
+    </div>
   );
 }
 

@@ -15,11 +15,11 @@ Two decisions, the second resting on the first:
 
 ## Why
 
-Groups cost more than they give. Every selection, drag, delete, duplicate, lock, layer, eraser,
+Groups cost more than they give. Every selection, drag, delete, duplicate, lock, eraser,
 quick-connect and clipboard path needs a group branch, and the interactions (select the group,
 click again to drill in, no resize, group mode to extend one) are a steady source of "why did
 that happen". What people actually wanted from them is covered by the marquee multi-selection
-(move, align, style, delete many at once) and by frames.
+(move, align, style, delete many at once) and by lanes and boundaries.
 
 The one real dependency is the palette's Components. A component built as grouped primitives
 comes apart the moment a user drags the wrong piece, resizes as a
@@ -33,7 +33,7 @@ The Callout has since become a preset of the Card ([The card](card.md)): its row
 `callout` kind that the read migration turns into a card with `cardMedia: 'badge'`.
 
 Each is a `ShapeElement` kind except the Hero, which is an image (see below). All of them keep
-the ordinary element behaviours for free: move, resize, rotate, lock, layers, colours, font,
+the ordinary element behaviours for free: move, resize, rotate, lock, colours, font,
 shadow, comments, links, copy / paste, undo.
 
 | Kind          | Text                                                    | Rows (bounded)                        |
@@ -53,7 +53,11 @@ label editor (rich text, alignment, size, bold) exactly like any shape. The mast
 **Every other piece of text edits in place** once the element is selected: click a stat's value,
 a step's caption or a nav link and type. Enter commits, Escape restores. Before the element is
 selected the text is inert, so a press anywhere on it still selects and drags it (the first click
-selects, the second edits, the same rule the timeline rail uses).
+selects, the second edits, the same rule the timeline rail uses). Once it is selected, a press that **moves** is still the element's: holding a line and dragging moves the
+element as a press anywhere else on it would, and only a press that lets go where it started (a click) puts the
+caret in the line, where it was pressed. **The face never changes colour for it**: pressing, holding, dragging and
+editing all leave the element's fills and ink as they are at rest, in every finish; the line being edited shows a
+thin outline round it (scaled with the canvas, like the selection) and nothing else.
 
 **Rows are added and removed from the context menu** (a Stats / Steps / Links section in the
 Tools flyout, beside the checklist and entity editors), and from a **+** on the canvas at the end
@@ -111,7 +115,7 @@ The editor has none of these:
 
 - Group / Ungroup in the selection popover, multi-selection toolbar and context menu; `⌘G`.
 - Group mode (the "Click another element to add to the group" pill).
-- Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock / layer /
+- Group selection, drill-in (`soloSelectedId`), and group-aware drag / delete / lock /
   duplicate / clipboard / format-painter / insert-between paths.
 - Group quick-connect and `pinned-group` endpoints (except the load-time migration above).
 - The Eraser Panel's "whole group" toggle ([Eraser Panel](../008-canvas/eraser-panel.md)).

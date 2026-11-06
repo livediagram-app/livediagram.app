@@ -1,30 +1,12 @@
-// Counterpart to export-tab.ts — parses an imported `.livehuddle-
-// tab.json` envelope back into a Tab. Markdown is also importable
-// (docs/specs/020-import-export/markdown-import.md) via its own module (`markdown-import.ts`). The Import
-// dialog (docs/specs/020-import-export/markdown-import.md) lets the user pick which format; the chosen format
-// drives the picker's file filter + which parser runs. PNG / PDF
-// remain export-only.
+// Counterpart to export-tab.ts: parses an imported `.livehuddle-
+// tab.json` envelope back into a Tab, the Import dialog's one format. PNG / PDF remain export-only.
 
 // The result of an import attempt, surfaced back to the Import dialog:
-// 'done' (replaced the tab — close, or show the image report when the import
-// met images, docs/specs/020-import-export/import-image-pipeline.md),
+// 'done' (replaced the tab: close),
 // 'cancelled' (file dialog dismissed — stay open, no error), or 'error'
 // (parse / build failed — show it).
 export type ImportOutcome =
-  | {
-      status: 'done';
-      images?: ImportImageReport;
-      // A board scene's report (docs/specs/020-import-export/board-scene.md "The report").
-      scene?: BoardSceneReport;
-      // Boards of a several-board import that could not land (the rest did).
-      failures?: { title: string; message: string }[];
-      // The documents an import made, one per board (docs/specs/020-import-export/board-import.md).
-      documents?: { id: string; name: string }[];
-      // The shape libraries a draw.io import made (docs/specs/013-workspace/shape-libraries.md).
-      libraries?: { id: string; name: string }[];
-    }
-  | { status: 'cancelled' }
-  | { status: 'error'; error: string };
+  { status: 'done' } | { status: 'cancelled' } | { status: 'error'; error: string };
 
 // JSON forward-compat: the envelope carries a numeric `schemaVersion`.
 // Files at or below `TAB_SCHEMA_VERSION` are accepted; newer files are
@@ -41,8 +23,6 @@ import {
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
 } from '@livehuddle/document';
-import type { ImportImageReport } from './import-images';
-import type { BoardSceneReport } from './board-scene/report';
 
 type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
@@ -99,7 +79,7 @@ export function parseImportedTab(text: string): ImportResult {
 
 // Open the browser's file picker and resolve with the chosen file's name
 // + text content. `accept` narrows the picker to the format the user
-// chose in the Import dialog (JSON vs Markdown).
+// chose in the Import dialog (JSON).
 //
 // Crucially, this ALWAYS settles — resolving `null` on cancel. Browsers
 // don't fire `change` when the file dialog is dismissed, so we detect a
@@ -107,13 +87,12 @@ export function parseImportedTab(text: string): ImportResult {
 // fires; if no `change` lands shortly after, it was a cancel. Without
 // this the promise hangs forever and the caller (e.g. the Import dialog)
 // is stuck "busy" with its buttons disabled.
-// The picked file's text, plus the File itself for a format that may be
-// binary (an Excalidraw PNG export).
+// The picked file's text, plus the File itself.
 // `tooBig` (its text then empty, never read) when the file is past the `maxBytes` the caller allows.
 type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
-  accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
+  accept = 'application/json,.json',
   opts: { maxBytes?: number } = {},
 ): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {

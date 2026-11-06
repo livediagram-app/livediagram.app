@@ -1,12 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CallsApiError } from '@/lib/api/calls';
-import { SfuSession, SUBSCRIBE_BATCH } from './sfu-session';
+import {
+  NOT_HEARD_RETRY_MAX_MS,
+  NOT_HEARD_RETRY_MS,
+  SfuSession,
+  SUBSCRIBE_BATCH,
+} from './sfu-session';
 
 const api = vi.hoisted(() => ({
   apiCallTracks:
     vi.fn<(caller: unknown, body: { subscribe?: { sessionId: string }[] }) => Promise<unknown>>(),
   apiCallRenegotiate: vi.fn(),
   apiCallClose: vi.fn(),
+  apiCallLayer: vi.fn(),
 }));
 vi.mock('@/lib/api/calls', async (load) => ({
   ...(await load<typeof import('@/lib/api/calls')>()),
@@ -32,8 +38,14 @@ class FakePc {
   addEventListener(name: string, fn: Listener) {
     this.listeners.set(name, fn);
   }
-  addTransceiver() {
-    const t = { mid: '0', sender: { replaceTrack: vi.fn(async () => {}) }, stop: vi.fn() };
+  added: unknown[] = [];
+  addTransceiver(_track: unknown, init: unknown) {
+    this.added.push(init);
+    const t = {
+      mid: String(this.added.length - 1),
+      sender: { replaceTrack: vi.fn(async () => {}) },
+      stop: vi.fn(),
+    };
     this.transceivers.push(t);
     return t;
   }
@@ -81,6 +93,7 @@ beforeEach(() => {
     }),
   );
   api.apiCallRenegotiate.mockResolvedValue({ ok: true });
+  api.apiCallLayer.mockResolvedValue({ requiresImmediateRenegotiation: false, tracks: [] });
   api.apiCallClose.mockResolvedValue({
     requiresImmediateRenegotiation: false,
     tracks: [],
@@ -93,7 +106,14 @@ afterEach(() => {
 });
 
 function open() {
-  const events = { onTrack: vi.fn(), onTrackEnded: vi.fn(), onFailed: vi.fn(), onPaused: vi.fn() };
+  const events = {
+    onTrack: vi.fn(),
+    onTrackEnded: vi.fn(),
+    onFailed: vi.fn(),
+    onPaused: vi.fn(),
+    onAudioOnly: vi.fn(),
+    onNotHeard: vi.fn(),
+  };
   const sfu = new SfuSession(caller, session, events);
   return { sfu, events, pc: FakePc.last };
 }
@@ -128,7 +148,7 @@ describe('SfuSession', () => {
       sdp: 'answer',
     });
     pc.listeners.get('track')!({ transceiver: { mid: '2' }, track: 'tb' });
-    expect(events.onTrack).toHaveBeenCalledWith('b', expect.anything());
+    expect(events.onTrack).toHaveBeenCalledWith('b', 'mic', expect.anything());
     pc.listeners.get('track')!({ transceiver: { mid: '9' }, track: 'x' });
     pc.listeners.get('track')!({ transceiver: { mid: null }, track: 'x' });
     expect(events.onTrack).toHaveBeenCalledTimes(1);
@@ -139,7 +159,7 @@ describe('SfuSession', () => {
     pc.transceivers.push({ mid: '1', sender: { replaceTrack: vi.fn() }, stop: vi.fn() });
     sfu.want([loc('b')]);
     await settle();
-    expect(events.onTrackEnded).toHaveBeenCalledWith('a');
+    expect(events.onTrackEnded).toHaveBeenCalledWith('a', 'mic');
     expect(api.apiCallClose).toHaveBeenCalledWith(caller, {
       sessionId: 'me',
       sessionToken: 'tok',
@@ -200,6 +220,45 @@ describe('SfuSession', () => {
     expect(events.onFailed).toHaveBeenCalledTimes(1);
   });
 
+  // The server hearing check (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust", #483).
+  it('asks again for a track the room said is not heard yet, waiting longer each time, and stops once closed', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
+    try {
+      const { sfu, events } = open();
+      const tick = (ms: number) => vi.advanceTimersByTimeAsync(ms);
+      const notHeard = {
+        requiresImmediateRenegotiation: false,
+        tracks: [{ errorCode: 'not_heard' }],
+      };
+      api.apiCallTracks.mockResolvedValueOnce(notHeard).mockResolvedValueOnce(notHeard);
+      sfu.want([loc('a')]);
+      await tick(0);
+      expect(events.onNotHeard).toHaveBeenCalledTimes(1);
+      // Held back meanwhile: another step asks nothing for it.
+      sfu.want([loc('a')]);
+      await tick(NOT_HEARD_RETRY_MS - 1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+      await tick(1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+      // Refused again: the next wait doubles, then it is received.
+      await tick(NOT_HEARD_RETRY_MS * 2 - 1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+      await tick(1);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(3);
+      expect(events.onNotHeard).toHaveBeenCalledTimes(2);
+      // The waits are capped, and nothing is asked once the session closed.
+      expect(NOT_HEARD_RETRY_MAX_MS).toBe(NOT_HEARD_RETRY_MS * 8);
+      api.apiCallTracks.mockResolvedValueOnce(notHeard);
+      sfu.want([loc('a'), loc('b')]);
+      await tick(0);
+      sfu.close();
+      await tick(NOT_HEARD_RETRY_MAX_MS);
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
   it('says so when a step is refused because calls are paused, and only then', async () => {
     const { sfu, events } = open();
@@ -218,10 +277,97 @@ describe('SfuSession', () => {
     sfu.want([loc('a')]);
     await settle();
     sfu.close();
-    expect(events.onTrackEnded).toHaveBeenCalledWith('a');
+    expect(events.onTrackEnded).toHaveBeenCalledWith('a', 'mic');
     expect(pc.closed).toBe(true);
     sfu.want([loc('b')]);
     await settle();
     expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+  });
+
+  // docs/specs/012-collaboration/blueprints/video-and-screen-bubbles.md "Subscriptions".
+  describe('video and screens', () => {
+    const cam = (id: string) => ({ sessionId: id, trackName: 'cam', token: 't' });
+    const screen = (id: string) => ({ sessionId: id, trackName: 'screen', token: 't' });
+
+    it('publishes each track once by name, with its encodings, and swaps it in place', async () => {
+      const { sfu, pc } = open();
+      const encodings = [{ rid: 'f' }, { rid: 'h' }];
+      await sfu.publish({} as MediaStreamTrack);
+      await sfu.publish({} as MediaStreamTrack, 'cam', encodings);
+      expect(api.apiCallTracks).toHaveBeenLastCalledWith(caller, {
+        sessionId: 'me',
+        sessionToken: 'tok',
+        publish: { sdp: 'offer', mid: '1', trackName: 'cam' },
+      });
+      expect(pc.added).toEqual([
+        { direction: 'sendonly' },
+        { direction: 'sendonly', sendEncodings: encodings },
+      ]);
+      await sfu.replaceTrack('cam', null);
+      await sfu.replaceTrack('screen', null);
+      expect(pc.transceivers[1]!.sender.replaceTrack).toHaveBeenCalledWith(null);
+      expect(sfu.locator('tt', 'screen')).toEqual({
+        sessionId: 'me',
+        trackName: 'screen',
+        token: 'tt',
+      });
+    });
+
+    it('subscribes one publisher’s microphone, camera and screen apart, and routes each', async () => {
+      const { sfu, events, pc } = open();
+      sfu.want([loc('a'), cam('a'), screen('a')]);
+      await settle();
+      // A camera on the small layer asks for no layer (the route's default).
+      expect(api.apiCallTracks.mock.calls[0]![1].subscribe).toEqual([
+        loc('a'),
+        cam('a'),
+        screen('a'),
+      ]);
+      pc.listeners.get('track')!({ transceiver: { mid: '2' }, track: 'tc' });
+      pc.listeners.get('track')!({ transceiver: { mid: '3' }, track: 'ts' });
+      expect(events.onTrack).toHaveBeenNthCalledWith(1, 'a', 'cam', expect.anything());
+      expect(events.onTrack).toHaveBeenNthCalledWith(2, 'a', 'screen', expect.anything());
+      // Dropping the screen alone closes it alone.
+      sfu.want([loc('a'), cam('a')]);
+      await settle();
+      expect(events.onTrackEnded).toHaveBeenCalledWith('a', 'screen');
+      expect(api.apiCallClose.mock.lastCall![1]).toMatchObject({ mids: ['3'] });
+    });
+
+    it('asks a maximised camera on the large layer, and switches a held one in place', async () => {
+      const { sfu } = open();
+      sfu.want([{ ...cam('a'), layer: 'f' }]);
+      await settle();
+      expect(api.apiCallTracks.mock.calls[0]![1].subscribe).toEqual([{ ...cam('a'), layer: 'f' }]);
+      // Restore: the same subscription moves to the small layer, without a new one.
+      sfu.want([cam('a')]);
+      await settle();
+      expect(api.apiCallLayer).toHaveBeenCalledWith(caller, {
+        sessionId: 'me',
+        sessionToken: 'tok',
+        tracks: [{ mid: '1', sessionId: 'a', trackName: 'cam', layer: 'h' }],
+      });
+      expect(api.apiCallTracks).toHaveBeenCalledTimes(1);
+      // Asked again, settled: nothing more.
+      sfu.want([cam('a')]);
+      await settle();
+      expect(api.apiCallLayer).toHaveBeenCalledTimes(1);
+      // A refused layer change is not retried in a loop.
+      api.apiCallLayer.mockRejectedValueOnce(new Error('update_track_error'));
+      sfu.want([{ ...cam('a'), layer: 'f' }]);
+      await settle();
+      sfu.want([{ ...cam('a'), layer: 'f' }]);
+      await settle();
+      expect(api.apiCallLayer).toHaveBeenCalledTimes(2);
+    });
+
+    it('says so when a camera or screen is refused because calls are audio only', async () => {
+      const { sfu, events } = open();
+      api.apiCallTracks.mockRejectedValueOnce(new CallsApiError(503, 'calls_off', 'audio-only'));
+      sfu.want([cam('a')]);
+      await settle();
+      expect(events.onAudioOnly).toHaveBeenCalledTimes(1);
+      expect(events.onPaused).not.toHaveBeenCalled();
+    });
   });
 });

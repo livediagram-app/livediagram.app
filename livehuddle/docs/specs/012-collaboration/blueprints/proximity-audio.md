@@ -18,12 +18,25 @@ Derived from [Proximity audio](../proximity-audio.md). Paths are livehuddle's; `
 
 ## Behaviour and state
 
+**Module layout** (#496, no behaviour of its own): the call (`lib/calls/proximity-call.ts`) is the orchestrator and
+composes focused parts. `call-config.ts` holds the timings, media constraints, `CallSignal`, `CallScene` and
+`ProximityCallInput`; `call-mic.ts` (`CallMic`) the microphone, its idle close, mute and the voice sampler;
+`call-video.ts` (`CallVideo`) the camera and the shared screen; `call-beacon.ts` (`CallBeacon`, `trackSignalOf`) the
+`call-track` locator, its resend throttle and the quiet-spell `calls-check`; `call-subscriptions.ts`
+(`chooseSubscriptions`, `seeable`, `presenceOf`) who is heard and which tracks are wanted; `call-staging.ts`
+(`stageScene`) the stage and hands for one scene; `call-receiver.ts` (`CallReceiver`) arriving tracks into the audio
+graph or a bubble, and their placing. The store is three modules behind one door, `calls-store.ts` (peers, your own
+call, the kill-switch mode), which re-exports `calls-hands-store.ts` (hands, let-speaks, stamped levels) and
+`calls-media-store.ts` (the bubbles' streams and the maximised one).
+
 **Call phase** (`lib/calls/calls-store.ts`): `off` → (Join Audio) `joining` → `live`; `joining` → `error` on a refused
 session or a failed connection; `live`/`error` → (Leave Audio, leaving the mode, changing tab, unmount) `off`.
 `micState`: `closed` (no other walker for `MIC_IDLE_CLOSE_MS`, or a listener), `open`, `blocked` (getUserMedia
 refused); `muted` is separate and survives the microphone closing.
 
-**Hearing** (`lib/calls/hearing.ts`, pure): `nextHeard(prev, self, peers)` keeps a peer already heard while its
+**Hearing** (`lib/calls/hearing.ts`, pure): rooms first ([Meeting rooms and the stage](meeting-rooms-and-stage.md)
+blueprint: `nextHeard`'s optional `zoning` hears a shared room whole and never across zones). In the open,
+`nextHeard(prev, self, peers)` keeps a peer already heard while its
 distance is ≤ `RELEASE_RADIUS_PX` and adds one at ≤ `HEARING_RADIUS_PX`; only peers with a locator are candidates.
 `gainAt(d)`: 1 at ≤ `FULL_VOLUME_RADIUS_PX`, `cos(π/2 · (d − full)/(release − full))` to 0 at the release radius.
 `panAt(dx)`: `clamp(dx / HEARING_RADIUS_PX, −1, 1) · MAX_PAN`. `barsOpacity(d, heard)`: 1 when heard, else linear from
@@ -70,7 +83,7 @@ Routes (`apps/api/src/routes/calls.ts`), each JSON:
 | `PUT /api/documents/:id/calls/renegotiate` | `{ sessionId, sessionToken, sdp }`                                                             | `{ ok: true }`                                                                             |
 | `PUT /api/documents/:id/calls/close`       | `{ sessionId, sessionToken, mids, sdp? }`                                                      | `CallTracksResponse`                                                                       |
 
-Rejections: `503 { error: 'calls_off', reason: 'production' | 'unconfigured' | 'paused' | 'audio-only' }` (the
+Rejections: `503 { error: 'calls_off', reason: 'unconfigured' | 'paused' | 'audio-only' }` (the
 last two from the [kill switch](../../016-platform/blueprints/calls-kill-switch.md#wired-in-part-2)); `404` without a grant; `410` trashed;
 `403 { error: 'calls_listen_only' }` for a listener's publish or a listener-signed session; `400 { error:
 'invalid_call_request' }` for a malformed body, a bad session token, a bad track token, more than
@@ -87,6 +100,10 @@ Nothing is stored: no table, no Durable Object storage, no log. The room keeps n
 held frames for one step. The editor's store is memory only and empties on leaving.
 
 ## Errors and edge cases
+
+- **`not_heard`** (the server hearing check, meeting-rooms-and-stage blueprint "Security and trust"): a subscribed
+  track the room refuses is not a dead locator; `SfuSession` holds it back 2 s (doubling to 16 s) and asks again, and
+  the call re-sends `call-session`. Every other `errorCode` is still a refusal never asked for again.
 
 - Calls off, or no shared room: no controls; the store stays `off`.
 - Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**;
@@ -150,23 +167,21 @@ token. The editor logs through `debugLog('calls', …)`.
 
 ## Testing
 
-| Rule                                                          | Test                                                     |
-| ------------------------------------------------------------- | -------------------------------------------------------- |
-| Production refuses whatever is set; secrets unset refuses     | `apps/api/src/calls/calls-gate.test.ts`                  |
-| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`                 |
-| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked)    |
-| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                      |
-| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`              |
-| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`             |
-| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`                  |
-| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`           |
-| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`              |
-| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`                |
-| A vote no longer hides characters                             | `apps/editor/app/document/[id]/usePresenceRows.test.tsx` |
-| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`           |
-| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`              |
-| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`        |
-| A vote keeps sending characters, speech and audio             | `apps/editor/hooks/collab/useEditorBroadcast.test.tsx`   |
+| Rule                                                          | Test                                                  |
+| ------------------------------------------------------------- | ----------------------------------------------------- |
+| Secrets unset refuses; production open once they are set      | `apps/api/src/calls/calls-gate.test.ts`               |
+| Tokens bind Space, session and role                           | `apps/api/src/calls/call-tokens.test.ts`              |
+| Routes: grant, gate, listener publish, bad token, upstream    | `apps/api/src/routes/calls.test.ts` (Realtime mocked) |
+| Room drops a Viewer's voice and track ops, and malformed ones | `apps/api/src/room-op-gate.test.ts`                   |
+| Voice is tab-scoped and coalesced; 100 talking walkers bound  | `apps/api/src/document-room-fanout.test.ts`           |
+| Parsers                                                       | `packages/api-schema/src/call-voice.test.ts`          |
+| Hearing, gain, pan, hysteresis, bars fade                     | `apps/editor/lib/calls/hearing.test.ts`               |
+| Detector: threshold, hangover, quantise, rate, refresh, mute  | `apps/editor/lib/calls/voice-detector.test.ts`        |
+| Store: receive, stale, prune                                  | `apps/editor/lib/calls/calls-store.test.ts`           |
+| Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`             |
+| The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`        |
+| One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`           |
+| Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`     |
 
 ## Constants and configuration
 
@@ -204,4 +219,4 @@ Cloudflare Realtime SFU (`https://rtc.live.cloudflare.com/v1/apps/<id>/…`) and
 
 ## Defaults ledger
 
-See `DEFAULTS.md` rows PA1 to PA6.
+See `DEFAULTS.md` rows PA1 to PA4 and PA6.

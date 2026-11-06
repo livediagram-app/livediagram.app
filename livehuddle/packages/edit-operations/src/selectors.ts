@@ -262,12 +262,12 @@ function applyTerm(
             code: 'invalid_value',
             operation,
             details: [
-              `in:${term.word}: ${refsOf(state).refOf(container.id)} is not a frame or lane`,
+              `in:${term.word}: ${refsOf(state).refOf(container.id)} is not a boundary or lane`,
               ...(containers.length
                 ? [`containers: ${containers.map((c) => refsOf(state).refOf(c.id)).join(' ')}`]
                 : []),
             ],
-            hint: 'name a frame or a lane',
+            hint: 'name a boundary or a lane',
           },
         };
       }

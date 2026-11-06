@@ -856,9 +856,7 @@ export function ExportMenu() {
   const dy = 12;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
     ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
@@ -881,23 +879,16 @@ export function ExportMenu() {
   );
 }
 
-/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the
- *  format cards. */
+/** The Import to Tab dialog: the amber warning naming the tab about to be replaced, over the box
+ *  a tab's JSON is pasted into (the one format, so the dialog opens at its panel). */
 export function ImportWarning() {
   const W = 420;
-  const H = 210;
+  const H = 170;
   const dx = 20;
   const dy = 10;
-  const cards: [string, string][] = [
-    ['JSON', 'json'],
-    ['Mermaid', 'mmd'],
-    ['Markdown', 'md'],
-    ['Excalidraw', 'excali'],
-    ['draw.io', 'drawio'],
-  ];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={380} h={150} title="Import to Tab" sceneW={W} sceneH={H}>
         {/* The amber warning banner */}
         <rect
           x={dx + 16}
@@ -931,52 +922,20 @@ export function ImportWarning() {
         <Label x={dx + 44} y={dy + 76} size={10} className="fill-slate-700">
           with the imported content. Undo brings it back.
         </Label>
-        {cards.map(([title, badge], i) => (
-          <FormatCard
-            key={title}
-            x={dx + 16 + (i % 3) * 118}
-            y={dy + 100 + Math.floor(i / 3) * 40}
-            w={112}
-            title={title}
-            badge={badge}
-          />
-        ))}
+        {/* The paste box a tab's JSON goes into */}
+        <rect
+          x={dx + 16}
+          y={dy + 100}
+          width={348}
+          height={36}
+          rx={6}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1}
+        />
+        <Label x={dx + 28} y={dy + 122} size={10} tone="muted">
+          {'{ "kind": "livehuddle.tab", "tab": { … } }'}
+        </Label>
       </Dialog>
-    </Scene>
-  );
-}
-
-/** Before/after cleanup: scattered shapes on the left, snapped into tidy rows and columns on the
- *  right. */
-export function CleanupBeforeAfter() {
-  return (
-    <Scene w={420} h={210}>
-      <Label x={14} y={22} size={10} weight={700} tone="muted">
-        BEFORE
-      </Label>
-      {/* Scattered, misaligned */}
-      <Shape x={20} y={40} w={56} h={30} kind="rect" />
-      <Shape x={108} y={64} w={56} h={30} kind="rect" />
-      <Shape x={44} y={104} w={56} h={30} kind="rect" />
-      <Shape x={128} y={132} w={56} h={30} kind="rect" />
-      <Arrow from={[76, 55]} to={[108, 75]} tone="muted" />
-      <Arrow from={[60, 70]} to={[60, 104]} tone="muted" />
-      <Arrow from={[142, 94]} to={[152, 132]} tone="muted" />
-
-      {/* Divider arrow */}
-      <Arrow from={[196, 105]} to={[226, 105]} kind="straight" />
-
-      <Label x={246} y={22} size={10} weight={700} tone="muted">
-        AFTER
-      </Label>
-      {/* Snapped to a tidy grid */}
-      <Shape x={250} y={48} w={56} h={30} kind="rect" accent />
-      <Shape x={332} y={48} w={56} h={30} kind="rect" accent />
-      <Shape x={250} y={120} w={56} h={30} kind="rect" accent />
-      <Shape x={332} y={120} w={56} h={30} kind="rect" accent />
-      <Arrow from={[306, 63]} to={[332, 63]} />
-      <Arrow from={[278, 78]} to={[278, 120]} />
-      <Arrow from={[360, 78]} to={[360, 120]} />
     </Scene>
   );
 }

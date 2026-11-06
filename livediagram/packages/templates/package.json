@@ -21,6 +21,7 @@
     "@livediagram/document": "workspace:*"
   },
   "devDependencies": {
+    "@liveworkspace/avatar": "workspace:^",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "oxlint": "^1.90.0",

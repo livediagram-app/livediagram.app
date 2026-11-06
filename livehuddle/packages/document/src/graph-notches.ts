@@ -1,4 +1,4 @@
-// No notch in a straight line (docs/specs/015-api/mcp-server.md §4.7 "The graph look"): an elbow whose ends sit
+// No notch in a straight line (livediagram/docs/specs/015-api/mcp-server.md §4.7 "The graph look"): an elbow whose ends sit
 // within NOTCH_MAX of one line, across a middle run shorter than KINK_RUN, is drawn straight. Two boxes of different
 // widths centred a pixel or two apart, or two anchors a pixel off, gave an elbow whose middle run was a 2 px step: a
 // notch a reader sees, where a slant of a few pixels over the edge's length cannot be seen. An elbow whose straight
@@ -32,7 +32,7 @@ export function withoutNotches(elements: Element[]): Element[] {
   // The boxes a straightened line must miss: every box but the frames and lanes that hold them.
   const boxes = elements.filter(
     (el): el is BoxedElement =>
-      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane')),
+      isBoxed(el) && !(el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane')),
   );
   const pinned = (end: Endpoint) => (end.kind === 'pinned' ? end.elementId : null);
   // How many arrows meet each box, and the boxes moved to true a line up.
@@ -47,7 +47,7 @@ export function withoutNotches(elements: Element[]): Element[] {
   // a gap from its neighbour, or hugged by its frame's padding, has no room for the step and is left where it is.
   const holders = elements.filter(
     (el): el is BoxedElement =>
-      isBoxed(el) && el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane'),
+      isBoxed(el) && el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane'),
   );
   const within = (a: Rect, b: Rect) =>
     a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;

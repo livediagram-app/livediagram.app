@@ -9,6 +9,7 @@ import {
   personName,
   verbList,
 } from './whatHappened';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const noon = new Date(2026, 9, 21, 12).getTime();
 const HOUR = 3_600_000;
@@ -81,10 +82,11 @@ describe('What Happened’s rules', () => {
         occurredAt: noon - i * 60_000,
       }),
     );
-    const start = performance.now();
-    const days = groupsByDay(groupWhatHappened(events, 'me'), noon);
-    const ms = performance.now() - start;
+    let days: ReturnType<typeof groupsByDay> = [];
+    const ms = cpuMsOf(() => {
+      days = groupsByDay(groupWhatHappened(events, 'me'), noon);
+    });
     expect(days.length).toBeGreaterThan(1);
-    expect(ms).toBeLessThan(200);
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

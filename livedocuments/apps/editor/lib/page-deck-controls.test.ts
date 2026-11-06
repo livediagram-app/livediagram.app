@@ -1,4 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+
+const track = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/telemetry', () => ({ track }));
 import type { Deck } from '@livedocuments/document';
 import { slideFitOptions } from './presentation-config';
 import { pageDeckControls } from './page-deck-controls';
@@ -14,7 +17,13 @@ const deck: Deck = {
 };
 
 describe('pageDeckControls', () => {
-  const verbs = { newPageSlide: vi.fn(), toggleSlideHidden: vi.fn(), setSlideNoteCards: vi.fn() };
+  const verbs = {
+    newPageSlide: vi.fn(),
+    toggleSlideHidden: vi.fn(),
+    setSlideNoteCards: vi.fn(),
+    flushDeckSave: vi.fn(),
+    start: vi.fn(async () => {}),
+  };
 
   it('is absent for someone who cannot change the deck', () => {
     expect(pageDeckControls(deck, 't', false, verbs)).toBeUndefined();
@@ -42,6 +51,15 @@ describe('pageDeckControls', () => {
     const cards = [{ id: 'c1', text: 'Say hello' }];
     c.setNoteCards('s1', cards);
     expect(verbs.setSlideNoteCards).toHaveBeenCalledWith('s1', cards);
+    c.flushNotes();
+    expect(verbs.flushDeckSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('presents from a slide, counted before the show starts', () => {
+    const c = pageDeckControls(deck, 't', true, verbs)!;
+    c.present('s1');
+    expect(track).toHaveBeenCalledWith('UI', 'Used', 'PresentFromHere');
+    expect(verbs.start).toHaveBeenCalledWith('s1');
   });
 });
 

@@ -2,12 +2,20 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import {
+  callLetByMe,
+  callMaximised,
+  resetCallPeers,
+  setCallMaximised,
+} from '@/lib/calls/calls-store';
 import { useCanvasCall } from './useCanvasCall';
 
 const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
-vi.mock('@/lib/calls/useProximityCall', () => ({ DO_NOT_DISTURB: false, ...hook }));
+vi.mock('@/lib/calls/useProximityCall', () => hook);
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => telemetry);
+const toast = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const props = {
   remoteAvatars: [
@@ -18,6 +26,7 @@ const props = {
   onCallSignal: vi.fn(),
   activeTabId: 't1',
   selfParticipant: { color: '#00f' },
+  elements: [],
 } as unknown as CanvasProps;
 
 afterEach(() => vi.clearAllMocks());
@@ -68,5 +77,167 @@ describe('useCanvasCall', () => {
     );
     expect(result.current.bars.self).toBeNull();
     expect(result.current.bars.onWalkTo).toBeUndefined();
+  });
+
+  // docs/specs/012-collaboration/video-and-screen-bubbles.md "Who sees what" and "Share roles".
+  it('tells the call the visible canvas area, snapped, and whether this session may share', () => {
+    const run = (viewport?: {
+      offset: { x: number; y: number };
+      zoom: number;
+      width: number;
+      height: number;
+    }) =>
+      renderHook(() =>
+        useCanvasCall({
+          props: { ...props, canShareScreen: true },
+          canvasTool: 'avatar',
+          avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+          avatarScale: 1,
+          ...(viewport ? { viewport } : {}),
+        }),
+      );
+    const { result } = run({ offset: { x: -1000, y: 30 }, zoom: 2, width: 1280, height: 700 });
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        canShare: true,
+        view: { x: 1024, y: 0, width: 640, height: 320 },
+      }),
+    );
+    expect(result.current.bubbles.self).toMatchObject({ at: { x: 0, y: 0 }, color: '#00f' });
+    // The bubbles wrap inside what is surely on screen: half a snap step in from each edge (#487).
+    expect(result.current.bubbles.view).toEqual({ left: 1056, width: 576 });
+    // Each edge snaps on its own (#503): the screen's right edge at 1410 holds the bubbles' at 1376, where a snapped
+    // width (1472) would have put it at 1440, past the screen.
+    const panned = run({ offset: { x: 30, y: 0 }, zoom: 1, width: 1440, height: 900 });
+    const edge = panned.result.current.bubbles.view!;
+    expect(edge).toEqual({ left: 32, width: 1344 });
+    expect(edge.left + edge.width).toBeLessThanOrEqual(1410);
+    // Not measured yet: no view.
+    run({ offset: { x: 0, y: 0 }, zoom: 1, width: 0, height: 0 });
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+    run();
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": every room on the tab is a call, and
+  // nothing else (a rug is not).
+  it('hands the call the rooms and stages, and nothing else', () => {
+    const room = (id: string, x: number) => ({
+      id,
+      type: 'shape',
+      shape: 'room',
+      x,
+      y: 0,
+      width: 480,
+      height: 320,
+    });
+    renderHook(() =>
+      useCanvasCall({
+        props: {
+          ...props,
+          elements: [
+            room('one', 0),
+            room('two', 1000),
+            { id: 'rug', type: 'shape', shape: 'rug', x: 0, y: 0, width: 99, height: 99 },
+            { ...room('stage', 0), shape: 'stage', x: 40, y: 40, width: 360, height: 140 },
+          ],
+        } as unknown as CanvasProps,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    const { zones, stages } = hook.useProximityCall.mock.lastCall![0] as {
+      zones: { id: string }[];
+      stages: { id: string; zone: string | null }[];
+    };
+    expect(zones.map((z) => z.id)).toEqual(['one', 'two']);
+    // And each stage with the room it stands in (the same spec's "The stage").
+    expect(stages.map((s) => [s.id, s.zone])).toEqual([['stage', 'one']]);
+  });
+
+  // meeting-rooms-and-stage.md "Raise hand" and "Do Not Disturb" (part 3).
+  it('lets an Editor let a hand speak and press Done, and hides others’ bars under Do Not Disturb', () => {
+    const send = vi.fn();
+    const { result } = renderHook(() =>
+      useCanvasCall({
+        props: { ...props, canShareScreen: true, onCallSignal: send },
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+        doNotDisturb: true,
+      }),
+    );
+    expect(result.current.bars.hidePeers).toBe(true);
+    expect(hook.useProximityCall).toHaveBeenLastCalledWith(
+      expect.objectContaining({ doNotDisturb: true }),
+    );
+    expect(result.current.hands.self).toEqual({ at: { x: 0, y: 0 }, scale: 1 });
+    result.current.hands.onLetSpeak!('p1', true);
+    expect(send).toHaveBeenLastCalledWith({ kind: 'avatar-let-speak', targetId: 'p1', on: true });
+    expect(callLetByMe().has('p1')).toBe(true);
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'LetSpeak');
+    result.current.hands.onLetSpeak!('p1', false);
+    expect(callLetByMe().has('p1')).toBe(false);
+    expect(telemetry.track).toHaveBeenCalledTimes(1);
+    resetCallPeers();
+  });
+
+  it('gives a Participant off every stage no Let Speak', () => {
+    const { result } = renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    expect(result.current.hands.onLetSpeak).toBeUndefined();
+    expect(result.current.bars.hidePeers).toBe(false);
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#469).
+  it('lets an Editor stop someone else’s share, and nobody else', () => {
+    const send = vi.fn();
+    const run = (extra: Partial<CanvasProps>, canvasTool: 'avatar' | 'select' = 'avatar') =>
+      renderHook(() =>
+        useCanvasCall({
+          props: { ...props, onCallSignal: send, ...extra },
+          canvasTool,
+          avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+          avatarScale: 1,
+        }),
+      ).result.current.bubbles.onStopShare;
+    const stop = run({ canShareScreen: true })!;
+    setCallMaximised({ id: 'p1', media: 'screen' });
+    stop('p2');
+    expect(callMaximised()).toEqual({ id: 'p1', media: 'screen' });
+    stop('p1');
+    expect(callMaximised()).toBeNull();
+    expect(send).toHaveBeenLastCalledWith({ kind: 'call-stop-share', targetId: 'p1' });
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'StopOthersShare');
+    // A Participant, a Viewer, an Editor out of the mode: none.
+    expect(run({})).toBeUndefined();
+    expect(run({ takePart: false })).toBeUndefined();
+    expect(run({ canShareScreen: true }, 'select')).toBeUndefined();
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#504).
+  it('tells you which Editor stopped your share, or that an Editor did', () => {
+    renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    const { onShareStopped } = hook.useProximityCall.mock.calls.at(-1)![0] as {
+      onShareStopped: (by: string) => void;
+    };
+    onShareStopped('p1');
+    expect(toast.info).toHaveBeenLastCalledWith('Sam stopped your screen share');
+    onShareStopped('gone');
+    expect(toast.info).toHaveBeenLastCalledWith('An Editor stopped your screen share');
   });
 });

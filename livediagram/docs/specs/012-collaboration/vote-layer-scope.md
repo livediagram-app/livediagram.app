@@ -54,6 +54,9 @@ votable.
 - **Votable elements get a soft brand ring** (`ring-brand-400/70`,
   `pointer-events-none` so it can't intercept the cast). Dimming alone tells
   you what _isn't_ a target; the ring answers "where do I click".
+- **The same treatment shows a text-only vote's set** ([Only items with text](session-tools.md#only-items-with-text)):
+  the dim and the ring show whenever casting is open and the vote has a layer
+  scope, `onlyWithText`, or both.
 - **Both only while casting is open.** After **End vote** the canvas returns to
   normal, so the results walkthrough reads against the full document.
 

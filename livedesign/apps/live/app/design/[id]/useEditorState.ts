@@ -71,7 +71,6 @@ import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { previewAdderKey, useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
-import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDesignHistory } from '@/hooks/canvas/useDesignHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
 import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
@@ -87,7 +86,7 @@ const NO_ELEMENTS: Element[] = [];
 // Said when a main could not be stored (docs/specs/009-elements/components.md "Sharing, collaboration and storage").
 const COMPONENT_SAVE_FAILED =
   'Your component change could not be saved. Check your connection and try again.';
-import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
+import { writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
 import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
 import { withStyleOfTab } from '@/lib/tab-theme-apply';
@@ -669,20 +668,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // edit link edits its one tab's content, nothing around it
   // (docs/specs/013-workspace/tab-scoped-share-links.md).
   const isStructureReadOnly = isReadOnly || sessionTabScope !== null;
-  // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md). Its shortcut
-  // counter rides the keyboard hook below.
-  const powerUserOffer = usePowerUserOffer({
-    prefs: userPreferences,
-    settled: prefsSettled,
-    editable: hydrated && !isReadOnly,
-    embed: !appChrome,
-    zen: panelLayout.zenMode,
-    apply: (next) => {
-      // Built on this render's preferences: moved onto the freshest before the whole blob is written.
-      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id));
-    },
-    offer: toast.offer,
-  });
 
   // Per-tab autosave. The previous snapshot lives in a ref so we can
   // diff: any tab whose object reference changed since last save is
@@ -1401,6 +1386,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
     activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
+  // tab's lock, which holds every element's place, not an image's picture.
+  const pictureBlocked =
+    (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1424,8 +1413,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
   });
 
-  const commit = (mapElements: (els: Element[]) => Element[]) => {
-    if (editsBlocked) return;
+  // A picture swap passes `{ picture: true }` and answers to `pictureBlocked` instead of `editsBlocked`.
+  const commit = (mapElements: (els: Element[]) => Element[], opts?: { picture?: boolean }) => {
+    if (opts?.picture ? pictureBlocked : editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
     // this `commit` — e.g. the link-card unfurl resolves a few seconds
@@ -1572,6 +1562,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Selection + placement + format helpers. See useElementHelpers.
   const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
+      layerInertIds,
       readSelection,
       activeId,
       activeTab,
@@ -1787,6 +1778,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
+    // A locked tab still takes a picture swap (docs/specs/009-elements/images.md "Locked images").
+    pictureBlocked: contentAddBlocked({
+      participating: participant.participating,
+      canAddContent: participant.can.addContent,
+      blocked: pictureBlocked,
+      structureBlocked: pictureBlocked || isReadOnly,
+    }),
+    commitPicture: (mapElements) => commit(mapElements, { picture: true }),
     getViewportCenter,
     commit,
     setSelectedId,
@@ -2488,7 +2487,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
     onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
-    onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: shortcutsEnabled,
   });
 

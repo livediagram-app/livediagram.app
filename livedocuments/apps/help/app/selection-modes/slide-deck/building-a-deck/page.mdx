@@ -1,70 +1,57 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SlideMenu } from '@liveworkspace/help-site/art/illustrations/presentation';
 
 export const metadata = helpMetadata({
   title: 'Building a Deck',
   description:
-    'Add pages as slides, rename and duplicate slides, hide one from the run, reorder the deck by dragging, and write presenter notes with a time budget.',
+    'Add pages to the deck from Contents, put them in order, hide one from the run, present from any slide, and write speaker notes on each.',
   path: '/help/selection-modes/slide-deck/building-a-deck/',
 });
 
 <ArticleLayout
   title="Building a Deck"
-  description="Everything you do to a deck before you present it: slides, order, hiding, notes and timings."
+  description="Everything you do to a deck before you present it: slides, order, hiding and notes."
   categoryTitle="Selection Modes"
   categorySlug="selection-modes"
   parentArticle={{ title: 'Slide Deck', slug: 'slide-deck' }}
   subArticles={getSubArticles('slide-deck').filter((a) => a.slug !== 'building-a-deck')}
 >
 
-A deck is built from the **Slide Deck** panel, one slide per point you mean to make. Every [slide page](/help/pages/slide-pages/) is in it already; add any other page by picking it from the list at the bottom of the panel and pressing **Add as slide**. Each row shows the slide's position, its name, and the tab and page it shows, plus a marker when it has notes or is hidden.
+A deck is built in **Contents**, the list of your pages down the left of the canvas (or behind the **Contents** button in the bottom-right corner when you have tucked it away). Every [slide page](/help/pages/slide-pages/) is in the deck already. Everything else you do to a slide is on its page's **⋯** menu in Contents: rest the pointer on a row and press **⋯**, or right-click the row.
 
-Building a deck needs edit access: on a view-only or participant link the Slide Deck tool isn't offered. Presenting doesn't: the **Present** button in the top bar is there for everyone on the document.
+Building a deck needs edit access: on a view-only or participant link the rows have no menu. Presenting doesn't: the **Present** button in the top bar is there for everyone on the document.
 
-**A row does one thing: press it to open that slide.** The editor switches to that slide's tab and page, which is how you check a slide without presenting it. Everything you can _do_ to a slide lives in its `…` menu instead, so a panel the width of the palette never has to carry five controls per row.
+## Adding a page
 
-## The slide menu
+An infographic or article page is not in the deck until you add it. Open its **⋯** menu and press **Add to Slides**: the page joins the show in its place in the page order, and from then on it is a slide like any other.
 
-Press the `…` at the right of a row and you get the same shape of menu the Explorer's rows and the tab context menu use: a row of quick actions across the top, then a labelled category you can open.
+## Hiding a slide from the run
 
-<Figure caption="The slide menu: Rename, Add notes and Duplicate across the top with Delete apart on the right, then the Visibility category.">
-  <SlideMenu />
-</Figure>
+On a page that is in the deck, the menu offers **Hide in Slides**, and on a hidden one **Show in Slides**.
 
-The quick actions are **Rename**, notes (**Add notes**, or **Edit notes** once there are some, lit when the slide has a script waiting), **Duplicate** (a copy of the slide straight after it, for a "same picture, different point" pair) and **Delete**, pinned to the right on its own.
-
-**Deleting asks first.** A confirmation opens beside the menu button. Deleting a slide never deletes its page: the page stays. A slide page's own slide has no Delete, since the deck would put it straight back; hide it instead.
-
-### Visibility: hiding a slide from the run
-
-The menu's **Visibility** category carries a single switch: **Hide** the slide, or **Show** it again.
-
-Hiding is a different idea from deleting. It is for the slide you might want next week, the backup detail for a question you may not get, the section you cut for time: the slide stays in the deck, it just doesn't run. A hidden slide shows in the panel with its name struck through and an eye marker beside it, so you can always see it is there.
+Hiding is a different idea from deleting. It is for the slide you might want next week, the backup detail for a question you may not get, the section you cut for time: the page stays, and so does its slide, it just doesn't run. Contents sets a hidden slide's picture aside under a **Hidden** veil, so you can always see it is there.
 
 Hidden slides are skipped everywhere at once: the count on the **Present** button, the `7 / 23` in the presenter's display, the jump list, and what advancing lands on all leave them out, so nothing can disagree about how long the deck is.
 
+## Presenting from a slide
+
+**Present From Here**, on a slide's menu, starts the show at that slide, so you can rehearse the second half without clicking through the first.
+
 ## Ordering the deck
 
-**Drag a row** up or down the list to move it. The list does not reshuffle while you drag: a caret shows where the row will land, and the move happens when you let go, because a list that reorders live moves the very row you were aiming at. It works on touch as well as with a mouse.
+**The deck runs in Contents' order.** Drag a row up or down the list to move its page, and its slide moves with it. The list does not reshuffle while you drag: a caret shows where the row will land, and the move happens when you let go. Each tab presents on its own: **Present** runs the tab you are on, so a talk lives on one tab and another tab can hold another talk.
 
-## Presenter notes
+## Speaker notes
 
-Open a slide's `…` menu and press **Add notes**, and the slide's note cards open under the list: what you mean to _say_ over this slide, one point a card. Press **Add First Card** and type; `⌘↵` (`Ctrl+Enter`) starts the next card, and `Esc` or **Done** closes the one you are writing. Drag a card by its grip, or press **Move Up** or **Move Down** (`Alt+↑` / `Alt+↓`), to change the order; the bin removes one, with **Undo** for a few seconds. A slide holds up to 20 cards. Press **Done** at the top to put the notes away again. They are behind the menu rather than always on screen so the panel never grows a list you did not ask for.
+Each slide page's title bar has **Notes**. Press it to write what you mean to _say_ over this slide, as note cards, one point a card. Press **Add First Card** and type; `⌘↵` (`Ctrl+Enter`) starts the next card, and `Esc` or **Done** closes the one you are writing. Drag a card by its grip, or press **Move Up** or **Move Down** (`Alt+↑` / `Alt+↓`), to change the order; the bin removes one, with **Undo** for a few seconds. A slide holds up to 20 cards.
 
-Notes belong to the slide, not to anything on it, which matters because the same box on two slides usually wants two different sentences said about it. Each card is plain text with its speaking time in the corner, since it is a script you read off rather than something anybody needs to bold, and during the presentation they stay hidden until you ask for them.
-
-## A time budget per slide
-
-Under the cards sits **Budget**, a number of minutes for this slide, shown while you present once you turn the budget on in the presenter settings. It is blank for most slides and that is the normal case; fill it in for the ones you know you tend to overrun.
-
-It sits with the notes deliberately: both are decided while you are _writing_ the talk, not while you are giving it. While you present, a slide with a budget can show time-on-this-slide against it in the presenter's display, and going over is marked rather than enforced. See [the pacing display](/help/selection-modes/slide-deck/presenter-controls/).
+Notes belong to the slide, not to anything on it. Each card is plain text with its speaking time in the corner, since it is a script you read off rather than something anybody needs to bold, and during the presentation they stay hidden until you ask for them.
 
 <Tip>
-  Build the deck in the order you will speak, then walk it once by pressing each row in turn. You
-  are checking that every slide's elements make sense on their own, which is the one thing the panel
-  cannot tell you.
+  Build the deck in the order you will speak, then walk it once with Present From Here on each slide
+  you are unsure of. You are checking that every slide makes sense on its own, which is the one
+  thing the list cannot tell you.
 </Tip>
 
 </ArticleLayout>

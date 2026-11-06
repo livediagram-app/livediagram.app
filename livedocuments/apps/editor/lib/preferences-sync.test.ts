@@ -38,11 +38,14 @@ const mockedPut = vi.mocked(apiPutPreferences);
 // every save was refused.
 function fullAccount(): UserPreferences {
   return {
+    ...({
+      // Written by the retired Power user mode (docs/specs/007-editor/power-user-mode.md), until a read drops it.
+      powerUserBaseline: {
+        showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+        notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
+      },
+    } as UserPreferences),
     quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
-    powerUserBaseline: {
-      showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
-      notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
-    },
     // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
     customSwatches: Array.from({ length: 400 }, (_, i) => `#${String(i).padStart(6, '0')}`),
     telemetryEnabled: false,
@@ -52,7 +55,6 @@ function fullAccount(): UserPreferences {
     elementIndicatorStyle: 'footer',
     drawPattern: 'graph',
     reduceMotion: true,
-    powerUserMode: true,
     notifyTips: false,
     notifyMilestones: false,
   };
@@ -85,7 +87,9 @@ describe('fitPreferences', () => {
     expect(fitted.customSwatches).toBeUndefined();
     // It fitted once the colours went: the next dead key stays.
     expect(fitted.drawPattern).toBe('graph');
-    expect(fitted.powerUserBaseline).toEqual(prefs.powerUserBaseline);
+    expect((fitted as Record<string, unknown>).powerUserBaseline).toEqual(
+      (prefs as Record<string, unknown>).powerUserBaseline,
+    );
   });
 
   it('stays fast on the largest blob it can be handed', () => {

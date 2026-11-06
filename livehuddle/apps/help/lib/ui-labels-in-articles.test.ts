@@ -102,7 +102,7 @@ function editorSource(): string {
       else if (/\.tsx?$/.test(entry)) all += readFileSync(full, 'utf8');
     }
   };
-  for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
+  for (const root of ['apps/editor', 'packages']) walk(`${ROOT}/${root}`);
   walk(EXPLORER_PACKAGE);
   walk(SETTINGS_PACKAGE);
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
@@ -158,7 +158,7 @@ describe('bold control names in articles match the editor', () => {
 // delete**" is a sentence, not a button, and a check that flagged it would be
 // a check people delete.
 const CONTROL_CLAIMS = [
-  // "press **Present**", "open **Tools › Session**"
+  // "press **Share**", "open **Tools › Session**"
   /(?:press|choose|pick|tap|click|open|select|toggle|flip|switch to|use)\s+\*\*([A-Z][^*]{2,28})\*\*/g,
   // "**Auto-advance** setting", "**Reactions** row"
   /\*\*([A-Z][^*]{2,28})\*\*\s+(?:button|switch|toggle|setting|checkbox|menu|dialog|panel|tab|category|slider|field|row|section|option|control|pill|chip|badge|preset|mode)/g,

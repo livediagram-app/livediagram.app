@@ -33,6 +33,9 @@ type Deps = {
   canvasMainRef: React.RefObject<HTMLElement | null>;
   // The view, read when a gesture fires and written back (docs/specs/008-canvas/blueprints/viewport-store.md).
   viewport: ViewportStore;
+  // A screen point (client px) every zoom gesture holds still instead of the pointer or the fingers, or null for
+  // the usual focal point: Avatar mode zooms about the character (docs/specs/008-canvas/avatar-mode.md "The camera").
+  zoomAnchor?: () => { x: number; y: number } | null;
 };
 
 type Api = {
@@ -56,6 +59,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       startOffset: { x: number; y: number };
       midX: number;
       midY: number;
+      // Held on the zoom anchor: the fingers' midpoint never pans.
+      anchored: boolean;
       wCX: number;
       wCY: number;
     } | null = null;
@@ -124,12 +129,14 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       endPinchGesture ??= beginCanvasGesture('zoom');
       const t0 = e.touches[0]!;
       const t1 = e.touches[1]!;
+      const anchor = depsRef.current.zoomAnchor?.() ?? null;
       pinch = {
         startDist: touchDist(t0, t1),
         startZoom: depsRef.current.viewport.get().zoom,
         startOffset: { ...depsRef.current.viewport.get().offset },
-        midX: (t0.clientX + t1.clientX) / 2,
-        midY: (t0.clientY + t1.clientY) / 2,
+        midX: anchor?.x ?? (t0.clientX + t1.clientX) / 2,
+        midY: anchor?.y ?? (t0.clientY + t1.clientY) / 2,
+        anchored: anchor !== null,
         ...wrapperCenter(),
       };
     };
@@ -156,8 +163,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       const t1 = e.touches[1]!;
       pendingPinch = {
         dist: touchDist(t0, t1),
-        midX: (t0.clientX + t1.clientX) / 2,
-        midY: (t0.clientY + t1.clientY) / 2,
+        midX: pinch.anchored ? pinch.midX : (t0.clientX + t1.clientX) / 2,
+        midY: pinch.anchored ? pinch.midY : (t0.clientY + t1.clientY) / 2,
       };
       pinchRaf ??= requestAnimationFrame(flushPinch);
     };
@@ -223,7 +230,8 @@ export function useCanvasPinchZoom(deps: Deps): Api {
         // deltaY > 0 = pinch-close / scroll-down = zoom out; < 0 = zoom in.
         const factor = Math.exp(-e.deltaY / 200);
         const newZoom = clamp(viewportZoom * factor, ZOOM_MIN, ZOOM_MAX);
-        zoomAtFocal(newZoom, e.clientX, e.clientY, viewportZoom, viewportOffset);
+        const anchor = depsRef.current.zoomAnchor?.() ?? { x: e.clientX, y: e.clientY };
+        zoomAtFocal(newZoom, anchor.x, anchor.y, viewportZoom, viewportOffset);
         return;
       }
       // Belt-and-braces: also bail if the cursor is over ANY element that

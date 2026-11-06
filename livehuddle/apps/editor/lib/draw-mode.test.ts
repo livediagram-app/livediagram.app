@@ -46,6 +46,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
+  'room-walls': [{ type: 'room-walls' }],
   path: [{ type: 'path' }],
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
@@ -185,6 +186,13 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
   });
 
+  it('describes the Room Builder, shortened on mobile', () => {
+    expect(drawBannerMessage({ type: 'room-walls' }, false)).toBe(
+      'Click to place corners, click the start to close',
+    );
+    expect(drawBannerMessage({ type: 'room-walls' }, true)).toBe('Tap to place corners');
+  });
+
   it('uses the friendly component name, not the raw kind', () => {
     // Components have their own label table rather than the shape
     // capitalise-fallback, so 'stat' reads "Stat row" and not "Stat".
@@ -270,17 +278,13 @@ describe('drawIntentCursor', () => {
 });
 
 describe('opensForTyping', () => {
-  it('opens a drawn text box for typing everywhere', () => {
-    expect(opensForTyping({ type: 'text' }, false)).toBe(true);
+  it('opens a drawn text box for typing', () => {
+    expect(opensForTyping({ type: 'text' })).toBe(true);
   });
 
-  it('opens a sticky for typing on a whiteboard only (docs/specs/023-draw-mode/draw-mode.md)', () => {
-    expect(opensForTyping({ type: 'sticky' }, true)).toBe(true);
-    expect(opensForTyping({ type: 'sticky' }, false)).toBe(false);
-  });
-
-  it('leaves shapes selected, not typing', () => {
-    expect(opensForTyping({ type: 'shape', kind: 'square' }, true)).toBe(false);
+  it('leaves stickies and shapes selected, not typing', () => {
+    expect(opensForTyping({ type: 'sticky' })).toBe(false);
+    expect(opensForTyping({ type: 'shape', kind: 'square' })).toBe(false);
   });
 });
 
@@ -347,6 +351,7 @@ describe('dropsOnTap', () => {
       { type: 'freehand', variant: 'shape-pen' },
       { type: 'freehand', variant: 'highlighter' },
       { type: 'polygon' },
+      { type: 'room-walls' },
       { type: 'path' },
       { type: 'fill', fill: '#000' },
     ];

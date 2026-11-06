@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, newFlashcardPage, type Page } from '@livedocuments/document';
-import { contentsRows, filterContents, pageInView } from './page-contents';
+import { contentsRows, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
 // docs/specs/007-editor/pages-mode.md "Contents".
@@ -13,7 +13,7 @@ const pages = layOutPages([
 
 // docs/specs/007-editor/flashcards.md "Contents": each card's row says its speaking time.
 describe('a stack in Contents', () => {
-  it('names each card and says its title and how long it takes to say', () => {
+  it('names each card by its title and says how long it takes to say', () => {
     const stack = layOutPages([newFlashcardPage('a', 'f1'), newFlashcardPage('b', 'f2')]);
     const words = Array.from({ length: 130 }, () => 'word').join(' ');
     const rows = contentsRows(stack, {
@@ -28,7 +28,7 @@ describe('a stack in Contents', () => {
       },
     });
     expect(rows.map((r) => [r.name, r.line])).toEqual([
-      ['Card 1', 'Flashcard · Opening · 1 min'],
+      ['Opening', 'Flashcard · 1 min'],
       ['Card 2', 'Flashcard · Untitled'],
     ]);
     expect(rows.map((r) => r.speakingTime)).toEqual(['1 min', undefined]);
@@ -49,25 +49,43 @@ describe('the Contents list', () => {
     expect(rows.map((r) => [r.number, r.name, r.line])).toEqual([
       [1, 'Cover', 'Infographic · A4 Portrait'],
       [2, 'Page 2', 'Slide · In the deck'],
-      [3, 'Page 3', 'Article · Field Notes'],
+      [3, 'Field Notes', 'Article'],
       [4, 'Page 4', 'Slide · Not in the deck'],
     ]);
     expect(rows[2]!.locked).toBe(true);
     expect(rows[1]!.aspect).toBeGreaterThan(1.7);
   });
 
-  it('marks a page of any kind whose slide the deck skips', () => {
-    const marked = contentsRows(pages, { hiddenInSlides: (id) => id === 'a' || id === 'b' });
-    expect(marked.map((r) => r.hiddenInSlides)).toEqual([true, true, undefined, undefined]);
-    expect(rows.every((r) => r.hiddenInSlides === undefined)).toBe(true);
+  it("names an unnamed slide or infographic by its own title, and a page's own name wins", () => {
+    const titled = contentsRows(pages, {
+      titleOf: (id) => ({ a: 'Big Words', b: 'Quarterly Review' })[id],
+    });
+    expect(titled.map((r) => r.name)).toEqual(['Cover', 'Quarterly Review', 'Page 3', 'Page 4']);
   });
 
-  it('finds pages by name, kind or number, every word', () => {
-    expect(filterContents(rows, 'slide').map((r) => r.id)).toEqual(['b', 'd']);
-    expect(filterContents(rows, '3').map((r) => r.id)).toEqual(['c']);
-    expect(filterContents(rows, 'cover portrait').map((r) => r.id)).toEqual(['a']);
-    expect(filterContents(rows, '  ')).toHaveLength(4);
-    expect(filterContents(rows, 'nothing')).toEqual([]);
+  it('says an article page’s title on its line when the page has a name of its own', () => {
+    const named = layOutPages([
+      { id: 'n', orientation: 'portrait', kind: 'article', flow: 'f1', name: 'Intro' },
+    ] as Page[]);
+    const [row] = contentsRows(named, {
+      articles: {
+        f1: {
+          blocks: [{ type: 'paragraph', style: 'title', runs: [{ text: 'Field Notes' }] }],
+        } as never,
+      },
+    });
+    expect([row!.name, row!.line]).toEqual(['Intro', 'Article · Field Notes']);
+  });
+
+  it('marks a page of any kind whose slide the deck skips', () => {
+    const marked = contentsRows(pages, { hiddenInSlides: (id) => id === 'a' || id === 'b' });
+    expect(marked.map((r) => r.setAside)).toEqual([
+      'Hidden in Slides',
+      'Hidden in Slides',
+      undefined,
+      undefined,
+    ]);
+    expect(rows.every((r) => r.setAside === undefined)).toBe(true);
   });
 
   it('marks the page at the middle of the screen, else the nearest', () => {

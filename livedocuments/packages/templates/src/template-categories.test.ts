@@ -18,15 +18,15 @@ describe('template categories', () => {
   it('are the use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Careers',
-      'Events and Celebrations',
-      'Home and Hobbies',
-      'Lessons and Learning',
-      'Marketing and Social',
-      'Pitches and Launches',
-      'Plans and Proposals',
+      'Events',
+      'Home',
+      'Learning',
+      'Marketing',
+      'Pitches',
+      'Plans',
       'Reports',
-      'Speeches and Talks',
-      'Team and Meetings',
+      'Talks',
+      'Teams',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));

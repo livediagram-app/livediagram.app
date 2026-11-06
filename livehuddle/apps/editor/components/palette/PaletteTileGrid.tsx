@@ -6,8 +6,6 @@ import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import { MarkerPaletteTile } from './MarkerPaletteTile';
 
 // Renders palette tiles from the shared catalogue (palette-tile-defs): maps each tile's action
 // descriptor to the editor's add-handler bundle and derives the pending-draw highlight, so every
@@ -23,6 +21,8 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
+  // The Room Builder (docs/specs/009-elements/room-builder.md): arms the room-walls gesture.
+  beginRoomWalls?: () => void;
   addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   addSticky: () => void;
   addTable: () => void;
@@ -32,12 +32,6 @@ export type PaletteTileActions = {
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon tiles (palette-dynamic-tiles, the Toolbar strip): drop a single line-art /
-  // Technology catalogue icon, same handlers the Icons / Technology tabs use.
-  addIcon: (iconId: string) => void;
-  addTechIcon: (iconId: string) => void;
-  // Picks up one of Draw mode's markers (the Toolbar strip's Search, palette-marker-tiles).
-  beginMarker: (penId: WhiteboardPenId) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -47,26 +41,23 @@ export type PaletteTileActions = {
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
-// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A marker keeps its press, which opens its settings.
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileHandler(
   def: PaletteTileDef,
   actions: PaletteTileActions,
   pendingDraw?: PendingDraw | null,
 ): () => void {
   const a = def.action;
-  if (a.type !== 'marker' && actions.cancelDraw && tileActive(def, pendingDraw)) {
+  if (actions.cancelDraw && tileActive(def, pendingDraw)) {
     return actions.cancelDraw;
   }
   switch (a.type) {
     case 'shape':
-      // The creation-time choice rides along, so "Add poll" places a poll and
-      // a confetti tile places a confetti pad (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).
+      // The creation-time choice rides along, so an Eraser tile places an Eraser button
+      // (docs/specs/009-elements/mode-button.md).
       return () =>
         actions.addShape(a.kind, {
-          session: a.session,
-          reaction: a.reaction,
           mode: a.mode,
-          estimateScale: a.estimateScale,
           variant: a.variant,
           name: tileCaption(def.label, def.caption),
         });
@@ -80,6 +71,8 @@ export function tileHandler(
       return actions.beginShapePen;
     case 'polygon':
       return actions.beginPolygon;
+    case 'room-walls':
+      return actions.beginRoomWalls ?? (() => {});
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
@@ -99,12 +92,6 @@ export function tileHandler(
       return () => actions.addSticker(a.stickerId);
     case 'component':
       return () => actions.addComponent(a.kind);
-    case 'icon':
-      return () => actions.addIcon(a.iconId);
-    case 'tech-icon':
-      return () => actions.addTechIcon(a.iconId);
-    case 'marker':
-      return () => actions.beginMarker(a.penId);
     case 'open':
       // Off the strip (which opens its popover itself) an opener moves the palette to its category.
       return () => requestPaletteCategory(a.category);
@@ -122,15 +109,12 @@ export function tileActive(
   const a = def.action;
   switch (a.type) {
     case 'shape':
-      // Matched on the CHOICE too, or all five reaction tiles would light up
+      // Matched on the CHOICE too, or all the mode tiles would light up
       // together while one of them was armed.
       return (
         pendingDraw.type === 'shape' &&
         pendingDraw.kind === a.kind &&
-        pendingDraw.session === a.session &&
-        pendingDraw.reaction === a.reaction &&
         pendingDraw.mode === a.mode &&
-        pendingDraw.estimateScale === a.estimateScale &&
         pendingDraw.variant === a.variant
       );
     case 'component':
@@ -143,6 +127,8 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'highlighter';
     case 'shape-pen':
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
+    case 'room-walls':
+      return pendingDraw.type === 'room-walls';
     // The Media tab has a tile per service and they all arm one `video`
     // intent, so match on the provider too or picking Loom would light up
     // Vimeo alongside it (the same trap the shape branch above avoids).
@@ -150,24 +136,13 @@ export function tileActive(
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
-    // Icon / sticker tiles DO arm (they ride the shape intent carrying their
-    // glyph id), but their catalogues are open-ended and the picker tabs
-    // render thousands of tiles, so pressed-state matching per glyph buys
+    // Sticker tiles DO arm (they ride the shape intent carrying their
+    // sticker id), but the catalogue is open-ended and the picker renders
+    // hundreds of tiles, so pressed-state matching per sticker buys
     // nothing the mode banner and cursor don't already say.
     case 'annotation':
     case 'sticker':
-    case 'icon':
-    case 'tech-icon':
       return false;
-    // A marker in hand: the whiteboard pen intent in this pen's colour and width.
-    case 'marker':
-      return (
-        pendingDraw.type === 'freehand' &&
-        pendingDraw.variant === 'whiteboard' &&
-        (pendingDraw.penId !== undefined
-          ? pendingDraw.penId === a.penId
-          : pendingDraw.colour === a.colour && pendingDraw.width === a.width)
-      );
     default:
       return pendingDraw.type === a.type;
   }
@@ -192,14 +167,9 @@ export function PaletteTile({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
   compact?: boolean;
-  // A press of the tile's own (a held marker opening its flyout), else the tile's action.
+  // A press of the tile's own, else the tile's action.
   onPress?: () => void;
 }) {
-  // A marker held, pressed again, opens its colour and width (MarkerPaletteTile).
-  if (def.action.type === 'marker' && !onPress)
-    return (
-      <MarkerPaletteTile def={def} actions={actions} pendingDraw={pendingDraw} compact={compact} />
-    );
   return (
     <TileButton
       def={def}
@@ -239,11 +209,7 @@ function TileButton({
       description={def.description}
       onClick={onClick}
       dragKind={a.type === 'shape' ? a.kind : undefined}
-      dragChoice={
-        a.type === 'shape'
-          ? (a.session ?? a.reaction ?? a.mode ?? a.estimateScale ?? a.variant)
-          : undefined
-      }
+      dragChoice={a.type === 'shape' ? (a.mode ?? a.variant) : undefined}
       draggable={otherDrag !== undefined || undefined}
       onDragStart={otherDrag}
       filled={def.filled}

@@ -1,5 +1,9 @@
 # Rich-text notes: blueprint
 
+**Retired in livedocuments 2026-11-04** ([links-and-notes-retired.md](../links-and-notes-retired.md)): the note
+popover, its editor and their files (named below without their folders) are removed; kept for the record. The shared
+rich-text model in `packages/` stays.
+
 Derived from [Rich-text notes](../rich-text-notes.md), with the toolbar's block control from
 [The block-type picker](../block-type-picker.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
@@ -11,15 +15,15 @@ Scope, by file:
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `../packages/model-core/src/rich-text.ts`                      | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
 | `packages/document/src/element-types.ts`                       | `note?` + `noteRich?` on every boxed element                                     |
-| `apps/editor/lib/note-value.ts`                                | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
-| `apps/editor/hooks/canvas/useEditorNotes.ts`                   | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
+| `note-value.ts`                                                | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
+| `useEditorNotes.ts`                                            | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
 | `apps/editor/components/panels/EditorAnchoredPopovers.tsx`     | Mounts `NotePopover`; lifecycle telemetry on commit                              |
-| `apps/editor/components/notes/NotePopover.tsx`                 | The anchored shell: position, flip, outside-click commit, Delete note            |
-| `apps/editor/components/notes/NoteRichTextEditor.tsx`          | The contentEditable surface and its keys                                         |
-| `apps/editor/components/notes/useNoteRichTextSession.ts`       | Note session over the shared document hook (`collapsedScope: 'word'`)            |
-| `apps/editor/components/notes/NoteFormatToolbar.tsx`           | Docked toolbar and the inline link field                                         |
-| `apps/editor/components/notes/NoteRichText.tsx`                | The one read-only renderer; `runsToLines`, `noteRuns`                            |
-| `apps/editor/components/notes/note-run-style.ts`               | Note typography; `noteRunHref`, `noteRunStyle`                                   |
+| `NotePopover.tsx`                                              | The anchored shell: position, flip, outside-click commit, Delete note            |
+| `NoteRichTextEditor.tsx`                                       | The contentEditable surface and its keys                                         |
+| `useNoteRichTextSession.ts`                                    | Note session over the shared document hook (`collapsedScope: 'word'`)            |
+| `NoteFormatToolbar.tsx`                                        | Docked toolbar and the inline link field                                         |
+| `NoteRichText.tsx`                                             | The one read-only renderer; `runsToLines`, `noteRuns`                            |
+| `note-run-style.ts`                                            | Note typography; `noteRunHref`, `noteRunStyle`                                   |
 | `apps/editor/components/rich-text/useRichTextDocument.ts`      | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
 | `apps/editor/components/rich-text/useRichTextFormatActions.ts` | Command dispatch and the collapsed-caret scope rule                              |
 | `apps/editor/components/rich-text/rich-text-format.ts`         | `ActiveFormat`, `computeActiveFormat`, `wordRangeAt`, `PLAIN_RUN_DEFAULTS`       |
@@ -178,7 +182,7 @@ export function expandRangeToLines(text: string, range: Range): Range;
 export function trimRuns(runs: TextRun[]): TextRun[];
 export function hasRichFormatting(runs: TextRun[] | undefined): boolean;
 
-// apps/editor/lib/note-value.ts
+// note-value.ts
 export type NoteFields = { note: string; noteRich?: TextRun[] };
 export function canonicalNote(plain: string, runs?: TextRun[]): NoteFields;
 export function noteFieldsEqual(a: NoteFields, b: NoteFields): boolean;
@@ -189,7 +193,7 @@ export function blockTypeOf(heading: RunHeading | null, list: ListStyle): BlockT
 export function blockTypeApplies(type: BlockType): { heading: RunHeading | null; list: ListStyle };
 export function listStyleOfText(text: string): ListStyle;
 
-// apps/editor/components/notes/NotePopover.tsx
+// NotePopover.tsx
 type NotePopoverProps = {
   elementId: string;
   initial: string;
@@ -314,18 +318,18 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 | Rule                                                   | Test                                                 | File                                                            |
 | ------------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------- |
-| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `apps/editor/lib/note-value.test.ts`                            |
-| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/editor/lib/note-value.test.ts`                            |
-| Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/editor/lib/note-value.test.ts`                            |
-| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/editor/lib/note-value.test.ts`                            |
+| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `note-value.test.ts`                                            |
+| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `note-value.test.ts`                                            |
+| Empty note strips both fields                          | whitespace-only reads as empty                       | `note-value.test.ts`                                            |
+| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `note-value.test.ts`                                            |
 | `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `../packages/model-core/src/rich-text.test.ts`                  |
 | Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `../packages/model-core/src/rich-text.test.ts`                  |
 | Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `../packages/model-core/src/rich-text.test.ts`                  |
-| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/editor/components/notes/note-run-style.test.ts`           |
-| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/editor/components/notes/note-run-style.test.ts`           |
-| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/editor/components/notes/note-run-style.test.ts`           |
-| Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | `apps/editor/components/notes/NoteRichTextEditor.test.tsx`      |
-| A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | `apps/editor/components/notes/NoteRichTextEditor.test.tsx`      |
+| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `note-run-style.test.ts`                                        |
+| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `note-run-style.test.ts`                                        |
+| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `note-run-style.test.ts`                                        |
+| Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | `NoteRichTextEditor.test.tsx`                                   |
+| A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | `NoteRichTextEditor.test.tsx`                                   |
 | The plain text follows an edit                         | `useRichTextDocument` live text                      | `apps/editor/components/rich-text/useRichTextDocument.test.tsx` |
 | Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `apps/editor/components/rich-text/block-type.test.ts`           |
 | List detection reads the prefix                        | `listStyleOfText`                                    | `apps/editor/components/rich-text/block-type.test.ts`           |

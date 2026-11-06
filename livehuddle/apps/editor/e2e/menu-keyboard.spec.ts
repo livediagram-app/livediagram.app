@@ -36,9 +36,9 @@ test.describe('menus by keyboard', () => {
   }) => {
     await startBlankDocument(page);
     await dismissQuickTour(page);
-    await (await paletteTile(page, 'Add Square')).click();
+    await (await paletteTile(page, 'Add Sticky Note')).click();
     await page.locator('[data-canvas-a11y-root]').click({ position: { x: 520, y: 360 } });
-    const square = page.getByRole('img', { name: 'Square', exact: true });
+    const square = page.getByRole('img', { name: 'Sticky note', exact: true });
     await expect(square).toHaveCount(1);
     const elementMenu = page.getByRole('dialog', { name: 'Element menu' });
 
@@ -68,14 +68,14 @@ test.describe('menus by keyboard', () => {
     await expect(square).toHaveCount(1);
     await expect(more).toBeFocused();
 
-    // By pointer it opens beside the canvas without taking focus. (The Quick style panel covers
-    // the square's left half, so the press lands on its right edge, once the panel has settled.)
+    // By pointer it opens beside the canvas without taking focus. (The press lands on the square's right
+    // edge, once the canvas has settled.)
     await page.waitForTimeout(400);
     const box = (await square.boundingBox())!;
     await page.mouse.click(box.x + box.width - 12, box.y + box.height / 2, { button: 'right' });
     await expect(elementMenu).toBeVisible();
     await expect(elementMenu.getByRole('menuitem')).toHaveCount(0);
-    await expect(elementMenu.getByRole('button', { name: 'Layer' })).toBeVisible();
+    await expect(elementMenu.getByRole('button', { name: 'Arrange' })).toBeVisible();
     // Collapsed sections are inert: their sliders are not in the tree.
     await expect(elementMenu.getByRole('slider')).toHaveCount(0);
     expect(await elementMenu.evaluate((el) => el.contains(document.activeElement))).toBe(false);

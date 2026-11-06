@@ -3,9 +3,17 @@
 import {
   isParticipationOp,
   isPresenceOpKind,
+  isRetiredOpKind,
   isSystemOpKind,
+  parseAvatarHand,
+  parseAvatarKnock,
+  parseAvatarKnockAnswer,
+  parseAvatarLetSpeak,
   parseAvatarSay,
   parseAvatarVoice,
+  parseCallSession,
+  parseCallStopShare,
+  parseCallsCheck,
   parseCallTrack,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
@@ -44,11 +52,13 @@ function keepsToItsTab(op: unknown): boolean {
   return true;
 }
 
-/** The sender as the gate needs it: its server-verified role, tab scope and published key. */
+/** The sender as the gate needs it: its server-verified role, tab scope, published key and adder key. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
   key: string | undefined;
+  // A Participant's server-verified adder key (X-Verified-Adder): what signs its notice board notes.
+  adderKey?: string | null;
 };
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
@@ -67,6 +77,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // could forge `share-revoked` with the code from their own URL
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
+  // An op of a feature livehuddle no longer has, from an older client (the Vote's `vote`,
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"): dropped from every session, so it is never
+  // sequenced, relayed, logged for catch-up or noted in the ledger.
+  if (isRetiredOpKind(opKind)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
@@ -74,20 +88,39 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (scopedRenames(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,
-  // responses and ideas relay like an Editor's; its `el` op goes through the participant content rule and
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's comment
+  // reactions relay like an Editor's; its `el` op goes through the participant content rule and
   // never relays as sent; everything else needs an Editor.
   const level = parseStoredLevel(sender.role);
-  // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a poll answer and a
-  // reaction are taking part, so they need a Participant.
-  if (level === 'view' && (opKind === 'poll-answer' || opKind === 'reaction')) return DROP;
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
   // the limits here as every receiver holds it, so a malformed one reaches nobody.
   if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
   // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
   // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
   if (opKind === 'avatar-voice' && (level === 'view' || !parseAvatarVoice(op))) return DROP;
-  if (opKind === 'call-track' && (level === 'view' || !parseCallTrack(op))) return DROP;
+  // A silent call's nudge to read the kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its
+  // clients"): a publisher's, so never a Viewer's; the room consumes it.
+  if (opKind === 'calls-check' && (level === 'view' || !parseCallsCheck(op))) return DROP;
+  // Raising a hand and letting one speak are taking part (docs/specs/012-collaboration/meeting-rooms-and-stage.md
+  // "Share roles"): a Viewer listens. Whether a let-speak's sender is an Editor or stands on a stage the room checks
+  // next, from where it last placed them (room-calls.ts, #495).
+  if (opKind === 'avatar-hand' && (level === 'view' || !parseAvatarHand(op))) return DROP;
+  if (opKind === 'avatar-let-speak' && (level === 'view' || !parseAvatarLetSpeak(op))) return DROP;
+  // A call proving its session to the room (proximity-audio.md "The wire"): any level, a Viewer subscribes too; the
+  // room checks the token and consumes it. Stopping someone else's share is an Editor's
+  // (video-and-screen-bubbles.md "Share roles", #469).
+  if (opKind === 'call-session' && !parseCallSession(op)) return DROP;
+  if (opKind === 'call-stop-share' && (level !== 'edit' || !parseCallStopShare(op))) return DROP;
+  // A knock and its answer (docs/specs/012-collaboration/knock.md): presence from any level, a Viewer walks too; a
+  // malformed one reaches nobody. The room throttles knocks next.
+  if (opKind === 'avatar-knock' && !parseAvatarKnock(op)) return DROP;
+  if (opKind === 'avatar-knock-answer' && !parseAvatarKnockAnswer(op)) return DROP;
+  if (opKind === 'call-track') {
+    const track = level === 'view' ? null : parseCallTrack(op);
+    if (!track) return DROP;
+    // Sharing a screen is an Editor's (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles").
+    if (track.screen && level !== 'edit') return DROP;
+  }
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
   if (opKind === 'focus-here' && level !== 'edit') return DROP;
@@ -95,7 +128,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!presence && level !== 'edit') {
     if (level !== 'participate') return DROP;
     if (opKind === 'el') return { kind: 'participant-content' };
-    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key)) return DROP;
+    if (!isParticipationOp(op) || !answersAsSelf(op, sender.key, sender.adderKey ?? null))
+      return DROP;
     participantAnswers = true;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

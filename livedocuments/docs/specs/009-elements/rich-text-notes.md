@@ -1,4 +1,6 @@
-# Rich-text notes
+# Rich-text notes (retired)
+
+**Retired in livedocuments 2026-11-04** ([links-and-notes-retired.md](./links-and-notes-retired.md)): kept for the record and for the other products.
 
 The per-element **note** (`note?` on every boxed element, opened from the
 element menu's Resources band or the on-element note badge, see

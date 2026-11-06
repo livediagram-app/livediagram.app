@@ -1,6 +1,6 @@
 # Reveal zone: blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/reveal-zone.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/reveal-zone.md) is the one to read and change. livehuddle's code for it is deleted. A Space that already holds one keeps it untouched and shows a plain labelled placeholder an Editor can delete ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#a-space-that-already-holds-a-leaving-element)). The rest of this page records what livehuddle had.
 
 Derived from [Reveal zone](../reveal-zone.md), with the baton rule from
 [Facilitator](../../012-collaboration/facilitator.md). The spec decides; this file only adds
@@ -9,22 +9,22 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                       | Role                                                            |
-| ---------------------------------------------------------- | --------------------------------------------------------------- |
-| `packages/document/src/shape-factory.ts`                   | 320x220, label "Hidden", `textAlignY: 'top'`, no stored colour  |
-| `packages/document/src/colors.ts`                          | `behaviourSkin` (accent and ink per paper), `REVEAL_COVER_BASE` |
-| `packages/document/src/validate.ts`                        | `revealed` must be a boolean                                    |
-| `packages/document/src/svg-render-faces.ts`                | `revealCover`, omitted when `revealed === true`                 |
-| `apps/editor/components/canvas/RevealFace.tsx`             | Cover, double press, Hide pill                                  |
-| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Resolves the accent: `ownColours(element).stroke` or default    |
-| `apps/editor/app/qa-board.css`                             | `.reveal-sweep`, `.reveal-cover` hover                          |
-| `apps/editor/hooks/ui/usePressWithoutDrag.ts`              | `requireDouble` and `isDoublePress`                             |
-| `../packages/workbench/src/lib/double-press.ts`            | `DOUBLE_PRESS_MS`                                               |
-| `apps/editor/hooks/canvas/useBehaviourElements.ts`         | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
-| `apps/editor/components/canvas/EditorCanvasHost.tsx`       | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |
-| `apps/editor/components/palette/BehaviourMenuSections.tsx` | `RevealMenuSection`                                             |
-| `apps/editor/hooks/canvas/usePortalSetters.ts`             | `setRevealedSelected` (`Element·Changed·Reveal`)                |
-| `apps/editor/components/palette/palette-tile-defs.tsx`     | `tools:reveal` in Behaviours                                    |
+| File                                                              | Role                                                            |
+| ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| `packages/document/src/shape-factory.ts`                          | 320x220, label "Hidden", `textAlignY: 'top'`, no stored colour  |
+| `packages/document/src/colors.ts`                                 | `behaviourSkin` (accent and ink per paper), `REVEAL_COVER_BASE` |
+| `packages/document/src/validate.ts`                               | `revealed` must be a boolean                                    |
+| `packages/document/src/svg-render-faces.ts`                       | `revealCover`, omitted when `revealed === true`                 |
+| `../livediagram/apps/editor/components/canvas/RevealFace.tsx`     | Cover, double press, Hide pill                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`             | Resolves the accent: `ownColours(element).stroke` or default    |
+| `../livediagram/apps/editor/app/qa-board.css`                     | `.reveal-sweep`, `.reveal-cover` hover                          |
+| `apps/editor/hooks/ui/usePressWithoutDrag.ts`                     | `requireDouble` and `isDoublePress`                             |
+| `../packages/workbench/src/lib/double-press.ts`                   | `DOUBLE_PRESS_MS`                                               |
+| `../livediagram/apps/editor/hooks/canvas/useBehaviourElements.ts` | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`              | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |
+| apps/editor/components/palette/BehaviourMenuSections.tsx (gone)   | `RevealMenuSection`                                             |
+| `apps/editor/hooks/canvas/usePortalSetters.ts`                    | `setRevealedSelected` (`Element·Changed·Reveal`)                |
+| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:reveal` in Behaviours                                    |
 
 ## Domain and naming
 
@@ -185,18 +185,18 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                             | Test                                                           | File                                                |
-| ------------------------------------------------ | -------------------------------------------------------------- | --------------------------------------------------- |
-| Not votable                                      | "rejects the interactive Behaviour shapes"                     | `packages/document/src/session.test.ts`             |
-| Export draws a cover                             | "draws more than a box and a label"                            | `packages/document/src/export-consistency.test.ts`  |
-| Export cover carries the gesture chip            | "covers a Reveal with the gesture chip, on the wrapper radius" | `packages/document/src/svg-render-fidelity.test.ts` |
-| Cover base follows the paper                     | "draws the Reveal cover on the base the canvas face uses"      | `packages/document/src/svg-render-surface.test.ts`  |
-| `revealed` must be boolean                       | none                                                           | (gap)                                               |
-| Double press within 450 ms, single never (I3)    | none                                                           | (gap, `isDoublePress` is pure)                      |
-| Local lift never writes (I1)                     | none                                                           | (gap)                                               |
-| Blocked viewer cannot lift                       | none                                                           | (gap) [QF15]                                        |
-| Revealed for all hides the cover everywhere      | "draws nothing once it is revealed for everyone"               | `apps/editor/components/canvas/RevealFace.test.tsx` |
-| Hide pill takes the press and restores the cover | "lets the Hide pill take the press that puts the cover back"   | `apps/editor/components/canvas/RevealFace.test.tsx` |
+| Rule                                             | Test                                                           | File                                                                                               |
+| ------------------------------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Not votable                                      | "rejects the interactive Behaviour shapes"                     | retired with the Vote ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-vote)) |
+| Export draws a cover                             | "draws more than a box and a label"                            | `packages/document/src/export-consistency.test.ts`                                                 |
+| Export cover carries the gesture chip            | "covers a Reveal with the gesture chip, on the wrapper radius" | `packages/document/src/svg-render-fidelity.test.ts`                                                |
+| Cover base follows the paper                     | "draws the Reveal cover on the base the canvas face uses"      | `packages/document/src/svg-render-surface.test.ts`                                                 |
+| `revealed` must be boolean                       | none                                                           | (gap)                                                                                              |
+| Double press within 450 ms, single never (I3)    | none                                                           | (gap, `isDoublePress` is pure)                                                                     |
+| Local lift never writes (I1)                     | none                                                           | (gap)                                                                                              |
+| Blocked viewer cannot lift                       | none                                                           | (gap) [QF15]                                                                                       |
+| Revealed for all hides the cover everywhere      | "draws nothing once it is revealed for everyone"               | `../livediagram/apps/editor/components/canvas/RevealFace.test.tsx`                                 |
+| Hide pill takes the press and restores the cover | "lets the Hide pill take the press that puts the cover back"   | `../livediagram/apps/editor/components/canvas/RevealFace.test.tsx`                                 |
 
 ## Constants and configuration
 

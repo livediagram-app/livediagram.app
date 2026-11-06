@@ -1,25 +1,18 @@
 'use client';
 
 // An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start a Space, a start panel
-// (StartPanel). The Spaces, Recommended (the blank first) and the other groups beside a grid of the templates, each its
+// (StartPanel). Recommended (the blank first) and the catalogue's groups beside a grid of the templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBuilding2,
-  lucideCalendarRange,
-  lucideDices,
-  lucideGoal,
-  lucideGraduationCap,
-  lucideLightbulb,
   lucideMap,
-  lucideMessagesSquare,
-  lucidePenTool,
-  lucideRefreshCw,
+  lucidePresentation,
   lucideStar,
-  lucideUsers,
-  lucideVote,
+  lucideTreePine,
+  lucideWine,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
@@ -40,18 +33,11 @@ const RAIL_ICONS: Readonly<
   Record<'recommended' | TemplateCategory, ReturnType<typeof lucideGlyph>>
 > = {
   recommended: glyph(lucideStar),
-  ideas: glyph(lucideLightbulb),
-  decisions: glyph(lucideVote),
-  goals: glyph(lucideGoal),
-  meetings: glyph(lucideMessagesSquare),
-  people: glyph(lucideUsers),
-  planning: glyph(lucideCalendarRange),
-  product: glyph(lucidePenTool),
-  games: glyph(lucideDices),
-  retros: glyph(lucideRefreshCw),
-  strategy: glyph(lucideMap),
-  learning: glyph(lucideGraduationCap),
-  spaces: glyph(lucideBuilding2),
+  campus: glyph(lucideMap),
+  office: glyph(lucideBuilding2),
+  events: glyph(lucidePresentation),
+  outdoor: glyph(lucideTreePine),
+  recreation: glyph(lucideWine),
 };
 
 const COPY: Record<
@@ -60,7 +46,7 @@ const COPY: Record<
 > = {
   workshop: {
     title: 'Start a Space',
-    line: 'Walk into an office or a hall, or pick a session to run. Close this to start from a blank space.',
+    line: 'Walk into an office, a hall, a bar or a garden. Close this to start from a blank space.',
     noMatch: 'templates',
     help: 'templates',
   },
@@ -113,7 +99,7 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      // The Spaces lead (start-diagramming.md "The Spaces lead"): the first thing a new person sees is a place to walk.
+      // Recommended leads (start-diagramming.md "Recommended leads").
       initialCategory={start.initial}
       cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard)}
       search={(query) =>

@@ -6,20 +6,12 @@
 import {
   CHART_TYPE_LABELS,
   chartTypeOf,
-  DEFAULT_SESSION_TOOL,
+  isRetiredElement,
+  retiredElementName,
   type BoxedElement,
   type Element,
-  type SessionTool,
   type ShapeKind,
 } from '@livehuddle/document';
-
-// The tool a session button starts, as its kind reads (docs/specs/012-collaboration/session-button.md).
-const SESSION_TOOL_KIND: Record<SessionTool, string> = {
-  timer: 'Timer',
-  stopwatch: 'Stopwatch',
-  vote: 'Dot vote',
-  poll: 'Poll',
-};
 
 // Display kind for an element — capitalised, no article. Shapes
 // surface their concrete sub-kind ('Square', 'Diamond'…) so a name
@@ -41,9 +33,9 @@ export function kindLabel(el: Element): string {
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
   if (el.type === 'video') return 'Embed';
-  // A session button names the tool it starts ('Timer', 'Poll'), not the generic kind, which said nothing about it.
-  if (el.type === 'shape' && el.shape === 'session-button')
-    return SESSION_TOOL_KIND[el.session?.tool ?? DEFAULT_SESSION_TOOL];
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") reads by the name its
+  // placeholder shows ('Q&A Board', a session button's 'Timer'), not its stored kind word.
+  if (isRetiredElement(el)) return retiredElementName(el);
   if (el.type === 'shape') {
     // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
     const chart = chartTypeOf(el);
@@ -142,32 +134,18 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
-// note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
-// record's settings, a mode button, a Bring Focus button, a portal's settings, a roll call's Take Roll, an estimate
-// card's scales, an idea box's field, a done check's button, a comment pin's reply field, an action card's Add Action
-// and a page's title and subtitle lines.
+// The kinds whose face carries controls of its own: a checklist's ticks, a mode button, a
+// Bring Focus button, a portal's settings and a page's title and subtitle lines. A retired element's placeholder
+// holds none, so it is a picture.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
-  'session-button',
   'checklist',
-  'temperature',
-  'agenda',
-  'qa-board',
-  'reaction-pad',
-  'quiz',
-  'picker',
-  'reveal',
-  'decision',
   'mode-button',
   'focus-button',
   'portal',
-  'roll-call',
-  'estimate',
-  'idea-box',
-  'done-check',
-  'comment-pin',
-  'action-card',
   'page',
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a button over the drawing.
+  'directory',
+  'elevator',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture

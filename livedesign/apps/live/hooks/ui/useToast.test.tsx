@@ -17,7 +17,7 @@ function afterExit() {
   });
 }
 
-// The offer toast (docs/specs/007-editor/power-user-mode.md): two actions, and the longer answer timeout.
+// The offer toast (docs/specs/004-interface-design/toasts.md): two actions, and the longer answer timeout.
 
 function Offer({ offer }: { offer: ToastOffer }) {
   const toast = useToast();
@@ -27,8 +27,8 @@ function Offer({ offer }: { offer: ToastOffer }) {
 
 function renderOffer() {
   const offer: ToastOffer = {
-    message: 'Power user mode: fewer labels.',
-    confirmLabel: 'Try power user mode',
+    message: 'A new layout is ready.',
+    confirmLabel: 'Try the new layout',
     declineLabel: 'No thanks',
     onConfirm: vi.fn(),
     onDecline: vi.fn(),
@@ -57,23 +57,23 @@ describe('toast.offer', () => {
     act(() => {
       vi.advanceTimersByTime(TOAST_ANSWER_TIMEOUT_MS - 1);
     });
-    expect(screen.getByText('Power user mode: fewer labels.')).toBeTruthy();
+    expect(screen.getByText('A new layout is ready.')).toBeTruthy();
     act(() => {
       vi.advanceTimersByTime(1);
     });
     afterExit();
-    expect(screen.queryByText('Power user mode: fewer labels.')).toBeNull();
+    expect(screen.queryByText('A new layout is ready.')).toBeNull();
     expect(offer.onConfirm).not.toHaveBeenCalled();
     expect(offer.onDecline).not.toHaveBeenCalled();
   });
 
   it('confirms once and goes', () => {
     const offer = renderOffer();
-    fireEvent.click(screen.getByRole('button', { name: 'Try power user mode' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try the new layout' }));
     expect(offer.onConfirm).toHaveBeenCalledTimes(1);
     expect(offer.onDecline).not.toHaveBeenCalled();
     afterExit();
-    expect(screen.queryByText('Power user mode: fewer labels.')).toBeNull();
+    expect(screen.queryByText('A new layout is ready.')).toBeNull();
   });
 
   it('declines from its own button or the close button', () => {
@@ -99,7 +99,7 @@ describe('toast.offer', () => {
 
   it('answers once, however fast the second press comes', () => {
     const offer = renderOffer();
-    const confirm = screen.getByRole('button', { name: 'Try power user mode' });
+    const confirm = screen.getByRole('button', { name: 'Try the new layout' });
     fireEvent.click(confirm);
     fireEvent.click(confirm);
     expect(offer.onConfirm).toHaveBeenCalledTimes(1);
@@ -110,7 +110,7 @@ describe('toast.offer', () => {
     const labels = screen
       .getAllByRole('button')
       .map((b) => b.textContent || b.getAttribute('aria-label'));
-    expect(labels).toEqual(['No thanks', 'Try power user mode', 'Dismiss']);
+    expect(labels).toEqual(['No thanks', 'Try the new layout', 'Dismiss']);
   });
 });
 

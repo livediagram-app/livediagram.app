@@ -85,8 +85,8 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
     [cachedRef],
   );
   // True once the server copy has been merged in, or failed to arrive: the
-  // point after which a one-way latch such as `powerUserOfferShown` can be
-  // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
+  // point after which a one-way latch such as a tour's seen flag can be
+  // trusted not to be stale (docs/specs/007-editor/user-preferences.md).
   const [prefsSettled, setPrefsSettled] = useState(false);
   // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css

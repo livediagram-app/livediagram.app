@@ -185,7 +185,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
+- **Mode** (an editor mode) is livediagram's word for how a tab is worked on; livehuddle has none, only the stored value `opensIn: 'workshop'` ([Editor modes](docs/specs/007-editor/editor-modes.md)). "Avatar mode" is a canvas tool, not an editor mode.
 - **Kind** is what a tab is; every livehuddle tab is the general diagram tab.
 - **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
@@ -199,18 +199,15 @@ apps/
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livehuddle.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
-  cli/          # the livehuddle command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
-  templates/      # template catalogue + pure element builders (editor template starts + MCP)
+  templates/      # template catalogue + pure element builders (editor template starts + api)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
   help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
   document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
   api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
-  agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
@@ -281,24 +278,25 @@ each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-proj
 - **Avatar mode and the Navigate elements**: the walk, the Avatar panel and tour, Portal, Bring Focus, Chair, Desk,
   Sofa, Fence, Link card, Office and the Avatar Pad, and the Selection Mode buttons
   (`docs/specs/008-canvas/avatar-mode.md`, `docs/specs/009-elements/`), over `@liveworkspace/avatar`.
-- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the facilitator baton
-  and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`).
+- **The light meeting tools**: Bring Focus, the facilitator baton and follow-me (`bring-focus.md`, `facilitator.md`).
+  livehuddle's Timer is a placed piece of its own (`docs/specs/009-elements/timer-and-stopwatch.md`); the Session
+  strip's Timer is livediagram's alone (`docs/specs/012-collaboration/session-tools.md`).
 - **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
 - **The Spaces templates**: Virtual Office, Coworking Space, Team Pod and All-Hands Hall (`packages/templates`,
   `docs/specs/012-collaboration/virtual-office-template.md`).
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
-the retro and workshop templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas,
-reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, Presentation mode and the Slide
-Deck, the Page element and the diagram tools. These are livediagram's alone. Until #423's code parts land livehuddle
-still carries copies of them: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
+the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
+quizzes, Q&A, agendas, reveals and the rest), the Session strip (its Timer and Poll), the Session button, the Workshop tour, the
+diagram tools, and (gone since part 2) Presentation mode, the Slide Deck and the Page element. These are livediagram's
+alone. Until #423's code parts land livehuddle still carries copies of the rest: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
 
 The rules:
 
 - **A fix or change to one of these lands in both products in the same PR**, specs and code, **or the code moves to
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
-  of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
+  of Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the avatar core and its wire shapes (`@liveworkspace/avatar`,
   `@liveworkspace/api-schema`), the realtime room's shared shapes, and everything else in `packages/`.

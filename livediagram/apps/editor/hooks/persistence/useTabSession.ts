@@ -10,6 +10,7 @@
 import {
   applyVoteDelta,
   canCastVote,
+  elementHasText,
   isVoteHost,
   timerDisplayMs,
   type Tab,
@@ -215,6 +216,8 @@ export function useTabSession(deps: TabSessionDeps) {
       // Absent rather than false when off, so an ordinary vote's wire shape
       // is unchanged.
       ...(setup?.onePerElement ? { onePerElement: true } : {}),
+      // Text-only (docs/specs/012-collaboration/session-tools.md "Only items with text"), absent when off too.
+      ...(setup?.onlyWithText ? { onlyWithText: true } : {}),
       // A vote is one person's to run (docs/specs/012-collaboration/session-tools.md): the starter is the only
       // one who can end / reveal / clear it or move the results focus.
       startedBy: selfId,
@@ -283,10 +286,17 @@ export function useTabSession(deps: TabSessionDeps) {
   const castVote = (elementId: string): boolean => {
     if (editsBlocked) return false;
     const current = deps.activeTab.vote;
-    if (!current || !canCastVote(current, selfId, elementId)) return false;
+    // A text-only vote takes no new dot on a blank element (docs/specs/012-collaboration/session-tools.md
+    // "Only items with text"); only then is the element looked up.
+    const hasText = (tab: Tab) => {
+      if (!tab.vote?.onlyWithText) return true;
+      const el = tab.elements.find((e) => e.id === elementId);
+      return !!el && elementHasText(el);
+    };
+    if (!current || !canCastVote(current, selfId, elementId, hasText(deps.activeTab))) return false;
     patchActive((t) => {
       const vote = t.vote;
-      if (!vote || !canCastVote(vote, selfId, elementId)) return t;
+      if (!vote || !canCastVote(vote, selfId, elementId, hasText(t))) return t;
       return { ...t, vote: applyVoteDelta(vote, elementId, selfId, 1) };
     });
     // Straight out, ahead of the 600ms autosave: the point of the op is that a

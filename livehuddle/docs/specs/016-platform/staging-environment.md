@@ -13,7 +13,6 @@ reaches people's documents.
 |              | Production                                      | Staging                                    |
 | ------------ | ----------------------------------------------- | ------------------------------------------ |
 | Hostname     | `livehuddle.app`                                | `staging.livehuddle.app`                   |
-| MCP host     | `mcp.livehuddle.app`                            | `mcp-staging.livehuddle.app`               |
 | Trigger      | By hand                                         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `livehuddle-<app>`                              | `livehuddle-<app>-staging`                 |
@@ -58,7 +57,7 @@ drifting apart unnoticed.
 
 ### Service bindings point at staging
 
-The router binds five workers (marketing, editor, api, help, community) and mcp binds one (api). In `[env.staging]` every `service =`
+The router binds five workers (marketing, editor, api, help, community). In `[env.staging]` every `service =`
 value gains the `-staging` suffix, so the staging router forwards to the staging api and
 never to production's. A missed suffix here is the single worst failure mode available:
 staging frontend, production data, so `apps/router/wrangler.toml` keeps its staging
@@ -70,7 +69,7 @@ prints the resolved binding table.
 Staging gets its own **KV namespace**, and talks to liveworkspace's
 staging services (`staging.liveworkspace.app`: the index, media, Community and telemetry).
 Durable Objects come free: a different script is a different DO namespace, so the staging
-`DOCUMENT_ROOM` (and every document's content in it), `PERSON_STORE` and `WORKBENCH` are
+`DOCUMENT_ROOM` (and every document's content in it) and `PERSON_STORE` are
 already separate.
 
 Rate-limiter namespace ids are deliberately **left identical** to production's. They are
@@ -123,9 +122,8 @@ Two deliberate non-changes:
 its own build**: each environment's deploy builds its own sites. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                       | Staging                                     |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livehuddle.app`) | the staging MCP worker's `workers.dev` host |
+| Variable | Production | Staging |
+| -------- | ---------- | ------- |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and
@@ -157,8 +155,8 @@ Production's secrets are untouched. Staging's workers carry their own value of e
 secret, set with `wrangler secret put --env staging`, never production's:
 `ACCOUNTS_URL` (the accounts Worker staging signs in through), `API_RESOURCE` (staging's
 own resource, the access-token audience), `ACCOUNTS_CLIENT_ID` and
-`ACCOUNTS_CLIENT_SECRET` (staging's own OAuth client), `TELEMETRY_KEY` (on the staging api
-**and** staging mcp, the same value on both and on the staging telemetry service, or
+`ACCOUNTS_CLIENT_SECRET` (staging's own OAuth client), `TELEMETRY_KEY` (on the staging api,
+the same value as on the staging telemetry service, or
 server-side counts silently go missing,
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), and
 `COMMUNITY_KEY`, `MEDIA_KEY` and `DRIVE_KEY` for staging liveworkspace's services.
@@ -170,14 +168,13 @@ A deploy writes no secret, so they survive every deploy
 ## One workflow body, two callers
 
 The monorepo's root `deploy.yml` holds the whole deploy as a reusable workflow taking the
-environment as an input, each Worker through `deploy-worker.yml`; `deploy-staging.yml`
+environment as an input, each group of Workers through `deploy-group.yml`; `deploy-staging.yml`
 and `deploy-production.yml` are thin callers ([Deployment](deployment.md) "Deploy"). A
 staging environment whose deploy has drifted from production's tests nothing.
 
 `deploy-staging.yml` triggers on `workflow_run` (CI completing successfully for a push to
 `main`), not on `push`. Deploying a red `main` to staging would mean the environment's
-state no longer tells you anything. Every commit on `main` runs CI to the end
-([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish
+state no longer tells you anything. A newer push to `main` cancels an older CI run ([Deployment](deployment.md#runs-on-main-cancel-older-ones)), and the runs left can still finish
 out of order, and while merges keep landing `main`'s tip rarely has a finished run. A
 first job (**Newest green commit**) therefore deploys the newest commit on `main` whose CI
 passed, whichever run asked, and skips only when staging already runs it or something
@@ -195,22 +192,12 @@ up the newest green commit when it starts.
 Deploys fail loudly until these exist. Resource ids are committed to `wrangler.toml`
 (they are identifiers, not secrets; [Secrets policy](../002-project-scope/secrets-policy.md)).
 
-**Done**: the data store exists:
+**None today.** The staging MCP Worker's OAuth KV (`livehuddle-mcp-oauth-staging`) went with the MCP server
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)); the api keeps everything in Durable Objects.
 
-| Resource | Name                           | Where the id lives       |
-| -------- | ------------------------------ | ------------------------ |
-| KV       | `livehuddle-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
-
-Note the KV **title** is `livehuddle-mcp-oauth-staging`, matching production's
-`livehuddle-mcp-oauth`: the product's name leads, because every liveworkspace app's
-namespaces share one account (liveplanner's are `liveplanner-mcp-oauth[-staging]`).
-It is not `OAUTH_KV`; that is the binding name inside `wrangler.toml`, a different
-thing, and `wrangler kv namespace create OAUTH_KV --env staging` would have produced
-`livehuddle-mcp-staging-OAUTH_KV` instead.
-
-The **workers** are not on this list: a worker is its uploaded script, so all seven
+The **workers** are not on this list: a worker is its uploaded script, so all six
 `livehuddle-*-staging` workers come into existence on the first staging deploy. The
-tiers bootstrap them in the right order: the api first, then the sites and mcp (bound to
+tiers bootstrap them in the right order: the api first, then the sites (bound to
 the api), then the router (bound to the five), exactly as production's first deploy did
 ([Deployment](deployment.md) "Deploy").
 
@@ -218,10 +205,9 @@ the api), then the router (bound to the five), exactly as production's first dep
 list under [Secrets](#secrets)), for example
 `cd apps/api && wrangler secret put MEDIA_KEY --env staging` for the media service.
 
-**Hostnames**: only two workers get one:
+**Hostnames**: only one worker gets one:
 
 - `staging.livehuddle.app` → `livehuddle-router-staging`
-- `mcp-staging.livehuddle.app` → `livehuddle-mcp-staging`
 
 Each is declared as a custom domain in its worker's `[env.staging]` block and attached by
 the deploy ([Deployment](deployment.md#custom-domain)).

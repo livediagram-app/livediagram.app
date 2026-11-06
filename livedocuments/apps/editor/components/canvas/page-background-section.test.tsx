@@ -223,11 +223,11 @@ describe('BackgroundSection', () => {
 });
 
 describe('the Animated category', () => {
-  const slide = (fill?: PageFill) => {
+  const slide = (fill?: PageFill, kind: 'slide' | 'flashcard' = 'slide') => {
     const page = {
       id: 's',
       orientation: 'landscape',
-      kind: 'slide',
+      kind,
       ...(fill ? { background: { fill } } : {}),
     };
     const onBackground = vi.fn();
@@ -243,11 +243,14 @@ describe('the Animated category', () => {
     return onBackground;
   };
 
-  it('is offered on a slide page alone', () => {
+  it('is offered on a slide and a flashcard, not an infographic page', () => {
     show();
     expect(screen.queryByRole('radio', { name: 'Animated' })).toBeNull();
     cleanup();
     slide();
+    expect(radio('Animated')).toBeTruthy();
+    cleanup();
+    slide(undefined, 'flashcard');
     expect(radio('Animated')).toBeTruthy();
   });
 

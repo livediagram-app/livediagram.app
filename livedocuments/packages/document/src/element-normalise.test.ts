@@ -122,7 +122,8 @@ describe('content kinds', () => {
       { id: 'd', type: 'shape', shape: 'square', ...box, textSize: 'scale' },
     ]);
     expect(shape).toMatchObject({ textSize: 'md' });
-    expect(text).toMatchObject({ textSize: 'sm' });
+    // A new text is a Paragraph (docs/specs/015-api/mcp-server.md).
+    expect(text).toMatchObject({ textSize: 24 });
     expect(sticky).toMatchObject({ textSize: 'md' });
     expect(sized).toMatchObject({ textSize: 'scale' });
   });
@@ -261,5 +262,57 @@ describe('an agent’s concept graphic', () => {
     ]);
     expect(concept('cycle', 2).conceptRows.map((r) => r.label)).toEqual(['R1', 'R2', 'Step 3']);
     expect(concept('hub', 5).conceptRows).toHaveLength(5);
+  });
+});
+
+// docs/specs/015-api/mcp-server.md: a new raw text is a Paragraph, and a size past 48 px stores as the slider does.
+describe("an agent's text", () => {
+  const raw = (extra: Record<string, unknown> = {}) => ({
+    id: 't',
+    type: 'text',
+    x: 0,
+    y: 0,
+    width: 300,
+    height: 40,
+    label: 'Body',
+    ...extra,
+  });
+
+  it('takes a 24 px left and top aligned Paragraph for what it leaves out', () => {
+    const [el] = normaliseElements([raw()]) as Record<string, unknown>[];
+    expect(el).toMatchObject({ textSize: 24, textAlignX: 'left', textAlignY: 'top' });
+    const [given] = normaliseElements([raw({ textSize: 'lg', textAlignX: 'center' })]) as Record<
+      string,
+      unknown
+    >[];
+    expect(given).toMatchObject({ textSize: 'lg', textAlignX: 'center', textAlignY: 'top' });
+  });
+
+  it('leaves a text the tab already holds as it is', () => {
+    const [el] = normaliseElements([raw()], { kept: new Set(['t']) }) as Record<string, unknown>[];
+    expect(el!.textSize).toBe('sm');
+    expect(el).not.toHaveProperty('textAlignX');
+  });
+
+  it('stores a size past 48 px as 48 and a scale, held to 72, on a text or a box but not a chip', () => {
+    expect(normaliseElement(raw({ textSize: 60 }))).toMatchObject({
+      textSize: 48,
+      textScale: 1.25,
+    });
+    expect(normaliseElement(raw({ textSize: 200 }))).toMatchObject({
+      textSize: 48,
+      textScale: 1.5,
+    });
+    expect(normaliseElement(raw({ textSize: 60, textScale: 2 }))).toMatchObject({
+      textSize: 60,
+      textScale: 2,
+    });
+    expect(normaliseElement(raw({ textSize: 30 }))).not.toHaveProperty('textScale');
+    const box = { ...createShape('square', 0, 0), textSize: 72 };
+    expect(normaliseElement(box)).toMatchObject({ textSize: 48, textScale: 1.5 });
+    const sticky = { id: 'n', type: 'sticky', x: 0, y: 0, width: 9, height: 9, textSize: 60 };
+    expect(normaliseElement(sticky)).toMatchObject({ textSize: 60 });
+    const chip = { ...createShape('badge', 0, 0), textSize: 60 };
+    expect(normaliseElement(chip)).not.toHaveProperty('textScale');
   });
 });

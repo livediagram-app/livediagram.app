@@ -4,43 +4,60 @@ Derived from [Office](../office.md).
 
 ## Files
 
-| File                                                     | Role                                                                                      |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `packages/document/src/office.ts`                        | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's parts and walls |
-| `packages/document/src/seating.ts`                       | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each  |
-| `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                        |
-| `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                     |
-| `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                      |
-| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                               |
-| `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                  |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                               |
-| `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                  |
-| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                        |
-| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
-| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                 |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
-| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
-| `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                     |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                      |
+| File                                                     | Role                                                                                                       |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/office.ts`                        | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's and stage's parts                |
+| `packages/document/src/seating.ts`                       | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each                   |
+| `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                                         |
+| `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                                      |
+| `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                                       |
+| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                                                |
+| `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                                   |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                                                |
+| `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size; `SizedPieceView`, shared with the stage                          |
+| `apps/editor/components/canvas/collab/StageView.tsx`     | Canvas drawing of a stage at its own size                                                                  |
+| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                                         |
+| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                                 |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                                         |
+| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                                  |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                                              |
+| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room, rug or stage goes in at the back                                                                   |
+| `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                                          |
+| `apps/editor/components/palette/StageMenuSection.tsx`    | `StageMenuSection`: Who Can Speak, Show Cameras                                                            |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`, `setStageSelected`                                                                  |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | The office tiles                                                                                           |
+| `packages/document/src/office-garden.ts`                 | The pod, bar and garden drawings (`OFFICE_EXTRA_ART`), `gardenPathParts`, `grassParts`, `gardenFenceParts` |
+| `../packages/avatar/src/pod.ts`                          | `POD_SEATS`, `podWalls`, `podInterior`, `podClosed`, `closePods`                                           |
+| `apps/editor/components/canvas/collab/GardenViews.tsx`   | Canvas drawing of a garden path, grass and a garden fence at their own size                                |
+| `packages/document/src/call-geometry.ts`                 | `roomZones` takes a pod's interior as a call                                                               |
 
 ## Domain and naming
 
-| Term         | Identifier                           | Meaning                                                   |
-| ------------ | ------------------------------------ | --------------------------------------------------------- |
-| Office piece | `OfficeKind`, `OFFICE_KINDS`         | The seven kinds                                           |
-| Floor piece  | `isFloorShape`                       | Room and rug: placed at the back, never block, never rung |
-| Doorway      | `RoomDoor` (`ShapeElement.roomDoor`) | `'n' \| 'e' \| 's' \| 'w' \| 'none'`; absent = `'s'`      |
-| Wall         | `roomWalls(el)` → `WallSegment[]`    | Blocking lines, broken at the doorway                     |
-| Footprint    | `officeFootprint(el)`                | The blocking box of a plant or bookshelf                  |
-| Drink        | `DrinkKind`, `drinkFrom(kind)`       | `'water'` (cooler), `'coffee'` (machine)                  |
-| Held drink   | `AvatarPresence.holding`             | The drink in a character's hand, or none                  |
-| Table seat   | `TableSeat`                          | `{ u, v, facing }`: a seat and its sitter's facing        |
+| Term         | Identifier                              | Meaning                                                                          |
+| ------------ | --------------------------------------- | -------------------------------------------------------------------------------- |
+| Office piece | `OfficeKind`, `OFFICE_KINDS`            | The eight kinds                                                                  |
+| Floor piece  | `isFloorShape`                          | Room, rug, stage (and the Avatar Pad): at the back, never block, never rung      |
+| Stage        | `stageParts`, `stageTop`, `STAGE_FRONT` | Its drawing, the top feet stand on, the front face's height                      |
+| Doorway      | `RoomDoor` (`ShapeElement.roomDoor`)    | `'n' \| 'e' \| 's' \| 'w' \| 'none'`; absent = `'s'`                             |
+| Wall         | `roomWalls(el)` → `WallSegment[]`       | Blocking lines, broken at the doorway                                            |
+| Footprint    | `officeFootprint(el)`                   | The blocking box of a plant or bookshelf                                         |
+| Drink        | `DrinkKind`, `drinkFrom(kind)`          | `'water'` (cooler), `'coffee'` (machine), `'juice'` (cabinet), `'soda'` (fridge) |
+| Fixed seat   | `FixedSeatKind`, `seatsACharacter`      | A pod or a bar stool: seats that never turn, each with its sitter's facing       |
+| Scenery      | `isSceneryShape`                        | Blocks with a footprint, never rung: plant, bookshelf, bar, outdoor plant, tree  |
+| Pod door     | `podClosed(el, peersSeatedOn)`          | Both seats held: closed; the walk reads `podClosed` on the element               |
+| Held drink   | `AvatarPresence.holding`                | The drink in a character's hand, or none                                         |
+| Table seat   | `TableSeat`                             | `{ u, v, facing }`: a seat and its sitter's facing                               |
 
 ## Behaviour and state
 
-- **Placing**: `placeBoxed` prepends a floor piece (`[el, ...before]`), appends anything else.
+- **Placing**: `placeBoxed` prepends a floor piece (`[el, ...before]`), appends anything else. A garden path and grass
+  are floor pieces (`isFloorShape`).
+- **The pod's door**: `useCanvasAvatar` hands the walk `closePods(elements, peers)`, which marks a pod
+  `podClosed: true` while two peers sit in it (our own seat never counts for our own walls: sitting, we are not
+  walking, and standing up opens it). `fenceSegments` adds `podWalls(el)`: its four walls, the front one broken at the
+  doorway, unbroken while closed. `FurnitureView` draws the door slid shut while the pod's sitters (ours included)
+  number two, with a CSS `transform` transition of `POD_DOOR_MS`, none under reduced motion.
+- **A garden fence** blocks on `fenceLine` as a fence does; it is drawn by `gardenFenceParts`.
 - **Blocking**: `fenceSegments(elements)` emits, in paint order, a fence's line, a room's `roomWalls`, and a
   footprint's four `boxEdges`. `fenceStep` blocks them all with `FENCE_REACH`.
 - **Room walls**: back at `y + ROOM_BACK_FACE - ROOM_WALL / 2`, front at `y + h - ROOM_WALL / 2`, sides at
@@ -64,11 +81,14 @@ Derived from [Office](../office.md).
 ## Interfaces and contracts
 
 ```ts
-export type OfficeKind = 'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
+export type OfficeKind = 'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug' | 'stage';
 export type RoomDoor = 'n' | 'e' | 's' | 'w' | 'none';
 export type DrinkKind = 'water' | 'coffee';
 export function roomDoorSpan(length: number, door: RoomDoor): [number, number] | null;
 export function roomParts(width: number, height: number, door: RoomDoor): FurniturePart[];
+export type StageSpeakers = 'edit' | 'take-part';
+export function stageParts(width: number, height: number): FurniturePart[];
+export function stageTop(el: Box): Box;
 export function roomWalls(el: Box & { roomDoor?: RoomDoor }): WallSegment[];
 export function officeFootprint(el: Box & { shape: string }): Box | null;
 // AvatarPresence
@@ -79,11 +99,14 @@ holding?: 'water' | 'coffee' | null;
 | ------------------------- | -------------------------------------------- |
 | `roomDoor` absent         | `'s'`                                        |
 | `roomDoor` off-vocabulary | `isValidElement` false (`validate-shape.ts`) |
+| `stageSpeakers` absent    | `'edit'`                                     |
+| `stageSpeakers` other     | `isValidElement` false                       |
+| `stageCameras` not a bool | `isValidElement` false                       |
 | `holding` anything else   | The receiver draws an empty hand             |
 
 ## Data and persistence
 
-`roomDoor` is the only stored field (synced, exported, undoable). A held drink, the machine's answer, and seating
+`roomDoor`, `stageSpeakers` and `stageCameras` are the stored fields (synced, exported, undoable). A held drink, the machine's answer, and seating
 are presence or local, never stored.
 
 ## Errors and edge cases
@@ -114,12 +137,16 @@ Drawings as in [Office](../office.md), from `OFFICE_ART` (grids: plant 56 × 88,
 56 × 112, coffee machine 72 × 96, rug 200 × 120, meeting table 232 × 168), outlines in the theme stroke, fixed
 `OFFICE_TONES` for leaves, pots, water, coffee and spines. Room: floor in its fill, walls `ROOM_WALL` thick, back
 wall face `ROOM_BACK_FACE` tall shaded with the stroke, mat in the doorway; label `sm`, top left, `md` padding so it
-sits in the wall's face. Menu: **Room** section, five tiles (Top, Right, Bottom, Left, None), hint text as shipped.
+sits in the wall's face. Stage: drawn to its size like a room, top in its fill (`STAGE_FLOOR` unstyled) with two
+plank rails, front face `STAGE_FRONT` tall shaded with the stroke, a plate centred on the face; label `sm`, centred at
+the bottom so it sits on the plate. Menu: **Room** section, five tiles (Top, Right, Bottom, Left, None), hint text as shipped;
+**Stage** section, two tiles (`STAGE_SPEAKER_LABELS`: Editors, Editors and Participants), a hint, and a Show Cameras
+switch ([Meeting rooms and the stage blueprint](../../012-collaboration/blueprints/meeting-rooms-and-stage.md)).
 
 ## Accessibility
 
 `FurnitureView` and `RoomView` SVGs are `role="img"` with the piece's name ("Water cooler", "Room, Kitchen"); a
-meeting table names its sitters. Reduced motion stops the answer, the sip and the steam.
+meeting table names its sitters and rings the chair each holds. Reduced motion stops the answer, the sip and the steam.
 
 ## Observability
 
@@ -148,3 +175,7 @@ Element add / change telemetry as every element; `Canvas · Used · WaterCooler 
 | `DRINK_SIP_EVERY_MS`      | 8 000                                                   | Spec (the CSS loop's period)              |
 | `MACHINE_ANSWER_MS`       | 1 500                                                   | Spec                                      |
 | `ROOM_FLOOR` / `RUG_FILL` | `#f5f0e6` / `#fde68a` light; `#292524` / `#713f12` dark | D210                                      |
+| `POD_DOOR_MS`             | 600                                                     | Spec                                      |
+| `GARDEN_PATH_FILL`        | `#e7dcc4`                                               | A warm sand on either paper               |
+
+Custom-shaped rooms and doors: [Room Builder blueprint](room-builder.md).

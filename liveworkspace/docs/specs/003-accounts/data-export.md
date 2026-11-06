@@ -25,7 +25,13 @@ packages/app-doors             @liveworkspace/app-doors: the calls the platform 
 - **A team admin, for the team.** A team export holds every item the team owns and every comment in those items, and
   the team's name and id. It holds no one's profile and no images: an image belongs to whoever uploaded it, so each
   member's own export carries theirs. Only a team's admins may start one or download it, checked against accounts'
-  own records (never a token's claim) when it starts and again at the download.
+  own records (never a token's claim) when it starts, again when it finishes and again at the download.
+- **Still an admin when it finishes.** A team export's ready (or failed) email goes to whoever started it only if they
+  are still one of the team's admins when it finishes. Someone removed as an admin, removed from the team, or whose
+  team was deleted meanwhile gets no email, and their link opens nothing: the download sends them to Settings with
+  `other-account`, the same as anyone who isn't an admin, whether or not the link has lapsed or the export is still
+  there, so it never says the export exists. The team's other admins still see it in Settings, with **Download**, and
+  the file is deleted on its usual schedule.
 - **Live work.** Items in the Trash are left out. An item's folder is not kept: items are filed by app.
 
 ## What is in the zip
@@ -98,13 +104,14 @@ When an export is ready, accounts emails whoever started it a link to download i
 - **And signed in as that account.** The download needs the accounts session of the person the link was made for.
   Signed out, it goes to the sign-in page and comes back; signed in as someone else, or with a link that has lapsed,
   been altered or been replaced, it goes to Settings, which says why. A team export also needs the person to still be
-  the team's admin.
+  the team's admin, checked before anything else about the link (["Who and what"](#who-and-what)).
 - **Streamed.** Accounts streams the zip from the export service as `liveworkspace-data-<date>.zip`; nothing is held
   in memory.
 
 The email goes from accounts' sender with the platform's email layout: **Your liveworkspace data is ready** (or **Your
 team's data is ready**, naming the team), the size, a Download button, and the line that the link works for 3 days
-and only when signed in as that address. A failed export's email says so and points to Settings to try again.
+and only when signed in as that address. A failed export's email says so and points to Settings to try again. A
+team's email, ready or failed, goes only to someone still its admin.
 
 ## Settings
 

@@ -42,6 +42,35 @@ test('/new makes a guest’s document in This Browser and opens it on its start'
   expectNoPageErrors(pageErrors);
 });
 
+// The first visit itself (docs/specs/003-system-architecture/e2e-smoke.md "Every test opens as a returning guest"):
+// every other test opens as a guest who holds a token, and a browser with none leaves /new for the guest handoff and
+// comes back holding one, then makes its document. Nothing is checked on the page until the round trip is back.
+test.describe('a first visit', () => {
+  test.use({ freshVisitor: true });
+
+  test('goes through the guest handoff and comes back to make a document with a guest token', async ({
+    page,
+    pageErrors,
+  }) => {
+    const visited: string[] = [];
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) visited.push(new URL(frame.url()).pathname);
+    });
+    await page.goto('/new');
+    const cameBack = () => {
+      const at = visited.findIndex((path) => path.startsWith('/auth/guest'));
+      return at >= 0 && at < visited.length - 1;
+    };
+    await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
+    await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}/, { timeout: 30_000 });
+    await expect(page.getByRole('region', { name: /^Start / })).toBeVisible();
+    expect(
+      await page.evaluate(() => localStorage.getItem('livedocuments:v2:guest-token')),
+    ).toBeTruthy();
+    expectNoPageErrors(pageErrors);
+  });
+});
+
 // The editor header carries no apps menu (docs/specs/007-editor/editor-app.md "Header"): its logo is a plain link with
 // no site switcher (that stays on the Explorer and landing pages), and the product's own links (Home, Explorer, Help)
 // live in the Explorer panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout"), never in the header.

@@ -29,12 +29,16 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'a tab is capped at 10,000 elements; only plan limits are absent',
   },
   {
-    pattern: /export any tab[^.]*mermaid/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern: /export any tab[^.]*(?:mermaid|excalidraw)/i,
+    why: 'a tab exports JSON, Markdown, PNG, SVG and PDF; Mermaid and Excalidraw left livehuddle (not-in-livehuddle.md "Imports from other tools")',
   },
   {
-    pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern: /any tab (?:out )?as[^.]*(?:mermaid|excalidraw)/i,
+    why: 'a tab exports JSON, Markdown, PNG, SVG and PDF; Mermaid and Excalidraw left livehuddle',
+  },
+  {
+    pattern: /import[^.]*(?:excalidraw|mermaid|draw\.io|diagrams\.net)/i,
+    why: 'livehuddle imports only its own tab JSON (not-in-livehuddle.md "Imports from other tools")',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,
@@ -54,7 +58,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /AI assistance|AI panel|ask and clean|clean mode|assistant in the editor/i,
-    why: 'the editor has no AI assistant of its own; AI tools connect over MCP (docs/specs/019-marketing/build-with-ai.md)',
+    why: 'the editor has no AI assistant of its own',
+  },
+  {
+    pattern: /\bMCP\b|command[- ]line|\bCLI\b|Build with AI|mcp\.livehuddle/i,
+    why: 'livehuddle has no MCP server, CLI or Build with AI page (docs/specs/002-project-scope/not-in-livehuddle.md)',
   },
 ];
 

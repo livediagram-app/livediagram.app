@@ -58,7 +58,9 @@ width counts the targets, their gaps, 8 px of padding a side and a 1 px border a
 
 Never over the other chrome (panels, the Contents panel, popovers, the Toolbar strip and
 its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
-takes the first that overlaps none of them:
+takes the first that overlaps none of them. The bottom-right cluster counts by its strips, not its row: beside a
+docked Contents sidebar the row reaches left to the sidebar (so it can wrap upward short of it) while its strips sit at
+the right, and the empty row is no obstacle:
 
 1. the left edge, centred;
 2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;
@@ -336,12 +338,8 @@ WCAG 2.2 AA.
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title.
-- **Minimal chrome keeps the section titles** ([Power user mode](../007-editor/power-user-mode.md)).
-  Minimal chrome removes words that teach the interface; these name what each row changes. Two
-  rows of seven coloured squares (Stroke, Background) look alike without them, and a user who
-  knows the editor still has to tell them apart at a glance. The docked panel's header follows the
-  panel rule instead: Minimal chrome hides a panel's title and help button, which would leave an
-  empty strip, so the header is not shown; the panel keeps its accessible name ("Quick style").
+- **Section titles always show**: they name what each row changes. Two rows of seven coloured
+  squares (Stroke, Background) look alike without them.
 - **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
   one (`scrollbar-slim`), light and dark, not the operating system's.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above

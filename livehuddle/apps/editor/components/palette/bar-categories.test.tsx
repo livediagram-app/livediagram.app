@@ -1,36 +1,53 @@
 import { describe, expect, it } from 'vitest';
 import { barCategoriesFor } from './bar-categories';
-import { paletteCategoriesFor } from './palette-layouts';
-import { SESSION_CATEGORY_ID, SESSION_GROUP_IDS } from './session-category';
-import type { EditorMode } from '@livehuddle/document';
+import { paletteCategories } from './palette-layouts';
 
-// What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar").
+// What the category bar offers (docs/specs/007-editor/toolbar-layout.md "The category bar",
+// docs/specs/012-collaboration/workshop-mode.md "The palette").
 
-const bar = (mode: EditorMode) =>
-  barCategoriesFor(
-    paletteCategoriesFor(mode).map((c) => ({ ...c, content: null })),
-    (groups) => groups.map((g) => g.id).join(','),
-  );
+const bar = () => barCategoriesFor(paletteCategories().map((c) => ({ ...c, content: null })));
 
 describe('the category bar’s categories', () => {
-  it('gathers Workshop’s session tools into Session, Ask keeping its own button', () => {
-    const cats = bar('workshop');
+  it('shows the meeting palette less Popular, with no Session category', () => {
+    const cats = bar();
     expect(cats.map((c) => c.id)).toEqual([
-      'shapes',
-      'my-shapes',
       'write',
-      'draw',
-      'layout',
-      'collab-ask',
-      SESSION_CATEGORY_ID,
-      'icons',
+      'collab-rooms',
+      'collab-seating',
+      'collab-amenities',
+      'collab-bar',
+      'collab-recreation',
+      'collab-garden',
+      'collab-meeting',
+      'collab-travel',
       'stickers',
-      'media',
-      'data',
     ]);
-    const session = cats.find((c) => c.id === SESSION_CATEGORY_ID)!;
-    expect(session.tiles).toBeNull();
-    // Its body is drawn from the groups it gathered, in order.
-    expect(session.content).toBe(SESSION_GROUP_IDS.join(','));
+    expect(cats.map((c) => c.label)).toEqual([
+      'Write',
+      'Rooms',
+      'Seating',
+      'Amenities',
+      'Bar',
+      'Recreation',
+      'Garden',
+      'Meeting',
+      'Travel',
+      'Stickers',
+    ]);
+  });
+
+  it('names every category in one word', () => {
+    for (const c of bar()) expect(c.label, c.id).not.toMatch(/\s/);
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "The strip's order": a divider wherever the band changes,
+  // so Write | Rooms..Meeting | Travel | Stickers.
+  it('keeps the bands: Write, the Space furnishing, Travel apart, then the decoration', () => {
+    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 6, 6, 6, 7, 2]);
+    const cats = bar();
+    const dividedBefore = cats
+      .filter((c, i) => i > 0 && cats[i - 1]!.group !== c.group)
+      .map((c) => c.label);
+    expect(dividedBefore).toEqual(['Rooms', 'Travel', 'Stickers']);
   });
 });

@@ -1,4 +1,4 @@
-import { isFloorShape } from '@livehuddle/document';
+import { isFloorShape, withDoorPiece } from '@livehuddle/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -144,12 +144,17 @@ export function useElementHelpers(opts: {
     // z-order: rendering is by array index, lowest first, so the last
     // entry paints on top. Landing new content where the user can see
     // and immediately work with it matches every other editor; the
-    // Layer accordion's "Send to back" covers the rarer reverse case.
+    // Arrange section's "Send to Back" covers the rarer reverse case.
     const before = activeTab.elements;
     // A room or a rug is the floor (docs/specs/009-elements/office.md): it goes in behind everything, so the
     // furniture already there, and any dropped on it later, stands on it.
     const onFloor = el.type === 'shape' && isFloorShape(el.shape);
-    const after = onFloor ? [el, ...before] : [...before, el];
+    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), in front of the
+    // room so a click lands on it; the room keeps the selection, and one commit makes both one undo step.
+    const [placed, ...companions] = withDoorPiece(el);
+    const after = onFloor
+      ? [placed!, ...before, ...companions]
+      : [...before, placed!, ...companions];
     commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
     if (select) setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders
@@ -201,6 +206,10 @@ export function useElementHelpers(opts: {
     const boxedPair = !!target && isBoxed(source) && isBoxed(target);
     const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
     if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
+    // A lock holds an element's look as well as its place (docs/specs/008-canvas/format-panel.md "Locks"): a
+    // locked element and everything on a locked tab refuse the paint, and the brush stays
+    // loaded. A locked source still lends its look: copying it changes nothing.
+    if (target.locked === true || activeTab.locked === true) return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to

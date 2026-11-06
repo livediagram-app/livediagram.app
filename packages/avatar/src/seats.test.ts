@@ -26,6 +26,15 @@ describe('facings', () => {
       sofa: 'n',
       desk: 's',
       'meeting-table': 'n',
+      'office-pod': 'n',
+      'bar-stool': 'n',
+      // The social pieces' fixed seats (livehuddle's docs/specs/009-elements/social-pieces.md).
+      'ping-pong-table': 'n',
+      bench: 'n',
+      'picnic-table': 'n',
+      hammock: 'n',
+      'bean-bag': 'n',
+      'reading-nook': 'n',
     });
     expect(seatingFacing({ shape: 'desk' })).toBe('s');
     expect(seatingFacing({ shape: 'desk', chairFacing: 'e' })).toBe('e');
@@ -142,5 +151,16 @@ describe('seatFor', () => {
       chairFacing: 'e' as const,
     };
     expect(seatFor(chair, { x: 0, y: 0 }).facing).toBe('left');
+  });
+});
+
+// livehuddle's docs/specs/009-elements/office.md "Bar, Bar Stool".
+describe('the bar stool', () => {
+  it('seats one facing the bar, whatever facing it carries', () => {
+    const stool = { shape: 'bar-stool' as const, x: 0, y: 0, width: 44, height: 64 };
+    expect(seatPoints(stool)).toEqual([{ x: 22, y: 25.6, facing: 'up' }]);
+    expect(seatPoints({ ...stool, chairFacing: 'e' })).toEqual(seatPoints(stool));
+    expect(seatFor(stool, { x: 0, y: 100 }).facing).toBe('up');
+    expect(seatingFacing(stool)).toBe('n');
   });
 });

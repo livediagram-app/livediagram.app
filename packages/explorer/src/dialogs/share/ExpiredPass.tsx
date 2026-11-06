@@ -15,17 +15,20 @@ export function ExpiredPass({
   busy,
   onExtend,
   onDelete,
+  legacy = false,
 }: {
   link: ShareLink;
   url: string;
   busy: boolean;
   onExtend: () => void;
   onDelete: () => void;
+  // A level the item's app no longer offers a new pass: its band says Legacy.
+  legacy?: boolean;
 }) {
   const exit = usePassExit(onDelete);
   const extend = link.expiry === 'never' ? 'Extend' : `Extend ${LIFETIMES[link.expiry]}`;
   return (
-    <PassTicket level={link.level} code={link.code} expired leaving={exit.leaving}>
+    <PassTicket level={link.level} legacy={legacy} code={link.code} expired leaving={exit.leaving}>
       <div className="flex items-center gap-2">
         <span className="inline-flex shrink-0 -rotate-3 items-center rounded border-2 border-rose-400 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-500/70 dark:text-rose-300">
           <span className="text-optical-line text-optical-caps uppercase tracking-widest">

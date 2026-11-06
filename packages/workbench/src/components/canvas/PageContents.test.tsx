@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { usePageContents, type ContentsUse } from '../../hooks/ui/usePageContents';
 import type { ContentsRowBase } from '../../lib/page-contents';
 import { ContentsPanel, usePageInViewOnOpen } from './PageContentsPanel';
@@ -30,7 +30,17 @@ const rowsOf = (pages: typeof PAGES): Row[] =>
     locked: i === 1,
     aspect: 1,
     ...(i === 0 ? { badge: '45 sec' } : {}),
+    // Page 1 (here in the sidebar) and Page 4 are set aside, as livedocuments' hidden slides are.
+    ...(i === 0 || i === 3 ? { setAside: 'Hidden in Slides' } : {}),
   }));
+
+// A row's veil, its picture and its button's description.
+const veilOf = (name: string) =>
+  rowButton(name).closest('[role="listitem"]')!.querySelector('[data-contents-veil]');
+const describedAs = (name: string) => {
+  const id = rowButton(name).getAttribute('aria-describedby');
+  return id ? document.getElementById(id)?.textContent : undefined;
+};
 
 function harness({ canEdit = true, pages = PAGES } = {}) {
   const spies = {
@@ -44,7 +54,6 @@ function harness({ canEdit = true, pages = PAGES } = {}) {
     setLocked: vi.fn(),
     openSettings: vi.fn(),
     track: vi.fn<(type: ContentsUse) => void>(),
-    readTexts: vi.fn(() => new Map([['p5', 'revenue figures']])),
   };
   const view = {
     pages,
@@ -67,11 +76,9 @@ function harness({ canEdit = true, pages = PAGES } = {}) {
   };
   function useContents(here: string | undefined, onWent?: () => void) {
     const rows = rowsOf(pages);
-    const readTexts = useCallback(() => spies.readTexts(), []);
     const contents = usePageContents({
       view,
       rows,
-      readTexts,
       dropUnit: (_id, drop) => drop.index,
       lastPage: pages.at(-1),
       maxPages: 10,
@@ -87,12 +94,16 @@ function harness({ canEdit = true, pages = PAGES } = {}) {
     return { ...contents, thumbs: new Map([['p1', { markup: '<rect/>', viewBox: '0 0 1 1' }]]) };
   }
   const badges = (row: Row) => (row.badge ? <span data-badge="">{row.badge}</span> : null);
-  const footer = (c: ReturnType<typeof useContents>) =>
-    c.canAdd ? (
-      <button type="button" onClick={() => (c.addLike ? c.addLike() : c.add?.('slide'))}>
-        Add Page
-      </button>
-    ) : null;
+  const footer = (c: ReturnType<typeof useContents>, end?: ReactNode) => (
+    <div data-foot="">
+      {c.canAdd ? (
+        <button type="button" onClick={() => (c.addLike ? c.addLike() : c.add?.('slide'))}>
+          Add Page
+        </button>
+      ) : null}
+      {end}
+    </div>
+  );
   return { spies, useContents, badges, footer };
 }
 
@@ -151,20 +162,25 @@ describe('the shared Contents popover', () => {
     expect(rowButton('Page 5').getAttribute('aria-current')).toBe('page');
   });
 
-  it('finds a page by its words, read only once a search is typed, and clears on Escape', () => {
-    const h = harness();
-    render(<Panel h={h} />);
-    expect(h.spies.readTexts).not.toHaveBeenCalled();
-    const find = screen.getByRole('searchbox', { name: 'Find a Page' });
-    fireEvent.change(find, { target: { value: 'revenue' } });
-    expect(h.spies.readTexts).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(['5Page 5']);
-    fireEvent.change(find, { target: { value: 'zebra' } });
-    expect(screen.getByText('No page matches “zebra”.')).toBeTruthy();
-    fireEvent.keyDown(find, { key: 'Escape' });
+  it('sets a set-aside page aside: a veil with the eye alone on a narrow picture, read as its description', () => {
+    render(<Panel h={harness()} />);
+    expect(document.querySelectorAll('[data-contents-veil]')).toHaveLength(2);
+    // A 52 px square picture is too narrow for the word.
+    expect(veilOf('Page 4')?.textContent).toBe('');
+    expect(veilOf('Page 4')?.querySelector('svg')).toBeTruthy();
+    expect(veilOf('Page 3')).toBeNull();
+    expect(describedAs('Page 4')).toBe('Hidden in Slides');
+    expect(describedAs('Page 3')).toBeUndefined();
+    // The name stays the row's own; the reason is no extra mark on the name line.
+    expect(rowButton('Page 4').getAttribute('aria-label')).toBe('Page 4');
+    expect(screen.queryByRole('img', { name: 'Hidden in Slides' })).toBeNull();
+  });
+
+  it('has no Find box: every page is listed and an Editor can always reorder', () => {
+    render(<Panel h={harness()} />);
+    expect(screen.queryByRole('searchbox')).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(8);
-    fireEvent.keyDown(find, { key: 'ArrowDown' });
-    expect(document.activeElement).toBe(rowButton('Page 1'));
+    expect(document.querySelectorAll('[data-contents-grip]')).toHaveLength(8);
   });
 
   it('moves the focus down the rows with the arrow keys, Home and End', () => {
@@ -200,11 +216,12 @@ describe('the shared Contents popover', () => {
     expect(h.spies.duplicatePage).toHaveBeenCalledWith('p1');
   });
 
-  it('adds a page like the last, and marks it once it arrives', () => {
+  // pages-mode.md "Adding a page": like the last, right after the page here (the one the list opened on, p1).
+  it('adds a page like the last right after the page here, and marks it once it arrives', () => {
     const h = harness();
     const { rerender } = render(<Panel h={h} />);
     fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
-    expect(h.spies.addPageLike).toHaveBeenCalledWith('p8');
+    expect(h.spies.addPageLike).toHaveBeenCalledWith('p8', 'p1');
     rerender(<Panel h={h} />);
     expect(screen.getAllByRole('listitem')).toHaveLength(8);
   });
@@ -240,9 +257,11 @@ describe('the shared Contents popover', () => {
 function Sidebar({
   h,
   onMinimise = () => {},
+  joined = true,
 }: {
   h: ReturnType<typeof harness>;
   onMinimise?: () => void;
+  joined?: boolean;
 }) {
   const [here] = useState<string | undefined>('p1');
   const contents = h.useContents(here);
@@ -251,13 +270,11 @@ function Sidebar({
       contents={contents}
       pages={PAGES}
       focusPage={h.spies.focusPage}
-      footer={h.footer(contents)}
+      footer={(end) => h.footer(contents, end)}
       badges={h.badges}
       top={64}
-      side="left"
-      onMoveToSide={() => {}}
       onMinimise={onMinimise}
-      joined
+      joined={joined}
     />
   );
 }
@@ -289,11 +306,59 @@ describe('the shared Contents sidebar', () => {
     }
   });
 
-  it('minimises to its button, framing the page in view again', () => {
+  it('has no header, no Find box and no drag; its foot holds Add Page with Contents Options to its right', () => {
+    render(<Sidebar h={harness()} joined={false} />);
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    expect(aside.querySelector('h2')).toBeNull();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(aside.querySelector('[data-contents-handle]')).toBeNull();
+    expect(aside.style.left).toBe('0px');
+    expect(aside.querySelector('[data-menu-join-band]')).toBeNull();
+    const foot = aside.querySelector('[data-foot]')!;
+    expect(
+      [...foot.querySelectorAll('button')].map(
+        (b) => b.getAttribute('aria-label') ?? b.textContent,
+      ),
+    ).toEqual(['Add Page', 'Contents Options']);
+  });
+
+  it('veils a set-aside page with the word, a dashed edge, and the brand ring kept on the page here', () => {
+    render(<Sidebar h={harness()} />);
+    expect(veilOf('Page 4')?.textContent).toBe('Hidden');
+    const picture = (name: string) =>
+      rowButton(name).closest('[role="listitem"]')!.querySelector('[data-contents-picture]')!;
+    expect(picture('Page 4').className).toContain('outline-dashed');
+    expect(picture('Page 3').className).not.toContain('outline-dashed');
+    // Page 1 is here and set aside: its ring stays the brand's, under the same veil.
+    expect(rowButton('Page 1').getAttribute('aria-current')).toBe('page');
+    expect(picture('Page 1').className).toContain('ring-brand-500');
+    expect(veilOf('Page 1')?.textContent).toBe('Hidden');
+    expect(describedAs('Page 1')).toBe('Hidden in Slides');
+  });
+
+  it('keeps Contents Options at a Viewer’s foot, with no Add Page', () => {
+    render(<Sidebar h={harness({ canEdit: false })} />);
+    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Contents Options' })).toBeTruthy();
+  });
+
+  it('collapses to its button from Contents Options, framing the page in view again', () => {
     const h = harness();
     const onMinimise = vi.fn();
-    render(<Sidebar h={h} onMinimise={onMinimise} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Minimise Contents' }));
-    expect(onMinimise).toHaveBeenCalled();
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    try {
+      render(<Sidebar h={h} onMinimise={onMinimise} />);
+      fireEvent.click(screen.getByRole('button', { name: 'Contents Options' }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Collapse Contents' }));
+      expect(onMinimise).toHaveBeenCalled();
+      for (let i = 0; i < 4 && frames.length; i++) frames.shift()!(0);
+      expect(h.spies.focusPage).toHaveBeenCalledWith('p1');
+    } finally {
+      raf.mockRestore();
+    }
   });
 });

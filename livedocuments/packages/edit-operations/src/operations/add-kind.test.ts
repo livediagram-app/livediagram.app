@@ -59,6 +59,32 @@ describe('add <kind>', () => {
     expect(added('add shape')).toMatchObject({ shape: 'square' });
   });
 
+  it('makes a text a Paragraph boxed for its words, 24 px, left aligned, top first (EO28)', () => {
+    const box = (op: string) => added(op) as Element & { width: number; height: number };
+    const short = box('add text label="Notes"');
+    expect(short).toMatchObject({ textSize: 24, sizing: 'wrap' });
+    expect(short.width).toBeLessThan(200);
+    const long = box(`add text label="${'word '.repeat(60).trim()}"`);
+    expect(long.width).toBe(600);
+    expect(long.height).toBeGreaterThan(short.height);
+    expect(added('add text label="Big" text=72')).toMatchObject({ textSize: 48, textScale: 1.5 });
+    expect(added('add text label="Box" width=90 height=30')).toMatchObject({
+      width: 90,
+      height: 30,
+    });
+  });
+
+  it('makes a text left aligned, top first, as every new text in the editor (EO28)', () => {
+    expect(added('add text label="Notes"')).toMatchObject({
+      textAlignX: 'left',
+      textAlignY: 'top',
+    });
+    expect(added('add text label="Notes" textAlignX=center')).toMatchObject({
+      textAlignX: 'center',
+    });
+    expect(added('add sticky')).not.toHaveProperty('textAlignX');
+  });
+
   it('coerces an unknown kind to a shape with a warning, and refuses what it cannot make', () => {
     const outcome = run('add rectangle label=Box');
     expect(applied(outcome).warnings).toEqual([
@@ -190,6 +216,13 @@ describe('add <kind>', () => {
       (e) => e.id === 'f2',
     ) as Element & { height: number };
     expect(f2.height).toBe(200);
+  });
+
+  // docs/specs/009-elements/tab-window.md: a retired kind is never made, though a stored one loads.
+  it('refuses a tab window', () => {
+    const op: EditOperation = { op: 'add', kind: 'tab-window' };
+    const rejection = refused(applyEditOperations(checkoutFlow(), [op], { makeId: fixedIds() }));
+    expect(JSON.stringify(rejection)).toContain('tab windows are retired');
   });
 
   it('refuses a kind on a locked layer it would land on', () => {

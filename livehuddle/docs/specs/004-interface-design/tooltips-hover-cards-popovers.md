@@ -40,6 +40,9 @@ A control has at most one hint. If a hover card is present, it carries the name 
   toolbar reads each name without paying the wait each time.
 - **Opens instantly on keyboard focus.** Focus that is not keyboard-visible (a click, a dialog
   focusing its first control) does not open it.
+- **A tap is not a hover.** After a touch, phones and emulators send the control under the finger a mouse
+  `pointerenter` of their own. A mouse event within **1 s** of a touch is that echo and opens nothing: a
+  phone that taps Join in a dialog must not find the Settings tooltip up when the dialog closes over it.
 - **The name only**, on one line where it fits, in the interface's small text. It may wrap; it never
   truncates.
 - **Inverse pill.** On light pages, a dark pill (slate 900) with white text and a small pointer
@@ -71,11 +74,10 @@ card is kept **only where it says something the face cannot**:
 - **a person** (an avatar's name card);
 - something the face deliberately **does not draw** (where a Portal leads, since
   the ring carries no caption);
-- a control whose press is **not what it looks like** (a dot-vote tally, where a
-  click takes your dot back).
+- a control whose press is **not what it looks like**.
 
 Never on a **labelled button** (Reveal, New round, Open the box, Take roll,
-I'm done, Pick, Hide: the label is the whole story), never on a vote arrow or a
+I'm done, Pick, Hide: the label is the whole story), never on a
 chip, and never over a **whole element** (the Reaction pad's card covered the
 pad, so it opened every time the pointer crossed it). Anything worth saying
 about a removed one lives in the element's help article and its accessible

@@ -68,7 +68,7 @@ describe('make room', () => {
     const outer: Element = {
       id: 'big',
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
       x: -80,
       y: 240,
       width: 300,
@@ -120,7 +120,7 @@ describe('make room', () => {
     const outer: Element = {
       id: 'pay',
       type: 'shape',
-      shape: 'frame',
+      shape: 'boundary',
       x: -40,
       y: 600,
       width: 400,

@@ -4,7 +4,7 @@ A short, optional guided tour of one [page kind](pages-mode.md#page-kinds): a sl
 article. Like every tour it is started from the footer's **Start Pages Tour** button and never offers itself; [Show Me](show-me.md)
 runs the same track from a page's panel, and the [element tours](element-tours.md) share the button. Each kind has its own **track**, which shows how that kind of page is made by
 opening the real controls on the person's own page (a slide's Layout and Background popovers,
-the Slide Deck and Present) rather than only pointing at them: anchored step cards, a glide, a
+a page's menu in Contents and Present) rather than only pointing at them: anchored step cards, a glide, a
 dimming spotlight, Skip, Back and a closing card, driven by the tour engine every tour shares ("How a tour runs").
 
 ## Domain language
@@ -43,24 +43,24 @@ and the closing card. This tour's part:
   tour stayed on the button for good (Work Tracker #177).
 - **Taken, on every device.** As a run starts and however it ends (completed or skipped), the synced
   `pagesTourKinds` user preference ([User preferences](user-preferences.md)) records its kind. The record feeds the
-  Settings rows, which page a press prefers, and whether the button offers the tour at all. `pagesTourSeen` true counts every kind as taken only
-  while [Power user mode](power-user-mode.md) is on (`apps/editor/lib/tour-tracks.ts`, shared with the [element
-  tours](element-tours.md)).
+  Settings rows, which page a press prefers, and whether the button offers the tour at all. The older single flag `pagesTourSeen`
+  counts no kind on its own: an answer given before the tour split stands for no kind in particular
+  (`apps/editor/lib/pages-tour.ts`). Someone who had the retired [Power user mode](power-user-mode.md) on keeps every
+  kind taken: its preset's flag is folded into `pagesTourKinds` as the stored preferences are read.
 - **Rerun from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
   while any is untaken; off marks them all taken, on forgets every record), and one switch per kind sits nested beneath
   it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Flashcards Tour**; the Flashcards
   row came with the button leaving once a track is taken, since without it a taken Flashcards track had no switch of
   its own to bring it back). On means that kind has not been taken. Turning one off marks that kind alone;
-  turning one on forgets that kind alone (and folds a Power user's single `pagesTourSeen` into the taken list
-  first, so the other kinds stay as they were). Closing Settings with a kind newly on starts the tour when it is on
-  offer right now; otherwise it does nothing, and the button is there when the person is in Pages. Power user
-  mode's readout lists **Pages Tours**.
+  turning one on forgets that kind alone (and clears the single `pagesTourSeen`, so the other kinds stay as they
+  were). Closing Settings with a kind newly on starts the tour when it is on offer right now; otherwise it does
+  nothing, and the button is there when the person is in Pages.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)).
 
 ## Tour content
 
-The tour opens popovers, the page's panel and the Slide Deck, and closes them again on leaving the step. Its
+The tour opens popovers, the page's panel and a page's menu in Contents, and closes them again on leaving the step. Its
 controls stay live: a layout or background the person picks while its step is up is theirs, kept as any pick is (one
 edit, undoable). The tour places nothing of its own.
 
@@ -68,14 +68,14 @@ edit, undoable). The tour places nothing of its own.
 
 The track's steps, then its closing card, a step card in the same popover (`TourPopover`) that sits outside the
 step count. Each
-step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
+step rings one control of the tour page (or its row in Contents, or the header's Present), held by its own page rather than the first page's,
 never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
 on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
 
 Each track's cards name its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour** or **Article tour**.
 The exact strings live in `apps/editor/components/tour/<kind>-tour-steps.ts`.
 
-**A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
+**A step that opens a popover** (Layout, Background, a Contents row's menu) opens it once on entering, by pressing its
 real button, and rings it. The popover stays open while the person presses the tour's card. Picking from it closes
 it as it always does: the ring then moves to the tour page, so the person sees what they picked land; the step
 never reopens it. Leaving the step closes whatever it opened that is still open.
@@ -87,17 +87,13 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 1. **Choose a Layout** (the slide's Layout popover, opened): hover a layout to preview it, press to place it.
 2. **Change the Background** (the Background popover, opened): colours, gradients, animated backgrounds and
    pictures, a pattern on top; hover to preview, press to keep it.
-3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
-4. **Your Slide Deck** (the Slide Deck, opened from the Slides button, ringing its rows): every slide page is in the
-   deck already; drag a row to reorder, press one to go to that slide.
-5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker note cards, hide from the show, rename, duplicate.
-6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
-   size.
-7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.
-8. **You're ready to present** (closing card).
-
-The deck stays open from step 4 to step 7 and closes after them, however the tour leaves them
-(`holdSlideDeck` / `releaseSlideDeck`).
+3. **Add Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
+4. **Your Slides** (the tour page's row in the Contents sidebar): every slide is in the show already, in this
+   order; drag a row to move it, press one to go to that slide.
+5. **Each Slide's Menu** (the row's ⋯ menu, opened): hide a slide from the show, or present from it.
+6. **Present** (the header's Present): full screen, arrow keys to move, Escape to end. Transitions and auto-advance
+   are in Settings, under Presenting.
+7. **You're ready to present** (closing card).
 
 ### Infographic track
 
@@ -106,7 +102,8 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 3. **Change the Background** (the Background popover, opened).
 4. **Page Size** (the page's panel, opened on Page): size and orientation; duplicate, move or delete below.
 5. **Add a Page** (the +).
-6. **Present It** (the Slide Deck, opened): any page can be a slide, picked in the deck and presented.
+6. **Present It** (the tour page's ⋯ menu in Contents, opened): Add to Slides puts any page in the show, and
+   Present runs it.
 7. **You're ready to make pages** (closing card).
 
 ### Article track
@@ -121,8 +118,8 @@ The deck stays open from step 4 to step 7 and closes after them, however the tou
 
 ### Filtering
 
-- A step whose control is not on screen when the tour starts (the Slides button on a
-  phone; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
+- A step whose control is not on screen when the tour starts (the Contents sidebar while it is minimised, or on a
+  phone; the header's Present while the deck has nothing to show; the + when neither the one after the last page nor the Toolbar strip's is in the window) is left out up front, so the count stays honest; one that goes before its
   turn is skipped ("Mechanics").
 - If the tour can no longer run where it started (the person's edit rights go, they open another tab, or the tour page is deleted or locked) it ends as skipped, closing whatever it opened.
 
@@ -202,10 +199,11 @@ The tour's funnel; the track shows in the step tokens:
 - **Page Show Me**: `UI` · `Started` · `<Kind>Tour`, and `UI` · `Ended` · `<Kind>TourCompleted` |
   `<Kind>TourSkipped`, for `SlideTour`, `InfographicTour` and `ArticleTour` ([Show Me](show-me.md)).
 
-## Power user mode
+## Power user mode (retired)
 
-[Power user mode](power-user-mode.md) marks the Pages tour seen (`pagesTourSeen`, every kind while the mode
-is on) and every element tour (`elementToursSeen`).
+The retired [Power user mode](power-user-mode.md) marked the Pages tour seen (`pagesTourSeen`) and every element
+tour (`elementToursSeen`). Both stay seen for someone who had it on: `upgradeLegacyPreferences`
+(`packages/api-schema/src/legacy-preferences.ts`) adds every kind to `pagesTourKinds` when it drops the mode's keys.
 
 ## Code
 

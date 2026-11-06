@@ -28,7 +28,7 @@ export const frame = (
   y: number,
   width: number,
   height: number,
-  shape = 'frame',
+  shape = 'boundary',
 ): Element => ({ id, type: 'shape', shape, x, y, width, height, label: id }) as Element;
 
 export const arrow = (
@@ -45,14 +45,14 @@ export const arrow = (
   ...extra,
 });
 
-export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'layers' | 'theme'> => ({
+export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'theme'> => ({
   elements,
 });
 
 export const quiet = () => {};
 
 export const lint = (
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn'>>,
+  tab: Pick<Tab, 'elements' | 'theme'> & Partial<Pick<Tab, 'opensIn'>>,
   options: LintOptions = {},
 ): LintReport => lintTab(tab, { log: quiet, ...options });
 

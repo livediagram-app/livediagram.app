@@ -216,7 +216,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/document`: the data model end to end: element
     factories + defaults, geometry / anchor / snap math, arrow path +
     avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels,
-    layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
+    auto-layout (clusters, styles, lanes, crossings), mind maps,
     Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
     shape recognition, rich text, tables, comments + mentions, element ops and
     deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows,
@@ -267,10 +267,6 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/telemetry-client`: the shared buffer / flush / beacon engine
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
-  - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
-    SDK), tool registration + telemetry, graph input, element normalising, tab
-    builders, the find-diagrams search, OAuth state handling, the request scope,
-    and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level
     `apps/editor/app` segment routes to the editor worker rather than falling

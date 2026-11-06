@@ -1,6 +1,7 @@
 // An article's table of contents (docs/specs/007-editor/article-pages.md "Table of contents"): the
 // headings it lists, drawn from the writing, never stored. Pure.
 import type { ArticleRun } from './article-flow';
+import { articleRunsText } from './article-footnotes';
 
 /** How many heading levels a contents block lists: Heading 1 only, 1 and 2, or 1 to 3. */
 export type ArticleTocDepth = 1 | 2 | 3;
@@ -32,9 +33,7 @@ export function articleTocEntries(
     if (b.type !== 'paragraph' || !b.style) continue;
     const level = LEVEL[b.style];
     if (!level || level > depth) continue;
-    const text = (b.runs ?? [])
-      .map((r) => r.text)
-      .join('')
+    const text = articleRunsText(b.runs ?? [])
       .replace(/\s+/g, ' ')
       .trim();
     if (text) out.push({ id: b.id, level, text });

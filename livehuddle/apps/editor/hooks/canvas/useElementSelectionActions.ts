@@ -12,20 +12,14 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
-  createText,
   bringManyToFront,
-  duplicateElements,
   sendManyToBack,
-  isBoxed,
   withAttachedArrows,
   type Element,
   type Tab,
 } from '@livehuddle/document';
-import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
-import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
-import { track, titleCaseType } from '@/lib/telemetry';
-import { trackDuplicated } from '@/lib/element-telemetry';
+import { track } from '@/lib/telemetry';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { describeMany, describeOne } from '@/lib/element-names';
 
@@ -49,12 +43,6 @@ type EditorSelectionActionsDeps = {
   // selection lock, docs/specs/007-editor/editor-app.md). A marquee skips locked elements so a drag
   // box doesn't scoop up something someone else is editing.
   lockedByOther: (id: string) => boolean;
-  // Elements on a LOCKED layer (docs/specs/006-document/layers.md): protected from deletion like
-  // per-element `locked`.
-  layerLockedIds: Set<string>;
-  // Elements on a hidden OR locked layer (docs/specs/006-document/layers.md): a marquee never
-  // selects them.
-  layerInertIds: Set<string>;
 };
 
 export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
@@ -68,8 +56,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setMultiSelectedIds,
     setFormatSourceId,
     lockedByOther,
-    layerLockedIds,
-    layerInertIds,
   } = deps;
 
   // The duplicate family (single + marquee cluster with arrow
@@ -104,8 +90,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       return els.filter((el) => {
         // Belt-and-suspenders: never drop a locked element, even via the
         // arrow cascade (a locked arrow survives its endpoint going).
-        // A locked LAYER protects its elements the same way (docs/specs/006-document/layers.md).
-        if (el.locked === true || layerLockedIds.has(el.id)) return true;
+        if (el.locked === true) return true;
         return !gone.has(el.id);
       });
     });
@@ -124,8 +109,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     announce(`Deleted ${deleted.length === 1 ? describeOne(deleted[0]!) : describeMany(deleted)}`);
   };
 
-  // A locked element, or one on a locked layer: a delete leaves it, and a mind branch walk stops at it.
-  const isProtected = (el: Element) => el.locked === true || layerLockedIds.has(el.id);
+  // A locked element: a delete leaves it, and a mind branch walk stops at it.
+  const isProtected = (el: Element) => el.locked === true;
 
   // The deletable subset of a selection: ids whose element isn't locked.
   // Locked elements are protected from deletion (docs/specs/008-canvas/canvas-and-palette.md Locking).
@@ -133,8 +118,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const lockedIds = new Set(
       activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
     );
-    // Locked-layer members are protected exactly like element-locked ones.
-    return new Set([...ids].filter((id) => !lockedIds.has(id) && !layerLockedIds.has(id)));
+    return new Set([...ids].filter((id) => !lockedIds.has(id)));
   };
 
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
@@ -142,10 +126,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   // the popover/accordion still applies; 2+ → enter true multi-select.
   const selectMarquee = (rawIds: Set<string>) => {
     // Drop any element another participant currently holds — a marquee
-    // shouldn't pull a remotely-locked element into the selection — and
-    // anything on a hidden / locked layer (docs/specs/006-document/layers.md).
+    // shouldn't pull a remotely-locked element into the selection.
     const ids = new Set<string>();
-    for (const id of rawIds) if (!lockedByOther(id) && !layerInertIds.has(id)) ids.add(id);
+    for (const id of rawIds) if (!lockedByOther(id)) ids.add(id);
     if (ids.size === 0) {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -197,7 +180,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     commit((els) => {
       const gone = withAttachedArrows(els, targetIds, isProtected);
       return els.filter((el) => {
-        if (el.locked === true || layerLockedIds.has(el.id)) return true;
+        if (el.locked === true) return true;
         return !gone.has(el.id);
       });
     });
@@ -223,56 +206,9 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     track('Element', 'Selected', 'Filter');
   };
 
-  // Quick add (docs/specs/008-canvas/canvas-and-palette.md): from the selected element, add a new element to
-  // `direction`. `kind` decides what's added — 'duplicate' clones the source,
-  // 'text' drops a caption to the side. Neither draws a
-  // connector arrow; the + menu's Arrow action is how you connect them.
-  const spawnConnectSelected = (direction: QuickConnectDirection, kind: QuickConnectKind) => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    const source = activeTab.elements.find((el) => el.id === selectedId);
-    if (!source || !isBoxed(source)) return;
-    const ids = new Set([selectedId]);
-    const baseBounds = { x: source.x, y: source.y, width: source.width, height: source.height };
-    // Nearest in-line gap matching + step-until-clear placement — pure
-    // geometry, lifted to lib/quick-add-placement.ts.
-    const { dx, dy } = quickAddPlacement({
-      elements: activeTab.elements,
-      ids,
-      baseBounds,
-      direction,
-    });
-    if (kind === 'duplicate') {
-      // Clone only, no connector arrow. Most duplicates don't need an arrow,
-      // so adding one was usually noise to delete; draw one with the + menu's
-      // Arrow action on the occasions you do want it.
-      const { newElements, idMap } = duplicateElements(activeTab.elements, ids, dx, dy);
-      const sourceCopyId = idMap.get(source.id);
-      if (!sourceCopyId) return;
-      commit((els) => [...els, ...newElements]);
-      setSelectedId(sourceCopyId);
-      trackDuplicated(newElements);
-      return;
-    }
-
-    // Text: drop a text element to the side and open it for editing — but
-    // do NOT connect it with an arrow (a caption / label next to a node
-    // isn't a flow edge, so a connector would be noise).
-    if (kind === 'text') {
-      const text = createText(baseBounds.x + dx, baseBounds.y + dy);
-      commit((els) => [...els, text]);
-      setSelectedId(text.id);
-      setEditingId(text.id);
-      track('Element', 'Added', titleCaseType('text'));
-      return;
-    }
-  };
-
-  // Intra-LAYER z-order (selection popover). Distinct from the element
-  // menu's Bring to Front, which is a LAYER move (docs/specs/006-document/layers.md): these nudge the
-  // selection within its own band, so two notes on the same layer can be
-  // stacked without shuffling anyone between layers. A multi-selection
-  // travels together, keeping its members' relative order.
+  // Z-order from the selection popover (docs/specs/006-document/layers.md "Stacking"), the same
+  // move as the element menu's Bring to Front / Send to Back. A multi-selection travels together,
+  // keeping its members' relative order.
   const stackSelected = (direction: 'front' | 'back') => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
@@ -292,6 +228,5 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     deleteMultiSelected,
     narrowMultiSelection,
     duplicateSelected,
-    spawnConnectSelected,
   };
 }

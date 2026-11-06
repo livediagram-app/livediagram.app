@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, type Page } from '@livedesign/design';
-import { contentsRows, filterContents, pageInView } from './page-contents';
+import { contentsRows, pageInView } from './page-contents';
 import { contentsDropUnit } from './page-contents';
 
 // docs/specs/007-editor/pages-mode.md "Contents".
@@ -30,14 +30,6 @@ describe('the Contents list', () => {
     ]);
     expect(rows[2]!.locked).toBe(true);
     expect(rows[1]!.aspect).toBeGreaterThan(1.4);
-  });
-
-  it('finds pages by name, kind or number, every word', () => {
-    expect(filterContents(rows, 'landscape').map((r) => r.id)).toEqual(['b']);
-    expect(filterContents(rows, '3').map((r) => r.id)).toEqual(['c']);
-    expect(filterContents(rows, 'cover portrait').map((r) => r.id)).toEqual(['a']);
-    expect(filterContents(rows, '  ')).toHaveLength(4);
-    expect(filterContents(rows, 'nothing')).toEqual([]);
   });
 
   it('marks the page at the middle of the screen, else the nearest', () => {

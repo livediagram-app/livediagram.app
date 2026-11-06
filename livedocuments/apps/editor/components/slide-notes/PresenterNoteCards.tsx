@@ -19,8 +19,13 @@ export const VIEWER_STACK_MAX = 3;
 export const VIEWER_DOTS_MAX = 10;
 // As a flashcard turns: deep enough to read as a card's, at the viewer's size.
 const PERSPECTIVE = 'perspective(1200px)';
-const TURNED = { transform: `${PERSPECTIVE} rotateX(78deg)`, opacity: 0 };
-const FLAT = { transform: `${PERSPECTIVE} rotateX(0deg)`, opacity: 1 };
+// The same quiet lift as a flashcard's flip (flashcards.md "Flipping"): a small tilt, a touch higher, a shade smaller.
+const TURNED = {
+  transform: `${PERSPECTIVE} rotateX(14deg) translateY(-3%) scale(0.985)`,
+  opacity: 0,
+};
+const FLAT = { transform: `${PERSPECTIVE} rotateX(0deg) translateY(0) scale(1)`, opacity: 1 };
+const FLIP_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 
 type Ghost = { card: NoteCard; index: number; key: number };
 
@@ -84,7 +89,7 @@ export function PresenterNoteCards({
     }
     const anim = front.current?.animate?.([TURNED, FLAT], {
       duration: FLASHCARD_FLIP_MS,
-      easing: 'ease-in-out',
+      easing: FLIP_EASING,
     });
     return () => anim?.cancel();
   }, [index, slideId, card]);
@@ -93,7 +98,7 @@ export function PresenterNoteCards({
     if (!ghost) return;
     const anim = ghostRef.current?.animate?.([FLAT, TURNED], {
       duration: FLASHCARD_FLIP_MS,
-      easing: 'ease-in-out',
+      easing: FLIP_EASING,
       fill: 'forwards',
     });
     if (!anim) {

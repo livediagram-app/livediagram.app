@@ -1,4 +1,4 @@
-// The template library (docs/specs/008-canvas/canvas-and-palette.md Quick Start + docs/specs/015-api/mcp-server.md MCP): the
+// The template library (docs/specs/008-canvas/canvas-and-palette.md Quick Start + livediagram/docs/specs/015-api/mcp-server.md MCP): the
 // catalogue (kinds, titles, categories, canvas overrides) and the pure
 // per-template element builders. Shared by the editor's picker and the
 // MCP worker so the two can't drift.
@@ -15,8 +15,8 @@ export {
   popularKindsFor,
 } from './popular';
 export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
-export * from './template-layers';
 export { buildTemplate } from './build-template';
 export { templateFamilyOf } from './template-families';
 export * from './template-tab';
+export { templateFloors, templateFirstFloorName, type TemplateFloor } from './template-floors';
 export { templateCatalogue } from './template-catalogue';

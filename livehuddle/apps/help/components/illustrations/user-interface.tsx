@@ -186,7 +186,7 @@ function BottomBar({ y, w, labelled = false }: { y: number; w: number; labelled?
   );
 }
 
-/** The bottom-right corner cluster: Undo / Redo, Layers, the Theme & canvas
+/** The bottom-right corner cluster: Undo / Redo, the Theme & canvas
  *  paintbrush, then the zoom controls (minus, the level, plus). */
 function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
   return (
@@ -199,27 +199,21 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
       </Panel>
       <Panel x={x + 56} y={y} w={28} h={28}>
         <path
-          d={`M${x + 63} ${y + 11} l7 -4 l7 4 l-7 4 Z M${x + 63} ${y + 16} l7 4 l7 -4`}
-          {...GLYPH}
-        />
-      </Panel>
-      <Panel x={x + 88} y={y} w={28} h={28}>
-        <path
-          d={`M${x + 96} ${y + 21} q1 -5 5 -5 l6 -7 l2 2 l-7 6 q0 4 -6 4 Z`}
+          d={`M${x + 64} ${y + 21} q1 -5 5 -5 l6 -7 l2 2 l-7 6 q0 4 -6 4 Z`}
           className="stroke-brand-500"
           strokeWidth={1.5}
           fill="none"
           strokeLinejoin="round"
         />
       </Panel>
-      <Panel x={x + 120} y={y} w={94} h={28}>
-        <Label x={x + 134} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
+      <Panel x={x + 88} y={y} w={94} h={28}>
+        <Label x={x + 102} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
           −
         </Label>
-        <Label x={x + 167} y={y + 15} size={10} weight={600} tone="body" anchor="middle">
+        <Label x={x + 135} y={y + 15} size={10} weight={600} tone="body" anchor="middle">
           {level}
         </Label>
-        <Label x={x + 200} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
+        <Label x={x + 168} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
           +
         </Label>
       </Panel>
@@ -230,14 +224,14 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 // --- Scenes ------------------------------------------------------------------
 
 /** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a tool panel (Laser) docked top-right under it, the Map bottom-left, the corner cluster
+ *  top, a tool panel (Eraser) docked top-right under it, the Map bottom-left, the corner cluster
  *  bottom-right, and the bottom bar. */
 export function PanelLayout() {
   return (
     <Scene w={420} h={250}>
       <MenuCard x={12} y={12} />
       <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="LASER">
+      <Panel x={318} y={56} w={90} h={66} title="ERASER">
         {[0, 1].map((i) => (
           <rect
             key={i}
@@ -267,7 +261,7 @@ export function PanelLayout() {
           strokeWidth={1.4}
         />
       </Panel>
-      <CornerCluster x={194} y={182} />
+      <CornerCluster x={226} y={182} />
       <BottomBar y={220} w={420} />
     </Scene>
   );
@@ -406,7 +400,7 @@ export function ZoomControls() {
           Fit to screen
         </Label>
       </Panel>
-      <CornerCluster x={110} y={198} />
+      <CornerCluster x={142} y={198} />
     </Scene>
   );
 }
@@ -489,12 +483,12 @@ export function MultiSelectToolbar() {
   );
 }
 
-/** The element menu for a shape: collapsible sections, Layer first, then
+/** The element menu for a shape: collapsible sections, Arrange first, then
  *  Size, Shape, Rotation, the Style and Text flyouts, Collaborate and
  *  Resources. */
 export function ElementContextMenu() {
   const sections: { label: string; flyout?: boolean }[] = [
-    { label: 'Layer' },
+    { label: 'Arrange' },
     { label: 'Size' },
     { label: 'Shape' },
     { label: 'Rotation' },

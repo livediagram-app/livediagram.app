@@ -1,7 +1,6 @@
-import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
-import { iconTileDef, stickerTileDef } from './palette-dynamic-tiles';
+import { stickerTileDef } from './palette-dynamic-tiles';
 import { visibleTiles } from './PaletteTileGrid';
 
 // Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
@@ -10,7 +9,7 @@ import { visibleTiles } from './PaletteTileGrid';
 // (a tile's `dividerAfter`) show between the tiles on the strip that they separate.
 //
 // Pure so the rule is testable without rendering the strip. The catalogues
-// it reads for Icons / Stickers / Technology are async (lib/icon-registry),
+// it reads for Stickers are async (lib/icon-registry),
 // so before they land those categories simply return no tiles and still ask
 // for More, which is where their loading note lives.
 
@@ -75,11 +74,10 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
   );
 }
 
-// Categories whose body carries more than tiles: a search box or a library
-// picker. They always get More, even
+// Categories whose body carries more than tiles: a search box. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'my-shapes']);
+const ALWAYS_MORE = new Set(['stickers']);
 
 function allTilesFor(
   categoryId: string,
@@ -87,12 +85,8 @@ function allTilesFor(
 ): PaletteTileDef[] {
   switch (categoryId) {
     // Catalogue order is a placeholder for "the ones people use" (docs/specs/007-editor/toolbar-layout.md).
-    // Sliced BEFORE building tile defs so a 180-glyph catalogue doesn't build
-    // 180 JSX glyphs to show twelve.
-    case 'icons':
-      return getLineArtIconCatalog()
-        .slice(0, STRIP_TILE_LIMIT + 1)
-        .map(iconTileDef);
+    // Sliced BEFORE building tile defs so a 225-sticker catalogue doesn't build
+    // 225 JSX glyphs to show twelve.
     case 'stickers':
       return searchStickers('')
         .slice(0, STRIP_TILE_LIMIT + 1)

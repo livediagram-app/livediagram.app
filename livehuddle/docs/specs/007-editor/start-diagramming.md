@@ -10,11 +10,11 @@ a step before it. livediagram's Start Diagramming and Start Drawing went with Di
 One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws the start; the start says what its groups and cards are, the panel
 draws them.
 
-- **Header:** the title ("Start a Space"), one line under it ("Walk into an office or a hall, or pick a session
-  to run. Close this to start from a blank space."), the search box, and in the top right corner the
+- **Header:** the title ("Start a Space"), one line under it ("Walk into an office, a hall, a bar or a garden.
+  Close this to start from a blank space."), the search box, and in the top right corner the
   **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
-- **Rail:** **Virtual Spaces** first, then **Recommended** and the other groups, each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
+- **Rail:** **Recommended** first, then the other groups (Campus, Events, Office, Outdoor, Recreation), each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
   count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark
   and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
   its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker
@@ -34,7 +34,10 @@ draws them.
   there is no Best Match and the groups lead as before.
 - **There is no way out to a bigger picker.** The start holds every listed template; it is the whole catalogue. There is no modal of every template ([New document route](new-document-route.md)).
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
-- **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
+- **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
+  panel's code loads when it is first drawn, so on a busy machine it can arrive after a control was reached or a menu
+  opened from the keyboard, and it never takes focus from one. It takes it only from the page itself or the canvas
+  (`focusIsFree`, `../packages/workbench/src/lib/focus-is-free.ts`). Up and Down move along the rail, choosing as they go. Down
   in the search box moves to the first card it found. Among the cards the arrow keys move between them: Left and Right
   to the card before and after (across a section's end into the next), Up and Down to the nearest card in the row
   above and below; Up from the first row goes back to the search box while there is a search. Home and End reach the
@@ -48,19 +51,21 @@ draws them.
   Excalidraw scene) pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the
   search. Pasted text still searches.
 
-### The Spaces lead
+### Recommended leads
 
-livehuddle is a place to meet, so the start **leads with the Spaces** ([v1 scope](../002-project-scope/v1-scope.md)
-feature 3): the rail's first group is **Virtual Spaces** (Virtual Office, Coworking Space, Team Pod, All-Hands Hall),
-and the start opens on it, so the first thing a new person sees is a place to walk into. A Spaces template opens
-walking once it lands ([Avatar mode](../008-canvas/avatar-mode.md#opening-walking)). The start lifts the leading
-group (`LEADING_START_GROUP`, `spaces`) ahead of Recommended; the rest keep the catalogue's alphabetical order
-([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+The start **leads with Recommended**: it is the rail's first group and the group the start opens on, so the first
+thing a new person sees is the quickest ways to meet, the blank first, then the picks most teams start from. The
+catalogue's categories follow in its alphabetical order
+([Template categories](../008-canvas/canvas-and-palette.md#template-categories)). Every template in a category is a
+Space and opens walking once it lands ([Avatar mode](../008-canvas/avatar-mode.md#opening-walking)).
+
+Why: Recommended already holds Spaces to walk into, and it is the one group that crosses categories (an Office
+Space and an Events hall side by side) with the blank beside them, so it is the better first answer than one category.
 
 ### Recommended and groups
 
 Recommended is the Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **the blank
-first**, straight after Virtual Spaces in the rail. The other groups (`components/start/start-template-items.ts`,
+first**, first in the rail. The other groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`) are the catalogue's categories
 ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the catalogue's order, each
 holding the templates listed in it (primary or cross-listed), alphabetical by label. A new template joins the rail
@@ -73,7 +78,7 @@ Recommended. Choosing the blank closes the panel, as the × does, since it leave
 
 `EditorStartPanels` (`components/start/EditorStartPanels.tsx`) decides, from the editor's state:
 
-- To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
+- To someone who can edit (an **Editor**), after hydration, outside an embed, with
   no draw tool armed.
 - While the tab is empty: no elements.
 
@@ -160,4 +165,4 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).
+- `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

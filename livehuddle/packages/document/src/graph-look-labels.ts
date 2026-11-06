@@ -1,4 +1,4 @@
-// Labels on elbows, the graph look's last pass (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"):
+// Labels on elbows, the graph look's last pass (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"):
 // split from graph-look.ts, whose routing passes lay the elbows these labels sit on.
 
 import { arrowRoutePoints } from './arrow-label-layout';
@@ -7,7 +7,7 @@ import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-pr
 import type { Pt } from './graph-look';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
-// Labels on elbows (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): an elbow's midpoint sits on the
+// Labels on elbows (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): an elbow's midpoint sits on the
 // channel it shares with its neighbours, so their labels landed on one another. Each labelled elbow puts its label
 // on a run that is its own, no other labelled arrow running along it: the drop into its target first, then the leg
 // out of its source, then its longest; centred on the run, on the line. Every label is given the width of its text,
@@ -35,7 +35,7 @@ export function placeElbowLabels(elements: Element[]): Element[] {
     .map((el) => ({ id: el.id, pts: paths.get(el.id) ?? pathOf(el), end: busEnd(el) }));
   // The boxes a label must clear: every boxed element but the frames and lanes that hold them.
   const isHolder = (el: Element) =>
-    el.type === 'shape' && (el.shape === 'frame' || el.shape === 'lane');
+    el.type === 'shape' && (el.shape === 'boundary' || el.shape === 'lane');
   const boxes = elements.filter((el): el is BoxedElement => isBoxed(el) && !isHolder(el));
   // The frames and lanes a label must not straddle, and the heading each reads by: a frame's title at its top left,
   // a lane's header strip down its left.

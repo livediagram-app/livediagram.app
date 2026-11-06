@@ -1,8 +1,9 @@
 # Tours and the Start Tour button
 
 How every tour in the editor is offered and run: the footer's **Start Tour** button, the engine the tours share, how a
-step reads and moves, and the look. The tours themselves are the [Workshop tour](../012-collaboration/workshop-tour.md),
-the [Avatar tour](../008-canvas/avatar-tour.md), the [element tours](element-tours.md) and [Show Me](show-me.md).
+step reads and moves, and the look. The tours themselves are the [Avatar tour](../008-canvas/avatar-tour.md), the
+[element tours](element-tours.md) and [Show Me](show-me.md). The Workshop tour left livehuddle (Work Tracker #423,
+[Workshop tour](../012-collaboration/workshop-tour.md)).
 livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Diagram and Draw,
 [Editor modes](editor-modes.md)).
 
@@ -29,8 +30,7 @@ livediagram's Diagram tour and Draw tour are not part of livehuddle (cut with Di
   drawn at all. It comes back when its switch in Settings' **Tours** category is turned on again (on means "offer
   me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
   also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
-  reads, so the button and the row never disagree, and Power user mode, which answers every tour, clears the button
-  too. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
+  reads, so the button and the row never disagree. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
   tour is taken, and a taken tour is never published. Until 1 November 2026 a taken tour stayed on the button for
   good (Work Tracker #177).
 - **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
@@ -107,7 +107,7 @@ of their steps ask the person to try things.
 
 - **One engine, every tour.** The step runner (`useTourEngine`: prepare, await, heal, glide, Back / Next /
   Skip) and what it draws (`TourStage`: `TourSpotlight`, `TourPopover`) are shared by the
-  [Workshop tour](../012-collaboration/workshop-tour.md), the avatar, element and Show Me tours;
+  avatar, element and Show Me tours;
   each tour's host owns its offer, its steps and what ending means. A step anchors by `data-tour-id`, or by a
   `selector` resolved when it runs (a Show Me step's Mashup tile), and an anchorless card's `prepare` runs
   too. The last card's words (`TourCardCopy`) are a prop. The engine, the stage, the

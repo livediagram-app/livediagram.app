@@ -19,7 +19,6 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
@@ -32,8 +31,6 @@ import {
   settingsRequest,
 } from '@/components/dialogs/settings/settings-panel-host';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { isPowerUserMode } from '@/lib/power-user-mode';
-import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { useRetiredPartsCount } from '@/hooks/persistence/useRetiredPartsCount';
 
 type SettingsDialogProps = {
@@ -76,16 +73,10 @@ export function SettingsDialog({
   const { accountUserId, isSignedIn } = useAccountBootstrap();
   const signedIn = Boolean(isSignedIn && accountUserId);
   const { user } = useDeferredAuth();
-  // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
-  // blueprints/workbench-embeds.md, Surface table).
-  const workbench = useWorkbenchSession() !== null;
-  // Power-user-only rows appear the moment the mode's own row switches on
-  // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
-  const powerUserMode = isPowerUserMode(settings);
-  // Live settings too: a panel's rows follow its Enable switch the same way.
+  // Live settings, not a snapshot: a panel's rows follow its Enable switch the moment it flips.
   // Documents in This Browser with parts set aside: Account's way back to the offer
   // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
-  const retiredParts = useRetiredPartsCount(!workbench);
+  const retiredParts = useRetiredPartsCount();
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
   const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
@@ -93,13 +84,11 @@ export function SettingsDialog({
       visibleCategories({
         emailEnabled,
         signedIn,
-        powerUserMode,
         preferences: settings,
-        workbench,
         cursorsDrawn,
         retiredParts,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, workbench, retiredParts, cursorsDrawn],
+    [emailEnabled, signedIn, settings, retiredParts, cursorsDrawn],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
@@ -111,8 +100,8 @@ export function SettingsDialog({
   );
 
   // The header's livehuddle / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
-  // account whose settings liveworkspace keeps, so a guest and a workbench see this app's alone.
-  const allowAll = signedIn && !workbench;
+  // account whose settings liveworkspace keeps, so a guest sees this app's alone.
+  const allowAll = signedIn;
   // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
   const [scope, setScope] = useSettingsScope(
     'livehuddle:settings-scope:v1',
@@ -121,7 +110,7 @@ export function SettingsDialog({
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
   // and synced as here). The profile's Name and Colour is edited in place, over the same door as All's settings
   // (`/api/workspace/account/profile` with the person's token); a save is told to the page (onProfileSaved), so this
-  // editor's own presence follows it at once. Only where All is offered: a guest, a workbench and a self-hosted
+  // editor's own presence follows it at once. Only where All is offered: a guest and a self-hosted
   // editor have no liveworkspace account to set it on.
   const identityName = signedIn && user ? (user.fullName ?? user.username ?? user.email ?? '') : '';
   const profile = useMemo(
@@ -164,15 +153,11 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): turning its row on from off and closing
-  // reruns the tour in place, as the footer's Start Tour button does.
-  const workshopTourSeen = settings.workshopTourSeen === true;
-  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
+  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): turning its row on from off and closing reruns the
+  // tour in place, as the footer's Start Tour button does.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
-    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };

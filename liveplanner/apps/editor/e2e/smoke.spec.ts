@@ -39,6 +39,35 @@ test('/new opens a guest’s new plan in This Browser on Start Planning, with no
   expectNoPageErrors(pageErrors);
 });
 
+// The first visit itself (docs/specs/003-system-architecture/e2e-smoke.md "Every test opens as a returning guest"):
+// every other test opens as a guest who holds a token, and a browser with none leaves /new for the guest handoff and
+// comes back holding one, then makes its plan. Nothing is checked on the page until the round trip is back.
+test.describe('a first visit', () => {
+  test.use({ freshVisitor: true });
+
+  test('goes through the guest handoff and comes back to make a plan with a guest token', async ({
+    page,
+    pageErrors,
+  }) => {
+    const visited: string[] = [];
+    page.on('framenavigated', (frame) => {
+      if (frame === page.mainFrame()) visited.push(new URL(frame.url()).pathname);
+    });
+    await page.goto('/new');
+    const cameBack = () => {
+      const at = visited.findIndex((path) => path.startsWith('/auth/guest'));
+      return at >= 0 && at < visited.length - 1;
+    };
+    await expect.poll(cameBack, { timeout: 15_000 }).toBe(true);
+    await page.waitForURL(/\/project\/[^/?#]+/, { timeout: 30_000 });
+    await expect(page.getByRole('heading', { name: 'Start Planning' })).toBeVisible();
+    expect(
+      await page.evaluate(() => localStorage.getItem('liveplanner:v2:guest-token')),
+    ).toBeTruthy();
+    expectNoPageErrors(pageErrors);
+  });
+});
+
 test('the explorer renders for a guest', async ({ page, pageErrors }) => {
   await page.goto('/explorer');
   // The sidebar's Overview rows are always present for a guest

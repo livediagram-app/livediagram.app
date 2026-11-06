@@ -63,7 +63,6 @@ import {
   MULTIPLAYER_SESSIONS,
   NEW_VERSION_PROMPT,
   NEW_VISITORS,
-  NOTES,
   OFFLINE_MODE,
   ONBOARDING_TOURS,
   ORGANISATION,
@@ -72,7 +71,6 @@ import {
   PAGE_WORK,
   PALETTE_USE,
   PANELS_OPENED,
-  POWER_USER_OFFER,
   PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
@@ -242,7 +240,8 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
     groups: [
       {
         title: 'Editing tools',
-        metrics: [NOTES, ASSIGNED_ACTIONS, ORGANISATION],
+        // Notes left with element notes (docs/specs/009-elements/links-and-notes-retired.md).
+        metrics: [ASSIGNED_ACTIONS, ORGANISATION],
       },
       {
         title: 'More editing',
@@ -326,7 +325,7 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
       title: 'Tours',
       metrics: [PAGES_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, POWER_USER_OFFER, NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

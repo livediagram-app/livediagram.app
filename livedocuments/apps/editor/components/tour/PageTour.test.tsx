@@ -66,34 +66,33 @@ function TitlePopover({ name }: { name: string }) {
   );
 }
 
-function SlidesButton() {
+// The tour page's row in the Contents sidebar with its ⋯ menu, and the header's Present.
+function ContentsRow({ pageId }: { pageId: string }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <div data-tour-id="slides">
+      <div data-contents-slot="0">
+        <button type="button" data-page-row={pageId} aria-label="Page 1" />
         <button
           type="button"
-          aria-label="Open Slides"
+          aria-label="More Actions for Page 1"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         />
       </div>
       {open ? (
-        <div data-tour-id="slide-deck">
-          <div data-slide-slot="slide-1">
-            <button type="button" aria-label="Options for Slide 1" />
-          </div>
-          <button type="button" data-slide-deck-settings-trigger="" aria-label="Show settings" />
-          <button type="button" data-presentation-start="panel">
-            Present
-          </button>
+        <div role="menu" aria-label="Page 1 actions">
+          <button type="button">Hide in Slides</button>
         </div>
       ) : null}
+      <button type="button" data-presentation-start="header">
+        Present
+      </button>
     </>
   );
 }
 
-// CanvasPages' wiring, cut down: the page and its title bar, the + and Slides, its panel, and the tour.
+// CanvasPages' wiring, cut down: the page and its title bar, the +, its Contents row, its panel, and the tour.
 function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
   const [opened, setOpened] = useState<{ id: string; tab: PagePanelTab; seq?: number } | null>({
     id: of.id,
@@ -118,17 +117,14 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
         </div>
       )}
       <button type="button" data-tour-id="add-page" aria-label="Add Page" />
-      <SlidesButton />
+      <ContentsRow pageId={of.id} />
       {opened && !deleted ? (
         <PagePanel
           key={opened.seq ?? 0}
           page={laid}
           count={1}
           getAnchor={() => undefined}
-          initialTab={opened.tab}
-          themeBackgrounds={[]}
           edit={edits()}
-          onPreview={vi.fn()}
           onClose={() => setOpened(null)}
           showMe={{
             button: (
@@ -180,13 +176,13 @@ describe('Show Me on every page', () => {
 });
 
 describe('a slide’s Show Me', () => {
-  it('opens Layout, then Background, points at the +, then walks the Slide Deck', async () => {
+  it('opens Layout, then Background, points at the +, then its row and menu in Contents, then Present', async () => {
     render(<Page of={page('slide')} />);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'SlideTour');
     // The panel it was pressed in makes way for the page.
     await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());
-    await shows(() => expect(stepDialog(/^Show Me step 1 of 7: Choose a Layout/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Choose a Layout/)).toBeTruthy());
     await shows(() => expect(popover('Layout')).not.toBeNull());
     await next();
     await shows(() => expect(popover('Layout')).toBeNull());
@@ -194,20 +190,17 @@ describe('a slide’s Show Me', () => {
     await shows(() => expect(popover('Background')).not.toBeNull());
     await next();
     await shows(() => expect(popover('Background')).toBeNull());
-    await shows(() => expect(stepDialog(/Add Another Slide/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/Add Slide/)).toBeTruthy());
     await next();
-    await shows(() => expect(stepDialog(/Your Slide Deck/)).toBeTruthy());
-    await shows(() => expect(document.querySelector('[data-tour-id="slide-deck"]')).not.toBeNull());
+    await shows(() => expect(stepDialog(/Your Slides/)).toBeTruthy());
     await next();
     await shows(() => expect(stepDialog(/Each Slide’s Menu/)).toBeTruthy());
-    await next();
-    await shows(() => expect(stepDialog(/Set Up the Show/)).toBeTruthy());
+    // The row's menu opens for its step, and closes as it ends.
+    await shows(() => expect(screen.queryByRole('menu', { hidden: true })).not.toBeNull());
     await next();
     await shows(() => expect(stepDialog(/Present/)).toBeTruthy());
-    // The deck stays open from step to step.
-    expect(document.querySelector('[data-tour-id="slide-deck"]')).not.toBeNull();
+    await shows(() => expect(screen.queryByRole('menu', { hidden: true })).toBeNull());
     await next();
-    await shows(() => expect(document.querySelector('[data-tour-id="slide-deck"]')).toBeNull());
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SlideTourCompleted');
   });

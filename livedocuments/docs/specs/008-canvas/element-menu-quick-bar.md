@@ -1,9 +1,8 @@
 # Element menu quick bar
 
-The element menu (a right-click, or a long-press on a touch screen) opens on a **quick bar**: two rows of glyph
-buttons above its first category. What gets reached for on any element sits there, one press away, instead of
-inside a category that has to be opened first. livedocuments has no selection toolbar
-([Selection popover](canvas-and-palette.md#selection-popover)), so the menu is the one place for what it held.
+The element menu (a right-click, or a long-press on a touch screen) opens on a **quick bar**: one row of glyph
+buttons above its first category, holding only what gets reached for on a single element. livedocuments has no
+selection toolbar ([Selection popover](canvas-and-palette.md#selection-popover)).
 
 A long-press on a selected element's resize handles opens the menu too: on a phone a small element is mostly
 handles, and the browser moves a finger near one onto it, so a press held still there is still a press on the
@@ -11,35 +10,25 @@ element. A press that moves resizes, as before.
 
 ## What it holds
 
-The first row, **Element actions** (`aria-label`), holds what the selection toolbar used to:
-
-- **Edit Text**, reading **Add Text** on an element with no words yet: on every text-capable element
-  (`elementSupportsText`), entering inline text editing as a double-click does.
-- **Duplicate**.
-- **Stack Front** and **Stack Back**: in front of or behind everything else on the element's own layer (the Layer
-  category's Bring to Front and Send to Back move it between layers).
-- **Lock**, reading **Unlock** on a locked element, pressed while locked.
-- At the right, apart from them, **Delete**, disabled on a locked element.
-
-The second row, at the left, what attaches to the element, in this order:
+One row (`aria-label` "Quick actions"):
 
 - **Assign Action**, reading **View Action** once the element has one ([Assigned actions](../012-collaboration/assigned-actions.md)).
 - **Add Comment**, reading **View Comments** once it has a thread ([Comments](canvas-and-palette.md#comments)).
-- **Add Link**, reading **Edit Link** once it has one. Not on a link card or a video, whose link is their own
-  **Link** category's.
-- **Add Note**, reading **Edit Note** once it has one.
-- At the right, apart from them, **Clear Styles**: the Quick Style panel's own Clear Styles
-  ([Quick style panel](quick-style-panel.md)), the element's quick-style colours, width and line style back to the
-  theme's. It shows while the element takes a quick style, whether or not the panel is on screen.
-- A button the element already uses (it has an action, a thread, a link or a note) is tinted in the brand colour and
-  pressed (`aria-pressed`), so the bar also says what the element carries.
-- Each button has a Tooltip naming it, runs its action and closes the menu, as the tiles it replaced did.
+- At the right, apart from them, **Delete**, disabled on a locked element ("Locked. Unlock it to delete.").
+- A button the element already uses (it has an action or a thread) is tinted in the brand colour and pressed
+  (`aria-pressed`), so the bar also says what the element carries.
+- Each button has a Tooltip naming it, runs its action and closes the menu.
 
-The four attachments are offered on boxed elements; arrows take none, so an arrow's bar is its Element actions row
-(and Clear Styles while it takes a quick style).
+Assign Action and Add Comment are offered on boxed elements; an arrow's bar is Delete alone.
 
-There are no **Collaborate** or **Resources** categories for Assign Action, Add Comment, Add Link and Add Note: the
-quick bar is their one place in the menu.
+Nothing else sits in the bar (owner, 2026-11-04: one row, not two). What it used to hold stays a press away
+elsewhere: editing text is a double-click; Duplicate is Cmd/Ctrl+D; Stack Front and Stack Back are the **Layer**
+category's; Lock is Cmd/Ctrl+Shift+L (and a multi-selection's toolbar). **Add Link**, **Add Note** and **Clear Styles** are retired from the menu: an element's
+existing link and note still work (a click on a linked element follows it, and a note still shows), and Clear Styles
+stays in the Quick Style panel ([Quick style panel](quick-style-panel.md)).
+
+There are no **Collaborate** or **Resources** categories: the quick bar is the menu's one place for Assign Action and
+Add Comment.
 
 ## Share roles
 

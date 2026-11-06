@@ -1,7 +1,7 @@
 // Every product's work in miniature: a board, a sheet, a dashboard and a form (liveplanner), a flowchart, a mind map,
 // a whiteboard and a workshop (livediagram), an article, a slide, an infographic and a poster (livedocuments), a logo,
-// a phone and a website wireframe and a photo (livedesign). Each draws into the box it is handed, in SVG user units,
-// and scales to it, so it reads the same on a laptop's screen in a help scene and in a tile on Explorer Home.
+// a phone and a website wireframe and a photo (livedesign), and livehuddle's Spaces (work-art-spaces.tsx). Each draws
+// into the box it is handed, in SVG user units, and scales to it, so it reads the same on a laptop's screen in a help scene and in a tile on Explorer Home.
 //
 // Drawn in the house style of the help centres' illustration kit (@liveworkspace/help-site art/primitives): white
 // paper with slate edges and ink, the `brand` ramp for accents. They hold no colour of their own: whoever draws them
@@ -10,35 +10,12 @@
 // appearances. Static: no state, no effects, no motion. The help centres and the Explorer's hero share them
 // (liveworkspace/docs/specs/004-index/one-explorer.md "What you can make, on Home's hero").
 
-export type WorkBox = { x: number; y: number; w: number; h: number };
+import { Bar, Paper, fitBox, type WorkBox } from './work-art-parts';
+
+export { fitBox, type WorkBox } from './work-art-parts';
+export * from './work-art-spaces';
+
 type Box = WorkBox;
-
-/** The box of a given width-to-height ratio, as large as fits in `box`, centred in it. */
-export function fitBox(box: WorkBox, ratio: number): WorkBox {
-  const w = Math.min(box.w, box.h * ratio);
-  const h = w / ratio;
-  return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h };
-}
-
-/** A sheet of paper: white with a slate edge, the ground most pictures draw on. */
-function Paper({ x, y, w, h }: Box) {
-  return (
-    <rect
-      x={x}
-      y={y}
-      width={w}
-      height={h}
-      rx={Math.min(3, w * 0.04)}
-      className="fill-white stroke-slate-200"
-      strokeWidth={0.8}
-    />
-  );
-}
-
-/** A muted bar standing in for a run of text. */
-function Bar({ x, y, w, h, className = 'fill-slate-200' }: Box & { className?: string }) {
-  return <rect x={x} y={y} width={w} height={h} rx={h / 2} className={className} />;
-}
 
 // ---- liveplanner -----------------------------------------------------------------------------------------------
 

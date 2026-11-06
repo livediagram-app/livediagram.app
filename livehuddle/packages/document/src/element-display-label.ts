@@ -1,4 +1,5 @@
 import type { BoxedElement } from './index';
+import { isRetiredElement, retiredElementName } from './retired-kinds';
 
 // The one-line name a boxed element goes by in a LIST of elements: the
 // Collaborate Panel's rows (docs/specs/012-collaboration/assigned-actions.md §5) and the Inbox's rows
@@ -17,10 +18,8 @@ export function elementDisplayLabel(el: BoxedElement): string {
   }
   const label = (el as { label?: string }).label;
   if (label && label.trim().length > 0) return label.trim();
-  // The Comment and Action panels ship unlabelled on purpose (their dialogs
-  // would otherwise prefill every entry from it), so an empty one is named
-  // by what it is rather than "Untitled" (docs/specs/012-collaboration/comment-pin.md, action-panel.md).
-  if (el.type === 'shape' && el.shape === 'action-card') return 'Action Panel';
-  if (el.type === 'shape' && el.shape === 'comment-pin') return 'Comment Panel';
+  // An unlabelled retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is named
+  // by what it was, as its placeholder names it, rather than "Untitled".
+  if (el.type === 'shape' && isRetiredElement(el)) return retiredElementName(el);
   return 'Untitled';
 }

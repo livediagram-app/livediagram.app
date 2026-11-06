@@ -100,6 +100,16 @@ const rollup: RollupDraftField = { label: 'Total', kind: 'calculated', calculati
 const lookup: RollupDraftField = { label: 'Due', kind: 'calculated', calculation: 'lookup' };
 
 describe('Rollup', () => {
+  // docs/specs/026-plan/item-types.md "Rollup and Lookup fields": Preview sits above the line saying what it works out,
+  // so a longer line never pushes it under Add Field's footer on a phone.
+  it('draws Preview above the line that says what it works out', () => {
+    withPlan(cards());
+    render(<Harness start={rollup} draft={projectDraft} />);
+    const preview = screen.getByLabelText('Preview');
+    const line = screen.getByRole('status');
+    expect(preview.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('picks Through, Calculate and Field, takes the result, and previews on a card with a value', () => {
     withPlan(cards());
     render(<Harness start={rollup} draft={projectDraft} />);

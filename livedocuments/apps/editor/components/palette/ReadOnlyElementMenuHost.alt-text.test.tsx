@@ -34,7 +34,6 @@ function open(level: 'view' | 'participate', target: Element, over: Record<strin
     embedMode: false,
     lockedByOther: () => false,
     openComments: vi.fn(),
-    openNote: vi.fn(),
     followLink: vi.fn(),
     beginEdit: vi.fn(),
     setImageAlt,

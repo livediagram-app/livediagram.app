@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { settleTabFields } from './tab-fields';
 import { migrateIncomingTab } from './stored-tab';
-import { layerBands, visibleLayerElements } from './layers';
+import { paintOrder } from './paint-order';
 import type { Element, Tab } from './index';
 
-// A tab's raw-read fields settled on the way in (docs/specs/006-document/layers.md "Data model").
+// A tab's raw-read fields settled on the way in. livehuddle drops layers (./retired-layers); the settling here is
+// for a tab handed on to a product that still has them.
 describe('settleTabFields', () => {
   const base = { id: 't', name: 'T', elements: [] as Element[] };
 
@@ -45,38 +46,19 @@ describe('settleTabFields', () => {
         { id: '', name: 'Empty' },
         { id: 'b', name: 'B', locked: true, opacity: Number.NaN, extra: 1 },
       ],
-    }) as Tab;
+    }) as Tab & { layers?: unknown };
     expect(out.layers).toEqual([
       { id: 'a', name: 'Layer 2', opacity: 1 },
       { id: 'b', name: 'B', locked: true },
     ]);
   });
 
-  it("settles a dot vote's tallies, and drops a vote that is not one", () => {
-    const vote = { active: true, revealed: false, votesPerPerson: 3, votes: { a: ['p1', 'p1'] } };
-    const kept = { ...base, vote };
-    expect(settleTabFields(kept)).toBe(kept);
-    for (const junk of ['x', 5, [], true, null])
-      expect('vote' in settleTabFields({ ...base, vote: junk })).toBe(false);
-    expect(
-      (settleTabFields({ ...base, vote: { ...vote, votes: 'x' } }) as unknown as Tab).vote?.votes,
-    ).toEqual({});
-    expect(
-      (
-        settleTabFields({
-          ...base,
-          vote: { ...vote, votes: { a: ['p1'], b: 'p2', c: [3] } },
-        }) as unknown as Tab
-      ).vote?.votes,
-    ).toEqual({ a: ['p1'] });
-  });
-
   it('a malformed tab arriving from outside renders after the migration', () => {
     const el = { id: 'e', type: 'text', x: 0, y: 0, width: 10, height: 10, text: 'x' };
     for (const layers of ['x', 0.5, [1, 'a', null], [{ id: 'a' }, null]]) {
       const tab = migrateIncomingTab({ ...base, elements: [el], layers }) as Tab;
-      expect(() => visibleLayerElements(tab.elements, tab.layers)).not.toThrow();
-      expect(() => layerBands(tab.elements, tab.layers)).not.toThrow();
+      expect('layers' in tab).toBe(false);
+      expect(() => paintOrder(tab.elements)).not.toThrow();
     }
   });
 });

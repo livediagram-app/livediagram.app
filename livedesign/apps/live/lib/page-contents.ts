@@ -1,6 +1,6 @@
 // Contents' rows (docs/specs/007-editor/pages-mode.md "Contents"): a row per page in row order, what
 // each says about itself, and where a dropped page lands. Pure: pages in, rows out. Which page is in
-// view and the Find a Page narrowing read the same in every editor with pages, so they are shared
+// view reads the same in every editor with pages, so it is shared
 // (@liveworkspace/workbench/lib/page-contents) and re-exported here for the editor's own callers.
 import {
   pageHasOrientation,
@@ -14,7 +14,7 @@ import {
 import { rowDropIndex, type RowDrop } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import type { ContentsRowBase } from '@liveworkspace/workbench/lib/page-contents';
 
-export { filterContents, pageInView } from '@liveworkspace/workbench/lib/page-contents';
+export { pageInView } from '@liveworkspace/workbench/lib/page-contents';
 
 // The shared row (its number, name, kind line, lock and shape), with what this editor adds.
 export type ContentsRow = ContentsRowBase & {

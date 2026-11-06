@@ -6,18 +6,12 @@ import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
-import {
-  useWorkbenchSession,
-  type WorkspaceFrameHooks,
-} from '@/components/providers/workbench-session-context';
-import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 // Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
 // "Offline"); its recovery tools are the lazy part.
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
-import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { ConversionHandoff } from '@/components/dialogs/ConversionHandoff';
 import { LocalStorePrompts } from '@/components/dialogs/LocalStorePrompts';
 import { EditorContext } from './EditorContext';
@@ -42,23 +36,17 @@ const SharePasswordGate = dynamic(
   { ssr: false },
 );
 
-// `surface` says where the editor runs (editor-surface.ts): the app (/document), the read-only embed
-// view (/embed, docs/specs/013-workspace/embeds.md), or a workbench's frame (/embed/workbench,
-// docs/specs/013-workspace/workbench-embeds.md). Same state, same EditorView, with the chrome /
+// `surface` says where the editor runs (editor-surface.ts): the app (/document) or the read-only embed
+// view (/embed, docs/specs/013-workspace/embeds.md). Same state, same EditorView, with the chrome /
 // identity / edit gates flipped by it.
 export default function LivePage({ surface = 'app' }: { surface?: EditorSurface } = {}) {
   const state = useEditorState({ surface });
-  const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
+  const { embedMode, appChrome } = surfaceFlags(surface);
   // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
-  // document, and one per document-scope workbench frame that mounts the editor (a workspace frame counts its own
-  // mount, WorkspaceFrame). Fires once on mount.
-  // A workspace frame's hooks (Back), or null.
-  const workspaceFrame = useWorkbenchSession()?.frame ?? null;
-  const inWorkspaceFrame = workspaceFrame !== null;
+  // document. Fires once on mount.
   useEffect(() => {
     if (surface === 'embed') track('Session', 'Opened', 'Embed');
-    if (surface === 'workbench' && !inWorkspaceFrame) track('Session', 'Opened', 'Workbench');
-  }, [surface, inWorkspaceFrame]);
+  }, [surface]);
   // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
   // the first-load JS, see @liveworkspace/workbench/lib/icon-registry.ts) as soon as the editor
   // mounts, so it downloads in parallel with the document fetch / hydration.
@@ -104,15 +92,14 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.
   if (state.documentTrashed.trashed) {
-    // A workbench cannot restore: Restore is an ownership power outside its session.
     const card = (
       <DocumentTrashedCard
-        restorable={workbenchMode ? null : state.documentTrashed.restorable}
+        restorable={state.documentTrashed.restorable}
         onRestore={state.documentTrashed.restore}
       />
     );
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+      <EmbedShell>{card}</EmbedShell>
     ) : (
       <StatusShell title="Space deleted">{card}</StatusShell>
     );
@@ -123,28 +110,25 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
     const card = <LoadErrorCard embed={!appChrome} ownerId={ownerId} />;
-    // Embed and workbench frames get the bare retry card: an app header + Explorer
+    // An embed gets the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>{card}</EmbedShell>
+      <EmbedShell>{card}</EmbedShell>
     ) : (
       <StatusShell title="Couldn’t load space">{card}</StatusShell>
     );
   }
 
   if (documentNotFound) {
-    // An address that names no document is a missing page, not a missing document. A workbench's session always
-    // names a document, whatever its frame's address.
-    const page = !workbenchMode && !isEditorPath(window.location.pathname);
+    // An address that names no document is a missing page, not a missing document.
+    const page = !isEditorPath(window.location.pathname);
     // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame}>
+      <EmbedShell>
         <NotFound
           page={page}
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
-          // In a workspace frame the Explorer is a step back, inside the frame.
-          onOpenExplorer={workspaceFrame?.back}
         />
       </EmbedShell>
     ) : (
@@ -202,11 +186,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       <MentionContext.Provider value={state.commentMentions}>
         {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
         <CommentReactionsProvider value={state.commentReactions}>
-          {/* The owner's shape libraries, for the palette's My shapes
-              (docs/specs/013-workspace/shape-libraries.md). */}
-          <ShapeLibraryProvider ownerId={ownerId}>
-            <EditorView />
-          </ShapeLibraryProvider>
+          <EditorView />
         </CommentReactionsProvider>
       </MentionContext.Provider>
       {/* This browser's own store: an old livehuddle.app guest's claim, its retired parts, and moving documents in
@@ -253,18 +233,6 @@ function StatusShell({
 
 // The bare embed status surface (docs/specs/013-workspace/embeds.md): no header, no Explorer — an
 // app header + Explorer inside someone else's iframe would be noise.
-// A frame's bare status screen; a workspace frame's carries its Back (WB59), top left.
-function EmbedShell({
-  children,
-  frame = null,
-}: {
-  children: ReactNode;
-  frame?: WorkspaceFrameHooks | null;
-}) {
-  return (
-    <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">
-      {frame ? <WorkbenchBackButton onBack={frame.back} backTitle={frame.backTitle} /> : null}
-      {children}
-    </main>
-  );
+function EmbedShell({ children }: { children: ReactNode }) {
+  return <main className="relative h-dvh bg-slate-50 dark:bg-slate-950">{children}</main>;
 }

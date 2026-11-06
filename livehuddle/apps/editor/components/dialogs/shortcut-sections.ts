@@ -46,28 +46,14 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['V'], label: 'Select Tool  (or 1)' },
       { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand Tool' },
-      { keys: ['K'], label: 'Laser Pointer' },
-      { keys: ['E'], label: 'Eraser (click / drag to delete)' },
-      { keys: ['P'], label: 'Pencil (freehand)' },
-      { keys: ['I'], label: 'Isometric View' },
-      { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
-      { keys: ['Z'], label: 'Zen Mode (focus)' },
+      { keys: ['E'], label: 'Eraser, click / drag to delete  (or 0)' },
     ],
   },
   {
     heading: 'Add elements',
     rows: [
-      { keys: ['R'], label: 'Square' },
-      { keys: ['O'], label: 'Circle' },
-      { keys: ['D'], label: 'Diamond' },
-      { keys: ['C'], label: 'Cylinder' },
-      { keys: ['G'], label: 'Parallelogram' },
-      { keys: ['T'], label: 'Text' },
+      { keys: ['T'], label: 'Text  (or 8)' },
       { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['A'], label: 'Arrow' },
-      { keys: ['F'], label: 'Frame' },
-      { keys: ['9'], label: 'Image' },
-      { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
     ],
   },
   {
@@ -89,29 +75,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
-      // A dot vote's keys (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard").
-      { keys: ['+'], label: 'In an open vote: add one of your dots to the selected element' },
-      { keys: ['-'], label: 'In an open vote: take one of your dots back' },
+
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
-    ],
-  },
-  {
-    // Only live while a deck is running (docs/specs/012-collaboration/presentation-mode.md), which is why they are their
-    // own section rather than mixed into Navigate & select: none of them do
-    // anything in the editor.
-    heading: 'While presenting',
-    rows: [
-      { keys: ['→'], label: 'Next slide  (or Space / Page Down / click)' },
-      { keys: ['←'], label: 'Previous slide  (or Page Up)' },
-      { keys: ['Home'], label: 'First slide' },
-      { keys: ['End'], label: 'Last slide' },
-      { keys: ['G'], label: 'Jump to any slide' },
-      { keys: ['N'], label: 'Presenter notes for this slide' },
-      { keys: ['L'], label: 'Laser pointer over the slide' },
-      { keys: ['S'], label: 'Spotlight over the slide' },
-      { keys: ['Click'], label: 'On an element: its note, comments and actions' },
-      { keys: ['Escape'], label: 'Exit the presentation' },
     ],
   },
   {

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-// The action mutators over an element's LIST (docs/specs/012-collaboration/action-panel.md "The data"): a card
-// appends and addresses actions by id, an ordinary element keeps one.
+// The action mutators over an element's LIST (docs/specs/012-collaboration/assigned-actions.md): an element that holds a
+// list (a retired Action panel, docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") appends and
+// addresses actions by id, so its stored list is never lost; an ordinary element keeps one.
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -40,10 +41,8 @@ function setup(elements: Tab['elements']) {
         const list = elementActions(find(elementId));
         return actionId ? list.find((a) => a.id === actionId) : list[0];
       },
-      isActionCard: (elementId) => {
-        const el = find(elementId);
-        return el.type === 'shape' && el.shape === 'action-card';
-      },
+      holdsActionList: (elementId) =>
+        Array.isArray((find(elementId) as { actions?: unknown }).actions),
       actionCount: (elementId) => elementActions(find(elementId)).length,
       self: { userId: 'u-me', name: 'Me' },
       notify,
@@ -51,6 +50,15 @@ function setup(elements: Tab['elements']) {
   );
   return { result, list: (id: string) => elementActions(find(id)), raw: find, notify };
 }
+
+// A retired Action panel as it was stored: an untyped shape carrying its list.
+const panel = (actions: ElementAction[] = [], id = 'card') =>
+  ({
+    ...createShape('square', 0, 0),
+    id,
+    shape: 'action-card',
+    actions,
+  }) as unknown as Tab['elements'][number];
 
 const legacy = (): ElementAction =>
   createElementAction({
@@ -61,9 +69,9 @@ const legacy = (): ElementAction =>
     assigner: { id: 'u-me', name: 'Me' },
   });
 
-describe('useEditorActions on an Action panel', () => {
+describe('useEditorActions on a retired Action panel', () => {
   it('appends each saved action, then completes and deletes one by id', () => {
-    const card = createShape('action-card', 0, 0);
+    const card = panel();
     const { result, list } = setup([card]);
     act(() => result.current.saveAction(card.id, input('First')));
     act(() => result.current.saveAction(card.id, input('Second')));
@@ -76,7 +84,7 @@ describe('useEditorActions on an Action panel', () => {
   });
 
   it('edits the named action and leaves the rest alone', () => {
-    const card = createShape('action-card', 0, 0);
+    const card = panel();
     const { result, list } = setup([card]);
     act(() => result.current.saveAction(card.id, input('First')));
     act(() => result.current.saveAction(card.id, input('Second')));
@@ -86,7 +94,7 @@ describe('useEditorActions on an Action panel', () => {
   });
 
   it('closes one as Won’t Do, sets a status from the dialog', () => {
-    const card = createShape('action-card', 0, 0);
+    const card = panel();
     const { result, list } = setup([card]);
     act(() => result.current.saveAction(card.id, input('First')));
     act(() => result.current.saveAction(card.id, input('Second')));
@@ -100,16 +108,8 @@ describe('useEditorActions on an Action panel', () => {
     expect(list(card.id)[0]!.status).toBe('open');
   });
 
-  it('migrates a card saved with a single action on its first edit', () => {
-    const card = { ...createShape('action-card', 0, 0), action: legacy() };
-    const { result, list, raw } = setup([card]);
-    act(() => result.current.saveAction(card.id, input('Added')));
-    expect(list(card.id).map((a) => a.name)).toEqual(['Old single action', 'Added']);
-    expect('action' in raw(card.id)).toBe(false);
-  });
-
   it('does not re-create an action deleted while its edit dialog was open', () => {
-    const card = createShape('action-card', 0, 0);
+    const card = panel();
     const { result, list } = setup([card]);
     act(() => result.current.saveAction(card.id, input('Doomed')));
     const doomed = list(card.id)[0]!;
@@ -121,7 +121,7 @@ describe('useEditorActions on an Action panel', () => {
   });
 
   it('opens the add dialog from the Assign Action tile, never a popover', () => {
-    const card = createShape('action-card', 0, 0);
+    const card = panel();
     const { result } = setup([card]);
     act(() => result.current.openAssignAction(card.id));
     expect(result.current.assignActionFor).toBe(card.id);
@@ -143,16 +143,12 @@ describe('useEditorActions on an ordinary element', () => {
   });
 });
 
-// docs/specs/012-collaboration/action-panel.md "The data": a panel holds at most ACTION_CARD_MAX actions, and an add
-// past that is refused whole: nothing stored, no email sent.
-describe('a full Action panel', () => {
+// A stored panel holds at most ACTION_CARD_MAX actions, and an add past that is refused whole: nothing stored, no
+// email sent.
+describe('a full retired Action panel', () => {
   it('refuses another action, and emails nobody about it', () => {
     const full = Array.from({ length: ACTION_CARD_MAX }, (_, i) => ({ ...legacy(), id: `a${i}` }));
-    const card = {
-      ...createShape('action-card', 0, 0),
-      id: 'card',
-      actions: full,
-    } as Tab['elements'][number];
+    const card = panel(full);
     const { result, list, notify } = setup([card]);
     act(() =>
       result.current.saveAction('card', {

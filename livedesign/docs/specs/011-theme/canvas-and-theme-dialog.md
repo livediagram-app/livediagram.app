@@ -331,7 +331,14 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 
 - `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
 - `ThemeBrowser`: the flat, paged theme list. Rendered by the palette accordion, the New-design picker and the dialog's Colours panel.
-- `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
+- `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share. Shared from `@liveworkspace/workbench`
+  (`packages/workbench/src/components/primitives/PagedCarousel.tsx`). Every page keeps its slot in the strip (so
+  swiping, snapping and the dots work as before), but only the page on show and its two neighbours **mount their
+  tiles**, so a slide always has the next page drawn and the dialog never builds the far pages' tiles. A move by the
+  dots keeps every page it slides past mounted until it arrives, and a page holding keyboard focus stays mounted, so
+  focus is never dropped. A page whose tiles are not mounted is an empty slot hidden from screen readers; each mounted
+  page is a group named "<Label> page N of M", and the dots still say which page is current. The strip keeps the
+  tallest mounted page's height, so mounting a page never moves the layout.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
   controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion

@@ -49,16 +49,14 @@ export const HELP_ARTICLES = {
   markdownImport: 'tools/markdown-import',
   // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
   findAndReplace: 'tools/find-and-replace',
-  linkingTabs: 'tabs/linking-tabs',
   // Teams
   // Canvas / themes
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   changingTheme: 'canvas/themes/changing-theme',
   choosingAFinish: 'canvas/finish',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
-  // Links / activity / comments
+  // Activity / comments
   pagesTour: 'pages/pages-tour',
-  links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
   assignedActions: 'collaboration/assigned-actions',
@@ -84,11 +82,9 @@ export const HELP_ARTICLES = {
   sankeyDiagram: 'palette/concept-graphics/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
-  tabWindows: 'pages/tab-windows',
   conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
-  powerUserMode: 'user-interface/power-user-mode',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
@@ -171,8 +167,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: "Tips for copying one element's look onto others.",
   },
   slideDeck: {
-    title: 'Learn about the Slide Deck',
-    description: 'Tips for building and presenting slides from your document.',
+    title: 'Learn about presenting',
+    description: 'Tips for building a deck from your pages and presenting it.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
@@ -198,10 +194,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Markdown import',
     description: 'How a Markdown file becomes an article.',
   },
-  linkingTabs: {
-    title: 'Learn about linking tabs',
-    description: 'How linking to another tab works.',
-  },
   changingTheBackground: {
     title: 'Learn about the canvas',
     description: 'Tips for the background, patterns and the canvas behind what you draw.',
@@ -217,10 +209,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   choosingFonts: {
     title: 'Learn about fonts',
     description: 'Tips for choosing a typeface and text size for a tab.',
-  },
-  links: {
-    title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
@@ -298,10 +286,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about stacks',
     description: 'Rows, columns and grids that lay out what you drop in them.',
   },
-  tabWindows: {
-    title: 'Learn about tab windows',
-    description: 'Show another tab live on a slide, and keep it up to date.',
-  },
   conceptGraphics: {
     title: 'Learn about concept graphics',
     description:
@@ -310,10 +294,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
-  },
-  powerUserMode: {
-    title: 'Learn about power user mode',
-    description: 'The recommended settings it applies, and Minimal chrome.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',

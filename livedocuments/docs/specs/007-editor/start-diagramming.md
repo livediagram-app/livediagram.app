@@ -11,25 +11,28 @@ where the work begins instead of in a step before it. The New Document route ask
 are, the panel draws them.
 
 - **Header:** the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
-  **Help** link and **Close** (×). On a phone the search takes its own row under the title, the help and × staying
-  beside the title.
-- **Rail:** **Recommended**, then the groups, each with its glyph and count; long names wrap beside the glyph on a
-  wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on its
+  **Help** link. There is no **Close** (see [A choice first](#a-choice-first)). On a phone the search takes its own
+  row under the title, the help staying beside the title, and the sheet has no grab handle to drag it away.
+- **Rail:** **Blank Pages**, then the groups, each with its glyph and count, Blank Pages chosen as the start opens.
+  Group names are a word each (the catalogue's short labels), so each sits on one line. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on its
   own tint read 3.6:1 in light, under WCAG AA's 4.5:1.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the panel picks no theme, so
   the scaffold takes the colours the tab already wears (its own theme, or the one a new tab inherited from the tab it
   was added beside) rather than the template's built-in ones. The tab's backdrop is left as it is.
 - **Search:** the catalogue's own search (`templateMatchesQuery`, as the marketing gallery's), across the Pages
-  templates; matches are grouped under their group, each once, in rail order. Escape clears a search first; with
-  nothing to clear it closes the start, as its × does.
+  templates; matches are grouped under their group, each once, in rail order. Escape clears a search; with nothing
+  to clear it does nothing.
 - **A title match leads.** A template whose name begins with what was typed (case, punctuation and hyphens ignored,
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. With no name beginning so, there is no Best Match and the
   groups lead.
 - **The start is the whole catalogue.** It holds every listed Pages template; there is no bigger picker behind it.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
-- **Keyboard:** the search is focused on a fine pointer; Up and Down move along the rail, choosing as they go. Down
+- **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
+  panel's code loads when it is first drawn, so on a busy machine it can arrive after a control was reached or a menu
+  opened from the keyboard, and it never takes focus from one. It takes it only from the page itself or the canvas
+  (`focusIsFree`, `../packages/workbench/src/lib/focus-is-free.ts`). Up and Down move along the rail, choosing as they go. Down
   in the search box moves to the first card it found. Among the cards the arrow keys move between them: Left and Right
   to the card before and after (across a section's end into the next), Up and Down to the nearest card in the row
   above and below; Up from the first row goes back to the search box while there is a search. Home and End reach the
@@ -43,22 +46,29 @@ are, the panel draws them.
   pasted on a new tab land on the canvas, closing the start, rather than their JSON landing in the search. Pasted
   text still searches.
 
-### Recommended and groups
+### Groups
 
-Recommended is the template step's Popular list (`stepPopularKinds` in `@livedocuments/templates` `popular.ts`:
-Blank Illustration, Project Brief, Blank Slide Deck, Event Poster, Year in Review, Social Carousel, hidden templates
-left out). The start swaps two of its picks for blanks of a page kind (`RECOMMENDED_SWAPS`), a page already of its
-kind being the quicker start: **Blank Infographic** in place of Blank Illustration and **Blank Article** in place of
-the Project Brief template, so it leads Blank Infographic, Blank Article, Blank Slide Deck. The marketing gallery's
-shelf (`POPULAR_TEMPLATE_KINDS`) is its own, longer list. Then **Blank Pages**: Blank Slide Deck, Blank Article,
-Blank Infographic and Blank Flashcards, one empty page of the kind meant. Then one group per catalogue category, in
-the same alphabetical order and with the same names as every other picker
+**Blank Pages** leads, chosen as the start opens: Blank Slide Deck, Blank Article, Blank Infographic and Blank
+Flashcards, one empty page of the kind meant. Then one group per catalogue category, in the same alphabetical order
+and with the same names as every other picker
 ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), each template under its primary
 category (`components/start/start-template-items.ts` derives them, so a new template or category needs no change
 there).
 
-Every listed template is in exactly one group after Recommended, so every one is reachable. Blank
-Illustration is not offered: closing the panel leaves the same empty tab.
+Every listed template is in exactly one group, so every one is reachable. Blank Illustration is not offered: Blank
+Infographic is the same empty page, already chosen.
+
+**No Recommended.** The start once led with a Recommended group (the template step's short Popular list, two of its
+picks swapped for blanks of a page kind). Retired 2026-11-04: each of its picks already sat in Blank Pages or in its
+own group, so it was a second place to look rather than a quicker start. The marketing gallery's Popular shelf
+(`POPULAR_TEMPLATE_KINDS`) is its own and stays.
+
+## A choice first
+
+A new document or tab holds **no page until something is chosen**. The start cannot be dismissed: it has no ×,
+Escape does nothing once the search is clear, a press outside it does nothing, and on a phone there is no grab handle
+to drag it down. Nothing waits under it as a page. Blank Pages is the way to start from nothing: each of its blanks
+lands one empty page of its kind, already chosen.
 
 ## When it shows
 
@@ -84,25 +94,28 @@ An **explicit blank** opens with its start already closed (`closeStartForBlank`)
 
 ## Bringing it back
 
-The × starts from a blank canvas: the start stays closed on that tab, for this person in this browser
-(`../packages/workbench/src/components/canvas/empty-card-dismissed.ts`, keyed by `startClosedKey`). On a phone, dragging the sheet's grab handle down closes it too.
-
-While a closed start's tab is still empty, the **palette tray** (the strip that hangs from the palette, [Toolbar
-layout](toolbar-layout.md)) reads "Tab 1 is empty" with **Show Templates**, which opens the start again
-(`StartAgainTray`). It goes with the emptiness: the first element ends it. It steps aside while an armed tool's
-message is up (its Cancel, a modifier hint), as that takes the same place and says what the next click does. The
-closed list is shared state: the panel and the tray read the same key and follow each other as it changes.
+Only an **explicit blank** (above) opens with the start closed, keyed per tab for this person in this browser by
+`startClosedKey` (`../packages/workbench/src/components/canvas/empty-card-dismissed.ts`). Its one page asks **What Is
+This Page For?** ([Pages](pages-mode.md)), which has no way out either, and while the tab is still empty the
+**palette tray** (the strip that hangs from the palette, [Toolbar layout](toolbar-layout.md)) reads "Tab 1 is
+empty" with **Show Templates**, which opens the start again (`StartAgainTray`). It goes with the emptiness: the first
+element ends it. It steps aside while an armed tool's message is up (its Cancel, a modifier hint), as that takes the
+same place and says what the next click does. The closed list is shared state: the panel and the tray read the same
+key and follow each other as it changes.
 
 ## The first page
 
 The tab's first page is drawn only once the start is done: while Start Making Pages is open there is no page behind
-it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
-closing the panel shows the first page with its own **What Is This Page For?** ([Pages](pages-mode.md)). A blank of
+it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. That holds from the tab's first frame:
+the canvas reads the same rule the panel does (`useTemplateStartShown`), not the panel's mount, so a new tab never
+flashes an empty page while the panel's code is still loading. A start closed for the tab (an explicit blank, "Bringing
+it back") is not open: the canvas reads `useTemplateStartOpen`, the rule and the tab's closed key together, so the
+explicit blank's one page is drawn at once, asking What Is This Page For? Picking a template lands its pages. A blank of
 a page kind (Blank Slide Deck, Blank Article, Blank Infographic) lands one page of that kind, already
 chosen, so it asks nothing and the start does not come back over it.
 
 **The last page can be deleted.** Deleting it (or the last article) clears the tab, its pages, its writing and its
-elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The agents'
+elements, as one edit that Undo puts back, and brings Start Making Pages back, even on an explicit blank. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).
 
 ## Default folders
@@ -156,7 +169,7 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 
 ## Tests
 
-- `components/start/start-template-items.test.ts`: Recommended, groups and search, and every listed template
+- `components/start/start-template-items.test.ts`: Blank Pages first, groups and search, and every listed template
   reachable from the start.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.

@@ -134,7 +134,7 @@ describe('set', () => {
       code: 'invalid_value',
       operation: 1,
       details: ['commentThread=[]: people change it, not edit operations'],
-      hint: "comments go through the comment commands; responses and ideas are people's",
+      hint: "comments go through the comment commands; assigned actions are people's",
     });
   });
 
@@ -143,7 +143,7 @@ describe('set', () => {
     expect(rejection.code).toBe('unknown_field');
     expect(rejection.details[0]).toBe('arrow has no field "widht"');
     expect(rejection.details[1]).toMatch(
-      /^fields: label stroke text-color border text line, then id type layerId from to /,
+      /^fields: label stroke text-color border text line, then id type from to /,
     );
   });
 
@@ -184,20 +184,6 @@ describe('set', () => {
     expect(refused(run([set('n33', { label: 'x' })]))).toMatchObject({
       code: 'target_not_found',
       details: expect.arrayContaining(['  n3  square "Login"']),
-    });
-  });
-
-  it('refuses moving an element onto a locked layer', () => {
-    const tab: Tab = {
-      ...checkoutFlow(),
-      layers: [
-        { id: 'top', name: 'Top' },
-        { id: 'base', name: 'Base', locked: true },
-      ],
-    };
-    expect(refused(run([set('n3', { layerId: 'base' })], tab))).toMatchObject({
-      code: 'element_locked',
-      details: ['locked:', '  n3  square "Login" (layer "Base")'],
     });
   });
 });

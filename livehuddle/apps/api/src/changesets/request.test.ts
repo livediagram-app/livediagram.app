@@ -49,17 +49,19 @@ describe('parseChangesetRequest', () => {
       const out = parseChangesetRequest({ replace: r });
       return out.ok ? out.value.body : out.refusal.body.error;
     };
-    expect(replace({ mermaid: 'graph TD; a-->b', name: 'Flow', theme: 'ocean' })).toEqual({
+    expect(replace({ template: 'team-pod', name: 'Pod', theme: 'ocean' })).toEqual({
       kind: 'replace',
-      replace: { mermaid: 'graph TD; a-->b' },
-      name: 'Flow',
+      replace: { template: 'team-pod' },
+      name: 'Pod',
       theme: 'ocean',
     });
     expect(replace({ elements: [], layout: 'auto' })).toEqual({
       kind: 'replace',
       replace: { elements: [], layout: 'auto' },
     });
-    expect(replace({ mermaid: 'x', template: 'kanban' })).toBe('invalid_body');
+    expect(replace({ graph: {}, template: 'kanban' })).toBe('invalid_body');
+    // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools"): no source at all.
+    expect(replace({ mermaid: 'graph TD; a-->b' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
     expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
     expect(replace({ elements: [], finish: 'sketch' })).toEqual({

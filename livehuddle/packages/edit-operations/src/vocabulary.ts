@@ -78,7 +78,7 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
   'keep-arrows',
   'between',
   'in',
-  'frame',
+  'boundary',
   'lane',
   'front',
   'back',
@@ -87,7 +87,7 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
 export const LAYOUT_STYLES = ['flow', 'tree'] as const;
 export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
-export const WRAP_CONTAINERS = ['frame', 'lane'] as const;
+export const WRAP_CONTAINERS = ['boundary', 'lane'] as const;
 
 // The layout engine's rank gap (EO23); larger reads as a separate drawing.
 export { LAYER_GAP as PLACEMENT_GAP } from '@livehuddle/document';

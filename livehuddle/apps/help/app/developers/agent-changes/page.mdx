@@ -5,18 +5,18 @@ import { AgentChangeToast } from '@liveworkspace/help-site/art/illustrations/age
 export const metadata = helpMetadata({
   title: "Reviewing and Undoing an Agent's Changes",
   description:
-    'Every change an AI tool, the CLI or a script makes is a changeset you can review and undo for 30 days: from the change toast in the editor, the CLI, or the API.',
+    'Every change an agent or a script makes through the API is a changeset you can review and undo for 30 days: from the change toast in the editor, or the API.',
   path: '/help/developers/agent-changes/',
 });
 
 <ArticleLayout
   title="Reviewing and Undoing an Agent's Changes"
-  description="See what an AI tool, the CLI or a script changed, and take it back from the editor, the CLI or the API."
+  description="See what an agent or a script changed, and take it back from the editor or the API."
   categoryTitle="Developers"
   categorySlug="developers"
 >
 
-When an [AI tool](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/developers/cli/) or a script changes one of your tabs, the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
+When an agent or a script changes one of your tabs through the [API](/help/developers/api-overview/), the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
 
 ## In the Editor
 
@@ -40,63 +40,7 @@ The note is an information message, so switching off **In-Editor Notifications**
 
 ### Once the Note Is Gone
 
-The editor has no history of changesets. Once you close the note, or if the change landed while you didn't have the space open (it simply appears when you next open it, with no outline and no note), review and undo it from the CLI or the API, below.
-
-## From the CLI
-
-`changeset ls` lists a space's recent changesets, newest first, 20 by default:
-
-```bash
-livehuddle changeset ls "Auth flow"
-livehuddle changeset ls 3f9c --tab Overview --limit 5
-```
-
-One changeset a line: its id, the tab revision it produced, the tab, who made it (marked `(agent)` when a token did), its summary, how many elements it added, changed and removed, and when (in UTC):
-
-```text
-cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
-cs_3h7v2n9c4p  rev 39  "Overview"  Webber (agent)  +0 ~3 -1  2026-10-11 08:52
-```
-
-A revert shows as its own line ending in `reverts cs_…`. `changeset show` prints one changeset's line, then what it did, one line per element, the same lines the write printed:
-
-```bash
-livehuddle changeset show "Auth flow" cs_8k2m4q7d1x
-```
-
-```text
-cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
-+ pay  square "Payment service" @520,120 160×64
-+ arrow  n2→pay
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset revert abc123 cs_8k2m4q7d1x
-```
-
-Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
-
-```bash
-livehuddle changeset revert "Auth flow" cs_8k2m4q7d1x
-```
-
-```text
-reverted 1 · rev 44→45 · cs_5m2q8r1t6w · lint clean
-kept pay (changed)
-```
-
-`-q` prints only the new changeset's id, and `--json` gives the whole answer.
-
-To see everything that changed in a tab since you last looked, whoever changed it, use `tab diff` with a revision the CLI has read (the CLI keeps a copy of each tab it reads with `tab view`):
-
-```bash
-livehuddle tab diff "Auth flow" --since 41
-```
-
-```text
-tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
-- arrow 6406 → 0556 [0cee]
-~ square e4a8 label "Payments service" → "Payments"
-~ card cb02 moved +200,+0
-+ cylinder 7180 "Redis cache" in c991 "Services"
-```
+The editor has no history of changesets. Once you close the note, or if the change landed while you didn't have the space open (it simply appears when you next open it, with no outline and no note), review and undo it from the API, below.
 
 ## From the API
 
@@ -124,7 +68,7 @@ Each changeset in the list looks like this:
 }
 ```
 
-`agent` is `true` when an API token made the change. Only the person who made it also sees the `tokenId` of the token that did. The single-changeset route answers `{ "changeset": { … }, "results": [ … ], "text": "…" }`, where `text` is the lines `changeset show` prints under the summary line. A revert answers:
+`agent` is `true` when an API token made the change. Only the person who made it also sees the `tokenId` of the token that did. The single-changeset route answers `{ "changeset": { … }, "results": [ … ], "text": "…" }`, where `text` is the result lines as plain text, one per element. A revert answers:
 
 ```json
 {
@@ -153,12 +97,11 @@ A revert applies the changeset in reverse to the tab as it is now, element by el
 - `present`: an element the changeset removed is back on the tab.
 - `order`: someone reordered the elements a changeset reordered.
 
-Everything else goes back to how the changeset found it. Comments, votes and other contributions people added to an element in the meantime stay on it. A few more cases:
+Everything else goes back to how the changeset found it. Comments and other contributions people added to an element in the meantime stay on it. A few more cases:
 
 - A revert is itself a new changeset, credited to you, so you can revert a revert.
 - Reverting a changeset that created a tab empties the tab but keeps it.
-- Reverting the same changeset twice changes nothing: every element has changed since the first revert, so the CLI says `nothing to revert`.
-- AI tools connected through [MCP](/help/account-and-data/connect-ai-mcp/) can't revert changesets themselves; use the editor, the CLI or the API.
+- Reverting the same changeset twice changes nothing: every element has changed since the first revert, so the answer's `changeset` is `null`.
 
 ## How Long You Can Undo
 

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Hero } from './Hero';
-import { FLOOR_STAGES, floorArtHref } from './hero-space-floor-cast';
+import { FLOOR_ONLY, FLOOR_STAGES, floorArtHref } from './hero-space-floor-cast';
 import { timelineOf } from './hero-space-floor-motion';
 
 // docs/specs/019-marketing/marketing-site.md "Hero": the pitch and its two calls to action standing on a Space's
@@ -10,15 +10,15 @@ import { timelineOf } from './hero-space-floor-motion';
 const html = renderToStaticMarkup(<Hero />);
 
 describe('the hero', () => {
-  it('pitches meetings and workshops under its two promise badges', () => {
-    expect(html).toContain('>Meet and run workshops together</h1>');
+  it('pitches meeting in a Space under its two promise badges', () => {
+    expect(html).toContain('>Meet your team in a Space</h1>');
     expect(html).toMatch(/aria-label="Our promises"/);
     expect(html).toContain('Free and open source');
     expect(html).toContain('No sign-up to start');
   });
 
   it('opens a Space from its own funnel slot, and browses the templates under it', () => {
-    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>Open a Space/);
+    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>(?:<span[^>]*>)?Open a Space/);
     expect(html).toMatch(/href="\/#templates"[^>]*>Browse Templates/);
   });
 
@@ -37,7 +37,7 @@ describe('the hero', () => {
       expect(
         before
           .slice(before.lastIndexOf('<div'))
-          .startsWith('<div aria-hidden="true" class="hsf-stage'),
+          .startsWith('<div aria-hidden="true" data-optical-ignore="true" class="hsf-stage'),
       ).toBe(true);
       const markup = html.slice(start);
       expect(markup).toContain(`src="${floorArtHref(stage.key, 'light')}"`);
@@ -53,5 +53,29 @@ describe('the hero', () => {
   it('shows the wide stage from sm and the phone’s below it, never both', () => {
     expect(html).toMatch(/class="hsf-stage pointer-events-none select-none [^"]*max-sm:hidden"/);
     expect(html).toMatch(/class="relative mt-6 overflow-hidden sm:hidden"/);
+  });
+
+  // Work Tracker #440: below lg a walker with a floor path walks it in place of its wide path, never both shown.
+  it('swaps each walker with a floor path for it below lg', () => {
+    expect(FLOOR_ONLY.cast.length).toBeGreaterThan(0);
+    for (const walker of FLOOR_ONLY.cast) {
+      const name = walker.name.toLowerCase();
+      expect(html).toContain(`class="hsf-walker hsf-wide-${name} hsf-lg-only"`);
+      expect(html).toContain(`class="hsf-walker hsf-floor-${name} hsf-below-lg"`);
+    }
+    expect(html).toMatch(/class="hsf-say hsf-floor-leo-say-0 hsf-below-lg"/);
+  });
+
+  // Work Tracker #438: a hidden image is still fetched unless it is lazy, so every drawing is, and only the one
+  // shown loads.
+  it('fetches only the furniture drawing shown', () => {
+    const drawings = [...html.matchAll(/<img [^>]*src="\/hero\/floor-[^"]+"[^>]*>/g)].map(
+      (m) => m[0],
+    );
+    // The back row's layer shows the wide stage's own drawing again, so it adds no fetch of its own.
+    expect(drawings).toHaveLength(FLOOR_STAGES.length * 2 + 2);
+    const srcs = new Set(drawings.map((img) => img.match(/src="([^"]+)"/)![1]));
+    expect(srcs.size).toBe(FLOOR_STAGES.length * 2);
+    for (const img of drawings) expect(img).toContain('loading="lazy"');
   });
 });

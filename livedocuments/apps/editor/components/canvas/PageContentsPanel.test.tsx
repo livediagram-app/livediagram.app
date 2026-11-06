@@ -87,22 +87,17 @@ describe('PageContentsPanel', () => {
   it('adds a page, never of another kind, for an Editor alone', () => {
     const h = show(2);
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Add (Page|Slide)/ }));
     expect(h.addPage).toHaveBeenCalledWith('infographic');
     cleanup();
     show(2, false);
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add (Page|Slide)/ })).toBeNull();
   });
 
-  it('offers Find a Page past six pages, narrowing the list', () => {
-    show(4);
-    expect(screen.queryByRole('searchbox', { name: 'Find a Page' })).toBeNull();
-    cleanup();
+  it('lists every page with no Find box, however many', () => {
     show(8);
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Page' }), {
-      target: { value: 'slide' },
-    });
-    expect(screen.getAllByRole('listitem')).toHaveLength(4);
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    expect(screen.getAllByRole('listitem')).toHaveLength(8);
   });
 
   it('docks back as the sidebar from its header, where a sidebar is offered', () => {

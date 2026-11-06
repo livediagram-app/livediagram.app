@@ -1,11 +1,13 @@
 // The virtual office (docs/specs/009-elements/office.md): the Room, the Meeting Table, the Plant, the Bookshelf,
-// the Water Cooler, the Coffee Machine and the Rug. Their drawings are tables of parts in the furniture's
+// the Water Cooler, the Coffee Machine, the Rug and the Stage. Their drawings are tables of parts in the furniture's
 // vocabulary (seating.ts), drawn upright from the room's camera, which both renderers paint (the editor's views
 // and svg-render-faces), so an office on the canvas and in an export are the same office. The geometry the
 // Avatar-mode walk needs (a room's walls and doorway, the footprints of the scenery that blocks) is
 // @liveworkspace/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
 
-import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import type { FurnitureArt, FurniturePart, FurnitureDrawing } from './seating';
+import { allSides, ellipse, path, rect } from './furniture-parts';
 import {
   brokenRun,
   roomDoorSpan,
@@ -14,13 +16,61 @@ import {
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
 import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
+import { OFFICE_EXTRA_ART } from './office-garden';
+import { OFFICE_SOCIAL_ART } from './office-social';
+import { OFFICE_RECREATION_ART } from './office-recreation';
+import { WAYFINDING_ART } from './office-wayfinding';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
 // footprints) is @liveworkspace/avatar's, shared with every product that has Avatar mode.
 export * from '@liveworkspace/avatar/office-geometry';
 
 export type OfficeKind =
-  'room' | 'meeting-table' | 'plant' | 'bookshelf' | 'water-cooler' | 'coffee-machine' | 'rug';
+  | 'room'
+  | 'meeting-table'
+  | 'plant'
+  | 'bookshelf'
+  | 'water-cooler'
+  | 'coffee-machine'
+  | 'rug'
+  | 'stage'
+  // The pod, the bar and the garden (docs/specs/009-elements/office.md "Office Pod" to "Garden Fence").
+  | 'office-pod'
+  | 'bar'
+  | 'bar-stool'
+  | 'drinks-cabinet'
+  | 'drinks-fridge'
+  | 'outdoor-plant'
+  | 'tree'
+  | 'garden-path'
+  | 'grass'
+  | 'garden-fence'
+  // The Door (docs/specs/009-elements/room-builder.md "Door").
+  | 'door'
+  // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
+  | 'directory'
+  | 'elevator'
+  // The social pieces (docs/specs/009-elements/social-pieces.md).
+  | 'notice-board'
+  | 'world-clock'
+  | 'jukebox'
+  | 'ping-pong-table'
+  | 'arcade-machine'
+  | 'fireplace'
+  | 'campfire'
+  | 'bench'
+  | 'picnic-table'
+  | 'hammock'
+  | 'garden-umbrella'
+  | 'fountain'
+  | 'pond'
+  // The social pieces' second set (docs/specs/009-elements/social-pieces.md).
+  | 'pool-table'
+  | 'foosball-table'
+  | 'dartboard'
+  | 'vending-machine'
+  | 'bean-bag'
+  | 'reading-nook';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -30,7 +80,59 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'water-cooler',
   'coffee-machine',
   'rug',
+  'stage',
+  'office-pod',
+  'bar',
+  'bar-stool',
+  'drinks-cabinet',
+  'drinks-fridge',
+  'outdoor-plant',
+  'tree',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  'door',
+  'directory',
+  'elevator',
+  'notice-board',
+  'world-clock',
+  'jukebox',
+  'ping-pong-table',
+  'arcade-machine',
+  'fireplace',
+  'campfire',
+  'bench',
+  'picnic-table',
+  'hammock',
+  'garden-umbrella',
+  'fountain',
+  'pond',
+  'pool-table',
+  'foosball-table',
+  'dartboard',
+  'vending-machine',
+  'bean-bag',
+  'reading-nook',
 ];
+
+/** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
+export type SizedOfficeKind =
+  'room' | 'stage' | 'garden-path' | 'grass' | 'garden-fence' | 'door' | 'pond';
+const SIZED_OFFICE_KINDS: readonly string[] = [
+  'room',
+  'stage',
+  'garden-path',
+  'grass',
+  'garden-fence',
+  'door',
+  // The pond (docs/specs/009-elements/social-pieces.md "Pond"): resizable, drawn to its size like grass.
+  'pond',
+];
+/** The pieces drawn from a fixed grid (OFFICE_ART). */
+export type GridOfficeKind = Exclude<OfficeKind, SizedOfficeKind>;
+export function isGridOfficeShape(kind: string): kind is GridOfficeKind {
+  return isOfficeShape(kind) && !SIZED_OFFICE_KINDS.includes(kind);
+}
 
 export function isOfficeShape(kind: string): kind is OfficeKind {
   return (OFFICE_KINDS as readonly string[]).includes(kind);
@@ -53,36 +155,6 @@ export const OFFICE_TONES = {
 } as const;
 
 type Part = FurniturePart;
-const rect = (
-  role: FurniturePartRole,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rx: number,
-  fill?: string,
-): Part => ({ tag: 'rect', role, x, y, w, h, rx, ...(fill ? { fill } : {}) });
-const ellipse = (
-  role: FurniturePartRole,
-  cx: number,
-  cy: number,
-  rx: number,
-  ry: number,
-  fill?: string,
-): Part => ({ tag: 'ellipse', role, cx, cy, rx, ry, ...(fill ? { fill } : {}) });
-const path = (role: FurniturePartRole, d: string, fill?: string): Part => ({
-  tag: 'path',
-  role,
-  d,
-  ...(fill ? { fill } : {}),
-});
-
-// A drawing that reads the same from every side, so every facing shows it.
-const allSides = (view: FurnitureDrawing): FurnitureArt => ({
-  front: view,
-  back: view,
-  side: view,
-});
 
 const T = OFFICE_TONES;
 
@@ -244,14 +316,18 @@ export const MEETING_TABLE_ART: FurnitureArt = allSides({
   seats: MEETING_TABLE_VIEW.tableSeats.map(({ u, v }) => ({ u, v })),
 });
 
-// Every office piece but the room, which is drawn to its size (roomParts).
-export const OFFICE_ART: Record<Exclude<OfficeKind, 'room'>, FurnitureArt> = {
+// Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
+export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   'meeting-table': MEETING_TABLE_ART,
   plant: allSides(PLANT_VIEW),
   bookshelf: allSides(BOOKSHELF_VIEW),
   'water-cooler': allSides(WATER_COOLER_VIEW),
   'coffee-machine': allSides(COFFEE_MACHINE_VIEW),
   rug: allSides(RUG_VIEW),
+  ...OFFICE_EXTRA_ART,
+  ...OFFICE_SOCIAL_ART,
+  ...OFFICE_RECREATION_ART,
+  ...WAYFINDING_ART,
 };
 
 // --- The room ----------------------------------------------------------------
@@ -297,5 +373,63 @@ export function roomParts(width: number, height: number, door: RoomDoor): Furnit
     parts.push(rect('rail', width - W - 14, side[0] + 6, 10, side[1] - side[0] - 12, 2));
   // A room shrunk past its walls has no floor or mat left to draw: a part of no size is dropped, never drawn with a
   // negative width or height (an SVG error on the canvas and in an export).
+  return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
+}
+
+// --- The stage (docs/specs/009-elements/office.md "Stage") ------------------
+
+/** Who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles"). */
+export type StageSpeakers = 'edit' | 'take-part';
+export const STAGE_SPEAKERS: readonly StageSpeakers[] = ['edit', 'take-part'];
+export const DEFAULT_STAGE_SPEAKERS: StageSpeakers = 'edit';
+/** Who Can Speak's tiles in the element menu (docs/specs/012-collaboration/meeting-rooms-and-stage.md part 4). */
+export const STAGE_SPEAKER_LABELS: Record<StageSpeakers, string> = {
+  edit: 'Editors',
+  'take-part': 'Editors and Participants',
+};
+export function isStageSpeakers(v: unknown): v is StageSpeakers {
+  return v === 'edit' || v === 'take-part';
+}
+/** The front edge's height: the face you see below the stage's top. */
+export const STAGE_FRONT = 24;
+// The stage's top when it has no fill of its own: the room's floor, a little lighter.
+export const STAGE_FLOOR = '#fbf7ef';
+export const STAGE_FLOOR_DARK = '#3a3430';
+// The plate on the front edge: 40% of the stage's width, between these.
+const STAGE_PLATE_MIN = 64;
+const STAGE_PLATE_MAX = 160;
+const STAGE_PLATE_INSET = 5;
+
+/** Where feet stand on a stage: its top, above the front edge (the box may be empty on a stage too short). */
+export function stageTop(el: Rect): Rect {
+  return { x: el.x, y: el.y, width: el.width, height: el.height - STAGE_FRONT };
+}
+
+/** A stage's drawing, in its own px (0..width, 0..height): its top with two planks, its front face and a plate. */
+export function stageParts(width: number, height: number): FurniturePart[] {
+  const F = STAGE_FRONT;
+  const top = height - F;
+  const parts: FurniturePart[] = [rect('panel', 0, 0, width, top + 1, 4)];
+  // Two plank lines across the top, so it reads as boards, not a rug.
+  for (const k of [1, 2]) {
+    const y = Math.round((top * k) / 3);
+    if (y > 4 && y < top - 4 && width > 16) parts.push(path('rail', `M8 ${y}H${width - 8}`));
+  }
+  parts.push(rect('face', 0, top, width, F, 3));
+  const plate = Math.min(
+    width - 16,
+    Math.max(STAGE_PLATE_MIN, Math.min(STAGE_PLATE_MAX, width * 0.4)),
+  );
+  parts.push(
+    rect(
+      'panel',
+      Math.round((width - plate) / 2),
+      top + STAGE_PLATE_INSET,
+      Math.round(plate),
+      F - STAGE_PLATE_INSET * 2,
+      3,
+    ),
+  );
+  // A stage shrunk past its edge draws only what has a size, never a negative one.
   return parts.filter((p) => p.tag !== 'rect' || (p.w > 0 && p.h > 0));
 }

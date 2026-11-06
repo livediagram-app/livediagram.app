@@ -99,7 +99,6 @@ function BoxedElementViewImpl({
   onFollowLink,
   onOpenComments,
   onOpenAction,
-  onOpenNote,
   onEditLink,
   onOpenEditDialog,
   onDropIcon,
@@ -285,7 +284,7 @@ function BoxedElementViewImpl({
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
-    { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries },
+    { onOpenComments, onOpenAction },
     { text: label, textSize, padding: labelPadding, alignX, alignY, inlineIcon: !!inlineIcon },
     cornerPx,
   );
@@ -533,7 +532,9 @@ function BoxedElementViewImpl({
           land. Cleared on drop / drag-leave. */}
       {dropSide ? <IconDropPreview side={dropSide} /> : null}
 
-      {isLocked ? <LockBadge /> : null}
+      {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
+          (canvas-and-palette.md "Locking"). */}
+      {element.locked === true ? <LockBadge /> : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 

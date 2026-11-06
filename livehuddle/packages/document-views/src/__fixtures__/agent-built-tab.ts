@@ -1,4 +1,4 @@
-// The Services frame as an agent builds it through graph input, node ids its own slugs and arrow ids
+// The Services group (a boundary) as an agent builds it through graph input, node ids its own slugs and arrow ids
 // minted as slugs (docs/specs/024-agents/blueprints/document-views.md "Testing", VW7).
 import { buildGraphTab, slugIdFor, type Element, type Tab } from '@livehuddle/document';
 

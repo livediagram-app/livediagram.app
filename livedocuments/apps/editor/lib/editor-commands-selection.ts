@@ -80,14 +80,8 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Note / comment are single boxed-element actions.
+  // Comment is a single boxed-element action.
   if (isSingle && ctx.singleIsBoxed) {
-    out.push({
-      id: 'note',
-      name: 'Add / Edit Note',
-      keywords: 'note annotate memo description',
-      run: h.editNote,
-    });
     out.push({
       id: 'comment',
       name: 'Add Comment',

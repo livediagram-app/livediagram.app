@@ -145,12 +145,12 @@ export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 /**
  * The editors' popover (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the
- * scrim"): up to 64rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
- * quarter of a 1280px window's canvas stays in sight; and up to 56rem tall. Each editor's MovablePanel takes these,
+ * scrim"): up to 54rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
+ * third of a 1280px window's canvas stays in sight; and up to 45rem tall. Each editor's MovablePanel takes these,
  * so the size lives once. The host keeps it 1rem inside the window.
  */
-export const EXPLORER_POPOVER_WIDTH = 'w-[64rem]';
-export const EXPLORER_POPOVER_HEIGHT = '56rem';
+export const EXPLORER_POPOVER_WIDTH = 'w-[54rem]';
+export const EXPLORER_POPOVER_HEIGHT = '45rem';
 
 /**
  * The rail and pane's box per layout. `side` (a desktop or tablet popover) fills the popover, which the host sizes
@@ -213,8 +213,6 @@ export type ExplorerPanelProps = {
   notice?: ReactNode;
   // Pinned under the rail and pane, outside their scroll (the product's links).
   footer?: ReactNode;
-  // Group titles over the rail's groups, or a hairline between them (Minimal chrome).
-  divider?: 'titles' | 'lines';
   /** Other people's names and Google pictures, as on the Explorer page (`createExplorerAccounts` over the app's
    *  router with the person's token): the Inbox's and history's avatars then show pictures. Without it, initials. */
   accounts?: ExplorerAccounts | null;
@@ -288,7 +286,6 @@ function PanelInner({
   open = false,
   notice,
   footer,
-  divider = 'titles',
 }: Omit<ExplorerPanelProps, keyof LibraryHostProps | 'teamsHost' | 'teams' | 'thisBrowser'>) {
   const { teams } = useTeams();
   const driveMarks = useDriveMarks(drive);
@@ -413,7 +410,6 @@ function PanelInner({
               selected={section}
               onPick={pick}
               phone={stacked}
-              divider={divider}
               offlineCount={offlineCount}
             />
             <Pane
@@ -690,14 +686,12 @@ function Rail({
   selected,
   onPick,
   phone,
-  divider,
   offlineCount,
 }: {
   groups: PanelSectionGroup[];
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
   phone: boolean;
-  divider: 'titles' | 'lines';
   // How many items this browser keeps only for itself: This Browser's count.
   offlineCount: number;
 }) {
@@ -786,18 +780,11 @@ function Rail({
           {groups.map((g, i) =>
             g.sections.length ? (
               <section key={g.id} aria-label={SECTION_GROUP_TITLES[g.id]}>
-                {divider === 'titles' ? (
-                  <h3
-                    className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
-                  >
-                    {SECTION_GROUP_TITLES[g.id]}
-                  </h3>
-                ) : i ? (
-                  <span
-                    aria-hidden
-                    className="mx-2 my-2.5 block h-px bg-slate-200 dark:bg-slate-700"
-                  />
-                ) : null}
+                <h3
+                  className={`px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 ${i ? 'mt-4' : ''}`}
+                >
+                  {SECTION_GROUP_TITLES[g.id]}
+                </h3>
                 <ul className="flex flex-col gap-0.5">
                   {g.sections.map(entry)}
                   {g.id === 'spaces' ? newTeamEntry : null}
@@ -1050,7 +1037,7 @@ function Pane({
           </HeaderIconButton>
         ) : null}
         {section.kind === 'inbox' ? (
-          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[9rem]" />
+          <span ref={setInboxSlot} className="flex max-w-[8.5rem] shrink-0 max-sm:max-w-[13rem]" />
         ) : null}
         {/* This Browser holds only this app's items, and the Library is the app's own. */}
         {section.kind === 'library' || section.kind === 'offline' ? null : (
@@ -1061,7 +1048,7 @@ function Pane({
       </div>
       <div
         data-explorer-pane=""
-        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1 @2xl:px-4"
+        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1 @[38rem]:px-4"
       >
         {/* Keyed by section: a pick slides the new section in (a fade alone under reduced motion). */}
         <div key={sectionKey(section)} className="animate-view-forward">
@@ -1681,6 +1668,18 @@ function TrashSection() {
 
 // The team card, as the page shows it over the team's library: read when the dialog opens. Leaving or deleting the
 // team closes it and goes Home.
+/** After leaving or deleting a team from its Members dialog, the dialog and the team's pane are gone: the keyboard
+ *  lands on the rail's Home, where the panel now is, once the dialog has closed and handed focus back. */
+export function landOnPanelHome(): void {
+  setTimeout(() => {
+    const entries = document.querySelectorAll<HTMLElement>(
+      '[data-explorer-panel] [data-rail-entry]',
+    );
+    const home = [...entries].find((e) => /^Home( \(|$)/.test(e.getAttribute('aria-label') ?? ''));
+    home?.focus({ preventScroll: true });
+  }, 0);
+}
+
 function TeamMembersDialog({
   teamId,
   teamName,
@@ -1707,6 +1706,7 @@ function TeamMembersDialog({
             onGone={() => {
               onClose();
               navigate({ kind: 'home' });
+              landOnPanelHome();
             }}
           />
         ) : load.state === 'loading' ? (

@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Exporting Spaces" description="Take your work with you as an image, a PDF or a portable file, or drop a live view into another site." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Your spaces are not locked inside livehuddle. When you want a copy to drop into a slide deck, a doc, or a chat, you can export a tab as an image or a PDF, or as a file another tool can open. And when you want the space to stay live wherever you put it, you can embed it instead.
+Your spaces are not locked inside livehuddle. When you want a copy to drop into a slide deck, a doc, or a chat, you can export a tab as an image or a PDF, or as a JSON backup or a Markdown outline. And when you want the space to stay live wherever you put it, you can embed it instead.
 
 ## Exporting a tab
 
@@ -22,24 +22,23 @@ Export works on one tab at a time, so switch to the tab you want first. Then eit
 
 To export only part of a tab, select two or more elements and choose **Export** on the toolbar that appears for a multi-selection (editors only; view-only readers export the whole tab).
 
-<Figure caption="The Export dialog offers seven formats: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF.">
+<Figure caption="The Export dialog offers five formats: JSON, Markdown, PNG, SVG and PDF.">
   <ExportMenu />
 </Figure>
 
 Pick a format:
 
-- **PNG**, **SVG** or **PDF** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size, PDF to print. An options screen with a live preview lets you leave out the canvas background pattern (it is on by default), tilt the picture into the isometric view, and include hidden layers when the tab has any, then download.
+- **PNG**, **SVG** or **PDF** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size, PDF to print. An options screen with a live preview lets you leave out the canvas background pattern (it is on by default), then download.
 - **JSON** for a `.livehuddle-tab.json` file that [imports](/help/tabs/import-tabs/) back into livehuddle with everything intact. This is the one to keep as a backup.
-- **Mermaid**, **Markdown** or **Excalidraw** to carry the structure into another tool. Each opens the text first, so you can copy it or download it, and so does JSON.
+- **Markdown** for the tab's text and connections as a readable outline. It opens the text first, so you can copy it or download it, and so does JSON.
 
 A few things to know about image exports:
 
 - Looping element animations **freeze to a static frame**, so a still image always looks clean. An animated background pattern has no still version, so the image shows the plain background colour.
-- Frames are drawn behind their contents, just as they are on the canvas.
 
 [Exporting a Tab](/help/tabs/export-tabs/) covers every format and option in detail.
 
-An image is the right choice when you need a fixed snapshot: a workshop's board for a report, an attachment, or a printout.
+An image is the right choice when you need a fixed snapshot: a meeting's board for a report, an attachment, or a printout.
 
 ## Embedding a live view
 

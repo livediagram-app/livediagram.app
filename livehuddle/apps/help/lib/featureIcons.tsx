@@ -1,32 +1,22 @@
 import {
   lucideAppWindow,
   lucideBrushCleaning,
-  lucideChartPie,
-  lucideCircleDot,
   lucideClock,
   lucideFilePlus,
   lucideFolder,
   lucideFootprints,
-  lucideGitCommitHorizontal,
+  lucideHeadphones,
   lucideLayoutGrid,
-  lucideLightbulb,
   lucideLink,
-  lucideLocateFixed,
   lucideMagnet,
-  lucideMessagesSquare,
   lucidePanelLeft,
   lucidePanelsTopLeft,
-  lucidePencilLine,
-  lucideRoute,
-  lucideScanEye,
   lucideSearch,
-  lucideSpade,
   lucideSquarePlus,
-  lucideStarHalf,
   lucideTimer,
   lucideToggleRight,
   lucideUsers,
-  lucideVote,
+  lucideVideo,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
@@ -103,14 +93,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideUsers} />
     </Glyph>
   ),
-  // The deck: the slide you are on, and the ones behind it.
-  'slide-deck': (
-    <Glyph>
-      <rect x="6" y="7.5" width="15" height="10" rx="1.5" />
-      <path d="M4 9.5v9.5a1.5 1.5 0 001.5 1.5H17" />
-      <path d="M11.5 10.5l4.5 2.5-4.5 2.5z" />
-    </Glyph>
-  ),
   select: (
     <Glyph>
       <path d="M5 3l6 16 2.5-6.5L20 10 5 3z" />
@@ -133,23 +115,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17 6h2a1 1 0 011 1v3a1 1 0 01-1 1h-6a1 1 0 00-1 1v2M11 15h2v6h-2z" />
     </Glyph>
   ),
-  laser: (
-    <Glyph>
-      <circle cx="12" cy="12" r="2.5" />
-      <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
-    </Glyph>
-  ),
-  spotlight: (
-    <Glyph>
-      <Prims prims={lucideLocateFixed} />
-    </Glyph>
-  ),
-  'isometric-mode': (
-    <Glyph>
-      <path d="M12 3l9 5v8l-9 5-9-5V8l9-5z" />
-      <path d="M12 12l9-4M12 12v9M12 12L3 8" />
-    </Glyph>
-  ),
   // Palette → Elements.
   // The element families the Build / Write / Collaborate / Behaviour tabs
   // hold. Each one draws the thing it makes, so the tab reads before the label
@@ -158,22 +123,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 20l1-4 9.5-9.5a2 2 0 012.8 2.8L8 18.8z" />
       <path d="M13 7.5l3.5 3.5" />
-    </Glyph>
-  ),
-  build: (
-    <Glyph>
-      <rect x="3" y="13" width="8" height="7" rx="1" />
-      <rect x="13" y="13" width="8" height="7" rx="1" />
-      <rect x="8" y="4" width="8" height="7" rx="1" />
-    </Glyph>
-  ),
-  // Two bubbles rather than two people: the Collaborate tiles are the things
-  // a group leaves on the canvas, not the people leaving them (the
-  // Collaboration category owns that glyph).
-  collaborate: (
-    <Glyph>
-      <path d="M3 6.5A1.5 1.5 0 014.5 5h9A1.5 1.5 0 0115 6.5v4A1.5 1.5 0 0113.5 12H8l-3 3v-3H4.5A1.5 1.5 0 013 10.5z" />
-      <path d="M18 9h1.5A1.5 1.5 0 0121 10.5v4A1.5 1.5 0 0119.5 16H19v3l-3-3h-3" />
     </Glyph>
   ),
   // A chair in profile: back, seat, two legs. Drawn side-on because a front-on
@@ -201,6 +150,20 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 14.5V3" />
     </Glyph>
   ),
+  // A stand with a sign across its head and rows of rooms: the lobby board.
+  directory: (
+    <Glyph>
+      <rect x="4" y="2" width="16" height="14" rx="2" />
+      <path d="M4 6h16M7.5 9.5h1M11 9.5h5.5M7.5 12.5h1M11 12.5h4M12 16v4M8 21.5h8" />
+    </Glyph>
+  ),
+  // Two doors meeting in the middle under an up and a down arrow: a lift.
+  elevator: (
+    <Glyph>
+      <rect x="3.5" y="7" width="17" height="15" rx="1.5" />
+      <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>
@@ -209,17 +172,28 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
-  lanes: (
+  // A wall screen on its stand, as the Screen's palette tile.
+  screen: (
     <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M3 9.5h18M3 15h18" />
-      <path d="M6.5 4v16" />
+      <rect x="2.5" y="4" width="19" height="13" rx="2" />
+      <path d="M9 20.5h6M12 17v3.5" />
     </Glyph>
   ),
-  'embed-elements': (
+  // A plaque with a status stripe, a name line and a status dot: a Room Sign.
+  'room-sign': (
     <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M10.5 9.5l4.5 2.5-4.5 2.5z" />
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M6.5 6v12M10 10.5h7.5" />
+      <circle cx="11" cy="14" r="1" />
+    </Glyph>
+  ),
+  // The Stage: a platform's top and the front face you see, with a microphone on a stand, as its palette tile.
+  stage: (
+    <Glyph>
+      <path d="M4.5 13.5h15L22 17H2z" />
+      <path d="M2 17v3.5h20V17" />
+      <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
+      <path d="M12 8v5.5" />
     </Glyph>
   ),
   // A pressable pill with the pointer arriving from outside it: every Behaviour
@@ -243,49 +217,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 9l1.3 2.7 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z" />
     </Glyph>
   ),
-  shapes: (
-    <Glyph>
-      <rect x="3" y="4" width="8" height="8" rx="1" />
-      <circle cx="16.5" cy="16" r="4" />
-      <path d="M14 4l5 5M19 4l-5 5" />
-    </Glyph>
-  ),
-  arrows: (
-    <Glyph>
-      <path d="M3 12h15M14 7l5 5-5 5" />
-    </Glyph>
-  ),
   tools: (
     <Glyph>
       <path d="M14.5 5.5a3.5 3.5 0 00-4.8 4.6l-6 6a1.5 1.5 0 002.1 2.1l6-6a3.5 3.5 0 004.6-4.8l-2.3 2.3-2-2 2.4-2.2z" />
-    </Glyph>
-  ),
-  components: (
-    <Glyph>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <path d="M17.5 14v7M14 17.5h7" />
     </Glyph>
   ),
   icons: (
     <Glyph>
       <circle cx="12" cy="12" r="9" />
       <path d="M9.5 10a2.5 2.5 0 015 0c0 1.7-2.5 2-2.5 3.5M12 17h.01" />
-    </Glyph>
-  ),
-  drawing: (
-    <Glyph>
-      <Prims prims={lucidePencilLine} />
-    </Glyph>
-  ),
-  // A chisel tip and a broad swipe. `write` is a pen nib and `drawing` is a
-  // pencil, so the tip shape is what separates all three.
-  highlighter: (
-    <Glyph>
-      <path d="M8 13.5l6.5-8.5a2 2 0 013 2.6L11 16z" />
-      <path d="M8 13.5L6 17l5-1" />
-      <path d="M3.5 20.5h17" />
     </Glyph>
   ),
   'selecting-and-grouping': (
@@ -311,24 +251,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 9h18M9 21V9" />
-    </Glyph>
-  ),
-  // Three people round a speech bubble: a team in a session, someone asking the room.
-  'workshop-mode': (
-    <Glyph>
-      <path d="M8 3h8a1.5 1.5 0 0 1 1.5 1.5v3A1.5 1.5 0 0 1 16 9h-3l-2 2v-2H8A1.5 1.5 0 0 1 6.5 7.5v-3A1.5 1.5 0 0 1 8 3z" />
-      <circle cx="5" cy="15" r="2" />
-      <circle cx="12" cy="14.5" r="2" />
-      <circle cx="19" cy="15" r="2" />
-      <path d="M1.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3M8.5 21c0.6-2 1.8-3.3 3.5-3.3s2.9 1.3 3.5 3.3M15.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3" />
-    </Glyph>
-  ),
-  // A flipchart on its easel with a dashed spotlight ring on its pad: a guided look at Workshop.
-  'workshop-tour': (
-    <Glyph>
-      <rect x="4" y="3" width="16" height="12" rx="1.5" />
-      <path d="M8 15l-2.5 6M16 15l2.5 6M12 15v6" />
-      <rect x="7" y="6" width="10" height="6" rx="1.5" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
   // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
@@ -364,6 +286,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />
       <circle cx="18" cy="6" r="2.5" />
+    </Glyph>
+  ),
+  // Calls: the headphones the call strip shows a listener, and the camera its Camera button shows.
+  'proximity-audio': (
+    <Glyph>
+      <Prims prims={lucideHeadphones} />
+    </Glyph>
+  ),
+  'cameras-and-screen-sharing': (
+    <Glyph>
+      <Prims prims={lucideVideo} />
     </Glyph>
   ),
   links: (
@@ -403,17 +336,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
     </Glyph>
   ),
-  'zen-mode': (
-    <Glyph>
-      <path d="M3 12h4l2 5 4-12 2 7h6" />
-    </Glyph>
-  ),
-  'markdown-import': (
-    <Glyph>
-      <rect x="3" y="6" width="18" height="12" rx="2" />
-      <path d="M6 14V10l2 2 2-2v4M14 10v4M14 14l2-2M14 14l-2-2" />
-    </Glyph>
-  ),
   history: (
     <Glyph>
       <path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8" />
@@ -422,7 +344,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   ),
   // Collaboration guides — the six that finish the Collaboration category. Every
   // one of them had an obvious drawing already spoken for: a clock is on `agendas`
-  // and `share-link-expiry`, dots are `casting-dots`, people-in-a-folder is
+  // and `share-link-expiry`, people-in-a-folder is
   // `search-teams`, a tick with people is `done-checks`. So each takes the next
   // detail down.
   //
@@ -434,24 +356,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 10v3.5l2.5 1.5" />
       <path d="M10 3h4M12 3v3" />
       <path d="M18.5 6.5l1.5-1.5" />
-    </Glyph>
-  ),
-  // A question put to the room.
-  polls: (
-    <Glyph>
-      <path d="M3 6.5A2.5 2.5 0 015.5 4h13A2.5 2.5 0 0121 6.5v7a2.5 2.5 0 01-2.5 2.5H10l-4.5 4v-4H5.5A2.5 2.5 0 013 13.5z" />
-      <path d="M10 8.2a2 2 0 114 0c0 1.4-2 1.6-2 3" />
-      <path d="M12 13.5h.01" />
-    </Glyph>
-  ),
-  // Dots landing ON something — the sub-article `casting-dots` draws the dots
-  // themselves, so the parent draws what they are spent on.
-  voting: (
-    <Glyph>
-      <rect x="3" y="14" width="18" height="6.5" rx="1.5" />
-      <circle cx="7.5" cy="8" r="2.5" fill="currentColor" stroke="none" />
-      <circle cx="14" cy="8" r="2.5" fill="currentColor" stroke="none" />
-      <circle cx="19" cy="5.5" r="2" />
     </Glyph>
   ),
   // An envelope with the invitee on it, which is how a role reaches someone.
@@ -551,108 +455,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21.5 11.5V14h-2.5" />
     </Glyph>
   ),
-  // Collaboration → Voting. Five articles about one feature, so the collisions
-  // here are internal: every one of them could have been "some dots". Each draws
-  // its own subject instead — spending a dot, restricting to a layer, hiding the
-  // count, tracking the room, and what won.
-  //
-  // `casting-dots` deliberately has no enclosing square: dots inside a box is the
-  // die that `pickers` already draws.
-  'casting-dots': (
-    <Glyph>
-      <Prims prims={lucideVote} />
-    </Glyph>
-  ),
-  // The stack, with the dots landing on one sheet of it.
-  'vote-layers': (
-    <Glyph>
-      <path d="M12 3l7.5 4.2-7.5 4.2-7.5-4.2z" />
-      <path d="M4.5 12l7.5 4.2 7.5-4.2" />
-      <path d="M4.5 16.5L12 20.7l7.5-4.2" />
-      <circle cx="9.5" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="13" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  // A struck-through eye: the counts and the cursors are what stay hidden. The
-  // open eye belongs to layer visibility, which is a different question.
-  'vote-privacy': (
-    <Glyph>
-      <path d="M3 12s3.5-5.5 9-5.5 9 5.5 9 5.5-3.5 5.5-9 5.5S3 12 3 12z" />
-      <circle cx="12" cy="12" r="2.5" />
-      <path d="M4 20L20 4" />
-    </Glyph>
-  ),
-  // A panel tracking the room: who has voted, and how far along it is.
-  'vote-panel': (
-    <Glyph>
-      <rect x="3" y="3.5" width="18" height="17" rx="2" />
-      <path d="M3 8h18" />
-      <path d="M6 11.5h7M6 15h5" />
-      <rect x="6" y="17.5" width="12" height="1.5" rx="0.75" />
-      <path d="M6 18.25h5" />
-    </Glyph>
-  ),
-  // A podium: the tallest in the middle, which is what a ranked result looks
-  // like. No axes, so it cannot be read as the bar chart.
-  'vote-results': (
-    <Glyph>
-      <rect x="9" y="5.5" width="6" height="15" rx="1" />
-      <rect x="2.5" y="11" width="6" height="9.5" rx="1" />
-      <rect x="15.5" y="14" width="6" height="6.5" rx="1" />
-      <path d="M11.5 9h1v4" />
-    </Glyph>
-  ),
-  // Palette → Data elements. Charts are the easiest subjects in the whole set —
-  // each has one unmistakable idiom — with one exception: Rating is stars, and a
-  // star reads as a favourite. So Rating draws the SCALE (a row, part filled)
-  // rather than the symbol.
-  // Just the bar, filled part-way. Drawing the ring above the bar — to cover both
-  // halves of "Bars and Rings" — made a circle sitting on a stem, which reads as
-  // a lightbulb and nothing else. One honest half beats two unreadable ones.
-  'progress-elements': (
-    <Glyph>
-      <rect x="2.5" y="8.5" width="19" height="7" rx="3.5" />
-      <rect x="5" y="10.75" width="8" height="2.5" rx="1.25" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  rating: (
-    <Glyph>
-      <Prims prims={lucideStarHalf} />
-    </Glyph>
-  ),
-  'pie-chart': (
-    <Glyph>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 3.5v8.5l7.4 4.2" />
-    </Glyph>
-  ),
-  'bar-and-line-charts': (
-    <Glyph>
-      <path d="M3.5 20.5V4" />
-      <path d="M3.5 20.5H21" />
-      <rect x="6.5" y="13" width="3" height="5" rx="0.5" />
-      <rect x="12" y="10" width="3" height="8" rx="0.5" />
-      <rect x="17.5" y="6.5" width="3" height="11.5" rx="0.5" />
-      <path d="M6 10.5l4-3 4.5 2.5 5-4" />
-    </Glyph>
-  ),
-  // Filled dots beside rules: the key's own shape, and distinct from the
-  // timeline rail below, whose dots sit ON one line rather than down a column.
-  legend: (
-    <Glyph>
-      <circle cx="5.5" cy="6.5" r="2" fill="currentColor" stroke="none" />
-      <circle cx="5.5" cy="12" r="2" fill="currentColor" stroke="none" />
-      <circle cx="5.5" cy="17.5" r="2" fill="currentColor" stroke="none" />
-      <path d="M11 6.5h9.5M11 12h9.5M11 17.5h6" />
-    </Glyph>
-  ),
-  // Horizontal, and posted: the rail is a run of evenly spaced points. The
-  // Explorer's `timeline` is a vertical feed, which is why this one lies flat.
-  'timeline-rail': (
-    <Glyph>
-      <Prims prims={lucideGitCommitHorizontal} />
-    </Glyph>
-  ),
   // Palette → Behaviour elements. Every one of these is, physically, a button
   // someone presses, and the `behaviour` family glyph above already draws that.
   // So none of them draws a button being pressed: each draws what pressing it
@@ -671,90 +473,11 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideToggleRight} />
     </Glyph>
   ),
-  // A play triangle: this is the button that starts something for the room.
-  'session-buttons': (
-    <Glyph>
-      <rect x="2.5" y="7" width="19" height="10" rx="5" />
-      <path d="M10 9.8l4.5 2.2-4.5 2.2z" />
-    </Glyph>
-  ),
-  // The tick, and the two you are still waiting on.
-  'done-checks': (
-    <Glyph>
-      <circle cx="8" cy="8" r="5" />
-      <path d="M5.8 8l1.6 1.6L10.3 6" />
-      <circle cx="6.5" cy="16.5" r="1.5" />
-      <path d="M4.4 20.3a2.3 2.3 0 014.2 0" />
-      <circle cx="13.5" cy="16.5" r="1.5" />
-      <path d="M11.4 20.3a2.3 2.3 0 014.2 0" />
-      <path d="M18.5 16.5h.01M21 16.5h.01" />
-    </Glyph>
-  ),
-  // A pad, and the burst it throws over the canvas.
-  'reaction-pads': (
-    <Glyph>
-      <rect x="4" y="12" width="12" height="8" rx="2" />
-      <path d="M8 16h4" />
-      <path d="M17.5 8.5l3-3M15 6V3M19.5 11.5h3M13.5 8.5l-1.5-1.5" />
-    </Glyph>
-  ),
-  // Content on the left, still under a mosaic on the right. Two bars for the
-  // cover read as a pause button and a left arrow made it a sidebar toggle; a
-  // censor mosaic is the one cover idiom nothing else here uses.
-  'reveal-zones': (
-    <Glyph>
-      <Prims prims={lucideScanEye} />
-    </Glyph>
-  ),
-  // A die: the only thing in the set that says "at random" on its own.
-  pickers: (
-    <Glyph>
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M8.5 8.5h.01M12 12h.01M15.5 15.5h.01" />
-    </Glyph>
-  ),
-  // Palette → Tools elements. Concrete objects, so each draws the object — the
-  // trap here is the neighbours rather than the subjects: a sheet of prose, a
-  // note card and a ticked list are all "a rectangle with lines in it" until the
-  // detail that separates them is the loudest thing in the glyph.
-  tables: (
-    <Glyph>
-      <rect x="3" y="4.5" width="18" height="15" rx="2" />
-      <path d="M3 9.5h18M3 14.5h18" />
-      <path d="M9 4.5v15M15 4.5v15" />
-    </Glyph>
-  ),
-  // A portrait sheet, filled to the edges: the point of a Page is that it holds
-  // more prose than a label can.
-  pages: (
-    <Glyph>
-      <rect x="5" y="2.5" width="14" height="19" rx="2" />
-      <path d="M8 7h8M8 10.5h8M8 14h8M8 17.5h5" />
-    </Glyph>
-  ),
   // Tilted, because a sticky note on a board never is not.
   'sticky-notes': (
     <Glyph>
       <rect x="4" y="5" width="15" height="15" rx="1.5" transform="rotate(-7 11.5 12.5)" />
       <path d="M8 10.5h7M8 14h4.5" />
-    </Glyph>
-  ),
-  'code-blocks': (
-    <Glyph>
-      <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
-      <path d="M9 9.5L6.5 12 9 14.5" />
-      <path d="M15 9.5L17.5 12 15 14.5" />
-      <path d="M12.5 9l-1.5 6" />
-    </Glyph>
-  ),
-  // Ticked rows, with one still to do — a checklist is only interesting part
-  // done.
-  checklists: (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M6 8.5l1.4 1.4 2.6-2.8" />
-      <path d="M6 14.5l1.4 1.4 2.6-2.8" />
-      <path d="M13 9h5M13 15h5" />
     </Glyph>
   ),
   // One ring, with the jump going through it. Two rings is the truer picture of
@@ -770,238 +493,10 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 9.8l2.2 2.2-2.2 2.2" />
     </Glyph>
   ),
-  // Palette → Arrow guides. Four articles about arrows, and the `arrows` family
-  // glyph above is already a plain arrow, so none of these is one. Each draws the
-  // single thing its article is about: the three shapes, the handle you drag, the
-  // obstacle, and the other arrow.
-  'arrow-styles': (
-    <Glyph>
-      <path d="M3 5h15M15.5 3l2.5 2-2.5 2" />
-      <path d="M3 12c4-4 11 4 15 0" />
-      <path d="M15.5 10l2.5 2-2.5 2" />
-      <path d="M3 19h7.5v-4H18" />
-      <path d="M15.5 13l2.5 2-2.5 2" />
-    </Glyph>
-  ),
-  // The handle itself, sitting on the control point — that is the whole article.
-  'curve-and-elbow-handles': (
-    <Glyph>
-      <path d="M3 18C3 8 21 16 21 6" />
-      <rect x="9.5" y="10.5" width="5" height="5" rx="1" fill="currentColor" stroke="none" />
-      <path d="M12 6.5v-3M10.3 5l1.7-1.7L13.7 5" />
-    </Glyph>
-  ),
-  // The obstacle, with the arrow routed AROUND it. An arc over the top read as an
-  // umbrella sheltering the box rather than a path avoiding it, so the route now
-  // turns: up the near side, across above, down the far side.
-  'avoiding-elements': (
-    <Glyph>
-      <Prims prims={lucideRoute} />
-    </Glyph>
-  ),
-  // One arrow ending ON another, with the snap point marked.
-  'arrow-to-arrow': (
-    <Glyph>
-      <path d="M3 19.5h18" />
-      <path d="M12 3v13" />
-      <path d="M9.5 13.5L12 16l2.5-2.5" />
-      <circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  // A node with its slots: a tile at the top left, a title and a meta line beside it, a tag along the bottom.
-  'cards-and-callouts': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2.5" />
-      <rect x="6" y="7" width="4" height="4" rx="1" />
-      <path d="M12.5 8h5.5M12.5 10.5h3.5M6 14.5h12" />
-      <rect x="6" y="16.5" width="5" height="1.5" rx=".75" />
-    </Glyph>
-  ),
-  // A box with a numbered disc riding its top-left corner.
-  'badges-and-step-numbers': (
-    <Glyph>
-      <rect x="6" y="7" width="15" height="12" rx="2" />
-      <circle cx="6" cy="7" r="3.5" fill="currentColor" stroke="none" />
-      <path d="M11 13h7" />
-    </Glyph>
-  ),
-  // Nested dashed zones, the outer one titled in a tab on its edge.
-  boundaries: (
-    <Glyph>
-      <rect x="3" y="6" width="18" height="14" rx="2" strokeDasharray="2.5 2" />
-      <rect x="5" y="3.5" width="7" height="3.5" rx="1" fill="currentColor" stroke="none" />
-      <rect x="9" y="10" width="9" height="7" rx="1.5" strokeDasharray="2 1.8" />
-    </Glyph>
-  ),
-  // A note box with a leader line out to a dot.
-  'pointer-notes': (
-    <Glyph>
-      <rect x="3" y="3.5" width="12" height="8" rx="1.5" />
-      <path d="M8 11.5 17 18.5" />
-      <circle cx="18" cy="19" r="2" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  // A dashed tray holding three evenly spaced boxes.
-  stacks: (
-    <Glyph>
-      <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
-      <rect x="5" y="9" width="4" height="6" rx="1" />
-      <rect x="10" y="9" width="4" height="6" rx="1" />
-      <rect x="15" y="9" width="4" height="6" rx="1" />
-    </Glyph>
-  ),
-  // A legend: a solid and a dashed line sample, each beside its meaning.
-  'diagram-keys': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <path d="M6 9.5h4M13 9.5h5M13 14.5h5" />
-      <path d="M6 14.5h4" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
-  frames: (
-    <Glyph>
-      <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />
-      <rect x="3.5" y="7.5" width="17" height="12.5" rx="1.5" />
-      <rect x="6.5" y="10.5" width="5" height="4" rx="1" />
-      <circle cx="16" cy="15.5" r="2" />
-    </Glyph>
-  ),
-  // A globe in the window, not a document: `embeds` is a document inside somebody
-  // else's page, and this is somebody else's page inside a document.
-  website: (
-    <Glyph>
-      <rect x="2.5" y="4" width="19" height="16" rx="2" />
-      <path d="M2.5 8h19" />
-      <circle cx="12" cy="14" r="4" />
-      <path d="M8 14h8" />
-      <path d="M12 10c-1.8 2.4-1.8 5.6 0 8M12 10c1.8 2.4 1.8 5.6 0 8" />
-    </Glyph>
-  ),
-  // The marks themselves: the traffic light, and the checkbox under it.
-  'shape-markers': (
-    <Glyph>
-      <Prims prims={lucideCircleDot} />
-    </Glyph>
-  ),
-  // The rough sketch, with the snap that cleans it up. One sparkle, not two: the
-  // second sat low enough that its stroke clipped the viewBox edge.
-  'shape-recognition': (
-    <Glyph>
-      <path d="M4.5 6.5l13 .8-1 10.4-11.4-.6z" />
-      <path d="M19 3.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
-    </Glyph>
-  ),
-  // Palette → Collaborate elements. Each draws what its own article describes
-  // rather than a generic "group activity" mark: five of these are boxes with
-  // rows in them, so the distinguishing detail (a gauge, a slot, a clock, a
-  // seal, a row of faces) has to carry the meaning.
-  'comment-panels': (
-    <Glyph>
-      <Prims prims={lucideMessagesSquare} />
-    </Glyph>
-  ),
-  // A clipboard with its one task ticked: an action, owned and done.
-  'action-panels': (
-    <Glyph>
-      <path d="M9 4.5H7a1.5 1.5 0 00-1.5 1.5v13.5A1.5 1.5 0 007 21h10a1.5 1.5 0 001.5-1.5V6A1.5 1.5 0 0017 4.5h-2" />
-      <rect x="9" y="3" width="6" height="3.5" rx="1" />
-      <path d="M9 13.5l2.2 2.2 4-4.5" />
-    </Glyph>
-  ),
-  // Planning poker: a fanned hand with the face card still turned down.
-  'estimate-cards': (
-    <Glyph>
-      <Prims prims={lucideSpade} />
-    </Glyph>
-  ),
-  // A quiz: the question in a disc, with its answers on a ring around it.
-  quizzes: (
-    <Glyph>
-      <circle cx="12" cy="12" r="4.5" />
-      <path d="M10.8 10.9a1.3 1.3 0 1 1 1.8 1.2c-.4.2-.6.5-.6.9M12 14.6h.01" />
-      <path d="M12 2.5h.01M21.5 12h.01M12 21.5h.01M2.5 12h.01" />
-    </Glyph>
-  ),
-  // A fist-of-five gauge: the dial and where the room is pointing.
-  'temperature-checks': (
-    <Glyph>
-      <path d="M3.5 17a8.5 8.5 0 1117 0" />
-      <path d="M12 17l4.5-5" />
-      <path d="M12 17h.01M5.5 12.5h.01M8 9h.01M16 9h.01" />
-    </Glyph>
-  ),
-  // A ballot box: the slot, and a submission going into it unseen.
-  'idea-boxes': (
-    <Glyph>
-      <Prims prims={lucideLightbulb} />
-    </Glyph>
-  ),
-  // A ranked queue: an upvote chevron beside the top row, shorter rows below.
-  'qa-boards': (
-    <Glyph>
-      <path d="M3.5 8.5 6 6l2.5 2.5" />
-      <path d="M6 6v7" />
-      <path d="M11 6.5h9.5M11 12h7M11 17.5h4.5" />
-    </Glyph>
-  ),
-  // The run of a session: its segments, and the time against them.
-  agendas: (
-    <Glyph>
-      <rect x="3" y="4" width="12" height="16" rx="2" />
-      <path d="M6 8h6M6 11.5h6M6 15h3.5" />
-      <circle cx="17.5" cy="16" r="4" />
-      <path d="M17.5 14.2V16l1.3 1" />
-    </Glyph>
-  ),
-  // A record with the decision ticked beside it. The tick is free-standing: put
-  // inside a circle it read as a prohibition sign — the opposite of "decided".
-  'decision-records': (
-    <Glyph>
-      <rect x="3" y="3.5" width="12" height="17" rx="2" />
-      <path d="M6 8h6M6 11.5h6M6 15h3.5" />
-      <path d="M13.5 16.5l2.6 2.6 5-5.6" />
-    </Glyph>
-  ),
-  // Who was in the room: heads and shoulders against the names. Bare circles
-  // beside lines read as a bulleted list, which is not what a roll call is.
-  'roll-calls': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <circle cx="7" cy="7.8" r="1.5" />
-      <path d="M4.9 11.6a2.3 2.3 0 014.2 0" />
-      <circle cx="7" cy="14.8" r="1.5" />
-      <path d="M4.9 18.6a2.3 2.3 0 014.2 0" />
-      <path d="M12 9h6M12 16h6" />
-    </Glyph>
-  ),
-  // The last cards: the slide-deck trio, Locking a Tab, the two Tools
-  // cleanups, and the three User Interface guides. With these the
-  // catalogue is fully drawn, and the category fallback becomes a safety net for
-  // cards not yet written rather than something a reader actually sees.
-  'building-a-deck': (
-    <Glyph>
-      <path d="M3.5 6.5h.01M3.5 12h.01M3.5 17.5h.01" />
-      <rect x="7" y="4.5" width="14" height="4" rx="1" />
-      <rect x="7" y="10" width="14" height="4" rx="1" />
-      <rect x="7" y="15.5" width="14" height="4" rx="1" />
-    </Glyph>
-  ),
-  // Corner brackets: the deck taken full screen.
-  presenting: (
-    <Glyph>
-      <rect x="4.5" y="6.5" width="15" height="11" rx="1.5" />
-      <path d="M2.5 5.5v-3h3M21.5 5.5v-3h-3M2.5 18.5v3h3M21.5 18.5v3h-3" />
-    </Glyph>
-  ),
-  // Back, forward, and where you are in the run.
-  'presenter-controls': (
-    <Glyph>
-      <rect x="2.5" y="8" width="19" height="8" rx="4" />
-      <path d="M9 10.5L6.5 12 9 13.5z" />
-      <path d="M15 10.5L17.5 12 15 13.5z" />
-      <path d="M11.3 12h.01M13.2 12h.01" />
-    </Glyph>
-  ),
+  // The last cards: Locking a Tab, the two Tools cleanups, and the three
+  // User Interface guides. With these the catalogue is fully drawn, and the
+  // category fallback becomes a safety net for cards not yet written rather than
+  // something a reader actually sees.
   // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
   'side-by-side': (
     <Glyph>
@@ -1022,7 +517,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
-  // bars on a baseline it was a bar chart — which is `vote-results` and
+  // bars on a baseline it was a bar chart, which is
   // `bar-and-line-charts` — and drawn as a guide line with two boxes it was
   // `alignment-guides`. The grid of dots is what is left, and it is the right
   // subject anyway: this is the action that snaps to it.
@@ -1034,16 +529,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4 20h.01M9 20h.01M14.5 20h.01M20 20h.01" />
       <rect x="8.5" y="8.5" width="7" height="7" rx="1" />
       <path d="M6.2 6.2l1.6 1.6M17.8 17.8l-1.6-1.6" />
-    </Glyph>
-  ),
-  // A tidied flowchart: boxes and arrows, which is what the graph becomes.
-  // `multicolour-themes` uses circles for its nodes.
-  'auto-layout': (
-    <Glyph>
-      <rect x="8.5" y="3" width="7" height="4.5" rx="1" />
-      <rect x="2.5" y="16.5" width="7" height="4.5" rx="1" />
-      <rect x="14.5" y="16.5" width="7" height="4.5" rx="1" />
-      <path d="M12 7.5v3.5M6 16.5V11h12v5.5" />
     </Glyph>
   ),
   about: (
@@ -1069,13 +554,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="7.5" cy="8" r="1.6" fill="currentColor" stroke="none" />
       <rect x="3" y="14" width="18" height="6" rx="3" />
       <circle cx="16.5" cy="17" r="1.6" fill="currentColor" stroke="none" />
-    </Glyph>
-  ),
-  // A lightning bolt over a bare bar: faster defaults, fewer words.
-  'power-user-mode': (
-    <Glyph>
-      <path d="M13 2.5 6.5 12h5l-1 7.5L17 10h-5z" />
-      <path d="M3 21.5h18" />
     </Glyph>
   ),
   // Canvas sub-article guides — the ten that finish the Canvas category. Once a
@@ -1170,25 +648,9 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideTimer} />
     </Glyph>
   ),
-  'data-elements': (
-    <Glyph>
-      <Prims prims={lucideChartPie} />
-    </Glyph>
-  ),
-  'style-presets': (
-    <Glyph>
-      <path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 16l-5 2.7 1-5.5-4-3.9 5.5-.8L12 3z" />
-    </Glyph>
-  ),
   'layout-cleanup': (
     <Glyph>
       <Prims prims={lucideLayoutGrid} />
-    </Glyph>
-  ),
-  annotations: (
-    <Glyph>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v4M12 16h.01" />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.
@@ -1197,21 +659,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="3.5" width="12" height="12" rx="2" />
       <rect x="9" y="8.5" width="12" height="12" rx="2" />
       <path d="M9 12.5h6M9 15.5h6" />
-    </Glyph>
-  ),
-  // A plus appearing beside an element, which is the gesture itself.
-  'quick-add-on-hover': (
-    <Glyph>
-      <rect x="3" y="7" width="10" height="10" rx="1.5" />
-      <circle cx="18" cy="6" r="3.5" />
-      <path d="M18 4.5v3M16.5 6h3" />
-    </Glyph>
-  ),
-  'auto-attach-arrows': (
-    <Glyph>
-      <rect x="3" y="9" width="6" height="6" rx="1" />
-      <rect x="15" y="9" width="6" height="6" rx="1" />
-      <path d="M9 12h6M13 10l2 2-2 2" />
     </Glyph>
   ),
   'alignment-guides': (
@@ -1230,10 +677,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5.5 7.5h1.5M5.5 9.5h1.5" />
     </Glyph>
   ),
-  // Canvas guides. The four layer entries are deliberately NOT four variations
-  // on a stack of sheets: three of them would be indistinguishable at 24px, so
-  // each draws the thing its article is about instead — the stack itself, then
-  // an eye, a merge, and a reorder.
   'follow-along': (
     <Glyph>
       <path d="M8 4l6.5 15 1.4-6 6-1.6z" />
@@ -1246,36 +689,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8h5M6 11h3" />
       <rect x="11" y="12" width="10" height="8" rx="1.5" />
       <path d="M14 15.5h4M14 18h2.5" />
-    </Glyph>
-  ),
-  layers: (
-    <Glyph>
-      <path d="M12 3l8 4.5-8 4.5-8-4.5z" />
-      <path d="M4 12.5l8 4.5 8-4.5" />
-      <path d="M4 17l8 4.5 8-4.5" />
-    </Glyph>
-  ),
-  'layers-visibility-and-locking': (
-    <Glyph>
-      <path d="M2.5 11.5S5.5 6 11 6s8.5 5.5 8.5 5.5S16.5 17 11 17s-8.5-5.5-8.5-5.5z" />
-      <circle cx="11" cy="11.5" r="2.5" />
-      <rect x="16" y="16.5" width="6" height="5" rx="1" />
-      <path d="M17.5 16.5v-1.2a1.5 1.5 0 013 0v1.2" />
-    </Glyph>
-  ),
-  'layers-organising': (
-    <Glyph>
-      <rect x="4" y="3.5" width="11" height="6" rx="1.5" />
-      <rect x="9" y="14.5" width="11" height="6" rx="1.5" />
-      <path d="M12 10.5v3M10.5 12l1.5 1.5L13.5 12" />
-    </Glyph>
-  ),
-  'layer-order': (
-    <Glyph>
-      <rect x="4" y="4" width="12" height="6" rx="1.5" />
-      <rect x="4" y="14" width="12" height="6" rx="1.5" />
-      <path d="M20 8V3.5M18 5.5l2-2 2 2" />
-      <path d="M20 16v4.5M18 18.5l2 2 2-2" />
     </Glyph>
   ),
   size: (
@@ -1325,17 +738,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 4H5.5a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 5.5 20H12" />
       <path d="M11 3.6q5 -.6 9.2 .6M19.6 3.4q.8 8.4 -.2 17M20.4 19.6q-4.4 .8 -9.2 .2" />
       <path d="M12.4 4.6q4 -.2 7 .4M18.8 5.2q.4 7 -.2 13.6" opacity="0.6" />
-    </Glyph>
-  ),
-  // A selected box with a slim panel of swatches beside it: the panel is what
-  // the article is about, so it carries the dots and the selection stays plain.
-  'quick-style-panel': (
-    <Glyph>
-      <rect x="2.5" y="8" width="9" height="8" rx="1.5" strokeDasharray="2 1.5" />
-      <rect x="14.5" y="3.5" width="7" height="17" rx="1.5" />
-      <circle cx="18" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
-      <circle cx="18" cy="11.5" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M16.5 15.5h3M16.5 17.5h3" />
     </Glyph>
   ),
   locking: (
@@ -1479,28 +881,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A stack of cards with a shape on the top one: a set of shapes that is yours.
-  'shape-libraries': (
-    <Glyph>
-      <path d="M6 5h12a1.5 1.5 0 0 1 1.5 1.5V17" />
-      <rect x="3.5" y="8" width="13" height="12" rx="1.5" />
-      <circle cx="10" cy="14" r="3" />
-    </Glyph>
-  ),
   // A diagram's box and decision, joined by a bent connector, arriving as a document.
-  'drawio-import': (
-    <Glyph>
-      <rect x="3" y="4" width="8" height="5" rx="1" />
-      <path d="M7 9v6h4" />
-      <path d="M16.5 11.5l3.5 3.5-3.5 3.5-3.5-3.5z" />
-    </Glyph>
-  ),
   // A board's ink arriving in a tab.
-  'microsoft-whiteboard-import': (
-    <Glyph>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M6.5 14c1.5-3 3-3 4 0s2.5 3 4 0 2.5-2 3 0" />
-    </Glyph>
-  ),
   'export-tabs': (
     <Glyph>
       <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -1605,7 +987,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
  *  you at a glance whether a card is about the palette or about sharing.
  *
  *  Keyed on the FIRST segment of `categorySlug`, so a nested landing
- *  (`palette/tools/data-elements`) inherits its top-level category's glyph
+ *  (`palette/tools/images`) inherits its top-level category's glyph
  *  rather than needing its own. Adding a bespoke entry to FEATURE_ICONS still
  *  wins — this is the floor, not a replacement for drawing the specific thing.
  */
@@ -1616,7 +998,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideAppWindow} />
     </Glyph>
   ),
-  // A frame with shapes drawn inside it.
+  // A canvas with shapes drawn on it.
   canvas: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

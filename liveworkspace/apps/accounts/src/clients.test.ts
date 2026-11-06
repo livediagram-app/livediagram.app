@@ -89,6 +89,25 @@ describe('registering a client', () => {
     expect(made).toEqual([]);
   });
 
+  it('takes the client back and says to migrate when the database does not take the app yet', async () => {
+    // oauth_client_app as it was before 0018_livehuddle.sql: its CHECK has no livehuddle.app.
+    const { db, sql } = testD1();
+    sql.exec(`DROP TABLE oauth_client_app;
+      CREATE TABLE oauth_client_app (
+        clientId TEXT NOT NULL PRIMARY KEY REFERENCES oauthClient ("clientId") ON DELETE CASCADE,
+        app TEXT NOT NULL CHECK (app IN ('livediagram.app', 'liveplanner.app', 'livedocuments.app', 'livedesign.app'))
+      ) WITHOUT ROWID;`);
+    env = { ...env, AUTH_DB: db };
+    const response = await register({ ...valid, name: 'livehuddle-dev', app: 'livehuddle.app' });
+    expect(response.status).toBe(500);
+    const body = (await response.json()) as { error: string; message: string };
+    expect(body.error).toBe('client_app_refused');
+    expect(body.message).toContain('livehuddle.app');
+    expect(body.message).toContain('db:migrate:local');
+    expect(made).toHaveLength(1);
+    expect(sql.prepare('SELECT count(*) AS n FROM oauthClient').get()).toEqual({ n: 0 });
+  });
+
   it('needs the admin token', async () => {
     expect((await register(valid, 'wrong')).status).toBe(401);
   });

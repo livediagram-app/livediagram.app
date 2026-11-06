@@ -20,6 +20,7 @@ import {
   pagesOf,
   layOutPages,
   pageKindOf,
+  tabArrangesPages,
   withContentOnAPage,
   type Element,
   type LaidOutPage,
@@ -41,11 +42,17 @@ import type { PageLayoutId } from '@livedocuments/templates';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
-import { setCurrentPageKind } from '@/lib/current-page-kind';
+import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
 import { textHasCaretIn, usePageSnap } from './usePageSnap';
 import { getActiveArticle } from '@/lib/article/article-editor-store';
-import { cardInFrontOf, cardStageOf, type CardStack, type CardStage } from '@/lib/flashcard-stack';
+import {
+  cardInFrontOf,
+  cardStageOf,
+  stacksPages,
+  type CardStack,
+  type CardStage,
+} from '@/lib/flashcard-stack';
 import { flipCard, pictureCard, type CardPicture } from '@/lib/flashcard-flip';
 
 export type { PageEdits };
@@ -87,11 +94,14 @@ export type PagesModeView = {
   deck?: PageDeckControls;
   // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
   letterbox?: boolean;
-  // A tab of flashcards: the card in front, for the world layers to draw alone (flashcardStage,
-  // docs/specs/007-editor/flashcards.md "The stack").
+  // A stack (a tab of flashcards or infographic pages): the page in front, for the world layers to draw alone
+  // (flashcardStage, docs/specs/007-editor/flashcards.md "The stack", pages-mode.md "Stacked infographics").
   cardStage?: CardStage;
   // Set by flashcardStage on the view the world layers draw: the card in front's place in the stack.
   cardStack?: CardStack;
+  // How the tab's pages stand, where they may stand either way (pages-mode.md "Stacked or side by side": every kind
+  // but an article): `stacked` as shown; `toggle` (an Editor's, on a tab not locked) switches it for the tab.
+  arrangement?: { stacked: boolean; toggle?: () => void };
 };
 
 export type PageDeckControls = {
@@ -101,8 +111,12 @@ export type PageDeckControls = {
   ) => { id: string; hidden: boolean; noteCards: readonly NoteCard[] } | undefined;
   add: (pageId: string) => void;
   toggleHidden: (slideId: string) => void;
-  // The slide's speaker notes as note cards, as the Slide Deck panel writes them (none removes them).
+  // The slide's speaker notes as note cards, as the title bar's Notes writes them (none removes them).
   setNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
+  // Saves the cards' waiting deck now, as the writing leaves the screen (speaker-note-cards.md "Saving").
+  flushNotes: () => void;
+  // Presents from this slide (Present From Here, docs/specs/007-editor/pages-mode.md "Slides").
+  present: (slideId: string) => void;
 };
 
 export function usePagesMode(deps: {
@@ -117,9 +131,6 @@ export function usePagesMode(deps: {
   getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
-  // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
-  // open) another.
-  framePageRef?: RefObject<((pageId: string) => void) | null>;
   // Given the landing framing, so the fit on landing
   // on a tab (useTabEntryEffects) frames the page you were last on (else the first), not the
   // whole row of pages.
@@ -179,8 +190,9 @@ export function usePagesMode(deps: {
   const frame = (page?: LaidOutPage, read = false, glides = false, lands = false) => {
     const m = measure();
     if (!m) return;
-    // In a stack of flashcards the view stays where it is and the card in front changes, by a flip.
-    const flips = page?.kind === 'flashcard';
+    // In a stack (flashcards, infographic pages) the page in front changes, by a flip, rather than the view gliding
+    // along the row.
+    const flips = !!page && stacksPages(pages, activeTab.pageArrangement);
     if (flips) toCard(page, !lands);
     const { zoom, offset } = frameFor(m, page, read);
     glide.current?.();
@@ -216,7 +228,7 @@ export function usePagesMode(deps: {
   // front to the card before it.
   const frontAt = useRef(0);
   const wanted = wantedCard?.tabId === tabId ? wantedCard.id : null;
-  const cardId = cardInFrontOf(pages, wanted, frontAt.current);
+  const cardId = cardInFrontOf(pages, wanted, frontAt.current, activeTab.pageArrangement);
   // The card standing in for one gone becomes the one asked for (set while rendering, as React derives
   // state from a change in its inputs), so the next render keeps it rather than stepping back again.
   if (wanted && cardId && cardId !== wanted) setWantedCard({ tabId, id: cardId });
@@ -225,6 +237,27 @@ export function usePagesMode(deps: {
     if (at >= 0) frontAt.current = at;
   }, [pages, cardId]);
   const cardStage = useMemo(() => cardStageOf(pages, cardId), [pages, cardId]);
+  // A tab that comes to stand as a stack however it does (Stack Pages, its undo or redo, a peer's switch) brings the page
+  // in view to the front, so the view, still on that page's place in the row, never rests on an empty canvas; one that
+  // goes back to the row is on the page that was in front (pages-mode.md "Stacked or side by side").
+  const stackedNow = !!cardStage;
+  const stackedBefore = useRef({ tabId, stacked: stackedNow });
+  useLayoutEffect(() => {
+    const before = stackedBefore.current;
+    stackedBefore.current = { tabId, stacked: stackedNow };
+    if (before.tabId !== tabId || before.stacked === stackedNow) return;
+    if (!stackedNow) {
+      // Back in the row, the page that was in front is the page someone is on (the arrow keys go on from it).
+      const front = pages[frontAt.current];
+      if (front) setCurrentPageKind(pageKindOf(front), front.id);
+      return;
+    }
+    const here = pageIdInView();
+    if (here && here !== cardId && pages.some((p) => p.id === here))
+      setWantedCard({ tabId, id: here });
+    // Once per change of how the tab stands.
+    // oxlint-disable-next-line react/exhaustive-deps
+  }, [stackedNow, tabId]);
   // The card that was in front, pictured as it went, flipped away once its successor is drawn.
   const flipFrom = useRef<{ picture: CardPicture | null; forward: boolean } | null>(null);
   const toCard = (page: LaidOutPage, flips: boolean) => {
@@ -360,15 +393,6 @@ export function usePagesMode(deps: {
     return () => cancelAnimationFrame(raf);
   }, [landed]);
 
-  const { framePageRef } = deps;
-  useEffect(() => {
-    if (!framePageRef) return;
-    framePageRef.current = setGoTo;
-    return () => {
-      framePageRef.current = null;
-    };
-  }, [framePageRef]);
-
   const focusPage = (pageId: string) => {
     const page = pages.find((p) => p.id === pageId);
     // Gone to: the page someone is on now (Select All's reach, the palette's page).
@@ -394,20 +418,36 @@ export function usePagesMode(deps: {
   const theme = getTheme(activeTab.theme);
   const themeBackgrounds = themeBackgroundPresets(theme);
   const tabFont = activeTab.font;
-  const fitPageInView = () => {
+  // The page whose place holds the middle of the view (beside the docked Contents), read from the view itself.
+  const pageIdInView = () => {
     const canvas = deps.canvasMainRef.current;
-    if (!canvas) return;
-    const id = pageInView(
+    if (!canvas) return undefined;
+    return pageInView(
       pages,
       deps.getViewport(),
       { width: canvas.offsetWidth, height: canvas.offsetHeight },
       sideChromeInsets(canvas),
     );
+  };
+  const fitPageInView = () => {
+    if (!deps.canvasMainRef.current) return;
+    const id = pageIdInView();
     frame(
       pages.find((p) => p.id === id),
       false,
       true,
     );
+  };
+  // Stacked or side by side, for the whole tab (pages-mode.md "Stacked or side by side"): one edit, so one undo puts it
+  // back, and it syncs as any tab setting does. The page in view stays the page in view: the page in front stays where
+  // the row has it, and a stack that appears brings the page in view to the front (the layout effect above).
+  const toggleArrangement = () => {
+    const stack = !cardStage;
+    commitTabs((ts) =>
+      ts.map((t) => (t.id === tabId ? { ...t, pageArrangement: stack ? 'stack' : 'row' } : t)),
+    );
+    track('Tab', 'Changed', stack ? 'PagesStacked' : 'PagesSideBySide');
+    debugLog('[page] arrangement', { tabId, stack });
   };
   const shared = {
     pages,
@@ -422,6 +462,14 @@ export function usePagesMode(deps: {
     layoutPreview,
     setLayoutPreview,
     ...(cardStage ? { cardStage } : {}),
+    ...(tabArrangesPages(pages)
+      ? {
+          arrangement: {
+            stacked: !!cardStage,
+            ...(canEdit && activeTab.locked !== true ? { toggle: toggleArrangement } : {}),
+          },
+        }
+      : {}),
   };
   if (!canEdit || activeTab.locked === true) return shared;
   return {
@@ -440,6 +488,8 @@ export function usePagesMode(deps: {
       mayEdit,
       toastInfo: deps.toastInfo,
       theme,
+      // A new page goes right after the page someone is on (pages-mode.md "Adding a page").
+      currentPage: () => cardId ?? currentPageIdNow(),
     }),
   };
 }

@@ -1,7 +1,7 @@
 // Take Offline, Sync and Delete in the Explorer on an app's own address: offered only where the app's editor runs them
 // (the registry's offlineConversions), only on the app's own items the person edits and holds themselves, and Sync
 // only for a person signed in; Delete for anyone, once the Explorer has asked. Each hands over to the item's own
-// address in the editor.
+// address in the editor; Delete runs in place on the page, handing over only where it can't reach the record.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
 import { APP_NAMES } from '@liveworkspace/sites';
@@ -59,21 +59,33 @@ describe('A request that reaches This Browser', () => {
 });
 
 describe('Delete', () => {
-  it('notes in this tab that the Explorer asked, then hands over to the item in the editor', () => {
+  const sessionStore = () => {
     const kept = new Map<string, string>();
-    const session = {
+    return {
       getItem: (k: string) => kept.get(k) ?? null,
       setItem: (k: string, v: string) => void kept.set(k, v),
       removeItem: (k: string) => void kept.delete(k),
     } as unknown as Storage;
+  };
+
+  it('deletes in place: the record goes and nothing navigates', async () => {
+    const assign = vi.fn();
+    const removeRecord = vi.fn(async () => 'removed' as const);
+    await offlineRemove('livedocuments', assign, removeRecord)!({ id: 'd 1' } as never);
+    expect(removeRecord).toHaveBeenCalledWith('livedocuments', 'd 1');
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the hand-over where the record is out of reach: notes the ask, then opens the item', async () => {
+    const session = sessionStore();
     const assign = vi.fn();
     vi.stubGlobal('window', { location: { assign }, sessionStorage: session });
-    offlineRemove('liveplanner')!({ id: 'p 1' } as never);
+    const unreachable = async () => 'unreachable' as const;
+    await offlineRemove('liveplanner', undefined, unreachable)!({ id: 'p 1' } as never);
     expect(assign).toHaveBeenCalledWith('/project/p%201?convert=delete&item=p+1');
     expect(takeThisBrowserDeleteConfirmed('p 1', session)).toBe(true);
-    // Its own way out, for a caller that hands one in.
     const to = vi.fn();
-    offlineRemove('livedesign', to)!({ id: 'x' } as never);
+    await offlineRemove('livedesign', to, unreachable)!({ id: 'x' } as never);
     expect(to).toHaveBeenCalledWith('/design/x?convert=delete&item=x');
   });
 

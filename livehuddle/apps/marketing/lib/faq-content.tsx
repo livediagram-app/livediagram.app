@@ -5,7 +5,7 @@ import {
   lucideShapes,
   lucideShare2,
   lucideShieldCheck,
-  lucideSparkles,
+  lucideCode,
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 39;
+export const TEMPLATE_COUNT = 19;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 12;
+export const TEMPLATE_CATEGORY_COUNT = 5;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -34,7 +34,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livehuddle?',
-        a: 'A free, real-time Space for meetings and workshops. Open a Space and you walk in as your own little character, gather the team round the table, and run the session on the board with a timer, dot votes, polls and quizzes built in. Share a link and everyone is in the same Space, live, with no account needed.',
+        a: 'A free, real-time Space to meet your team in. Open a Space and you walk in as your own little character, find the team in a virtual office, a team pod or an all-hands hall, and gather round the table, with sticky notes on the walls and a Timer or a Stopwatch in the room when the meeting needs one. Share a link and everyone is in the same Space, live, with no account needed.',
       },
       {
         q: 'Do I need an account to use livehuddle?',
@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I open my first Space?',
-        a: `Press Open a Space and pick a Space to walk into (a Team Pod, a Virtual Office, a Coworking Space or an All-Hands Hall) or a session to run, from a retro to a town hall. ${TEMPLATE_COUNT} templates are ready, or start blank. The Space opens with you on your feet, and a short tour offers to show you round.`,
+        a: `Press Open a Space and pick a Space to walk into (a Team Pod, a Virtual Office, a Rooftop Bar or a Garden Retreat, among ten), or start from a blank Space. The Space opens with you on your feet, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -142,43 +142,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I run with it?',
-        a: 'Stand-ups and team check-ins in a Team Pod, retrospectives in five formats, Lean Coffee and town hall Q&A, brainstorms and affinity maps, Crazy Eights, planning poker, meeting agendas, quizzes, icebreakers and party games, and a whole virtual office to walk round between them.',
+        a: 'Stand-ups and team check-ins in a Team Pod, all-hands in a hall with a stage, quiet work side by side in a Coworking Space, and a whole virtual office to walk round between them, with a shared timer when the meeting needs one.',
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-five themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates (a blank Space and ${TEMPLATE_COUNT - 1} Spaces to walk round), and twenty-five themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Do I need to switch modes?',
-        a: 'No. Every board in livehuddle is a workshop board: stickies, writing, pens, shapes, icons, media, charts and every session tool sit on one palette, and the Session strip at the foot holds the timer, votes and polls. Pick Avatar on the toolbar to walk, and any other tool to work on the board.',
+        a: 'No. Every tab in livehuddle is a Space: the rooms and furniture, sticky notes, text, stickers and the Timer and Stopwatch sit on one palette. Pick Avatar on the toolbar to walk, and any other tool to put something on the walls.',
       },
       {
         q: 'Can I organise a big space?',
-        a: 'Yes. A space holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your spaces live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a space onto a folder to file it.',
-      },
-      {
-        q: 'Can I add pictures?',
-        a: (
-          <>
-            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
-            openly licensed photo or illustration without leaving the editor. See{' '}
-            <a href="/help/palette/tools/images/">images</a>.
-          </>
-        ),
-        aText:
-          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
-      },
-      {
-        q: 'Can I show data, like a chart?',
-        a: (
-          <>
-            Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline. See{' '}
-            <a href="/help/palette/tools/data-elements/">data elements</a>.
-          </>
-        ),
-        aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
+        a: 'Yes. A space holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Your spaces live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a space onto a folder to file it.',
       },
       {
         q: 'Can I use the same tab in two spaces?',
@@ -193,21 +169,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Add to Another Space puts the tab you are on into another of your spaces. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Space.',
       },
       {
-        q: 'Can I use it as a whiteboard?',
-        a: (
-          <>
-            Yes. Every board is a whiteboard: the palette’s Draw category holds a pencil, a
-            highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted
-            or grid backdrop in light or dark. See{' '}
-            <a href="/help/palette/tools/drawing/">Drawing</a>.
-          </>
-        ),
-        aText:
-          'Yes. Every board is a whiteboard: the palette\u2019s Draw category holds a pencil, a highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted or grid backdrop in light or dark. See Drawing.',
-      },
-      {
         q: 'Can I walk the room through something?',
-        a: 'Yes. Switch on Spotlight to dim the board around your cursor, or the laser to leave a glowing trail on everyone\u2019s screen. A Bring Focus element offers everyone a jump to the thing you mean, and anyone can press Follow beside you to see what you see.',
+        a: 'Yes. Walk your character up to the thing you are talking about, and everyone sees it get there. A Bring Focus element offers everyone a jump to the thing you mean, and anyone can press Follow beside you to see what you see.',
       },
       {
         q: 'Can I undo a mistake?',
@@ -227,7 +190,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I work with my team in real time?',
-        a: 'Yes, that is the point. Share a link and teammates join the same Space in real time, with live cursors, walking characters, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new space starts in your browser, and the first Share syncs it in one step.',
+        a: 'Yes, that is the point. Share a link and teammates join the same Space in real time, with live cursors, walking characters, selection rings, presence on each tab, and comments. If you have not signed in, a new space starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -272,12 +235,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
-            unlocks it, with a padlock beside its name. You can also lock single elements or whole
-            layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
+            unlocks it, with a padlock beside its name. You can also lock single elements. See{' '}
+            <a href="/help/tabs/locking-tabs/">locking a tab</a>.
           </>
         ),
         aText:
-          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements. See locking a tab.',
       },
       {
         q: 'How do I keep up with what changed?',
@@ -293,19 +256,22 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Your Inbox gathers the actions and comment threads waiting on you across every space, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
-        q: 'Is it good for running workshops and retros?',
+        q: 'Is it good for stand-ups, all-hands and a virtual office?',
         a: (
           <>
-            It is what livehuddle is for. Every board carries a timer, dot votes and polls, and
-            templates start a retrospective, Lean Coffee or town hall Q&amp;A in one click. Whoever
-            holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate
-            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
-            it knows, and an idea box collects anonymous ideas. See{' '}
+            It is what livehuddle is for. Meet for the stand-up in a Team Pod, gather the company in
+            the All-Hands Hall, and keep a Virtual Office open to walk round in between. Every room
+            can hold a Timer or a Stopwatch to keep a meeting short, and whoever holds the
+            facilitator baton runs the clock. See{' '}
             <a href="/help/collaboration/session-tools/">session tools</a>.
           </>
         ),
         aText:
-          'It is what livehuddle is for. Every board carries a timer, dot votes and polls, and templates start a retrospective, Lean Coffee or town hall Q&A in one click. Whoever holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See session tools.',
+          'It is what livehuddle is for. Meet for the stand-up in a Team Pod, gather the company in the All-Hands Hall, and keep a Virtual Office open to walk round in between. Every room can hold a Timer or a Stopwatch to keep a meeting short, and whoever holds the facilitator baton runs the clock. See session tools.',
+      },
+      {
+        q: 'Can we talk by voice or video in a Space?',
+        a: 'Not yet. Voice and video calls between the people near each other are being built, but they are not switched on at livehuddle.app, so for now run your usual call alongside the Space. Speech bubbles, statuses, comments and reactions all work live in the Space itself.',
       },
     ],
   },
@@ -317,7 +283,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a space you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a space you own, create a participant link (talk, add stickies, write and comment, without reshaping the board; the default) or an editor link (full edit access). Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
         q: 'Can I password-protect a space?',
@@ -328,16 +294,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. When a space has more than one tab, the Share dialog lets a link open a single tab,
-            as an editor, participant or view-only link, and the rest of the space stays private.
-            See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+            as an editor or participant link, and the rest of the space stays private. See{' '}
+            <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
           </>
         ),
         aText:
-          'Yes. When a space has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the space stays private. See sharing one tab.',
+          'Yes. When a space has more than one tab, the Share dialog lets a link open a single tab, as an editor or participant link, and the rest of the space stays private. See sharing one tab.',
       },
       {
         q: 'Can I embed a Space in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable space, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the Space as it is now.',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable space, and a participant link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the Space as it is now.',
       },
       {
         q: 'Can I show a board where iframes are blocked, like a README?',
@@ -367,24 +333,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   },
   {
     id: 'ai-and-integrations',
-    title: 'AI, API and MCP',
-    blurb: 'Connect your assistant and your scripts.',
-    icon: lucideGlyph(lucideSparkles, ICON),
+    title: 'API and Integrations',
+    blurb: 'Read and change your spaces from your own scripts.',
+    icon: lucideGlyph(lucideCode, ICON),
     items: [
-      {
-        q: 'Can I connect my own AI assistant, like Claude?',
-        a: (
-          <>
-            Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find, read, create and edit the spaces in
-            your account. Its changes appear live for anyone on the tab, outlined so you can see
-            them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
-            ChatGPT, Cursor and more.
-          </>
-        ),
-        aText:
-          'Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the spaces in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
-      },
       {
         q: 'Is there an API?',
         a: (
@@ -397,10 +349,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         aText:
           'Yes. Once you sign in, create an API token and call the REST API to read and manage your spaces from scripts, CI or anything that can send a header. See the API overview.',
       },
-      {
-        q: 'Is there a command-line tool?',
-        a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export spaces from your terminal, which makes it handy for scripts and coding agents.',
-      },
     ],
   },
   {
@@ -411,11 +359,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a tab as PNG, SVG, PDF or a portable JSON file you can import back. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export a tab as PNG, SVG, PDF or a portable JSON file you can import back.',
       },
       {
-        q: 'Can I move my boards over from another tool?',
-        a: 'Not directly yet: there is no importer for other whiteboards. Export a board from the old tool as a PNG and add it to a tab as an image, or start the next session from one of the templates. A livehuddle JSON export imports back in full.',
+        q: 'Can I bring my office over from another tool?',
+        a: 'Not directly: there is no importer for other virtual offices or boards. Start from the Virtual Office or Coworking Space template and arrange the office pieces to match. A livehuddle JSON export imports back in full.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',

@@ -101,6 +101,24 @@ describe('useCanvasPinchZoom view', () => {
   });
 });
 
+// docs/specs/007-editor/flashcards.md "Getting around a stack": a stack has no row to pan along.
+describe('useCanvasPinchZoom on a stack', () => {
+  it('pans up and down only, a sideways or Shift wheel moving nothing sideways; Ctrl still zooms', () => {
+    viewport = createViewportStore(1);
+    renderHook(() =>
+      useCanvasPinchZoom({ canvasMainRef: { current: canvas }, viewport, stacked: () => true }),
+    );
+    wheel({ deltaX: 30, deltaY: 10 });
+    wheel({ deltaX: 50, deltaY: 0, shiftKey: true });
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    expect(viewport.get().offset).toEqual({ x: 0, y: -10 });
+    wheel({ deltaY: -40, ctrlKey: true, clientX: 0, clientY: 0 });
+    expect(viewport.get().zoom).toBeGreaterThan(1);
+  });
+});
+
 // An element that scrolls sideways itself (data-own-wheel-x) keeps a sideways or Shift wheel.
 describe('useCanvasPinchZoom and a sideways scroller', () => {
   it('leaves a sideways or Shift wheel to it, and still pans on a vertical one', () => {

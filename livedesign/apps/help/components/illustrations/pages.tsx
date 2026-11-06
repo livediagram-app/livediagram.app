@@ -1,48 +1,22 @@
 // Illustrations for the Pages articles on Working with Pages and Exporting Pages
 // (docs/specs/018-help/help-app.md). Each draws the real surface with its real labels: the pages in
-// a row with their labels, title-bar buttons, cogs and add buttons (CanvasPages.tsx,
-// AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the page panel (PagePanel.tsx,
+// a row with their labels, title bar cards with their cogs (CanvasPages.tsx, PageTitleBar.tsx), add buttons
+// (AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the page panel (PagePanel.tsx,
 // page-panel-sections.tsx) and the export page picker (ExportPagePicker.tsx). Composed from the
 // shared primitives.
 
 import type { ReactNode } from 'react';
 import { Scene, Label, TextBar, Tabs } from '@liveworkspace/help-site/art/primitives';
-import { BackgroundGlyph, LayoutGlyph, PadlockGlyph, TitleIcon } from './page-title-bar';
+import {
+  BackgroundGlyph,
+  CogGlyph,
+  LayoutGlyph,
+  PadlockGlyph,
+  PageLabel,
+  TitleBarCard,
+} from './page-title-bar';
 
 // --- Shared bits -------------------------------------------------------------------------------
-
-/** The page cog: a small round button with a gear. `on` marks the cog whose panel is open. */
-function Cog({ cx, cy, on = false }: { cx: number; cy: number; on?: boolean }) {
-  const spokes = [0, 45, 90, 135, 180, 225, 270, 315];
-  return (
-    <g transform={`translate(${cx} ${cy})`}>
-      <circle
-        r={9}
-        className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-300'}
-        strokeWidth={1.3}
-      />
-      {spokes.map((a) => (
-        <line
-          key={a}
-          x1={0}
-          y1={-3.4}
-          x2={0}
-          y2={-5.4}
-          transform={`rotate(${a})`}
-          className={on ? 'stroke-brand-600' : 'stroke-slate-500'}
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-      ))}
-      <circle
-        r={2.9}
-        fill="none"
-        className={on ? 'stroke-brand-600' : 'stroke-slate-500'}
-        strokeWidth={1.4}
-      />
-    </g>
-  );
-}
 
 /** A sheet of paper on the canvas, with a soft edge. */
 function Sheet({
@@ -140,21 +114,30 @@ function SolidSegments({
 
 // --- Pages in a row ----------------------------------------------------------------------------
 
-/** A wireframe page's title-bar buttons as icons alone (the page too small on screen to name
- *  them): Layout, Background and the padlock, left of the cog at `cogX`. */
-function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
+/** A page's title bar, its controls as icons alone (the page too small on screen to name them), on
+ *  its one card, its right edge at the page's: a wireframe page's Layout and Background, then the
+ *  padlock and the cog; `padlockOnly` for a page whose bar holds only the page group. */
+function PageBar({
+  right,
+  cy,
+  padlockOnly = false,
+  cogOn = false,
+}: {
+  right: number;
+  cy: number;
+  padlockOnly?: boolean;
+  cogOn?: boolean;
+}) {
   return (
-    <g>
-      <TitleIcon cx={cogX - 54} cy={cy} Glyph={LayoutGlyph} />
-      <TitleIcon cx={cogX - 38} cy={cy} Glyph={BackgroundGlyph} />
-      <TitleIcon cx={cogX - 22} cy={cy} Glyph={PadlockGlyph} />
-    </g>
+    <TitleBarCard
+      right={right}
+      cy={cy}
+      groups={[
+        padlockOnly ? [] : [{ Glyph: LayoutGlyph }, { Glyph: BackgroundGlyph }],
+        [{ Glyph: PadlockGlyph }, { Glyph: CogGlyph, on: cogOn }],
+      ]}
+    />
   );
-}
-
-/** The padlock alone, left of the cog at `cogX`: the one title-bar button every page has. */
-function PadlockOnly({ cogX, cy }: { cogX: number; cy: number }) {
-  return <TitleIcon cx={cogX - 22} cy={cy} Glyph={PadlockGlyph} />;
 }
 
 /** Two pages in a row, a logo and a phone wireframe: each with its label above its top-left corner
@@ -164,11 +147,8 @@ export function PagesScene() {
   return (
     <Scene w={480} h={250}>
       {/* Page 1: a logo artboard, a mark over its wordmark */}
-      <Label x={20} y={38} size={9} weight={600} tone="body">
-        1024 x 1024 · Logo
-      </Label>
-      <PadlockOnly cogX={211} cy={38} />
-      <Cog cx={211} cy={38} />
+      <PageLabel x={20} y={38} size={9} rest="1024 x 1024 · Logo" />
+      <PageBar right={220} cy={38} padlockOnly />
       <Sheet x={20} y={52} w={192} h={192}>
         <circle cx={116} cy={124} r={34} className="fill-brand-500" />
         <path d="M98 136 l18 -30 l18 30 z" className="fill-white" />
@@ -176,11 +156,8 @@ export function PagesScene() {
         <TextBar x={92} y={194} w={48} tone="faint" />
       </Sheet>
       {/* Page 2: a phone screen, framed as its device */}
-      <Label x={244} y={38} size={9} weight={600} tone="body">
-        iPhone · Wireframe
-      </Label>
-      <PageIcons cogX={395} cy={38} />
-      <Cog cx={395} cy={38} />
+      <PageLabel x={244} y={38} size={9} rest="iPhone · Wireframe" />
+      <PageBar right={404} cy={38} />
       <rect x={292} y={52} width={96} height={192} rx={16} className="fill-slate-800" />
       <Sheet x={297} y={57} w={86} h={182}>
         <rect x={331} y={61} width={18} height={5} rx={2.5} className="fill-slate-800" />
@@ -287,11 +264,8 @@ export function PagePanelScene() {
   return (
     <Scene w={436} h={266}>
       {/* The page, its cog lit while its panel is open */}
-      <Label x={20} y={32} size={10} weight={600} tone="body">
-        A4 · Portrait
-      </Label>
-      <PadlockOnly cogX={161} cy={32} />
-      <Cog cx={161} cy={32} on />
+      <PageLabel x={20} y={32} rest="A4 · Portrait" />
+      <PageBar right={170} cy={32} padlockOnly cogOn />
       <Sheet x={20} y={46} w={150} h={212}>
         <TextBar x={36} y={70} w={90} h={9} tone="accent" />
         <TextBar x={36} y={88} w={66} />

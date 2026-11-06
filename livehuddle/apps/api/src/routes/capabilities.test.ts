@@ -31,8 +31,8 @@ describe('the route', () => {
   });
 });
 
-describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")', () => {
-  it('names the api base, sign-in, the document format, and no issuer or floor by default', async () => {
+describe('the host fields (docs/specs/015-api/api.md "Capabilities")', () => {
+  it('names the api base, sign-in and the document format, and nothing for a CLI', async () => {
     const caps = await capabilities({});
     expect(caps).toMatchObject({
       apiBase: expect.stringMatching(/\/api$/),
@@ -43,27 +43,12 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
     expect(caps).not.toHaveProperty('cli');
   });
 
-  it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
+  it('reports sign-in when the accounts Worker is configured', async () => {
     const caps = await capabilities({
       ACCOUNTS_URL: 'https://accounts.example',
       API_RESOURCE: 'https://livehuddle.example/api',
-      OAUTH_ISSUER: 'https://mcp.livehuddle.app/',
-      CLI_MIN_VERSION: ' 1.2.3 ',
     });
-    expect(caps).toMatchObject({
-      authEnabled: true,
-      oauthIssuer: 'https://mcp.livehuddle.app',
-      cli: { minVersion: '1.2.3' },
-    });
-  });
-
-  it('leaves out an issuer that is not https, or not a URL, and a malformed floor', async () => {
-    for (const OAUTH_ISSUER of ['http://mcp.local', 'not a url']) {
-      expect(await capabilities({ OAUTH_ISSUER, CLI_MIN_VERSION: '1.2' })).not.toHaveProperty(
-        'oauthIssuer',
-      );
-    }
-    expect(await capabilities({ CLI_MIN_VERSION: 'v1' })).not.toHaveProperty('cli');
+    expect(caps).toMatchObject({ authEnabled: true });
   });
 });
 
@@ -75,7 +60,7 @@ describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls 
     TURN_KEY_API_TOKEN: 'turn-secret',
   };
 
-  it('are off with no secrets, on with them, and off on production whatever is set', async () => {
+  it('are off with no secrets, on with them, and on on production too once they are set', async () => {
     expect(await capabilities({})).toMatchObject({ callsEnabled: false });
     expect(await capabilities(secrets)).toMatchObject({ callsEnabled: true });
     expect(
@@ -83,7 +68,10 @@ describe('calls (docs/specs/012-collaboration/proximity-audio.md "Turning calls 
     ).toMatchObject({ callsEnabled: true });
     expect(
       await capabilities({ ...secrets, APP_BASE_URL: 'https://www.livehuddle.app' }),
-    ).toMatchObject({ callsEnabled: false });
+    ).toMatchObject({ callsEnabled: true });
+    expect(await capabilities({ APP_BASE_URL: 'https://www.livehuddle.app' })).toMatchObject({
+      callsEnabled: false,
+    });
   });
 
   it('stay shown while the kill switch pauses them, and say the mode', async () => {

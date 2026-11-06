@@ -3,6 +3,7 @@
 // who it is the usual way (its token, the share code it came in by); the api checks the grant on the Space.
 import type {
   CallCloseRequest,
+  CallLayerRequest,
   CallRenegotiateRequest,
   CallSessionResponse,
   CallTracksRequest,
@@ -28,6 +29,11 @@ export class CallsApiError extends Error {
   /** The calls kill switch paused calls (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). */
   get paused(): boolean {
     return this.code === 'calls_off' && this.reason === 'paused';
+  }
+
+  /** The kill switch allows audio alone: a camera or a screen was refused (video-and-screen-bubbles.md). */
+  get audioOnly(): boolean {
+    return this.code === 'calls_off' && this.reason === 'audio-only';
   }
 }
 
@@ -69,6 +75,9 @@ export const apiCallTracks = (caller: CallsCaller, body: CallTracksRequest) =>
 
 export const apiCallRenegotiate = (caller: CallsCaller, body: CallRenegotiateRequest) =>
   send<{ ok: true }>(caller, 'renegotiate', 'PUT', body);
+
+export const apiCallLayer = (caller: CallsCaller, body: CallLayerRequest) =>
+  send<CallTracksResponse>(caller, 'layer', 'PUT', body);
 
 export const apiCallClose = (caller: CallsCaller, body: CallCloseRequest) =>
   send<CallTracksResponse>(caller, 'close', 'PUT', body);

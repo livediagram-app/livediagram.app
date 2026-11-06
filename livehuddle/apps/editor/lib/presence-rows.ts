@@ -1,6 +1,6 @@
 // Pure aggregation of realtime presence state into the row shapes the
-// editor renders: per-tab presence buckets, remote cursor rows, laser-trail
-// rows, peer Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), and the per-element
+// editor renders: per-tab presence buckets, remote cursor rows,
+// peer Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), and the per-element
 // remote-selection map. Lifted out of
 // useEditorState so this join logic (presence x tab-focus x idle, scoped
 // to the active tab and filtered to live participants) is unit-testable
@@ -9,8 +9,6 @@
 import { avatarGlideMs } from '@liveworkspace/avatar/relay';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
-import type { LaserPoint } from './laser-buffer';
-import type { LaserConfig } from './laser-config';
 
 // Row shapes the builders below return. Module-private: only this file's own
 // functions name them, so they carry no `export` (consumers get the inferred
@@ -23,14 +21,6 @@ type CursorRow = {
   y: number;
   // The peer's Google picture, when the roster carried one (an account session's view only).
   picture?: string;
-};
-type LaserTrailRow = {
-  participantId: string;
-  color: string;
-  points: LaserPoint[];
-  // The pen this trail was drawn with (docs/specs/008-canvas/laser-panel.md). Absent for a peer on an
-  // older client, which draws the original laser.
-  config?: LaserConfig;
 };
 // `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
 // Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
@@ -181,6 +171,9 @@ export function buildRemoteAvatarRows(
   livePresenceById: Map<string, Participant>,
   selfId: string,
   activeId: string,
+  // Each peer's tab from the tab bar's presence. Travel keeps Avatar mode across tabs (avatar-mode.md "Changing
+  // tab"), so a peer who rode away leaves their last packet behind on this tab: it is dropped once their tab moved.
+  tabFocus?: ReadonlyMap<string, string>,
 ): { id: string; name: string; color: string; avatar: AvatarPresence; glideMs: number }[] {
   const rows: {
     id: string;
@@ -195,51 +188,11 @@ export function buildRemoteAvatarRows(
   for (const [id, entry] of remoteAvatars) {
     if (id === selfId) continue;
     if (entry.tabId !== activeId) continue;
+    const focus = tabFocus?.get(id);
+    if (focus !== undefined && focus !== entry.tabId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
     rows.push({ id, name: p.name, color: p.color, avatar: entry.avatar, glideMs });
-  }
-  return rows;
-}
-
-// Laser-trail rows for the overlay: the local trail first, then any peers
-// whose latest sample is on the active tab and who are still present.
-export function buildLaserTrailRows(input: {
-  localLaserTrail: LaserPoint[];
-  remoteLaserTrails: Map<string, { tabId: string; points: LaserPoint[]; config?: LaserConfig }>;
-  livePresenceById: Map<string, Participant>;
-  selfId: string;
-  selfColor: string;
-  activeId: string;
-  // Our own pen (docs/specs/008-canvas/laser-panel.md). Peers' pens arrive with their samples; ours is
-  // read straight from the panel's state, so our trail never lags a change we
-  // just made.
-  selfLaserConfig?: LaserConfig;
-}): LaserTrailRow[] {
-  const {
-    localLaserTrail,
-    remoteLaserTrails,
-    livePresenceById,
-    selfId,
-    selfColor,
-    activeId,
-    selfLaserConfig,
-  } = input;
-  const rows: LaserTrailRow[] = [];
-  if (localLaserTrail.length > 0) {
-    rows.push({
-      participantId: selfId,
-      color: selfColor,
-      points: localLaserTrail,
-      config: selfLaserConfig,
-    });
-  }
-  for (const [id, entry] of remoteLaserTrails) {
-    if (id === selfId) continue;
-    if (entry.tabId !== activeId) continue;
-    const p = livePresenceById.get(id);
-    if (!p) continue;
-    rows.push({ participantId: id, color: p.color, points: entry.points, config: entry.config });
   }
   return rows;
 }
@@ -306,7 +259,7 @@ export type RemoteSelection = { elementId: string | null; tabId?: string };
 
 // Per-element map of which remote participants have it selected (for the
 // on-element badges). Drops self + null (deselected) entries, and — like
-// cursors and lasers — entries scoped to a DIFFERENT tab: element ids
+// cursors — entries scoped to a DIFFERENT tab: element ids
 // aren't unique across tabs in older documents (tab duplication used to
 // copy them verbatim), so an unscoped badge also LOCKED the same-id
 // element on other tabs via the docs/specs/007-editor/editor-app.md selection lock.

@@ -3,7 +3,9 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livehuddle/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { RoomDoor } from './office';
+import type { RoomDoor, StageSpeakers } from './office';
+import type { ClockZone, NoticeNote } from './office-social';
+import type { PieceTimer } from './timer-pieces';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -26,21 +28,14 @@ import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
-import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
+import type { SelectionMode } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
-import type { ParticipantResponse } from './responses';
-import type { QaNote } from './qa-board';
 import type { HeroCaption, StatItem } from './web-components';
 import type { ImageCredit } from './image-credit';
-import type {
-  AgendaItem,
-  ChairFacing,
-  DecisionStatus,
-  EstimateScale,
-  RollCallEntry,
-} from './collab-shapes';
+import type { ChairFacing } from './collab-shapes';
+import { SHAPE_KINDS } from './shape-kinds';
 import type {
   AnimationSpeed,
   ChecklistItem,
@@ -75,11 +70,6 @@ export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
 export type ShapeElement = {
   id: ElementId;
   type: 'shape';
-  // Layer membership (docs/specs/006-document/layers.md): id of the Tab.layers entry this element
-  // renders inside. Absent / unknown = the tab's default layer, so every
-  // element authored before layers existed keeps rendering unchanged.
-  // Carried by every element variant (arrows included, see index.ts).
-  layerId?: string;
   shape: ShapeKind;
   // Registry key for the glyph (e.g. 'server', 'database', 'user'). Two
   // uses: when `shape === 'icon'` it IS the element (glyph above an
@@ -206,7 +196,7 @@ export type ShapeElement = {
   themeLockFill?: boolean;
   // The element is one size for life: no resize handles, union-scales move
   // it without scaling it, and the menu's Size category stays away. The
-  // fixed-size SHAPE kinds (mode-button / session-button,
+  // fixed-size SHAPE kinds (mode-button, badge,
   // docs/specs/009-elements/mode-button.md) get the same treatment from their
   // kind instead. See isFixedSizeElement.
   fixedSize?: boolean;
@@ -246,21 +236,6 @@ export type ShapeElement = {
   // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
   // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
   portalTarget?: ElementId;
-  // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
-  // for the room, and its one setting. Only meaningful on 'session-button';
-  // absent means a default five-minute timer, so a button authored without one
-  // still does something sensible.
-  session?: SessionButtonConfig;
-  // Reveal zone (docs/specs/009-elements/reveal-zone.md): whether the cover is off FOR EVERYONE. A viewer
-  // uncovering it for themselves is local and ephemeral and never touches this.
-  // Only meaningful on the 'reveal' kind.
-  revealed?: boolean;
-  // Picker (docs/specs/012-collaboration/picker.md): where the candidates come from, the written list when
-  // that source is 'options', and the last result — kept on the element so the
-  // canvas still shows it after a reload. Only meaningful on the 'picker' kind.
-  pickerSource?: PickerSource;
-  pickerOptions?: string[];
-  pickerResult?: string;
   // Chair (docs/specs/009-elements/chair.md): which way the seat points. Only meaningful on the
   // 'chair' kind; absent = DEFAULT_CHAIR_FACING ('n'). WHO is sitting in it is
   // deliberately NOT here — occupancy rides the avatar presence op, so a chair
@@ -269,66 +244,28 @@ export type ShapeElement = {
   // Room (docs/specs/009-elements/office.md "Room"): the wall its doorway is in, or 'none' for a closed room.
   // Absent = DEFAULT_ROOM_DOOR ('s', the front wall).
   roomDoor?: RoomDoor;
-  // --- The collaboration family (docs/specs/012-collaboration/participant-responses.md to docs/specs/012-collaboration/roll-call.md) ---------------------
-  // One value per participant (docs/specs/012-collaboration/participant-responses.md), shared by the estimate card and the
-  // temperature check. At most one entry per participant: re-casting REPLACES,
-  // via `setResponse`. Bounded in validate.ts.
-  responses?: ParticipantResponse[];
-  // Whether the values are out, for everyone (docs/specs/012-collaboration/estimate-card.md). Only meaningful on
-  // 'estimate' — the temperature check is deliberately never hidden.
-  responsesRevealed?: boolean;
-  // Estimate card (docs/specs/012-collaboration/estimate-card.md): which ladder of values the card offers. Absent =
-  // DEFAULT_ESTIMATE_SCALE ('fibonacci').
-  estimateScale?: EstimateScale;
-  // Idea box (docs/specs/012-collaboration/idea-box.md): the anonymous submissions, in submission order, and
-  // whether the box is open. There is NO author field, and adding one would
-  // undo the feature — the anonymity guarantee is that the schema has nowhere
-  // to record who wrote a card. Bounded in validate.ts.
-  ideaCards?: string[];
-  // Each card's random id, by position (`ideaCardIds[i]` names `ideaCards[i]`; '' or missing is an id-less
-  // card). Minted fresh per card by the posting browser, so it names the card, never the person
-  // (docs/specs/012-collaboration/idea-box.md "Anonymity is structural").
-  ideaCardIds?: string[];
-  ideasRevealed?: boolean;
-  // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
-  // never stored), and the server-bumped revision every whole-element sync
-  // path compares so a stale snapshot can't roll the board back
-  // (preferNewerQa). Only the qa endpoint writes these.
-  qaNotes?: QaNote[];
-  qaRev?: number;
-  // Which round of answers / ideas this card is on (docs/specs/012-collaboration/collab-race-hardening.md): a random id
-  // minted by each clear or reset. Answers and ideas travel as their own
-  // element deltas stamped with it, so one cast before a clear can't land in
-  // the round after, and an element update for the SAME round leaves the
-  // receiver's answers alone. Absent until the first clear.
-  collabRound?: string;
-  // Agenda (docs/specs/012-collaboration/agenda.md): the ordered segments, and the index of the one the room
-  // is in (absent = not started). Only meaningful on 'agenda'.
-  agendaItems?: AgendaItem[];
-  agendaCurrent?: number;
-  // The `startedAt` of the tab timer the current segment started, so the face
-  // shows that timer's time left only while it is still that run.
-  agendaTimerStartedAt?: number;
-  // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
-  // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
-  // element's `label` is the decision STATEMENT, so it needs no extra field.
-  decisionStatus?: DecisionStatus;
-  decisionDate?: string;
-  decisionDrivers?: string[];
-  // Roll call (docs/specs/012-collaboration/roll-call.md): a FROZEN snapshot of who was in the room when the
-  // roll was taken — names and colours copied, never re-joined to the live
-  // participant. Only meaningful on 'roll-call'.
-  rollCall?: RollCallEntry[];
-  // Quiz (docs/specs/012-collaboration/quiz.md): the answers, which one is right, the round's length in
-  // seconds, and the round's state (started / locked early / revealed). The
-  // question is the label; each person's pick rides `responses` as the
-  // answer's index. Only meaningful on 'quiz'.
-  quizOptions?: string[];
-  quizCorrect?: number;
-  quizSeconds?: number;
-  quizStartedAt?: number;
-  quizLockedAt?: number;
-  quizRevealed?: boolean;
+  // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its walls' centre line, the corners
+  // as 0..1 fractions of the box. Absent on a rectangular Room.
+  roomOutline?: { x: number; y: number }[];
+  // Stage (docs/specs/009-elements/office.md "Stage"): who may speak from it, and whether its speakers' cameras and
+  // screens reach the whole tab. Absent = DEFAULT_STAGE_SPEAKERS ('edit') and off.
+  stageSpeakers?: StageSpeakers;
+  stageCameras?: boolean;
+  // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
+  // is open, so every door starts open.
+  doorClosed?: boolean;
+  // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
+  noticeNotes?: NoticeNote[];
+  // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
+  clockZones?: ClockZone[];
+  // Jukebox (social-pieces.md "Jukebox"): the https audio address it plays; absent = no music set.
+  jukeboxSource?: string;
+  // Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "The state"): its live clock, changed only by
+  // `piece-timer` deltas; absent = idle at the default (a Timer at 5 minutes, a Stopwatch at 0).
+  pieceTimer?: PieceTimer;
+  // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
+  // shows when nobody in its room is sharing. Absent = none.
+  screenUrl?: string;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/timeline.md): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
@@ -382,8 +319,8 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
-  // REACTION_DEFAULT at render, so a pad from an older file still works.
+  // A retired Reaction Pad's burst (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kept as
+  // stored so a save carries it through, never read.
   reaction?: Reaction;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
@@ -503,8 +440,6 @@ export type TextElement = {
   // Who added it, when a Participant did (docs/specs/013-workspace/share-roles.md "What a Participant changes"):
   // the server-derived adder key the room stamped. Absent on everything an Editor added. Never set by a client.
   addedBy?: string;
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -639,8 +574,6 @@ export type TableCellStyle = {
 export type TableElement = {
   id: ElementId;
   type: 'table';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -757,8 +690,6 @@ export type StickyElement = {
   type: 'sticky';
   // Who added it, when a Participant did: see TextElement.addedBy.
   addedBy?: string;
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -854,8 +785,6 @@ export type StickyElement = {
 export type ImageElement = {
   id: ElementId;
   type: 'image';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -958,8 +887,6 @@ export type ImageElement = {
 export type FreehandElement = {
   id: ElementId;
   type: 'freehand';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1078,8 +1005,6 @@ export type PathNode = PathPoint & {
 export type PathElement = {
   id: ElementId;
   type: 'path';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1143,8 +1068,6 @@ export type PathElement = {
 export type AnnotationElement = {
   id: ElementId;
   type: 'annotation';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1234,8 +1157,6 @@ export type LinkCardMeta = {
 export type LinkCardElement = {
   id: ElementId;
   type: 'link-card';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1311,8 +1232,6 @@ export type LinkCardElement = {
 export type VideoElement = {
   id: ElementId;
   type: 'video';
-  // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
-  layerId?: string;
   x: number;
   y: number;
   width: number;
@@ -1390,24 +1309,30 @@ export type VideoElement = {
 // Does this element take a TYPED label — i.e. is dropping one an invitation
 // to start writing? True for the paper-and-text kinds (sticky, shape, text,
 // icon), false for the ones whose face is a picture or a control the user
-// configures instead of writes: a sticker is artwork, a session button /
-// reaction pad / mode button / estimate all render their own caption from
-// their setting, so opening a text caret on them would offer to edit
-// something that isn't theirs to edit.
+// configures instead of writes: a sticker is artwork, a mode
+// button renders its own caption from its setting, so opening a text caret on
+// them would offer to edit something that isn't theirs to edit. A retired
+// element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+// elements", a kind livehuddle does not have) takes no typed label either.
 const UNTYPED_SHAPES = new Set<string>([
   'sticker',
   // A fence (docs/specs/009-elements/fence.md) carries no label.
   'fence',
   // An Avatar Pad (docs/specs/009-elements/avatar-pad.md) carries no label.
   'avatar-pad',
-  'session-button',
-  'reaction-pad',
   'mode-button',
-  'estimate',
+  // The Directory (docs/specs/009-elements/directory.md) carries no label; an Elevator's label is its name.
+  'directory',
+  // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) carry no label.
+  'screen',
+  'room-sign',
+  // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
+  'timer',
+  'stopwatch',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
   if (el.type === 'arrow') return false;
   if (el.type !== 'shape') return true;
-  return !UNTYPED_SHAPES.has(el.shape ?? '');
+  return !UNTYPED_SHAPES.has(el.shape ?? '') && SHAPE_KINDS.has(el.shape ?? '');
 }

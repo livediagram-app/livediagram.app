@@ -19,7 +19,3 @@ export function withContentsPlacement(
 ): UserPreferences {
   return { ...prefs, contentsPlacement: placement };
 }
-
-// Which side of the canvas the sidebar is pinned to (@liveworkspace/workbench/lib/contents-sidebar), kept in this
-// browser only under this key, and never synced.
-export const CONTENTS_SIDE_STORAGE_KEY = 'livedocuments:contents-side:v1';

@@ -1,6 +1,8 @@
 # Quick style panel
 
-Status: **implemented**.
+> **Gone from livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#quick-style)): livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/008-canvas/quick-style-panel.md) is the one to read and change. livehuddle shows no Quick Style panel and has no Settings switch for it; its components are deleted. The element menu stays the home of every style setting, and its quick bar keeps Clear Styles. The rest of this page records what livehuddle had.
+
+Status: **gone from livehuddle** (2026-11-05).
 
 While one or more shapes, arrows and / or text elements are selected, a small panel on the left
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
@@ -75,7 +77,7 @@ moment; placed before the Map existed, the panel sat over its header.
 - **Not on phones.** A phone's canvas has no spare edge, and the context menu covers the same
   choices. The panel shows from the `sm` breakpoint up.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
-  once repeat each other, and the menu may open at the right edge), in zen mode, in embeds, while
+  once repeat each other, and the menu may open at the right edge), in embeds, while
   presenting, and when edits are blocked (a view-only visitor or a locked tab).
 
 ### Turning it off
@@ -259,9 +261,9 @@ kinds: select three arrows, two rectangles and a circle, press green, and all si
 text element to that selection and a Text colour row appears beside the others, styling only it.
 
 **Any mix works.** A selection may hold every kind at once (a whole pasted or imported board:
-marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images, frames). Each row
+marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images). Each row
 styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
-elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
+elements no row fits (stickies, images, tables and the other non-shape kinds) are passed
 over, never refused, so they never hide the panel from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to
@@ -345,12 +347,8 @@ WCAG 2.2 AA.
   reached by right-click, Shift+F10 or the context-menu key, and Escape returns focus to the swatch.
 - **Section titles are separate from the names**: a row's accessible name does not depend on its
   visible title.
-- **Minimal chrome keeps the section titles** ([Power user mode](../007-editor/power-user-mode.md)).
-  Minimal chrome removes words that teach the interface; these name what each row changes. Two
-  rows of seven coloured squares (Stroke, Background) look alike without them, and a user who
-  knows the editor still has to tell them apart at a glance. The docked panel's header follows the
-  panel rule instead: Minimal chrome hides a panel's title and help button, which would leave an
-  empty strip, so the header is not shown; the panel keeps its accessible name ("Quick style").
+- **Section titles always show**: they name what each row changes. Two rows of seven coloured
+  squares (Stroke, Background) look alike without them.
 - **Scrolling is in-theme**: when the docked body scrolls, its scrollbar is the app's slim themed
   one (`scrollbar-slim`), light and dark, not the operating system's.
 - **No layout shift.** Showing, hiding or re-placing the panel moves nothing else; it floats above

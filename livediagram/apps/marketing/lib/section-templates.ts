@@ -20,7 +20,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'lean-coffee',
     'affinity-map',
     'crazy-eights',
-    'virtual-office',
+    'kwl-chart',
   ],
   diagrams: [
     'flowchart',
@@ -31,7 +31,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'er-diagram',
     'swimlane',
     'cloud-architecture',
-    'decision-tree',
+    'network-diagram',
   ],
   whiteboard: [
     'sketchnote',

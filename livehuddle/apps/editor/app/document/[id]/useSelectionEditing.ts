@@ -13,7 +13,6 @@ import {
   type Tab,
   type TextRun,
 } from '@livehuddle/document';
-import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 import { patchTab } from './editor-page-helpers';
@@ -37,11 +36,6 @@ export function useSelectionEditing(opts: {
   tabLocked?: boolean;
   // A Participant writes on elements despite isReadOnly (docs/specs/013-workspace/share-roles.md).
   canWriteText?: (el: Element) => boolean;
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): never selectable.
-  layerInertIds: Set<string>;
-  // Smart layer naming (docs/specs/006-document/layers.md): called with every committed label so a
-  // default-named layer can adopt the first one typed onto it.
-  adoptLayerName: (elementId: string, label: string) => void;
   formatSourceId: string | null;
   // Persistent Format canvas tool (docs/specs/008-canvas/canvas-and-palette.md). Boxed elements route their
   // format-tool clicks through useBoxedDragHandlers.beginDrag; arrows have
@@ -51,9 +45,6 @@ export function useSelectionEditing(opts: {
   documentName: string;
   tabs: Tab[];
   activeTab: Tab;
-  // The viewer works in Draw mode (docs/specs/007-editor/editor-modes.md): plain keys belong to
-  // the dock.
-  drawMode: boolean;
   // The element whose label editor is open, if any: what an Escape leaves.
   editingId: string | null;
   commit: (updater: (els: Element[]) => Element[]) => void;
@@ -94,8 +85,6 @@ export function useSelectionEditing(opts: {
     readSelection,
     isReadOnly,
     canWriteText,
-    layerInertIds,
-    adoptLayerName,
     formatSourceId,
     formatToolActive,
     documentName,
@@ -254,9 +243,6 @@ export function useSelectionEditing(opts: {
         tickTabs((ts) => patchTab(ts, activeTab.id, { name: trimmed }));
       }
     }
-    // Layer counterpart (docs/specs/006-document/layers.md): a default-named layer adopts the first
-    // label committed onto one of its elements.
-    if (trimmed) adoptLayerName(elementId, trimmed);
   };
 
   // Type-to-edit's seed (docs/specs/008-canvas/canvas-and-palette.md "Type-to-edit"): the element as the seed wrote
@@ -319,8 +305,6 @@ export function useSelectionEditing(opts: {
     if (!labelable) return false;
     // Self-drawing data components have no editable label (see beginEdit).
     if (el.type === 'shape' && !opensInlineLabelEditor(el.shape)) return false;
-    // Draw mode leaves the key to its dock unless a note or text box is selected.
-    if (opts.drawMode && !whiteboardTakesTyping(el)) return false;
     // Type-to-edit REPLACES the whole label with the typed char, so any
     // per-range `richText` from a prior edit must be dropped — otherwise the
     // editor would re-open against the stale runs instead of the seed char.
@@ -349,9 +333,8 @@ export function useSelectionEditing(opts: {
     // element selected, so block it — for plain select AND for format-
     // paint targets, since painting would mutate an element someone
     // else is working on. The not-allowed cursor + "Locked to <name>"
-    // hover card on the element communicate why. Hidden / locked-layer
-    // elements (docs/specs/006-document/layers.md) are equally untouchable.
-    if (lockedByOther(id) || layerInertIds.has(id)) return;
+    // hover card on the element communicate why.
+    if (lockedByOther(id)) return;
     // Persistent Format tool: first click arms the source, each later click
     // paints onto the target and KEEPS the source armed. Mirrors the boxed
     // branch in useBoxedDragHandlers.beginDrag — arrows reach selection
@@ -379,9 +362,8 @@ export function useSelectionEditing(opts: {
   // Toggling the last member out of the multi-set drops back to
   // empty selection.
   const toggleInMultiSelect = (id: string) => {
-    // Don't let a shift-click pull a remotely-held element — or a
-    // hidden / locked-layer one (docs/specs/006-document/layers.md) — into the set.
-    if (lockedByOther(id) || layerInertIds.has(id)) return;
+    // Don't let a shift-click pull a remotely-held element into the set.
+    if (lockedByOther(id)) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const next = new Set(multiSelectedIds);
     if (selectedId && !next.has(selectedId)) next.add(selectedId);

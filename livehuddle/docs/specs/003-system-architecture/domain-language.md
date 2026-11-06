@@ -21,8 +21,10 @@ interchangeable. These are design decisions, taken before any feature that uses 
 - Holding a meeting (a stand-up, an all-hands) is what the meeting board is for. A session is an activity, never a
   tab kind or a stored thing; "Session" and "Collaborate" never name the mode.
 - The interface never says "Workshop" (Work Tracker #423): running a workshop is livediagram's Workshop mode
-  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Until part 3 the code still names the mode, the
-  template categories and the community categories after workshops.
+  ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). Since part 3 the interface names no mode and no
+  template category after workshops; `EditorMode` stays `'workshop'` in the code and in storage. No Community
+  category is about workshops either: a post stored under a retired one reads as Something Else
+  ([Community](../025-community/community.md#categories)).
 
 ### Kind
 
@@ -63,7 +65,7 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 | **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
 | **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
 | **host**            | The element an attached badge or step number sits on                                    | parent                                    |
-| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
+| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame                        |
 | **concept graphic** | The Timeline: one element laying out its own rows                                       | SmartArt, diagram                         |
 | **row**             | One milestone of a concept graphic (`conceptRows`)                                      | item                                      |
 
@@ -111,15 +113,6 @@ The words for how elements are drawn, apart from their colours ([Finish](../008-
 | **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
 | **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
 
-## Workbenches
-
-The words for a board open beside code ([Workbench embeds](../013-workspace/workbench-embeds.md)).
-
-| Term                    | Means                                                                                 | Never called                           |
-| ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
-| **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
-
 ## Community
 
 The words for the public gallery of published documents ([Community](../025-community/community.md)).
@@ -163,8 +156,8 @@ keep "document" and "canvas" beside "space", so an old search still finds the co
 controls); a Space holds tabs, and each tab has a canvas. A sentence that would say both reads as "your work"
 instead. The tab menu's item for putting a tab into another space is **Add to Another Space**, apart from the
 palette's **Add to canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an
-item, and keeps its name. The Spaces templates (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) are
-templates a Space is made from; their category keeps its label, **Virtual Spaces**. "Space" the key (hold Space to
+item, and keeps its name. The Spaces templates (Virtual Office, Rooftop Bar, Garden Retreat and the rest) are
+templates a Space is made from, in the Campus, Office, Events, Outdoor and Recreation categories. "Space" the key (hold Space to
 pan) is a key, never the item.
 
 ## This Browser

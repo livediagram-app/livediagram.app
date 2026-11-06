@@ -27,8 +27,8 @@ test.describe('Viewport on add', () => {
     const canvas = page.locator(CANVAS);
     const box = (await canvas.boundingBox())!;
     const drop = { x: 200, y: 260 };
-    await (await paletteTile(page, 'Add Square')).dragTo(canvas, { targetPosition: drop });
-    const square = canvas.getByRole('img', { name: 'Square', exact: true });
+    await (await paletteTile(page, 'Add Sticky Note')).dragTo(canvas, { targetPosition: drop });
+    const square = canvas.getByRole('img', { name: 'Sticky note', exact: true });
     await expect(square).toHaveCount(1);
     // Past the frame the entry fit used to land on.
     await page.waitForTimeout(300);
@@ -44,7 +44,7 @@ test.describe('Viewport on add', () => {
     // Dropped at the far corner, so only a fit would bring it back to the middle.
     const box = (await canvas.boundingBox())!;
     await (
-      await paletteTile(page, 'Add Square')
+      await paletteTile(page, 'Add Sticky Note')
     ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
     await page.keyboard.press('Escape');
     // Let the autosave land before reloading.
@@ -62,7 +62,7 @@ test.describe('Viewport on add', () => {
       })
       .toBe(1);
     await page.reload();
-    const square = page.locator(CANVAS).getByRole('img', { name: 'Square', exact: true });
+    const square = page.locator(CANVAS).getByRole('img', { name: 'Sticky note', exact: true });
     await expect(square).toHaveCount(1);
     await expect(async () => {
       const after = (await page.locator(CANVAS).boundingBox())!;

@@ -12,17 +12,24 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Slides: layout, background, another slide, then the deck: its rows, a slide’s menu, the show, present', () => {
+  it('Slides: layout, background, another slide, then its row in Contents, its menu, present', () => {
     expect(ids(pageTourSteps('slide'))).toEqual([
       'layouts',
       'background',
       'add-page',
-      'deck',
+      'contents',
       'slide-menu',
-      'show-settings',
       'present',
       'outro',
     ]);
+  });
+
+  it("points at the tour page's own Contents row and its menu, and at the header's Present", () => {
+    const steps = pageTourSteps('slide');
+    const at = (id: string) => steps.find((s) => s.id === id)!.selector!(api);
+    expect(at('contents')).toBe('[data-contents-slot]:has([data-page-row="p1"])');
+    expect(at('slide-menu')).toBe('[data-contents-slot]:has([data-page-row="p1"])');
+    expect(at('present')).toBe('[data-presentation-start="header"]');
   });
 
   it('Infographic: its name, layout, background, size, another page, present', () => {
@@ -85,10 +92,13 @@ describe('what the tour starts with', () => {
     expect(steps.at(-1)!.card).toBe('outro');
   });
 
-  it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
-    const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
-    expect(ids(shownPageTourSteps('slide', api, exists))).not.toContain('present');
-    expect(ids(shownPageTourSteps('slide', api, exists))).toContain('layouts');
+  it('leaves out a step whose control is not on screen (no Contents sidebar on a phone)', () => {
+    const exists = (sel: string) => !sel.includes('data-contents-slot');
+    const shown = ids(shownPageTourSteps('slide', api, exists));
+    expect(shown).not.toContain('contents');
+    expect(shown).not.toContain('slide-menu');
+    expect(shown).toContain('present');
+    expect(ids(shownPageTourSteps('infographic', api, exists))).not.toContain('present');
   });
 
   it('checks what a step opens by the button that opens it', () => {

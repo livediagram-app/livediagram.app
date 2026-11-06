@@ -18,7 +18,7 @@ someone is on, each opening a flyout of its tiles:
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
-  Format / Laser / Spotlight / Slide Deck / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
+  Format / Laser / Spotlight / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then the category bar** ("The category bar"). Its tiles are the Palette's tiles (`palette-tile-defs`, arranged
   by the page kind's palette layout, [Pages](pages-mode.md) "The palette's kind"), rendered by the shared
@@ -115,8 +115,6 @@ scrolling when long:
   fixed height** whatever it says, room for the name and two lines of description (`FLYOUT_FOOTER_HEIGHT`, 69 px),
   a longer description clamped to two lines: a footer that grew and shrank with each tile moved the flyout's edge
   under the pointer as it travelled.
-- Under Minimal Chrome ([Power user mode](power-user-mode.md)) a picture tile shows its icon alone, named by a
-  Tooltip; a card keeps its name, which is its content.
 - Every tile places, arms, drags onto the canvas (with the canvas ghost), shows its armed and refused states and
   draws in the tab theme's tint and finish, as the strip's own tile does (`useTileGlyph`, shared with `IconButton`).
 - **Widths:** 26rem for a picture grid, 36rem for two columns of cards, 19rem for one, 37.5rem for a catalogue's
@@ -311,7 +309,7 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     phone (below `sm`) a message too long for the row wraps to a second line instead of cutting off, so "Tap to
     drop or drag to draw Square" keeps the name it gives.
   - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
-  - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
+  - It also carries an empty tab's **Show Templates**: on an explicit blank, whose start opens closed, "Tab 1 is empty" with **Show
     Templates**, which opens the start again, until the first element lands
     ([Template starts](start-diagramming.md) "Bringing it back").
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.

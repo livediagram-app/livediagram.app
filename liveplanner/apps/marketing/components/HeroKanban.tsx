@@ -22,15 +22,21 @@ const LANES = [
   { name: 'Done', count: '12' },
 ] as const;
 
+// How far down a card sits: its place in the band's 52rem floor (a lane is 1rem shorter, inside the wall's
+// inset), plus `share` of whatever height the band has past that floor when it fills a taller screen
+// (docs/specs/019-marketing/marketing-site.md "Hero"), so the wall spreads with the band rather than bunching
+// at its top. The copy takes half the extra, so a share over a half opens the gap under the search.
+const down = (rem: number, share: number) => `calc(${rem}rem + (100% - 51rem) * ${share})`;
+
 // Which lane each of the six cards sits in, how far down and how it leans; the last is the one being dragged.
 const SLOTS: readonly { lane: number; top: string; tilt: string }[] = [
-  { lane: 0, top: '4.75rem', tilt: '-2deg' },
-  { lane: 0, top: '20.625rem', tilt: '2deg' },
-  { lane: 4, top: '4.75rem', tilt: '2deg' },
-  { lane: 4, top: '20.625rem', tilt: '-2deg' },
-  { lane: 1, top: '36.875rem', tilt: '-1deg' },
+  { lane: 0, top: down(4.75, 0.1), tilt: '-2deg' },
+  { lane: 0, top: down(20.625, 0.45), tilt: '2deg' },
+  { lane: 4, top: down(4.75, 0.1), tilt: '2deg' },
+  { lane: 4, top: down(20.625, 0.45), tilt: '-2deg' },
+  { lane: 1, top: down(38.25, 0.75), tilt: '-1deg' },
 ];
-const DRAGGED = { lane: 2, top: '36.5rem' };
+const DRAGGED = { lane: 2, top: down(37.875, 0.75) };
 
 const CARD =
   'pointer-events-auto flex w-[12.25rem] flex-col gap-1.5 rounded-[0.875rem] border border-brand-100 bg-white p-1.5 text-slate-900 shadow-[0_22px_40px_-22px_var(--hero-card-shadow)] outline-none transition-[transform,box-shadow] duration-micro ease-out focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 motion-reduce:transition-none dark:border-transparent';

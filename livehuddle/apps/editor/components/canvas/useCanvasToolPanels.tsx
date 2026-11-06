@@ -10,18 +10,11 @@ import type { CanvasChromeProps } from './CanvasChrome';
 // Each panel shows only while its tool is active, so they load on demand, together (./tool-panels); the editor
 // fetches them once idle (lib/editor-deferred-code.ts), so picking a tool does not wait.
 const AvatarPanel = dynamic(() => loadToolPanels().then((m) => m.AvatarPanel), { ssr: false });
-const LaserPanel = dynamic(() => loadToolPanels().then((m) => m.LaserPanel), { ssr: false });
-const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPanel), {
-  ssr: false,
-});
 const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
-const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
-  ssr: false,
-});
 
-// The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
-// docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in
+// The three tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/eraser-panel.md,
+// docs/specs/008-canvas/format-panel.md), lifted out of useCanvasChromePanels. They are siblings in
 // every respect that matters: each is mounted ONLY while its own canvas
 // tool is active, so unlike the standing panels (Explorer, Palette,
 // Activity, ...) they join and leave their corner stack as the tool is
@@ -29,7 +22,7 @@ const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPan
 // because the tool itself is. Grouping them keeps that shared contract in
 // one place, and keeps the chrome host to the panels that are always
 // candidates to be on screen. Every one of them takes the identical
-// wiring bundle below, so a seventh tool panel is a copy of its neighbour.
+// wiring bundle below, so another tool panel is a copy of its neighbour.
 export function useCanvasToolPanels({
   props,
   chromeHidden,
@@ -44,11 +37,8 @@ export function useCanvasToolPanels({
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
   avatarEl: ReactNode;
-  laserEl: ReactNode;
-  spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
-  slideDeckEl: ReactNode;
 } {
   const {
     canvasTool,
@@ -62,18 +52,6 @@ export function useCanvasToolPanels({
     avatarStatus,
     onSetAvatarStatus,
     avatarSpeechCooling,
-    laserConfig,
-    onChangeLaserField,
-    laserPanelPosition,
-    onMoveLaserPanel,
-    onResetLaserPanel,
-    spotlightConfig,
-    onChangeSpotlightField,
-    spotlightRadius,
-    onSetSpotlightRadius,
-    spotlightPanelPosition,
-    onMoveSpotlightPanel,
-    onResetSpotlightPanel,
     eraserConfig,
     onChangeEraserField,
     eraserPanelPosition,
@@ -86,37 +64,19 @@ export function useCanvasToolPanels({
     formatPanelPosition,
     onMoveFormatPanel,
     onResetFormatPanel,
-    slideDeck,
-    slideDeckPanelPosition,
-    onMoveSlideDeckPanel,
-    onResetSlideDeckPanel,
-    tabSummaries,
-    activeTabId,
-    readOnly,
   } = props;
-  // Draw mode, which kept its eraser settings in the dock, is gone (docs/specs/007-editor/editor-modes.md).
-  const whiteboard = false;
 
-  const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
-    onResetLaserPanel?.(),
-  );
-  const spotlightWiring = panelWiringFor('spotlight', spotlightPanelPosition ?? null, () =>
-    onResetSpotlightPanel?.(),
-  );
   const eraserWiring = panelWiringFor('eraser', eraserPanelPosition ?? null, () =>
     onResetEraserPanel?.(),
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
   );
-  const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
-    onResetSlideDeckPanel?.(),
-  );
 
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): the character sheet, a popover over the
   // Avatar button, mounted only while Avatar mode is active and the popover open. Available to view-role too
-  // (the mode is); only someone who may speak gets Send a Message. Shown in Zen, as its button is (the mode's one
-  // piece of chrome there); only the welcome flow hides it.
+  // (the mode is); only someone who may speak gets Send a Message. Only the welcome flow
+  // hides it.
   const avatarEl =
     !props.welcomeOpen && canvasTool === 'avatar' && avatarConfig && avatarPopover ? (
       <AvatarPanel
@@ -149,42 +109,10 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
-  // tool is active — the avatar panel's twin in every respect, including the
-  // view-role availability (the laser is theirs too).
-  const laserEl =
-    !chromeHidden && canvasTool === 'laser' && laserConfig ? (
-      <LaserPanel
-        config={laserConfig}
-        onChange={(field, value) => onChangeLaserField?.(field, value)}
-        selfColour={selfParticipant?.color ?? '#0ea5e9'}
-        position={laserWiring.position}
-        onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
-        onReset={laserWiring.onReset}
-        dock={laserWiring.dock}
-      />
-    ) : null;
-
-  // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, mounted only while the
-  // Spotlight tool is active — the Laser Panel's sibling in every respect.
-  const spotlightEl =
-    !chromeHidden && canvasTool === 'spotlight' && spotlightConfig ? (
-      <SpotlightPanel
-        config={spotlightConfig}
-        onChange={(field, value) => onChangeSpotlightField?.(field, value)}
-        radius={spotlightRadius ?? 170}
-        onSetRadius={(r) => onSetSpotlightRadius?.(r)}
-        position={spotlightWiring.position}
-        onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
-        onReset={spotlightWiring.onReset}
-        dock={spotlightWiring.dock}
-      />
-    ) : null;
-
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
   // Eraser tool is active.
   const eraserEl =
-    !chromeHidden && !whiteboard && canvasTool === 'eraser' && eraserConfig ? (
+    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
       <EraserPanel
         config={eraserConfig}
         onChange={(field, value) => onChangeEraserField?.(field, value)}
@@ -198,7 +126,7 @@ export function useCanvasToolPanels({
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
-    !chromeHidden && !whiteboard && canvasTool === 'format' && formatConfig ? (
+    !chromeHidden && canvasTool === 'format' && formatConfig ? (
       <FormatPanel
         config={formatConfig}
         onToggleGroup={(group) => onToggleFormatGroup?.(group)}
@@ -211,23 +139,5 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The sixth, and the one
-  // whose tool does not itself change the canvas — picking it opens the
-  // workbench, and Start is a deliberate second act.
-  const slideDeckEl =
-    !chromeHidden && slideDeck && canvasTool === 'slide-deck' ? (
-      <SlideDeckPanel
-        state={slideDeck}
-        tabs={tabSummaries}
-        activeTabId={activeTabId ?? ''}
-        isReadOnly={readOnly}
-        position={slideDeckWiring.position}
-        onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
-        onReset={slideDeckWiring.onReset}
-        dock={slideDeckWiring.dock}
-      />
-    ) : null;
-
-  return { avatarEl, laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+  return { avatarEl, eraserEl, formatEl };
 }

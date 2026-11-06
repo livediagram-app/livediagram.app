@@ -23,8 +23,7 @@ origin and other apps' items on their own sites, and the filter shows "this app'
 
 The page at `/explorer` reads livehuddle's entry in the sites registry (`APP_ITEMS.livehuddle` in
 `@liveworkspace/sites`: item, share, new, preview, Library, import and This Browser paths). The editor's Explorer panel
-and the workbench's Explorer (`apps/editor/app/embed/workbench/ExplorerHost.tsx`) get the same from the editor's own
-hosts, named below.
+gets the same from the editor's own hosts, named below.
 
 - **Addresses.** A canvas opens at `/document/<id>` (with `?s=<code>` when it is reached through a link, and the
   editor's deep link `#t=<tab>&el=<element>` when a row pins one); a share link reads `/document/shared?s=<code>`,
@@ -32,11 +31,14 @@ hosts, named below.
   ([Share-link previews](share-link-previews.md)). `itemHref` and `shareUrl` in `apps/editor/lib/explorer-host.ts`.
 - **New.** The `/new` flow, filed where it was pressed (`?folder=`, `?team=`) ([Default folders](default-folders.md)).
 - **What it makes.** Home's hero pictures an app's kinds of work, each starting its template through
-  `/new?template=`; livehuddle has none listed yet, so its hero shows none (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
-- **The Library.** The person's **Image Gallery** and **Shape Libraries**, read through this site's API, and
-  **Import from**, whose buttons open this site's `/import` page for the source, which imports where New was pressed
-  and comes back (`apps/editor/lib/explorer-library-host.tsx`). Shape Libraries' tiles are drawn by
-  `GET /api/shape-libraries/:id/previews` ([Shape libraries](shape-libraries.md)).
+  `/new?template=`; livehuddle's are its four Spaces (Virtual Office, Team Pod, Coworking Space, All-Hands Hall), each
+  opening that template in `/new` (the package's `WORK_KINDS`, [Explorer Home](explorer-home.md), [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
+- **The Library.** The person's **Image Gallery**, read through this site's API, and **Import from**, whose
+  buttons open this site's `/import` page for the source, which imports where New was pressed and comes back
+  (`apps/editor/lib/explorer-library-host.tsx`). livehuddle lists no source (the sites registry's `imports: []`), so
+  Import from shows none; the `/import` page answers only its Excalidraw link. (Shape Libraries, and the
+  draw.io and Microsoft Whiteboard imports, left livehuddle in Work Tracker #423 part 4:
+  [Shape libraries](shape-libraries.md).)
 - **The item menu.** In the editor's Explorer panel, **Take Offline** and **Sync Space** on a canvas's menu, as the
   person (`apps/editor/hooks/persistence/useOfflineItemMenu.tsx`, the package's `itemMenu`;
   [Offline Mode](../006-document/offline-mode.md)). The Explorer page, built by liveworkspace.app, hands both over to
@@ -52,8 +54,8 @@ The editor's floating Explorer panel is the package's `ExplorerPanel`, with the 
 page, inside the editor's movable panel, which docks in a corner or opens as the menu button's popover
 (`apps/editor/components/panels/Explorer.tsx`). The open canvas shows on top, read once from the index when the
 panel opens (the package's `useOpenItem`), or from This Browser's list for a canvas kept only in this browser, with
-the This Browser pill and This Browser's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 64rem (its rail 13rem, its preview cards four across)
-wide and 56rem tall, inside the window, over a dimmed scrim on every screen size (a press on it closes the panel and
+the This Browser pill and This Browser's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 54rem (its rail 13rem, its preview cards four across)
+wide and 45rem tall, inside the window, over a dimmed scrim on every screen size (a press on it closes the panel and
 focus goes back to the menu button); on a phone it stays the sheet. Every list is one request a page, loaded only once its section is chosen. It is wrapped in `React.memo`
 so the editor's per-frame churn never re-renders it.
 

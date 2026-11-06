@@ -6,14 +6,11 @@ import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
-  reactionOf,
   defaultFillColor,
   defaultPadding,
   defaultStrokeColor,
   carriesSharedSettingsMenu,
   elementKindLabel,
-  isCollabPanelShape,
-  ownColours,
   isSelfDrawingShape,
   isWebComponentShape,
   isChipShape,
@@ -21,6 +18,7 @@ import {
   type ConceptShape,
   type ShapeElement,
   defaultTextColor,
+  isRetiredElement,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
@@ -28,9 +26,6 @@ import {
 } from '@livehuddle/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
-import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
-import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
-import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
@@ -39,16 +34,12 @@ import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
-import { PickerFace } from '@/components/canvas/PickerFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
-import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
-import { RevealFace } from '@/components/canvas/RevealFace';
-import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
-import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
-import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code';
+import { loadTableView } from '@/lib/editor-deferred-code';
+import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
@@ -57,21 +48,24 @@ import { BoundaryFace } from '@/components/canvas/BoundaryFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { DirectoryFace } from '@/components/canvas/wayfinding/DirectoryFace';
+import { ElevatorFace } from '@/components/canvas/wayfinding/ElevatorFace';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
-// Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
-// as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
+// Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts
+// (lib/editor-deferred-code.ts), so a board that has one finds it already in.
 const TableView = dynamic(loadTableView, { ssr: false });
-const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 
 // WHAT AN ELEMENT SHOWS IN PLACE OF A PLAIN LABEL.
 //
 // One exclusive chain, ordered from the most specific face to the plain
 // label at the end. Nearly every branch is an element kind that draws its own
-// interactive face — a mode button, a session timer, a reveal cover, a picker,
-// a collaboration panel — and each one falls through to the ordinary label
-// editor while `isEditing`, so the title on a face is retyped exactly like the
-// label on a square.
+// interactive face (a mode button, Bring Focus, a reaction pad, a portal),
+// and each one falls through to the ordinary label editor while `isEditing`,
+// so the title on a face is retyped exactly like the label on a square. A
+// retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+// elements") comes before all of them and never falls through: it takes no
+// typed label.
 //
 // Split out of BoxedElementView because it is the one part of that component
 // that grows with the palette: every new pressable element adds a branch here
@@ -87,34 +81,18 @@ type ElementFaceRouterProps = Pick<
   | 'writable'
   | 'fontFamily'
   | 'activeMode'
-  | 'collab'
-  | 'commentActions'
-  | 'commentSelfId'
-  | 'actionActions'
-  | 'actionSelfId'
   | 'imageContext'
   | 'tabSummaries'
-  | 'tabTimer'
-  | 'timerControls'
-  | 'timerState'
-  | 'sessionStartBlocked'
-  | 'sessionRunBy'
-  | 'revealedForMe'
   | 'onCommitTable'
   | 'onEnterPortal'
-  | 'onFireReaction'
   | 'onFollowLink'
   | 'onLinkCell'
   | 'onPressModeButton'
   | 'onPressFocusButton'
-  | 'onPressSessionButton'
-  | 'onRollPicker'
   | 'onSetPageHeading'
   | 'onSetWebRows'
   | 'onSetHeroCaptionLine'
-  | 'onSetSessionConfig'
   | 'onOpenElementSettings'
-  | 'onToggleReveal'
 > & {
   // Derived once by the host and shared with the branches here, rather than
   // recomputed per branch: several of them render the same label node.
@@ -138,7 +116,15 @@ type ElementFaceRouterProps = Pick<
   hitLine: boolean;
 };
 
-export function ElementFaceRouter({
+export function ElementFaceRouter(props: ElementFaceRouterProps) {
+  // A kind livehuddle no longer has draws its placeholder and nothing else: no settings `…`, no face of its own,
+  // and no label editor however it was asked for one.
+  if (isRetiredElement(props.element) && props.element.type === 'shape')
+    return <RetiredElementFace element={props.element} fontFamily={props.fontFamily} />;
+  return <KnownElementFace {...props} />;
+}
+
+function KnownElementFace({
   hitLine,
   element,
   isEditing,
@@ -147,34 +133,18 @@ export function ElementFaceRouter({
   writable = true,
   fontFamily,
   activeMode,
-  collab,
-  commentActions,
-  commentSelfId,
-  actionActions,
-  actionSelfId,
   imageContext,
   tabSummaries,
-  tabTimer,
-  timerControls,
-  timerState,
-  sessionStartBlocked,
-  sessionRunBy,
-  revealedForMe,
   onCommitTable,
   onEnterPortal,
-  onFireReaction,
   onFollowLink,
   onLinkCell,
   onPressModeButton,
   onPressFocusButton,
-  onPressSessionButton,
-  onRollPicker,
   onSetPageHeading,
   onSetWebRows,
   onSetHeroCaptionLine,
-  onSetSessionConfig,
   onOpenElementSettings,
-  onToggleReveal,
   label,
   labelNode,
   contentInset,
@@ -205,15 +175,11 @@ export function ElementFaceRouter({
         onOpen={() => onOpenElementSettings(element.id)}
       />
     ) : null;
-  // A collaboration panel has a title row, and the `…` leads its title
-  // (CollabSettingsSlot); everything else keeps it in the top-right corner.
-  const inTitleRow = element.type === 'shape' && isCollabPanelShape(element.shape);
-  // A card's own fill, for the modern collab faces' accent scope.
+  // A card's own fill, for a diagram key's paper.
   const cardFill = element.fillColor ?? defaultFillColor(element, surface);
-  const settingsMenu =
-    settingsButton && !inTitleRow ? (
-      <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
-    ) : null;
+  const settingsMenu = settingsButton ? (
+    <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
+  ) : null;
 
   return (
     <>
@@ -236,66 +202,6 @@ export function ElementFaceRouter({
               : undefined
           }
         />
-      ) : element.type === 'shape' &&
-        element.shape === 'session-button' &&
-        element.session?.tool === 'timer' &&
-        !isEditing &&
-        timerControls ? (
-        /* A TIMER session element is the timer (docs/specs/012-collaboration/session-button.md), not a button that
-           starts one elsewhere: same TabTimer, same tab field, same pure
-           display maths as the top-of-page pill, so pausing here pauses
-           there. Falls through to the plain button face when the surface has
-           no timer controls (the read-only embed, the export renderer). */
-        <SessionTimerFace
-          timer={tabTimer ?? null}
-          durationMs={(element.session.minutes ?? 5) * 60_000}
-          readOnly={!timerControls.pause}
-          runBy={sessionRunBy ?? null}
-          borderPx={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
-          onStart={
-            onPressSessionButton && !sessionStartBlocked
-              ? () => onPressSessionButton(element)
-              : undefined
-          }
-          onPause={timerControls.pause}
-          onResume={timerControls.resume}
-          onReset={timerControls.reset}
-          onClear={timerControls.clear}
-          minutes={element.session.minutes ?? 5}
-          onSetMinutes={
-            onSetSessionConfig
-              ? (m) => {
-                  onSetSessionConfig(element, { ...element.session!, minutes: m });
-                  // A timer that is already running or paused restarts at the
-                  // new length: leaving it mid-run would show a number from
-                  // the old length against the new one.
-                  timerControls.setDuration?.(m * 60_000);
-                }
-              : undefined
-          }
-          onOpenSettings={
-            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
-          }
-        />
-      ) : element.type === 'shape' && element.shape === 'session-button' && !isEditing ? (
-        /* Session button (docs/specs/012-collaboration/session-button.md): starts a vote / poll for the room. */
-        <SessionButtonFace
-          config={element.session}
-          label={label}
-          textColor={textColor}
-          canStart={!!onPressSessionButton && !sessionStartBlocked}
-          runBy={sessionRunBy ?? null}
-          timerState={timerState}
-          onPress={onPressSessionButton ? () => onPressSessionButton(element) : undefined}
-          onSetConfig={
-            onSetSessionConfig && element.session
-              ? (next) => onSetSessionConfig(element, next)
-              : undefined
-          }
-          onOpenSettings={
-            onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
-          }
-        />
       ) : element.type === 'shape' && element.shape === 'focus-button' && !isEditing ? (
         /* Bring Focus (docs/specs/012-collaboration/bring-focus.md): asks everyone else in the room to come and
            look at this, on your tab. */
@@ -303,85 +209,6 @@ export function ElementFaceRouter({
           label={label}
           textColor={textColor}
           onPress={onPressFocusButton ? () => onPressFocusButton(element) : undefined}
-        />
-      ) : element.type === 'shape' && element.shape === 'reveal' && !isEditing ? (
-        /* Reveal zone (docs/specs/009-elements/reveal-zone.md): a cover, off for me / off for everyone. */
-        <RevealFace
-          label={label}
-          textColor={textColor}
-          strokeColor={
-            remoteBorderColor ?? ownColours(element).stroke ?? defaultStrokeColor(element, surface)
-          }
-          revealedForAll={element.revealed === true}
-          revealedForMe={!!revealedForMe}
-          onToggleForMe={onToggleReveal ? () => onToggleReveal(element.id) : undefined}
-        />
-      ) : element.type === 'shape' && element.shape === 'picker' && !isEditing ? (
-        /* Picker (docs/specs/012-collaboration/picker.md): rolls a person or an option. */
-        <PickerFace
-          label={label}
-          result={element.pickerResult}
-          candidates={onRollPicker?.(element).candidates ?? []}
-          textColor={textColor}
-          shared={onRollPicker?.(element).shared ?? false}
-          // Rolling is running the session (docs/specs/013-workspace/share-roles.md): an Editor's alone.
-          onRoll={onRollPicker && !readOnly ? () => onRollPicker(element).roll() : undefined}
-        />
-      ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
-        /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,
-           a temperature check, an idea box, an agenda, or a roll call. Like
-           every other face above, mid-edit it falls through to the ordinary
-           label editor below, so the title is retyped like any shape's. */
-        <CollabSettingsSlot.Provider value={settingsButton}>
-          <CollabFaceRouter
-            element={element}
-            label={label}
-            textColor={textColor}
-            collab={collab}
-            onOpenSettings={
-              onOpenElementSettings ? () => onOpenElementSettings(element.id) : undefined
-            }
-          />
-        </CollabSettingsSlot.Provider>
-      ) : element.type === 'shape' && element.shape === 'comment-pin' && !isEditing ? (
-        /* Comment pin (docs/specs/012-collaboration/comment-pin.md): opens the SAME thread popover an ordinary
-           element's comment badge opens — the pin is just an element whose
-           only job is to carry a commentThread. */
-        <CommentPanelFace
-          element={element}
-          label={label}
-          textColor={textColor}
-          surface={cardFill}
-          selfId={commentSelfId ?? ''}
-          onAddComment={commentActions?.add}
-          onDeleteComment={commentActions?.remove}
-          onResolve={commentActions?.resolve}
-          onUnresolve={commentActions?.unresolve}
-        />
-      ) : element.type === 'shape' && element.shape === 'action-card' && !isEditing ? (
-        /* Action panel (docs/specs/012-collaboration/action-panel.md): the Comment panel's sibling. It drives the
-           SAME action machinery the popover and the Assign Action dialog do. */
-        <ActionPanelFace
-          element={element}
-          label={label}
-          textColor={textColor}
-          surface={cardFill}
-          selfId={actionSelfId ?? null}
-          onAdd={actionActions?.add}
-          onEdit={actionActions?.edit}
-          onComplete={actionActions?.complete}
-          onReopen={actionActions?.reopen}
-        />
-      ) : element.type === 'shape' && element.shape === 'reaction-pad' && !isEditing ? (
-        /* Reaction pad (docs/specs/009-elements/reaction-pad.md): a pressable glyph. The burst it throws is
-           rendered OUTSIDE this label stack, below, so it can overflow the
-           element's box — a burst confined to the pad is a burst nobody
-           notices. */
-        <ReactionPadFace
-          label={label}
-          reaction={reactionOf(element.reaction)}
-          textColor={textColor}
-          onFire={onFireReaction ? () => onFireReaction(element) : undefined}
         />
       ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
         /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */
@@ -392,6 +219,18 @@ export function ElementFaceRouter({
           }
           targetName={onEnterPortal?.(element).targetName ?? null}
           onEnter={onEnterPortal?.(element).travel}
+        />
+      ) : element.type === 'shape' && element.shape === 'directory' ? (
+        /* Directory (docs/specs/009-elements/directory.md): a press over the stand opens the space's rooms. */
+        <DirectoryFace elementId={element.id} wayfinding={onEnterPortal?.(element).wayfinding} />
+      ) : element.type === 'shape' && element.shape === 'elevator' && !isEditing ? (
+        /* Elevator (docs/specs/009-elements/elevator.md): a press (or a walk-in) opens the panel; its name under it,
+           retyped like any label while editing. */
+        <ElevatorFace
+          elementId={element.id}
+          label={label}
+          textColor={textColor}
+          wayfinding={onEnterPortal?.(element).wayfinding}
         />
       ) : element.type === 'annotation' ? (
         <AnnotationGlyph

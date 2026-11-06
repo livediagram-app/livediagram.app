@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { createFreehand, createImage } from './factories';
 import type { Element, Tab } from './index';
 import {
+  addedByAdder,
   applyParticipantOp,
   participantTabChange,
   type ParticipantOpResult,
 } from './participant-content';
 
-// The participant content rule (docs/specs/013-workspace/share-roles.md "What a Participant changes").
+// The participant content rule (docs/specs/013-workspace/share-roles.md "A Participant walks"): a Participant adds,
+// writes, moves and removes nothing; it changes an element only through a piece (a Door, its notes on a Notice Board).
 const ME = 'a'.repeat(32);
 const THEM = 'b'.repeat(32);
 const box = { x: 10, y: 20, width: 120, height: 80 };
@@ -24,7 +26,7 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
     id,
     type: 'shape',
-    shape: 'rectangle',
+    shape: 'square',
     ...box,
     label: 'Column',
     ...extra,
@@ -49,52 +51,31 @@ function applied(r: ParticipantOpResult) {
 }
 
 describe('applyParticipantOp: add', () => {
-  it('adds a sticky stamped with the adder key, at its place', () => {
-    const tab = tabOf([shape('col'), sticky('s0')]);
-    const r = applied(applyParticipantOp(tab, { kind: 'add', element: sticky('new'), at: 1 }, ME));
-    expect(r.tab.elements.map((e) => e.id)).toEqual(['col', 'new', 's0']);
-    expect(r.tab.elements[1]).toMatchObject({ addedBy: ME });
-    expect(r.op).toMatchObject({ kind: 'add', at: 1, element: { addedBy: ME } });
-    expect(r.changed).toBe(true);
-  });
-
-  it('adds text, overrides a claimed adder, and clamps its place', () => {
-    const tab = tabOf([shape('col')]);
-    const text = { id: 'tx', type: 'text', ...box, label: 'Hi', addedBy: THEM } as Element;
-    const r = applied(applyParticipantOp(tab, { kind: 'add', element: text, at: 99 }, ME));
-    expect(r.tab.elements.map((e) => e.id)).toEqual(['col', 'tx']);
-    expect(r.tab.elements[1]).toMatchObject({ addedBy: ME });
-  });
-
-  it('strips a lock and any answers from what it adds', () => {
-    const r = applied(
-      applyParticipantOp(
-        tabOf([]),
-        {
-          kind: 'add',
-          element: sticky('n', { locked: true, commentThread: [{ id: 'c' }] }),
-          at: 0,
-        },
-        ME,
-      ),
-    );
-    expect(r.tab.elements[0]).not.toHaveProperty('locked');
-    expect(r.tab.elements[0]).not.toHaveProperty('commentThread');
-  });
-
-  it('refuses a shape, and takes it back off the sender', () => {
-    const r = applyParticipantOp(tabOf([]), { kind: 'add', element: shape('x'), at: 0 }, ME);
-    expect(r).toEqual({
-      result: 'refused',
-      reason: 'not-addable',
-      correction: { kind: 'remove', id: 'x' },
-    });
-  });
-
-  it('refuses without an adder key', () => {
-    for (const key of [null, '']) {
-      const r = applyParticipantOp(tabOf([]), { kind: 'add', element: sticky('x'), at: 0 }, key);
-      expect(r).toMatchObject({ result: 'refused', reason: 'no-adder' });
+  it('refuses every add, a sticky, text, image or shape alike, and takes it back off the sender', () => {
+    const elements: Element[] = [
+      sticky('s'),
+      { id: 'tx', type: 'text', ...box, label: 'Hi' },
+      { ...createImage(0, 0), id: 'i' },
+      shape('x'),
+      {
+        ...createFreehand(
+          [
+            { x: 0, y: 0 },
+            { x: 5, y: 5 },
+          ],
+          false,
+        ),
+        id: 'f',
+      },
+    ];
+    for (const el of elements) {
+      for (const key of [ME, null]) {
+        expect(applyParticipantOp(tabOf([]), { kind: 'add', element: el, at: 0 }, key)).toEqual({
+          result: 'refused',
+          reason: 'not-addable',
+          correction: { kind: 'remove', id: el.id },
+        });
+      }
     }
   });
 
@@ -106,370 +87,116 @@ describe('applyParticipantOp: add', () => {
     );
     expect(r).toEqual({ result: 'refused', reason: 'id-taken', correction: null });
   });
-
-  it('refuses on a locked tab and onto a locked layer', () => {
-    const locked = applyParticipantOp(
-      tabOf([], { locked: true }),
-      { kind: 'add', element: sticky('x'), at: 0 },
-      ME,
-    );
-    expect(locked).toMatchObject({ result: 'refused', reason: 'tab-locked' });
-    const layered = applyParticipantOp(
-      tabOf([], { layers: [{ id: 'L', name: 'Frame', locked: true }] }),
-      { kind: 'add', element: sticky('x', { layerId: 'L' }), at: 0 },
-      ME,
-    );
-    expect(layered).toMatchObject({ result: 'refused', reason: 'locked' });
-  });
-
-  it('refuses a malformed element', () => {
-    const bad = {
-      id: 'x',
-      type: 'sticky',
-      x: 'left',
-      y: 0,
-      width: 1,
-      height: 1,
-    } as unknown as Element;
-    expect(applyParticipantOp(tabOf([]), { kind: 'add', element: bad, at: 0 }, ME)).toMatchObject({
-      result: 'refused',
-      reason: 'invalid',
-    });
-  });
 });
 
-describe("applyParticipantOp: update someone else's element", () => {
-  it('writes the words on a shape and keeps everything else as stored', () => {
-    const stored = shape('col', { fillColor: '#fff' });
-    const incoming = shape('col', {
-      label: 'Start doing',
-      richText: [{ text: 'Start doing' }],
-      fillColor: '#000',
-      width: 999,
-      x: 500,
-    });
-    const r = applied(
-      applyParticipantOp(tabOf([stored]), { kind: 'update', element: incoming }, ME),
-    );
-    expect(r.tab.elements[0]).toEqual({
-      ...stored,
-      label: 'Start doing',
-      richText: [{ text: 'Start doing' }],
-    });
-    // Peers get the words alone, never the stored size or colour over their own live copy.
-    expect(r.op).toEqual({
-      kind: 'patch',
-      id: 'col',
-      set: { label: 'Start doing', richText: [{ text: 'Start doing' }] },
-    });
-    expect(r.changed).toBe(true);
+describe('applyParticipantOp: update', () => {
+  it("keeps every content field of anyone's element as stored: words, place, size, colour, cells, picture", () => {
+    const img = { ...createImage(0, 0), id: 'i', imageId: 'old' } as Element;
+    const cases: [Element, Record<string, unknown>][] = [
+      [shape('col'), { label: 'Start', x: 400, width: 300, fillColor: '#000000' }],
+      [sticky('s', { addedBy: THEM }), { label: 'Nope', x: 99, fillColor: '#bbf7d0' }],
+      [
+        table('tb'),
+        {
+          cells: [
+            ['x', 'y'],
+            ['z', 'w'],
+          ],
+        },
+      ],
+      [
+        { id: 'tx', type: 'text', ...box, label: 'Hi' },
+        { label: 'Longer words', width: 400 },
+      ],
+      [img, { imageId: 'new', naturalWidth: 640, width: 5 }],
+    ];
+    for (const [stored, change] of cases) {
+      const r = applied(
+        applyParticipantOp(
+          tabOf([stored]),
+          { kind: 'update', element: { ...stored, ...change } },
+          ME,
+        ),
+      );
+      expect(r.changed, stored.id).toBe(false);
+      expect(r.tab.elements[0], stored.id).toEqual(stored);
+    }
   });
 
-  it("never writes on a Behaviour's words, a poll's question among them", () => {
-    const stored = shape('poll', { shape: 'session-button', label: 'Lunch?' });
-    const tab = tabOf([stored]);
-    const r = applied(
-      applyParticipantOp(tab, { kind: 'update', element: { ...stored, label: 'Mine' } }, ME),
-    );
-    expect(r.tab.elements[0]).toEqual(stored);
-    expect(r.changed).toBe(false);
-    expect(participantTabChange(tab, tabOf([{ ...stored, label: 'Mine' }]), ME)).toBeNull();
-  });
-
-  it('clears the words when the sender cleared them', () => {
+  it('treats its own earlier sticky no differently: it no longer writes on, moves or recolours it', () => {
+    const mine = sticky('m', { addedBy: ME });
     const r = applied(
       applyParticipantOp(
-        tabOf([shape('col')]),
-        { kind: 'update', element: { ...shape('col'), label: undefined } as Element },
-        ME,
-      ),
-    );
-    expect(r.tab.elements[0]).not.toHaveProperty('label');
-  });
-
-  it("moves, resizes and recolours anyone's sticky, never turns it", () => {
-    const stored = sticky('s', { addedBy: THEM });
-    const r = applied(
-      applyParticipantOp(
-        tabOf([stored]),
+        tabOf([mine]),
         {
           kind: 'update',
-          element: sticky('s', {
-            x: 300,
-            y: 40,
-            fillColor: '#bae6fd',
-            width: 400,
-            height: -5,
-            rotation: 45,
-            addedBy: ME,
-          }),
+          element: { ...mine, label: 'Edited', x: 300, fillColor: '#bbf7d0' } as Element,
         },
         ME,
       ),
     );
-    expect(r.tab.elements[0]).toMatchObject({
-      x: 300,
-      y: 40,
-      fillColor: '#bae6fd',
-      width: 400,
-      // A size that is not positive keeps the stored one.
-      height: 80,
-      addedBy: THEM,
-    });
-    expect(r.tab.elements[0]).not.toHaveProperty('rotation');
-  });
-
-  it('keeps a stored place for a malformed position', () => {
-    const r = applied(
-      applyParticipantOp(
-        tabOf([sticky('s')]),
-        { kind: 'update', element: sticky('s', { x: Number.NaN, y: 55 }) },
-        ME,
-      ),
-    );
-    expect(r.tab.elements[0]).toMatchObject({ x: 10, y: 55 });
-  });
-
-  it("writes a table's cells only when its shape holds", () => {
-    const tab = tabOf([table('tb')]);
-    const words = applied(
-      applyParticipantOp(
-        tab,
-        {
-          kind: 'update',
-          element: {
-            ...table('tb'),
-            cells: [
-              ['x', 'b'],
-              ['c', 'd'],
-            ],
-          } as Element,
-        },
-        ME,
-      ),
-    );
-    expect((words.tab.elements[0] as { cells: string[][] }).cells[0]).toEqual(['x', 'b']);
-    const grown = applied(
-      applyParticipantOp(
-        tab,
-        {
-          kind: 'update',
-          element: {
-            ...table('tb'),
-            cells: [
-              ['a', 'b'],
-              ['c', 'd'],
-              ['e', 'f'],
-            ],
-          } as Element,
-        },
-        ME,
-      ),
-    );
-    expect(grown.changed).toBe(false);
-  });
-
-  it('lets a text box that hugs its words follow them, and no other, nor a shape', () => {
-    const hug = { id: 'tx', type: 'text', ...box, label: 'Hi', sizing: 'fit' } as Element;
-    const fixed = { id: 'fx', type: 'text', ...box, label: 'Hi' } as Element;
-    const tab = tabOf([hug, fixed]);
-    const grown = applied(
-      applyParticipantOp(
-        tab,
-        { kind: 'update', element: { ...hug, label: 'Hello there', width: 200 } as Element },
-        ME,
-      ),
-    );
-    expect(grown.tab.elements[0]).toMatchObject({ label: 'Hello there', width: 200 });
-    const resized = applied(
-      applyParticipantOp(
-        tab,
-        { kind: 'update', element: { ...fixed, label: 'Hello', width: 200 } as Element },
-        ME,
-      ),
-    );
-    expect(resized.tab.elements[1]).toMatchObject({ label: 'Hello', width: 120 });
-    const nudged = applied(
-      applyParticipantOp(tab, { kind: 'update', element: { ...fixed, x: 500 } as Element }, ME),
-    );
-    expect(nudged.tab.elements[1]).toMatchObject({ x: 10 });
-    const col = shape('col');
-    const shaped = applied(
-      applyParticipantOp(
-        tabOf([col]),
-        { kind: 'update', element: { ...col, width: 999 } as Element },
-        ME,
-      ),
-    );
-    expect(shaped.tab.elements[0]).toMatchObject({ width: 120 });
-  });
-
-  it("keeps a marker loop's stored fill and open ends when a Participant sends a Fill tool press", () => {
-    // docs/specs/023-draw-mode/fill-tool.md "Share roles": a fill a Participant sends anyway is not kept.
-    const ring = [0, 1, 2, 3, 4, 5].map((i) => ({
-      x: 50 + 40 * Math.cos(i),
-      y: 50 + 40 * Math.sin(i),
-    }));
-    const stored = { ...createFreehand(ring, false), id: 'ink', penWidth: 2 } as Element;
-    const filled = { ...stored, closed: true, fillColor: '#dbeafe' } as Element;
-    const r = applied(applyParticipantOp(tabOf([stored]), { kind: 'update', element: filled }, ME));
     expect(r.changed).toBe(false);
-    expect(r.tab.elements[0]).toBe(stored);
-  });
-
-  it('answers unchanged when nothing permitted moved', () => {
-    const stored = shape('col');
-    const r = applied(
-      applyParticipantOp(
-        tabOf([stored]),
-        { kind: 'update', element: shape('col', { rotation: 45 }) },
-        ME,
-      ),
-    );
-    expect(r.changed).toBe(false);
-    expect(r.tab.elements[0]).toBe(stored);
-    expect(r.op).toEqual({ kind: 'patch', id: 'col', set: {} });
+    expect(r.tab.elements[0]).toEqual(mine);
   });
 
   it('refuses a missing element, a changed type and a locked one', () => {
-    expect(applyParticipantOp(tabOf([]), { kind: 'update', element: sticky('gone') }, ME)).toEqual({
-      result: 'refused',
-      reason: 'missing',
-      correction: null,
-    });
-    const stored = shape('s');
     expect(
-      applyParticipantOp(tabOf([stored]), { kind: 'update', element: sticky('s') }, ME),
-    ).toEqual({
-      result: 'refused',
-      reason: 'type-changed',
-      correction: { kind: 'update', element: stored },
-    });
-    const held = shape('h', { locked: true });
+      applyParticipantOp(tabOf([]), { kind: 'update', element: sticky('gone') }, ME),
+    ).toMatchObject({ result: 'refused', reason: 'missing', correction: null });
+    expect(
+      applyParticipantOp(tabOf([sticky('s')]), { kind: 'update', element: shape('s') }, ME),
+    ).toMatchObject({ result: 'refused', reason: 'type-changed' });
+    const held = sticky('h', { locked: true });
     expect(
       applyParticipantOp(
         tabOf([held]),
-        { kind: 'update', element: shape('h', { label: 'x' }) },
+        { kind: 'update', element: { ...held, label: 'x' } as Element },
         ME,
       ),
-    ).toMatchObject({ result: 'refused', reason: 'locked' });
+    ).toMatchObject({
+      result: 'refused',
+      reason: 'locked',
+      correction: { kind: 'update', element: held },
+    });
   });
 
   it('refuses everything on a locked tab', () => {
-    const stored = sticky('s', { addedBy: ME });
-    const tab = tabOf([stored], { locked: true });
-    expect(
-      applyParticipantOp(tab, { kind: 'update', element: sticky('s', { label: 'x' }) }, ME),
-    ).toEqual({
+    const s0 = sticky('s');
+    const tab = tabOf([s0], { locked: true });
+    expect(applyParticipantOp(tab, { kind: 'update', element: s0 }, ME)).toMatchObject({
       result: 'refused',
       reason: 'tab-locked',
-      correction: { kind: 'update', element: stored },
     });
-    expect(applyParticipantOp(tab, { kind: 'remove', id: 's' }, ME)).toEqual({
+    expect(applyParticipantOp(tab, { kind: 'remove', id: 's' }, ME)).toMatchObject({
       result: 'refused',
       reason: 'tab-locked',
-      correction: { kind: 'add', element: stored, at: 0 },
+      correction: { kind: 'add', element: s0, at: 0 },
     });
-  });
-});
-
-describe('applyParticipantOp: update its own element', () => {
-  it('takes any field, keeping identity, adder and answers from stored', () => {
-    const stored = sticky('mine', {
-      addedBy: ME,
-      responses: [{ participantId: 'p', value: '3', at: 1 }],
-    });
-    const r = applied(
-      applyParticipantOp(
-        tabOf([stored]),
-        {
-          kind: 'update',
-          element: sticky('mine', {
-            width: 300,
-            textBold: true,
-            addedBy: THEM,
-            responses: [],
-          }),
-        },
-        ME,
-      ),
-    );
-    expect(r.tab.elements[0]).toMatchObject({
-      width: 300,
-      textBold: true,
-      addedBy: ME,
-      responses: [{ participantId: 'p', value: '3', at: 1 }],
-    });
-  });
-});
-
-describe('applyParticipantOp: what its own element may not become', () => {
-  it('keeps its lock as stored, and clears a field it removed', () => {
-    const stored = sticky('mine', { addedBy: ME, note: 'n' });
-    const r = applied(
-      applyParticipantOp(
-        tabOf([stored]),
-        { kind: 'update', element: sticky('mine', { addedBy: ME, locked: true }) },
-        ME,
-      ),
-    );
-    expect(r.tab.elements[0]).not.toHaveProperty('locked');
-    expect(r.op).toEqual({ kind: 'patch', id: 'mine', set: {}, clear: ['note'] });
-  });
-
-  it('refuses moving it onto a locked layer', () => {
-    const tab = tabOf([sticky('mine', { addedBy: ME })], {
-      layers: [
-        { id: 'layer:default', name: 'Layer 1' },
-        { id: 'L', name: 'Frame', locked: true },
-      ],
-    });
-    expect(
-      applyParticipantOp(
-        tab,
-        { kind: 'update', element: sticky('mine', { addedBy: ME, layerId: 'L' }) },
-        ME,
-      ),
-    ).toMatchObject({ result: 'refused', reason: 'locked' });
   });
 });
 
 describe('applyParticipantOp: remove and reorder', () => {
-  it('removes what it added', () => {
-    const r = applied(
-      applyParticipantOp(
-        tabOf([shape('col'), sticky('mine', { addedBy: ME })]),
-        { kind: 'remove', id: 'mine' },
-        ME,
-      ),
-    );
-    expect(r.tab.elements.map((e) => e.id)).toEqual(['col']);
+  it('removes nothing, its own earlier sticky included, and puts it back where it was', () => {
+    for (const el of [
+      sticky('mine', { addedBy: ME }),
+      sticky('theirs', { addedBy: THEM }),
+      shape('col'),
+    ]) {
+      const tab = tabOf([shape('a'), el]);
+      expect(applyParticipantOp(tab, { kind: 'remove', id: el.id }, ME)).toEqual({
+        result: 'refused',
+        reason: 'not-own',
+        correction: { kind: 'add', element: el, at: 1 },
+      });
+    }
   });
 
-  it("refuses to remove anyone else's, and puts it back where it was", () => {
-    const theirs = sticky('theirs', { addedBy: THEM });
-    const editors = sticky('editors');
-    const tab = tabOf([shape('col'), theirs, editors]);
-    expect(applyParticipantOp(tab, { kind: 'remove', id: 'theirs' }, ME)).toEqual({
+  it('refuses to remove a locked element as locked', () => {
+    const held = sticky('h', { addedBy: ME, locked: true });
+    expect(applyParticipantOp(tabOf([held]), { kind: 'remove', id: 'h' }, ME)).toMatchObject({
       result: 'refused',
-      reason: 'not-own',
-      correction: { kind: 'add', element: theirs, at: 1 },
+      reason: 'locked',
     });
-    expect(applyParticipantOp(tab, { kind: 'remove', id: 'editors' }, ME)).toMatchObject({
-      reason: 'not-own',
-    });
-    expect(applyParticipantOp(tab, { kind: 'remove', id: 'editors' }, null)).toMatchObject({
-      reason: 'not-own',
-    });
-  });
-
-  it('refuses to remove a locked element, even its own', () => {
-    const r = applyParticipantOp(
-      tabOf([sticky('mine', { addedBy: ME, locked: true })]),
-      { kind: 'remove', id: 'mine' },
-      ME,
-    );
-    expect(r).toMatchObject({ result: 'refused', reason: 'locked' });
   });
 
   it('refuses a missing element with nothing to restore', () => {
@@ -481,7 +208,7 @@ describe('applyParticipantOp: remove and reorder', () => {
   });
 
   it('refuses every reorder, restoring the stored order', () => {
-    const tab = tabOf([shape('a'), sticky('b', { addedBy: ME })]);
+    const tab = tabOf([shape('a'), sticky('b')]);
     expect(applyParticipantOp(tab, { kind: 'reorder', ids: ['b', 'a'] }, ME)).toEqual({
       result: 'refused',
       reason: 'reorder',
@@ -491,43 +218,51 @@ describe('applyParticipantOp: remove and reorder', () => {
 });
 
 describe('participantTabChange', () => {
-  const before = tabOf([shape('col'), sticky('theirs', { addedBy: THEM })]);
+  const before = tabOf([
+    shape('col'),
+    sticky('theirs', { addedBy: THEM }),
+    sticky('mine', { addedBy: ME }),
+  ]);
 
-  it('stamps what it adds and keeps permitted changes as they are', () => {
-    const after = tabOf([
-      shape('col', { label: 'Start' }),
-      sticky('theirs', { addedBy: THEM, x: 99 }),
-      sticky('new'),
-    ]);
-    const out = participantTabChange(before, after, ME);
-    expect(out?.elements[2]).toMatchObject({ id: 'new', addedBy: ME });
-    expect(out?.elements[0]).toBe(after.elements[0]);
+  it('answers the same tab when nothing changed', () => {
+    expect(participantTabChange(before, before, ME)).toBe(before);
   });
 
-  it('answers the same tab when nothing needed stamping', () => {
-    const after = tabOf([shape('col', { label: 'Start' }), sticky('theirs', { addedBy: THEM })]);
-    expect(participantTabChange(before, after, ME)).toBe(after);
+  it('refuses every content change: an add, a delete, a word, a move, an order, the tab', () => {
+    const [col, theirs, mine] = before.elements as [Element, Element, Element];
+    const changes: Tab[] = [
+      tabOf([...before.elements, sticky('new')]),
+      tabOf([...before.elements, { id: 'tx', type: 'text', ...box, label: 'Hi' }]),
+      tabOf([col, theirs]),
+      tabOf([shape('col', { label: 'Start' }), theirs, mine]),
+      tabOf([col, sticky('theirs', { addedBy: THEM, x: 99 }), mine]),
+      tabOf([col, theirs, sticky('mine', { addedBy: ME, label: 'Edited' })]),
+      tabOf([...before.elements].reverse()),
+      { ...before, name: 'Renamed' },
+    ];
+    for (const after of changes) expect(participantTabChange(before, after, ME)).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/room-builder.md "Opening and closing": a Participant swings any door, and only that.
+describe('a Participant and a Door', () => {
+  const door = (extra: Record<string, unknown> = {}) =>
+    shape('door', { shape: 'door', label: undefined, ...extra });
+  const before = tabOf([door()]);
+
+  it('opens and closes it', () => {
+    const closed = participantTabChange(before, tabOf([door({ doorClosed: true })]), ME);
+    expect(closed?.elements[0]).toMatchObject({ doorClosed: true });
+    const open = participantTabChange(tabOf([door({ doorClosed: true })]), before, ME);
+    expect(open?.elements[0]).not.toHaveProperty('doorClosed');
   });
 
-  it('refuses anything the room would refuse or trim', () => {
-    // Somebody else's sticky deleted.
-    expect(participantTabChange(before, tabOf([shape('col')]), ME)).toBeNull();
-    // A shape resized.
+  it('moves, resizes or deletes nothing about it', () => {
+    expect(participantTabChange(before, tabOf([door({ x: 400 })]), ME)).toBeNull();
     expect(
-      participantTabChange(
-        before,
-        tabOf([shape('col', { width: 500 }), sticky('theirs', { addedBy: THEM })]),
-        ME,
-      ),
+      participantTabChange(before, tabOf([door({ doorClosed: true, width: 40 })]), ME),
     ).toBeNull();
-    // A shape added.
-    expect(participantTabChange(before, tabOf([...before.elements, shape('x')]), ME)).toBeNull();
-    // Reordered.
-    expect(participantTabChange(before, tabOf([...before.elements].reverse()), ME)).toBeNull();
-    // The tab's own settings.
-    expect(participantTabChange(before, { ...before, name: 'Renamed' }, ME)).toBeNull();
-    // An add without a key.
-    expect(participantTabChange(before, tabOf([...before.elements, sticky('n')]), null)).toBeNull();
+    expect(participantTabChange(before, tabOf([]), ME)).toBeNull();
   });
 });
 
@@ -546,30 +281,33 @@ describe('copies drop the adder', () => {
   });
 });
 
-describe('images (docs/specs/013-workspace/share-roles.md)', () => {
-  it("adds an image, and swaps the picture on and resizes anyone's image, never restyling it", () => {
-    const tab = tabOf([]);
-    const img = { ...createImage(0, 0), id: 'i1' } as Element;
-    expect(applied(applyParticipantOp(tab, { kind: 'add', element: img, at: 0 }, ME)).changed).toBe(
-      true,
+// docs/specs/013-workspace/share-roles.md "A Participant walks": the Notice Board is a piece it keeps. Unpinning its
+// last note leaves the board with none.
+describe('a Notice Board', () => {
+  const note = { id: 'n1', text: 'Lunch at 1', author: 'Sam', by: ME, at: 1 };
+  const board = (notes?: unknown[]) =>
+    ({
+      id: 'nb',
+      type: 'shape',
+      shape: 'notice-board',
+      ...box,
+      ...(notes ? { noticeNotes: notes } : {}),
+    }) as unknown as Element;
+
+  it('unpins its own last note', () => {
+    const r = applyParticipantOp(
+      tabOf([board([note])]),
+      { kind: 'update', element: board([]) },
+      ME,
     );
-    const theirs = tabOf([{ ...img, imageId: 'old' } as Element]);
-    const swapped = {
-      ...img,
-      imageId: 'new',
-      naturalWidth: 640,
-      naturalHeight: 480,
-      width: 5,
-      objectFit: 'cover',
-    };
-    const r = applied(
-      applyParticipantOp(theirs, { kind: 'update', element: swapped as Element }, ME),
-    );
-    expect(r.tab.elements[0]).toMatchObject({
-      imageId: 'new',
-      naturalWidth: 640,
-      width: 5,
-    });
-    expect(r.tab.elements[0]).not.toHaveProperty('objectFit');
+    expect(r.result).toBe('applied');
+    expect(r.result === 'applied' && r.tab.elements[0]).not.toHaveProperty('noticeNotes');
+  });
+
+  it('knows what its key added, and nothing without one', () => {
+    expect(addedByAdder(board(), ME)).toBe(false);
+    expect(addedByAdder({ ...board(), addedBy: ME } as Element, ME)).toBe(true);
+    expect(addedByAdder({ ...board(), addedBy: ME } as Element, null)).toBe(false);
+    expect(addedByAdder({ ...board(), addedBy: '' } as Element, '')).toBe(false);
   });
 });

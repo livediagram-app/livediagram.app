@@ -39,6 +39,7 @@ import {
   startPanelJustLeft,
 } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
+import { focusIsFree } from '@liveworkspace/workbench/lib/focus-is-free';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -61,7 +62,12 @@ type StartPanelCategory<C extends string> = {
 
 export type { StartPanelCard } from './StartCard';
 
-type StartPanelResult<C extends string> = { category: C; cards: readonly StartPanelCard[] };
+// A result group, headed by its category's rail name, or `name` for a group the rail doesn't show.
+type StartPanelResult<C extends string> = {
+  category: C;
+  name?: string;
+  cards: readonly StartPanelCard[];
+};
 
 export function StartPanel<C extends string>({
   titleId,
@@ -111,10 +117,11 @@ export function StartPanel<C extends string>({
   const [query, setQuery] = useState(() => takeStartQuery());
   const rail = useRef<HTMLDivElement>(null);
   // Ready to type into on a desktop (a fine pointer), so a letter typed finds a card rather than a canvas shortcut; a
-  // phone's keyboard is not raised unasked.
+  // phone's keyboard is not raised unasked. Only while focus is free: the panel's code loads when it is first drawn,
+  // so on a busy machine it can arrive after a menu was opened from the keyboard, and it never takes focus from one.
   const searchInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (window.matchMedia?.('(pointer: fine)').matches)
+    if (window.matchMedia?.('(pointer: fine)').matches && focusIsFree())
       searchInput.current?.focus({ preventScroll: true });
   }, []);
   // On a phone the panel is a sheet risen from the bottom edge, its handle settling back when dragged: Start Planning
@@ -398,7 +405,7 @@ export function StartPanel<C extends string>({
               ) : (
                 <>
                   {best.length > 0 ? section('best-match', 'Best Match', best) : null}
-                  {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
+                  {results.map((g) => section(g.category, g.name ?? nameOf(g.category), g.cards))}
                 </>
               )
             ) : (
