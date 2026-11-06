@@ -1,6 +1,6 @@
 import { ctaHref } from '@livehuddle/api-schema';
 import { ChevronRightIcon } from '@livehuddle/ui';
-import { HeroSpacePhone, HeroSpaceStage } from './HeroSpaceStage';
+import { HeroSpaceBackRow, HeroSpacePhone, HeroSpaceStage } from './HeroSpaceStage';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), and the hero is a Space: a band in
 // the brand mark's colours (@livehuddle/ui hero-band.css, shared with the help centre) whose dot grid is the floor,
@@ -28,6 +28,7 @@ export function Hero() {
     <section className="hero-band hero-tall relative overflow-hidden bg-(--hero-bg) text-(--hero-ink) [--hero-tall-below:0]">
       <div aria-hidden className="hero-band-dots hsf-dots pointer-events-none absolute inset-0" />
       <HeroSpaceStage />
+      <HeroSpaceBackRow />
       <div className="hero-tall-copy relative mx-auto w-full max-w-6xl px-4 pt-12 text-center sm:px-6 sm:pt-16 lg:pt-20">
         {/* Two promises, each its own badge and each true today. A phone keeps the first, so the row stays one line. */}
         <ul aria-label="Our promises" className="flex justify-center gap-2.5">

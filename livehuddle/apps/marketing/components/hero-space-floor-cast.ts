@@ -68,8 +68,8 @@ export type Walker = {
   holding?: 'coffee';
   // Sitting on the sofa the whole loop (the sprite's seated pose).
   seated?: true;
-  // Below lg, where the wide stage hides its wings (BACK_ROW_Y, FLOOR_CLIP_Y), the path walked instead, for a walker
-  // whose own path crosses a clip line: so nobody vanishes mid-walk at tablet widths (FLOOR_ONLY).
+  // Below lg, where the wide stage shows its floor alone (FLOOR_CLIP_Y), the path walked instead, for a walker whose
+  // own path crosses the clip line: so nobody vanishes mid-walk at tablet widths (FLOOR_ONLY).
   floorBeats?: Beat[];
 };
 
@@ -95,8 +95,8 @@ const tee = (
 // (y 484). The headline is the widest line, 792px at 72px type, over x 404..1196 at any window from lg, so the
 // keep-clear column is a little wider. The band is never shorter than 748px from lg, so everything from y 404 down
 // always shows: the wings either side of the copy hold the coffee corner and the desks, the floor under the calls to
-// action the meeting table. A taller window shows more of the room above, the back of the office (BACK_ROW_Y), and a
-// shorter one crops it from the top, as a narrower one crops the wings.
+// action the meeting table. Above them stands the back of the office (BACK_ROW_SPAN), a layer of its own that a
+// window shows whole or not at all.
 const WIDE: FloorStage = {
   key: 'wide',
   width: 1600,
@@ -105,8 +105,7 @@ const WIDE: FloorStage = {
   furniture: [
     // The back of the office, one row standing on y 280: a bookshelf, the jukebox and the arcade machine on the
     // left, the notice board, the ping-pong table and the fireplace in the middle, an office pod, a drinks fridge and
-    // a plant on the right. It spans y 150..298 (BACK_ROW_SPAN), so a 1440x900 window (its band showing from y 324)
-    // leaves it out whole and a 1920x1080 one (from y 144) shows it whole.
+    // a plant on the right, wholly inside BACK_ROW_SPAN with its players (their bubbles from y 150, chips to 298).
     { kind: 'bookshelf', x: 104, y: 174 },
     { kind: 'jukebox', x: 226, y: 190 },
     { kind: 'arcade-machine', x: 300, y: 190 },
@@ -346,24 +345,37 @@ const PHONE: FloorStage = {
 
 export const FLOOR_STAGES: readonly FloorStage[] = [WIDE, PHONE];
 
-// Below lg the copy spans the window, so the wide stage hides its wings: it shows the back of the office above
-// BACK_ROW_Y (higher than the copy's top at every width from sm) and the floor below FLOOR_CLIP_Y (the calls to
-// action's foot), both in stage px (app/hero-scenes/space-floor.css `.hsf-floor-only`). From lg the band is never
-// shorter than 748px, so from BACK_ROW_Y down the stage always shows.
-export const BACK_ROW_Y = 404;
+// The back of the office, top and foot in stage px: every piece, player, chip and bubble there stands wholly inside
+// it. It is a layer of its own (HeroSpaceBackRow, app/hero-scenes/space-floor.css `.hsf-back`) so a window never cuts
+// it: at its place on the stage when the band is tall enough, else slid down to BACK_ROW_MIN_TOP under the band's top
+// (a bubble, 6px into the span, then clears the header by 12px), and hidden whole when the band is under
+// BACK_ROW_MIN_BAND, where it would meet the wings or the copy. The stage itself draws only from the span's foot down.
+export const BACK_ROW_SPAN = { top: 144, foot: 324 } as const;
+export const BACK_ROW_MIN_TOP = 6;
+export const BACK_ROW_MIN_BAND = 876;
+// The band's top over the header, as hero-tall.css takes it: the band fills the window less this.
+export const HERO_HEADER = 72;
+
+/** Where the back row's layer stands in a band this tall, its top in band px, or null when hidden. */
+export function backRowTop(band: number): number | null {
+  if (band < BACK_ROW_MIN_BAND) return null;
+  return Math.max(band - WIDE.height + BACK_ROW_SPAN.top, BACK_ROW_MIN_TOP);
+}
+
+/** A walker of the back row's layer rather than the stage. */
+export const onBackRow = (walker: Walker) => walker.from.y < BACK_ROW_SPAN.foot;
+
+// Below lg the copy spans the window, so the wide stage shows its floor alone, from FLOOR_CLIP_Y (stage px, the calls
+// to action's foot; `.hsf-floor-only`), and the back row's layer above the copy by the same rule as from lg.
 export const FLOOR_CLIP_Y = 842;
 
-// Where the back of the office stands, top and foot in stage px: wholly hidden by a 1440x900 window (its band
-// showing from y 324) and wholly shown by a 1920x1080 one (from y 144), the commonest laptop and desktop screens.
-export const BACK_ROW_SPAN = { top: 144, foot: 324 } as const;
-
 // The wide stage below lg: not a stage of its own (it draws on the wide stage, over its floor), only the walkers whose
-// own path crosses a clip line, each on its floor path. Between the lines is all copy to them.
+// own path crosses the clip line, each on its floor path. Above the line is all copy to them.
 export const FLOOR_ONLY: FloorStage = {
   key: 'floor',
   width: WIDE.width,
   height: WIDE.height,
-  clear: { x: 0, y: BACK_ROW_Y, width: WIDE.width, height: FLOOR_CLIP_Y - BACK_ROW_Y },
+  clear: { x: 0, y: 0, width: WIDE.width, height: FLOOR_CLIP_Y },
   furniture: [],
   cast: WIDE.cast.flatMap((walker) =>
     walker.floorBeats ? [{ ...walker, beats: walker.floorBeats }] : [],
