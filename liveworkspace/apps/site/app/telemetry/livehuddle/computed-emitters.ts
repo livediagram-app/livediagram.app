@@ -96,12 +96,6 @@ export const ELEMENT_TOUR_TOKENS: string[] = [
 ].map((m) => m[1]!);
 
 export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
-  ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
-  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
-  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
-  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
-  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
@@ -358,10 +352,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
-  },
-  'apps/editor/hooks/canvas/useWhiteboard.ts Draw·Selected': {
-    values: ['Main', 'Second', 'Third'],
-    open: 'penTelemetryType: the place of the pen in the dock, never its colour',
   },
   'apps/editor/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],
