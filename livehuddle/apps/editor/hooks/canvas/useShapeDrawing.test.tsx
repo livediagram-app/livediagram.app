@@ -268,6 +268,34 @@ describe('useShapeDrawing Room Builder', () => {
     expect(selection.get().selectedId).toBe(added[0]!.id);
   });
 
+  // docs/specs/009-elements/office-amenities.md "The Restroom preset": the room, its Door and its fittings, one commit.
+  it('adds a tapped Restroom furnished, with its Door and sign, in one commit, the room selected', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() =>
+      result.current.commitDraw(
+        { type: 'shape', kind: 'room', variant: 'restroom' },
+        500,
+        400,
+        500,
+        400,
+      ),
+    );
+    expect(commit).toHaveBeenCalledTimes(1);
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added.map((e) => (e.type === 'shape' ? e.shape : e.type))).toEqual([
+      'room',
+      'door',
+      'toilet-cubicle',
+      'toilet-cubicle',
+      'hand-dryer',
+      'washbasin',
+      'washbasin',
+      'room-sign',
+    ]);
+    expect(added[0]).toMatchObject({ label: 'Restroom' });
+    expect(selection.get().selectedId).toBe(added[0]!.id);
+  });
+
   it('commits nothing for fewer than three corners', () => {
     const { result, commit } = roomSetup(false);
     act(() => result.current.beginRoomWalls());

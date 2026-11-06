@@ -114,6 +114,10 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   // then the rest of the floor.
   'tools:room': 'Build',
   'tools:fence': 'Floor',
+  // Amenities (docs/specs/009-elements/office-amenities.md "Where they live"): the office kit, the kitchen, the restroom.
+  'tools:plant': 'Office',
+  'tools:water-cooler': 'Kitchen',
+  'tools:restroom': 'Restroom',
 };
 
 export type FlyoutGroup = { id: string; title: string | null; tiles: PaletteTileDef[] };

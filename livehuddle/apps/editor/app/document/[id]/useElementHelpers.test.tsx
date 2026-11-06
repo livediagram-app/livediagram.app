@@ -78,6 +78,25 @@ describe('addBoxedAt', () => {
     expect(els).toHaveLength(ROW.length + 2);
   });
 
+  // docs/specs/009-elements/office-amenities.md "The Restroom preset": a dropped Restroom brings its fittings too.
+  it('drops a Restroom with its Door, fittings and sign in front of it, in one change', () => {
+    const { helpers, commitTabs } = harness();
+    helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y), { variant: 'restroom' });
+    expect(commitTabs).toHaveBeenCalledTimes(1);
+    const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
+    const els = updater([{ id: 't1', name: 'Tab 1', elements: ROW }])[0]!.elements;
+    expect((els[0] as ShapeElement).shape).toBe('room');
+    expect(els.slice(-7).map((e) => (e as ShapeElement).shape)).toEqual([
+      'door',
+      'toilet-cubicle',
+      'toilet-cubicle',
+      'hand-dryer',
+      'washbasin',
+      'washbasin',
+      'room-sign',
+    ]);
+  });
+
   it('refuses to touch the board when edits are blocked', () => {
     const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW };
     const commitTabs = vi.fn();

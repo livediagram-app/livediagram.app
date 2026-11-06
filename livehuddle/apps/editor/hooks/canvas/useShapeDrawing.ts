@@ -226,12 +226,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // behind its contents regardless of array position.
     // A door tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door"), against the
     // live walls.
-    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"): one commit, one undo.
+    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), and a room preset's
+    // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo.
     commit((els) => [
       ...els,
       ...(sized.type === 'shape' && sized.shape === 'door'
         ? [snapDoorToWall(sized, els)]
-        : withDoorPiece(sized)),
+        : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined)),
     ]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode

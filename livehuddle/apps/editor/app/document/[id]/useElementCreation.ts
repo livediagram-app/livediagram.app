@@ -49,6 +49,7 @@ export function useElementCreation(opts: {
     opts?: {
       edit?: boolean;
       style?: <E extends BoxedElement>(el: E) => E;
+      variant?: string;
     },
   ) => void;
   beginDraw: (intent: PendingDraw) => void;
@@ -261,6 +262,8 @@ export function useElementCreation(opts: {
       // rose) is put back after the theme and the remembered style.
       {
         edit: true,
+        // A room preset's tile (the Restroom) brings its pieces with the Room.
+        variant: art?.choice,
         style: (el) => {
           const styled = styleNewElement(el);
           // A dropped door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door").

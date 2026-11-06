@@ -112,12 +112,32 @@ describe('palette layouts', () => {
     expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
       'tools:wall-door',
     ]);
+    // Amenities in three named groups (docs/specs/009-elements/office-amenities.md "Where they live").
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',
       'tools:bookshelf',
+      'tools:printer',
+      'tools:copier',
+      'tools:lockers',
+      'tools:coat-rack',
+      'tools:umbrella-stand',
       'tools:water-cooler',
       'tools:coffee-machine',
       'tools:vending-machine',
+      'tools:kitchen-counter',
+      'tools:kitchen-sink',
+      'tools:fridge',
+      'tools:microwave',
+      'tools:kettle',
+      'tools:restroom',
+      'tools:toilet-cubicle',
+      'tools:washbasin',
+      'tools:hand-dryer',
+    ]);
+    const amenities = paletteCategoriesFor('workshop').find((c) => c.id === 'collab-amenities')!;
+    expect(amenities.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
+      'tools:umbrella-stand',
+      'tools:kettle',
     ]);
     expect(tileIds('collab-recreation')).toEqual([
       'tools:jukebox',

@@ -86,6 +86,19 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'vending-machine': 'Vending machine',
   'bean-bag': 'Bean bag',
   'reading-nook': 'Reading nook',
+  printer: 'Printer',
+  copier: 'Copier',
+  lockers: 'Lockers',
+  'coat-rack': 'Coat rack',
+  'umbrella-stand': 'Umbrella stand',
+  'kitchen-counter': 'Kitchen counter',
+  'kitchen-sink': 'Kitchen sink',
+  fridge: 'Fridge',
+  microwave: 'Microwave',
+  kettle: 'Kettle',
+  'toilet-cubicle': 'Toilet cubicle',
+  washbasin: 'Washbasin',
+  'hand-dryer': 'Hand dryer',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
