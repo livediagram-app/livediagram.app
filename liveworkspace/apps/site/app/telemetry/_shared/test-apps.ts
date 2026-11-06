@@ -3,6 +3,7 @@
 import { TELEMETRY_CATEGORIES as LIVEDESIGN_CATEGORIES } from '@livedesign/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEDIAGRAM_CATEGORIES } from '@livediagram/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEDOCUMENTS_CATEGORIES } from '@livedocuments/api-schema';
+import { TELEMETRY_CATEGORIES as LIVEHUDDLE_CATEGORIES } from '@livehuddle/api-schema';
 import { TELEMETRY_CATEGORIES as LIVEPLANNER_CATEGORIES } from '@liveplanner/api-schema';
 import { LIVEDESIGN } from '../livedesign/config';
 import * as LIVEDESIGN_CATALOGUE from '../livedesign/metric-catalogue';
@@ -10,6 +11,8 @@ import { LIVEDIAGRAM } from '../livediagram/config';
 import * as LIVEDIAGRAM_CATALOGUE from '../livediagram/metric-catalogue';
 import { LIVEDOCUMENTS } from '../livedocuments/config';
 import * as LIVEDOCUMENTS_CATALOGUE from '../livedocuments/metric-catalogue';
+import { LIVEHUDDLE } from '../livehuddle/config';
+import * as LIVEHUDDLE_CATALOGUE from '../livehuddle/metric-catalogue';
 import { LIVEPLANNER } from '../liveplanner/config';
 import * as LIVEPLANNER_CATALOGUE from '../liveplanner/metric-catalogue';
 import type { TelemetryAppConfig } from './app';
@@ -45,6 +48,12 @@ export const TEST_APPS: TestApp[] = [
     config: LIVEDESIGN,
     categories: LIVEDESIGN_CATEGORIES,
     catalogue: LIVEDESIGN_CATALOGUE,
+  },
+  {
+    name: 'livehuddle',
+    config: LIVEHUDDLE,
+    categories: LIVEHUDDLE_CATEGORIES,
+    catalogue: LIVEHUDDLE_CATALOGUE,
   },
 ];
 
