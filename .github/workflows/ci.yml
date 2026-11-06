@@ -20,7 +20,7 @@ permissions:
 # checked. A run started by hand gets a group of its own (docs/ci.md "Runs on main").
 concurrency:
   group: ci-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   TURBO_TELEMETRY_DISABLED: '1'
