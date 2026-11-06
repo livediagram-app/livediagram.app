@@ -237,16 +237,6 @@ export const PAGE_BUILDING = chart(
   },
 );
 
-// An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
-// "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
-export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
-  'UI',
-  'Closed',
-  'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty page shows inside itself.',
-  { types: ['EmptyPageLayouts'] },
-);
-
 // Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
 export const ARTICLE_INSERTS = chart(
   'Element',
@@ -328,7 +318,6 @@ export const PAGE_WORK: MetricStack = {
     FLASHCARD_FLIPS,
     STACK_NAV,
     PRINTS,
-    EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
     ARTICLE_LOOKS,
