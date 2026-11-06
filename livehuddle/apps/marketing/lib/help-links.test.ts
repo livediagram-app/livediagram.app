@@ -10,10 +10,14 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 // The shared marketing pages (@liveworkspace/marketing-site) link into this app's help centre too.
 const SOURCE_DIRS = ['app', 'components', 'lib', '../../../packages/marketing-site/src'];
 
+// The shared Build with AI page, which livehuddle does not render (no MCP server,
+// docs/specs/002-project-scope/not-in-livehuddle.md), so its links are not this app's.
+const NOT_RENDERED = join('marketing-site', 'src', 'components', 'ai');
+
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
-    if (entry.isDirectory()) return sourceFiles(path);
+    if (entry.isDirectory()) return path.endsWith(NOT_RENDERED) ? [] : sourceFiles(path);
     return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name) ? [path] : [];
   });
 }

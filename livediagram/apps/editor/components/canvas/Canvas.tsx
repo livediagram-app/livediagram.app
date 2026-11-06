@@ -746,7 +746,7 @@ function CanvasView(props: CanvasProps) {
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}
                 standingOn={avatarStandingOn}
-                onStand={avatar.standUp}
+                self
               />
             ) : null}
             {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}

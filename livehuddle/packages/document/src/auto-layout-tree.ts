@@ -41,7 +41,7 @@ function treeRoots(ids: ElementId[], edges: Edge[]): ElementId[] {
 // Place one component as a top-to-bottom tidy tree. Multiple roots lay out
 // side by side (siblings under an implicit virtual root).
 // A stacked parent's leaves hang in a column under it (graph input's compact org chart,
-// docs/specs/015-api/mcp-server.md §4.7): indented from the parent's left by a quarter of its width plus this, so the
+// livediagram/docs/specs/015-api/mcp-server.md §4.7): indented from the parent's left by a quarter of its width plus this, so the
 // bus down from its lower-left quarter has room, each leaf this far below the one before.
 const STACK_INDENT = 28;
 export const STACK_GAP = 14;

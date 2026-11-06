@@ -45,6 +45,7 @@ export {
   SELF_MEDIA_ID,
   setCallMaximised,
   setCallMedia,
+  shareStoppedNotice,
   useCallMaximised,
   useCallMedia,
   type CallMaximised,

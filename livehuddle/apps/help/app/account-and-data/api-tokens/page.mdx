@@ -15,9 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="account-and-data"
 >
 
-An API token lets your own scripts and integrations talk to the livehuddle API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API and MCP server of every liveworkspace app, livehuddle included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
-
-To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livehuddle CLI](/help/developers/cli/) when you sign in with `livehuddle auth login`.
+An API token lets your own scripts and integrations talk to the livehuddle API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API of every liveworkspace app, livehuddle included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
 
 ## You need an account
 
@@ -51,7 +49,7 @@ For what you can call and how, see the [Developers](/help/developers/api-overvie
 
 ## Viewing and revoking tokens
 
-Your tokens are listed on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livehuddle stops accepting it within a minute, and ends any workbench pairing made with it within a few minutes. Deleting your account also removes all of your tokens, along with the rest of your data.
+Your tokens are listed on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens), with when each was created, last used and expires. Revoke one there. livehuddle stops accepting it within a minute. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

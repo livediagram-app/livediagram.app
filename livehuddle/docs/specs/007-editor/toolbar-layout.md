@@ -17,9 +17,7 @@ flyout of its tiles:
 ```
 
 - **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
-  ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
-  workbench frame, which has no Explorer button, the card holds **Back** instead
-  ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
+  ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker, in three named bands: **Build** (Select, Hand), **Edit** (Eraser, Format)
   and **Interact** (Avatar) ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.

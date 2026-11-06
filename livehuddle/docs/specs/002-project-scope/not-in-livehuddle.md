@@ -40,7 +40,8 @@ to change.
   the Icons category ([Icons](#icons)) and adding images and link cards ([Media](#media-image-and-link-card)).
 - **Talking without a call**: speech bubbles, comments with mentions, comment reactions, and assigned actions from
   any element's menu with the Collaborate Panel.
-- **Every platform feature** ([v1 scope](v1-scope.md) section 7).
+- **Every platform feature** ([v1 scope](v1-scope.md) section 7) but the MCP server, the CLI and workbenches
+  ([The MCP server, the CLI and workbenches](#the-mcp-server-the-cli-and-workbenches)).
 
 ## The presenting tools, Isometric and Zen
 
@@ -417,6 +418,39 @@ cleanup), the Explorer's Shape Libraries page and library import, the draw.io, M
 Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to Canvas results for tiles the meeting
 palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
 pens, the layout containers) is Work Tracker #459's, not this part's: a stored one still draws, moves and deletes.
+
+## The MCP server, the CLI and workbenches
+
+The owner (2026-11-06, Work Tracker #562 and #563): "We previously weren't sure whether we needed the MCP for
+livehuddle, but I now know that we do not. Remove the MCP for this app and cleanup", and the same for the CLI. Every
+other product keeps its MCP server and CLI (the platform rule that a fork keeps them no longer holds for livehuddle).
+livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md),
+[CLI](../../../../livediagram/docs/specs/015-api/cli.md)) are the ones to read for what they did.
+
+- **Gone**: the MCP Worker (`apps/mcp`, `mcp.livehuddle.app` and its staging host), its OAuth sign-in for AI tools
+  (the editor's `/oauth/consent` and device pages, the api's `/api/oauth/exchange`, the capabilities' `oauthIssuer`),
+  the CLI (`apps/cli`, `@livehuddle/cli` on npm, the capabilities' `cli` minimum version), the verbs package they shared
+  (`packages/agent-verbs`), the MCP Registry listing (`server.json`), and the marketing site's **Build with AI** page
+  (`/ai`) with its header link, FAQ answers, landing card and sitemap entry. The marketing header is Choose Template
+  and Explorer.
+- **Workbenches go with them.** A workbench opened a document inside a developer tool through the CLI
+  (liveworkspace's [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), so livehuddle no longer
+  pairs one: the `/embed/workbench` frame, Settings' list of workbench pairings, the editor's workbench chrome and
+  messages, and the api's `lvw_` session and its confinement are gone. An `lvw_` bearer now identifies nobody, and the
+  router's `/api/workbench` answers 404 from the api. liveworkspace's pairing service is unchanged; livehuddle simply
+  never redeems a pairing. The room keeps its share of the platform's pairing contract (closing a room with code 4006
+  when a pairing ends), unused, until that contract is next changed.
+- **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old
+  addresses redirect (router `legacy-editor-route.ts`): the AI and MCP articles to [API Tokens](/help/account-and-data/api-tokens/),
+  the CLI and Workbench articles to the [API overview](/help/developers/api-overview/).
+- **What stays**: the REST API and API tokens (full or read-only), agent changesets, document views, agent comments
+  and presence, and everything else a script reaches over HTTP. The changeset front door still parses the `door` of a
+  changeset an MCP client or the CLI sent, and telemetry still parses `Mcp`, `Cli` and the `Ai` marketing surface, so
+  old events and stored history read as before.
+- **Status page**: livehuddle has no MCP row ([Status](../../../../liveworkspace/docs/specs/009-status/status.md)).
+- **The owner's steps after merging**: delete the `livehuddle-mcp` and `livehuddle-mcp-staging` Workers, their custom
+  domains and DNS, their `livehuddle-mcp-oauth` KV namespaces and secrets, and deprecate `@livehuddle/cli` on npm.
+  Deploys find Workers from the workspaces a change reaches, so a deleted app is never deployed.
 
 ## Share roles
 

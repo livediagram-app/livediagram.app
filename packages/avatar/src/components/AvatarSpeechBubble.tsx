@@ -25,6 +25,7 @@ export const SpeechCard = forwardRef(function SpeechCard(
     name,
     tailRef,
     tailShift,
+    tail = true,
     children,
     floating,
   }: {
@@ -35,6 +36,8 @@ export const SpeechCard = forwardRef(function SpeechCard(
     // Screen px the tail sits off the card's centre, when the card was shifted to stay inside the view and the tail
     // still points at the head.
     tailShift?: number;
+    // False drops the tail: a composer moved down below the head it would point at (#501).
+    tail?: boolean;
     children: ReactNode;
     // A floating bubble is read-only and inert to the pointer; the composer takes presses.
     floating?: boolean;
@@ -60,14 +63,16 @@ export const SpeechCard = forwardRef(function SpeechCard(
         </div>
       ) : null}
       {/* The tail: a rotated square straddling the bottom edge, bordered on its two outer sides. */}
-      <span
-        ref={tailRef}
-        aria-hidden
-        className={`absolute -bottom-[6px] left-1/2 h-[10px] w-[10px] -translate-x-1/2 rotate-45 border-b-[1.5px] border-r-[1.5px] bg-white dark:bg-slate-900 ${
-          colour ? '' : 'border-brand-500'
-        }`}
-        style={tailShift ? { ...tint, marginLeft: tailShift } : tint}
-      />
+      {tail ? (
+        <span
+          ref={tailRef}
+          aria-hidden
+          className={`absolute -bottom-[6px] left-1/2 h-[10px] w-[10px] -translate-x-1/2 rotate-45 border-b-[1.5px] border-r-[1.5px] bg-white dark:bg-slate-900 ${
+            colour ? '' : 'border-brand-500'
+          }`}
+          style={tailShift ? { ...tint, marginLeft: tailShift } : tint}
+        />
+      ) : null}
     </div>
   );
 });

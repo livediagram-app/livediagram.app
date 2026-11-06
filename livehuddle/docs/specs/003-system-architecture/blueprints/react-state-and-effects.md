@@ -25,21 +25,21 @@ Every render-time read of a browser global is converted; reads in effects, handl
 module code that render does not consume stay as they are. A component whose prerendered HTML matters (an LCP
 page) never suspends whole: its URL reads use an external store whose server snapshot is "nothing" instead.
 
-| Site                                                                              | Reads                               | Becomes                                                                           |
-| --------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| `apps/editor/app/oauth/consent/page.tsx`, `apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
-| `apps/editor/app/new/page.tsx` (`placedFromUrl`)                                  | `location.search`                   | `useSyncExternalStore` (`placementParamsFromSearch`), like the bypass             |
-| `CommunityPublishedConfirmation`                                                  | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
-| `CanvasThemeDialog` (`useBrushAnchor`)                                            | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
-| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`         | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
-| `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`        | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
-| `apps/editor/components/start/StartPanel.tsx` (search focus)                      | `(pointer: fine)`                   | `window.matchMedia` in the mount effect that focuses the search box               |
-| `arrow-handles.tsx` (`COARSE_POINTER`)                                            | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
-| `EditorContextMenu` (`anchorBottom`)                                              | `innerHeight`                       | `useViewportHeight()`                                                             |
-| `StartAgainTray` (`pillPlace` default argument)                                   | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
-| `useViewportWidth`, `useViewportHeight`                                           | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
-| `EditorCanvasHost` (`openUp`, in the context-menu handler)                        | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
-| `packages/ui/src/SiteFooter.tsx`                                                  | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
+| Site                                                                                                      | Reads                               | Becomes                                                                           |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| `livediagram/apps/editor/app/oauth/consent/page.tsx`, `livediagram/apps/editor/app/oauth/device/page.tsx` | `location` (return path)            | `use(browser())` in the signed-out branch, under the page's Suspense              |
+| `apps/editor/app/new/page.tsx` (`placedFromUrl`)                                                          | `location.search`                   | `useSyncExternalStore` (`placementParamsFromSearch`), like the bypass             |
+| `CommunityPublishedConfirmation`                                                                          | `location.origin`                   | `use(browser())`, then `window.location.origin`                                   |
+| `CanvasThemeDialog` (`useBrushAnchor`)                                                                    | `innerWidth`, a box                 | `use(browser())` before the state (read once as it opens)                         |
+| `useEditorDialogs`, `useEyeDropper`, `useShareLinks`, `useEditorViewport`                                 | the URL, `EyeDropper`, `innerWidth` | `use(browser())` (`useShareLinks`: the guard goes; its URL is built in handlers)  |
+| `apps/editor/app/document/[id]/page.tsx`, `apps/editor/app/embed/page.tsx`                                | (the editor suspends)               | `<Suspense fallback={<OpeningScreen />}>`: the screen the prerender always showed |
+| `apps/editor/components/start/StartPanel.tsx` (search focus)                                              | `(pointer: fine)`                   | `window.matchMedia` in the mount effect that focuses the search box               |
+| `arrow-handles.tsx` (`COARSE_POINTER`)                                                                    | `(pointer: coarse)`                 | `useMediaQuery('(pointer: coarse)')` in each handle                               |
+| `EditorContextMenu` (`anchorBottom`)                                                                      | `innerHeight`                       | `useViewportHeight()`                                                             |
+| `StartAgainTray` (`pillPlace` default argument)                                                           | `innerHeight`                       | a required argument; the caller passes `useViewportHeight()`                      |
+| `useViewportWidth`, `useViewportHeight`                                                                   | `innerWidth`, `innerHeight`         | `useSyncExternalStore` on `resize`, 0 in the prerender                            |
+| `EditorCanvasHost` (`openUp`, in the context-menu handler)                                                | `innerHeight`                       | the guard goes: a handler runs in the browser                                     |
+| `packages/ui/src/SiteFooter.tsx`                                                                          | the clock (`new Date()`)            | `NEXT_PUBLIC_BUILD_YEAR`                                                          |
 
 What stays, with where it runs, is the allow-list in `apps/editor/render-browser-globals.test.ts`.
 

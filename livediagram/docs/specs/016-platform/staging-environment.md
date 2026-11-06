@@ -178,8 +178,7 @@ staging environment whose deploy has drifted from production's tests nothing.
 
 `deploy-staging.yml` triggers on `workflow_run` (CI completing successfully for a push to
 `main`), not on `push`. Deploying a red `main` to staging would mean the environment's
-state no longer tells you anything. Every commit on `main` runs CI to the end
-([Deployment](deployment.md#runs-on-main-are-never-cancelled)), so those runs can finish
+state no longer tells you anything. A newer push to `main` cancels an older CI run ([Deployment](deployment.md#runs-on-main-cancel-older-ones)), and the runs left can still finish
 out of order, and while merges keep landing `main`'s tip rarely has a finished run. A
 first job (**Newest green commit**) therefore deploys the newest commit on `main` whose CI
 passed, whichever run asked, and skips only when staging already runs it or something

@@ -73,7 +73,7 @@ Server-side enforcement: the upload endpoint checks `Content-Type` against the w
 
 - **Per-file cap: 10 MB.** Sits comfortably above typical phone JPEGs (2–4 MB) and 4K screenshots (~3–6 MB as PNG), while staying well below the Workers request-body limit (100 MB). Going higher hurts the picker UX (long uploads on slow networks) without serving real diagram content; canvas images render at thumbnail or modest sizes, so an 8K original is wasted bytes.
 - **Per-person cap: 100 images and 100 MB, across every app**, kept by the media service. When either is reached the upload answers 403 with `{ error: "gallery_full", reason: "count" | "bytes", limit, current }`, passed on as the service sent it, so the client can render an accurate message.
-- Enforcement order on POST: this api checks the declared type and `Content-Length` against the per-file cap first, so a refused file never leaves the worker; the service then answers an early `X-Image-Sha256` dedupe without the body (sent only for the owner's own editor or a guest: a [workbench session](../013-workspace/workbench-embeds.md) or an API token uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row for nothing more than a hash), checks the caps, sniffs the bytes and stores them. The caps ride inside the row's insert, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass one; a refused insert answers the same 403, or 409 `{ error: "upload_conflict" }` when the gallery has room again by then, and the client may retry.
+- Enforcement order on POST: this api checks the declared type and `Content-Length` against the per-file cap first, so a refused file never leaves the worker; the service then answers an early `X-Image-Sha256` dedupe without the body (sent only for the owner's own editor or a guest: an API token uploads the body, which still dedupes on its real hash, because the shortcut would otherwise hand them the matching gallery row for nothing more than a hash), checks the caps, sniffs the bytes and stores them. The caps ride inside the row's insert, so uploads racing each other (the [Import image pipeline](../020-import-export/import-image-pipeline.md) sends three at once) cannot together pass one; a refused insert answers the same 403, or 409 `{ error: "upload_conflict" }` when the gallery has room again by then, and the client may retry.
 
 ## API endpoints
 
@@ -257,8 +257,8 @@ Setting or clearing an image is one undoable step. Undo restores the prior `imag
 
 An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
 
-- **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../015-api/mcp-server.md#45b-list_images)) and
-  `image ls` (CLI, [CLI](../015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
+- **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../../../../livediagram/docs/specs/015-api/mcp-server.md#45b-list_images)) and
+  `image ls` (CLI, [CLI](../../../../livediagram/docs/specs/015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
   width, height, size and upload time, newest first, filtered by name. The MCP's `image: true` adds a contact sheet
   of the listed images, so an assistant can tell which screenshot is which without names that say so.
 - **Placing it.** An `image` element takes the id as `imageId`, with optional `alt` and `objectFit`, on any write

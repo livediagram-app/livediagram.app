@@ -27,15 +27,7 @@ import { readGuestToken } from '../guest-token';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
-import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
 import { withDocumentGrant } from './document-grants';
-// A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
-export {
-  getWorkbenchConfinement,
-  setWorkbenchConfinement,
-  subscribeWorkbenchSessionRefused,
-  WorkbenchConfinedError,
-} from './workbench-confinement';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
 import {
@@ -121,9 +113,6 @@ export async function apiFetch(
   opts: { documentGrant?: boolean } = {},
 ): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
-  // A workbench session's request outside its allow-list is refused unsent, and is no network error.
-  const refusal = confinementRefusal(input, init);
-  if (refusal) throw refusal;
   let res: Response;
   try {
     // A request about one canvas carries the index's grant on it (document-grants.ts), fetched once per ten minutes.
@@ -137,7 +126,6 @@ export async function apiFetch(
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
-  void noteWorkbenchResponse(init, res);
   // The server release signal rides every response: the document format number and the live build
   // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
   noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
@@ -150,8 +138,8 @@ function isTimelinePath(url: string): boolean {
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
-// types come from `@livehuddle/api-schema`, as do the envelopes the
-// MCP server reads too (DocumentResponse, TabResponse, ...); the ones
+// types come from `@livehuddle/api-schema`, as do the shared envelopes
+// (DocumentResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
 export type FoldersResponse = { folders: Folder[] };

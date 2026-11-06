@@ -14,6 +14,8 @@ const hook = vi.hoisted(() => ({ useProximityCall: vi.fn() }));
 vi.mock('@/lib/calls/useProximityCall', () => hook);
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => telemetry);
+const toast = vi.hoisted(() => ({ info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 const props = {
   remoteAvatars: [
@@ -104,6 +106,12 @@ describe('useCanvasCall', () => {
     expect(result.current.bubbles.self).toMatchObject({ at: { x: 0, y: 0 }, color: '#00f' });
     // The bubbles wrap inside what is surely on screen: half a snap step in from each edge (#487).
     expect(result.current.bubbles.view).toEqual({ left: 1056, width: 576 });
+    // Each edge snaps on its own (#503): the screen's right edge at 1410 holds the bubbles' at 1376, where a snapped
+    // width (1472) would have put it at 1440, past the screen.
+    const panned = run({ offset: { x: 30, y: 0 }, zoom: 1, width: 1440, height: 900 });
+    const edge = panned.result.current.bubbles.view!;
+    expect(edge).toEqual({ left: 32, width: 1344 });
+    expect(edge.left + edge.width).toBeLessThanOrEqual(1410);
     // Not measured yet: no view.
     run({ offset: { x: 0, y: 0 }, zoom: 1, width: 0, height: 0 });
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
@@ -212,5 +220,24 @@ describe('useCanvasCall', () => {
     expect(run({})).toBeUndefined();
     expect(run({ takePart: false })).toBeUndefined();
     expect(run({ canShareScreen: true }, 'select')).toBeUndefined();
+  });
+
+  // video-and-screen-bubbles.md "Share roles" (#504).
+  it('tells you which Editor stopped your share, or that an Editor did', () => {
+    renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
+        avatarScale: 1,
+      }),
+    );
+    const { onShareStopped } = hook.useProximityCall.mock.calls.at(-1)![0] as {
+      onShareStopped: (by: string) => void;
+    };
+    onShareStopped('p1');
+    expect(toast.info).toHaveBeenLastCalledWith('Sam stopped your screen share');
+    onShareStopped('gone');
+    expect(toast.info).toHaveBeenLastCalledWith('An Editor stopped your screen share');
   });
 });

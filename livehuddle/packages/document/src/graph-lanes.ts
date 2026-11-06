@@ -1,4 +1,4 @@
-// The lanes layout (docs/specs/015-api/mcp-server.md §4.7 `style: "lanes"`): a swimlane diagram from a graph. Each
+// The lanes layout (livediagram/docs/specs/015-api/mcp-server.md §4.7 `style: "lanes"`): a swimlane diagram from a graph. Each
 // group is a lane, one under another, its label in the lane's header strip; a node outside every group gets an
 // unnamed lane after them. The flow runs left to right on a column grid shared by every lane, a node's column its
 // longest path from a start (edges back to an earlier column are left to the loop routing), so a hand-off between
@@ -322,7 +322,7 @@ function clearRun(
   return true;
 }
 
-// Columns with the staircase (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
+// Columns with the staircase (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):
 // a hand-off to the next lane that is its step's only way out and its next step's only way in keeps its column, unless
 // its step was itself reached by such a drop. One
 // whose step, or next step, then shares that column with another node of its lane takes a column after all, so the

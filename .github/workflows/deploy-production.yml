@@ -2,14 +2,22 @@ name: Deploy Production
 
 # Production is a manual gate (docs/ci.md "Deploys"): run it from the Actions tab (or
 # `gh workflow run deploy-production.yml`) when staging looks right. By default it ships exactly what
-# staging runs (the `deployed/staging` tag), and of that only what changed since production's own last
-# deploy. `ref` ships another commit instead; one older than production's (a rollback) redeploys every
+# staging runs (the `deployed/staging` tag); `source: Deploy Latest Main` ships main's tip instead, to
+# move faster than staging. Of that, only what changed since production's own last deploy ships. `ref`
+# ships another commit instead of either; one older than production's (a rollback) redeploys every
 # Worker, as `all` does.
 on:
   workflow_dispatch:
     inputs:
+      source:
+        description: What to ship.
+        type: choice
+        options:
+          - Deploy Staging Tip
+          - Deploy Latest Main
+        default: Deploy Staging Tip
       ref:
-        description: Commit to ship. Empty ships what staging runs.
+        description: A commit to ship instead. Overrides the choice above.
         type: string
         default: ''
       all:
@@ -41,10 +49,13 @@ jobs:
       - id: ref
         env:
           INPUT: ${{ inputs.ref }}
+          SOURCE: ${{ inputs.source }}
         run: |
           set -euo pipefail
           if [ -n "${INPUT}" ]; then
             ref="$(git rev-parse --verify "${INPUT}^{commit}")"
+          elif [ "${SOURCE}" = 'Deploy Latest Main' ]; then
+            ref="$(git rev-parse --verify 'refs/remotes/origin/main^{commit}')"
           else
             ref="$(git rev-parse -q --verify 'refs/tags/deployed/staging^{commit}' || true)"
             if [ -z "${ref}" ]; then

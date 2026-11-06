@@ -132,6 +132,23 @@ keep the headings themselves readable:
   in the UI face and needs none.
 - A Dashboard tab passes its font to the boards in its slots the same way.
 
+### On Dashboards and views
+
+A Dashboard is read the same way, in small type and numbers: a metric's figure, a chart's axis, a Calendar's days, a
+Gantt's dates, a Sheet's cells. So a Dashboard page, and a plan view (a metric, Calendar, Gantt, Workload, Status Mix,
+Priority Matrix or Card Search) wherever it is drawn, follow the board's rule:
+
+- **Headings take the tab's font**: a view's title (or its slot's name), a Note's and a written card's heading (Key
+  Date, Checklist, Links), a Title's big heading, and the boards' and cards' headings above, a card face drawn in a
+  view (a Calendar's, Card Search's) included.
+- **Everything else is the editor's own face**: every figure and its unit and line, a metric's small capitals label,
+  a view's bars, days, dates, counts and legends, a chart's labels and axes, a Sheet's cells (a cell's own Font
+  still wins), a Title's description, a Note's text, a Status card's light and words, and every button and field.
+
+The same three details hold: a heading is drawn at its face's own weights, Caveat keeps its lift on headings only,
+and a face liveplanner does not offer letters no heading. A view on a canvas tab takes its font from its element and
+tab (`element.font → tab.font`) as any element does; in a Dashboard slot it takes the Dashboard tab's.
+
 ### Text size on boards and cards
 
 The tab's **Text Size** (Tab Style > Text) scales a board's and a Plan card element's text up and down, all of it

@@ -296,7 +296,8 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **Shadow**: the element presets and sliders (one undo step once a slider rests 400 ms); None removes the card's
     lift. Before a shadow is set the sliders read the card's own soft lift.
   - Not offered: Layer, Size, Rotation, Animation, Tools, Collaborate, Resources or Font (a slot places and sizes the
-    card, cards hold no comments, and the cards share the tab's font).
+    card, cards hold no comments, and the cards' headings share the tab's font: fonts.md "On Dashboards and
+    views").
   - A **Title** is drawn bare on the page, so its style is its text colour alone: its menu shows **Colours** (Text,
     Reset to Theme) in place of the Style row (a flyout of one section is promoted inline, as on the canvas).
   - Text: a text colour set by hand is kept; otherwise a preset's own, or (a fill set by hand) white or near-black,

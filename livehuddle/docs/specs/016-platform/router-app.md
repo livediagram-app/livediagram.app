@@ -83,10 +83,11 @@ session (so the other apps sign in without a click) and comes straight back to `
 
 The router asks liveworkspace's shared helper first (`routeToWorkspace`,
 [liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)).
-`/explorer/*`, `/api/workspace/account/*`, the signed sign-in pages, `/api/workspace/auth/*`, the site's assets
-(`/_liveworkspace/*`) and `/api/workbench/*` are liveworkspace's, served at this address from `WORKSPACE_ORIGIN`
+`/explorer/*`, `/api/workspace/account/*`, the signed sign-in pages, `/api/workspace/auth/*`, and the site's assets
+(`/_liveworkspace/*`) are liveworkspace's, served at this address from `WORKSPACE_ORIGIN`
 (production's when unset; staging and local development name their own). The Explorer is liveworkspace's one
-Explorer; livehuddle has no Explorer of its own.
+Explorer; livehuddle has no Explorer of its own. `/api/workbench/*` is not forwarded: livehuddle has no workbenches,
+so it reaches the api, which answers 404 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 ## Implementation
 

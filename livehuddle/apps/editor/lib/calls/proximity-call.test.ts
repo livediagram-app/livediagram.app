@@ -136,6 +136,7 @@ function makeCall(
     getDisplayMedia?: () => Promise<MediaStream>;
     visible?: () => boolean;
     preview?: LocalPreview;
+    onShareStopped?: (by: string) => void;
   } = {},
 ) {
   const sent: CallSignal[] = [];
@@ -153,6 +154,7 @@ function makeCall(
     caller,
     canSpeak: opts.canSpeak ?? true,
     canShare: opts.canShare ?? false,
+    onShareStopped: opts.onShareStopped,
     context,
     send: (s) => (s.kind === 'call-session' ? proved : sent).push(s),
     getUserMedia,
@@ -596,7 +598,8 @@ describe('ProximityCall video and screens', () => {
       { id: 'pt', role: 'participate' },
       { id: 'vw', role: 'view' },
     ]);
-    const { call, sent } = makeCall({ canShare: true });
+    const onShareStopped = vi.fn();
+    const { call, sent } = makeCall({ canShare: true, onShareStopped });
     await call.start();
     await call.toggleScreen();
     const stop = { kind: 'call-stop-share', tabId: 't1', targetId: 'me' };
@@ -604,13 +607,17 @@ describe('ProximityCall video and screens', () => {
     receiveStopShare('vw', stop);
     receiveStopShare('ed', { kind: 'call-stop-share' });
     expect(callSelf().screen).toBe('on');
+    expect(onShareStopped).not.toHaveBeenCalled();
     receiveStopShare('ed', stop);
     expect(callSelf().screen).toBe('off');
+    // The sharer is told who stopped it (#504), once.
+    expect(onShareStopped).toHaveBeenCalledExactlyOnceWith('ed');
     expect(sent.at(-1)).toEqual({ kind: 'call-track', track: me('mic'), screen: null });
     // Nothing to stop: nothing said.
     const count = sent.length;
     receiveStopShare('ed', stop);
     expect(sent).toHaveLength(count);
+    expect(onShareStopped).toHaveBeenCalledTimes(1);
     call.stop();
     // A call that has ended ignores it.
     receiveStopShare('ed', stop);

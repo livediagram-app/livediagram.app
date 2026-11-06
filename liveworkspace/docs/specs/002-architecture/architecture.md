@@ -77,7 +77,8 @@ webhook dispatcher, the Drive mirror) sets it through one shared rule, `@livewor
 - **No write for an alarm already set.** An app's room arms its alarm on many writes, and an alarm set again at the
   same time is a storage write for nothing. The room remembers the time it last set while it is in memory and skips
   setting the same one, or deleting an alarm it already deleted (`armRoomAlarm`). A room woken from hibernation
-  remembers nothing, so its first arm always writes.
+  remembers nothing, so its first arm always writes. A room's purge deletes its alarm through the same helper
+  (`disarmRoomAlarm`), which forgets the time too, so the next arm after a purge always writes.
 - A request that asks for work now (a webhook queued, a Drive check or connect, an export started) still sets the
   alarm for now: it runs once per request, never in a loop. A data export's next chunk is set at once too: each chunk
   works up to 20 s, so a second's floor would only slow every export.
