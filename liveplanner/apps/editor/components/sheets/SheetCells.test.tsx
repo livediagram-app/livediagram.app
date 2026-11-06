@@ -79,7 +79,6 @@ function draw(
   opts: {
     scroll?: { top: number; left: number };
     view?: { width: number; height: number };
-    fontFamily?: string;
     filterHead?: { r: number; cols: ReadonlySet<number> };
   } = {},
 ) {
@@ -95,7 +94,6 @@ function draw(
       scroll={scroll}
       palette={palette}
       locale="en-GB"
-      fontFamily={opts.fontFamily}
       filterHead={opts.filterHead}
     />,
   );
@@ -290,8 +288,10 @@ describe('the cells', () => {
     expect(textBox('Loading…').style.color).not.toBe(RED);
   });
 
-  it('uses the element’s font', () => {
-    const { container } = draw(sheetOf({}), { fontFamily: 'Georgia' });
-    expect((container.firstElementChild as HTMLElement).style.fontFamily).toBe('Georgia');
+  // The Sheet's root letters its cells (fonts.md "On Sheet tabs and charts"); the cells set no face of their own.
+  it('takes the face the Sheet hands down', () => {
+    const { container } = draw(sheetOf({ A1: 'Rent' }));
+    expect((container.firstElementChild as HTMLElement).style.fontFamily).toBe('');
+    expect(textBox('Rent').style.fontFamily).toBe('');
   });
 });

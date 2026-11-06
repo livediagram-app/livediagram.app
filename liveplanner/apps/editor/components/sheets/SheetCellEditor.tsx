@@ -147,13 +147,7 @@ export function FunctionAssist({
   return null;
 }
 
-export function SheetCellEditor({
-  input,
-  fontFamily,
-}: {
-  input: FormulaInput;
-  fontFamily?: string;
-}) {
+export function SheetCellEditor({ input }: { input: FormulaInput }) {
   const c = useSheetController();
   const ref = useRef<HTMLTextAreaElement | null>(null);
   const e = c.editing;
@@ -184,7 +178,7 @@ export function SheetCellEditor({
   const text = {
     fontSize: px,
     lineHeight: `${lineH}px`,
-    fontFamily: resolveFontStack(f?.ff) ?? fontFamily,
+    fontFamily: resolveFontStack(f?.ff),
     fontWeight: f?.b ? 700 : undefined,
     fontStyle: f?.i ? ('italic' as const) : undefined,
   };

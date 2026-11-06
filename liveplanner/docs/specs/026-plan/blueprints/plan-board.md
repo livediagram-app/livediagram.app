@@ -706,6 +706,12 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   inherit. The Dashboard headings opting in: `ViewFrame`'s title (on its own header, not in the menu box),
   `CardHeading` (`card-parts.tsx`: Key Date, Checklist, Links), `DashboardNote`'s heading and `DashboardTitle`'s
   heading, each as read and as typed into.
+- Sheets and charts (spec "On Sheet tabs and charts"): `PlanSheetView`'s body root takes
+  `planBoardFontStyle(fontFamily)` and hands no face further down, so the grid, the cell editor and the Sheet's
+  charts inherit the UI face (a cell's `ff` still sets its own); `SheetHeader`'s title (not in the menu box) opts in
+  with `PLAN_HEADING_STYLE`. `ShapeContentRouter` wraps a data chart in `planChartFontStyle(element)` and passes no
+  face to `DataChartView`, so axis ticks, Show Values and the legend inherit the UI face, or the chart's own
+  `element.font`, on a canvas tab and on a Sheet alike.
 - Font pickers: `PLANNER_FONTS` (`@liveplanner/project` `planner-fonts.ts`, `FONTS` less
   `PLANNER_EXCLUDED_FONT_IDS`) feeds `TextTab`, `TypographySections` and `SheetToolbarMenus`; labels of a stored
   font still read from `FONTS`, so an excluded face already set keeps its name.
