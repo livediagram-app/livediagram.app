@@ -6,4 +6,5 @@ export * from './client';
 export * from './create-or-resume';
 export * from './grant';
 export * from './notices';
+export * from './connections';
 export * from './webhooks';
