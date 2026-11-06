@@ -1,6 +1,6 @@
 // Response envelopes: the `{ <noun>: payload }` wrappers the api worker puts
 // around the canonical types in ./index.ts. Named once here so every consumer
-// of the wire (the live editor's api client, the MCP server's tools) reads
+// of the wire (the live editor's api client, any script) reads
 // the same shape instead of spelling `{ document: LiveDoc }` inline at each
 // call site, where a renamed key would drift silently.
 

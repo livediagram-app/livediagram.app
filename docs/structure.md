@@ -84,7 +84,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
 └─ livehuddle/                 forked from livediagram in-tree (meetings, workshops, Avatar mode)
-   ├─ apps/                    the same set as livediagram's: editor, api, mcp, cli, marketing, help, community, router
+   ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, help, community, router
    ├─ packages/                @livehuddle/*
    └─ docs/specs               its specs, folded back to the code (build plan step 9)
 ```

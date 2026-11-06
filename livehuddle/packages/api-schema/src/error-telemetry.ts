@@ -39,7 +39,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'shape-libraries',
   'teams',
   'tokens',
-  'oauth',
   'account',
   'trash',
   'preferences',

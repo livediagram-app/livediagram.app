@@ -72,7 +72,6 @@ function setup() {
     opsApplied: number,
     onDocumentTrashed: () => void = () => {},
     changesetSeen: ReadonlyMap<string, number> = noneSeen,
-    noteTabRevision?: (tabId: string, rev: number) => void,
   ) =>
     useAutosave({
       hydrated: true,
@@ -87,29 +86,9 @@ function setup() {
       ...setters,
       onDocumentTrashed,
       changesetSeen,
-      noteTabRevision,
     });
   return { journal, refs, useSubject };
 }
-
-// The selection reference names the revision the editor knows (docs/specs/013-workspace/blueprints/
-// workbench-embeds.md "The selection reference"): a save's answer is one.
-describe('useAutosave and tab revisions', () => {
-  it('notes the revision each save wrote, and nothing when the answer names none', async () => {
-    const { useSubject } = setup();
-    const noted = vi.fn();
-    apiSaveTab.mockResolvedValueOnce(12);
-    const { rerender } = renderHook(({ tabs }) => useSubject(tabs, 0, () => {}, undefined, noted), {
-      initialProps: { tabs: [tab('mine')] },
-    });
-    await act(async () => vi.advanceTimersByTime(600));
-    expect(noted).toHaveBeenCalledWith('t1', 12);
-
-    rerender({ tabs: [tab('again')] });
-    await act(async () => vi.advanceTimersByTime(600));
-    expect(noted).toHaveBeenCalledTimes(1);
-  });
-});
 
 describe('useAutosave and peer ops', () => {
   it('saves a local edit after the debounce', () => {

@@ -42,8 +42,9 @@ cluster's **Walk** button; a Participant is always walking, so it needs none. Wa
 way in is the same one-press button: an Editor can also pick Avatar on its palette strip's picker, but the picker is a
 menu away, and a Viewer has no strip at all. Before, only a Viewer had the button, so the people building a Space had the slowest way in.
 
-- **Where.** In the cluster, after Undo / Redo for those who have them and first for a Viewer, where the mode's own
-  control appears while walking. While walking, the Avatar button (and the call
+- **Where.** In the cluster, after Undo / Redo while an Editor is not walking, and first otherwise (a Viewer, and
+  anyone walking, [No editing chrome while walking](#no-editing-chrome-while-walking)), where the mode's own control
+  appears while walking. While walking, the Avatar button (and the call
   buttons) follow it, and Walk stays put under the pointer.
 - **What it does.** Pressing it enters Avatar mode exactly as picking Avatar does (the selection cleared, the tool
   before it remembered, `Canvas·Used·AvatarMode` counted), the character appearing wherever a fresh entry puts it (a
@@ -60,7 +61,7 @@ menu away, and a Viewer has no strip at all. Before, only a Viewer had the butto
 
 ## The Avatar Panel
 
-While the mode is active, an **Avatar** button sits in the bottom-right cluster, **immediately right of Undo / Redo** (right of the [Walk button](#the-walk-button) for a Viewer, who has no Undo), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
+While the mode is active, an **Avatar** button sits in the bottom-right cluster, **right of the [Walk button](#the-walk-button)** (when there is one) and the call buttons (Undo and Redo are away while walking, [No editing chrome while walking](#no-editing-chrome-while-walking)), and opens the **Avatar** panel, the character sheet, as a popover over it, the way Contents and the Session strip's buttons open theirs. The panel is **closed when the mode starts**: the canvas is the point of the mode, and a panel that always covered a corner of it was in the way. Pressing the button again, pressing outside the popover, or Escape closes it. The button exists only while the mode does, so leaving the mode takes the button and any open panel with it. It shows on a desktop and a phone alike, named **Avatar** beside a small head-and-shoulders glyph on a desktop and the glyph alone on a phone, like its neighbours. View-role visitors get it too: the mode is theirs as well. Only the welcome flow hides it. The panel is never a corner panel: it does not dock, drag or join a corner stack.
 
 Contents, top to bottom:
 
@@ -112,9 +113,25 @@ The four choices are then **remembered per browser** under `livehuddle:v2:avatar
 
 Parsing is **field by field with per-field fallbacks**: a value this build doesn't recognise (an option retired in a later release, a hand-edited key) costs only that one choice rather than resetting the whole character, and a config written by an older build loads with the new fields defaulted. Position of the avatar itself is still never persisted; only the costume.
 
+## No editing chrome while walking
+
+While walking you are in the room, not editing it (Work Tracker #561), so the controls that change the tab step aside
+for as long as the mode is on, for every role, and come back the moment it ends:
+
+- **Undo and Redo** leave the bottom-right cluster, and their shortcuts (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z, Ctrl+Y) do
+  nothing, so a stray key never changes the Space behind you. The browser's own undo is held back too. The command
+  palette leaves out Undo and Redo while walking.
+- **Tab Style** (the cluster's Theme & Canvas brush, [Canvas and theme dialog](../011-theme/canvas-and-theme-dialog.md))
+  leaves the cluster, and so do its other ways in, the command palette's **Open Theme** and **Open Canvas Options**.
+  It has no shortcut.
+- What stays is the walk's own chrome: Walk, the call buttons, Avatar, Collaborate (while the tab has a thread) and the
+  zoom controls. On a phone the cluster is shorter, still one row.
+- A Participant is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)), so it
+  never sees any of them, as before; a Viewer never had them. Only an Editor sees the change, as it walks.
+
 ## Walking
 
-- **Click / tap anywhere** on the canvas: the avatar walks there at a constant **260 canvas px/s**, in a straight line or round the walls in the way ([Finding the way](#finding-the-way)), facing its direction of travel. A click mid-walk retargets immediately. It arrives and stops; there is no easing, deliberately: a constant-speed walk reads as a character, an eased glide reads as a camera.
+- **Click / tap anywhere** on the canvas: the avatar walks there, standing up first when it is seated ([Chair](../009-elements/chair.md) "Any movement stands you up") at a constant **260 canvas px/s**, in a straight line or round the walls in the way ([Finding the way](#finding-the-way)), facing its direction of travel. A click mid-walk retargets immediately. It arrives and stops; there is no easing, deliberately: a constant-speed walk reads as a character, an eased glide reads as a camera.
 - **Arrow keys**: while held, the avatar walks that way, mirroring the direction pressed. Two held keys compose a diagonal (normalised, so diagonal walking isn't faster). Any arrow press cancels a click-walk in progress; releasing every arrow stops the avatar where it stands.
 - **No collision with ordinary elements**: they are scenery, so the avatar walks over anything except a [Fence](../009-elements/fence.md), a [Room](../009-elements/office.md#room)'s walls (it enters by the doorway) and the footprint of a plant or bookshelf ([Office](../009-elements/office.md)), none of which it can cross (it stops, or slides along them). Walking onto a water cooler or coffee machine gives it a drink, carried in its presence as `holding`. The element it is standing on gets a soft brand-tinted "you are here" ring, which is what makes the mode useful for narration: the audience can see what the character has arrived at.
 - **Space hops**, and the character waves a small flag through the hop plus a short tail so it reads as a celebration rather than stopping dead on landing. The hop peaks around 70 canvas px and lands in a bit over half a second; the contact shadow shrinks as it rises, which is what sells leaving the floor. Autorepeat is ignored (one press, one hop) and a second press mid-flight does nothing. Space is the hold-to-pan modifier everywhere else, which this mode can afford to reclaim: it is read-only, so there is no selection to tap-edit, and panning stays on middle-mouse drag, the trackpad, and the zoom controls.
@@ -417,7 +434,7 @@ The panel's **Send a Message** opens a popover over the Avatar button with a tex
 - On send the bubble **detaches**: its tail fades, and it floats **straight up from where your character's head was** when you sent it, swaying gently from side to side, so it reads as drifting rather than sliding. Your character is free to walk away from it at once.
 - It **fades out over the last third** of its flight and is gone. How long it flies **scales with its length**: 4 seconds for up to two words, 0.15 seconds more for each further word, and never more than 10 seconds (reached at 42 words), so a long message stays up long enough to read. It rises at a steady 18 screen pixels a second, so a longer message also floats higher.
 - Like the composer, a floating bubble is drawn at reading size whatever the zoom, anchored to its canvas point, so it pans with the canvas.
-- **Kept inside the view**: the composer and every floating bubble are shifted sideways just enough to stay whole inside the canvas's visible area, with an 8px margin, however close to a left or right edge the character stands (on a phone, a character at the edge no longer runs its words off screen). Only the card moves: its tail keeps pointing at the head's canvas point, and nothing changes while the bubble is clear of the edges. Where the view is narrower than the card, the left edge wins. The top edge holds a floating bubble too, below the palette strip floating there (the walk's follow margin, 120px): one that would rise into it stops there and fades, and one over a character standing under it starts there, over the head, rather than out of sight.
+- **Kept inside the view**: the composer and every floating bubble are shifted sideways just enough to stay whole inside the canvas's visible area, with an 8px margin, however close to a left or right edge the character stands (on a phone, a character at the edge no longer runs its words off screen). Only the card moves: its tail keeps pointing at the head's canvas point, and nothing changes while the bubble is clear of the edges. Where the view is narrower than the card, the left edge wins. The top edge holds a floating bubble too, below the palette strip floating there (the walk's follow margin, 120px): one that would rise into it stops there and fades, and one over a character standing under it starts there, over the head, rather than out of sight. The composer keeps the same line (#501): typing with your character just under the top edge, it sits 120px down, over your character, and comes down further as it grows a line or its hint. Moved down like this it sits below your head, so it shows no tail.
 - **Several at once**: you may send again as soon as your last bubble has left your head, after a **1.5 second cooldown**; until then Enter and Send are held (the composer shows "One moment…"). Each bubble flies on its own clock, so a quick second message rises beneath the first.
 - **Peers see the same flight**, starting when their copy arrives. Every bubble, yours included, has its border and tail in the speaker's **avatar colour** (their presence colour, the shirt's) and the speaker's **name** in small type **under the message**, in the same colour, so a message is still attributable once its sender has walked away. The composer wears your colour too, its send button included.
 - **Bounded on every screen**: at most **three** bubbles per person are on screen; a fourth from the same person makes their oldest fade out at once. A client that ignores the cooldown therefore cannot fill anyone's canvas.

@@ -37,9 +37,9 @@ describe('runOnce', () => {
   it('stores a row for every service, the day’s rollup and both answers', async () => {
     const env = testEnv();
     const report = await runOnce(env, T0, { results: results() });
-    expect(report).toMatchObject({ at: T0, checked: 42, up: 42, down: 0, opened: 0 });
-    expect(rows(env, 'SELECT * FROM checks')).toHaveLength(42);
-    expect(rows(env, 'SELECT * FROM daily WHERE day = ?', '2026-10-25')).toHaveLength(42);
+    expect(report).toMatchObject({ at: T0, checked: 41, up: 41, down: 0, opened: 0 });
+    expect(rows(env, 'SELECT * FROM checks')).toHaveLength(41);
+    expect(rows(env, 'SELECT * FROM daily WHERE day = ?', '2026-10-25')).toHaveLength(41);
 
     const latest = snapshot<StatusLatest>(env, 'latest');
     expect(latest.at).toBe(T0);
@@ -50,7 +50,7 @@ describe('runOnce', () => {
 
     const history = snapshot<StatusHistory>(env, 'history');
     expect(history.from).toBe('2026-07-28');
-    expect(Object.keys(history.services)).toHaveLength(42);
+    expect(Object.keys(history.services)).toHaveLength(41);
     const site = history.services['liveworkspace:site']!;
     expect(site.w).toBe(`${'-'.repeat(89)}u`);
     // A fully up day isn't listed: only days under 100% are.
@@ -187,7 +187,7 @@ describe('runOnce', () => {
       });
     };
     const report = await runOnce(env, T0, { fetch: fetchImpl });
-    expect(report).toMatchObject({ checked: 42, down: 1, opened: 1 });
+    expect(report).toMatchObject({ checked: 41, down: 1, opened: 1 });
     const latest = snapshot<StatusLatest>(env, 'latest');
     expect(latest.services['liveplanner:editor']).toEqual(['d', 502, expect.any(Number), 'status']);
     expect(latest.services['liveplanner:router']![0]).toBe('u');
@@ -203,7 +203,7 @@ describe('runOnce', () => {
       batch: (stmts: D1PreparedStatement[]) => (batches.push(stmts.length), db.batch(stmts)),
     } as unknown as D1Database;
     await runOnce(env, T0, { results: results() });
-    // One read batch (4 queries), one write batch: 42 checks, 42 days, 3 prunes, 2 snapshots.
-    expect(batches).toEqual([4, 89]);
+    // One read batch (4 queries), one write batch: 41 checks, 41 days, 3 prunes, 2 snapshots.
+    expect(batches).toEqual([4, 87]);
   });
 });

@@ -5,13 +5,11 @@ const index = vi.hoisted(() => ({ deleteItem: vi.fn() }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const { handOffDeleteUndo, takeDeleteUndo, trashOpenDocument } =
-  await import('./document-delete-undo');
+const { trashOpenDocument } = await import('./document-delete-undo');
 const { isDocumentDeleted } = await import('./document-tombstones');
 
 afterEach(() => {
   vi.clearAllMocks();
-  sessionStorage.clear();
 });
 
 describe('trashOpenDocument', () => {
@@ -22,7 +20,6 @@ describe('trashOpenDocument', () => {
     expect(await trashOpenDocument('a', 'Roadmap', leave)).toBe(true);
     expect(seen).toEqual([true]);
     expect(leave).toHaveBeenCalledWith('/explorer?trashed=a&title=Roadmap');
-    expect(takeDeleteUndo()).toEqual({ id: 'a', title: 'Roadmap' });
   });
 
   it('lifts the tombstone and stays when the index refuses', async () => {
@@ -31,19 +28,5 @@ describe('trashOpenDocument', () => {
     expect(await trashOpenDocument('b', 'Roadmap', leave)).toBe(false);
     expect(isDocumentDeleted('b')).toBe(false);
     expect(leave).not.toHaveBeenCalled();
-    expect(takeDeleteUndo()).toBeNull();
-  });
-});
-
-describe('the Undo handoff', () => {
-  it('is taken once', () => {
-    handOffDeleteUndo('c', null);
-    expect(takeDeleteUndo()).toEqual({ id: 'c', title: null });
-    expect(takeDeleteUndo()).toBeNull();
-  });
-
-  it('offers nothing once stale', () => {
-    handOffDeleteUndo('d', 'Old', 1_000);
-    expect(takeDeleteUndo(1_000 + 31_000)).toBeNull();
   });
 });

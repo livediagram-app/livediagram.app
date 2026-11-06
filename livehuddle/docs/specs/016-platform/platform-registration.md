@@ -23,7 +23,7 @@ Each is a step of its own in the [Build plan](../005-project-roadmap/build-plan.
 | [Index](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)                    | `livehuddle` in the index's apps, its noun (Space, Spaces) and its paths in the Explorer                                                                                                                                                                                                                                           |
 | [Media](../../../../liveworkspace/docs/specs/006-media/media.md)                           | livehuddle among the apps that upload images                                                                                                                                                                                                                                                                                       |
 | [Telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md#adding-an-app) | Its vocabulary, key and dashboard, by that spec's "Adding an app" steps                                                                                                                                                                                                                                                            |
-| [Status](../../../../liveworkspace/docs/specs/009-status/README.md)                        | Its checks: the site, the api and livehuddle's MCP server (`MCP_DEV_PORTS`, `9088` locally, `mcp.livehuddle.app` live), as every app's (owner, 2026-11-02; [Open decisions](../005-project-roadmap/open-decisions.md) D3)                                                                                                          |
+| [Status](../../../../liveworkspace/docs/specs/009-status/README.md)                        | Its checks: the site and the api; no MCP row since the MCP server went (Work Tracker #562, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches))                                                                                                                                  |
 | [Site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md)            | One row: livehuddle's name, URL, pitch and colours                                                                                                                                                                                                                                                                                 |
 | [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)               | livehuddle as a fifth editor on the shared workbench                                                                                                                                                                                                                                                                               |
 | [Community](../../../../liveworkspace/docs/specs/007-community/community.md#adding-an-app) | **In v1** (owner, 2026-11-02; Work Tracker #184), by that spec's "Adding an app" steps: `livehuddle.app` in `COMMUNITY_APPS` with its own categories for meetings and workshops, a `COMMUNITY_KEY_LIVEHUDDLE` key (**owner only**), the api's Community routes, the `community` app's pages, and `communityPath` in its `AppItems` |
@@ -50,8 +50,8 @@ In the order the build makes them (code locations as on `main` today):
    site's `/telemetry`.
 6. **Settings.** `packages/settings/src/device.ts` (`keysFor('livehuddle')`) and the Settings panel's catalogue in
    `packages/settings-ui`.
-7. **Status.** `liveworkspace/packages/status/src/services.ts`: livehuddle's checks, its MCP Worker's local port
-   (`9088`) in `MCP_DEV_PORTS` among them (see the Status row above).
+7. **Status.** `liveworkspace/packages/status/src/services.ts`: livehuddle's checks, with no entry in
+   `MCP_DEV_PORTS` (see the Status row above).
 8. **Drive.** `packages/drive/src/formats.ts` (`APP_FILE_FORMATS.livehuddle`), the drive Worker's env
    (`DRIVE_KEY_LIVEHUDDLE`, `APP_ORIGIN_LIVEHUDDLE`) and `wrangler.toml` (the origins and livehuddle's API in
    `INDEX_AUDIENCES`). The api's internal door answers the file (`handlers.export`, `format: 'file'`) and the import
@@ -82,22 +82,21 @@ forked scripts change only their hundreds digit.
 
 Wrangler's own ports sit outside the 35xx block, one range per product (the api at livediagram 8687, liveplanner
 8887, livedocuments 8987, livedesign 8989; inspectors at 91xx to 95xx): livehuddle takes **9087** for the api,
-**9088** for the MCP, and inspector ports **9630** onward, all free on `main` today.
+**9088** for the MCP (free again since #562), and inspector ports **9630** onward, all free on `main` today.
 
 ## CI
 
 **Added at the code fork (build plan step 3), held until launch:**
 
 - **A fifth group** in `.github/scripts/ci-plan.mjs`: `livehuddle`, folder `livehuddle/`, editor
-  `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`). The
+  `@livehuddle/editor` (sharded), and, until #563 removed it, its CLI (`cli: null` now). The
   root-files pattern that reaches everything has `livehuddle` beside the other product folders.
 - **Held until launch** (`held: true`): the group runs only when a change touches `livehuddle/` itself or everything
   runs, never because a shared package it uses changed; it has no E2E, and none of its Workers deploy, even with
   **all** (docs/ci.md "Deploys").
 - **docs/ci.md**'s group table has the row, and says what held means.
 - **The spec checks run** since the specs were forked (step 4): the help app's repo-paths check over `docs/specs/` and
-  `docs/`, and the suites that pin prose to code (the router's routes against `016-platform/router-app.md`, the CLI's
-  command table against `015-api/cli.md`, the preferences cap against `015-api/api.md`, and the image cap against
+  `docs/`, and the suites that pin prose to code (the router's routes against `016-platform/router-app.md`, the preferences cap against `015-api/api.md`, and the image cap against
   `009-elements/images.md`). Each cut removes the specs of
   what it removes in the same PR, so these stay green.
 
@@ -105,8 +104,8 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 
 - **The hold lifts**: `held: true` comes off, so shared-package changes reach livehuddle's suites and its Workers
   deploy.
-- **Real KV namespaces** for the MCP Worker's OAuth state: `livehuddle-mcp-oauth` (production) and
-  `livehuddle-mcp-oauth-staging` replace the placeholder ids in `apps/mcp/wrangler.toml`. The api has no D1 (its
+- **Real KV namespaces** for the MCP Worker's OAuth state (deleted with it since #562): `livehuddle-mcp-oauth` (production) and
+  `livehuddle-mcp-oauth-staging` replace the placeholder ids in `livediagram/apps/mcp/wrangler.toml`. The api has no D1 (its
   Durable Objects keep everything), so there is no database to create.
 - **The bare domain** `livehuddle.app` joins the platform's `APP_BARE_HOSTS`, so the router sends its pages to
   `www.`.
@@ -131,7 +130,7 @@ Through CI only, never by hand (docs/ci.md "Deploys"), to the liveworkspace Clou
 pins (`851be7d244b76a6557bcbe6c4ded80f5`):
 
 - First tier (the services and apis): `livehuddle-api` (Durable Objects and their migrations; no D1).
-- Second tier (the sites): `livehuddle-mcp`, `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`,
+- Second tier (the sites): `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`,
   `livehuddle-community`.
 - Third tier (the routers): `livehuddle-router`.
 

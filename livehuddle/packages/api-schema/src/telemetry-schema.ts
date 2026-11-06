@@ -74,17 +74,13 @@ export const TELEMETRY_CATEGORIES = [
   // per-article helpful / not-really feedback. The second app (besides
   // the editor) that emits telemetry. `type` is the article slug.
   'Help',
-  // API tokens (docs/specs/015-api/public-api-and-tokens.md) + MCP connections (docs/specs/015-api/mcp-server.md): 'Created'/'Removed'
-  // with `type` 'Manual' (Explorer New-token) or 'MCP' (an AI tool connected
-  // via the consent screen, which mints a token under the hood).
+  // API tokens (docs/specs/015-api/public-api-and-tokens.md): 'Created'/'Removed' with `type` 'Manual' (Explorer
+  // New-token); 'MCP' and 'Cli', from the retired MCP consent screen and CLI sign-in, still parse.
   'Token',
-  // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
-  // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
-  // third app that reports telemetry, so usage shows up distinctly from the
-  // editor's own events.
+  // MCP server tool calls: 'Used' with `type` the tool name. livehuddle no longer has an MCP server
+  // (docs/specs/002-project-scope/not-in-livehuddle.md); kept so the events it sent still parse.
   'Mcp',
-  // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
-  // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
+  // CLI commands: 'Used' with `type` the verb. livehuddle no longer has a CLI; kept so the events it sent still parse.
   'Cli',
   // Transactional + lifecycle email (apps/api, docs/specs/014-identity/transactional-email.md): 'Sent' with `type`
   // the template kind ('Welcome', 'TeamInvite', ...). Written server-side by

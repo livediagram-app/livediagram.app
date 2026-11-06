@@ -451,7 +451,7 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/015-api/mcp-server.md).
+// Deterministic auto-layout for AI-generated diagrams (livediagram/docs/specs/015-api/mcp-server.md).
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements } from './auto-layout-tidy';
@@ -462,7 +462,7 @@ export { frameHeadingRect } from './auto-layout-cluster-seats';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 
-// Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7,
+// Authoring input the api's changesets build from (livediagram/docs/specs/015-api/mcp-server.md §4.7,
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
@@ -470,10 +470,10 @@ export { KINK_RUN, arrowEndKey } from './graph-notches';
 export * from './graph-limits';
 export * from './tab-builders';
 
-// Shared by the editor's text export + import and reusable by the api / MCP.
+// Shared by the editor's text export + import and reusable by the api.
 
-// Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
-// shared by the in-app export and the MCP worker's inline image render.
+// Headless SVG renderer (livediagram/docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
+// shared by the in-app export and the api's server-side renders.
 export * from './svg-render';
 export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
@@ -489,8 +489,8 @@ export {
 } from './svg-render-face-kit';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
-// recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
+// recolour / switch / reset / preset transforms, shared by the editor and the api.
+// The viewer-appearance wrappers stay in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';

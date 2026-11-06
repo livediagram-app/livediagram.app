@@ -216,14 +216,7 @@ describe('AREAS', () => {
   it('names every app and package tree that uploads coverage, each once', () => {
     const paths = AREAS.flatMap((a) => a.paths);
     expect(new Set(paths).size).toBe(paths.length);
-    for (const p of [
-      'apps/editor',
-      'apps/api',
-      'apps/mcp',
-      'apps/help',
-      'apps/marketing',
-      'packages',
-    ]) {
+    for (const p of ['apps/editor', 'apps/api', 'apps/help', 'apps/marketing', 'packages']) {
       expect(paths).toContain(p);
     }
   });

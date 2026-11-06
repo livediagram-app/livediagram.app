@@ -53,8 +53,7 @@ presence as that person's agent, and comments are how people and agents talk on 
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
   label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
   time.
-- Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
-  `wait --for comment`) or on its next read.
+- Agents cannot be mentioned. An agent that answers comments reads new ones on its next read of the threads.
 
 ## Token levels
 

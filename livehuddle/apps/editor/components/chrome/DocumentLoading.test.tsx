@@ -27,6 +27,14 @@ function setNavigatorOnline(online: boolean) {
 }
 
 describe('DocumentLoading', () => {
+  // docs/specs/007-editor/new-document-route.md "The opening screen": livehuddle's own picture, not the diagram one.
+  it('shows a Space coming to life as its picture', () => {
+    render(<DocumentLoading stage="creating" />);
+    expect(screen.getByRole('img', { name: 'A Space coming to life' })).toBeTruthy();
+    expect(screen.queryByRole('img', { name: 'Building a diagram' })).toBeNull();
+    expect(screen.getByText('Creating your space')).toBeTruthy();
+  });
+
   it('offers Refresh after 10 seconds and reports the slow load', () => {
     render(<DocumentLoading stage="opening" />);
     expect(screen.queryByText(/longer than usual/)).toBeNull();

@@ -247,14 +247,11 @@ export {
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
-  // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
-  // oldest CLI accepted for writes.
+  // For scripts (docs/specs/015-api/api.md "Capabilities"), each optional so an older worker parses: where the
+  // api answers, whether sign-in exists, and the stored document format.
   apiBase?: string;
   authEnabled?: boolean;
-  oauthIssuer?: string;
   documentFormat?: number;
-  cli?: { minVersion: string };
   // True only when the deployment has the Email Service `EMAIL` binding (docs/specs/014-identity/transactional-email.md). The
   // editor app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
@@ -349,11 +346,6 @@ export * from './community-categories';
 export * from './community-paths';
 export * from './document-paths';
 export * from '@liveworkspace/api-schema/http-errors';
-export * from './oauth-clients';
-// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
-export * from './workbench';
-export * from './workbench-messages';
-export * from './mcp-origin';
 
 // The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
 export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';

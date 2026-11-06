@@ -155,6 +155,53 @@ describe('layoutBubbles in a narrow view', () => {
   });
 });
 
+// "Near the edge, a row stays inside the view" (#503).
+describe('layoutBubbles near the edge of the view', () => {
+  const view = { left: 0, width: 800 };
+  const inView = (r: BubbleRect) => r.left >= view.left && r.right <= view.left + view.width;
+
+  it('slides a row that fits back inside the left edge, keeping its order and gaps', () => {
+    // Two people with cameras on, at the very left edge: packed, the first bubble would start off-screen.
+    const atLeft = [box('a', 10), box('b', 40)];
+    expect(layoutBubbles(atLeft, []).rects.every(inView)).toBe(false);
+    const { rects, order, dy } = layoutBubbles(atLeft, [], view);
+    expect(order).toEqual(['a', 'b']);
+    expect(dy.size).toBe(0);
+    expect(rects.every(inView)).toBe(true);
+    expectApart(rects);
+    expect(rects[0]!.left).toBe(0);
+    expect(rects[1]!.left).toBe(rects[0]!.right + BUBBLE_GAP_PX);
+  });
+
+  it('slides a row back inside the right edge', () => {
+    const atRight = [box('a', 760), box('b', 790)];
+    const { rects } = layoutBubbles(atRight, [], view);
+    expect(rects.every(inView)).toBe(true);
+    expectApart(rects);
+    expect(rects[1]!.right).toBe(800);
+  });
+
+  it('moves only the bubble at the edge, leaving someone further in where they stand', () => {
+    const apart = [box('a', 20), box('b', 400)];
+    const { dx } = layoutBubbles(apart, [], view);
+    expect(dx.get('a')).toBe(60 - 20);
+    expect(dx.get('b')).toBe(0);
+  });
+
+  it('keeps the order as people near the edge shuffle, so the bubbles do not jitter', () => {
+    const first = layoutBubbles([box('a', 10), box('b', 40)], [], view);
+    // b steps just left of a, inside the swap margin: no swap, and the same places.
+    const next = layoutBubbles([box('a', 30), box('b', 20)], first.order, view);
+    expect(next.order).toEqual(first.order);
+    expect(next.rects).toEqual(first.rects);
+  });
+
+  it('leaves a row well inside the view where it was', () => {
+    const middle = [box('a', 380), box('b', 410)];
+    expect(layoutBubbles(middle, [], view).rects).toEqual(layoutBubbles(middle, []).rects);
+  });
+});
+
 describe('groupWidth', () => {
   it('is the bubbles and the gaps between them', () => {
     expect(groupWidth(1, 120)).toBe(120);

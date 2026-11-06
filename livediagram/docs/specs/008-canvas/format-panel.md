@@ -39,6 +39,10 @@ Device-local, in `localStorage` (`livediagram:v2:format-config`), like the other
 
 The **Copies** toggles are the setting most likely to be wrong later: someone leaves Fill off, comes back tomorrow, and wonders why the painter isn't copying colours. So the panel keeps the count in view ("Copies: Border, Text") and the brush swatch shows only what is enabled.
 
+## Locks
+
+A lock holds an element's look as well as its place. The Format tool never paints onto a locked element, an element on a locked or hidden layer, or anything on a locked tab: the tap does nothing, counts as no paint (no `Element·Changed·FormatPainter`), and leaves a Paint once brush loaded. A locked element can still be the source, since copying its look changes nothing; a hidden or locked layer's element can be neither, as it takes no presses at all ([Layers](../006-document/layers.md)). The Eraser protects the same three locks ([Canvas and palette](canvas-and-palette.md) "Eraser").
+
 ## Telemetry
 
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): toggling emits `UI·Changed·FormatCopies`, and the mode emits `UI·Changed·FormatMode`. Painting itself still reports `Element·Changed·FormatPainter`, as before.

@@ -121,7 +121,8 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: new RegExp(`${TFJS_WASM.source}|${ORT_WASM.source}|${WEBP_WASM.source}`) },
     texts: text('emscripten-3.1.28-LICENSE.txt'),
   },
-  // The mcp worker's SVG renderer: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2.
+  // An SVG renderer a Worker may bundle: resvg 0.34 and its rasteriser, compiled by resvg-js 2.6.2. No livehuddle
+  // app bundles it since the MCP server went, so the page lists it only if one does again.
   {
     id: 'resvg',
     name: 'resvg',
@@ -142,7 +143,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     trigger: { assets: /(^|-)index_bg\.wasm$/ },
     texts: text('tiny-skia-0.10.0-LICENSE.txt'),
   },
-  // The typeface the MCP server and the CLI render PNG previews with (packages/render-png/fonts).
+  // The typeface PNG previews render with (packages/render-png/fonts), listed only when an app bundles it.
   {
     id: 'inter',
     name: 'Inter',
@@ -152,29 +153,6 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     homepage: 'https://github.com/rsms/inter',
     trigger: { assets: /(^|-)Inter-(Regular\.ttf|Bold\.otf)$/ },
     texts: text('inter-3.19-LICENSE.txt'),
-  },
-  // draw.io's view geometry (routes, perimeters, label points) ported into the draw.io importer.
-  {
-    id: 'drawio-mxgraph',
-    name: 'draw.io (mxGraph view geometry)',
-    version: '31.7.0',
-    licence: 'Apache-2.0',
-    carrier: 'livehuddle source (draw.io import)',
-    homepage: 'https://github.com/jgraph/drawio',
-    trigger: {
-      sources: [
-        'apps/editor/lib/drawio/route/edge-styles.ts',
-        'apps/editor/lib/drawio/route/geometry.ts',
-        'apps/editor/lib/drawio/route/label.ts',
-        'apps/editor/lib/drawio/route/orth-connector.ts',
-        'apps/editor/lib/drawio/route/page.ts',
-        'apps/editor/lib/drawio/route/perimeters.ts',
-        'apps/editor/lib/drawio/route/segment-connector.ts',
-        'apps/editor/lib/drawio/route/state.ts',
-        'apps/editor/lib/drawio/route/view.ts',
-      ],
-    },
-    texts: text('drawio-31.7.0-LICENSE.txt'),
   },
   // Icon geometry vendored into the monorepo's own source (packages/icons, shared by every product).
   {

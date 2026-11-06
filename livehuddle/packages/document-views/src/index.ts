@@ -14,4 +14,3 @@ export { overviewView, editedAge, type OverviewTabInput } from './overview';
 export { diffView } from './diff';
 export { PERSON_ID_FIELDS } from './show';
 export { commentHosts, threadListingLines } from './comments';
-export { selectionReference } from './selection-reference';

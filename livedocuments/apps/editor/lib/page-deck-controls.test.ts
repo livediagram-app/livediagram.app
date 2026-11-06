@@ -21,6 +21,7 @@ describe('pageDeckControls', () => {
     newPageSlide: vi.fn(),
     toggleSlideHidden: vi.fn(),
     setSlideNoteCards: vi.fn(),
+    flushDeckSave: vi.fn(),
     start: vi.fn(async () => {}),
   };
 
@@ -50,6 +51,8 @@ describe('pageDeckControls', () => {
     const cards = [{ id: 'c1', text: 'Say hello' }];
     c.setNoteCards('s1', cards);
     expect(verbs.setSlideNoteCards).toHaveBeenCalledWith('s1', cards);
+    c.flushNotes();
+    expect(verbs.flushDeckSave).toHaveBeenCalledTimes(1);
   });
 
   it('presents from a slide, counted before the show starts', () => {

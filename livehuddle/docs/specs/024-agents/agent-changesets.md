@@ -100,10 +100,6 @@ drag previews stay for documents with an audience.
 ## Whole-tab saves and tab renames
 
 - A tab `PUT` presented with an API token is refused `405 use_changesets`, its message naming the changeset route.
-  The CLI and the MCP server never do whole-tab saves.
-- A [workbench session](../013-workspace/workbench-embeds.md) is a person's editor, not a token: its saves are
-  whole-tab `PUT`s, it writes no agent changesets, its selection holds as a person's does, and its Undo on a toast
-  is a person's revert.
 - A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
   relayed to the room as the `tab-meta` an editor's own rename sends. (A `document-meta` keeps every open editor's
   tab names, so a peer's stale tab list can never revert a rename.) The CLI's and the MCP's tab renames use it.
@@ -175,7 +171,7 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 
 ## The MCP server
 
-`update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
+`update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
 `update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap
 erases nothing:
 

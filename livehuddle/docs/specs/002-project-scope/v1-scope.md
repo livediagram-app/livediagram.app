@@ -116,9 +116,9 @@ livehuddle keeps every feature the platform gives all its apps, and cuts only wh
   ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)).
 - **The Community** ([Community](../025-community/community.md)): publishing a Space to the gallery at
   `/community`, on the platform's Community service, with categories for meetings and workshops.
-- **The MCP server and the CLI** ([MCP server](../015-api/mcp-server.md), [CLI](../015-api/cli.md)): an AI tool or a
-  script finds, reads, creates and changes Spaces. Their tools and commands cover what livehuddle has; nothing for
-  Diagram or Draw mode, Event Storming or repositories.
+- **The REST API and API tokens** ([Public API and tokens](../015-api/public-api-and-tokens.md)): a script finds,
+  reads, creates and changes Spaces. The MCP server and the CLI went later
+  ([Not in livehuddle](not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 ## Non-goals for v1
 
@@ -148,6 +148,6 @@ In the shape of every liveworkspace product, under `livehuddle/apps/` ([Apps and
 | `router`    | Yes | The Worker in front of every app on livehuddle.app, as every product's router             |
 | `marketing` | Yes | The landing page, built on `@liveworkspace/marketing-site`                                |
 | `help`      | Yes | The help centre, built on `@liveworkspace/help-site`, with the articles for what v1 holds |
-| `mcp`       | Yes | The MCP server for AI tools, on `mcp.livehuddle.app` (D3)                                 |
-| `cli`       | Yes | The `livehuddle` command line, `@livehuddle/cli` (D3)                                     |
+| `mcp`       | No  | Shipped at launch, removed later (Work Tracker #562, not-in-livehuddle.md)                |
+| `cli`       | No  | Shipped at launch, removed later (Work Tracker #563, not-in-livehuddle.md)                |
 | `community` | Yes | The Community gallery at `/community`, on the platform's Community service (D3)           |
