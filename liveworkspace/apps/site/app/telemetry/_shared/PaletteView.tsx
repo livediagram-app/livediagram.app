@@ -34,10 +34,39 @@ export function PaletteView({
   active: TelemetryWindowKey;
 }) {
   const { palette } = useTelemetryApp();
-  const { tabs, subtitles, aliases: PALETTE_TYPE_ALIASES } = palette;
+  const { tabs, aliases: PALETTE_TYPE_ALIASES } = palette;
+  const subtitles = palette.subtitles ?? { shapes: '', devices: '' };
   const rows = summary.windows[active].rows;
   const trend = rankTrend(summary, active);
   const ranked = (tab: string) => rank(rows, addedIn(tabs[tab] ?? []), PALETTE_TYPE_ALIASES);
+  if (palette.cards) {
+    return (
+      <div className="mt-8">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          What people reach for in the creation palette, for{' '}
+          <span className="font-medium">{windowLabel(active)}</span>, most to least used.
+        </p>
+        <div className="mt-6">
+          <CardColumns>
+            {palette.cards.map((card) => (
+              <RankCard
+                key={card.tab}
+                trend={trend}
+                title={card.title}
+                subtitle={card.subtitle}
+                category="Element"
+                action="Added"
+                items={ranked(card.tab)}
+                daily={summary.daily}
+                aliases={PALETTE_TYPE_ALIASES}
+                emptyLabel={card.empty}
+              />
+            ))}
+          </CardColumns>
+        </div>
+      </div>
+    );
+  }
   const shapes = ranked('shapes');
   const tools = ranked('tools');
   const collaborateSubtitle = tabs.collaborate ? subtitles.collaborate : undefined;

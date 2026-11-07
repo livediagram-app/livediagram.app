@@ -4,7 +4,12 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livediagram/api-schema';
-import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  platformEmitters,
+  avatarEmitters,
+  sharedClientEmitters,
+  sharedSiteEmitters,
+} from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -63,6 +68,8 @@ const EMITS = [
   ...platformEmitters(isValidTelemetryEvent, 'Document'),
   // Every app's client errors and timings, sent through the shared browser client.
   ...sharedClientEmitters(),
+  // Avatar mode's events, sent through this editor's bound track.
+  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];

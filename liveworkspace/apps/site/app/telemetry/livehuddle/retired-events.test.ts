@@ -9,6 +9,22 @@ const dropRetiredEvents = (summary: TelemetrySummary) => dropRetired(summary, is
 // reach a chart.
 
 describe('isRetiredEvent', () => {
+  it('retires what livehuddle let go, not what a Space still sends', () => {
+    expect(isRetiredEvent('UI', 'Started', 'Presentation')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'Presentation-Transition')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'Presentation-LoopOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'SessionVote')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerPreviewOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'WhiteboardDockPositionTop')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'LanesSettled')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'EntityField')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Cardinality')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'Sit')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'PingPong')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'Room')).toBe(false);
+  });
+
   it('retires the Activity panel events', () => {
     expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);
@@ -189,8 +205,9 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
     expect(isRetiredEvent('Editor', 'Changed', 'ModeDiagram')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(false);
-    expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(false);
+    // The Slide Deck carried on past Pages mode, then left livehuddle with presenting.
+    expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(true);
   });
 
   it('retires the Pages leftovers: exports, wordmark controls, page buttons and page slides', () => {

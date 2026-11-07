@@ -156,6 +156,8 @@ export function useCanvasAvatar({
   const playAvatarBurst = (reaction: Reaction) => {
     avatarBurstSeq.current += 1;
     setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
+    // A burst played, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
+    track('Canvas', 'Used', 'AvatarReaction');
   };
   // The panel's Behaviour and Reactions on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
   useAvatarActionKeys({

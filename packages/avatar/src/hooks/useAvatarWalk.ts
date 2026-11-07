@@ -502,6 +502,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
+    // A move performed, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
+    avatarBindings.track('Canvas', 'Used', 'AvatarAction');
   };
 
   // Chair (docs/specs/009-elements/chair.md): sit down. Snaps the feet to the seat point (so the
@@ -523,6 +525,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setFacing(seatFacing);
     seatedRef.current = chairId;
     setSeatedOn(chairId);
+    // Sitting down, never where (docs/specs/009-elements/chair.md "Telemetry").
+    avatarBindings.track('Canvas', 'Used', 'Sit');
     const claim = newSeatClaim(index);
     claimRef.current = claim;
     setSeatClaim(claim);

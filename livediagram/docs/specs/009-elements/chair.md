@@ -170,6 +170,10 @@ Where they differ from the chair:
   table of parts in `@livediagram/document` (`FURNITURE_ART`), one drawing per view, that both
   renderers paint.
 
+## Telemetry
+
+Sitting down fires `track('Canvas', 'Used', 'Sit')` from `useAvatarWalk`'s `sitOn`, once per sitting, on any piece with a seat (a chair, a desk, a sofa, a bench, a bar stool): that someone sat, never where or on what ([Telemetry](../017-telemetry/telemetry.md)). Standing up is not counted.
+
 ## Not in scope
 
 - **No walk-to-the-nearest-free-chair.** Sit where you walked; a taken chair stops you beside it
