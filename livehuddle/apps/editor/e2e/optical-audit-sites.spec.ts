@@ -28,7 +28,7 @@ async function open(page: Page, url: string, build: string): Promise<void> {
   const res = await page.goto(url);
   expect(
     res?.status(),
-    `${url} did not load: build it (pnpm --filter @livehuddle/${build} build)`,
+    `${url} did not load: build it (pnpm --filter ${build === 'community' ? '@liveworkspace/site' : `@livehuddle/${build}`} build)`,
   ).toBe(200);
   // Measure the settled page: an illustration still loading moves what sits beside it by a fraction of a pixel, which
   // snaps its text to a different row (the feature page's call to action read -1.49px on some runs, 0 on others).
