@@ -98,11 +98,11 @@ whose side panel lists them, one card each; each places, drags and previews exac
 type is the same `door` element with the same rules (it snaps onto walls, cuts its wall, rides its room, opens and
 closes, and a closed one blocks walking). Only its drawing and its width differ.
 
-| Type           | `variant`   | Width | Drawn                                                                                 |
-| -------------- | ----------- | ----- | ------------------------------------------------------------------------------------- |
-| Door           | (none)      | 96    | One leaf on a hinge, standing open with its swing arc; shut, it lies across the gap    |
-| Double Door    | `double`    | 144   | Two leaves hinged at the jambs, each with its arc; shut, they meet in the middle      |
-| Sliding Door   | `sliding`   | 120   | Two glass panels on a track; open, they slide into the wall either side of the gap    |
+| Type           | `variant`   | Width | Drawn                                                                                                          |
+| -------------- | ----------- | ----- | -------------------------------------------------------------------------------------------------------------- |
+| Door           | (none)      | 96    | One leaf on a hinge, standing open with its swing arc; shut, it lies across the gap                            |
+| Double Door    | `double`    | 144   | Two leaves hinged at the jambs, each with its arc; shut, they meet in the middle                               |
+| Sliding Door   | `sliding`   | 120   | Two glass panels on a track; open, they slide into the wall either side of the gap                             |
 | Revolving Door | `revolving` | 96    | A glass drum with four wings; open, the wings stand at 45 degrees; shut, they square up and seal the wall line |
 
 - **The field** is `ShapeElement.variant?: string`, the type of a piece within its kind. It is general: a

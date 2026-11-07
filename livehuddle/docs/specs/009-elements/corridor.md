@@ -21,12 +21,12 @@ Editors only (see [Share roles](#share-roles)).
 A shape kind of its own, `corridor`, whose type is stored in `variant` (the field the
 [Door types](room-builder.md#door-types) use; absent is the Straight, a value it does not take draws as the Straight).
 
-| Type       | `variant` | Its arms                                                              | Size      |
-| ---------- | --------- | --------------------------------------------------------------------- | --------- |
-| Straight   | (none)    | One run, open at both ends                                            | 480 × 120 |
-| Corner     | `corner`  | Two arms meeting in a corner, open at the top and at the right        | 360 × 360 |
-| T-Junction | `tee`     | A run across the top, open at both ends, and an arm down the middle   | 480 × 360 |
-| Crossroads | `cross`   | Two runs crossing in the middle, open at all four ends                | 480 × 480 |
+| Type       | `variant` | Its arms                                                            | Size      |
+| ---------- | --------- | ------------------------------------------------------------------- | --------- |
+| Straight   | (none)    | One run, open at both ends                                          | 480 × 120 |
+| Corner     | `corner`  | Two arms meeting in a corner, open at the top and at the right      | 360 × 360 |
+| T-Junction | `tee`     | A run across the top, open at both ends, and an arm down the middle | 480 × 360 |
+| Crossroads | `cross`   | Two runs crossing in the middle, open at all four ends              | 480 × 480 |
 
 - **Its arms are 120 canvas px wide** wall to wall (`CORRIDOR_ARM`, the width two people pass in), whatever the
   box: a bigger Corner is longer arms, not wider ones. In a box narrower than that, an arm is as wide as the box allows.

@@ -98,14 +98,14 @@ drags and previews as the Room tile did (dropped at its own size, lining up with
 ordinary Room (`shape: 'room'`): nothing about the preset is stored, so a placed one is moved, resized, renamed and
 recoloured like any room.
 
-| Preset    | Variant      | Shape                                          | Size      | Name      | Door                      |
-| --------- | ------------ | ---------------------------------------------- | --------- | --------- | ------------------------- |
-| Room      | (none)       | A rectangle with its back wall standing up     | 480 × 320 | Room      | The front wall's middle   |
-| Office    | `office`     | A small rectangle for one or two desks         | 280 × 220 | Office    | The front wall's middle   |
-| Boardroom | `boardroom`  | A long rectangle round a big table             | 800 × 400 | Boardroom | The front wall's middle   |
-| Open Plan | `open-plan`  | An L: a wide floor with a wing down the left   | 720 × 520 | Open Plan | The wing's front wall     |
-| Kitchen   | `kitchen`    | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall     |
-| Lounge    | `lounge`     | An octagon, every wall the same length         | 440 × 440 | Lounge    | The front wall            |
+| Preset    | Variant     | Shape                                                     | Size      | Name      | Door                    |
+| --------- | ----------- | --------------------------------------------------------- | --------- | --------- | ----------------------- |
+| Room      | (none)      | A rectangle with its back wall standing up                | 480 × 320 | Room      | The front wall's middle |
+| Office    | `office`    | A small rectangle for one or two desks                    | 280 × 220 | Office    | The front wall's middle |
+| Boardroom | `boardroom` | A long rectangle round a big table                        | 800 × 400 | Boardroom | The front wall's middle |
+| Open Plan | `open-plan` | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan | The wing's front wall   |
+| Kitchen   | `kitchen`   | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall   |
+| Lounge    | `lounge`    | An octagon, every wall the same length                    | 440 × 440 | Lounge    | The front wall          |
 
 - The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
   ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
@@ -175,13 +175,13 @@ when moved, resized or recoloured; absent is the Oval, and a value a rug does no
 | Type     | `variant`  | Shape and pattern                                                         | Size      |
 | -------- | ---------- | ------------------------------------------------------------------------- | --------- |
 | Oval     | (none)     | An oval with rings (the rug as it always was)                             | 200 × 120 |
-| Round    | `round`    | A circle with a braided border and rings to the middle                   | 160 × 160 |
-| Bordered | `bordered` | A rectangle with a wide border band and a plain field                    | 240 × 160 |
+| Round    | `round`    | A circle with a braided border and rings to the middle                    | 160 × 160 |
+| Bordered | `bordered` | A rectangle with a wide border band and a plain field                     | 240 × 160 |
 | Runner   | `runner`   | A long narrow rug with banded ends and a fringe, for a hall or a corridor | 320 × 88  |
-| Striped  | `striped`  | A rectangle in bold stripes across it                                    | 220 × 150 |
+| Striped  | `striped`  | A rectangle in bold stripes across it                                     | 220 × 150 |
 | Persian  | `persian`  | A rectangle with a medallion, corner spandrels, a double border, a fringe | 260 × 170 |
-| Kilim    | `kilim`    | A rectangle in rows of stepped diamonds                                  | 240 × 150 |
-| Doormat  | `doormat`  | A small mat with a coir weave, for a doorway                             | 120 × 72  |
+| Kilim    | `kilim`    | A rectangle in rows of stepped diamonds                                   | 240 × 150 |
+| Doormat  | `doormat`  | A small mat with a coir weave, for a doorway                              | 120 × 72  |
 
 - **Drawn to its size**, every type but the Oval: its border bands and pattern keep their thickness however big the
   rug, and stripes, rows and diamonds repeat to fill it rather than stretch (the Oval keeps its drawing, scaled, as
