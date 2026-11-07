@@ -23,6 +23,7 @@ import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
+import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
 import {
   CardThreadsProvider,
@@ -347,6 +348,7 @@ export function EditorView() {
             onRename={renameTab}
             onDuplicate={duplicateTab}
             onDelete={deleteTab}
+            onConnectAgain={(id) => void ctx.connectedTabs.connectAgainTab(id)}
             onClearContent={() => void clearTabContent()}
             onImportTab={() => setImportOpen(true)}
             canImportFromTool={trackerImport.canImport}
@@ -472,9 +474,14 @@ export function EditorView() {
                                               value={!(embedMode && isReadOnly)}
                                             >
                                               {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                              <SuppressElementIndicators when={embedMode}>
-                                                <EditorCanvasHost />
-                                              </SuppressElementIndicators>
+                                              {/* A connected tab's page stands in the board's place (connected-tabs.md). */}
+                                              {ctx.activeTabConnected ? (
+                                                <ConnectedTabHost />
+                                              ) : (
+                                                <SuppressElementIndicators when={embedMode}>
+                                                  <EditorCanvasHost />
+                                                </SuppressElementIndicators>
+                                              )}
                                             </CommentBadgesContext.Provider>
                                           </AgentFocusContext.Provider>
                                         </ChangesetRevealContext.Provider>

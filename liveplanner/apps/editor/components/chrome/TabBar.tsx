@@ -31,6 +31,8 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { connectedTabBroken } from '@liveworkspace/workbench/components/connect/connected-tab-store';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
@@ -85,6 +87,9 @@ type TabBarProps = {
   onRename: (id: string, name: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
+  // Connect Again on a connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md): its menu's row when it
+  // opens nothing.
+  onConnectAgain?: (id: string) => void;
   // Wipes every element from the active tab. Undoable. Only exposed
   // through the active tab's ellipsis menu (used to live in the
   // Palette's Content accordion).
@@ -156,6 +161,7 @@ export function TabBar({
   onRename,
   onDuplicate,
   onDelete,
+  onConnectAgain,
   onClearContent,
   onImportTab,
   canImportFromTool = false,
@@ -211,6 +217,14 @@ export function TabBar({
   // per surface — the ellipsis closes via setMenuFor, the canvas menu via
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
+    // A connected tab gets its own short menu (TabPortalMenu): Remove Tab, its folder, Connect Again when it is broken.
+    connected:
+      connectionOf(tab) && onConnectAgain
+        ? {
+            broken: connectedTabBroken(connectionOf(tab)!.id),
+            onConnectAgain: () => onConnectAgain(tab.id),
+          }
+        : undefined,
     canDelete: tabs.length > 1,
     // Deleting a board or sheet a form sends to unpublishes the form: its confirmation says so first.
     deleteWarning: deleteTabWarning(tabs, tab.id),

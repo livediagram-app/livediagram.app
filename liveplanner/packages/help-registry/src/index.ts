@@ -128,7 +128,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a piece of work in one plan: its boards, sheets, forms and dashboards each on a tab, organised and moved between.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -786,6 +786,16 @@ export const articles: Article[] = [
     title: 'Tab Folders',
     description: 'Group related tabs under one named folder chip on the tab bar.',
     keywords: 'group tabs organise organize collapse nest sections fan chip',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
+    slug: 'connected-files',
+    title: 'Connected Files',
+    description:
+      'Add a tab that opens a file from any liveworkspace app, among its canvases, plans, documents and designs.',
+    keywords:
+      'connect connected file tab livediagram livedocuments livedesign livehuddle other app canvas design link share both ways role editor viewer participant remove connect again',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

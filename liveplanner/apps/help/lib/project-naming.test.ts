@@ -32,9 +32,10 @@ const DOM_DOCUMENT =
 
 // The platform's shared names, which say document for every app's item: an OpenAPI document, the
 // @liveworkspace/api-schema/document-* modules, the media service's X-Media-Document header, and the names this
-// product re-exports from them as its own.
+// product re-exports from them as its own, and the shared workbench hooks' `documentId` (the host item's id) given the
+// project's.
 const SHARED_PLATFORM =
-  /OpenApiDocument|OpenAPI document|X-Media-Document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
+  /OpenApiDocument|OpenAPI document|X-Media-Document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}|^\s*documentId: projectId,$/;
 
 // Every app's own items named together (closing an account deletes them all), and the documents of the old
 // livediagram.app that the migration brings over.

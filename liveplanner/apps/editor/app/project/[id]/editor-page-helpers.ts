@@ -3,6 +3,7 @@
 // Tab[] used by the project-hydration + autosave paths.
 import type { Tab } from '@liveplanner/project';
 import type { AccessLevel } from '@liveplanner/api-schema';
+import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new project's first tab) default the per-tab text size
@@ -21,18 +22,19 @@ export function createTab(name: string): Tab {
 // first `activeTab.elements` read. The seeded tab autosaves back to the
 // API on the next save cycle, healing the project.
 export function placeholdersFromSummaries(
-  summaries: { id: string; name: string; folder?: string }[],
+  summaries: { id: string; name: string; folder?: string; connection?: unknown }[],
 ): Tab[] {
   if (summaries.length === 0) return [createTab('Tab 1')];
   // Carry `folder` (docs/specs/006-project/tab-folders.md) so the tab bar renders folders from the
   // first paint; the lazy per-tab content fetch fills `elements` later
   // without touching folder (it's link metadata, not body content).
-  return summaries.map((summary) => ({
-    id: summary.id,
-    name: summary.name,
-    elements: [],
-    folder: summary.folder,
-  }));
+  // A connected tab's connection too (liveworkspace/docs/specs/004-index/connected-tabs.md), so it shows as one at once.
+  return summaries.map((summary) =>
+    carryConnection(
+      { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+      summary,
+    ),
+  );
 }
 
 // What the canvas should show for the ACTIVE tab while its lazy per-tab

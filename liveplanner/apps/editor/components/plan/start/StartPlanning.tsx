@@ -42,6 +42,7 @@ import {
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 
 const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
@@ -178,6 +179,8 @@ export function StartPlanning({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  const connect = useConnectStart();
   const plan = usePlan();
   const hasCards = (plan?.items.size ?? 0) > 0;
   // Fetched as the panel opens; the effect returns nothing (the fetch is a promise).
@@ -253,6 +256,7 @@ export function StartPlanning({
       onChoose={choose}
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}
+      connect={connect}
     />
   );
 }

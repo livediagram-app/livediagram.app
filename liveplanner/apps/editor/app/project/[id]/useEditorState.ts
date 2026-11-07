@@ -110,7 +110,10 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf, apiSaveTab } from '@/lib/api-client';
+import { planGrant } from '@/lib/api/plan-grants';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { usePlanList } from '@/hooks/persistence/usePlanList';
 import { usePlanShareState } from '@/hooks/persistence/usePlanShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
@@ -1300,6 +1303,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // tick / element-add helpers all consult this early-return guard
   // so a single check covers drag, edit, paint, delete, etc.
   const activeTabLocked = activeTab.locked === true;
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md) holds no content: every edit is shut on it.
+  const activeTabConnected = connectionOf(activeTab) !== null;
   // Lazy per-tab load gate (docs/specs/006-project/per-tab-storage.md). Until the active tab's content has
   // landed it's an empty placeholder, NOT its real server row. The canvas
   // shows a blocking overlay over this state — but that overlay only
@@ -1332,7 +1337,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const runsBlocked = isReadOnly;
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
-    activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+    activeTabLocked ||
+    activeTabConnected ||
+    (isReadOnly && !participant.participating) ||
+    activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1728,6 +1736,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     importPlanItems,
     retitleSheets: sheets.retitleSheets,
     sheetTitle: sheets.sheetTitle,
+  });
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new
+  // tab, the host's grant for opening one, and Connect Again.
+  const connectedTabs = useConnectedTabActions({
+    tabs,
+    hostKind: 'plan',
+    documentId: projectId,
+    grantFor: async (id) =>
+      (await planGrant(id, sessionShareCode ? { code: sessionShareCode } : null))?.grant ?? null,
+    createTab,
+    saveTab: (tab) => apiSaveTab(selfParticipant.id, projectId ?? '', tab, sessionShareCode),
+    commitTabs,
+    markTabLoaded,
+    openTab: (id) => {
+      setActiveId(id);
+      setSelectedId(null);
+      setEditingId(null);
+    },
+    toast,
   });
   // The menu box renames the open tab on a click on its name (active-tab-name-store).
   usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
@@ -2659,6 +2686,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...realtime,
     activeTab,
     activeTabLocked,
+    activeTabConnected,
+    connectedTabs,
     // Layers (docs/specs/006-project/layers.md): the normalised stack, the session-scoped active
     // layer, per-layer element counts, the interaction-gate id sets, and
     // the panel / context-menu ops.
