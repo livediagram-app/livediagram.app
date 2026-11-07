@@ -3,7 +3,7 @@
 // other.
 
 import { isSeatingShape } from '@liveworkspace/avatar/office-geometry';
-import { isGridOfficeShape } from './office';
+import { isGridOfficeShape, isLongTable } from './office';
 import { isFixedSizeShape } from './selection-mode';
 
 /**
@@ -41,9 +41,13 @@ export function isFixedSizeElement(el: {
   type: string;
   shape?: string;
   fixedSize?: boolean;
+  variant?: unknown;
 }): boolean {
   if (el.fixedSize === true) return true;
-  return el.type === 'shape' && el.shape != null && isPlacedShape(el.shape);
+  if (el.type !== 'shape' || el.shape == null) return false;
+  // A Long Table is drawn to its width, so it resizes and takes more chairs (office.md "Long Table").
+  if (isLongTable({ shape: el.shape, variant: el.variant })) return false;
+  return isPlacedShape(el.shape);
 }
 
 // Whether adding a kind drops it at its own default size, a tap and a press-and-drag alike, with no draw-to-size box
