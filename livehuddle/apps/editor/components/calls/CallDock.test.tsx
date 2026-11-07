@@ -43,12 +43,29 @@ describe('CallDock', () => {
     show(live);
     const dock = document.querySelector<HTMLElement>('[data-call-dock]')!;
     expect(dock.getAttribute('data-region')).toBe('call');
-    for (const cls of ['bottom-4', 'left-1/2', '-translate-x-1/2'])
+    for (const cls of ['absolute', 'bottom-4', 'left-1/2', '-translate-x-1/2'])
       expect(dock.className).toContain(cls);
+    // Never lifted a row on a phone any more (Work Tracker #642).
+    expect(dock.className).not.toContain('bottom-[68px]');
     const group = screen.getByRole('group', { name: 'Call' });
     expect(card().contains(group)).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Mute' }));
     expect(actions.toggleMute).toHaveBeenCalledTimes(1);
+  });
+
+  // On a phone it sits in the cluster's row, on the zoom buttons' bottom line (call-dock-row.ts places it).
+  it('takes the middle column of the cluster row, unscaled and unpositioned, in the row', () => {
+    mobile.value = true;
+    render(<CallDock inRow />);
+    show(live);
+    const dock = document.querySelector<HTMLElement>('[data-call-dock]')!;
+    expect(dock.className.split(' ')).toEqual(
+      expect.arrayContaining(['col-start-2', 'row-start-1', 'flex', 'justify-center']),
+    );
+    for (const cls of ['absolute', 'bottom-4', 'left-1/2', '-translate-x-1/2'])
+      expect(dock.className.split(' ')).not.toContain(cls);
+    expect(dock.getAttribute('style')).toBeNull();
+    expect(card().contains(screen.getByRole('group', { name: 'Call' }))).toBe(true);
   });
 
   it('adds a divider and the Screen Share group only while you share', () => {

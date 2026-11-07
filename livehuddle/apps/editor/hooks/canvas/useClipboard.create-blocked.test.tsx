@@ -35,6 +35,8 @@ function harness(createBlocked: boolean) {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       toast: { error: vi.fn(), info: vi.fn() } as never,
+      ownerId: 'owner',
+      documentId: null,
     }),
   );
   return { result, elements: () => elements };

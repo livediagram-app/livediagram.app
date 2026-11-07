@@ -6,26 +6,27 @@ import { WriteRows } from '@/components/illustrations/palette-categories';
 export const metadata = helpMetadata({
   title: 'Write Elements',
   description:
-    'Pick the right Write element: a Text label for a line that names a region, or a Sticky note for a thought somebody adds to the board.',
+    'Pick the right Write element: a Text label for a line that names a region, a Sticky note for a thought somebody adds, or an Image for a logo or a photo.',
   path: '/help/palette/write/',
 });
 
 <ArticleLayout
   title="Write Elements"
-  description="The two elements whose content is words rather than a picture."
+  description="Text labels, sticky notes and images: the words on a Space, and the pictures beside them."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles('write')}
 >
 
-The **Write** elements hold the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+The **Write** elements are the ones whose content is _yours_: words, and pictures. Everywhere else in the palette you place a piece of furniture or a room and then maybe label it; here what you write or bring is the point, and the element is just what carries it.
 
-They differ mostly in **whose words they are**. A Text label is the board's own structure: a title, a heading, the name of a room. A Sticky note is somebody's contribution: an idea, a question, a point to raise.
+The two writing elements differ mostly in **whose words they are**. A Text label is the board's own structure: a title, a heading, the name of a room. A Sticky note is somebody's contribution: an idea, a question, a point to raise. An **Image** is the picture that makes a Space yours: your logo on the reception wall, a team photo by the door, a floor plan by the lifts.
 
 ## What the category contains
 
 - A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, headings, and anything that labels a _region_ rather than an element. See [Text and Fonts](/help/canvas/text-and-fonts/).
 - A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what brainstorms are made of. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- An **Image** places a picture you upload. Pick it, then click the canvas for a default size or drag out the size you want: the image lands as an empty frame, and its **Select Image** button (or a double-click) opens the picker, where you upload a file, reuse one from your gallery or search for an openly licensed picture.
 
 <Note>
   There is a third way to attach words, and it is not in this category: any element can carry a
@@ -33,11 +34,17 @@ They differ mostly in **whose words they are**. A Text label is the board's own 
   to the element they are on and move with it.
 </Note>
 
+## Pasting or dropping a picture
+
+You don't need the palette to add a picture. Copy one (a screenshot, or an image from a web page) and press `⌘V` (`Ctrl+V` on Windows) on the canvas, or drag an image file from your computer onto the canvas. It uploads to your image gallery and lands as an image of its own shape, in the middle of the screen for a paste or where you let go for a drop. PNG, JPEG, WebP and GIF pictures work: a picture in another format says which ones to use, and any other file is turned away with a short note.
+
+Adding a picture is for editors: on a Participant or view-only [share link](/help/collaboration/sharing/) there is no palette and a paste or a drop does nothing, but everybody in the Space sees the pictures that are there.
+
 ## Rows, not pictures
 
-Both writing elements are rectangles with text in them, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each one is a row with a one-line description instead: "a free-standing text label" against "a coloured note card" is what you are actually choosing between.
+Text and Note are both rectangles with words in them, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each Write element is a row with a one-line description instead: "a free-standing text label" against "a coloured note card" is what you are actually choosing between.
 
-<Figure caption="The Write elements as their panel lists them: Text and Note, each with the line that tells them apart.">
+<Figure caption="The Write elements as their panel lists them: Text, Note and Image, each with the line that tells them apart.">
   <WriteRows />
 </Figure>
 

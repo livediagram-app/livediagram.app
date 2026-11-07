@@ -216,8 +216,13 @@ their home moved (`components/calls/CallDock.tsx`).
   hides with the rest of the chrome, and a building Editor has no call to control, so the building strip has none.
   The card **draws nothing when nothing is in it** (no call to offer and no preview, for someone who may not speak):
   no empty frame.
-- **Where.** Centred along the bottom edge, 16 px up. On a phone, where the bottom-right cluster
-  spans the row, **one row above it**.
+- **Where.** Centred along the bottom edge, 16 px up. On a phone (owner, 2026-11-07: "on mobile the audio, camera,
+  share buttons are not in line with the zoom buttons ... fix that"), **in the bottom-right cluster's row**, its
+  bottom on the zoom buttons' bottom line, not a row above them: the row is three columns (`clusterRowLayout`,
+  `components/calls/call-dock-row.ts`), the dock in the middle one, centred on the screen while there is room, and the
+  cluster's buttons, unwrapped, in the right one. The buttons take the room they need first, so on a narrow phone, or
+  with Collaborate beside Fit, the dock moves left rather than covering them. In the row it is drawn at the corner
+  buttons' UI scale, as the rest of the row is. A desktop window keeps it floating at the bottom centre.
 - **What.** There is **no Join and no Leave** (owner, 2026-11-07: "Currently we have this concept of Joining audio and
   leaving audio, which is friction I don't like"): walking where there is a call joins it, so the dock holds the
   microphone (Live, Nobody Near, Muted, Mic Blocked, Mic Off, Listening; it starts muted), **Do Not Disturb** while

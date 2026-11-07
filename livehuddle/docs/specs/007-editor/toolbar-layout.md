@@ -435,8 +435,8 @@ its bottom-row button. What changes to fit the width:
   button.
 - **The avatar palette's toggle stays put** with Say, while the look and action buttons swipe between them, all
   named ([The avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette)). The call's buttons are on the
-  [Call dock](../008-canvas/avatar-mode.md#the-call-dock), glyphs alone, one row above the bottom-right cluster, so Mute
-  is always one tap away. Share Screen is not offered on a phone (no screen picker), so a live call's group
+  [Call dock](../008-canvas/avatar-mode.md#the-call-dock), glyphs alone, in the bottom-right cluster's row on the zoom
+  buttons' bottom line, so Mute is always one tap away. Share Screen is not offered on a phone (no screen picker), so a live call's group
   is the microphone and the camera.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Editor app](editor-app.md)). Fit
   stays.

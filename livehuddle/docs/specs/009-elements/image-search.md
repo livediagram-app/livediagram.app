@@ -1,8 +1,7 @@
 # Image search
 
-> **Gone from livehuddle** ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): nothing in livehuddle adds one now (no palette tile,
-> no `9` key, no picture pasted or dropped on the canvas). A stored one still loads, draws, moves, edits and deletes as
-> below. livediagram keeps the feature, and [its spec](../../../../livediagram/docs/specs/009-elements/image-search.md) is the one to change.
+> **Back in livehuddle** with images ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back), owner
+> 2026-11-07): the picker an Editor opens from Write's Image tile keeps its Search tab.
 
 The image picker ([Image element + per-owner gallery](images.md)) has a third tab, **Search**, beside
 Upload and Gallery. The user types what they want ("server rack", "team meeting"), gets a grid of

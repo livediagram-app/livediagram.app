@@ -68,12 +68,19 @@ describe('palette layouts', () => {
     expect(popular.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:text']);
   });
 
-  it('holds only light content in Write, and offers no Image or Link card anywhere (not-in-livehuddle.md "Media")', () => {
-    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky']);
+  // not-in-livehuddle.md "Media" and "Images are back": the Image is Write's alone, and no Link card anywhere.
+  it('holds the light content in Write, the Image after the words, and no Media or Link card anywhere', () => {
+    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky', 'tools:image']);
+    const write = paletteCategories().find((c) => c.id === 'write')!;
+    expect(write.description).toBe('Text, sticky notes and images.');
+    // One block: no divider, so no half-named groups in its flyout.
+    expect(write.tiles!.some((t) => t.dividerAfter)).toBe(false);
     expect(paletteCategoryOffered('media')).toBe(false);
-    for (const c of paletteCategories())
-      for (const t of c.tiles ?? [])
-        expect(['tools:image', 'tools:link-card'], c.id).not.toContain(t.id);
+    for (const c of paletteCategories()) {
+      for (const t of c.tiles ?? []) expect(t.id, c.id).not.toBe('tools:link-card');
+      if (c.id !== 'write')
+        expect(c.tiles?.map((t) => t.id) ?? [], c.id).not.toContain('tools:image');
+    }
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "The Space categories".

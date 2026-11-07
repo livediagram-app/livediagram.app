@@ -74,6 +74,8 @@ function harness(start: Element[]) {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       toast: toast as never,
+      ownerId: 'owner',
+      documentId: null,
     }),
   );
   return { result, elements: () => elements, toast };

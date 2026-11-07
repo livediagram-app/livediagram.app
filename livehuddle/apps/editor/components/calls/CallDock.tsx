@@ -5,6 +5,8 @@
 // and put as buttons in the bottom ... center them"). It holds the call group (CallStripGroup: the microphone, the
 // camera, Share Screen) and, while you share, the Screen Share group after it. The card
 // draws nothing while neither shows (`empty:hidden`), so a role with no call and no preview sees no empty frame.
+// On a phone it sits in the bottom-right cluster's row (`inRow`, CanvasChrome lays the row out), on the zoom buttons'
+// bottom line rather than a row above them (owner, 2026-11-07, Work Tracker #642).
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -18,10 +20,14 @@ import { ScreenShareStripGroup, useScreenSharing } from './ScreenShareStripGroup
 export function CallDock({
   doNotDisturb = false,
   onClearDoNotDisturb,
+  inRow = false,
 }: {
   // Your status is Do Not Disturb, and how to clear it (the avatar status setter).
   doNotDisturb?: boolean;
   onClearDoNotDisturb?: () => void;
+  // In the bottom-right cluster's row, its middle column (a phone): placed and scaled by that row rather than floating
+  // over the canvas on its own.
+  inRow?: boolean;
 }) {
   const isMobile = useIsMobileViewport();
   const scale = useUiScale('toolbar');
@@ -30,10 +36,14 @@ export function CallDock({
     <div
       data-call-dock=""
       data-region="call"
-      // Centred along the bottom edge; on a phone, where the bottom-right cluster spans the row, one row above it
-      // (16px inset + its 44px buttons + an 8px gap).
-      className="pointer-events-none absolute bottom-4 left-1/2 z-[var(--z-panel)] flex -translate-x-1/2 justify-center phone:bottom-[68px]"
-      style={uiScaleStyle(scale)}
+      // Centred along the bottom edge, 16px up. In the cluster's row the row's grid centres it, and the row is drawn
+      // at the corner buttons' scale, so it takes no scale of its own there (zooms multiply).
+      className={
+        inRow
+          ? 'pointer-events-none col-start-2 row-start-1 flex justify-center'
+          : 'pointer-events-none absolute bottom-4 left-1/2 z-[var(--z-panel)] flex -translate-x-1/2 justify-center'
+      }
+      style={inRow ? undefined : uiScaleStyle(scale)}
     >
       <div
         data-floating-panel=""

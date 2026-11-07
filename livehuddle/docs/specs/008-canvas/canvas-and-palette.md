@@ -1433,8 +1433,9 @@ re-attaching any of them to a copy misrepresents it, and a copy can cross
 accounts.
 
 **Three sources compete on paste, in order:** a file on the system
-clipboard (in livehuddle refused with "The canvas does not take files.", since no picture is added any more,
-[Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card); livediagram routes an image to the image-upload pipeline), our own
+clipboard (a picture goes to the image-upload pipeline and lands as an image element,
+[Paste and drop](../009-elements/images.md#paste-and-drop); any other file is refused with "The canvas takes pictures,
+not other files."), our own
 serialised elements, then the in-app buffer. The buffer is kept as a fallback
 rather than deleted because clipboard writes are best-effort: `writeText`
 rejects when the document isn't focused or permission is denied, and a copy

@@ -64,7 +64,9 @@ The meeting palette is livehuddle's one palette, in order:
 
 - **Popular** (the landing category), fixed: Sticky note and Text, then behind a divider Room,
   Meeting Table, Chair, Bring Focus and Avatar Pad. No openers: every category is one level deep.
-- **Write**: Text and Sticky note. No Pointer note, Table, Checklist, Page or Annotation.
+- **Write**: Text, Sticky note and Image (owner, 2026-11-07: images are back, for branding;
+  [Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). No Pointer note, Table, Checklist,
+  Page or Annotation.
 - **The Space categories** ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)),
   one per question somebody building a Space asks (owner, 2026-11-05: one Navigate category would only grow):
   - **Rooms**: a **Build** group first (Room, Room Builder, Door), then **Floor** (Fence, Stage, Office Pod, Rug).
@@ -81,8 +83,10 @@ The meeting palette is livehuddle's one palette, in order:
   Laser, Spotlight and Isometric buttons (owner, 2026-11-05).
 - **Stickers**, for decoration, as livediagram has them. No Icons category (owner, 2026-11-05:
   [Icons](../002-project-scope/not-in-livehuddle.md#icons)); a stored icon still draws and edits.
-- **No Media** (owner, 2026-11-05: [Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): no Image or Link card anywhere in the palette, and a picture pasted
-  or dropped on the canvas is refused. A stored image or link card still draws, moves and deletes.
+- **No Media** (owner, 2026-11-05: [Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): no
+  Media category and no Link card anywhere in the palette. The Image is Write's, and a picture pasted or dropped on
+  the canvas lands as an image ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). A
+  stored link card still draws, moves and deletes.
 - **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Frame, Layout, Data, Components, Ask, Tools, Record or React (owner, 2026-11-05: no frames in livehuddle). A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
   **Write | Rooms, Seats, Perks, Play, Garden, Meet | Travel | Stickers**, a divider

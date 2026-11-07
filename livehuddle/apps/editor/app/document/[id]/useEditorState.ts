@@ -2211,8 +2211,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isPinchingRef,
   });
 
-  // Copy / paste (in-app element clipboard + OS-clipboard image
-  // paste). `copySelection` feeds the keyboard hook below; paste is
+  // Copy / paste (in-app element clipboard + OS-clipboard picture
+  // paste and drop). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
   // useClipboard.
   // The pointer's canvas position while it is over the canvas, null
@@ -2231,6 +2231,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setMultiSelectedIds,
     toast,
     getViewportCanvasRect,
+    // A pasted or dropped picture (docs/specs/009-elements/images.md "Paste and drop"): uploaded to this person's
+    // gallery for this Space, never in an embed.
+    ownerId: selfParticipant.id,
+    documentId,
+    embedMode,
   });
 
   // Global keyboard shortcuts (Escape cancels modes / deselects, Delete /

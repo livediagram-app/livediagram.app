@@ -55,6 +55,7 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Take part in a session tool (answer, react)               | Yes    | Yes         | No     | as above                                                                                                      |
 | Hold the facilitator baton                                | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                            |
 | Add, write, arrange or delete stickies and text           | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
+| Add an image: Write's Image tile, paste or drop           | Yes    | No          | No     | [Images](../009-elements/images.md#share-roles)                                                               |
 | A building palette, Undo / Redo, paste, duplicate, delete | Yes¹   | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
 | The avatar palette while walking                          | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md#the-avatar-palette)                                                |
 | The Call dock (call controls) while walking               | Yes    | Yes         | Yes    | [The Call dock](../008-canvas/avatar-mode.md#the-call-dock)                                                   |

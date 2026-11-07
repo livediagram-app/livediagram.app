@@ -69,10 +69,15 @@ export function WriteRows() {
       key: 'N',
       glyph: <path d="M-6 -6 h12 v7 l-5 5 h-7 Z M1 6 v-5 h5" {...g} />,
     },
+    {
+      name: 'Image',
+      blurb: 'Place an uploaded picture',
+      glyph: <path d="M-6 -5 h12 v10 h-12 Z M-6 3 l4 -4 l4 4 l2 -2 l2 2 M2.5 -2 h0.01" {...g} />,
+    },
   ];
   return (
-    <Scene w={420} h={170} bg="plain">
-      <PaletteFrame category="Write" h={150}>
+    <Scene w={420} h={210} bg="plain">
+      <PaletteFrame category="Write" h={190}>
         {rows.map((r, i) => {
           const ry = 80 + i * 40;
           return (

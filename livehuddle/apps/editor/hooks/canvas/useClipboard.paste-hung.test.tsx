@@ -42,6 +42,8 @@ function paste(source: Element[], tab: Element[]): Element[] {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       toast: { error: vi.fn(), info: vi.fn() } as never,
+      ownerId: 'owner',
+      documentId: null,
     }),
   );
   act(() => result.current.pasteFromClipboard(source));
