@@ -53,6 +53,8 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
   onto a room's (centred on the wall's centre line, turned to its angle, in the corridor's floor colour), and cuts it:
   a character walks through an open Door in a corridor wall, and a closed one blocks it again. Moving or resizing a
   corridor carries the Doors standing on its walls, as a room does (`doorsFollowRooms`, `withAttachedDoors`).
+- **Windows snap onto them too** ([Window](room-builder.md#window)): a Window on a corridor wall faces into the
+  corridor, rides it and follows its resize, and never cuts the wall.
 - **Not a call of its own**: a corridor is open at its ends, so people in it hear the people near them as on open
   floor ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)). Only a Room is private.
 

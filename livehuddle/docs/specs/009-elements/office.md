@@ -100,14 +100,15 @@ the room, its Door and the pieces that show what the room is for arrive in one c
 preset is stored on the room or its pieces: each is an ordinary element, so a placed one is moved, resized, renamed,
 recoloured, refurnished or emptied like any room, and its pieces like any piece.
 
-| Preset    | Variant     | Shape                                                     | Size      | Name      | Door                    |
-| --------- | ----------- | --------------------------------------------------------- | --------- | --------- | ----------------------- |
-| Room      | (none)      | A rectangle with its back wall standing up                | 480 × 320 | Room      | The front wall's middle |
-| Office    | `office`    | A small rectangle for one or two desks                    | 360 × 240 | Office    | The front wall's middle |
-| Boardroom | `boardroom` | A long rectangle round a big table                        | 800 × 400 | Boardroom | The front wall's middle |
-| Open Plan | `open-plan` | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan | The wing's front wall   |
-| Kitchen   | `kitchen`   | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall   |
-| Lounge    | `lounge`    | An octagon, every wall the same length                    | 440 × 440 | Lounge    | The front wall          |
+| Preset        | Variant         | Shape                                                     | Size      | Name          | Door                    |
+| ------------- | --------------- | --------------------------------------------------------- | --------- | ------------- | ----------------------- |
+| Room          | (none)          | A rectangle with its back wall standing up                | 480 × 320 | Room          | The front wall's middle |
+| Office        | `office`        | A small rectangle for one or two desks                    | 360 × 240 | Office        | The front wall's middle |
+| Boardroom     | `boardroom`     | A long rectangle round a big table                        | 800 × 400 | Boardroom     | The front wall's middle |
+| Open Plan     | `open-plan`     | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan     | The wing's front wall   |
+| Kitchen       | `kitchen`       | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen       | The cut corner's wall   |
+| Lounge        | `lounge`        | An octagon, every wall the same length                    | 440 × 440 | Lounge        | The front wall          |
+| Meeting Booth | `meeting-booth` | A rectangle with [glass walls](#glass-walls)              | 360 × 300 | Meeting Booth | The front wall's middle |
 
 - The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
   ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
@@ -119,20 +120,52 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
 - Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
   (DEFAULTS.md D226):
 
-  | Preset    | Furnishings                                                                                                                                         |
-  | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | Room      | None: the empty room to furnish from scratch                                                                                                        |
-  | Office    | A desk against the back wall, a plant and a bookshelf                                                                                               |
-  | Boardroom | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
-  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
-  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
-  | Lounge    | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
+  | Preset        | Furnishings                                                                                                                                         |
+  | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Room          | None: the empty room to furnish from scratch                                                                                                        |
+  | Office        | A desk against the back wall, a plant and a bookshelf                                                                                               |
+  | Boardroom     | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
+  | Open Plan     | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
+  | Kitchen       | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
+  | Lounge        | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
+  | Meeting Booth | A Meeting Table for six, a Screen on the back wall above it and a plant in a back corner                                                            |
 
   A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
   own size.
 
+- The Meeting Booth is the one preset that stores something: its walls are glass (`variant: 'glass'`, below), the
+  room's own wall style, which stays when the room is moved, resized or refurnished.
 - The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
 - For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
+
+### Glass walls
+
+A room whose walls are glass: you see who is in the meeting without walking in, and it is still a meeting room.
+Work Tracker #539.
+
+- **A room's wall style**, stored as the room's `variant` (the general field [Door types](room-builder.md#door-types)
+  use): absent is **Solid**, the walls every room had; `glass` is **Glass**. Any room takes it: a rectangle, a preset,
+  a room drawn with the [Room Builder](room-builder.md). A value a room does not take draws as Solid, so an older
+  client reading a glass room sees a solid one, and a newer client reading an old room sees what it always did.
+- **Where it is set**: the Room tile's **Meeting Booth** preset arrives glass, and every room's element menu has a
+  **Walls** section with two tiles, **Solid** and **Glass** (a selection of several rooms sets them all; other kinds
+  are left alone; one undoable change, `Element · Changed · Room`). Editors only: a Participant's short menu has no
+  Walls section, and the participant content rule keeps a room's `variant` as stored.
+- **Drawn see-through**: the walls keep their place and thickness (ROOM_WALL along the same centre line), but are
+  panes, not plaster: a faint wash of the stroke across the wall's band, with the room's floor and the canvas behind
+  showing through it, a thin pane line along the middle and a mullion across the band about every 64 canvas px. A
+  rectangle's back wall face is a tall pane of the same wash with two diagonal glints, so its name plate still reads
+  on it. Light paper and dark paper draw it from the room's own stroke and floor, the glints white, fainter on dark
+  (DEFAULTS.md D229). A Door or a Window on a glass wall draws as on any wall.
+- **Who is inside shows**: every character is drawn above the board, so the people in any room are on screen to
+  everyone; a glass room adds that its walls no longer read as closed, so a meeting in progress is seen, table, screen
+  and people, from the corridor. The equaliser bars over talkers already show through every wall
+  ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+- **Everything else is a room's**: the walls block walking exactly as solid ones do (the same collision lines, the
+  same reach and slide, cut only where an open Door stands), the path finder routes round them unchanged, and the
+  room is **a call of its own**: nobody outside hears anyone inside, however close to the glass, and the server's
+  hearing check treats it as any room. Glass is seen through, never heard through.
+- **Export** draws glass walls as the canvas does.
 
 ## Meeting Table
 
@@ -379,7 +412,7 @@ white with the theme's stroke round each picket.
   `Coffee-machine`, `Rug`, `Stage`, `Office-pod`, `Bar`, `Bar-stool`, `Drinks-cabinet`, `Drinks-fridge`,
   `Outdoor-plant`, `Tree`, `Garden-path`, `Grass`, `Garden-fence`: a hyphenated kind keeps its hyphen, as every element's
   token does).
-- A room's doorway changed: `Element · Changed · Room`; a stage's Who Can Speak or Show Cameras: `Element · Changed ·
+- A room's doorway or its walls (Solid, Glass) changed: `Element · Changed · Room`; a stage's Who Can Speak or Show Cameras: `Element · Changed ·
 Stage`.
 - Getting a drink: `Canvas · Used · WaterCooler`, `CoffeeMachine`, `DrinksCabinet` or `DrinksFridge`. Never who, never
   how often in a session.
@@ -389,6 +422,7 @@ Stage`.
 - Doors that open and close, or that lock, on a Room (the Office Pod's door is the one door that moves, and only by
   who sits in it).
 - Day and night in the garden, weather, or seasons.
-- Light switches, day and night, or sound.
+- Light switches, day and night, or sound (a [Window](room-builder.md#window)'s light is fixed).
+- Glass that damps sound or lets it through, frosted or tinted glass, and glass Corridors.
 - Tables of other sizes (a four- or eight-seater). Chairs round any table do this today.
 - Anyone else using your drink, handing a cup over, or drinks that run out.
