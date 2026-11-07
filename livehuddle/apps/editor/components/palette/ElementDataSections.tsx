@@ -41,6 +41,7 @@ import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import { JukeboxMenuSection, WorldClockMenuSection } from '@/components/palette/SocialMenuSections';
 import { ScreenMenuSection } from '@/components/palette/ScreenMenuSection';
+import { ArcadeMenuSection } from '@/components/palette/ArcadeMenuSection';
 import {
   // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
@@ -145,7 +146,8 @@ export function ElementDataSections({
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
-    shapeTarget?.shape === 'jukebox';
+    shapeTarget?.shape === 'jukebox' ||
+    (shapeTarget?.shape === 'arcade-machine' && !!props.onClearArcadeScores);
   return (
     <>
       {showTools ? (
@@ -257,6 +259,14 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetSource={props.onSetJukeboxSource}
+            />
+          ) : null}
+          {shapeTarget?.shape === 'arcade-machine' && props.onClearArcadeScores ? (
+            <ArcadeMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onClear={() => props.onClearArcadeScores!(shapeTarget.id)}
+              onCloseMenu={props.onClose}
             />
           ) : null}
           {shapeTarget?.shape === 'screen' && props.onSetScreenUrl ? (

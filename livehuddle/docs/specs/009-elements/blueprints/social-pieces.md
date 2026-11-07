@@ -49,6 +49,7 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/components/canvas/collab/arcade/useMoonMail.ts`     | One run on this screen: its phase, the strip, the keys, pausing, and one rAF loop that paints through a ref      |
 | `apps/editor/components/canvas/collab/arcade/MoonMailScreen.tsx` | The square canvas, its Start / Paused / Game Over cards, the strip with the Pause button                         |
 | `apps/editor/components/canvas/collab/arcade/HighScores.tsx`     | The table: rank, name (and **You**), score, day; the new row lit; **No Scores Yet**                              |
+| `apps/editor/components/palette/ArcadeMenuSection.tsx`           | The Editor's menu section: the table's count and **Clear High Scores**, asked first                              |
 
 ## Domain and naming
 
@@ -190,8 +191,8 @@ play or won)` tells `SocialArt`'s `RestingRally` to give way.
 ## Arcade Machine (Work Tracker #529)
 
 Built in three parts: part 1 the spec, the High Scores' stored shape, deltas, ledger and room rule, and Moon Mail's
-model; part 2 (this state) the panel, the drawing, the controls and posting; part 3 the bubble's best score, the
-Editor's Clear High Scores and the two-browser test.
+model; part 2 the panel, the drawing, the controls and posting; part 3 (this state) the bubble's best score, the
+Editor's Clear High Scores, copies starting empty, the answers flush's no-op and the two-browser test.
 
 ### Arcade domain and naming
 
@@ -219,7 +220,9 @@ Editor's Clear High Scores and the two-browser test.
   lives beside the ceiling, `(startLetters + floor(ms / letterEveryMs)) * letterPoints * streakMax`, in
   `packages/document`, and the game imports it, so the rule the room checks and the rule the game plays cannot
   drift apart.
-- Copying a machine, or its Space, carries its table (it is the element's); an export draws the cabinet without it.
+- A copied machine starts empty: `arcadeScores` is in `ORIGINAL_ONLY_FIELDS` (`packages/document/src/duplicate.ts`),
+  so Duplicate (`freshCopyFields`) and the clipboard (`stripIdentity`) both drop it. Duplicate Tab and a copied Space
+  re-mint the tab's elements whole and keep it. An export draws the cabinet without it.
 
 ### Arcade behaviour and state
 
@@ -239,10 +242,33 @@ Editor's Clear High Scores and the two-browser test.
   `arcade-clear` sets `cleared` to its seq and drops every recorded score. `mergeLedgerIntoTab` applies the clear
   when `cleared > since`, then each score with `seq > since`, in seq order, each through `applyElementDelta`.
   `mergeLedgerAnswersIntoTab` takes the arcade entry whole (its clear and scores), so a Participant's score reaches
-  the stored machine `ANSWERS_FLUSH_MS` after it is posted.
+  the stored machine `ANSWERS_FLUSH_MS` after it is posted. Replayed from seq 0, the clear would drop the stored
+  table and the scores rebuild the same one as new objects, so every later flush (any Participant's reaction, pin or
+  press on the tab) rewrote the row for nothing: `applyArcadeEvents` hands back the element itself when the table it
+  ends on holds the same scores in the same order (`sameArcadeTable`), so `writeParticipantAnswers` skips the write.
 - **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-messages.ts); `answersAsSelf` admits
   it when `score.by` equals the session's non-empty adder key. `arcade-clear` is not a participation delta, so the
   gate drops a Participant's; an Editor's relays as every Editor delta does. A Viewer's either is dropped.
+
+### The table on the machine (part 3)
+
+- **The bubble's best** (`ArcadeFace`): with `element.arcadeScores[0]`, a second line under **Insert Coin**,
+  **Best 1,240 · Ann** (`arcadeBestLine`: the score in `en-GB` figures, the name truncated by CSS at 140 px), in the
+  same button, so the press is unchanged; the `sr-only` status reads "Insert Coin. Best 1,240 by Ann". Read from the
+  element, so a posted score or a clear on any screen re-renders it as the delta lands.
+- **Clear High Scores** (`apps/editor/components/palette/ArcadeMenuSection.tsx`): in the
+  Editor's element menu, under Tools, a **High Scores** section (the star glyph; the facing section after it already
+  carries the piece's name) for an `arcade-machine` when `onClearArcadeScores` is given (the host passes
+  it only at `can.level === 'edit'`; a Participant's and a Viewer's menus are their own). It reads **3 Scores on the table**
+  (**1 Score on the table**) or **No Scores Yet**, and **Clear High Scores** (disabled while empty) first closes the menu (`onClose`: the menu's
+  popover layer sits above the confirm's modal layer, so it would cover the confirm's buttons), then asks `useConfirm` with the title
+  "Clear all 3 scores?" ("Clear 1 score?"), the message "This can't be undone. The table empties for everyone in
+  the Space." and the confirm label **Clear High Scores**; confirmed, one
+  `applyElementDelta(id, { kind: 'arcade-clear' })` and `track('Element', 'Changed', 'Arcade-machine')`.
+- **The two-browser test** (`apps/editor/e2e/arcade-scores.spec.ts`): an owner seeds a machine in a Team Pod and
+  shares it; a Participant joins, walks to the machine, plays until it scores, closes the panel (posting); the
+  owner's bubble shows the Participant's best and a Viewer's panel lists it with **Viewers See the Scores** and no
+  Start; the owner clears it from the menu and the Participant's reopened panel reads **No Scores Yet**.
 
 ### Moon Mail's model (`apps/editor/lib/arcade/moon-mail.ts`)
 
@@ -370,3 +396,8 @@ Editor's Clear High Scores and the two-browser test.
 | The press and keys at the machine, the lazy panel's mount                     | `apps/editor/components/canvas/collab/ArcadeFace.test.tsx`         |
 | Phases, keys, taps, pausing, posting once, closing mid-run, a Viewer's view   | `apps/editor/components/canvas/collab/arcade/ArcadePanel.test.tsx` |
 | No Moon Mail code in the first load                                           | `apps/editor/app/arcade-lazy.test.ts`                              |
+| The bubble's best line, updated as the table changes                          | `apps/editor/components/canvas/collab/ArcadeFace.test.tsx`         |
+| Clear High Scores: the count, disabled when empty, asks first, one clear      | `apps/editor/components/palette/ArcadeMenuSection.test.tsx`        |
+| A copied machine starts empty                                                 | `packages/document/src/duplicate.test.ts`                          |
+| An answers flush that changes nothing hands back the same tab                 | `packages/document/src/arcade-score-deltas.test.ts`                |
+| A score posted on one screen lands on another; a clear empties both; Viewers  | `apps/editor/e2e/arcade-scores.spec.ts`                            |

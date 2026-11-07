@@ -24,6 +24,18 @@ describe('freshCopyFields', () => {
     expect(copy.actions).toBeUndefined();
   });
 
+  it('starts a copied Arcade Machine\'s High Scores empty (social-pieces.md "Copies")', () => {
+    const machine = {
+      ...createShape('arcade-machine', 0, 0),
+      id: 'arcade',
+      arcadeScores: [{ id: 's1', name: 'Ann', score: 10, ms: 5000, by: 'k', at: 1 }],
+    } as Element;
+    const { newElements } = duplicateElements([machine], new Set(['arcade']), 10, 10);
+    const copy = JSON.parse(JSON.stringify(newElements[0])) as Record<string, unknown>;
+    expect(copy.arcadeScores).toBeUndefined();
+    expect(copy.shape).toBe('arcade-machine');
+  });
+
   it('adds no keys an element never had', () => {
     expect(freshCopyFields(createShape('square', 0, 0))).toEqual({});
   });

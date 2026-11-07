@@ -8,9 +8,9 @@ import { useId } from 'react';
 import { lucideTrophy } from '@liveworkspace/icons/lucide';
 import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
 import type { ArcadeScore } from '@livehuddle/document';
+import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 
 const TrophyIcon = lucideGlyph(lucideTrophy, 18);
-const SCORE = new Intl.NumberFormat('en-GB');
 // "5 Nov", in the reader's own time zone.
 const DAY = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
 
@@ -74,7 +74,7 @@ export function HighScores({
                   </span>
                 ) : null}
                 <span className="ml-auto shrink-0 font-semibold tabular-nums text-slate-800 dark:text-slate-100">
-                  {SCORE.format(s.score)}
+                  {formatArcadeScore(s.score)}
                 </span>
                 <span className="w-12 shrink-0 text-right text-[12px] text-slate-500 dark:text-slate-400">
                   {DAY.format(s.at)}

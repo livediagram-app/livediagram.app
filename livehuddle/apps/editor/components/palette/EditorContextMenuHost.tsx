@@ -122,6 +122,8 @@ export function EditorContextMenuHost() {
     setScreenUrlSelected,
     setClockZonesSelected,
     setJukeboxSourceSelected,
+    applyElementDelta,
+    can,
     setPortalTargetSelected,
     setPortalNameSelected,
     createLinkedPortal,
@@ -203,6 +205,12 @@ export function EditorContextMenuHost() {
     : null;
   const ctxMemberIds =
     multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
+  // An Arcade Machine's Clear High Scores (docs/specs/009-elements/social-pieces.md "Clearing"): one delta, the room's
+  // like a posted score, so nobody's undo brings the table back.
+  const clearArcadeScores = (elementId: string) => {
+    applyElementDelta(elementId, { kind: 'arcade-clear' });
+    track('Element', 'Changed', 'Arcade-machine');
+  };
 
   return (
     <EditorContextMenu
@@ -300,6 +308,7 @@ export function EditorContextMenuHost() {
       onSetScreenUrl={setScreenUrlSelected}
       onSetClockZones={setClockZonesSelected}
       onSetJukeboxSource={setJukeboxSourceSelected}
+      onClearArcadeScores={can.level === 'edit' ? clearArcadeScores : undefined}
       onSetPortalTarget={setPortalTargetSelected}
       onSetPortalName={setPortalNameSelected}
       onCreateLinkedPortal={createLinkedPortal}
