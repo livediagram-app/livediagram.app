@@ -60,11 +60,18 @@ function subscribe(listener: () => void) {
   };
 }
 
+/**
+ * The instant to serve. While a timer runs it keeps `now` fresh. With nothing subscribed (a first
+ * render, before subscribe runs) `now` may be left over from import or the last unsubscribe, so it is
+ * renewed once it is a tick or more away from the real clock, either way. It stays put otherwise, so
+ * getSnapshot returns the same value between calls.
+ */
+function snapshot(): number {
+  if (timer === null && Math.abs(Date.now() - now) >= TICK_MS) now = Date.now();
+  return now;
+}
+
 /** The shared clock's instant: one interval for every subscriber. */
 export function useNow(): number {
-  return useSyncExternalStore(
-    subscribe,
-    () => now,
-    () => 0,
-  );
+  return useSyncExternalStore(subscribe, snapshot, () => 0);
 }
