@@ -23,6 +23,7 @@ import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
+import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
@@ -335,6 +336,7 @@ export function EditorView() {
             onRename={renameTab}
             onDuplicate={duplicateTab}
             onDelete={deleteTab}
+            onConnectAgain={(id) => void ctx.connectedTabs.connectAgainTab(id)}
             onClearContent={() => void clearTabContent()}
             onImportTab={() => setImportOpen(true)}
             onExportTab={() => {
@@ -470,9 +472,14 @@ export function EditorView() {
                                 value={!(embedMode && isReadOnly) && !sessionCommunity}
                               >
                                 {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                <SuppressElementIndicators when={embedMode}>
-                                  <EditorCanvasHost />
-                                </SuppressElementIndicators>
+                                {/* A connected tab's page stands in the canvas's place (connected-tabs.md). */}
+                                {ctx.activeTabConnected ? (
+                                  <ConnectedTabHost />
+                                ) : (
+                                  <SuppressElementIndicators when={embedMode}>
+                                    <EditorCanvasHost />
+                                  </SuppressElementIndicators>
+                                )}
                               </CommentBadgesContext.Provider>
                             </AgentFocusContext.Provider>
                           </ChangesetRevealContext.Provider>
