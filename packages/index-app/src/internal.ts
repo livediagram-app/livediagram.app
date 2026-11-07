@@ -8,6 +8,8 @@
 //   POST   /api/internal/items/:id/notices    {type, ...}    what happened, for an email (index-client notices.ts)
 //   POST   /api/internal/items/:id/workbench-close {pairingId}  a workbench pairing's access ended: close its sessions
 //                                                            in the item's room (liveworkspace/docs/specs/011-workbench/workbench.md)
+//   POST   /api/internal/items/:id/connected-tabs {name, connection}  the index's reverse write of a connected tab
+//                                                            (connected-tabs.ts): one tab at the end, `{ tabId }`
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?}  copy an item's content (or one tab)
 //                                                            into a new item, for `by` (who copies) through link `code`
 //                                                            (if any), from address `ip` (if known)
@@ -41,7 +43,14 @@
 // index's key and the data export's, never the media or the Drive key.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
-import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
+import {
+  parseItemNotice,
+  readConnectedTabWrite,
+  type ConnectedTabWrite,
+  type ItemNotice,
+  type Level,
+} from '@liveworkspace/index-client';
+import type { ConnectedTabOutcome } from './connected-tabs';
 import type {
   MigrationApp,
   MigrationDoorAnswer,
@@ -168,6 +177,9 @@ export type InternalItemHandlers = {
   // docs/migration.md): their shape libraries into their store, added once, never updated. Checked for shape,
   // version, app and person before it is called. An app with nothing to take leaves it out and the door is a 404.
   migratePerson?: (payload: MigrationPersonPayload) => Promise<MigrationPersonAnswer>;
+  // The index's reverse write of a connected tab (connected-tabs.ts appendConnectedTab): one tab, loose, at the end of
+  // the item's tab bar, the same connection id again answering the tab it made. An app without it answers 404.
+  connectedTab?: (itemId: string, write: ConnectedTabWrite) => Promise<ConnectedTabOutcome>;
 } & DataExportHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
@@ -435,6 +447,31 @@ async function migrateItem(
   return json(answer);
 }
 
+// POST /api/internal/items/:id/connected-tabs: the reverse tab, or why not. The index waits at most 5 s for it and
+// takes the reverse back on anything but a 2xx.
+async function connectedTab(
+  request: Request,
+  id: string,
+  run: NonNullable<InternalItemHandlers['connectedTab']>,
+): Promise<Response> {
+  const write = readConnectedTabWrite(await bodyOf(request));
+  if (!write) return badRequest('invalid connected tab');
+  let outcome: ConnectedTabOutcome;
+  try {
+    outcome = await run(id, write);
+  } catch (err) {
+    console.error('[internal] connected tab failed', { error: String(err) });
+    return json({ error: 'unavailable' }, 503);
+  }
+  if (outcome === 'not_found') return notFound();
+  if (outcome === 'connection_limit') {
+    console.warn('[internal] connected tab refused', { reason: 'connection_limit' });
+    return json({ error: 'connection_limit' }, 409);
+  }
+  console.info('[internal] connected tab', { made: outcome.made });
+  return json({ tabId: outcome.tabId }, outcome.made ? 201 : 200);
+}
+
 const EXPORT_PATH = /^\/api\/internal\/items\/[^/]+\/export$/;
 const MIGRATION_PATH = /^\/api\/internal\/items\/[^/]+\/migration$/;
 const PERSON_MIGRATION_PATH = /^\/api\/internal\/people\/[^/]+\/migration$/;
@@ -552,6 +589,15 @@ export async function handleInternalItems(
       }),
     );
     return json({ ok: true }, 202);
+  }
+
+  if (
+    rest.length === 2 &&
+    rest[1] === 'connected-tabs' &&
+    request.method === 'POST' &&
+    handlers.connectedTab
+  ) {
+    return connectedTab(request, id, handlers.connectedTab);
   }
 
   if (rest.length === 3 && rest[1] === 'copy-to' && request.method === 'POST' && handlers.copy) {
