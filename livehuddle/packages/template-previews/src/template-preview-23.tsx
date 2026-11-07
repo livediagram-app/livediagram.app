@@ -174,8 +174,13 @@ export function templatePreviewGroup23(kind: TemplateKind): ReactElement | null 
         <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
           <Room x={6} y={3} w={68} h={44} door="bottom" />
           {/* The stage: its top, and the front face you see below it. */}
-          <rect x={25} y={7} width="30" height="6" rx="1" fill="rgb(253 230 138)" />
-          <rect x={25} y={12} width="30" height="2.4" rx="0.6" fill="rgb(217 119 6)" />
+          <rect x={25} y={7} width="30" height="6" rx="1" fill="rgb(236 201 143)" />
+          <rect x={25} y={12} width="30" height="2.4" rx="0.6" fill="rgb(124 74 42)" />
+          {/* Its curtains framing it, and the presenter's podium (docs/specs/009-elements/venue-pieces.md). */}
+          <rect x={24.5} y={5.6} width="31" height="1.2" rx="0.4" fill="rgb(185 28 28)" />
+          <rect x={24.5} y={5.6} width="1.6" height="6.4" rx="0.5" fill="rgb(185 28 28)" />
+          <rect x={53.9} y={5.6} width="1.6" height="6.4" rx="0.5" fill="rgb(185 28 28)" />
+          <rect x={46} y={8.4} width="2" height="2.6" rx="0.4" fill="rgb(194 137 75)" />
           {[20, 26, 32, 38].map((y) =>
             [12, 18, 24, 30, 46, 52, 58, 64].map((x) => (
               <rect

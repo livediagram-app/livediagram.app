@@ -70,6 +70,9 @@ const WALL_PIECE_KINDS: readonly string[] = [
   'hand-dryer',
   'microwave',
   'kettle',
+  // livehuddle's venue pieces (its venue-pieces.md "How each one walks"): Stage Curtains hang over a stage, walked
+  // between and in front of, never into.
+  'stage-curtains',
 ];
 export function isWallPieceShape(kind: string): boolean {
   return WALL_PIECE_KINDS.includes(kind);
@@ -138,15 +141,40 @@ const OFFICE_FOOTPRINT: Partial<
   fridge: { x0: 4 / 72, x1: 68 / 72, y0: 108 / 136, y1: 132 / 136 },
   'toilet-cubicle': { x0: 0, x1: 1, y0: 0.6, y1: 0.96 },
   washbasin: { x0: 26 / 72, x1: 46 / 72, y0: 96 / 112, y1: 110 / 112 },
+  // livehuddle's venue pieces (its venue-pieces.md): a pillar's base full width, a column's plinth, the car park's bays
+  // full width (so a row of them is one barrier), the bike rack's stands and bikes, and the podium's foot.
+  pillar: { x0: 0, x1: 1, y0: 134 / 152, y1: 150 / 152 },
+  column: { x0: 4 / 64, x1: 60 / 64, y0: 148 / 168, y1: 164 / 168 },
+  'car-park': { x0: 0, x1: 1, y0: 44 / 128, y1: 124 / 128 },
+  'bike-rack': { x0: 4 / 136, x1: 132 / 136, y0: 52 / 80, y1: 76 / 80 },
+  podium: { x0: 8 / 56, x1: 48 / 56, y0: 74 / 88, y1: 86 / 88 },
 };
+
+// livehuddle's Swimming Pool (its venue-pieces.md "How each one walks"): drawn to its size, its deck a fixed band, so
+// its footprint is the water: the pool less its deck, in px rather than fractions, matching the drawing at any size.
+export const POOL_DECK = 14;
+/** The deck's width round a pool of this size: POOL_DECK, or a tenth of its shorter side when that is less. */
+export function poolDeck(width: number, height: number): number {
+  return Math.max(0, Math.min(POOL_DECK, Math.min(width, height) / 10));
+}
+const INSET_FOOTPRINT_KINDS: readonly string[] = ['swimming-pool'];
 
 /** Scenery: blocks with its footprint and is never a destination (walking up to it rings nothing). */
 export function isSceneryShape(kind: string): boolean {
-  return kind in OFFICE_FOOTPRINT;
+  return kind in OFFICE_FOOTPRINT || INSET_FOOTPRINT_KINDS.includes(kind);
 }
 
 /** The footprint of a piece that blocks, in canvas coordinates, or null for one that does not. */
 export function officeFootprint(el: Rect & { shape: string }): Rect | null {
+  if (INSET_FOOTPRINT_KINDS.includes(el.shape)) {
+    const d = poolDeck(el.width, el.height);
+    return {
+      x: el.x + d,
+      y: el.y + d,
+      width: Math.max(0, el.width - 2 * d),
+      height: Math.max(0, el.height - 2 * d),
+    };
+  }
   const f = OFFICE_FOOTPRINT[el.shape];
   if (!f) return null;
   return {

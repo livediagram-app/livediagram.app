@@ -2,10 +2,10 @@
 // floors, one tab each, joined by named Elevators.
 //
 // - Lobby (the first tab, Marble): a Lobby Bar, a Ballroom with a Stage, a Business Centre and a Library Lounge round
-//   an open lobby with a reception, sofas on rugs and the Lobby Lift; the Walk In at the front door.
+//   an open lobby with a reception, sofas on rugs, four Columns and the Lobby Lift; the Walk In at the front door.
 // - Suites (Carpet): six suites either side of a corridor, the Suites Lift and a Directory at its end.
-// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a long water
-//   garden, the Rooftop Lift and a Directory.
+// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a
+//   garden round a Swimming Pool, the Rooftop Lift and a Directory.
 //
 // Indoors, every room's Door opens onto the floor's open lobby or corridor (campusPlan, IndoorRoom). Each builder is
 // pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -107,6 +107,9 @@ const LOBBY_FLOOR: OfficePiece[] = [
   { kind: 'sofa', x: 324, y: 880, facing: 'n' },
   { kind: 'rug', x: 300, y: 1080 },
   { kind: 'sofa', x: 324, y: 1100, facing: 's' },
+  // Two pairs of columns either side of the way in from the front door, past the reception
+  // (docs/specs/009-elements/venue-pieces.md "In the templates").
+  ...[700, 860, 1276, 1436].map((x) => ({ kind: 'column' as const, x, y: 1010 })),
   // The Lobby Lift, by the bar.
   lift(80, 1000, 'Lobby Lift'),
   { kind: 'plant', x: 2060, y: 1140 },
@@ -239,8 +242,8 @@ const ROOF_ROOMS: IndoorRoom[] = [
 ];
 
 const TERRACE: OfficePiece[] = [
-  // A long water garden between the two rooms, planters at its ends.
-  { kind: 'pond', x: 700, y: 120, w: 600, h: 200 },
+  // The rooftop pool between the two rooms, planters at its ends (docs/specs/009-elements/venue-pieces.md).
+  { kind: 'swimming-pool', x: 700, y: 120, w: 600, h: 200 },
   { kind: 'outdoor-plant', x: 700, y: 360 },
   { kind: 'outdoor-plant', x: 1228, y: 360 },
   // Umbrellas and hammocks across the terrace.
@@ -264,8 +267,7 @@ export function buildHotelRooftop(cx: number, cy: number): Element[] {
       text: 'Rooftop',
       width: 180,
       sticker: 'emoji-sun',
-      subtitle:
-        'A terrace above the city: the rooftop bar, the spa room, hammocks and the water garden.',
+      subtitle: 'A terrace above the city: the rooftop bar, the spa room, hammocks and the pool.',
     },
   });
 }

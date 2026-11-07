@@ -468,6 +468,14 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Toilet-cubicle',
     'Washbasin',
     'Hand-dryer',
+    // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+    'Pillar',
+    'Column',
+    'Car-park',
+    'Bike-rack',
+    'Swimming-pool',
+    'Stage-curtains',
+    'Podium',
     // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
     'Timer',
     'Stopwatch',

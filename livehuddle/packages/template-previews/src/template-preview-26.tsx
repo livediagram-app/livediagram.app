@@ -10,6 +10,9 @@ import {
   Seats,
   site,
   Stage,
+  Curtains,
+  Podium,
+  SwimmingPool,
   Water,
   type Site,
 } from './template-preview-25';
@@ -144,6 +147,12 @@ function hotelAndSuites(): ReactElement {
       <Blocks s={s} at={[[80, 1000, 112, 140]]} fill={STEEL} />
       <Plant x={s.X(930)} y={s.Y(930)} />
       <Plant x={s.X(1260)} y={s.Y(930)} />
+      {/* Two pairs of columns either side of the way in. */}
+      <Blocks
+        s={s}
+        at={[700, 860, 1276, 1436].map((x) => [x, 1110, 64, 64] as const)}
+        fill="rgb(214 207 196)"
+      />
       <Arrival x={s.X(1100)} y={s.Y(1230)} />
     </svg>
   );
@@ -219,6 +228,13 @@ function expoHall(): ReactElement {
       />
       <ellipse cx={s.X(1100)} cy={s.Y(260)} rx={s.L(100)} ry={s.L(60)} fill={RUG} />
       <Stage s={s} at={[860, 800, 480, 150]} />
+      <Curtains s={s} at={[860, 764, 480]} />
+      <Podium s={s} x={1180} y={830} />
+      <Blocks
+        s={s}
+        at={[800, 1064].flatMap((y) => [668, 1484].map((x) => [x, y + 100, 48, 48] as const))}
+        fill="rgb(203 213 225)"
+      />
       <Seats s={s} xs={[788, 866, 944, 1180, 1258, 1336]} ys={[1000, 1204]} />
       <Blocks s={s} at={booths} fill={POD} />
       <Arrival x={s.X(1100)} y={s.Y(1390)} />
@@ -272,6 +288,7 @@ function beachOffsite(): ReactElement {
       <Tree x={s.X(690)} y={s.Y(200)} r={2.2} />
       <circle cx={s.X(1480)} cy={s.Y(760)} r="2" fill={UMBRELLA} />
       <circle cx={s.X(1720)} cy={s.Y(760)} r="2" fill={UMBRELLA} />
+      <SwimmingPool s={s} at={[1400, 900, 440, 200]} />
       <Arrival x={s.X(600)} y={s.Y(1130)} />
     </svg>
   );

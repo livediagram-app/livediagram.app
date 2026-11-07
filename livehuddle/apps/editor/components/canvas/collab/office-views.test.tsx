@@ -6,6 +6,7 @@ import {
   OFFICE_TONES,
   ROOM_DOOR_WIDTH,
   STAGE_FRONT,
+  STAGE_TONES,
   type ShapeElement,
 } from '@livehuddle/document';
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
@@ -82,12 +83,14 @@ describe('the office views', () => {
   });
 
   // docs/specs/009-elements/office.md "Stage".
-  it('draws a stage at its own size: its top in its fill, planks, a shaded front edge and a plate', () => {
+  it('draws a stage at its own size: its top in its fill, boards, a lit and shaded front edge and a plate', () => {
     const stage = shape('stage', { width: 500, height: 150 });
     const { container } = render(<StageView element={stage} stroke="#64748b" floor="#fbf7ef" />);
     const svg = container.querySelector('svg')!;
     expect(svg.getAttribute('viewBox')).toBe('0 0 500 150');
-    expect(svg.querySelectorAll('path')).toHaveLength(2);
+    // The boards, the footlights and their glints (docs/specs/009-elements/venue-pieces.md "The stronger Stage").
+    expect(svg.querySelectorAll('path')).toHaveLength(3);
+    expect(svg.querySelector(`path[fill="${STAGE_TONES.lamp}"]`)).not.toBeNull();
     const face = [...svg.querySelectorAll('rect')].filter(
       (r) => r.getAttribute('y') === String(150 - STAGE_FRONT),
     );

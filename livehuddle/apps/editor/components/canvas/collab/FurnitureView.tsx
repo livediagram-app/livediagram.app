@@ -100,6 +100,12 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'toilet-cubicle': 'Toilet cubicle',
   washbasin: 'Washbasin',
   'hand-dryer': 'Hand dryer',
+  pillar: 'Pillar',
+  column: 'Column',
+  'car-park': 'Car park',
+  'bike-rack': 'Bike rack',
+  'stage-curtains': 'Stage curtains',
+  podium: 'Podium',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */

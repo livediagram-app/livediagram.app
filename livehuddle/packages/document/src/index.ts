@@ -396,6 +396,7 @@ export * from './office-recreation';
 export * from './office-workplace';
 export * from './office-kitchen';
 export * from './office-restroom';
+export * from './office-venue';
 export * from './room-presets';
 export * from './office-wayfinding';
 // Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
