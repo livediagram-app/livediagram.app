@@ -15,6 +15,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/clients.ts`                                    | `POST /api/auth/internal/clients`, `clientApp`                                           |
 | `liveworkspace/apps/accounts/src/account-api.ts`                                | `verifiedClient`, `vouchedPerson`: client credentials and access tokens by introspection |
 | `liveworkspace/apps/accounts/scripts/register-client.ts`, `map-clients.ts`      | Registering a client; mapping existing ones to apps                                      |
+| `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts` | Each app's fixed local client, written into the local database by the dev script         |
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
 | `packages/auth-client/src/sign-out.ts`                                          | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
 | `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`         | The device grant each app's MCP server runs for CLIs                                     |
