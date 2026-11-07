@@ -462,6 +462,22 @@ Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to 
 palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
 pens, the layout containers) is Work Tracker #459's, not this part's: a stored one still draws, moves and deletes.
 
+### Shape libraries: kept read-only (Work Tracker #515)
+
+Part 4 removed Shape Libraries from livehuddle's UI but left the api's routes and the person's store. The decision
+(the dev loop's, 2026-11-07; the owner can overturn it): **keep both, read-only**.
+
+- `GET /api/shape-libraries` and `GET /api/shape-libraries/:id/previews` keep working, so a library someone imported
+  stays reachable.
+- `POST`, `PUT` and `DELETE` on `/api/shape-libraries` are refused for every caller (Editors, Participants, Viewers,
+  anonymous callers and tokens alike) with `403` and `{ "error": "shape_libraries_read_only" }`, the status this api
+  already uses for a write it will not take (`read_only_token`). Nothing is created, changed or removed.
+- Account deletion still purges the person's store, and a guest signing in still has theirs adopted by the account's
+  (`db/account.ts`), so nobody's libraries are stranded or kept after their account closes.
+- No stored library is deleted or migrated. Retiring the store would delete people's data, so it is not done here.
+- Download All My Data does not read shape libraries: the export service asks each app for its items (Spaces) and
+  never for a person's store, so a library is not in the zip. They can still be read through the api above.
+
 ## Hand, Eraser and Format as modes
 
 The owner (2026-11-06): "change the selection mode dropdown so it just lets me toggle between Editor and ...
