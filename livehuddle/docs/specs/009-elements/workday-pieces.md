@@ -18,11 +18,11 @@ and like being in.
 
 ## Where they live
 
-| Category       | Tiles, in palette order                                                        |
-| -------------- | ------------------------------------------------------------------------------ |
-| **Rooms**      | Phone Booth, Nap Pod and Reception Desk after the Office Pod (the Floor group) |
-| **Seating**    | Hot Desk and Standing Desk after the Reading Nook                              |
-| **Recreation** | Treadmill, Weight Bench and Pet Bed after the Fireplace                        |
+| Category  | Tiles, in palette order                                                                          |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| **Rooms** | Phone Booth, Nap Pod and Reception Desk after the Office Pod (the Floor group)                   |
+| **Seats** | Hot Desk and Standing Desk after the Reading Nook                                                |
+| **Play**  | Treadmill and Weight Bench in a **Gym** group after Games; Pet Bed after the Fireplace in Lounge |
 
 Shape kinds: `nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-desk`, `hot-desk`, `pet-bed`,
 `reception-desk`.
@@ -50,7 +50,7 @@ Shape kinds: `nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-de
 
 ## Statuses a piece sets
 
-Your [status](../008-canvas/avatar-mode.md#status) can come from where you are, not only from the panel:
+Your [status](../008-canvas/avatar-mode.md#status) can come from where you are, not only from the Status flyout:
 
 | Where you sit               | Status shows   | Token   |
 | --------------------------- | -------------- | ------- |
@@ -61,15 +61,15 @@ Your [status](../008-canvas/avatar-mode.md#status) can come from where you are, 
 - **It shows while you sit there.** Standing up, being stood up by an earlier claim, the piece being deleted or
   hidden, and leaving Avatar mode all show your own status again, the one you had before you sat. The piece's status
   is laid over yours, never written over it, so there is nothing to put back and nothing that can be left behind.
-- **A status you pick while sitting wins.** Picking one from the panel (None included) while you sit on a piece that
+- **A status you pick while sitting wins.** Picking one from the Status flyout (None included) while you sit on a piece that
   sets one replaces the piece's for as long as you stay, and stays yours after you stand up. Sitting down again later
   shows the piece's status again.
 - **Closing the tab or dropping off** takes your character away, status and all; nothing is stored. **Reconnecting**
   sends your presence again with what shows now, so a reconnect never brings back a stale piece status or loses one.
-- **What peers see** is the status that shows, sent in your presence's `status` like any other. The panel's Status
-  row shows it too, so the panel and your chip never disagree.
-- **On a Break** (a sky-blue dot) and **Busy** (an orange dot) join the statuses livehuddle's panel offers, between
-  Away and Do Not Disturb, so they can be set by hand as well. Like Do Not Disturb, they are in the shared status list
+- **What peers see** is the status that shows, sent in your presence's `status` like any other. The Status flyout
+  presses it too, so the flyout and your chip never disagree.
+- **On a Break** (a blue dot; a water bottle in the hand) joins the Activity group after Out to Lunch, and **Busy** (a
+  brown dot; a phone held to the ear) the Availability group after Away, so they can be set by hand as well. Like Do Not Disturb, they are in the shared status list
   (`@liveworkspace/avatar`), which livediagram parses and draws but does not offer.
 - Busy is a status, not Do Not Disturb: knocks, toasts and other people's equalisers still reach you. The Phone
   Booth's privacy comes from its call (below), not from the status.

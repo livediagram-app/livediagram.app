@@ -55,7 +55,11 @@ describe('avatar statuses and the wire', () => {
   // pieces and offered with calls, read and drawn everywhere.
   it('offers Busy after Away and On a Break after Out to Lunch with calls, and reads them everywhere', () => {
     const ids = AVATAR_CALL_STATUSES.map((s) => s.id);
-    expect(ids.slice(ids.indexOf('away'), ids.indexOf('away') + 3)).toEqual(['away', 'busy', 'dnd']);
+    expect(ids.slice(ids.indexOf('away'), ids.indexOf('away') + 3)).toEqual([
+      'away',
+      'busy',
+      'dnd',
+    ]);
     expect(ids[ids.indexOf('lunch') + 1]).toBe('break');
     expect(AVATAR_STATUSES.some((s) => s.id === 'break' || s.id === 'busy')).toBe(false);
     expect(parseAvatarStatus('break')).toBe('break');
