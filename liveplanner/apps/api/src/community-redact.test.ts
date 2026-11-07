@@ -166,7 +166,9 @@ describe('a stored card row, for a copy', () => {
 
   it('carries the same redaction as a read, its rows otherwise as they were', () => {
     const out = redactItemRowForCommunity(row(), [TASK]);
-    expect(JSON.parse(String(out['fields']))).toEqual(redactItemForCommunity(card(), [TASK]).fields);
+    expect(JSON.parse(String(out['fields']))).toEqual(
+      redactItemForCommunity(card(), [TASK]).fields,
+    );
     expect(JSON.parse(String(out['created_by']))).toEqual(COMMUNITY_PERSON);
     expect(JSON.parse(String(out['updated_by']))).toEqual(COMMUNITY_PERSON);
     expect(out['rev']).toBe(4);
@@ -184,9 +186,9 @@ describe('a stored card row, for a copy', () => {
     const broken = redactItemRowForCommunity(row({ fields: '{' }), [TASK]);
     expect(JSON.parse(String(broken['fields']))).toEqual({});
     // Fields that are not an object, and a row with none at all, carry nothing either.
-    expect(JSON.parse(String(redactItemRowForCommunity(row({ fields: '[1]' }), [])['fields']))).toEqual(
-      {},
-    );
+    expect(
+      JSON.parse(String(redactItemRowForCommunity(row({ fields: '[1]' }), [])['fields'])),
+    ).toEqual({});
     const bare = redactItemRowForCommunity({ id: 'i2' }, []);
     expect(JSON.parse(String(bare['fields']))).toEqual({});
     expect(JSON.parse(String(bare['created_by']))).toEqual(COMMUNITY_PERSON);
@@ -214,7 +216,7 @@ describe('a tab', () => {
     expect(redactPlanTabForCommunity({ id: 't2' } as never)).toEqual({ id: 't2' });
   });
 
-  it("redacts a stored body for a copy, and copies one that does not parse, or has no elements, as empty", () => {
+  it('redacts a stored body for a copy, and copies one that does not parse, or has no elements, as empty', () => {
     expect(redactPlanTabDataForCommunity(JSON.stringify(tab))).not.toContain('adder-key');
     expect(JSON.parse(redactPlanTabDataForCommunity('{'))).toEqual({ elements: [] });
     expect(JSON.parse(redactPlanTabDataForCommunity(JSON.stringify({ kind: 'form' })))).toEqual({

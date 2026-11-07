@@ -99,11 +99,7 @@ export function readQueryState(params: URLSearchParams, scope?: CommunityScope):
 /** Carries the address's search across the switch. Going to All Apps takes My Shares out (it is one app's, on its
  *  address) and names a chosen category with the app (`category:<app>/<id>`), since All Apps lists each app's own;
  *  coming back, the app's own category reads bare again, and another app's is left out (lib/query-state.ts). */
-export function carrySearch(
-  search: string,
-  next: 'app' | 'all',
-  app: CommunityApp,
-): string | null {
+export function carrySearch(search: string, next: 'app' | 'all', app: CommunityApp): string | null {
   const params = new URLSearchParams(search);
   const q = params.get('q') ?? '';
   let moved = next === 'all' ? setCommunitySearchMine(q, false) : q;

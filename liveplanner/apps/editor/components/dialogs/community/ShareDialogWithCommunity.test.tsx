@@ -26,7 +26,14 @@ import { ShareDialogWithCommunity } from './ShareDialogWithCommunity';
 function renderDialog(over: { signedIn?: boolean; firstTabEmpty?: boolean } = {}) {
   const share = {
     client: {},
-    item: { id: 'p1', app: 'liveplanner', kind: 'plan', sharedVia: null, title: 'Plan', teamId: null },
+    item: {
+      id: 'p1',
+      app: 'liveplanner',
+      kind: 'plan',
+      sharedVia: null,
+      title: 'Plan',
+      teamId: null,
+    },
     shareUrl: () => '',
     onClose: () => {},
   } as unknown as Parameters<typeof ShareDialogWithCommunity>[0];

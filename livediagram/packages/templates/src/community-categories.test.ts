@@ -11,6 +11,8 @@ describe("the Community's categories", () => {
     expect(list.at(-1)!.id).toBe('other');
     expect(
       list.slice(0, -1).map(({ id, label, blurb }) => ({ id, label, description: blurb })),
-    ).toEqual(TEMPLATE_CATEGORIES.map(({ id, label, description }) => ({ id, label, description })));
+    ).toEqual(
+      TEMPLATE_CATEGORIES.map(({ id, label, description }) => ({ id, label, description })),
+    );
   });
 });

@@ -597,7 +597,15 @@ describe('Start With', () => {
     const insertLike = db.sql.prepare(
       'INSERT INTO likes (post_id, liker_key, network_hash, created_at) VALUES (?, ?, ?, ?)',
     );
-    const categories = ['ideas', 'decisions', 'goals', 'meetings', 'people', 'planning', 'software'];
+    const categories = [
+      'ideas',
+      'decisions',
+      'goals',
+      'meetings',
+      'people',
+      'planning',
+      'software',
+    ];
     db.sql.exec('BEGIN');
     for (let i = 0; i < 2000; i++) {
       insertPost.run(`post${i}`, `doc${i}`, `code${i}`, categories[i % categories.length]!, i, i);

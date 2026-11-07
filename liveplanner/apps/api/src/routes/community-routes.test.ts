@@ -102,8 +102,7 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
   if (!base) return null;
   const item = (id: string) => {
     const row = db.sql.prepare('SELECT owner_id, team_id, name FROM plan WHERE id = ?').get(id) as
-      | { owner_id: string; team_id: string | null; name: string }
-      | undefined;
+      { owner_id: string; team_id: string | null; name: string } | undefined;
     if (!row) throw new IndexError(404, 'not_found');
     return {
       id,
@@ -415,7 +414,9 @@ describe('owner routes', () => {
   });
 
   it('ignores other paths', async () => {
-    expect(await handleCommunityOwnerRoutes(owner('POST', '/api/projects/p1/community'))).toBeNull();
+    expect(
+      await handleCommunityOwnerRoutes(owner('POST', '/api/projects/p1/community')),
+    ).toBeNull();
     expect(await handleCommunityOwnerRoutes(owner('GET', '/api/projects/p1/share'))).toBeNull();
   });
 
@@ -463,9 +464,9 @@ describe('share roles', () => {
         headers: { 'X-Share-Code': 'LINKVIEW' },
       }),
     );
-    expect((await res.json<{ project: { communityState: unknown } }>()).project.communityState).toBe(
-      null,
-    );
+    expect(
+      (await res.json<{ project: { communityState: unknown } }>()).project.communityState,
+    ).toBe(null);
   });
 });
 
@@ -619,7 +620,7 @@ describe('the community link', () => {
       ['PATCH', '/api/projects/p1/items/i1'],
       ['PUT', '/api/projects/p1/tabs/tab-p1'],
     ] as const) {
-      const res = await visitor(method, path, post.shareCode, { body: {} });
+      const res = await visitor(method, path, post.shareCode, method === 'GET' ? {} : { body: {} });
       expect([200, 201, 204], `${method} ${path}`).not.toContain(res.status);
     }
   });

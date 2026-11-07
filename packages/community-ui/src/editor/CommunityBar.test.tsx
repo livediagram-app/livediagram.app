@@ -14,7 +14,9 @@ const community = {
 describe('CommunityBar', () => {
   it('names who shared it, leads back to the post, and offers a visitor Make a Copy', () => {
     const onMakeCopy = vi.fn();
-    render(<CommunityBar community={community} own={null} onMakeCopy={onMakeCopy} copying={false} />);
+    render(
+      <CommunityBar community={community} own={null} onMakeCopy={onMakeCopy} copying={false} />,
+    );
     expect(screen.getByRole('region', { name: 'Community' }).textContent).toContain(
       'Shared to the Community by Anonymous',
     );

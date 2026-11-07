@@ -2285,6 +2285,17 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Community|Shared': 'Someone shared a plan to the Community, the public gallery of plans.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
+  'Community|Removed': 'Someone took their own post down from the Community.',
+  'Community|Opened': "Someone opened a post's own page in the Community.",
+  'Community|Liked': 'Someone liked a post in the Community.',
+  'Community|Unliked': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied': 'Someone made their own copy of a Community post.',
+  'Community|Reported': 'Someone reported a post in the Community.',
+  'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
+  'Community|Selected':
+    'Someone narrowed or reordered the Community gallery: a category, a tag, a sort order or My Shares.',
   'Timing|Measured':
     'A key moment was timed: a project opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',

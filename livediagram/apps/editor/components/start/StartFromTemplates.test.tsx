@@ -144,7 +144,9 @@ describe('StartFromTemplates, from the Community', () => {
     line: 'How our team ships.',
   });
   const cardIds = () =>
-    [...document.querySelectorAll('[data-start-card]')].map((c) => c.getAttribute('data-start-card'));
+    [...document.querySelectorAll('[data-start-card]')].map((c) =>
+      c.getAttribute('data-start-card'),
+    );
 
   it("follows a group's templates with its Community tiles, badged, the rail counting templates only", async () => {
     startTiles = { processes: [tile('p1', 'Release Train'), tile('p2', 'Hiring Loop')] };
@@ -171,7 +173,9 @@ describe('StartFromTemplates, from the Community', () => {
     const leave = vi.fn();
     mount('diagram', onTemplate, leave);
     fireEvent.click(document.querySelector('[data-rail="processes"]')!);
-    fireEvent.click(await screen.findByRole('button', { name: /^Release Train from the Community/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^Release Train from the Community/ }),
+    );
     expect(leave).toHaveBeenCalledWith('/document/shared?s=CODE-p1&copy=1');
     expect(track).toHaveBeenCalledWith('Community', 'Copied', 'StartWith');
     expect(onTemplate).not.toHaveBeenCalled();

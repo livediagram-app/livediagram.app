@@ -1,5 +1,5 @@
 // Community calls from the editor (docs/specs/025-community/community.md; blueprint
-// docs/specs/025-community/blueprints/community.md §4): the owner's post on a plan (read,
+// docs/specs/025-community/community.md): the owner's post on a plan (read,
 // publish / Edit Listing, remove). The public gallery reads live in
 // liveworkspace.app's Community page; nothing here is called without an owner identity.
 import {

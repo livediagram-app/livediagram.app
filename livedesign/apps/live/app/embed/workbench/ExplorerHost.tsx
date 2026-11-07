@@ -97,6 +97,8 @@ function useExplorerChrome(): {
   // The signed-in account and its name, for the Share dialog's Community tab; null for a guest.
   accountUserId: string | null;
   accountDisplayName: string | null;
+  // A guest's signed id, so a guest's Share dialog can show the Community tab; null once signed in or still loading.
+  guestId: string | null;
 } {
   const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   const guestId = useSignedGuestId(authLoaded, accountUserId);
@@ -110,6 +112,7 @@ function useExplorerChrome(): {
     isSignedIn: !!isSignedIn,
     accountUserId: accountUserId ?? null,
     accountDisplayName: accountDisplayName ?? null,
+    guestId: guestId ?? null,
   };
 }
 
@@ -129,7 +132,7 @@ export function ExplorerHost({
   sidebarLinks?: readonly SidebarLink[];
 }) {
   const router = useAppNavigation();
-  const { chrome, isSignedIn, accountUserId, accountDisplayName } = useExplorerChrome();
+  const { chrome, isSignedIn, accountUserId, accountDisplayName, guestId } = useExplorerChrome();
   const viewerId = chrome.ownerId;
   const prefs = chrome.prefs;
   const teams = useTokenTeams(isSignedIn);
@@ -147,10 +150,10 @@ export function ExplorerHost({
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
-        guestId ?? null,
+        guestId,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The open design deleted from the editor lands here with its Undo (lib/design-delete-undo.ts), taken once.

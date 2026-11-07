@@ -103,15 +103,15 @@ describe('the community state store', () => {
 
 describe('itemIsPublic', () => {
   it('is Public for a listed post while the Community is on, and for a community visitor', () => {
-    expect(itemIsPublic({ communityOn: true, ownPostState: 'listed', communitySession: false })).toBe(
-      true,
-    );
+    expect(
+      itemIsPublic({ communityOn: true, ownPostState: 'listed', communitySession: false }),
+    ).toBe(true);
     expect(
       itemIsPublic({ communityOn: false, ownPostState: 'listed', communitySession: false }),
     ).toBe(false);
-    expect(itemIsPublic({ communityOn: true, ownPostState: 'hidden', communitySession: false })).toBe(
-      false,
-    );
+    expect(
+      itemIsPublic({ communityOn: true, ownPostState: 'hidden', communitySession: false }),
+    ).toBe(false);
     expect(itemIsPublic({ communityOn: true, ownPostState: null, communitySession: true })).toBe(
       true,
     );

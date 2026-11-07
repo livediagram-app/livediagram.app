@@ -116,9 +116,9 @@ describe("an app's own categories", () => {
       ok: false,
       error: 'invalid_category',
     });
-    expect(validateCommunityPostInput({ ...valid, category: 'branding' }, 'livedesign.app').ok).toBe(
-      true,
-    );
+    expect(
+      validateCommunityPostInput({ ...valid, category: 'branding' }, 'livedesign.app').ok,
+    ).toBe(true);
     expect(communityPostInputErrors({ ...valid, category: 'pitches' }, 'liveplanner.app')).toEqual([
       'invalid_category',
     ]);
@@ -334,7 +334,9 @@ describe('Start With tiles', () => {
     expect(long.length).toBeLessThanOrEqual(COMMUNITY_START_LINE_MAX);
     expect(long.endsWith('word…')).toBe(true);
     // One unbroken run has no word to cut at: cut where it must.
-    expect(communityStartLine('x'.repeat(300))).toBe(`${'x'.repeat(COMMUNITY_START_LINE_MAX - 1)}…`);
+    expect(communityStartLine('x'.repeat(300))).toBe(
+      `${'x'.repeat(COMMUNITY_START_LINE_MAX - 1)}…`,
+    );
   });
 
   it('carries only what a tile shows and opens', () => {

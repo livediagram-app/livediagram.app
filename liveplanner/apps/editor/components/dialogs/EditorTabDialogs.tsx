@@ -149,10 +149,7 @@ export function EditorTabDialogs() {
           firstTabEmpty={
             !!activeTab &&
             tabs[0]?.id === activeTab.id &&
-            firstTabIsEmpty(
-              activeTab,
-              plan.context.status === 'ready' ? plan.context.items : null,
-            )
+            firstTabIsEmpty(activeTab, plan.context.status === 'ready' ? plan.context.items : null)
           }
           author={{
             name: accountDisplayName || selfParticipant.name,

@@ -25,7 +25,8 @@ export function communityImagePath(shareCode: string): string {
 // Make a Copy, and Start With's Community tiles). livedesign's documents are designs and liveplanner's are projects;
 // every other app's are documents.
 export function communityViewerPath(app: CommunityApp, shareCode: string, copy = false): string {
-  const kind = app === 'livedesign.app' ? 'design' : app === 'liveplanner.app' ? 'project' : 'document';
+  const kind =
+    app === 'livedesign.app' ? 'design' : app === 'liveplanner.app' ? 'project' : 'document';
   return `/${kind}/shared?s=${encodeURIComponent(shareCode)}${copy ? '&copy=1' : ''}`;
 }
 

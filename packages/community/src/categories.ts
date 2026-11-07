@@ -199,7 +199,12 @@ export const COMMUNITY_APP_CATEGORIES = {
       blurb: 'Posters, group cards and toasts for big days.',
       type: 'Events',
     },
-    { id: 'home', label: 'Home', blurb: 'Recipes to share and floor plans of a home.', type: 'Home' },
+    {
+      id: 'home',
+      label: 'Home',
+      blurb: 'Recipes to share and floor plans of a home.',
+      type: 'Home',
+    },
     {
       id: 'learning',
       label: 'Learning',
@@ -218,7 +223,12 @@ export const COMMUNITY_APP_CATEGORIES = {
       blurb: 'Decks and cue cards to pitch or launch an idea.',
       type: 'Pitches',
     },
-    { id: 'plans', label: 'Plans', blurb: 'Briefs, proposals, PR/FAQs and design docs.', type: 'Plans' },
+    {
+      id: 'plans',
+      label: 'Plans',
+      blurb: 'Briefs, proposals, PR/FAQs and design docs.',
+      type: 'Plans',
+    },
     {
       id: 'reports',
       label: 'Reports',

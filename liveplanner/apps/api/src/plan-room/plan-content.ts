@@ -436,7 +436,12 @@ export async function exportPlanCopy(
   // A Community copy takes no conversation at all.
   const threads = community
     ? []
-    : await copiedThreads(env, planId, itemIds === null ? null : new Set(itemIds), redactAuthorsFor);
+    : await copiedThreads(
+        env,
+        planId,
+        itemIds === null ? null : new Set(itemIds),
+        redactAuthorsFor,
+      );
   const itemRows = items.results ?? [];
   const sheetRows = sheets.results ?? [];
   const cellRows = cells.results ?? [];

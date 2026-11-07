@@ -127,7 +127,8 @@ export function redactItemRowForCommunity(
   let createdBy: ItemPerson = COMMUNITY_PERSON;
   try {
     const parsed: unknown = JSON.parse(String(row['fields'] ?? '{}'));
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) fields = parsed as ItemFields;
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+      fields = parsed as ItemFields;
     const by: unknown = JSON.parse(String(row['created_by'] ?? 'null'));
     if (isItemPerson(by)) createdBy = by;
   } catch {
@@ -143,7 +144,10 @@ export function redactItemRowForCommunity(
   };
 }
 
-type TabLike = { elements?: object[]; vote?: { votes?: Record<string, string[]>; startedBy?: string } };
+type TabLike = {
+  elements?: object[];
+  vote?: { votes?: Record<string, string[]>; startedBy?: string };
+};
 
 // A tab as a stranger sees it: every app's rule, and no Participant's adder key.
 export function redactPlanTabForCommunity<T extends TabLike>(tab: T): T {
@@ -195,7 +199,10 @@ export function responseSheetIds(tabs: readonly { data?: string; form?: unknown 
 
 // A sheet as a stranger sees it: nobody named as its last writer, and a form's response sheet with its heading row
 // alone (its first row), every response below it gone.
-export function redactSheetForCommunity(sheet: SheetJson, responseSheets: ReadonlySet<string>): SheetJson {
+export function redactSheetForCommunity(
+  sheet: SheetJson,
+  responseSheets: ReadonlySet<string>,
+): SheetJson {
   const out: SheetJson = { ...sheet, updatedBy: COMMUNITY_PERSON };
   if (!responseSheets.has(sheet.id)) return out;
   const heading = sheet.layout.rows[0];

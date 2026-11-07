@@ -25,7 +25,10 @@ describe('firstTabIsEmpty', () => {
   it('calls a Form empty with no question in it', () => {
     expect(firstTabIsEmpty({ kind: 'form', elements: [] }, null)).toBe(true);
     expect(
-      firstTabIsEmpty({ kind: 'form', elements: [], form: { heading: 'Sign Up', sections: [] } }, null),
+      firstTabIsEmpty(
+        { kind: 'form', elements: [], form: { heading: 'Sign Up', sections: [] } },
+        null,
+      ),
     ).toBe(true);
   });
 

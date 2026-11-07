@@ -518,7 +518,9 @@ export function EditorView() {
                                             {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
                                                 nor for a Community visitor (docs/specs/025-community/community.md). */}
                                             <CommentBadgesContext.Provider
-                                              value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                              value={
+                                                !(embedMode && isReadOnly) && !sessionCommunity
+                                              }
                                             >
                                               {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                               <SuppressElementIndicators when={embedMode}>

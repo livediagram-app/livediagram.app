@@ -18,7 +18,7 @@ vi.mock('../guest-token', () => ({
   readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
 }));
 
-// The editor's Community calls (docs/specs/025-community/blueprints/community.md) and how their
+// The editor's Community calls (docs/specs/025-community/community.md) and how their
 // refusals are worded.
 
 type Seen = { method: string; url: string; headers: Headers; body: string | null };

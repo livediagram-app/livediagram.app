@@ -38,7 +38,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Renamed',
   'Comment·Resolved',
   'Comment·Unresolved',
-  // Community (docs/specs/025-community/blueprints/community.md "Telemetry"): publish, Edit Listing and Remove
+  // Community (docs/specs/025-community/community.md "Telemetry"): publish, Edit Listing and Remove
   // From Community in the Share dialog; a Community tile chosen in Start Planning ('Copied', type StartWith).
   'Community·Changed',
   'Community·Copied',
