@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape, type ShapeElement } from '@livehuddle/document';
 import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { avatarScale } from '@liveworkspace/avatar/config';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   elevatorExitPoint,
   stairsFlights,
@@ -91,5 +92,19 @@ describe('the Stairs', () => {
     ];
     expect(stairsFlights(tabs, 'a', flight).up?.loading).toBe(true);
     expect(stairsFlights(tabs, 'b', flight).down?.loading).toBe(false);
+  });
+
+  // Performance: the panel reads only the two neighbouring floors, one scan each, so a crowded building stays cheap.
+  it('finds both landings across 20,000-element floors within budget', () => {
+    const crowd = Array.from({ length: 20_000 }, (_, i) =>
+      at('plant', (i % 200) * 60, Math.floor(i / 200) * 90),
+    );
+    const tabs = [
+      { id: 'a', name: 'A', elements: [...crowd, at('stairs', 5000, 5000)] },
+      { id: 'b', name: 'B', elements: [] },
+      { id: 'c', name: 'C', elements: [...crowd, at('elevator', 300, 300)] },
+    ];
+    const best = Math.min(...[0, 1, 2].map(() => cpuMsOf(() => stairsFlights(tabs, 'b', flight))));
+    expect(best).toBeLessThan(cpuBudgetMs(25));
   });
 });
