@@ -171,4 +171,24 @@ describe('the ledger', () => {
     // Idempotent: written again, nothing changes.
     expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
   });
+  it('never rewrites the stored tab for a clear it already holds (every later flush replays it from 0)', () => {
+    const { ledger } = ledgerOf([
+      post(score('a', 30)),
+      CLEAR,
+      post(score('b', 20)),
+      post(score('c', 40)),
+    ]);
+    const stored = mergeLedgerAnswersIntoTab(
+      tab(machine({ arcadeScores: [score('a', 30)] })),
+      ledger,
+    );
+    expect(ids(stored.elements[0]!)).toEqual(['c', 'b']);
+    // A later flush, say for somebody's reaction on the tab: the clear and the scores rebuild the same table.
+    expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
+    // A clear with nothing after it, on a machine already empty: the same tab too.
+    const empty = tab(machine());
+    expect(mergeLedgerAnswersIntoTab(empty, ledgerOf([post(score('a', 30)), CLEAR]).ledger)).toBe(
+      empty,
+    );
+  });
 });
