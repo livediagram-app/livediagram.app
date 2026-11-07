@@ -113,6 +113,9 @@ import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
 import { RepeatSchedule } from './card-repeats';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
+import { addConnectedPlanTab, connectedTabArrival } from './connected-tab';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportPlanComments, exportPlanTables } from './plan-export';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -662,6 +665,22 @@ export class PlanRoom extends DurableObject<Env> {
   async importFile(planId: string, file: ProjectFileImport): Promise<void> {
     this.bindPlan(planId);
     await importProjectFile(this.requireEnv(), planId, file);
+  }
+
+  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
+  // with the plan open sees it arrive, as an ordered system op a blipped socket replays. A plan never started is not
+  // found, and asking does not start it.
+  async addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return 'not_found';
+    this.bindPlan(planId);
+    const env = this.requireEnv();
+    const outcome = await addConnectedPlanTab(env, planId, write);
+    if (typeof outcome === 'object' && outcome.made) {
+      const op = await connectedTabArrival(env, planId);
+      if (op) this.broadcastOrderedSystemOp(op);
+    }
+    return outcome;
   }
 
   async hasTab(planId: string, tabId: string): Promise<boolean> {

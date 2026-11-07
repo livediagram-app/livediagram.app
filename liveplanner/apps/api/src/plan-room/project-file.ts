@@ -38,7 +38,7 @@ import {
   type SheetJson,
 } from '@liveplanner/sheets';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
-import type { ExportResult } from '@liveworkspace/index-app';
+import { storedTabConnection, tabConnectionOf, type ExportResult } from '@liveworkspace/index-app';
 import { listItems } from '../db/items';
 import { listSheets } from '../db/sheets';
 import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
@@ -68,7 +68,15 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     'id' | 'name'
   > & { folder?: unknown };
   const { folder: _stale, ...rest } = body;
-  return { ...rest, id: row.id, name: row.name, ...(row.folder ? { folder: row.folder } : {}) };
+  // A connected tab's connection travels as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry nothing").
+  const connection = storedTabConnection(row.connection);
+  return {
+    ...rest,
+    id: row.id,
+    name: row.name,
+    ...(row.folder ? { folder: row.folder } : {}),
+    ...(connection ? { connection } : {}),
+  };
 }
 
 // The file, or `unchanged` when the caller already holds this last save, or `not_found` for a plan not started.
@@ -120,7 +128,8 @@ const fail = (failure: Failure): { ok: false; failure: Failure } => ({ ok: false
 
 // The fields a tab read adds beside the body (tab-row.ts rowToTab), which a file written from a tab read carries;
 // the body is stored without them.
-const ROW_FIELDS = ['projectId', 'orderIndex', 'updatedAt', 'rev', 'folder'] as const;
+// A connected tab's `connection` is its own column, read with tabConnectionOf, never stored in the body.
+const ROW_FIELDS = ['projectId', 'orderIndex', 'updatedAt', 'rev', 'folder', 'connection'] as const;
 
 const MAX_ID = 200;
 const NOBODY = { id: '', name: 'Someone', color: '#94a3b8' };
@@ -152,6 +161,7 @@ function tabsOf(tabs: EnvelopeTab[], tabIdMap: Map<string, string>): PlanCopy['t
       folder,
       data,
       elementCount: drawnCount(tab),
+      connection: tabConnectionOf(incoming) ?? null,
     });
   }
   return out;

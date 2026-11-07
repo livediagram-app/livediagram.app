@@ -10,7 +10,12 @@
 // Made on first use, never on construction (plan-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
-import { migrationSchema, outboxRetrySchema, tabSharesSchema } from '@liveworkspace/index-app';
+import {
+  TAB_CONNECTION_SCHEMA,
+  migrationSchema,
+  outboxRetrySchema,
+  tabSharesSchema,
+} from '@liveworkspace/index-app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
@@ -407,6 +412,14 @@ const V14 = (exec: Exec) => {
   }
 };
 
+// A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
+// `{ id, app, itemId }` beside the tab's name, never in its body. Asks first, as V10 does, so it runs again
+// harmlessly; every tab already there reads as not connected.
+const V15 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(tabs)').toArray();
+  if (!columns.some((c) => c.name === 'connection')) exec(TAB_CONNECTION_SCHEMA);
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -422,6 +435,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V12,
   V13,
   V14,
+  V15,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

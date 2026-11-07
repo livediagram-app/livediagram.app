@@ -399,17 +399,17 @@ The migration door (`PUT /api/internal/items/:id/migration`) also takes `MIGRATI
 app"). `POST /api/internal/items/:id/connected-tabs` `{ name, connection }`, on the index's key alone, is the index's
 reverse write of a connection made both ways (`plan-room/connected-tab.ts`): one empty tab named `name` (the host's
 title as the index has it), loose, at the end of the plan's tab bar, holding the connection, shown at once to
-everyone with the plan open as an ordered `document-meta` op. 201 `{ tabId }`; 200 `{ tabId }` for a connection id it
+everyone with the plan open as an ordered `project-meta` op. 201 `{ tabId }`; 200 `{ tabId }` for a connection id it
 already holds, adding nothing; 400 for a malformed body; 404 for a plan not started; 409 `connection_limit` past
 `CONNECTIONS_PER_ITEM` (50) connected tabs; 503 when the write fails. Otherwise a connection is written only by an
 editor's whole-tab save (the tab PUT, which a token never makes), onto a tab that is new or already connected
-(Connect Again), never onto a tab of content; an autosave that leaves it out keeps it, and a new one is confirmed to
-the index (`confirmConnection`). Changesets, agent writes and a token's create keep none. When a connected tab is
+(Connect Again), never onto a tab of content nor a Board, Sheet, Dashboard or Form tab; an autosave that leaves it out keeps it, and a new one is confirmed to
+the index (`confirmConnection`). Changesets, agent writes (a form write among them) and a token's create keep none. When a connected tab is
 deleted the index is told (`removeConnection`), which deletes its pass. Only an Editor adds or removes one; a
-Participant and a Viewer read it. A tab outside a tab-scoped visitor's scope drops its connection with its name, a
-Community visitor sees none, and a connected tab is never shared into another item. Copies, the Drive file and an
+Participant and a Viewer read it. A tab outside a tab-scoped visitor's scope drops its connection with its name, and a
+connected tab is never shared into another item. Copies, the Drive file and an
 editor's create (an Offline Mode sync) keep exactly `{ id, app, itemId }`, which the index opens only in its own host
-and tab, so anywhere else it offers Connect Again; a Community link's copy keeps none.
+and tab, so anywhere else it offers Connect Again. (liveplanner has no Community posts, so no Community read or copy.)
 
 ## Realtime model
 
