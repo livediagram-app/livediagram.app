@@ -86,6 +86,15 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'swimming-pool',
   'stage-curtains',
   'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.

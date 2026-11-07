@@ -2,7 +2,9 @@
 
 import { answerMachine } from '@/lib/machine-answer';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
-import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
+import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
+import { isStandingSeatShape } from '@livehuddle/document';
+import { useSeatStatus } from './useSeatStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
 import {
   sameSitters,
@@ -126,10 +128,18 @@ export function useCanvasAvatar({
   // Ephemeral: nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
-  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it.
-  const [avatarStatus, setAvatarStatus] = useAvatarStatus(canvasTool === 'avatar');
   // A character walks among what is drawn.
   const walkElements = elements;
+  // The seat you sat on as of the last render: the walk below returns it and takes the status it sets, so the status
+  // reads it one render behind, caught up during render (never an effect) as soon as the walk reports a change.
+  const [statusSeat, setStatusSeat] = useState<string | null>(null);
+  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it, with the status a
+  // seat piece sets laid over it while you sit there (docs/specs/009-elements/workday-pieces.md "Statuses a piece sets").
+  const [avatarStatus, setAvatarStatus] = useSeatStatus(
+    canvasTool === 'avatar',
+    statusSeat,
+    walkElements,
+  );
   // The peers on this tab as the seat rules read them (docs/specs/009-elements/chair.md "Occupancy is presence"):
   // where they stand, what they sit on and their claim. Rebuilt only when presence changes.
   const seatPeers = useMemo(
@@ -185,6 +195,21 @@ export function useCanvasAvatar({
   // The social pieces (docs/specs/009-elements/social-pieces.md): the jukebox whose area you stand in plays for you,
   // and the arcade machine you stand at asks for a coin.
   useSocialPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md): the reception desk you stand at welcomes you.
+  useWorkdayPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  if (avatar.seatedOn !== statusSeat) setStatusSeat(avatar.seatedOn);
+  // Who stands rather than sits in what they hold (workday-pieces.md "How each one walks"): the standing seats' ids,
+  // once per board change, so drawing each character is one look-up.
+  const standingSeats = useMemo(() => {
+    const ids = new Set<string>();
+    for (const el of walkElements)
+      if (el.type === 'shape' && isStandingSeatShape(el.shape)) ids.add(el.id);
+    return ids;
+  }, [walkElements]);
+  const sitsDown = useCallback(
+    (seatedOn: string | null | undefined) => !!seatedOn && !standingSeats.has(seatedOn),
+    [standingSeats],
+  );
   // The editor's Fit, entry centring and zoom anchor read the character's live feet through this.
   const noAvatarAtRef = useRef<(() => AvatarPoint | null) | null>(null);
   useAssignRef(props.avatarAtRef ?? noAvatarAtRef, avatar.readPos);
@@ -375,6 +400,7 @@ export function useCanvasAvatar({
     setAvatarBurst,
     setAvatarStatus,
     sittersOf,
+    sitsDown,
     speech,
     speechBubbles,
   };

@@ -98,6 +98,15 @@ describe('status signatures', () => {
     ).toBeNull();
   });
 
+  // livehuddle's docs/specs/009-elements/workday-pieces.md: the treadmill's On a Break holds a bottle, the same hand.
+  it('puts the water bottle down while a drink holds the hand', () => {
+    expect(sprite('break').querySelector('[data-status-effect="break"]')).not.toBeNull();
+    cleanup();
+    expect(
+      sprite('break', { holding: 'coffee' }).querySelector('[data-status-effect="break"]'),
+    ).toBeNull();
+  });
+
   it('lets a cropped portrait show a signature past its edge', () => {
     expect(sprite('celebrating', { portrait: true }).querySelector('svg')?.style.overflow).toBe(
       'visible',

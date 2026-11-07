@@ -43,7 +43,8 @@ three (`template-builders-spaces.ts`):
 
 - **Coworking Space**: one open room of two desk clusters (four desks each pair facing across a shared bench), a coffee
   bar (coffee machine, water cooler, plant), a lounge (a sofa and two chairs round a rug), a bookshelf, and two
-  **phone booths** along the right, small rooms with one chair each for a call away from the floor.
+  **phone booths** along the right, small rooms each holding a [Phone Booth](../009-elements/workday-pieces.md#phone-booth)
+  for a call away from the floor.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
   Questions). Its Avatar Pad waits **beside the pod, under the Team Board**, level with the pod's lower half and low enough that someone standing on it stands clear of the board, its how-to

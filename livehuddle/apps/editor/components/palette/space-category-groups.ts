@@ -22,6 +22,10 @@ export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCatego
         'tools:stage-curtains',
         'tools:podium',
         'tools:office-pod',
+        // The workday pieces' rooms within the floor (docs/specs/009-elements/workday-pieces.md).
+        'tools:phone-booth',
+        'tools:nap-pod',
+        'tools:reception-desk',
         'tools:rug',
         'tools:pillar',
         'tools:column',
@@ -44,7 +48,9 @@ export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCatego
         'tools:dartboard',
       ],
     },
-    { name: 'Lounge', tiles: ['tools:jukebox', 'tools:fireplace'] },
+    // A gym corner and the office dog (docs/specs/009-elements/workday-pieces.md "Where they live").
+    { name: 'Gym', tiles: ['tools:treadmill', 'tools:weight-bench'] },
+    { name: 'Lounge', tiles: ['tools:jukebox', 'tools:fireplace', 'tools:pet-bed'] },
   ],
   // Ground up: what grows, what is walked on and round, what is sat at, the water and fire, then the parking.
   'collab-garden': [

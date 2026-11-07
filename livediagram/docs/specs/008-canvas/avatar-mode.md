@@ -213,7 +213,8 @@ who is free to talk, who is heads-down, who has stepped away.
 - **Set from the panel**: a **Status** row, closed until opened like the rest, with the five choices (**None** and
   the four), its current value in the collapsed header. Every role may set it: it is presence, like the character.
   The shared status list (`@liveworkspace/avatar`) also knows livehuddle's others: its call status, **Do Not
-  Disturb** (`dnd`, a red dot with a white bar), and Need Help, Out to Lunch, Angry, Celebrating, Thinking and
+  Disturb** (`dnd`, a red dot with a white bar), the two its seat pieces set, **On a Break** (`break`) and
+  **Busy** (`busy`), and Need Help, Out to Lunch, Angry, Celebrating, Thinking and
   Feeling Sick. This panel offers the four; one of the others on the wire still parses and draws, signature and all
   (livehuddle's docs/specs/008-canvas/avatar-mode.md "Status" has the full table).
 - **Signatures**: each status is drawn on the character in its own pixels, from the front, behind and in profile,

@@ -8,6 +8,7 @@ import type { AvatarVoiceOp, CallsCheckOp, CallTrackOp } from './call-voice';
 import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
 import type { CallSessionOp, CallStopShareOp } from './call-control';
 import type { AvatarKnockAnswerOp, AvatarKnockOp } from './knock';
+import type { AvatarBellOp } from './bell';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
@@ -72,6 +73,9 @@ export const PRESENCE_OP_KINDS = [
   // knocker, as a shove is.
   'avatar-knock',
   'avatar-knock-answer',
+  // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire"): a moment, from any level,
+  // broadcast like a knock; each receiver checks it stands in earshot.
+  'avatar-bell',
   // Where the sender is looking, for anyone following them (docs/specs/012-collaboration/follow-me-viewport.md). Its
   // own wire contract calls it "ephemeral presence exactly like cursor /
   // laser / avatar: throttled, never logged, never ordered (no `seq`), never
@@ -472,6 +476,7 @@ export type RoomOp =
   | CallStopShareOp
   | AvatarKnockOp
   | AvatarKnockAnswerOp
+  | AvatarBellOp
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
   // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed

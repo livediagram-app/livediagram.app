@@ -58,7 +58,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'rooms',
     label: 'Rooms',
     description:
-      'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage with curtains and a podium, rugs, an office pod, pillars and columns.',
+      'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage with curtains and a podium, rugs, an office pod, a phone booth, a nap pod, a reception desk, pillars and columns.',
     tagline: 'Lay out the floor: rooms, walls and a stage.',
     icon: lucide(lucidePanelsTopLeft),
   },
@@ -67,7 +67,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'seating',
     label: 'Seats',
     description:
-      'What people sit at: a chair, a desk, a sofa, a meeting table, a bean bag and a reading nook.',
+      'What people sit at: a chair, a desk, a sofa, a meeting table, a bean bag, a reading nook, a hot desk and a standing desk.',
     tagline: 'Somewhere to sit, alone or together.',
     icon: lucide(lucideArmchair),
   },
@@ -88,7 +88,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'recreation',
     label: 'Play',
     description:
-      'Somewhere to unwind: a bar with stools, a drinks cabinet and a fridge, ping-pong, pool and foosball tables, an arcade machine, a dartboard, a jukebox and a fireplace.',
+      'Somewhere to unwind: a bar with stools, a drinks cabinet and a fridge, ping-pong, pool and foosball tables, an arcade machine, a dartboard, a treadmill, a weight bench, a jukebox, a fireplace and a pet bed.',
     tagline: 'A drink, a game, a seat by the fire.',
     icon: lucide(lucideWine),
   },

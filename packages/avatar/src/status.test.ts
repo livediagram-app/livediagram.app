@@ -24,7 +24,8 @@ describe('avatar status', () => {
 
   it('reads a known status off the wire and nothing else', () => {
     expect(parseAvatarStatus('away')).toBe('away');
-    for (const bad of ['busy', '', null, undefined, 3]) expect(parseAvatarStatus(bad)).toBeNull();
+    for (const bad of ['sleeping', '', null, undefined, 3])
+      expect(parseAvatarStatus(bad)).toBeNull();
   });
 });
 
@@ -49,14 +50,33 @@ describe('avatar statuses and the wire', () => {
     expect(avatarStatusLabel('dnd')).toBe('Do Not Disturb');
     expect(avatarStatusColour('dnd')).toBe('#e11d48');
   });
+
+  // livehuddle's docs/specs/009-elements/workday-pieces.md "Statuses a piece sets": On a Break and Busy, set by its seat
+  // pieces and offered with calls, read and drawn everywhere.
+  it('offers Busy after Away and On a Break after Out to Lunch with calls, and reads them everywhere', () => {
+    const ids = AVATAR_CALL_STATUSES.map((s) => s.id);
+    expect(ids.slice(ids.indexOf('away'), ids.indexOf('away') + 3)).toEqual([
+      'away',
+      'busy',
+      'dnd',
+    ]);
+    expect(ids[ids.indexOf('lunch') + 1]).toBe('break');
+    expect(AVATAR_STATUSES.some((s) => s.id === 'break' || s.id === 'busy')).toBe(false);
+    expect(parseAvatarStatus('break')).toBe('break');
+    expect(parseAvatarStatus('busy')).toBe('busy');
+    expect(avatarStatusLabel('break')).toBe('On a Break');
+    expect(avatarStatusLabel('busy')).toBe('Busy');
+    expect(avatarStatusColour('break')).toBe('#3b82f6');
+    expect(avatarStatusColour('busy')).toBe('#a16207');
+  });
 });
 
 // Owner, 2026-11-06: more statuses like Angry, each with a signature on the character, in named groups.
 describe('livehuddle status groups', () => {
   it('groups them as Availability, Activity and Mood, in the picker order', () => {
     expect(AVATAR_STATUS_GROUPS.map((g) => [g.name, g.statuses.map((s) => s.label)])).toEqual([
-      ['Availability', ['Available', 'Need Help', 'Away', 'Do Not Disturb']],
-      ['Activity', ['Focusing', 'In a Meeting', 'Out to Lunch']],
+      ['Availability', ['Available', 'Need Help', 'Away', 'Busy', 'Do Not Disturb']],
+      ['Activity', ['Focusing', 'In a Meeting', 'Out to Lunch', 'On a Break']],
       ['Mood', ['Angry', 'Celebrating', 'Thinking', 'Feeling Sick']],
     ]);
   });

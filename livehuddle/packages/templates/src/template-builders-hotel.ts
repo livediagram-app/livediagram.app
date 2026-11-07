@@ -97,9 +97,9 @@ const LOBBY_ROOMS: IndoorRoom[] = [
 ];
 
 const LOBBY_FLOOR: OfficePiece[] = [
-  // The reception: two desks facing the front door, a plant either side.
-  { kind: 'desk', x: 980, y: 880, facing: 'n' },
-  { kind: 'desk', x: 1100, y: 880, facing: 'n' },
+  // The reception: a Reception Desk facing the front door, its bell for arrivals, a plant either side
+  // (docs/specs/009-elements/workday-pieces.md).
+  { kind: 'reception-desk', x: 1000, y: 880 },
   { kind: 'plant', x: 910, y: 890 },
   { kind: 'plant', x: 1234, y: 890 },
   // Sofas on rugs to wait on.
@@ -239,6 +239,8 @@ const ROOF_ROOMS: IndoorRoom[] = [
     pieces: [
       { kind: 'office-pod', x: 40, y: 150 },
       { kind: 'office-pod', x: 224, y: 150 },
+      // A treadmill in the corner, which shows you as On a Break while you walk it.
+      { kind: 'treadmill', x: 416, y: 160 },
       { kind: 'plant', x: 470, y: 44 },
     ],
   },

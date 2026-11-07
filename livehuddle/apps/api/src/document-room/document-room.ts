@@ -84,6 +84,7 @@ import {
 } from '../room-session';
 
 import {
+  BELL_THROTTLE_MS,
   CHANGESET_RETENTION_MS,
   createKnockThrottle,
   type CommunityAuthor,
@@ -1192,6 +1193,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // meeting-rooms-and-stage.md "Trust"; calls/room-calls.ts): what the mint route asks before a subscription.
   // Knocks pass one per sender per window (docs/specs/012-collaboration/knock.md "The wire"): memory only.
   private readonly knocks = createKnockThrottle();
+  // Rings of a Reception Desk's bell pass one per sender per 5 seconds (docs/specs/009-elements/workday-pieces.md "The
+  // wire"), the knock's throttle with its own window: memory only.
+  private readonly bells = createKnockThrottle(BELL_THROTTLE_MS);
   private readonly calls = new RoomCalls({
     now: () => Date.now(),
     sessions: () => this.callSessions(),
@@ -1549,6 +1553,8 @@ export class DocumentRoom extends DurableObject<Env> {
         // A knock (docs/specs/012-collaboration/knock.md): one per sender per 10 seconds, then broadcast below; each
         // receiver checks it stands in the room. Its answer is addressed to the knocker, as a shove is.
         if (opKind === 'avatar-knock' && !this.knocks.allow(sender.id, Date.now())) return;
+        // A ring of the bell, likewise one per sender per 5 seconds, then broadcast; each receiver checks its earshot.
+        if (opKind === 'avatar-bell' && !this.bells.allow(sender.id, Date.now())) return;
         if (
           opKind === 'avatar-push' ||
           opKind === 'avatar-let-speak' ||
@@ -1765,6 +1771,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (presenceId) {
       this.calls.forget(presenceId);
       this.knocks.forget(presenceId);
+      this.bells.forget(presenceId);
       this.baton.startGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});
     }

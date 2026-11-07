@@ -7,6 +7,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { receiveKnockOp } from '@/lib/office/knock-inbox';
+import { receiveBellOp } from '@/lib/office/reception-bell';
 import {
   setRemoteBesideTab,
   syncRemoteBesideTabs,
@@ -449,6 +450,10 @@ export function useRoomConnection(opts: {
         // A knock on a room, or the answer to ours (docs/specs/012-collaboration/knock.md): parsed, handed to the
         // canvas, which knows whether we stand inside; never written.
         receiveKnockOp(from, op);
+      } else if (op.kind === 'avatar-bell') {
+        // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire"): parsed, handed to
+        // the canvas, which knows whether we stand in earshot; never written.
+        receiveBellOp(from, op);
       } else if (op.kind === 'avatar-push') {
         // A shove is ADDRESSED: the room delivers it to the named session and
         // nobody else, so anything that arrives here was aimed at us. We

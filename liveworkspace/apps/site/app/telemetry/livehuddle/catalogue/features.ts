@@ -388,6 +388,16 @@ export const OFFICE_DRINKS = chart(
   { types: ['WaterCooler', 'CoffeeMachine', 'DrinksCabinet', 'DrinksFridge'] },
 );
 
+// The workday pieces (docs/specs/009-elements/workday-pieces.md "Telemetry"): a Reception Desk's bell rung, the office
+// dog patted.
+export const WORKDAY_PIECES_USED = chart(
+  'Canvas',
+  'Used',
+  'Bells and Pats',
+  "A Reception Desk's bell rung, or the office dog on a Pet Bed patted, in Avatar mode.",
+  { types: ['ReceptionBell', 'PatPet'] },
+);
+
 // A Door swung open or shut (docs/specs/009-elements/room-builder.md).
 export const DOORS_SWUNG = chart(
   'Canvas',
@@ -433,6 +443,7 @@ export const CANVAS_MODES: MetricStack = {
   members: [
     ...MODE_METRICS,
     OFFICE_DRINKS,
+    WORKDAY_PIECES_USED,
     DOORS_SWUNG,
     SCREENS_OPENED,
     AVATAR_PAD_ARRIVALS,

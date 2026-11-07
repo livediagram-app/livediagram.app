@@ -196,7 +196,7 @@ describe('the space templates', () => {
     }
   });
 
-  it('gives the coworking space eight desks and two single-seat booths', () => {
+  it('gives the coworking space eight desks and two single-seat booths (each a Phone Booth)', () => {
     const els = build('coworking-space');
     expect(count(els, 'desk')).toBe(8);
     const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room').map((e) => e.label);

@@ -168,6 +168,8 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   two buttons on its panel. Under reduced motion the screen holds still.
 - Walking up to it (your character's feet within 24 px of its front) shows an **Insert Coin** bubble above it for you,
   for as long as you stand there. Nothing else happens, and nobody else sees your bubble.
+- A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
+  `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen; a turned cabinet's click is the walk.
 
 ## Fireplace, Campfire
 

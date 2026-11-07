@@ -83,6 +83,41 @@ describe('RoomCalls hearing (#483)', () => {
     expect(calls.hearing('S-pt', [mic('S-ed')])).toEqual(['apart']);
   });
 
+  // docs/specs/009-elements/workday-pieces.md "Phone Booth": its call is only its sitter's, from the seat they send.
+  it("keeps a Phone Booth's call for its sitter, and someone walking across it in the room's", () => {
+    // A booth drawn large, so the edge margin does not reach past its floor.
+    const booth = {
+      id: 'booth',
+      type: 'shape',
+      shape: 'phone-booth',
+      x: 600,
+      y: 40,
+      width: 300,
+      height: 510,
+    };
+    const tab = JSON.stringify({ id: 't', elements: [room, booth] });
+    const { calls, walk } = setup(sessions, {
+      readTab: (tabId: string, knownRev: number | null) =>
+        tabId === 't' ? { rev: 1, data: knownRev === 1 ? null : tab } : null,
+    });
+    calls.noteAvatar('vw', {
+      kind: 'avatar',
+      tabId: 't',
+      avatar: { x: 750, y: 400, walking: false, seatedOn: 'booth' },
+    });
+    walk('pt', 750, 400);
+    walk('ed', 500, 300);
+    expect(calls.hearing('S-pt', [mic('S-vw'), mic('S-ed')])).toEqual(['apart', 'heard']);
+    expect(calls.hearing('S-vw', [mic('S-ed')])).toEqual(['apart']);
+    // A seat id too long to be an element's is no seat.
+    calls.noteAvatar('vw', {
+      kind: 'avatar',
+      tabId: 't',
+      avatar: { x: 750, y: 400, walking: false, seatedOn: 'b'.repeat(65) },
+    });
+    expect(calls.hearing('S-pt', [mic('S-vw')])).toEqual(['heard']);
+  });
+
   it('refuses a subscriber outside the room, whatever their level', () => {
     const { calls, walk } = setup(sessions);
     walk('pt', 500, 300);

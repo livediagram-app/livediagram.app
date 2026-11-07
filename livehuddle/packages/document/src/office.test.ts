@@ -89,6 +89,15 @@ describe('the office pieces', () => {
       'swimming-pool',
       'stage-curtains',
       'podium',
+      // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+      'nap-pod',
+      'treadmill',
+      'weight-bench',
+      'phone-booth',
+      'standing-desk',
+      'hot-desk',
+      'pet-bed',
+      'reception-desk',
     ]);
     const sized = [
       'room',

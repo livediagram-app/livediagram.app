@@ -49,7 +49,8 @@ describe('useCanvasCall', () => {
         canSpeak: true,
         caller: { ownerId: 'o', documentId: 'd', shareCode: 'sc' },
         tabId: 't1',
-        self: { x: 0, y: 0 },
+        // Your feet carry your seat: only a seated character is in a Phone Booth's call.
+        self: { x: 0, y: 0, seatedOn: null },
       }),
     );
     expect(result.current.bars.peers[0]).toMatchObject({

@@ -35,6 +35,13 @@ describe('facings', () => {
       hammock: 'n',
       'bean-bag': 'n',
       'reading-nook': 'n',
+      // The workday pieces' seats (livehuddle's docs/specs/009-elements/workday-pieces.md).
+      'nap-pod': 'n',
+      treadmill: 'n',
+      'weight-bench': 'n',
+      'phone-booth': 'n',
+      'standing-desk': 'n',
+      'hot-desk': 'n',
     });
     expect(seatingFacing({ shape: 'desk' })).toBe('s');
     expect(seatingFacing({ shape: 'desk', chairFacing: 'e' })).toBe('e');

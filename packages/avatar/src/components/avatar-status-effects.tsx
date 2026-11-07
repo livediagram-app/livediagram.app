@@ -1,6 +1,6 @@
 // Each status's signature on the Avatar-mode character (docs/specs/008-canvas/avatar-mode.md "Status"), in the spirit
 // of Focusing's headphones (which stay in avatar-sprite.tsx): a sparkle, a "?", a headset, a sandwich, a no-entry
-// sign, steam from the ears, a party hat and confetti, a thought bubble, an ice pack. Drawn on the sprite's own
+// sign, steam from the ears, a party hat and confetti, a thought bubble, an ice pack, a water bottle, a phone. Drawn on the sprite's own
 // 16 x 24 grid inside its body group, so a signature bobs with the walk, rises with a hop, drops with a sitter and
 // mirrors with a right-facing profile.
 //
@@ -91,6 +91,11 @@ const BUBBLE = '#ffffff';
 const BREAD = '#e8b066';
 const BREAD_DARK = '#c2843f';
 const LETTUCE = '#65a30d';
+const BOTTLE = '#60a5fa';
+const BOTTLE_DARK = '#2563eb';
+const BOTTLE_CAP = '#e2e8f0';
+const PHONE = '#1f2937';
+const PHONE_SCREEN = '#fbbf24';
 
 // --- Pieces -------------------------------------------------------------------
 
@@ -342,9 +347,48 @@ function Sandwich({ view }: { view: AvatarStatusView }) {
   );
 }
 
+/** A water bottle in the hand (On a Break), where the held cup goes; still. */
+function Bottle({ view }: { view: AvatarStatusView }) {
+  const profile = view === 'profile';
+  const x = profile ? 2 : 13;
+  const y = 9;
+  return (
+    <g data-status-effect="break" opacity={view === 'back' ? 0.7 : 1}>
+      <rect x={x} y={y} width={2} height={1} fill={BOTTLE_CAP} />
+      <rect x={x} y={y + 1} width={2} height={4} fill={BOTTLE} />
+      <rect x={x + 1} y={y + 1} width={1} height={4} fill={BOTTLE_DARK} />
+      <rect x={profile ? x + 1 : x - 1} y={y + 3} width={2} height={2} fill={SKIN} />
+    </g>
+  );
+}
+
+/** A phone held to the ear (Busy), its screen's edge lit; still. From behind, only its edge past the head. */
+function Phone({ view }: { view: AvatarStatusView }) {
+  if (view === 'profile') {
+    return (
+      <g data-status-effect="busy">
+        <rect x={8} y={3} width={2} height={5} fill={PHONE} />
+        <rect x={10} y={4} width={1} height={3} fill={PHONE_SCREEN} />
+        <rect x={9} y={8} width={2} height={2} fill={SKIN} />
+      </g>
+    );
+  }
+  return (
+    <g data-status-effect="busy">
+      <rect x={view === 'front' ? 12 : 2} y={3} width={2} height={5} fill={PHONE} />
+      {view === 'front' ? (
+        <>
+          <rect x={14} y={4} width={1} height={3} fill={PHONE_SCREEN} />
+          <rect x={13} y={8} width={2} height={2} fill={SKIN} />
+        </>
+      ) : null}
+    </g>
+  );
+}
+
 /**
  * The status's signature, for the sprite to draw inside its body group after the head. `handFree` is false while a
- * drink, a Behaviour or the flag holds the hand, and the sandwich waits. Focusing's headphones and Away's fade and
+ * drink, a Behaviour or the flag holds the hand, and the sandwich (or the bottle) waits. Focusing's headphones and Away's fade and
  * Zz are drawn by the sprite and the walker, so those two draw nothing here.
  */
 export function AvatarStatusEffect({
@@ -378,6 +422,10 @@ export function AvatarStatusEffect({
       return <Thought top={top} />;
     case 'sick':
       return <Sick view={view} top={top} />;
+    case 'break':
+      return handFree ? <Bottle view={view} /> : null;
+    case 'busy':
+      return <Phone view={view} />;
     default:
       return null;
   }

@@ -6,6 +6,7 @@ import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { hasSocialArt, SocialArt } from './SocialArt';
+import { hasWorkdayArt, WorkdayArt } from './WorkdayFaces';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
   chairSeatFill,
@@ -106,6 +107,15 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'bike-rack': 'Bike rack',
   'stage-curtains': 'Stage curtains',
   podium: 'Podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod': 'Nap pod',
+  treadmill: 'Treadmill',
+  'weight-bench': 'Weight bench',
+  'phone-booth': 'Phone booth',
+  'standing-desk': 'Standing desk',
+  'hot-desk': 'Hot desk',
+  'pet-bed': 'Pet bed',
+  'reception-desk': 'Reception desk',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
@@ -189,11 +199,21 @@ export function FurnitureView({
         {hasSocialArt(kind) ? (
           <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
         ) : null}
+        {hasWorkdayArt(kind) ? (
+          <WorkdayArt
+            kind={kind}
+            id={element.id}
+            sitters={sitters}
+            box={element}
+            grid={frame.view}
+          />
+        ) : null}
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
         ) : null}
       </svg>
-      {occupied ? (
+      {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
+      {occupied && kind !== 'hot-desk' ? (
         <span
           className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
           // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).

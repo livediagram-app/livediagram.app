@@ -21,6 +21,9 @@ import {
   type TabCalls,
 } from './call-hearing';
 
+// The longest seat id the room keeps for a walker: an element id's.
+const SEAT_ID_MAX = 64;
+
 /** A room that has just started may not know where everyone stands: for this long, an unknown position is allowed. */
 export const ROOM_WAKE_GRACE_MS = 60_000;
 
@@ -82,13 +85,19 @@ export class RoomCalls {
 
   /** A walker's `avatar` op: where they stand now, or (avatar null) that they left the mode. */
   noteAvatar(from: string, op: unknown): void {
-    const o = op as { tabId?: unknown; avatar?: { x?: unknown; y?: unknown } | null } | null;
+    const o = op as {
+      tabId?: unknown;
+      avatar?: { x?: unknown; y?: unknown; seatedOn?: unknown } | null;
+    } | null;
     const at = o?.avatar;
     if (typeof o?.tabId !== 'string' || !at || !finite(at.x) || !finite(at.y)) {
       this.placed.delete(from);
       return;
     }
-    this.placed.set(from, { tabId: o.tabId, at: { x: at.x, y: at.y } });
+    // The seat too: only its sitter is in a Phone Booth's call (docs/specs/009-elements/workday-pieces.md).
+    const seatedOn =
+      typeof at.seatedOn === 'string' && at.seatedOn.length <= SEAT_ID_MAX ? at.seatedOn : null;
+    this.placed.set(from, { tabId: o.tabId, at: { x: at.x, y: at.y, seatedOn } });
   }
 
   /** A hand going up or down; down forgets who let it speak. */

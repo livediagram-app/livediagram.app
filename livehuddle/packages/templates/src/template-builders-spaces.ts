@@ -86,8 +86,9 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'bookshelf', x: 720, y: 46 },
       ],
     },
-    // Two phone booths along the right, for a call without the room. Their doors face the open floor: a door in a
-    // booth's front wall opened onto a 40 px strip by the room's own wall, too narrow to walk.
+    // Two phone booths along the right, for a call without the room, each a Phone Booth piece in a booth room
+    // (docs/specs/009-elements/workday-pieces.md). Their doors face the open floor: a door in a booth's front wall
+    // opened onto a 40 px strip by the room's own wall, too narrow to walk.
     {
       name: 'Booth 1',
       x: 860,
@@ -95,7 +96,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
+      pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
     {
       name: 'Booth 2',
@@ -104,7 +105,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
+      pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
   ];
   return plan(
