@@ -44,7 +44,7 @@ let emitter: { app: CommunityApp; track: TelemetryTrack } | null = null;
 function siteTrack(category: string, action: string, type: string) {
   const host = pageApp();
   if (!host) return;
-  const app = `${host}.app` as CommunityApp;
+  const app: CommunityApp = `${host}.app`;
   if (emitter?.app !== app) {
     emitter = {
       app,

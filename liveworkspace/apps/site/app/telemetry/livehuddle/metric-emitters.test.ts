@@ -137,9 +137,9 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
-    // siteTrack called by name, through the Community app's wrapper object.
+    // The Community page on liveworkspace.app, reporting in this app's name with each type literal.
     expect(has('Community', 'Liked', 'Post')).toBe(true);
-    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
+    expect(has('Community', 'Reported', 'PersonalInfo')).toBe(true);
     // livehuddle's MCP server and CLI are left out of the scan (./scan-roots.ts).
     expect(KNOWN.some((e) => /^(apps\/(mcp|cli)|packages\/agent-verbs)\//.test(e.path))).toBe(
       false,

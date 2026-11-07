@@ -299,11 +299,11 @@ address by the router:
   `livediagram Community`), fills a post's head from the service (`packages/community-site/src/router/post-head.ts`,
   404 for a missing post, the shell unchanged within `API_TIMEOUT_MS` when the service fails) and answers
   `/community/sitemap.xml`.
-- `liveworkspace/apps/site/app/community/` (`layout.tsx`, `page.tsx`, `post/page.tsx`, `community.css`): the static
-  export's routes. `components/community/CommunityFrame.tsx` is the `liveworkspace | app` header (`AppPageHeader`),
+- `liveworkspace/apps/site/app/community/` (`layout.tsx`, `page.tsx`, `community.css`, and `post/` with its own `page.tsx`): the static
+  export's routes. `liveworkspace/apps/site/components/community/CommunityFrame.tsx` is the `liveworkspace | app` header (`AppPageHeader`),
   the rail and the site's footer; `CommunityGate.tsx` asks livediagram's `/api/capabilities`.
-- `components/community/CommunityBinding.tsx`: what the address makes the page: livediagram's posts (or every app's
-  under All Apps, `gallery/ScopeToggle.tsx`), its words, livediagram's `/api`, `NEXT_PUBLIC_COMMUNITY_API`, the
+- `liveworkspace/apps/site/components/community/CommunityBinding.tsx`: what the address makes the page: livediagram's posts (or every app's
+  under All Apps, `liveworkspace/apps/site/components/community/gallery/ScopeToggle.tsx`), its words, livediagram's `/api`, `NEXT_PUBLIC_COMMUNITY_API`, the
   community key `livediagram:v2:community-key`, the editor's routes (Open Canvas `/document/shared?s=<code>`, Make a
   Copy `...&copy=1`, the embed `/embed?s=<code>`, the card image `/api/share/<code>/image.svg`, the author's
   document, the sign-in, Explorer Home), each on the post's own app's address, the telemetry
@@ -315,7 +315,7 @@ address by the router:
   `PostGrid` of `PostCard`, `LoadMore`, `GalleryStates`. Category, tags and sort are words in `q`; a legacy
   `?tag=`, `?category=` or `?sort=` folds into `q` in `readQueryState`. The search form sits on the toolbar layer.
 - My Shares: `is:mine` in `q` switches `useGallery` to the app's `fetchMine`, with the session from `AccountSession`
-  (mounted only when My Shares is on, over liveworkspace's `lib/explorer/app-session.ts` `appAccount`: livediagram's
+  (mounted only when My Shares is on, over `liveworkspace/apps/site/lib/explorer/app-session.ts` `appAccount`: livediagram's
   `POST /api/auth/token`, skipped without the signed-in hint). `MineSummary` shows **Your Shares**. Waiting past `SESSION_LOAD_TIMEOUT_MS`, `GalleryView` shows
   `LoadError` ("We couldn't load the Community.") with a reload.
 - The post page: `PostView` over `usePost`, `EmbedFrame` (the binding's embed, lazy, titled, falling back to the card

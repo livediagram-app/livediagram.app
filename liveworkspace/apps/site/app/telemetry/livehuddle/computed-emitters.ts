@@ -21,7 +21,6 @@ import {
   ALL_TIMING_TYPES,
   COMMUNITY_CATEGORIES,
   LEVEL_TELEMETRY_TYPE,
-  COMMUNITY_REPORT_REASONS,
   isValidTelemetryEvent,
 } from '@livehuddle/api-schema';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
@@ -131,16 +130,9 @@ const API_ERRORS = [
 ];
 const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
 
-// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category and a
-// report's reason as their closed `type` tokens, and the gallery filter kinds the Community app's
-// CommunitySelection union names.
+// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category as its closed `type` token.
+// The gallery's own events are liveworkspace.app's Community page's, each type literal there (platform-emitters.ts).
 const COMMUNITY_CATEGORY_TYPES = COMMUNITY_CATEGORIES.map((c) => c.type);
-const COMMUNITY_REASON_TYPES = COMMUNITY_REPORT_REASONS.map((r) => r.type);
-const COMMUNITY_SELECTIONS = tokensAfter(
-  read('community/lib/telemetry.ts'),
-  'export type CommunitySelection',
-  ';',
-);
 
 // Where a changeset came from, read off the front door's own type so the list cannot drift.
 const AGENT_FRONT_DOORS = tokensAfter(
@@ -185,10 +177,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: SLUGS,
     open: SLUG_WHY,
   },
-
-  // The Community app.
-  'apps/community/lib/telemetry.ts Community·Reported': { values: COMMUNITY_REASON_TYPES },
-  'apps/community/lib/telemetry.ts Community·Selected': { values: COMMUNITY_SELECTIONS },
 
   // Shared packages.
   'packages/telemetry-client/src/errors.ts Error·Client': {

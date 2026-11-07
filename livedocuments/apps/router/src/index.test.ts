@@ -708,7 +708,7 @@ describe("liveworkspace's Community page under this address (@liveworkspace/comm
   });
 
   it("answers the Community's sitemap itself, from the service, for livedocuments's posts", async () => {
-    const fetchMock = vi.fn((_req: Request | string) =>
+    const fetchMock = vi.fn((_req: string) =>
       Promise.resolve(Response.json({ posts: [{ id: 'p1', updatedAt: 0 }] })),
     );
     vi.stubGlobal('fetch', fetchMock);
@@ -718,7 +718,7 @@ describe("liveworkspace's Community page under this address (@liveworkspace/comm
       expect(await res.text()).toContain(
         '<loc>https://www.livedocuments.app/community/post?id=p1</loc>',
       );
-      const asked = String(fetchMock.mock.calls[0]![0]);
+      const asked = fetchMock.mock.calls[0]![0];
       expect(asked).toBe(
         'https://www.liveworkspace.app/api/community/sitemap?app=livedocuments.app',
       );

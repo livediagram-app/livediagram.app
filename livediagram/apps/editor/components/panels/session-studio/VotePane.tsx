@@ -11,7 +11,7 @@ import { useState, type ReactNode } from 'react';
 import { VOTE_DOTS_RANGE } from '@livediagram/document';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK, Glyph, Switch } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph, SwitchRow } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -220,34 +220,36 @@ function ToggleCard({
   onToggle: () => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onToggle}
-      className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition ${
+    <SwitchRow
+      checked={checked}
+      onChange={onToggle}
+      layout="flex w-full items-center justify-between gap-2.5 rounded-lg border px-2.5 py-2 text-left transition"
+      className={
         checked
           ? 'border-brand-300 bg-brand-50/60 dark:border-brand-500/50 dark:bg-brand-500/10'
           : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500'
-      }`}
+      }
     >
-      <span
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
-          checked
-            ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
-            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
-        }`}
-      >
-        {icon}
-      </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-          {title}
+      <span className="flex items-center gap-2.5">
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+            checked
+              ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
+              : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+          }`}
+        >
+          {icon}
         </span>
-        <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">{hint}</span>
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+            {title}
+          </span>
+          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+            {hint}
+          </span>
+        </span>
       </span>
-      <Switch presentational size="sm" checked={checked} />
-    </button>
+    </SwitchRow>
   );
 }
 

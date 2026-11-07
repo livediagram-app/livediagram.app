@@ -1796,6 +1796,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityApp": {
+    "enum": [
+      "livediagram.app",
+      "liveplanner.app",
+      "livedocuments.app",
+      "livedesign.app",
+      "livehuddle.app"
+    ],
+    "type": "string"
+  },
   "CommunityAuthor": {
     "additionalProperties": false,
     "properties": {
@@ -1865,6 +1875,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "anonymous": {
         "type": "boolean"
       },
+      "app": {
+        "$ref": "#/components/schemas/CommunityApp"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -1913,6 +1926,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "anonymous",
+      "app",
       "author",
       "category",
       "copyCount",
@@ -1982,6 +1996,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "anonymous": {
         "type": "boolean"
       },
+      "app": {
+        "$ref": "#/components/schemas/CommunityApp"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -2027,6 +2044,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "anonymous",
+      "app",
       "author",
       "category",
       "copyCount",

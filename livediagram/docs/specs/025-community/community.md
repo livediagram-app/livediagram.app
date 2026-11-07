@@ -337,7 +337,7 @@ A signed-in author can narrow the gallery to their own posts, to review them and
 - If sign-in has not loaded after 10 seconds (a blocked script, a network failure), it says **We couldn't load the
   Community.** with **Try Again**, which reloads the page.
 - The rest of the Community needs no identity, so the page asks for livediagram's session only once My Shares is on
-  (liveworkspace's `lib/explorer/app-session.ts` `appAccount`, which asks `POST /api/auth/token` only when
+  (`liveworkspace/apps/site/lib/explorer/app-session.ts` `appAccount`, which asks `POST /api/auth/token` only when
   livediagram's signed-in hint is set). The api answers `GET /api/community/mine` (signed-in session
   required, never cached); the public list ignores `is:mine`.
 - Turning it on is tracked as `Community·Selected·Mine`.

@@ -14,3 +14,10 @@ describe('sitemap: no Build with AI', () => {
     expect(sitemap().some((e) => e.url.endsWith('/ai'))).toBe(false);
   });
 });
+
+describe('sitemap: Community', () => {
+  it('lists the gallery, without a trailing slash (docs/specs/025-community/community.md)', () => {
+    const entry = sitemap().find((e) => e.url === 'https://www.livehuddle.app/community');
+    expect(entry).toMatchObject({ changeFrequency: 'daily', priority: 0.6 });
+  });
+});

@@ -21,7 +21,7 @@ export const tagHref = (tag: string) => `${COMMUNITY_HOME_PATH}?q=${encodeURICom
 export const appNameOf = (app: CommunityApp): AppName => app.replace(/\.app$/, '') as AppName;
 
 /** The Community app of a registry app (`livediagram` to `livediagram.app`). */
-export const communityAppOf = (app: AppName): CommunityApp => `${app}.app` as CommunityApp;
+export const communityAppOf = (app: AppName): CommunityApp => `${app}.app`;
 
 /** Where a link to a post goes: this address's own page (`external` false, a client-side move) or the post's app's. */
 export type PostLink = { href: string; external: boolean };

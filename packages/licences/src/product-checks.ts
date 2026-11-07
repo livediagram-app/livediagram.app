@@ -32,7 +32,8 @@ export function describeLicenceTables(
 
   describe('the apps', () => {
     it('registers every app in apps/, deployed or distributed, so a new one cannot ship unlisted', () => {
-      expect(appDirs.length).toBeGreaterThan(5);
+      // A floor that proves apps/ was read at all (livehuddle, the smallest product, ships five).
+      expect(appDirs.length).toBeGreaterThanOrEqual(5);
       expect([...apps.map((a) => a.id), ...distributed].toSorted()).toEqual(appDirs.toSorted());
     });
 
