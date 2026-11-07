@@ -84,9 +84,12 @@ describe("each app's categories", () => {
     expect(communityCategoryTypes('livehuddle.app')).toEqual([
       'Campus',
       'Events',
+      'Games',
+      'Homes',
       'Office',
       'Outdoor',
       'Recreation',
+      'Venues',
       'Other',
     ]);
   });

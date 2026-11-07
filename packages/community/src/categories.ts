@@ -327,6 +327,18 @@ export const COMMUNITY_APP_CATEGORIES = {
       type: 'Events',
     },
     {
+      id: 'games',
+      label: 'Games Rooms',
+      blurb: 'Arcades, dens and bars for playing games together.',
+      type: 'Games',
+    },
+    {
+      id: 'homes',
+      label: 'Homes',
+      blurb: 'Houses to meet in, with Stairs between the floors.',
+      type: 'Homes',
+    },
+    {
       id: 'office',
       label: 'Office',
       blurb: 'Desks, pods and meeting rooms for the workday.',
@@ -343,6 +355,12 @@ export const COMMUNITY_APP_CATEGORIES = {
       label: 'Recreation',
       blurb: 'Bars and cafes to unwind in together after work.',
       type: 'Recreation',
+    },
+    {
+      id: 'venues',
+      label: 'Venues',
+      blurb: 'Halls, hotels and stages to host a big day at.',
+      type: 'Venues',
     },
     OTHER,
   ],
@@ -366,6 +384,7 @@ export type CommunityCategory =
   | 'health'
   | 'hiring'
   | 'home'
+  | 'homes'
   | 'ideas'
   | 'learning'
   | 'marketing'
@@ -396,6 +415,7 @@ export type CommunityCategory =
   | 'support'
   | 'team'
   | 'travel'
+  | 'venues'
   | 'websites'
   | 'work';
 
