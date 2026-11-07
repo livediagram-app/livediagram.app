@@ -133,15 +133,6 @@ describe('applyReplace on an existing tab', () => {
     expect(x!.textSize).toBeDefined();
     expect(y!.y).not.toBe(x!.y);
   });
-
-  it('refuses a locked tab', () => {
-    const { calls, log } = recording();
-    expect(
-      refused(applyReplace({ ...checkoutFlow(), locked: true }, { graph }, { ...options, log }))
-        .code,
-    ).toBe('element_locked');
-    expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 0, op: 'replace', scope: 'tab' }]);
-  });
 });
 
 describe('applyReplace for a new tab', () => {

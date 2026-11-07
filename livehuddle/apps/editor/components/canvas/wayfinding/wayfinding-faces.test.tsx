@@ -254,7 +254,6 @@ function faceFor(kind: 'directory' | 'elevator', readOnly: boolean, wayfinding: 
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       onEnterPortal={() => ({ targetName: null, wayfinding })}
-      tabLocked={false}
       tabSummaries={[]}
       readOnly={readOnly}
       remoteSelectors={[]}

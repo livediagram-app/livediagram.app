@@ -23,9 +23,11 @@ globs = ["**/*.ttf", "**/*.otf"]
 #                          (an export finished) carries it too. Without it every route answers 404.
 #   INDEX_KEY_EXPORT       the index's INDEX_KEY_EXPORT: listing a person's or a team's items.
 #   MEDIA_KEY_EXPORT       the media service's MEDIA_KEY_EXPORT: a person's images and their bytes.
-#   DATA_EXPORT_KEY_LIVEDIAGRAM, DATA_EXPORT_KEY_LIVEPLANNER, DATA_EXPORT_KEY_LIVEDOCUMENTS, DATA_EXPORT_KEY_LIVEDESIGN
+#   DATA_EXPORT_KEY_LIVEDIAGRAM, DATA_EXPORT_KEY_LIVEPLANNER, DATA_EXPORT_KEY_LIVEDOCUMENTS, DATA_EXPORT_KEY_LIVEDESIGN,
+#   DATA_EXPORT_KEY_LIVEHUDDLE
 #                          each shared with that app's api Worker as DATA_EXPORT_KEY: its export door (file, svg, csv,
-#                          comments).
+#                          comments). An app whose key is unset is not reached: its items are named in the README's
+#                          Not included, and the export carries on.
 [vars]
 ENVIRONMENT = "production"
 # Where the service calls each app's export door.
@@ -33,6 +35,7 @@ APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
 
 # The index (listing the items), the media service (the images) and accounts (an export finished): a Worker's fetch to
 # another Worker's route on its own zone isn't routed to it.
@@ -73,6 +76,7 @@ APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
 
 [[env.staging.services]]
 binding = "INDEX"

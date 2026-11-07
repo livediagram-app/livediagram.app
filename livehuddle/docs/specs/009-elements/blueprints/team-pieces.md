@@ -31,7 +31,7 @@ selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month;
   `{ kind: 'notice-unpin', noteId, by }`. Who may pin and unpin is the Notice Board's rule exactly (`mayPin`,
   `mayUnpin`), factored into `components/canvas/collab/useNoteSigner.ts` so both pieces read one copy.
 - `applyElementDelta` (`element-deltas.ts`): `openNoticeBoard` becomes `openNotePiece`, true for every
-  `holdsNotes(el.shape)` kind not locked. `participant-content.ts` merges `noticeNotes` for every `holdsNotes` kind.
+  `holdsNotes(el.shape)` kind. `participant-content.ts` merges `noticeNotes` for every `holdsNotes` kind.
   The room's signer rule and the ledger already key on the delta kind, not the shape.
 
 ### Suggestion Box
@@ -42,7 +42,6 @@ selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month;
   `imageContext`), `viewer` (`can.level === 'view'`), `participant`, `editor`. `editor` loads on open
   (`apiListSuggestions`), status `loading | ready | failed`, and again on **Refresh**. Drop: status `idle | sending |
 sent | failed`, the text cleared on `sent`.
-- Locked box: the add box is replaced by **This box is closed.**; an Editor still lists.
 
 ### Signpost
 
@@ -70,7 +69,7 @@ sent | failed`, the text cleared on `sent`.
   fails validation).
 - `POST …/suggestions` body `{ elementId: string, text: string }`: `text` trimmed, 1 to `SUGGESTION_TEXT_MAX` (500)
   characters else 400 `missing text` / `text too long`; `elementId` missing 400. The box must be an element of the
-  tab with `shape: 'suggestion-box'`, else 404; `locked: true` 409 `box_closed`; 200 notes 409 `box_full`. 201 `{}`.
+  tab with `shape: 'suggestion-box'`, else 404; 200 notes 409 `box_full`. 201 `{}`.
 - `GET …/suggestions?elementId=`: 400 without `elementId`; 200 `SuggestionsResponse { suggestions: Suggestion[] }`.
 - `DELETE …/suggestions/:suggestionId`: 204, 404.
 - Editor client: `lib/api/suggestions.ts` `apiDropSuggestion`, `apiListSuggestions`, `apiRemoveSuggestion`, each
@@ -90,7 +89,7 @@ NULL, day TEXT NOT NULL`, index `(document_id, tab_id, element_id)`. Listed `ORD
 
 - A day button for a spill-over day (last or next month) selects that day and moves the cursor to its month.
 - A pin while full: the button disables and the panel says so (the Notice Board's copy, with "calendar").
-- Suggestion drop failures: 409 `box_full` and `box_closed` show their sentence; anything else **Couldn't drop it.
+- Suggestion drop failures: 409 `box_full` shows its sentence; anything else **Couldn't drop it.
   Try again.**, the text kept.
 - An Editor's list failing shows **Couldn't load the notes.** with **Try Again**.
 - A signpost on a tab with no places: no boards, the empty tooltip. A place deleted while its board shows: the board
@@ -138,17 +137,17 @@ documentId, tabId })` logs neither the caller nor the text; the drop is not rela
 
 ## Testing
 
-| Rule                                                     | Test                                                            |
-| -------------------------------------------------------- | --------------------------------------------------------------- |
-| A note's day is validated                                | `packages/document/src/office-team.test.ts`                     |
-| Calendar pins and unpins as a board's                    | `packages/document/src/notice-note-deltas.test.ts`              |
-| A Participant's calendar notes merge as a board's        | `packages/document/src/participant-content.test.ts`             |
-| Kinds registered, walk classes                           | `office.test.ts`, `shape-kind.test.ts`, `packages/avatar` tests |
-| Suggestion routes: roles, anonymity, caps, lock, cleanup | `apps/api/src/routes/suggestion-routes.test.ts`                 |
-| Month grid                                               | `apps/editor/lib/calendar-month.test.ts`                        |
-| Signpost places                                          | `apps/editor/lib/wayfinding.test.ts`                            |
-| Photo wall frames                                        | `apps/editor/lib/photo-wall.test.ts`                            |
-| Faces and panels per role                                | `apps/editor/components/canvas/collab/team-faces.test.tsx`      |
+| Rule                                               | Test                                                            |
+| -------------------------------------------------- | --------------------------------------------------------------- |
+| A note's day is validated                          | `packages/document/src/office-team.test.ts`                     |
+| Calendar pins and unpins as a board's              | `packages/document/src/notice-note-deltas.test.ts`              |
+| A Participant's calendar notes merge as a board's  | `packages/document/src/participant-content.test.ts`             |
+| Kinds registered, walk classes                     | `office.test.ts`, `shape-kind.test.ts`, `packages/avatar` tests |
+| Suggestion routes: roles, anonymity, caps, cleanup | `apps/api/src/routes/suggestion-routes.test.ts`                 |
+| Month grid                                         | `apps/editor/lib/calendar-month.test.ts`                        |
+| Signpost places                                    | `apps/editor/lib/wayfinding.test.ts`                            |
+| Photo wall frames                                  | `apps/editor/lib/photo-wall.test.ts`                            |
+| Faces and panels per role                          | `apps/editor/components/canvas/collab/team-faces.test.tsx`      |
 
 ## Constants and configuration
 

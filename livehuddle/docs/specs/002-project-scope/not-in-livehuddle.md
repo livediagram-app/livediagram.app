@@ -150,6 +150,49 @@ the one to read for them; livehuddle's [Session tools](../012-collaboration/sess
 - **The facilitator baton** no longer governs a clock: the pieces belong to their rooms and anyone who takes part runs
   them ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)).
 
+## Element and Tab Locking
+
+The owner (2026-11-07, Work Tracker #625): "There is no benefit to locking elements in livehuddle, remove the UI and
+code that enables it to simplify. Same goes with tabs, I don't need to lock tabs to prevent changes etc". Locking
+protects a finished diagram from a stray drag; a Space is a place people meet in, built once and walked round, and
+the share roles already decide who may change it. livediagram keeps both locks, and its
+[Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) spec ("Locking", the tab
+menu's Lock) is the one to read for them.
+
+- **Gone from every surface**: the selection popover's **Lock / Unlock** button, the multi-selection toolbar's
+  **Lock**, `⌘⇧L` / `Ctrl+Shift+L`, the command palette's **Lock / Unlock Selection**, the tab menu's **Lock Tab** /
+  **Unlock Tab**, the padlock before a locked tab's name and the padlock badge on a locked element, and the help
+  articles Locking Elements and Locking a Tab.
+- **Every rule that turned on a lock goes with it.** Nothing refuses a move, resize, rotation, nudge, delete, cut,
+  label, format paint, colour snap, tidy or quick style because an element is locked; no tab pauses undo, refuses
+  adds, imports, clearing, deleting or a theme change, or keeps its style from Apply to All Tabs because it is locked.
+  Server-side, the participant content check has no `locked` or `tab-locked` refusal, and agent changesets
+  ([Edit operations](../024-agents/edit-operations.md)) have no `element_locked` rejection (it leaves
+  `EDIT_REJECTION_CODES`).
+- **What locking did to Space pieces goes too.** A Door can no longer be locked: its padlock and darker shading are
+  gone, and an Editor or a Participant opens and closes any door ([Room builder](../009-elements/room-builder.md)). A
+  Suggestion Box closed only by being locked, so it no longer closes: it takes notes until it is full, and the
+  `box_closed` refusal is gone ([Team pieces](../009-elements/team-pieces.md#suggestion-box)). A Notice Board and a
+  Calendar Wall always take notes, a portal's tour and a Screen's Set Link are an Editor's on any one, and an image
+  always takes a new picture.
+- **Kept, because they are other things**: Lock Aspect Ratio (`aspectLocked`), the concurrent-selection lock ("Locked
+  to <name>", [Editor app](../007-editor/editor-app.md)) and the facilitator freeing it, and a stored layer's `locked`
+  as `tab-fields` settles it for the products that still have layers (livehuddle drops layers first,
+  [Layers](../006-document/layers.md)).
+- **Its telemetry**: `Element Locked`, `Element Unlocked`, `Tab Locked` and `Tab Unlocked` are no longer sent. The
+  `Locked` and `Unlocked` actions stay in the vocabulary, so the events already recorded keep their label (and the
+  facilitator's `Unlocked` type still rides on `Facilitator Changed`).
+- **An element or a tab saved with `locked: true`** loads, saves and behaves unlocked; nothing is dropped or
+  refused. `dropRetiredLocks` (`packages/document/src/retired-locks.ts`) drops `locked` from a tab and from each of
+  its elements on read. The stored-tab migration runs it beside the other retired cleanups, and the editor runs it on
+  a peer's `tab` op and `tab-meta` patch, so no data migration is needed and the tab is saved without it next time.
+  The `locked` field leaves the element and tab types.
+- **Help**: the two articles go; their old addresses redirect (router `legacy-editor-route.ts`): Locking Elements to
+  [Selecting Many Elements](/help/canvas/selecting-and-grouping/), Locking a Tab to
+  [Tabs](/help/tabs/using-tabs/). The marketing FAQ's "Can I stop a finished tab being changed?" goes.
+- **Share roles**: nothing changes in who may do what. The rules that turned on a lock go: a locked tab no longer
+  makes an Editor read-only, and a Participant swings any Door ([Share roles](../013-workspace/share-roles.md)).
+
 ## Imports from other tools
 
 The owner (2026-11-05): "Import from other apps like mermaid makes no sense to huddle". Reading another tool's
@@ -400,7 +443,7 @@ presenting tools, the `frame` ([The Frame](#the-frame)), and any other shape kin
 - **Drawn as a placeholder.** A plain card in the element's own box: a dashed outline, a muted fill, the kind's name
   ("Q&A Board", "Poll", "Agenda"; "Unknown Element" for a kind livehuddle never had) and, beneath it, "Not in
   livehuddle". Its stored label shows below that when it has one. The export and the thumbnail draw the same card.
-- **What it does.** It selects, moves, resizes, copies, locks and deletes like any element, and takes
+- **What it does.** It selects, moves, resizes, copies and deletes like any element, and takes
   comments. It takes no typed label (double-clicking it opens nothing), has no settings or context-menu section of its
   own, presses nothing and starts nothing. Agents read it by its stored kind.
 - **Nothing new.** No palette entry, Search result, template, agent verb, CLI command or paste makes one; an agent that
@@ -522,5 +565,11 @@ comments on it; a Viewer sees it).
   Participate included (`palette-layouts.test.ts`, `bar-categories.test.tsx`, `share-roles.test.ts`), the search
   panel lists neither (`palette-search.test.ts`), `9` adds nothing (`useEditorKeyboardShortcuts.test.ts`), a pasted
   or dropped picture is refused with the notice (`useClipboard.drop.test.tsx`), and the router pins the old help
+  addresses.
+- Element and Tab Locking: a stored tab and its elements with `locked: true` load and save without it
+  (`retired-locks.test.ts`), and so does a peer's `tab` op or `tab-meta` patch; the selection toolbars, the tab menu
+  and the command palette offer no Lock; the participant content check and the role tests (`share-roles.test.ts` in
+  the api and the editor) refuse nothing for a lock, a Participant swings any Door, and an edit right is still
+  checked as before; agent changesets refuse nothing as `element_locked`; and the router pins the two old help
   addresses.
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.

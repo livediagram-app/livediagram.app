@@ -13,14 +13,7 @@ import {
 import { growContainer, HOLD_PAD } from '../grow-container';
 import { boxOf, resolvePlacement, shifted } from '../placement';
 import { resolveSome } from '../selectors';
-import {
-  currentElements,
-  holdersOf,
-  moveElement,
-  refuseLocked,
-  type EditState,
-  writeFields,
-} from '../state';
+import { currentElements, holdersOf, moveElement, type EditState, writeFields } from '../state';
 import type { MoveOperation } from '../types';
 
 // The bounding box of boxed elements, or null when none is boxed.
@@ -52,11 +45,6 @@ export function applyMove(
   const targets = resolved.els;
   const named = new Set<ElementId>(targets.map((el) => el.id));
   const moving = containerContents(currentElements(state), named);
-  for (const id of moving) {
-    const el = state.byId.get(id)!;
-    const lock = state.locked.get(id);
-    if (lock) return refuseLocked(state, 'move', index, el, lock);
-  }
   let dx: number;
   let dy: number;
   if ('by' in operation) [dx, dy] = operation.by;
@@ -107,7 +95,6 @@ function giveBackRoom(
   operation: number,
 ): void {
   // A holder is a boundary or lane, always a box.
-  if (state.locked.has(holderId)) return;
   const c = state.byId.get(holderId) as BoxedElement;
   const holders = holdersOf(state);
   const stays = boundsOf(currentElements(state).filter((el) => holders.get(el.id) === holderId));

@@ -27,7 +27,6 @@ import {
   insertElement,
   namingOf,
   refsOf,
-  refuseLocked,
   type EditState,
   writeFields,
 } from '../state';
@@ -279,8 +278,6 @@ export function applyRewire(
       details: [`${operation.target}: ${refsOf(state).refOf(arrow.id)} is not an arrow`],
       hint: 'rewire an arrow by its ref, from the graph view',
     };
-  const lock = state.locked.get(arrow.id);
-  if (lock) return refuseLocked(state, 'rewire', index, arrow, lock);
   const fromBox = operation.from !== undefined ? resolveBox(state, operation.from, index) : null;
   if (fromBox && 'rejection' in fromBox) return fromBox.rejection;
   const toBox = operation.to !== undefined ? resolveBox(state, operation.to, index) : null;

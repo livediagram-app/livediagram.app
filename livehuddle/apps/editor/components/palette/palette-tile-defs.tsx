@@ -1,4 +1,10 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
+import {
+  CORRIDOR_PRESET_TILES,
+  DOOR_PRESET_TILES,
+  ROOM_PRESET_TILES,
+  RUG_PRESET_TILES,
+} from './palette-floor-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { badgePresetFace } from '@livehuddle/document';
 import type { EmbedProvider } from '@livehuddle/document';
@@ -16,6 +22,7 @@ import {
   RoomIcon,
   RoomBuilderIcon,
   DoorIcon,
+  WindowIcon,
   StageIcon,
   MeetingTableIcon,
   PlantIcon,
@@ -839,6 +846,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
     filled: true,
     action: { type: 'shape', kind: 'room' },
+    // Room presets (docs/specs/009-elements/office.md "Room presets"): six rooms to start from.
+    variants: ROOM_PRESET_TILES,
+    variantsHint: 'Start from a room, then resize, rename or recolour it.',
     icon: <RoomIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -857,6 +867,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <RoomBuilderIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // The Corridor (docs/specs/009-elements/corridor.md): a passage between rooms, its types as presets.
+    id: 'tools:corridor',
+    tileGroup: 'rooms',
+    blurb: 'A passage between rooms',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Corridor',
+    caption: 'Corridor',
+    description:
+      'A corridor to join rooms: walls down its sides that Avatar-mode characters walk between, open ends, and doors that snap onto its walls. It goes in behind everything, like a room.',
+    filled: true,
+    action: { type: 'shape', kind: 'corridor' },
+    variants: CORRIDOR_PRESET_TILES,
+    variantsHint: 'Pick a shape, then resize or rotate it to fit.',
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M4 2v18h18M10 2v12h12" />
+      </Glyph>
+    ),
+  },
+  {
     // Door (docs/specs/009-elements/room-builder.md "Door"): snaps onto any wall and lets characters through. Not
     // 'tools:door': the Portal tile kept that id.
     id: 'tools:wall-door',
@@ -867,10 +898,29 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Door',
     caption: 'Door',
     description:
-      'A door for any room wall, at any angle: drop it on a wall and it snaps on and turns to match, and Avatar-mode characters walk through it. Drag it along the wall to move it.',
+      'A door for any room or corridor wall, at any angle: drop it on a wall and it snaps on and turns to match, and Avatar-mode characters walk through it. Drag it along the wall to move it.',
     filled: true,
     action: { type: 'shape', kind: 'door' },
+    // Door types (docs/specs/009-elements/room-builder.md "Door types"): a swing, double, sliding or revolving door.
+    variants: DOOR_PRESET_TILES,
+    variantsHint: 'Pick a door, then drop it on any wall.',
     icon: <DoorIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Window (docs/specs/009-elements/room-builder.md "Window"): snaps onto a wall as a Door does, lets light in, never
+    // a way through.
+    id: 'tools:window',
+    tileGroup: 'rooms',
+    blurb: 'Light through any wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Window',
+    caption: 'Window',
+    description:
+      'A window for any room or corridor wall: drop it on a wall and it snaps on, turns to face in and casts a patch of light on the floor. The wall still blocks walking. Drag it along the wall to move it.',
+    filled: true,
+    action: { type: 'shape', kind: 'window' },
+    icon: <WindowIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Stage (docs/specs/009-elements/office.md "Stage", docs/specs/012-collaboration/meeting-rooms-and-stage.md).
@@ -1911,6 +1961,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
     filled: true,
     action: { type: 'shape', kind: 'rug' },
+    // Rug types (docs/specs/009-elements/office.md "Rug types"): eight shapes, sizes and patterns.
+    variants: RUG_PRESET_TILES,
+    variantsHint: 'Pick a rug, then resize or recolour it; its pattern stays.',
     icon: <RugIcon size={TILE_GLYPH_PX} />,
   },
   {

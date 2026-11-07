@@ -70,22 +70,19 @@ describe('deriveCanvasSelection', () => {
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
-  it('a locked element keeps the popover but loses plus + handles', () => {
-    const s = derive({ elements: [box('a', { locked: true })], selectedId: 'a' });
-    expect(s.selectedLocked).toBe(true);
-    expect(s.showPopover).toBe(true); // popover does NOT gate on the element lock
-    expect(s.showHandlesFor('a')).toBe(false);
+  // not-in-livehuddle.md "Element and Tab Locking": an element saved locked keeps every grip.
+  it('an element saved locked keeps the popover and its handles', () => {
+    const s = derive({
+      elements: [box('a', { locked: true } as Partial<ShapeElement>)],
+      selectedId: 'a',
+    });
+    expect(s.showPopover).toBe(true);
+    expect(s.showHandlesFor('a')).toBe(true);
   });
 
   it('read-only keeps the popover but suppresses plus + handles', () => {
     const s = derive({ elements: [box('a')], selectedId: 'a', readOnly: true });
     expect(s.showPopover).toBe(true); // popover does NOT gate on readOnly
-    expect(s.showHandlesFor('a')).toBe(false);
-  });
-
-  it('a locked tab suppresses every chrome including the popover', () => {
-    const s = derive({ elements: [box('a')], selectedId: 'a', tabLocked: true });
-    expect(s.showPopover).toBe(false);
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
@@ -115,13 +112,15 @@ describe('deriveCanvasSelection', () => {
     expect(s.showHandlesFor('a')).toBe(false);
   });
 
-  it('a locked member first in z-order leaves the union handles to the members that resize', () => {
-    const els: Element[] = [box('a', { locked: true }), box('b', { x: 200 }), box('c', { x: 400 })];
+  it('a member saved locked first in z-order takes the union handles like any other', () => {
+    const els: Element[] = [
+      box('a', { locked: true } as Partial<ShapeElement>),
+      box('b', { x: 200 }),
+      box('c', { x: 400 }),
+    ];
     const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b', 'c']) });
     expect(s.showUnionResize).toBe(true);
-    // The press goes to a member the drag accepts, and the box spans what the drag moves.
-    expect(s.unionResizePrimaryId).toBe('b');
-    expect(s.unionResizeBounds).toEqual({ x: 200, y: 0, width: 300, height: 60 });
+    expect(s.unionResizePrimaryId).toBe('a');
   });
 
   it('an arrow first in z-order still shows the union handles over the boxes', () => {
@@ -131,10 +130,13 @@ describe('deriveCanvasSelection', () => {
     expect(s.unionResizePrimaryId).toBe('b');
   });
 
-  it('a selection of locked members only shows no union handles', () => {
-    const els: Element[] = [box('a', { locked: true }), box('b', { x: 200, locked: true })];
+  it('a selection of members saved locked still shows the union handles', () => {
+    const els: Element[] = [
+      box('a', { locked: true } as Partial<ShapeElement>),
+      box('b', { x: 200, locked: true } as Partial<ShapeElement>),
+    ];
     const s = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']) });
-    expect(s.showUnionResize).toBe(false);
+    expect(s.showUnionResize).toBe(true);
   });
 
   it('the union box takes in a rotated member as drawn', () => {
@@ -168,16 +170,10 @@ describe('deriveCanvasSelection', () => {
     expect(s.multiToolbarBounds).toEqual({ x: 0, y: 0, width: 100, height: 80 });
   });
 
-  it('suppresses the floating toolbar in read-only / locked-tab modes', () => {
+  it('suppresses the floating toolbar in read-only mode', () => {
     const els: Element[] = [arrow('a'), arrow('b')];
     const ro = derive({ elements: els, multiSelectedIds: new Set(['a', 'b']), readOnly: true });
     expect(ro.showMultiToolbar).toBe(false);
-    const locked = derive({
-      elements: els,
-      multiSelectedIds: new Set(['a', 'b']),
-      tabLocked: true,
-    });
-    expect(locked.showMultiToolbar).toBe(false);
   });
 
   it('derives no quick-connect pluses (docs/specs/002-project-scope/not-in-livehuddle.md#quick-connect)', () => {
@@ -287,7 +283,7 @@ describe('deriveCanvasSelection — an arrow label is part of its arrow', () => 
 describe('elementGrips', () => {
   const table = { ...box('t'), type: 'table' } as unknown as Element;
   const fixed = box('f', { fixedSize: true });
-  const locked = box('l', { locked: true });
+  const locked = box('l', { locked: true } as Partial<ShapeElement>);
   const elements: Element[] = [box('a'), box('b'), table, fixed, locked, arrow('r')];
   const flagsSets: { selectedId: string | null; multi: string[] }[] = [
     { selectedId: null, multi: [] },
@@ -302,7 +298,6 @@ describe('elementGrips', () => {
     base,
     { ...base, editingId: 'a' },
     { ...base, isPaintMode: true },
-    { ...base, tabLocked: true },
     { ...base, readOnly: true },
   ];
 
@@ -335,6 +330,6 @@ describe('elementGrips', () => {
       handles: true,
       anchors: false,
     });
-    expect(elementGrips(locked, true, { ...ro, resizable: true }).handles).toBe(false);
+    expect(elementGrips(locked, true, { ...ro, resizable: true }).handles).toBe(true);
   });
 });

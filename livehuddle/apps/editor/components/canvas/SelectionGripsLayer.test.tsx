@@ -154,7 +154,6 @@ describe('SelectionGripsLayer', () => {
               curveControl={null}
               curveAnchors={null}
               elbowPoint={null}
-              isLocked={false}
               guardPress={() => false}
               onBeginEndpointDrag={vi.fn()}
             />

@@ -65,5 +65,5 @@ next loads or changes.
 
 ## Element tour
 
-The **Diagram Key tour** is on the footer's **Start Diagram Key Tour** button while a diagram key is selected, for an Editor on an unlocked element, and walks through
+The **Diagram Key tour** is on the footer's **Start Diagram Key Tour** button while a diagram key is selected, for an Editor, and walks through
 it on the element itself ([Element tours](../007-editor/element-tours.md) "The Diagram Key tour").

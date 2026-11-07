@@ -33,13 +33,14 @@ describe('attributesOf (VW14)', () => {
       ...shapeAt('square', 'x', 0, 0),
       iconId: 'server',
       link: { kind: 'url', url: 'https://stripe.com/docs/api' },
+      // Saved locked before locking left (livehuddle not-in-livehuddle.md): printed as nothing.
       locked: true,
       action: action('done'),
       note: 'Owns the order lifecycle and is the source of truth for order state.',
       commentThread: { comments: [comment], resolved: true },
     } as Element;
     expect(printed(el)).toBe(
-      'icon=server link=https://stripe.com/docs/api locked action="Fix retries" @Sam done ' +
+      'icon=server link=https://stripe.com/docs/api action="Fix retries" @Sam done ' +
         'note="Owns the order lifecycle and is the source of"… comments=1 resolved',
     );
   });

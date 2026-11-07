@@ -38,3 +38,5 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX31 | team-audit-log  | the admins' read pages 50 rows by default, at most 100; a CSV file holds at most 10,000 rows, read 2,000 a query.                            |
 | IDX32 | team-audit-log  | the read's `person` filter is who did it, not whom an event is about; `kind` takes one kind.                                                 |
 | IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |
+| IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                               |
+| IDX35 | connected-tabs  | the Connect list shows the 40 most recent items across every app (`CONNECT_RECENT_LIMIT`), without paging.                                   |

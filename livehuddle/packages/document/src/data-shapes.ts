@@ -207,6 +207,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'water-cooler' ||
     kind === 'coffee-machine' ||
     kind === 'rug' ||
+    // A corridor (docs/specs/009-elements/corridor.md) is floor and walls, with nothing to write on.
+    kind === 'corridor' ||
     // The bar and the garden (office.md): scenery and machines likewise; a pod and a stool keep theirs.
     kind === 'bar' ||
     kind === 'drinks-cabinet' ||
@@ -271,6 +273,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'photo-wall' ||
     // A door (docs/specs/009-elements/room-builder.md) is a doorway, with nothing to write on.
     kind === 'door' ||
+    // A window (room-builder.md "Window") is glass in a wall.
+    kind === 'window' ||
     // The Directory (docs/specs/009-elements/directory.md) draws its own words; an Elevator keeps its name.
     kind === 'directory' ||
     // Stairs (docs/specs/009-elements/stairs.md) carry no name.

@@ -51,6 +51,27 @@ describe('preview fonts', () => {
     expect(faceUrlsOf('nothing')).toEqual([]);
   });
 
+  it('keeps only gstatic TrueType sources, and stops at a url( that never closes', () => {
+    const sheet = [
+      'src: url(https://fonts.gstatic.com/s/a.ttf) format("truetype");',
+      'background: url(https://fonts.gstatic.com/s/b.ttf);',
+      'src:url(https://example.com/c.ttf);',
+      'src: url(https://fonts.gstatic.com/s/d.woff2);',
+      'src:  url(https://fonts.gstatic.com/s/e.ttf);',
+      'src: url(https://fonts.gstatic.com/s/f.ttf',
+    ].join('\n');
+    expect(faceUrlsOf(sheet)).toEqual([
+      'https://fonts.gstatic.com/s/a.ttf',
+      'https://fonts.gstatic.com/s/e.ttf',
+    ]);
+  });
+
+  it('reads a hostile stylesheet in linear time', () => {
+    const worst = 'src:url(https://fonts.gstatic.com/'.repeat(20_000);
+    // No timer: vitest's test timeout is the budget. The old pattern takes minutes on this, the scan a millisecond.
+    expect(faceUrlsOf(worst)).toEqual([]);
+  });
+
   it('fetches each face a tab uses beyond Inter, once, skipping an unknown id', async () => {
     const { fn, calls } = fetcher();
     const faces = await previewFonts(['inter', 'caveat', 'caveat', 'nope'], FONTS, fn);

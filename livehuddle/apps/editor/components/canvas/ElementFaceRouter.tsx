@@ -108,7 +108,6 @@ type ElementFaceRouterProps = Pick<
   textSize: TextSize;
   alignX: TextAlignX;
   alignY: TextAlignY;
-  isLocked: boolean;
   remoteBorderColor: string | null;
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
@@ -155,7 +154,6 @@ function KnownElementFace({
   textSize,
   alignX,
   alignY,
-  isLocked,
   remoteBorderColor,
   inlineIcon,
   marker,
@@ -271,7 +269,7 @@ function KnownElementFace({
             <HeroCaptionCard
               element={element}
               caption={element.heroCaption}
-              editable={isSelected && !readOnly && !isLocked}
+              editable={isSelected && !readOnly}
               fontFamily={fontFamily}
               onSetLine={
                 onSetHeroCaptionLine
@@ -315,7 +313,7 @@ function KnownElementFace({
         <TableView
           element={element}
           isSelected={isSelected}
-          readOnly={isLocked || (readOnly && !writable)}
+          readOnly={readOnly && !writable}
           cellsOnly={readOnly}
           tabSummaries={tabSummaries}
           onCommitTable={onCommitTable}
@@ -331,7 +329,7 @@ function KnownElementFace({
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           ink={textColor}
           fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          editable={isSelected && !readOnly && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
         />
       ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
@@ -343,7 +341,7 @@ function KnownElementFace({
           paper={cardFill}
           ink={textColor}
           fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          editable={isSelected && !readOnly && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
         />
       ) : element.type === 'shape' && element.shape === 'boundary' ? (
@@ -357,7 +355,7 @@ function KnownElementFace({
           accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
           ink={textColor}
           fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !isLocked}
+          editable={isSelected && !readOnly}
           onSetMeta={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
         />
       ) : element.type === 'shape' && isChipShape(element.shape) ? (
@@ -386,7 +384,7 @@ function KnownElementFace({
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           textColor={textColor}
           fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !isLocked && !!onSetWebRows}
+          editable={isSelected && !readOnly && !!onSetWebRows}
           onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
           onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
         />
@@ -425,7 +423,7 @@ function KnownElementFace({
         >
           <PageMasthead
             element={element}
-            readOnly={isLocked || readOnly}
+            readOnly={readOnly}
             onSetHeading={onSetPageHeading}
             fontFamily={fontFamily}
           />

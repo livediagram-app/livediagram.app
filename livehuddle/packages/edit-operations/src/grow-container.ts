@@ -86,14 +86,11 @@ export function growContainer(
   const moved = new Set<ElementId>();
   for (const { dx, dy, past } of sides) {
     if (dx === 0 && dy === 0) continue;
-    const units = neighbours
-      .filter((n) => !moved.has(n.id) && !state.locked.has(n.id) && past(n.box))
-      .map((n) => n.id);
+    const units = neighbours.filter((n) => !moved.has(n.id) && past(n.box)).map((n) => n.id);
     if (units.length === 0) continue;
     const carried = containerContents(before, new Set(units), holders);
     // A unit moved on one side is no unit on the next, and what it holds moves only with it: nothing moves twice.
     for (const id of carried) {
-      if (state.locked.has(id)) continue;
       moveElement(state, shifted(state.byId.get(id)!, dx, dy), operation, 'make room', {
         shift: [dx, dy],
       });
@@ -116,7 +113,7 @@ export function growContainer(
 }
 
 // The container holding a grown one, grown in turn to hold it and what it moved on with HOLD_PAD, when either now
-// reaches past it. A locked one, or a holder that is no boundary or lane, stays as it is.
+// reaches past it. A holder that is no boundary or lane stays as it is.
 function growScope(
   state: EditState,
   scope: ElementId | null,
@@ -125,8 +122,7 @@ function growScope(
   settled: ReadonlySet<ElementId>,
 ): void {
   const parent = scope ? state.byId.get(scope) : undefined;
-  if (!parent || parent.type === 'arrow' || !isContainer(parent) || state.locked.has(parent.id))
-    return;
+  if (!parent || parent.type === 'arrow' || !isContainer(parent)) return;
   let [x, y] = [parent.x, parent.y];
   let [right, bottom] = [parent.x + parent.width, parent.y + parent.height];
   // A carried arrow has no box: only boxes count.

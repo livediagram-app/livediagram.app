@@ -124,7 +124,6 @@ function modLive(isReadOnly = false, canvasTool = 'select') {
     copySelection: () => calls.push('copy'),
     onCut: () => calls.push('cut'),
     onDuplicate: () => calls.push('duplicate'),
-    onToggleLock: () => calls.push('lock'),
     onSelectAll: () => calls.push('select-all'),
     onBringToFront: () => calls.push('front'),
     onSendToBack: () => calls.push('back'),
@@ -210,9 +209,10 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: 'v' }).hit).toBeNull();
   });
 
-  it('requires Shift for Lock, since plain Cmd+L is the address bar', () => {
+  // not-in-livehuddle.md "Element and Tab Locking": Cmd+Shift+L locked the selection; it is the browser's again.
+  it('leaves Cmd+L and Cmd+Shift+L to the browser', () => {
     expect(chord({ key: 'l' }).hit).toBeNull();
-    expect(chord({ key: 'l', shiftKey: true }).hit).toBe('lock');
+    expect(chord({ key: 'l', shiftKey: true }).hit).toBeNull();
   });
 
   it('matches z-order on `code` so a non-US layout still reaches it', () => {

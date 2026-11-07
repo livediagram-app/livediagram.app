@@ -103,8 +103,6 @@
   animation: fa-b-drag 6s ease-in-out infinite;
 }
 
-/* A locked element answering a drag: a short shake, no move. */
-
 /* Shift-drag: a translucent copy follows the pointer to --tx/--ty and lands solid. */
 
 /* A key going down and held: Shift through a drag, ⌘ while the palette shows its keys. */

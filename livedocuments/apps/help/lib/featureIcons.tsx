@@ -312,6 +312,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 14V10l2 2 2-2v4M14 10v4M14 14l2-2M14 14l-2-2" />
     </Glyph>
   ),
+  // A shield with a list on it: the record the team's admins look back on.
+  'audit-log': (
+    <Glyph>
+      <path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z" />
+      <path d="M9 10h6M9 13h6M9 16h3.5" />
+    </Glyph>
+  ),
   // An envelope with the invitee on it, which is how a role reaches someone.
   'roles-and-invites': (
     <Glyph>

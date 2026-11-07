@@ -21,6 +21,7 @@ import {
 } from '@liveworkspace/index-client';
 import { setting, type Env } from './env';
 import { meteredFetch, type Charge } from './mirror/meter';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 /** The person's own work, as one pass reads it. */
 export type Picture = { items: MirrorItem[]; folders: MirrorFolder[]; trash: MirrorTrashed[] };
@@ -73,7 +74,7 @@ export async function everyPage<T, K extends string>(
 export function createIndexApi(env: Env): IndexApi {
   const key = setting(env.INDEX_KEY_DRIVE) ?? '';
   const binding = env.INDEX;
-  const base = binding ? BOUND_BASE : (setting(env.INDEX_URL) ?? BOUND_BASE).replace(/\/+$/, '');
+  const base = binding ? BOUND_BASE : withoutTrailingSlashes(setting(env.INDEX_URL) ?? BOUND_BASE);
   const doFetch: typeof fetch = binding
     ? (input, init) => binding.fetch(input instanceof URL ? input.toString() : input, init)
     : (input, init) => fetch(input, init);

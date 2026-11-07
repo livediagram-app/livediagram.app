@@ -29,6 +29,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
   // or up to it.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md): walked down.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -102,6 +104,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'photo-wall',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
+  // The Window (docs/specs/009-elements/room-builder.md "Window"): walked past.
+  'window',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
   'directory',
   'elevator',

@@ -53,7 +53,8 @@ question somebody building a Space asks, in the Meet band (Travel in a band of i
   kind, so their flyout is one block. Rooms, Play and Garden mix kinds, so each flyout splits into named groups
   ([Groups in a flyout](#groups-in-a-flyout)).
 - **Rooms opens on Build.** The owner (2026-11-05): "Room is hard to discover and a critical first piece". So the Rooms
-  flyout leads with a **Build** group, in order **Room**, **Room Builder** and **Door** (what a room is made with),
+  flyout leads with a **Build** group, in order **Room**, **Room Builder**, **Corridor**, **Door** and **Window** (what a room is
+  made with, and what joins rooms),
   then **Floor**: the rest of Rooms (Fence, Stage, Stage Curtains, Podium, Office Pod, Phone Booth, Nap Pod, Reception Desk, Rug,
   Pillar, Column). Each tile
   shows once, and a new rooms piece joins Floor by its `tileGroup` alone ([Groups in a flyout](#groups-in-a-flyout)).

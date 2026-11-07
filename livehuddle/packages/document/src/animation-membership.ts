@@ -115,6 +115,7 @@ const WORDLESS_SHAPES = new Set<string>([
   'avatar-pad',
   'sticker',
   // The office pieces (docs/specs/009-elements/office.md) but the room, whose label is its name plate.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -186,6 +187,7 @@ const WORDLESS_SHAPES = new Set<string>([
   'signpost',
   'photo-wall',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',

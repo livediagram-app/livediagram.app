@@ -329,10 +329,11 @@ answers 404. The service's own `COMMUNITY_ENABLED` (`false`, `0` or `off`) answe
 
 ```sh
 cd liveworkspace/apps/community
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8791/api/community
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
 http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's

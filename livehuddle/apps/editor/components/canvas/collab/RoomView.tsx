@@ -2,12 +2,14 @@
 
 import {
   DEFAULT_ROOM_DOOR,
+  isGlassRoom,
   roomParts,
   type FurniturePart,
   type ShapeElement,
 } from '@livehuddle/document';
 import { FurniturePartView } from './FurnitureView';
 import { OutlinedRoomView } from './RoomBuilderViews';
+import { GlassRoomView } from './WindowView';
 
 // A room (docs/specs/009-elements/office.md "Room"): a floor in the element's fill, the back wall standing up
 // with the room's name on it (the element's own label, which sits in the wall's face), the side and front walls
@@ -25,6 +27,9 @@ export function RoomView({
   animClass?: string;
 }) {
   const { width, height } = element;
+  // A room with glass walls (docs/specs/009-elements/office.md "Glass walls"), whatever its shape.
+  if (isGlassRoom(element))
+    return <GlassRoomView element={element} stroke={stroke} floor={floor} animClass={animClass} />;
   // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md) is its outline.
   if (element.roomOutline && element.roomOutline.length >= 3)
     return (

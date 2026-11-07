@@ -159,9 +159,6 @@ export type BoxedElementViewProps = {
   // menu under it. The caller is also responsible for selecting the
   // element (the menu's actions assume it is the current selection).
   onContextSelect: (id: string, screenX: number, screenY: number) => void;
-  // True when the tab as a whole is locked. Shows the LockBadge on
-  // every element regardless of its own per-element lock state.
-  tabLocked: boolean;
   // This document's tabs (id + name), so a link badge's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];

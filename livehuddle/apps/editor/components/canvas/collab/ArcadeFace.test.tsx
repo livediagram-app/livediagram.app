@@ -46,6 +46,21 @@ describe('ArcadeFace', () => {
     expect(button.hasAttribute('data-piece-main')).toBe(true);
   });
 
+  it("adds the table's best under Insert Coin, and follows the table as it changes", () => {
+    const at = (scores: ShapeElement['arcadeScores']) => ({ ...machine(), arcadeScores: scores });
+    const ann = { id: 's1', name: 'Ann', score: 1240, ms: 60_000, by: 'k', at: 1 };
+    const { rerender } = render(<ArcadeFace element={at([ann])} />);
+    expect(press()!.textContent).toBe('Insert CoinBest 1,240 ·Ann');
+    expect(screen.getByRole('status').textContent).toBe('Insert Coin. Best 1,240 by Ann');
+    // A better score lands from another screen.
+    rerender(<ArcadeFace element={at([{ ...ann, id: 's2', name: 'Bo', score: 2000 }, ann])} />);
+    expect(screen.getByRole('status').textContent).toBe('Insert Coin. Best 2,000 by Bo');
+    // Cleared: Insert Coin alone.
+    rerender(<ArcadeFace element={at(undefined)} />);
+    expect(press()!.textContent).toBe('Insert Coin');
+    expect(document.querySelector('[data-arcade-best]')).toBeNull();
+  });
+
   it('opens Moon Mail on a press, Loading… until its code is in', async () => {
     // Laid out, so the focus trap sees Close as a control it could focus.
     const laidOut = vi
@@ -58,7 +73,10 @@ describe('ArcadeFace', () => {
     // Focus on the panel while it loads, never on Close, where a Space would close it.
     expect(document.activeElement).toBe(screen.getByRole('dialog'));
     laidOut.mockRestore();
-    expect(await screen.findByText('Viewers See the Scores')).toBeTruthy();
+    // The first open transforms and loads the panel's whole chunk, which takes a while on a busy machine.
+    expect(
+      await screen.findByText('Viewers See the Scores', undefined, { timeout: 10_000 }),
+    ).toBeTruthy();
     // Closed with its Close button, the face is back to its bubble.
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();

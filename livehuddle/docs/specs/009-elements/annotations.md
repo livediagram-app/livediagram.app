@@ -22,7 +22,7 @@ and `note` is the plain-text mirror.
   the note.
 - **Fixed marker, not a box.** The circle does not resize: no corner / rotate
   handles. You can still move it (drag), recolour it (Colours accordion),
-  re-order it (bring to front / send to back), lock it, link it, and
+  re-order it (bring to front / send to back), link it, and
   delete it like any other element. It keeps a consistent marker size so a
   canvas full of annotations stays tidy.
 - **Glyph is fixed.** Every annotation shows the same note marker glyph; it
@@ -62,7 +62,7 @@ and `note` is the plain-text mirror.
 ## Model
 
 `AnnotationElement` is a boxed element (`type: 'annotation'`), so it flows
-through every generic boxed path (selection, drag, stacking, lock,
+through every generic boxed path (selection, drag, stacking,
 link, colours, comments, the note feature). It carries the shared boxed
 fields plus `note?: string` (and `noteRich?: TextRun[]`, [Rich-text notes](rich-text-notes.md)). `createAnnotation(x, y)` (in
 `packages/document/src/factories.ts`) returns one at the default 44×44 marker

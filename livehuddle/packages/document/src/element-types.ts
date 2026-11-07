@@ -137,7 +137,6 @@ export type ShapeElement = {
   width: number;
   height: number;
   label?: string;
-  locked?: boolean;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -255,6 +254,10 @@ export type ShapeElement = {
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
   // is open, so every door starts open.
   doorClosed?: boolean;
+  // A piece's type within its kind (docs/specs/009-elements/room-builder.md "Door types"): a Door's (Double, Sliding,
+  // Revolving), a Rug's pattern (office.md "Rug types"), a Corridor's shape (corridor.md). Absent is the kind's first
+  // type; a value its kind does not take draws as the first (piece-variants.ts).
+  variant?: string;
   // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
   noticeNotes?: NoticeNote[];
   // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
@@ -449,7 +452,6 @@ export type TextElement = {
   width: number;
   height: number;
   label?: string;
-  locked?: boolean;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -620,7 +622,6 @@ export type TableElement = {
   // label" code paths (export, search) compile without a
   // per-type guard, mirroring ImageElement.
   label?: string;
-  locked?: boolean;
   // Text controls apply to every cell uniformly (a table is one styled
   // grid, not per-cell formatting — that can come later).
   textSize?: TextSize;
@@ -699,7 +700,6 @@ export type StickyElement = {
   width: number;
   height: number;
   label?: string;
-  locked?: boolean;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
   textAlignY?: TextAlignY;
@@ -851,7 +851,6 @@ export type ImageElement = {
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
   padding?: Padding;
-  locked?: boolean;
   aspectLocked?: boolean;
   opacity?: number;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
@@ -930,7 +929,7 @@ export type FreehandElement = {
   // Editor panel) all read these uniformly. Labels render
   // on top of the SVG path (BoxedElementView), fill / stroke /
   // border-width / border-style follow the Colours + Border
-  // accordions, and the rest of the bag (lock, group, opacity,
+  // accordions, and the rest of the bag (group, opacity,
   // link, comment, note) flows through the generic boxed-element
   // machinery; persisting the fields keeps copy / paste /
   // format-paint symmetrical with the other boxed kinds.
@@ -957,7 +956,6 @@ export type FreehandElement = {
   strokeStyle?: BorderStyle;
   borderRadius?: BorderRadius;
   padding?: Padding;
-  locked?: boolean;
   aspectLocked?: boolean;
   opacity?: number;
   // Clockwise rotation in degrees about the element's centre. Absent
@@ -1042,7 +1040,6 @@ export type PathElement = {
   textColor?: string;
   borderRadius?: BorderRadius;
   padding?: Padding;
-  locked?: boolean;
   aspectLocked?: boolean;
   opacity?: number;
   // Clockwise rotation in degrees about the element's centre. Absent or 0 means unrotated.
@@ -1064,7 +1061,7 @@ export type PathElement = {
 // See docs/specs/009-elements/annotations.md. A fixed-size themed circle holding a note
 // glyph: hover it to read its `note` floating above the canvas, click it to
 // edit the note. It is a boxed element so it flows through every generic
-// path (selection, drag, layering, lock, group, link, colours, comments,
+// path (selection, drag, layering, group, link, colours, comments,
 // the note feature), but it does NOT resize (no handles) — it stays a tidy
 // marker. There is no inline label; the content lives entirely in `note`.
 // The shared boxed fields are declared (mostly always-undefined here) so the
@@ -1104,7 +1101,6 @@ export type AnnotationElement = {
   // An annotation has no editable label; declared always-undefined so the
   // generic "boxed element has a label" paths compile (mirrors Table/Image).
   label?: string;
-  locked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
   commentThread?: CommentThread;
@@ -1187,7 +1183,6 @@ export type LinkCardElement = {
   // The URL source + everyday boxed fields.
   link?: ElementLink;
   label?: string;
-  locked?: boolean;
   opacity?: number;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;
@@ -1273,7 +1268,6 @@ export type VideoElement = {
   // The URL source + everyday boxed fields.
   link?: ElementLink;
   label?: string;
-  locked?: boolean;
   opacity?: number;
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.
   shadow?: ElementShadow;

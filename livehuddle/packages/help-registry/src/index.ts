@@ -135,8 +135,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas: place, select, link, add notes to, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 19,
+      'Master the infinite canvas: place, select, link, add notes to, rotate, animate and theme elements, undo changes, and start from templates.',
+    articleCount: 18,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements'],
   },
@@ -145,7 +145,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one canvas: organise, link, and move between multiple boards with tabs.',
-    articleCount: 9,
+    articleCount: 8,
     kind: 'feature',
   },
   {
@@ -190,7 +190,7 @@ export const articles: Article[] = [
     title: 'The Toolbar',
     description: 'The contextual toolbar that appears when you select one or more elements.',
     keywords:
-      'selection bar buttons floating contextual duplicate lock delete comment filter export more',
+      'selection bar buttons floating contextual duplicate delete comment filter export more',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -867,9 +867,9 @@ export const articles: Article[] = [
     slug: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms of any shape with doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a kitchenette, a restroom, a printer, a copier, lockers, a coat rack, a notice board, world clocks, a calendar wall, a suggestion box, a team photo wall, a signpost, stage curtains and a podium, a phone booth, a nap pod, a reception desk with a bell, hot desks, standing desks, a treadmill, a weight bench, an office dog, pillars and columns, a swimming pool, a car park, a bike rack, plants, shelves, drinks and rugs for Avatar mode.',
+      'Rooms of any shape, room types, glass walls, windows, corridors, sliding and revolving doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a kitchenette, a restroom, a printer, a copier, lockers, a coat rack, a notice board, world clocks, a calendar wall, a suggestion box, a team photo wall, a signpost, stage curtains and a podium, a phone booth, a nap pod, a reception desk with a bell, hot desks, standing desks, a treadmill, a weight bench, an office dog, pillars and columns, a swimming pool, a car park, a bike rack, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
+      'virtual office room rooms room types presets glass walls glass room meeting booth window windows light boardroom open plan lounge corridor corridors hallway hall junction crossroads sliding door revolving door double door persian kilim runner doormat striped rug round rug room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard clear high scores reset scores play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -1005,14 +1005,6 @@ export const articles: Article[] = [
       'Drag a tab to the right edge to open it beside the one you are on; the toolbars follow you.',
     keywords:
       'split view split screen two tabs compare beside next to dual pane panes side-by-side drag tab right edge reference resize divider close',
-    category: 'Tabs',
-    categorySlug: 'tabs',
-  },
-  {
-    slug: 'locking-tabs',
-    title: 'Locking a Tab',
-    description: "Make a tab's whole canvas read-only so it cannot be changed by accident.",
-    keywords: 'read only protect freeze prevent editing lock board unlock padlock',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1366,15 +1358,6 @@ export const articles: Article[] = [
     group: 'Styling Elements',
   },
   {
-    slug: 'locking',
-    title: 'Locking Elements',
-    description: 'Protect an element from accidental moves, resizes, and deletion.',
-    keywords: 'lock protect freeze prevent editing pin fixed immovable',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Styling Elements',
-  },
-  {
     slug: 'element-indicators',
     title: 'Element Indicators',
     description:
@@ -1577,6 +1560,17 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Teams ----
+  {
+    slug: 'audit-log',
+    title: 'Audit Log',
+    description:
+      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+    keywords:
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/teams',
+    parentSlug: 'teams',
+  },
   {
     slug: 'roles-and-invites',
     title: 'Roles and Invites',

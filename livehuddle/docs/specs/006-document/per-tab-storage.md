@@ -25,7 +25,7 @@ CREATE TABLE tabs (
   -- Same JSON shape as the Tab type minus { id, name } (which live
   -- on the row). Holds elements + per-tab metadata: theme,
   -- backgroundColor, backgroundPattern, backgroundOpacity,
-  -- patternColor, locked. `templateChosen` is ephemeral client
+  -- patternColor. `templateChosen` is ephemeral client
   -- state, stripped before persistence, never stored here.
   data        TEXT    NOT NULL,
   updated_at  INTEGER NOT NULL
@@ -107,7 +107,7 @@ the real server row**. So while the active tab's content is outstanding:
 The overlay is **pointer-only**: it cannot block `window` keydown or
 `document` paste, so the spinner alone is not the edit lock. The actual
 guard is that the active tab's load state feeds the editor's single
-`editsBlocked` gate (alongside locked-tab and view-only), so EVERY
+`editsBlocked` gate (alongside view-only), so EVERY
 commit-based mutator (shape shortcuts, paste, Markdown import,
 clear-canvas, drag) is refused until the tab is `ready`. The overlay and
 the edit lock derive from the same `deriveTabLoadState`, so they can't

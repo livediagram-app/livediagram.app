@@ -30,7 +30,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   history: '#94a3b8',
   'session-tools': '#f43f5e',
   // The last cards
-  'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
   'auto-align': '#22c55e',
   about: '#0891b2',
@@ -74,6 +73,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   icons: '#ec4899',
   // Collaboration guides
   timer: '#f43f5e',
+  'audit-log': '#10b981',
   'roles-and-invites': '#a855f7',
   'team-shared-documents': '#0ea5e9',
   'assigned-actions': '#22c55e',
@@ -100,7 +100,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   animations: '#f43f5e',
   shadows: '#475569',
   finish: '#0d9488',
-  locking: '#94a3b8',
   'element-indicators': '#f97316',
   snapping: '#22c55e',
   // Palette → Palette Settings

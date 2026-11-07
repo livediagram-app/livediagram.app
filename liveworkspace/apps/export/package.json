@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9137 --port 3012",
+    "dev": "node ../../../packages/api-kit/scripts/dev-vars.ts && wrangler dev --inspector-port 9137 --port 3012",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "lint": "oxlint",
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/app-doors": "workspace:*",
     "@liveworkspace/data-export": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",
@@ -25,13 +26,13 @@
     "@liveworkspace/render-png": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261007.1",
+    "@cloudflare/workers-types": "^5.20261104.1",
     "@liveworkspace/vitest-config": "workspace:^",
-    "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.148.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.157.0"
   }
 }

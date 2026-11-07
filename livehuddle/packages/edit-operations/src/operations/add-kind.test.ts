@@ -173,19 +173,6 @@ describe('add <kind>', () => {
     ]);
   });
 
-  it('leaves a locked container ungrown', () => {
-    const tab = {
-      ...checkoutFlow(),
-      elements: checkoutFlow().elements.map((el) =>
-        el.id === 'f2' ? { ...el, locked: true } : el,
-      ),
-    };
-    const f2 = applied(run('add square inside:f2', tab)).tab.elements.find(
-      (e) => e.id === 'f2',
-    ) as Element & { height: number };
-    expect(f2.height).toBe(200);
-  });
-
   it('keeps a given md text size on a tab with no sibling, and reads a size the template sizes for', () => {
     const empty: Tab = { id: 't', name: 'T', elements: [] };
     expect(applied(run('add square label=Pay text=md', empty)).tab.elements[0]).toMatchObject({
@@ -403,7 +390,7 @@ describe('a frame grown to hold a new box', () => {
     expect(outer.y + outer.height).toBeGreaterThanOrEqual(inner.y + inner.height);
   });
 
-  it('keeps a locked element where it is when what holds it moves on', () => {
+  it('moves on what sits below the container it grows, and the box that holds it', () => {
     const tab = checkoutFlow();
     const below: Element[] = [
       { ...createShape('boundary', 0, 900), id: 'g', width: 400, height: 200, label: '' },
@@ -415,8 +402,7 @@ describe('a frame grown to hold a new box', () => {
         y: 940,
         width: 100,
         height: 60,
-        label: 'Kept',
-        locked: true,
+        label: 'Below',
       },
     ];
     const outcome = run('add square label=Retry inside:f2', {
@@ -424,7 +410,9 @@ describe('a frame grown to hold a new box', () => {
       elements: [...tab.elements, ...below],
     });
     const after = applied(outcome).tab.elements;
-    expect((after.find((e) => e.id === 'pinned-note') as Element & { y: number }).y).toBe(940);
+    expect(
+      (after.find((e) => e.id === 'pinned-note') as Element & { y: number }).y,
+    ).toBeGreaterThan(940);
     expect((after.find((e) => e.id === 'g') as Element & { y: number }).y).toBeGreaterThan(900);
   });
 });

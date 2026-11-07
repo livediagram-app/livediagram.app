@@ -72,7 +72,6 @@ type CanvasElementListProps = Pick<
   | 'editCursorAtEnd'
   | 'reshapingArrowId'
   | 'isPaintMode'
-  | 'tabLocked'
   | 'readOnly'
   | 'shiftDupGhostIds'
   | 'remoteSelectionsByElement'
@@ -109,7 +108,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   editCursorAtEnd,
   reshapingArrowId,
   isPaintMode,
-  tabLocked,
   readOnly,
   shiftDupGhostIds,
   remoteSelectionsByElement,
@@ -160,7 +158,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                       isPaintMode={isPaintMode}
                       isEditing={element.id === editingId}
                       editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                      tabLocked={tabLocked}
                       readOnly={readOnly}
                       onSelect={h.handleArrowSelect}
                       onContextSelect={h.handleElementContextSelect}
@@ -183,7 +180,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                       element.id === editingId ||
                       element.id === reshapingArrowId ||
                       readOnly ||
-                      tabLocked ||
                       isPaintMode
                     }
                     onBeginArrowTranslate={h.onBeginArrowTranslate}

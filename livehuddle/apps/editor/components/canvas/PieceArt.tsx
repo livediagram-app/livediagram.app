@@ -1,6 +1,6 @@
 'use client';
 
-import type { ShapeElement } from '@livehuddle/document';
+import { rugDrawnToSize, rugParts, type ShapeElement } from '@livehuddle/document';
 import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FenceView } from '@/components/canvas/collab/FenceView';
 import {
@@ -9,13 +9,14 @@ import {
   type ChairSitter,
 } from '@/components/canvas/collab/FurnitureView';
 import { GardenFenceView, GardenPathView, GrassView } from '@/components/canvas/collab/GardenViews';
-import { DoorView } from '@/components/canvas/collab/RoomBuilderViews';
+import { CorridorView, DoorView } from '@/components/canvas/collab/RoomBuilderViews';
+import { WindowView } from '@/components/canvas/collab/WindowView';
 import { PondView } from '@/components/canvas/collab/PondView';
 import { SwimmingPoolView } from '@/components/canvas/collab/SwimmingPoolView';
 import { hasSocialFace, SocialFace } from '@/components/canvas/collab/SocialFaces';
 import { hasWorkdayFace, WorkdayFace } from '@/components/canvas/collab/WorkdayFaces';
 import { hasTeamFace, TeamFace } from '@/components/canvas/collab/TeamFaces';
-import { RoomView } from '@/components/canvas/collab/RoomView';
+import { RoomView, SizedPieceView } from '@/components/canvas/collab/RoomView';
 import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
 import { ScreenView } from '@/components/canvas/collab/ScreenView';
 import { StageView } from '@/components/canvas/collab/StageView';
@@ -35,7 +36,11 @@ export function hasPieceArt(kind: string): boolean {
     // The Swimming Pool (docs/specs/009-elements/venue-pieces.md), drawn to its size.
     kind === 'swimming-pool' ||
     kind === 'room' ||
+    // The Corridor (docs/specs/009-elements/corridor.md), drawn to its size.
+    kind === 'corridor' ||
     kind === 'door' ||
+    // The Window (docs/specs/009-elements/room-builder.md "Window"), with its light.
+    kind === 'window' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
     kind === 'grass' ||
@@ -79,6 +84,19 @@ export function PieceArt({
   live?: boolean;
 }) {
   const kind = element.shape;
+  // A patterned rug (docs/specs/009-elements/office.md "Rug types") is drawn to its size; the Oval is furniture art.
+  if (rugDrawnToSize(element))
+    return (
+      <SizedPieceView
+        parts={rugParts(element.width, element.height, element.variant)}
+        width={element.width}
+        height={element.height}
+        stroke={stroke}
+        floor={fill}
+        animClass={animClass}
+        label="Rug"
+      />
+    );
   // A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself, drawn for its
   // facing, plus whoever is sitting in it.
   if (isFurnitureViewShape(kind)) {
@@ -122,9 +140,15 @@ export function PieceArt({
     // A room (office.md "Room"): its floor, walls and doorway; its name is the ordinary label on the back wall.
     case 'room':
       return <RoomView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
+    // A Corridor (corridor.md): its floor and the walls down its sides.
+    case 'corridor':
+      return <CorridorView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
     // A Door (room-builder.md "Door"): a doorway turned onto its wall.
     case 'door':
       return <DoorView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
+    // A Window (room-builder.md "Window"): glass in its wall and the light it lets in.
+    case 'window':
+      return <WindowView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
     // A stage (office.md "Stage"): its top, front edge and plate; its name is the ordinary label on the plate.
     case 'stage':
       return (

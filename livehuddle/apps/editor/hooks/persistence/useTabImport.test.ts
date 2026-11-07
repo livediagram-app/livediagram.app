@@ -13,9 +13,11 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 function setup(opts: { locked?: boolean } = {}) {
-  let tabs: Tab[] = [{ id: 't1', name: 'Board', elements: [], locked: opts.locked }];
+  // A tab saved locked before locking left (not-in-livehuddle.md "Element and Tab Locking").
+  let tabs: Tab[] = [
+    { id: 't1', name: 'Board', elements: [], ...(opts.locked ? { locked: true } : {}) },
+  ];
   const deps = {
-    tabs,
     activeId: 't1',
     commitTabs: vi.fn((f: (ts: Tab[]) => Tab[]) => void (tabs = f(tabs))),
     setSelectedId: vi.fn(),
@@ -67,11 +69,9 @@ describe('importing into a tab', () => {
     expect(deps.commitTabs).not.toHaveBeenCalled();
   });
 
-  it('refuses a locked tab, by paste or by file', async () => {
+  it('imports into a tab saved locked', async () => {
     const { api, deps } = setup({ locked: true });
-    const locked = { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
-    expect(await api.importTextIntoActiveTab('json', tabJson([]))).toEqual(locked);
-    expect(await api.importIntoActiveTab('json')).toEqual(locked);
-    expect(deps.commitTabs).not.toHaveBeenCalled();
+    expect(await api.importTextIntoActiveTab('json', tabJson([]))).toEqual({ status: 'done' });
+    expect(deps.commitTabs).toHaveBeenCalled();
   });
 });

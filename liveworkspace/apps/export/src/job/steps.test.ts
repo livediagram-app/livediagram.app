@@ -268,6 +268,59 @@ describe('a personal export', () => {
   });
 });
 
+describe('livehuddle (Work Tracker #447)', () => {
+  const space = (extra: Partial<FakeItem> = {}) =>
+    item('H', {
+      app: 'livehuddle',
+      name: 'Standup Space',
+      file: envelope('livehuddle', 'Standup Space', [{ id: 'room', name: 'Room' }]),
+      svg: { room: 'room-svg' },
+      threads: [thread('user_ada', 'mine', 'room:e1'), thread('user_bo', 'theirs', 'room:e2')],
+      ...extra,
+    });
+
+  it('holds each Space’s file, its picture and my comments in it', async () => {
+    const t = testContext();
+    t.sources.items = [item('A'), space()];
+    await begin(t);
+    await runToEnd(t);
+    expect(t.store.job()!.status).toBe('ready');
+    expect(t.store.job()!.problems).toBe(0);
+    const zip = zipOf(t);
+    expect(text(zip.get('livehuddle/Standup Space (H)/Standup Space.livehuddle')!.data)).toContain(
+      '"kind":"livehuddle.thing"',
+    );
+    expect(text(zip.get('livehuddle/Standup Space (H)/01 Room.png')!.data)).toBe('PNG:room-svg');
+    const comments = JSON.parse(text(zip.get('comments.json')!.data)) as {
+      app: string;
+      text: string;
+    }[];
+    expect(comments.filter((c) => c.app === 'livehuddle').map((c) => c.text)).toEqual(['mine']);
+    expect(text(zip.get('README.txt')!.data)).not.toContain('Not included');
+  });
+
+  it('leaves its Spaces out cleanly while its key is unset, and finishes the rest', async () => {
+    const t = testContext();
+    t.sources.unreachable.add('livehuddle');
+    const asked = vi.spyOn(t.sources.doors, 'exportFile');
+    t.sources.items = [item('A'), space(), space({ id: 'H2', name: '' })];
+    await begin(t);
+    await runToEnd(t);
+    const job = t.store.job()!;
+    expect(job.status).toBe('ready');
+    expect(job.failures).toBe(0);
+    expect(job.problems).toBe(2);
+    // livehuddle is never asked; the diagram is.
+    expect(asked.mock.calls.map(([app]) => app)).toEqual(['livediagram']);
+    const zip = zipOf(t);
+    expect([...zip.keys()].some((n) => n.startsWith('livehuddle/'))).toBe(false);
+    expect([...zip.keys()]).toContain('livediagram/Item A (A)/Item A.livediagram');
+    const readme = text(zip.get('README.txt')!.data);
+    expect(readme).toContain('- livehuddle: Standup Space (its app is not part of downloads yet)');
+    expect(readme).toContain('- livehuddle: H2 (its app is not part of downloads yet)');
+  });
+});
+
 describe('a team export', () => {
   it('holds the team’s items and every comment, with no profile or images', async () => {
     const t = testContext();

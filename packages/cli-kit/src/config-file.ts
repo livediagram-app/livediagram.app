@@ -13,11 +13,20 @@ export type ConfigFile = {
 
 const VALUE = /^("(?:[^"\\]|\\.)*"|true|false)$/;
 
+// A line up to the first `#` that follows whitespace: a trailing comment off, as `/\s+#.*$/` would take it, by a scan
+// rather than that pattern, which is quadratic on a long run of whitespace (CodeQL js/polynomial-redos).
+function withoutComment(raw: string): string {
+  for (let i = 1; i < raw.length; i++) {
+    if (raw[i] === '#' && /\s/.test(raw[i - 1]!)) return raw.slice(0, i);
+  }
+  return raw;
+}
+
 export function parseConfig(text: string, path: string): ConfigFile {
   const config: ConfigFile = { profiles: {} };
   let table: string | null = null;
   text.split(/\r?\n/).forEach((raw, index) => {
-    const line = raw.replace(/\s+#.*$/, '').trim();
+    const line = withoutComment(raw).trim();
     if (line === '' || line.startsWith('#')) return;
     const fail = () =>
       new CliError({
@@ -31,7 +40,7 @@ export function parseConfig(text: string, path: string): ConfigFile {
       config.profiles[table] ??= {};
       return;
     }
-    const pair = /^([a-z_]+)\s*=\s*(.+)$/.exec(line);
+    const pair = /^([a-z_]+)\s*=\s*(\S.*)$/.exec(line);
     if (!pair || !VALUE.test(pair[2]!)) throw fail();
     const [, key, rawValue] = pair;
     // The pattern lets any backslash escape (or a raw tab) through; one JSON does not read is the same usage error.
@@ -60,5 +69,6 @@ export function withTelemetry(text: string, on: boolean): string {
   const line = `telemetry = ${on}`;
   if (at !== -1) lines[at] = line;
   else lines.splice(0, 0, line);
-  return `${lines.join('\n').replace(/\n*$/, '')}\n`;
+  while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+  return `${lines.join('\n')}\n`;
 }

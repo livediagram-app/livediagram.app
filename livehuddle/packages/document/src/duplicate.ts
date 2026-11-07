@@ -24,10 +24,17 @@ import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model
 // about that element, a retired element's `responses` were people's answers cast in a session (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"),
 // and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
-// timeline never sees added.
+// timeline never sees added. An Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores",
+// "Copies") are a competition among the people at that machine, under their names: a copied machine starts empty.
 // The clipboard strips the same list on the way out (stripIdentity in apps/editor). Every other stored field of a
 // retired element rides along with a copy untouched.
-export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'responses', 'action', 'actions'] as const;
+export const ORIGINAL_ONLY_FIELDS = [
+  'commentThread',
+  'responses',
+  'action',
+  'actions',
+  'arcadeScores',
+] as const;
 
 export function freshCopyFields(el: Element): {
   addedBy?: undefined;
@@ -35,6 +42,7 @@ export function freshCopyFields(el: Element): {
   responses?: undefined;
   action?: undefined;
   actions?: undefined;
+  arcadeScores?: undefined;
 } {
   const fresh: { addedBy?: undefined } & {
     [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;

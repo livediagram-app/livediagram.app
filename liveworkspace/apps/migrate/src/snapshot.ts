@@ -89,7 +89,7 @@ export class StatementSplitter {
     this.buffer = '';
     this.scanned = 0;
     this.final = false;
-    if (rest && !/^(--[^\n]*\n?\s*)*$/.test(rest)) out.push(rest);
+    if (rest && !onlyComments(rest)) out.push(rest);
     return out;
   }
 }
@@ -228,4 +228,13 @@ export function openSnapshot(path: string): { db: DatabaseSync; meta: SnapshotMe
       snapshotAt: Number(m.snapshotAt ?? 0),
     },
   };
+}
+
+// Whether trimmed SQL is nothing but `--` comment lines (and blank ones). Line by line rather than
+// `/^(--[^\n]*\n?\s*)*$/`, which backtracks exponentially on a run of `--` (CodeQL js/redos).
+function onlyComments(sql: string): boolean {
+  return sql.split('\n').every((line) => {
+    const t = line.trim();
+    return t === '' || t.startsWith('--');
+  });
 }

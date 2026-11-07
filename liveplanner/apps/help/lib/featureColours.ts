@@ -42,6 +42,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   tools: '#14b8a6',
   timer: '#f43f5e',
   voting: '#ef4444',
+  'audit-log': '#10b981',
   'roles-and-invites': '#a855f7',
   'team-shared-projects': '#0ea5e9',
   'share-passwords': '#475569',

@@ -45,6 +45,14 @@ describe('placementLanding', () => {
     expect(door.y + door.height / 2).toBe(900);
   });
 
+  it("lands a preset at its own size: a Double Door on the wall, a Boardroom's box", () => {
+    const { piece: door, onWall } = placementLanding('door', { x: 200, y: 120 }, [room], 'double');
+    expect(onWall).toBe(true);
+    expect(door).toMatchObject({ width: 144, variant: 'double' });
+    const { piece } = placementLanding('room', { x: 0, y: 0 }, [], 'boardroom');
+    expect(piece).toMatchObject({ x: -400, y: -200, width: 800, label: 'Boardroom' });
+  });
+
   it('centres any other placed piece on the pointer at its own size, never on a wall', () => {
     const { piece, onWall } = placementLanding('bar-stool', { x: 210, y: 105 }, [room]);
     expect(onWall).toBe(false);
@@ -134,6 +142,31 @@ describe('DoorPlacementPreview', () => {
     expect(preview()?.hasAttribute('data-on-wall')).toBe(false);
   });
 
+  it('previews a Window on the wall it would snap to, facing in (room-builder.md "Window")', () => {
+    const win = { type: 'shape', kind: 'window' } as PendingDraw;
+    expect(placingKind(win, null)).toBe('window');
+    const landing = placementLanding('window', { x: 200, y: 120 }, [room]);
+    expect(landing.onWall).toBe(true);
+    // The top wall: the room is below, the window's own +y, so it keeps the wall's angle.
+    expect(landing.piece.rotation).toBe(0);
+    render(
+      <PlacementPreview
+        pendingDraw={win}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 200, 120);
+    expect(preview()?.getAttribute('data-kind')).toBe('window');
+    expect(preview()?.hasAttribute('data-on-wall')).toBe(true);
+    expect(preview()?.hasAttribute('inert')).toBe(true);
+    expect(preview()?.querySelector('[aria-label="Window"]')).not.toBeNull();
+    move('pointermove', 900, 900);
+    expect(preview()?.hasAttribute('data-on-wall')).toBe(false);
+  });
+
   it('hides off the canvas', () => {
     render(
       <PlacementPreview
@@ -147,6 +180,31 @@ describe('DoorPlacementPreview', () => {
     move('pointermove', 200, 120);
     move('pointermove', 200, 120, document.body);
     expect(preview()).toBeNull();
+  });
+
+  it("draws the armed preset's own piece, then the dragged one's", () => {
+    const { rerender } = render(
+      <PlacementPreview
+        pendingDraw={{ type: 'shape', kind: 'corridor', variant: 'cross' }}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 500, 500);
+    expect(preview()?.getAttribute('style')).toContain('width: 480px; height: 480px');
+    act(() => setPaletteDragPreview({ kind: 'rug', width: 320, height: 88, variant: 'runner' }));
+    rerender(
+      <PlacementPreview
+        pendingDraw={null}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+    );
+    move('dragover', 500, 500);
+    expect(preview()?.getAttribute('style')).toContain('width: 320px; height: 88px');
   });
 
   it('follows a Door dragged from the palette', () => {
@@ -216,7 +274,7 @@ describe('DoorPlacementPreview', () => {
     expect(turned.h).toBeGreaterThan(turned.w);
     expect(turned.l + turned.w / 2).toBeCloseTo(400);
     expect(turned.t + turned.h / 2).toBeCloseTo(300);
-    const { piece } = placementLanding('sofa', { x: 400, y: 300 }, [], 'e');
+    const { piece } = placementLanding('sofa', { x: 400, y: 300 }, [], undefined, 'e');
     expect(piece).toMatchObject({ chairFacing: 'e', width: turned.w, height: turned.h });
     resetPlacingFacing();
   });
@@ -266,6 +324,29 @@ describe('DoorPlacementPreview', () => {
     move('pointermove', 200, 120);
     expect(preview()).toBeNull();
   });
+
+  // The owner's report: an armed Pet Bed would not place. Its preview's sleeping dog is a Pat the Dog button across
+  // the bed's middle, right under the pointer, and it took the click (palette-drag-ghost.md "The preview is inert").
+  it.each(['pet-bed', 'jukebox', 'notice-board'] as const)(
+    'keeps every control an armed %s preview draws from the press that places it',
+    (kind) => {
+      render(
+        <PlacementPreview
+          pendingDraw={{ type: 'shape', kind }}
+          elements={[]}
+          wrapperRef={{ current: wrapper }}
+          zoom={1}
+        />,
+        { container: wrapper },
+      );
+      move('pointermove', 400, 300);
+      const el = preview() as HTMLElement;
+      expect(el.hasAttribute('inert')).toBe(true);
+      const controls = el.querySelectorAll('button, [data-piece-control]');
+      if (kind === 'pet-bed') expect(el.querySelector('[aria-label="Pat the Dog"]')).not.toBeNull();
+      for (const c of controls) expect(c.closest('[inert]')).toBe(el);
+    },
+  );
 });
 
 // The owner's report: a Room tile dragged or armed showed no preview of the room. Every Space piece tile previews the

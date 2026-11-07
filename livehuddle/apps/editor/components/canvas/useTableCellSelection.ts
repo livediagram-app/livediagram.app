@@ -32,7 +32,7 @@ export function useTableCellSelection({
   gridRef: RefObject<HTMLDivElement | null>;
   editing: { r: number; c: number } | null;
   isSelected: boolean;
-  // readOnly viewers and locked tables never select cells or open the menu.
+  // readOnly viewers never select cells or open the menu.
   disabled: boolean;
   onCommitTable: (id: string, patch: Partial<Pick<TableElement, 'cells' | 'cellStyles'>>) => void;
 }) {

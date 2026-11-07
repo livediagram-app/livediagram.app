@@ -34,7 +34,6 @@ function compactFor(el: Element, readOnly = false): boolean | undefined {
             elements: [el],
             editingId: null,
             isPaintMode: false,
-            tabLocked: false,
             readOnly,
           }}
         />

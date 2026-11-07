@@ -193,7 +193,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // An empty start search hands undo and redo on (start-diagramming.md): it has no typing of its own to undo.
         const historyChord = lower === 'z' || lower === 'y';
         if (inText && !(historyChord && passesHistoryChords(target))) return;
-        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, lock, z-order) is still the
+        // A Viewer's or Participant's canvas chord it may not run (select-all, duplicate, z-order) is still the
         // canvas's: left to the browser, Cmd+A selected the page's text and Cmd+D bookmarked it.
         if (!runModShortcut(e, live) && live.isReadOnly && coveredKeyRole(e) === 'swallow') {
           e.preventDefault();

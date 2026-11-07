@@ -11,6 +11,7 @@ import {
   type ShareResolution,
 } from '@liveworkspace/index-client';
 import type { Env } from '../env';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // What a preview needs to know about its item, as the caller reaches it.
 export type PreviewItem = {
@@ -34,7 +35,7 @@ export type Reach = PreviewItem | 'denied' | 'unavailable';
 const INDEX_TIMEOUT_MS = 5_000;
 
 function indexFetch(env: Env, path: string, headers: Headers): Promise<Response> {
-  const base = (env.INDEX_URL || INDEX_API_URL).replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(env.INDEX_URL || INDEX_API_URL);
   const init: RequestInit = { headers, signal: AbortSignal.timeout(INDEX_TIMEOUT_MS) };
   return env.INDEX ? env.INDEX.fetch(`${base}${path}`, init) : fetch(`${base}${path}`, init);
 }

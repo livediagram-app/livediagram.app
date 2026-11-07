@@ -22,7 +22,6 @@ export const ALIGN_NAME = 'Auto-align';
 const ALIGN_LINE = 'Snap to the grid. Nothing moves far.';
 export const TIDY_EMPTY_NOTE =
   'Nothing to tidy yet. Add some notes or pictures to this Space first.';
-export const TIDY_LOCKED_NOTE = 'This tab is locked. Unlock it to tidy its layout.';
 
 const NO_MOVE = () => {};
 
@@ -38,8 +37,8 @@ export function TidyUpPopover({
   anchor?: DockAnchor;
   onClose: () => void;
 }) {
-  const { run, preview, endPreview, blocked, assess } = actions;
-  const inert = blocked || empty;
+  const { run, preview, endPreview, assess } = actions;
+  const inert = empty;
   // Auto-align is judged once, on the tab as it was when the popover opened (useCleanupPreview judges the
   // pre-hover snapshot), and greyed out with the reason if it would change nothing or damage the drawing
   // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). Judged in a task after the first
@@ -74,7 +73,7 @@ export function TidyUpPopover({
         onPointerEnter: onMouseHover(preview),
         onPointerLeave: onMouseHover(endPreview),
       };
-  const note = blocked ? TIDY_LOCKED_NOTE : empty ? TIDY_EMPTY_NOTE : null;
+  const note = empty ? TIDY_EMPTY_NOTE : null;
 
   return (
     <MovablePanel
@@ -98,8 +97,8 @@ export function TidyUpPopover({
   );
 }
 
-// The verdict on Auto-align, filled in a task after the popover has painted. `assess` null (an empty or
-// locked tab) judges nothing.
+// The verdict on Auto-align, filled in a task after the popover has painted. `assess` null (an empty
+// tab) judges nothing.
 function useVerdict(assess: (() => CleanupVerdict) | null): CleanupVerdict | null {
   const [verdict, setVerdict] = useState<CleanupVerdict | null>(null);
   const assessRef = useLatest(assess);

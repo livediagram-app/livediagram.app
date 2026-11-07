@@ -74,13 +74,13 @@ describe('formatResultLines', () => {
             { key: 'note', from: 'Old' },
             { key: 'cells', from: [['a']], to: [['b']] },
             { key: 'label', to: long },
-            { key: 'locked', from: false, to: true },
+            { key: 'textBold', from: false, to: true },
             { key: 'font', to: 'Comic Sans' },
           ],
         },
       ]),
     ).toEqual([
-      '~ a3  to n7→@12,-40 · fillColor →#ff0000 · note "Old"→ · cells (changed) · label →"A label that runs on well past the sixty characters a result"… · locked false→true · font →"Comic Sans"',
+      '~ a3  to n7→@12,-40 · fillColor →#ff0000 · note "Old"→ · cells (changed) · label →"A label that runs on well past the sixty characters a result"… · textBold false→true · font →"Comic Sans"',
     ]);
   });
 

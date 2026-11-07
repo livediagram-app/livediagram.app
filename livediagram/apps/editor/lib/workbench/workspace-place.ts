@@ -7,6 +7,7 @@
 
 import { explorerPath, viewFromLocation, type ExplorerView } from '@liveworkspace/explorer';
 import { WORKSPACE_FRAME_PAGE } from './workbench-frame-path';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type WorkspacePlace =
   | { kind: 'explorer'; node: ExplorerView }
@@ -44,7 +45,7 @@ export function explorerRouteOfFrame(
   pathname: string,
   search: URLSearchParams,
 ): { pathname: string; search: URLSearchParams } | null {
-  const path = pathname.replace(/\/+$/, '');
+  const path = withoutTrailingSlashes(pathname);
   if (path === WORKSPACE_FRAME_PAGE) return { pathname: '/explorer/home', search };
   if (!path.startsWith(`${WORKSPACE_FRAME_PAGE}/`)) return null;
   if (path.startsWith(FOLDER_ROOT)) {
@@ -57,7 +58,7 @@ export function explorerRouteOfFrame(
 
 export function workspacePlaceOf(pathname: string, search: URLSearchParams): WorkspacePlace {
   if (pathname.startsWith(DOCUMENT_ROOT)) {
-    const id = decodeURIComponent(pathname.slice(DOCUMENT_ROOT.length).replace(/\/+$/, ''));
+    const id = decodeURIComponent(withoutTrailingSlashes(pathname.slice(DOCUMENT_ROOT.length)));
     if (!id || id.includes('/') || id === NOT_A_DOCUMENT) return HOME;
     return {
       kind: 'document',
@@ -78,7 +79,7 @@ const sameOrigin = (url: URL, origin: string) => url.origin === origin;
 export function framePathOfAppHref(href: string, origin: string): string | null {
   const url = new URL(href, origin);
   if (!sameOrigin(url, origin)) return null;
-  const path = url.pathname.replace(/\/+$/, '');
+  const path = withoutTrailingSlashes(url.pathname);
   const search = url.searchParams;
   if (path === WORKSPACE_FRAME_PAGE || path.startsWith(`${FRAME_PREFIX}/`))
     return withQuery(path, search);
@@ -103,7 +104,7 @@ export function framePathOfAppHref(href: string, origin: string): string | null 
 // The new-document wizard: inside a workspace frame a new document is made in place instead (WB58).
 export function isNewDocumentHref(href: string, origin: string): boolean {
   const url = new URL(href, origin);
-  return sameOrigin(url, origin) && url.pathname.replace(/\/+$/, '') === '/new';
+  return sameOrigin(url, origin) && withoutTrailingSlashes(url.pathname) === '/new';
 }
 
 // The same place in a full tab: Open in livediagram.

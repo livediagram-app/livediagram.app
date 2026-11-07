@@ -1,7 +1,7 @@
 # Download your data
 
-A signed-in person can download everything they own, from every app, as one zip: each diagram, plan, document and
-design in its portable file, a picture of each tab, CSV for boards and sheets, the comments they wrote, their profile
+A signed-in person can download everything they own, from every app, as one zip: each diagram, plan, document,
+design and Space in its portable file, a picture of each tab, CSV for boards and sheets, the comments they wrote, their profile
 and the images they uploaded. A team admin can download the same for everything the team owns. Exports today were
 one item at a time; one download of everything answers a data-portability request, builds trust, and eases the fear
 of lock-in that stops a team adopting a new tool.
@@ -41,7 +41,8 @@ README.txt                          what each folder holds, and how to bring a f
 profile.json                        a personal export: the account, its profile, teams and settings
 team.json                           a team export: the team's id and name
 comments.json, comments.csv         the comments (personal: the ones I wrote; team: every one), with their item and tab
-livediagram/<Name> (<id>)/          one folder per item, by app (liveplanner/, livedocuments/, livedesign/ alike)
+livediagram/<Name> (<id>)/          one folder per item, by app (liveplanner/, livedocuments/, livedesign/,
+                                    livehuddle/ alike)
   <Name>.livediagram                the item's whole file, JSON, exactly as the Drive mirror writes it
   01 <Tab>.png                      a picture of each tab, in order (up to EXPORT_TAB_PICTURES_MAX)
   <Board or Sheet>.csv              liveplanner only: each Board tab's cards and each Sheet's cells
@@ -173,7 +174,10 @@ the person is ever in them. A guest id answers `403`, a wrong key `401`.
 
 ### The apps
 
-A held app (livehuddle) has no export door until it launches: the service has no origin or key for it.
+Every app has one, livehuddle's Spaces included (launched November 2026; Work Tracker #447). An app whose origin
+(`APP_ORIGIN_<APP>`) or key (`DATA_EXPORT_KEY_<APP>`) the service is not given is not reachable: its items are never
+asked for, each is named in the README's **Not included** with `its app is not part of downloads yet`, and the export
+carries on and finishes as any other. That is how livehuddle's Spaces read until its key is set on both sides.
 
 Each app's export door (`@liveworkspace/index-app` `handleInternalItems`) takes the app's `DATA_EXPORT_KEY` (the
 service's `DATA_EXPORT_KEY_<APP>`) on the export door alone, `GET /api/internal/items/:id/export`, in four formats:
@@ -184,7 +188,7 @@ service's `DATA_EXPORT_KEY_<APP>`) on the export door alone, `GET /api/internal/
   other apps answer `404`, having none).
 - `format=comments`: `{ threads: ExportThread[] }`, every thread in the item (`id`, `tabId`, `tabName`, `on`,
   `resolved` and its `comments`, each `id`, `authorId`, `authorName`, `text`, `createdAt`), with each comment's real
-  author, so the service can keep the person's own. In livediagram, livedocuments and livedesign a thread's `id` is
+  author, so the service can keep the person's own. In livediagram, livedocuments, livedesign and livehuddle a thread's `id` is
   `<tab id>:<element id>` and `on` is the element's id; in liveplanner `on` is the card's. An author who has been
   anonymised has a null `authorId`.
 

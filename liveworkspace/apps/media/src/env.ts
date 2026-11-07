@@ -1,5 +1,6 @@
 import type { App } from '@liveworkspace/index-client';
 import { MEDIA_APPS, type MediaApp } from '@liveworkspace/media';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export interface Env {
   // The service's off switch: "false", "0" or "off" answers every route as missing. Unset is on.
@@ -88,7 +89,7 @@ export function appDoor(env: Env, app: App): { origin: string; key: string } | n
   const origin = env[ORIGIN_OF[app]];
   const key = appKey(env, MEDIA_APP_OF[app]);
   if (typeof origin !== 'string' || origin.trim() === '' || !key) return null;
-  return { origin: origin.replace(/\/+$/, ''), key };
+  return { origin: withoutTrailingSlashes(origin), key };
 }
 
 // The index's app, from the media app a key speaks for.

@@ -13,12 +13,11 @@ const box = (id: string): Element => ({
   width: 10,
   height: 10,
 });
-const link = (id: string, from: string, to: string, locked = false): ArrowElement => ({
+const link = (id: string, from: string, to: string): ArrowElement => ({
   id,
   type: 'arrow',
   from: { kind: 'pinned', elementId: from, anchor: 'e' },
   to: { kind: 'pinned', elementId: to, anchor: 'w' },
-  ...(locked ? { locked: true } : {}),
 });
 const hung = (id: string, onto: string): ArrowElement => ({
   id,
@@ -31,12 +30,6 @@ describe('withAttachedArrows', () => {
   it("takes a box's connector and the arrow hung off that connector", () => {
     const els = [box('a'), box('b'), link('x', 'a', 'b'), hung('y', 'x'), hung('z', 'y')];
     expect([...withAttachedArrows(els, new Set(['a']))].sort()).toEqual(['a', 'x', 'y', 'z']);
-  });
-
-  it('stops at a protected arrow, and leaves what hangs off it', () => {
-    const els = [box('a'), box('b'), link('x', 'a', 'b', true), hung('y', 'x')];
-    const out = withAttachedArrows(els, new Set(['a']), (el) => el.locked === true);
-    expect([...out]).toEqual(['a']);
   });
 
   it('walks a long chain in linear time', () => {

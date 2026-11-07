@@ -155,6 +155,8 @@ export type FakeSources = Sources & {
   readyFails: number;
   listFails: number;
   scopes: { scope: ExportScope; requestedBy: string }[];
+  // The apps the service has no origin or key for.
+  unreachable: Set<App>;
 };
 
 export function envelope(app: App, name: string, tabs: { id: string; name: string }[]): string {
@@ -176,6 +178,8 @@ export function fakeSources(): FakeSources {
     readyFails: 0,
     listFails: 0,
     scopes: [],
+    unreachable: new Set(),
+    reachable: (app) => !s.unreachable.has(app),
     async listItems(scope, requestedBy, cursor) {
       s.calls += 1;
       s.scopes.push({ scope, requestedBy });

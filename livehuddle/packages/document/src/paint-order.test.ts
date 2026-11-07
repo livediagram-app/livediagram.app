@@ -40,6 +40,18 @@ describe('paintOrder', () => {
     ]);
   });
 
+  // docs/specs/009-elements/room-builder.md "Window": its light lies on the floor, under furniture placed before it.
+  it('paints a window over its room and rug but under furniture placed before it', () => {
+    const els = [
+      sized('room', 'room', 500, 400),
+      sized('sofa', 'sofa', 152, 85),
+      sized('window', 'east', 120, 24),
+      sized('rug', 'rug', 200, 120),
+      sized('window', 'north', 200, 24),
+    ];
+    expect(paintOrder(els).map((e) => e.id)).toEqual(['room', 'rug', 'east', 'north', 'sofa']);
+  });
+
   it('returns the same array when it is already in order', () => {
     const els = [
       sized('grass', 'lawn', 900, 900),

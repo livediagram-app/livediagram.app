@@ -27,9 +27,10 @@ import type { FurnitureDrawing } from './seating';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
-  it('are eighteen shape kinds, each made at its drawing’s size', () => {
+  it('are seventy-five shape kinds, each made at its drawing’s size', () => {
     expect(OFFICE_KINDS).toEqual([
       'room',
+      'corridor',
       'meeting-table',
       'plant',
       'bookshelf',
@@ -48,6 +49,7 @@ describe('the office pieces', () => {
       'grass',
       'garden-fence',
       'door',
+      'window',
       'directory',
       'elevator',
       'stairs',
@@ -109,11 +111,13 @@ describe('the office pieces', () => {
     ]);
     const sized = [
       'room',
+      'corridor',
       'stage',
       'garden-path',
       'grass',
       'garden-fence',
       'door',
+      'window',
       'pond',
       'swimming-pool',
     ];
@@ -136,9 +140,10 @@ describe('the office pieces', () => {
     expect(room.aspectLocked).toBeFalsy();
   });
 
-  it('puts the room, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
+  it('puts the room, the corridor, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
     expect(OFFICE_KINDS.filter(isFloorShape)).toEqual([
       'room',
+      'corridor',
       'rug',
       'stage',
       'garden-path',

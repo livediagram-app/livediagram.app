@@ -47,12 +47,15 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'avatar-pad': W,
   stage: W,
   room: W,
+  corridor: W,
   'office-pod': W,
   rug: W,
   grass: W,
   'garden-path': W,
   // Walk: a Door, swung instead when the character is next to it (the gesture adds that: lib/avatar-door-press).
   door: W,
+  // Walk: a Window is walked up to like the floor; it never swings.
+  window: W,
   // Walk: seats; arriving sits you.
   chair: W,
   desk: W,

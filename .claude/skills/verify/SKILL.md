@@ -32,35 +32,28 @@ puts the api on the same origin as production does; the editor's own port can't 
 ## Signing in against the local accounts Worker
 
 Sign-in, guests and share links need the liveworkspace stack (`corepack pnpm dev:workspace`: the site on 3000,
-accounts on 8787, the index on 8793, media on 8792) and an OAuth client for the product in the local accounts
-database. Each D1 service's `dev` script applies its local migrations before it starts, so a database built before
-a migration catches up on its own.
+accounts on 8787, the index on 8793, media on 8792). In a fresh checkout or worktree there is nothing to set up
+(liveworkspace/docs/specs/003-accounts/sign-in.md "Local clients"):
 
-1. Register the product once per local accounts database (`ADMIN_TOKEN` is the one in accounts' `.dev.vars`):
+- Each service's `dev` script makes its `.dev.vars` from `.dev.vars.example` when there is none (never over one) and
+  applies its local migrations.
+- The accounts `dev` script writes every product's fixed local OAuth client (`local-<product>`, secret
+  `local-<product>-client-secret`) into its local database on each start (`corepack pnpm db:seed:local` runs that step
+  alone). A local database copied in from another checkout gets them at the next restart.
+- Each product api's `dev` script makes its `.dev.vars` from its `.dev.vars.example` (that client, the router as
+  `AUTH_ORIGIN`, the local index) once accounts has a `.dev.vars`, so start `dev:workspace` before the product, or
+  restart the product after. Without it the product runs with no sign-in and no guests, and its log says so.
 
-   ```sh
-   cd liveworkspace/apps/accounts
-   ADMIN_TOKEN=local-admin-token node scripts/register-client.ts \
-     --name livehuddle-dev --app livehuddle.app \
-     --redirect http://localhost:3500/api/auth/callback --redirect http://localhost:3500/auth/guest \
-     --resource http://localhost/api
-   ```
+An existing `.dev.vars` (the owner's main checkout) is left as it is, with whatever client it names; the local
+clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
 
-   Use the product's router port and site id (`livediagram.app`, `liveplanner.app`, ...). The resource is always
-   `http://localhost/api` locally.
-
-2. Put the printed id and secret in the product api's `.dev.vars` beside `ACCOUNTS_URL=http://localhost:3000`,
-   `API_RESOURCE=http://localhost/api` and `AUTH_ORIGIN=http://localhost:<router>` (the product's
-   `apps/api/.env.example` lists them), then restart the api worker. Ask before editing a `.dev.vars` you didn't make.
-
-- `500 client_app_refused` from registration means the accounts database doesn't take that app yet (behind on its
-  migrations, as before `0018_livehuddle.sql`): restart `dev:accounts`, or run `corepack pnpm db:migrate:local` in
-  `liveworkspace/apps/accounts`, and register again.
 - Codes aren't emailed locally: each sign-in code is printed in the accounts Worker's output.
 - Running a second stack in another port block: give the site `ACCOUNTS_DEV_ORIGIN` (and `INDEX_DEV_ORIGIN`,
   `MEDIA_DEV_ORIGIN`), accounts `BASE_URL` and `--local-upstream` at that site, the router `--var` overrides for
   `WORKSPACE_ORIGIN`, `EDITOR_ORIGIN` and `API_ORIGIN`, and every `wrangler` its own `WRANGLER_REGISTRY_PATH`
-  and `--persist-to`, so nothing reaches the workers already running. The accounts Worker accepts a sign-in on an
+  and `--persist-to`, so nothing reaches the workers already running. Seed the accounts database with
+  `LOCAL_CLIENT_ORIGINS=<product>.app=http://localhost:<your router port> corepack pnpm db:seed:local` (add
+  `-- --persist-to <dir>` when its state is elsewhere), so the local client takes your router as a redirect. The accounts Worker accepts a sign-in on an
   app's own address only on that app's first port (3500 for livehuddle), so give it
   `SIGN_IN_ON_APP_ORIGINS=false` there: sign-in then runs on the site's address and comes back to the app.
 - Without the api's accounts vars the editor still opens: nobody can sign in, guests have no identity

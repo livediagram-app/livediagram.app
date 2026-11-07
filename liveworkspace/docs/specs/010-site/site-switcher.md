@@ -81,7 +81,7 @@ app's; the search is the gallery's). The app whose address the page is on is the
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
 app. It lists livediagram, liveplanner, livedocuments, livedesign and livehuddle (`APP_SITES`; livehuddle's row,
-pitch "Meet and run workshops together", emerald `#10b981`, deep `#047857`, light `#34d399`, since its launch). An
+pitch "Meet up in shared Spaces", emerald `#10b981`, deep `#047857`, light `#34d399`, since its launch). An
 app registered but not yet launched keeps its row in `HELD_APP_SITES` instead, which no switcher reads, so it has no
 row until its launch moves it ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch));
 none is held today.

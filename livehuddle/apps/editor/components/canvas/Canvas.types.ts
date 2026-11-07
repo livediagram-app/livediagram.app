@@ -29,7 +29,6 @@ export type SnapTarget = { x: number; y: number; active: boolean };
 
 export type CanvasProps = {
   tabName: string;
-  tabLocked: boolean;
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
@@ -197,7 +196,6 @@ export type CanvasProps = {
   ) => void;
   onDuplicateMultiSelected: () => void;
   onDeleteMultiSelected: () => void;
-  onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
   onFilterMultiSelected: (ids: Set<string>) => void;
   // Opens the Export dialog scoped to just the multi-selection.
@@ -524,7 +522,6 @@ export type CanvasProps = {
     // says it places rather than the kind's default.
     art?: { iconId?: string; stickerId?: string; choice?: string },
   ) => void;
-  onToggleLockSelected: () => void;
   onDeleteSelected: () => void;
   // Duplicate the selected element. Surfaced as a one-click button in
   // the selection toolbar (SelectionPopover); previously context-menu only.

@@ -230,7 +230,16 @@ const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 // The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
 const FLOOR_FILLS: Record<
-  'room' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond' | 'swimming-pool',
+  | 'room'
+  | 'corridor'
+  | 'rug'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'door'
+  | 'window'
+  | 'pond'
+  | 'swimming-pool',
   readonly [string, string]
 > = {
   // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").
@@ -239,9 +248,13 @@ const FLOOR_FILLS: Record<
   'swimming-pool': [POOL_FILL, POOL_FILL_DARK],
   // A door paints the gap it cuts in a wall in the room's floor (docs/specs/009-elements/room-builder.md "Door").
   door: [ROOM_FLOOR, '#292524'],
+  // A window's frame is the wall's band in the room's floor (room-builder.md "Window").
+  window: [ROOM_FLOOR, '#292524'],
   'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
   grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
+  // A corridor's floor is a room's (docs/specs/009-elements/corridor.md).
+  corridor: [ROOM_FLOOR, '#292524'],
   rug: [RUG_FILL, '#713f12'],
   stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
 };
@@ -264,11 +277,13 @@ function behaviourSkin(
   // furniture's.
   if (
     kind === 'room' ||
+    kind === 'corridor' ||
     kind === 'rug' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
     kind === 'grass' ||
     kind === 'door' ||
+    kind === 'window' ||
     kind === 'pond' ||
     kind === 'swimming-pool'
   ) {
@@ -599,6 +614,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'avatar-pad',
   // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md) draws its floor and walls.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -683,6 +700,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'stopwatch',
   // A Door (docs/specs/009-elements/room-builder.md "Door") draws its jambs, leaf and swing: no border of its own.
   'door',
+  // A Window (room-builder.md "Window") draws its frame, pane and light.
+  'window',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.

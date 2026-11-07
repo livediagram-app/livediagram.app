@@ -123,6 +123,7 @@ import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
 import { loadCatalogue, type AppId } from '@/lib/app-settings';
 import { preloadSettingsPanel } from '@liveworkspace/settings-ui';
 import { ExplorerHeader } from './ExplorerHeader';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The Search panel and its entries: fetched when Search is pointed at or pressed, never with the page.
 const loadSearch = () => import('./ExplorerSearch');
@@ -185,7 +186,7 @@ const ExplorerLink: LinkComponent = (props) => {
 
 /** The retired view an address names (`/explorer/profile`, …), if any. */
 function retiredView(pathname: string): keyof typeof RETIRED_TARGETS | 'offline' | null {
-  const section = pathname.replace(/\/+$/, '').split('/')[2] ?? '';
+  const section = withoutTrailingSlashes(pathname).split('/')[2] ?? '';
   if (section === 'offline') return 'offline';
   return section in RETIRED_TARGETS ? (section as keyof typeof RETIRED_TARGETS) : null;
 }

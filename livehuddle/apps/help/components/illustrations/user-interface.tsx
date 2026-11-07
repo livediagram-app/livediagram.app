@@ -423,7 +423,7 @@ export function ZoomControls() {
 }
 
 /** The selection toolbar an Editor sees over one selected element, its top-left corner at (x, y), 34 tall: More,
- *  Add text, Duplicate, Format Painter, Bring to front, Send to back, Lock and Delete (Add Comment is in the More
+ *  Add text, Duplicate, Format Painter, Bring to front, Send to back and Delete (Add Comment is in the More
  *  menu). `formatOn` draws Format Painter pressed, as while its brush is loaded. */
 export function SelectionToolbar({
   x,
@@ -449,15 +449,6 @@ export function SelectionToolbar({
     { key: 'format', glyph: <PainterGlyph on={formatOn} /> },
     { key: 'front', glyph: <path d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} /> },
     { key: 'back', glyph: <path d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} /> },
-    {
-      key: 'lock',
-      glyph: (
-        <g>
-          <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-          <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-        </g>
-      ),
-    },
     { key: 'delete', glyph: <path d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} /> },
   ];
   return (
@@ -476,9 +467,9 @@ export function SelectionToolbar({
   );
 }
 
-/** The width `SelectionToolbar` draws at: its eight buttons, 30 apart. */
+/** The width `SelectionToolbar` draws at: its seven buttons, 30 apart. */
 function selectionToolbarWidth(): number {
-  return 8 + 8 * 30;
+  return 8 + 7 * 30;
 }
 
 /** One selected shape with its toolbar above: the "Selected Square" caption, then the selection toolbar, Format
@@ -499,7 +490,7 @@ export function ContextualToolbar() {
 }
 
 /** A mixed marquee selection (two shapes and an arrow) with the multi-select
- *  toolbar: More, Filter Selection, Duplicate, Export, Lock and Delete. */
+ *  toolbar: More, Filter Selection, Duplicate, Export and Delete. */
 export function MultiSelectToolbar() {
   const tx = 116;
   const ty = 34;
@@ -511,10 +502,6 @@ export function MultiSelectToolbar() {
       <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
     </g>,
     <path key="export" d="M0 3 V-6 M-4 -2 L0 -6 L4 -2 M-6 3 v3 h12 v-3" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
     <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
   ];
   return (

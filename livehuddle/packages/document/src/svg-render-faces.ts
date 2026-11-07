@@ -28,6 +28,7 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
   type FurniturePart,
@@ -42,9 +43,14 @@ import {
   RUG_FILL,
   STAGE_FLOOR,
   stageParts,
+  isLongTable,
+  longTableArt,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
-import { doorParts, outlinedRoomPaths } from './room-builder';
+import { outlinedRoomPaths } from './room-builder';
+import { corridorSvg, doorSvg, glassRoomSvg, windowSvg } from './svg-render-doors';
+import { isGlassRoom } from './glass-walls';
+import { rugDrawnToSize, rugParts } from './rug-art';
 import {
   GARDEN_PATH_FILL,
   GARDEN_TONES,
@@ -102,6 +108,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'avatar-pad',
   // The virtual office (docs/specs/009-elements/office.md).
   'room',
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -174,6 +181,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'signpost',
   'photo-wall',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',
@@ -349,11 +357,28 @@ export function svgBehaviourFace(
     // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
     // for the paper as the canvas resolves it (deep on a dark tab).
     case 'rug':
-      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
+      // A patterned rug (office.md "Rug types") is drawn to its size; the Oval keeps its scaled drawing.
+      return rugDrawnToSize(el)
+        ? sizedSvg(
+            el,
+            rugParts(el.width, el.height, el.variant),
+            fill ?? el.fillColor ?? RUG_FILL,
+            stroke,
+          )
+        : furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
+    // A Corridor (docs/specs/009-elements/corridor.md): its floor and walls.
+    case 'corridor':
+      return corridorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'room':
-      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+      // A glass-walled room (office.md "Glass walls") draws its walls as panes.
+      return isGlassRoom(el)
+        ? glassRoomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface)
+        : roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'door':
       return doorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+    // A Window (room-builder.md "Window"): its frame and pane in the wall, its light inside.
+    case 'window':
+      return windowSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface);
     case 'stage':
       return sizedSvg(
         el,
@@ -508,11 +533,13 @@ function avatarPadArt(el: Face, stroke: string): string {
 // A piece of furniture (docs/specs/009-elements/furniture-facing.md "The camera"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
-  const art = isSeatingShape(el.shape)
-    ? FURNITURE_ART[el.shape]
-    : isGridOfficeShape(el.shape)
-      ? OFFICE_ART[el.shape]
-      : null;
+  const art = isLongTable(el)
+    ? longTableArt(el.width, el.height, pieceFacing(el))
+    : isSeatingShape(el.shape)
+      ? FURNITURE_ART[el.shape]
+      : isGridOfficeShape(el.shape)
+        ? OFFICE_ART[el.shape]
+        : null;
   if (!art) return '';
   // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
   const frame = furnitureFrame(art, pieceFacing(el));
@@ -547,33 +574,6 @@ function roomSvg(el: Face, floor: string, stroke: string): string {
     roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR),
     floor,
     stroke,
-  );
-}
-
-// A Door (docs/specs/009-elements/room-builder.md "Door"): the gap it paints over its wall, its jambs, the leaf
-// standing open and its swing, as the canvas draws it.
-function doorSvg(el: Face, floor: string, stroke: string): string {
-  const { gap, jambs, leaf, shut, swing } = doorParts(el.width, el.height);
-  const closed = (el as { doorClosed?: boolean }).doorClosed === true;
-  const f = xmlEscape(floor);
-  const l = xmlEscape(stroke);
-  const box = (b: { x: number; y: number; w: number; h: number }) =>
-    `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`;
-  return (
-    `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
-    `<rect ${box(gap)} fill="${f}"/>` +
-    jambs
-      .map(
-        (j) =>
-          `<rect ${box(j)} fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>`,
-      )
-      .join('') +
-    // Closed (room-builder.md "Opening and closing"): the leaf across the opening, no swing.
-    (closed
-      ? ''
-      : `<path d="${swing}" fill="none" stroke="${l}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-dasharray="4 4"/>`) +
-    `<rect ${box(closed ? shut : leaf)} rx="1" fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>` +
-    `</g>`
   );
 }
 
@@ -631,6 +631,13 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${line}"`;
       case 'glint':
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+      // A rug's woven pattern (docs/specs/009-elements/office.md "Rug types").
+      case 'tint':
+        return `fill="${line}" opacity="${FURNITURE_WEAVE.tint}"`;
+      case 'sheen':
+        return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
+      case 'dye':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
     }
   })();
   // A face toward the room is the panel, shaded with its stroke colour.

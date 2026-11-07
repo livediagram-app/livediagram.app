@@ -12,7 +12,7 @@ A **Card**: one diagram node with slots you switch on. In reading order:
 - a **body**, the element's label;
 - a row of **tags**, small chips along the bottom.
 
-It is a `shape: 'card'`, so it keeps every ordinary element behaviour: move, resize, rotate, lock, colours,
+It is a `shape: 'card'`, so it keeps every ordinary element behaviour: move, resize, rotate, colours,
 font, shadow, accent edge ([Accent edge](../008-canvas/accent-edge.md)), comments, links, connectors, copy / paste
 and undo.
 

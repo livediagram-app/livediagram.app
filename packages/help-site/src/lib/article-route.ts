@@ -1,3 +1,4 @@
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 // An article's own URL and its parent's, read off the route it is served at
 // (docs/specs/018-help/help-app.md "SEO"). The help centre nests sub-articles
 // under their parent's folder (`palette/tools/data-elements/legend/` sits
@@ -10,7 +11,7 @@
 // `usePathname()` without the basePath, normalised to the trailing slash the
 // help app serves (`trailingSlash: true`). `/` stays `/`.
 export function routeHref(pathname: string): string {
-  const trimmed = pathname.replace(/\/+$/, '');
+  const trimmed = withoutTrailingSlashes(pathname);
   return trimmed === '' ? '/' : `${trimmed}/`;
 }
 

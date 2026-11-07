@@ -19,6 +19,7 @@
     "@liveplanner/items": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/migration": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
@@ -29,10 +30,10 @@
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   },
   "engines": {
     "node": ">=22.13"

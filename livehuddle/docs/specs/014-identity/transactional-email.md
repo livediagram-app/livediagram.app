@@ -113,7 +113,7 @@ every address in one call. Guests have no address and never receive email.
   the "live"/"huddle" wordmark in the header (`live` in brand-700 `#047857`), a
   brand-50 `#ecfdf5` page behind the card, buttons and links in brand-700 (white
   on it is 5.5:1), and a footer under the card with the lockup again, the
-  tagline ("Meet and run workshops together, live. Free and open source.") and a
+  tagline ("Meet up in shared Spaces, live. Free and open source.") and a
   link to the site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
   (`/email/livehuddle-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,

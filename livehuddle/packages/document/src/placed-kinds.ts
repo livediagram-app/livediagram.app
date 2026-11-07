@@ -3,7 +3,7 @@
 // other.
 
 import { isSeatingShape } from '@liveworkspace/avatar/office-geometry';
-import { isGridOfficeShape } from './office';
+import { isGridOfficeShape, isLongTable } from './office';
 import { isFixedSizeShape } from './selection-mode';
 
 /**
@@ -15,6 +15,8 @@ const PLACED_KINDS: ReadonlySet<string> = new Set([
   'avatar-pad',
   'portal',
   'door',
+  // The Window (docs/specs/009-elements/room-builder.md "Window"): placed on a wall like a Door.
+  'window',
   'focus-button',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
@@ -41,9 +43,13 @@ export function isFixedSizeElement(el: {
   type: string;
   shape?: string;
   fixedSize?: boolean;
+  variant?: unknown;
 }): boolean {
   if (el.fixedSize === true) return true;
-  return el.type === 'shape' && el.shape != null && isPlacedShape(el.shape);
+  if (el.type !== 'shape' || el.shape == null) return false;
+  // A Long Table is drawn to its width, so it resizes and takes more chairs (office.md "Long Table").
+  if (isLongTable({ shape: el.shape, variant: el.variant })) return false;
+  return isPlacedShape(el.shape);
 }
 
 // Whether adding a kind drops it at its own default size, a tap and a press-and-drag alike, with no draw-to-size box
@@ -51,5 +57,5 @@ export function isFixedSizeElement(el: {
 // (docs/specs/009-elements/office.md "Room": dropped, then resized), which unlike a placed piece keeps its resize
 // handles once on the canvas.
 export function dropsAtOwnSize(kind: string): boolean {
-  return isPlacedShape(kind) || kind === 'room';
+  return isPlacedShape(kind) || kind === 'room' || kind === 'corridor';
 }

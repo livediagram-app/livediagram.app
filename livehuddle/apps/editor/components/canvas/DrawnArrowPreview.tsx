@@ -57,7 +57,6 @@ export function DrawnArrowPreview({
         isSelected
         isPaintMode={false}
         isEditing={false}
-        tabLocked={false}
         // No grips on a preview.
         readOnly
         onSelect={noop}

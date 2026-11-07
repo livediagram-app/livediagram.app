@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9532",
+    "dev": "node ../../../packages/api-kit/scripts/dev-vars.ts --after ../../../liveworkspace/apps/accounts/.dev.vars && wrangler dev --inspector-port 9532",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
@@ -24,6 +24,7 @@
     "@livedesign/photo-engine": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
@@ -38,17 +39,17 @@
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261023.1",
+    "@cloudflare/workers-types": "^5.20261104.1",
     "@liveworkspace/community-service": "workspace:^",
     "@liveworkspace/media-service": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.90.0",
     "ts-json-schema-generator": "^2.9.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.152.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.157.0"
   }
 }

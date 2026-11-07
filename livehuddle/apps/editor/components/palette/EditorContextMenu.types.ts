@@ -196,6 +196,8 @@ export type EditorContextMenuProps = {
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
+  // And its walls (docs/specs/009-elements/office.md "Glass walls"): Solid or Glass.
+  onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
   // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
@@ -203,6 +205,8 @@ export type EditorContextMenuProps = {
   // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
   onSetClockZones?: (zones: import('@livehuddle/document').ClockZone[] | undefined) => void;
   onSetJukeboxSource?: (source: string | undefined) => void;
+  // An Arcade Machine's High Scores (social-pieces.md "Clearing"): an Editor's Clear, given only at `can.level` edit.
+  onClearArcadeScores?: (elementId: string) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livehuddle/document').Tab[];
@@ -342,7 +346,7 @@ export type EditorContextMenuProps = {
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters
-  // above apply to the whole selection. Duplicate / Group / Lock / Export /
+  // above apply to the whole selection. Duplicate / Group / Export /
   // Delete are NOT here — the selection toolbar carries those.
   selectionElements: Element[];
 };

@@ -43,11 +43,11 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
 
   it('reads set with selector terms, JSON values, unsets and all', () => {
     expect(
-      one('set type:sticky in:f2 fill=green width=200 locked=true note= tags=["a","b"] all'),
+      one('set type:sticky in:f2 fill=green width=200 textBold=true note= tags=["a","b"] all'),
     ).toEqual({
       op: 'set',
       target: 'type:sticky in:f2',
-      fields: { fill: 'green', width: 200, locked: true, note: null, tags: ['a', 'b'] },
+      fields: { fill: 'green', width: 200, textBold: true, note: null, tags: ['a', 'b'] },
       all: true,
     });
     expect(one('set "Orders service" label="200" fill=#ff0000')).toEqual({
@@ -63,8 +63,8 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     expect(one('set n1 label=1.2.3 width=-12.5e1')).toMatchObject({
       fields: { label: '1.2.3', width: -125 },
     });
-    expect(one('set n1 label=truer locked=false')).toMatchObject({
-      fields: { label: 'truer', locked: false },
+    expect(one('set n1 label=truer textBold=false')).toMatchObject({
+      fields: { label: 'truer', textBold: false },
     });
   });
 
@@ -337,7 +337,7 @@ describe('formatOperation round trip', () => {
   const lines = [
     'add square id=verify label="Verify email" text=sm below:n3 gap:40',
     'add text label=Note at:0,-20',
-    'set type:sticky in:f2 fill=green width=200 locked=true note= tags=["a","b"] all',
+    'set type:sticky in:f2 fill=green width=200 textBold=true note= tags=["a","b"] all',
     'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
     'rm n7 all keep-arrows',
     'move n4 right-of:"Orders service"',
@@ -368,7 +368,7 @@ describe('formatOperation round trip', () => {
     expect(operationsOf(lines.join('\n')).map(formatOperation)).toEqual([
       'add square id=verify label="Verify email" text=sm below:n3 gap:40',
       'add text label=Note at:0,-20',
-      'set type:sticky in:f2 fill=green width=200 locked=true note= tags=["a","b"] all',
+      'set type:sticky in:f2 fill=green width=200 textBold=true note= tags=["a","b"] all',
       'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
       'rm n7 all keep-arrows',
       'move n4 right-of:"Orders service"',

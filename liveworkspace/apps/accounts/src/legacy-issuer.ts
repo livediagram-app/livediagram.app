@@ -10,6 +10,7 @@ import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { RESOURCES } from './resources.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 /** What the introspection gave, or what this check found instead. */
 export interface Introspected {
@@ -20,7 +21,7 @@ export interface Introspected {
 
 /** The twin of this Worker's issuer, the one tokens from before the move carry; null where there is none. */
 export function legacyIssuer(env: Pick<Env, 'BASE_URL'>): string | null {
-  return wwwTwin(`${env.BASE_URL.replace(/\/+$/, '')}${AUTH_BASE_PATH}`);
+  return wwwTwin(`${withoutTrailingSlashes(env.BASE_URL)}${AUTH_BASE_PATH}`);
 }
 
 /** `token` as introspection would have answered it under the twin issuer, for `clientId`, or null when it is not one. */

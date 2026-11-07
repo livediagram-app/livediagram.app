@@ -6,12 +6,7 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
-import {
-  ClearIcon,
-  FolderMenuIcon,
-  MoveIcon,
-  TabLockIcon,
-} from '@/components/chrome/tab-bar-icons';
+import { ClearIcon, FolderMenuIcon, MoveIcon } from '@/components/chrome/tab-bar-icons';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -49,8 +44,6 @@ export function PortalMenu({
   onImport,
   onExport,
   onCopyTo,
-  onToggleLock,
-  locked,
   selfId,
   otherDocuments,
   folderNames,
@@ -76,8 +69,6 @@ export function PortalMenu({
   onImport: () => void;
   onExport: () => void;
   onCopyTo: (targetDocumentId: string) => void;
-  onToggleLock: () => void;
-  locked: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -213,76 +204,68 @@ export function PortalMenu({
             icon row so they're one glance away. The rest of the menu
             groups the verbose / destructive actions into sections. */}
           <MenuToolbar>
-            <MenuToolButton
-              icon={<PencilIcon />}
-              label="Rename"
-              description="Rename this tab."
-              onClick={onRename}
-            />
-            <MenuToolButton
-              icon={<DuplicateIcon />}
-              label="Duplicate"
-              description="Create a copy of this tab in this space."
-              onClick={onDuplicate}
-            />
-            {/* Paste in the tab ⋯ menu: one tab verb among several, so an
+            {/* The buttons spread evenly across the row, Delete last (docs/specs/004-interface-design/menus.md
+              "Control menus"), so the row has no gap. */}
+            <div className="flex w-full items-center justify-between">
+              <MenuToolButton
+                icon={<PencilIcon />}
+                label="Rename"
+                description="Rename this tab."
+                onClick={onRename}
+              />
+              <MenuToolButton
+                icon={<DuplicateIcon />}
+                label="Duplicate"
+                description="Create a copy of this tab in this space."
+                onClick={onDuplicate}
+              />
+              {/* Paste in the tab ⋯ menu: one tab verb among several, so an
               icon. Opened from an empty-canvas right-click (`point`) it
               is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
               hidden, when the buffer is empty. */}
-            {canvas && !point ? (
-              <MenuToolButton
-                icon={<PasteMenuIcon />}
-                label="Paste"
-                description={
-                  canvas.canPaste ? 'Paste what you copied onto this tab.' : 'Nothing to paste yet.'
-                }
-                onClick={() => {
-                  canvas.onPaste();
-                  onClose();
-                }}
-                disabled={!canvas.canPaste}
-              />
-            ) : null}
-            {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
+              {canvas && !point ? (
+                <MenuToolButton
+                  icon={<PasteMenuIcon />}
+                  label="Paste"
+                  description={
+                    canvas.canPaste
+                      ? 'Paste what you copied onto this tab.'
+                      : 'Nothing to paste yet.'
+                  }
+                  onClick={() => {
+                    canvas.onPaste();
+                    onClose();
+                  }}
+                  disabled={!canvas.canPaste}
+                />
+              ) : null}
+              {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
               pill to the right does, for a keyboard or a trackpad that would rather not drag. */}
-            {sideBySide ? (
-              <MenuToolButton
-                icon={<SideBySideIcon />}
-                label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
-                description={
-                  sideBySide.closing
-                    ? 'Go back to one tab: this one, across the whole window.'
-                    : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
-                }
-                onClick={() => {
-                  sideBySide.run();
-                  onClose();
-                }}
-                active={sideBySide.closing}
-              />
-            ) : null}
-            {/* Lock and Delete sit together at the right edge, apart from
-              the everyday verbs: both change what the tab will let you
-              do next rather than doing something to it. */}
-            <div className="ml-auto flex items-center gap-0.5">
-              <MenuToolButton
-                icon={<TabLockIcon />}
-                label={locked ? 'Unlock Tab' : 'Lock Tab'}
-                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
-                onClick={onToggleLock}
-                active={locked}
-              />
+              {sideBySide ? (
+                <MenuToolButton
+                  icon={<SideBySideIcon />}
+                  label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
+                  description={
+                    sideBySide.closing
+                      ? 'Go back to one tab: this one, across the whole window.'
+                      : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
+                  }
+                  onClick={() => {
+                    sideBySide.run();
+                    onClose();
+                  }}
+                  active={sideBySide.closing}
+                />
+              ) : null}
               <MenuToolButton
                 icon={<TrashIcon />}
                 label="Delete"
-                description={
-                  locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
-                }
+                description="Delete this tab."
                 onClick={() => {
                   onDelete();
                   onClose();
                 }}
-                disabled={!canDelete || locked}
+                disabled={!canDelete}
               />
             </div>
           </MenuToolbar>
@@ -325,13 +308,7 @@ export function PortalMenu({
             disabled={otherDocuments.length === 0}
           />
           <MenuGroupSeparator />
-          <MenuActionRow
-            plain
-            icon={<FileImportIcon />}
-            label="Import"
-            onClick={onImport}
-            disabled={locked}
-          />
+          <MenuActionRow plain icon={<FileImportIcon />} label="Import" onClick={onImport} />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow
             plain

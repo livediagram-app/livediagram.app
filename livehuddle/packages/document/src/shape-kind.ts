@@ -79,6 +79,8 @@ export type ShapeKind =
   // cooler, coffee machine), a rug on the floor, and a stage whoever stands on is heard by the whole tab
   // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage").
   | 'room'
+  // A Corridor (docs/specs/009-elements/corridor.md): a passage between rooms, its type in `variant`.
+  | 'corridor'
   | 'meeting-table'
   | 'plant'
   | 'bookshelf'
@@ -156,6 +158,8 @@ export type ShapeKind =
   | 'photo-wall'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
+  // A Window (docs/specs/009-elements/room-builder.md "Window"): snaps onto a wall like a Door, never cuts it.
+  | 'window'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in
   // each, and a lift between the space's tabs (its floors); and Stairs (docs/specs/009-elements/stairs.md), a flight
   // to the floor above or below.

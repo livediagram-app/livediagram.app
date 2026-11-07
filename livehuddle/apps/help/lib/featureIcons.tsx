@@ -363,6 +363,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M18.5 6.5l1.5-1.5" />
     </Glyph>
   ),
+  // A shield with a list on it: the record the team's admins look back on.
+  'audit-log': (
+    <Glyph>
+      <path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z" />
+      <path d="M9 10h6M9 13h6M9 16h3.5" />
+    </Glyph>
+  ),
   // An envelope with the invitee on it, which is how a role reaches someone.
   'roles-and-invites': (
     <Glyph>
@@ -392,12 +399,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // Collaboration → Sharing guides. Most of the obvious drawings were already
-  // taken: a padlock is `locking`, a chain is `links`, a picture is `images`. So
+  // taken: a chain is `links`, a picture is `images`. So
   // each of these draws the thing that makes it a SHARING article — the password
   // field, the deadline, the page it sits inside, the refresh.
   //
-  // The obscured field, not a padlock: `locking` owns the padlock, and what this
-  // article is actually about is the password you set.
+  // The obscured field, not a padlock: what this article is actually about is
+  // the password you set.
   'share-passwords': (
     <Glyph>
       <rect x="2.5" y="8" width="19" height="8" rx="2.5" />
@@ -498,7 +505,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M7.5 9.8l2.2 2.2-2.2 2.2" />
     </Glyph>
   ),
-  // The last cards: Locking a Tab, the two Tools cleanups, and the three
+  // The last cards: Side by Side, the two Tools cleanups, and the three
   // User Interface guides. With these the catalogue is fully drawn, and the
   // category fallback becomes a safety net for cards not yet written rather than
   // something a reader actually sees.
@@ -509,16 +516,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 4.5v15" />
       <path d="M5 7.5h4M15 7.5h4" />
       <path d="M10.5 12l1.5-1.5 1.5 1.5" />
-    </Glyph>
-  ),
-  // A tab with the padlock on it. `locking` is the bare padlock, for an element.
-  'locking-tabs': (
-    <Glyph>
-      <path d="M3 8h5l1.5-2H14v2" />
-      <path d="M3 8v10a2 2 0 002 2h5" />
-      <path d="M14 6h4a2 2 0 012 2v2" />
-      <rect x="13" y="14" width="8" height="6" rx="1.5" />
-      <path d="M15 14v-1.5a2 2 0 014 0V14" />
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
@@ -743,13 +740,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 4H5.5a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 5.5 20H12" />
       <path d="M11 3.6q5 -.6 9.2 .6M19.6 3.4q.8 8.4 -.2 17M20.4 19.6q-4.4 .8 -9.2 .2" />
       <path d="M12.4 4.6q4 -.2 7 .4M18.8 5.2q.4 7 -.2 13.6" opacity="0.6" />
-    </Glyph>
-  ),
-  locking: (
-    <Glyph>
-      <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
-      <path d="M8 10.5V7.5a4 4 0 018 0v3" />
-      <path d="M12 14.5v2.5" />
     </Glyph>
   ),
   // A card with small marks along its top-right: the badges an element wears.

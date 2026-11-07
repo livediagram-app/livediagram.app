@@ -99,11 +99,13 @@ describe('palette layouts', () => {
       'tools:standing-desk',
     ]);
     // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
-    // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
+    // Room Builder, Corridor and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
     expect(tileIds('collab-rooms')).toEqual([
       'tools:room',
       'tools:room-builder',
+      'tools:corridor',
       'tools:wall-door',
+      'tools:window',
       'tools:fence',
       'tools:stage',
       // The Stage's curtains and podium beside it; the pillar and column after the rug
@@ -119,9 +121,7 @@ describe('palette layouts', () => {
       'tools:column',
     ]);
     const rooms = paletteCategories().find((c) => c.id === 'collab-rooms')!;
-    expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
-      'tools:wall-door',
-    ]);
+    expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:window']);
     // Amenities in three named groups (docs/specs/009-elements/office-amenities.md "Where they live").
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',

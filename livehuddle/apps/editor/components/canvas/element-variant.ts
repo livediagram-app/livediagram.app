@@ -221,7 +221,7 @@ export function describeVariant(
       // children of this wrapper. The wrapper here just contributes
       // the selection ring + remote-selector border, with a
       // transparent background so the bitmap shows through.
-      // No overflow-hidden on the wrapper: the lock / comment /
+      // No overflow-hidden on the wrapper: the comment /
       // note badges sit at -right-1 / -top-1 outside the box, and
       // clipping the wrapper cuts them off (the bitmap clipping
       // happens inside ImageElementView instead).

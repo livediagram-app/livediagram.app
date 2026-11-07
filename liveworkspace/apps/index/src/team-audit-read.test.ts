@@ -18,7 +18,7 @@ import {
   type TeamAuditFilter,
 } from './team-audit-read';
 import { body, call, h, makeItem, person, useHarness, type AppCall } from './test-support';
-import { accountsPeopleNames, NAMES_PER_CALL } from './webhooks/access';
+import { accountsPeopleNames, NAMES_PER_CALL } from './accounts-access';
 import { answerWorld, newWorld, type World } from './webhooks/test-webhooks';
 
 useHarness();

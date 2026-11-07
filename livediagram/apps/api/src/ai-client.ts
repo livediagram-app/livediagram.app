@@ -1,4 +1,5 @@
-import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
+import { resolveAiProvider, type ResolvedAiProvider } from './ai-provider';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import type { Env } from './types';
 
 // The one place the worker talks to a model (docs/specs/021-event-storming/note-reader.md).
@@ -10,7 +11,7 @@ import type { Env } from './types';
 // URL (see ai-provider.ts), not a code path.
 
 export function chatCompletionsUrl(baseUrl: string): string {
-  return `${trimTrailingSlashes(baseUrl)}/chat/completions`;
+  return `${withoutTrailingSlashes(baseUrl)}/chat/completions`;
 }
 
 // One retry on a 5xx, after a breath.

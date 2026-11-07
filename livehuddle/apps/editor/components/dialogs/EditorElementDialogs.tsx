@@ -67,8 +67,8 @@ export function EditorElementDialogs() {
     can,
   } = useEditorContext();
 
-  // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
-  // or a role change, it would otherwise reopen by itself when that is undone.
+  // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a role
+  // change, it would otherwise reopen by itself when that is undone.
   const editable = () => !isReadOnly;
   useCloseVanishedDialogs(
     activeTab.elements,

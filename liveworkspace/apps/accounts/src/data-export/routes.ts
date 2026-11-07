@@ -23,6 +23,7 @@ import { readSettings } from '../settings.ts';
 import { exportEmail } from './email.ts';
 import { checkLink, linkUrl } from './link.ts';
 import { exportService, type ExportService } from './service.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { 'cache-control': 'no-store' } });
@@ -180,7 +181,7 @@ export async function handleDataExportDownload(
   options: RouteOptions = {},
 ): Promise<Response> {
   const url = new URL(request.url);
-  const base = env.BASE_URL.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(env.BASE_URL);
   const actor = await session(request);
   if (!actor) {
     const back = `${url.pathname}${url.search}`;

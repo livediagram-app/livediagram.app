@@ -88,7 +88,6 @@ export const SHAPE_COMMON_FIELDS = [
   'y',
   'width',
   'height',
-  'locked',
   'textAlignX',
   'textAlignY',
   'textBold',
@@ -139,9 +138,15 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   // docs/specs/009-elements/furniture-facing.md: every piece of furniture that turns takes a facing.
   ...Object.fromEntries(TURNING_SHAPES.map((kind) => [kind, ['chairFacing']])),
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
-  room: ['roomDoor'],
+  // And its walls (office.md "Glass walls"): Solid or Glass.
+  room: ['roomDoor', 'variant'],
   // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
-  door: ['doorClosed'],
+  door: ['doorClosed', 'variant'],
+  // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.
+  rug: ['variant'],
+  // office.md "Long Table": a Meeting Table's type.
+  'meeting-table': ['variant'],
+  corridor: ['variant'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],
   // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.

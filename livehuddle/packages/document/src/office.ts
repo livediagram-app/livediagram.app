@@ -16,6 +16,7 @@ import {
   ROOM_WALL,
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
+import { LONG_TABLE_VARIANT } from '@liveworkspace/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
@@ -33,6 +34,8 @@ export * from '@liveworkspace/avatar/office-geometry';
 
 export type OfficeKind =
   | 'room'
+  // The Corridor (docs/specs/009-elements/corridor.md).
+  | 'corridor'
   | 'meeting-table'
   | 'plant'
   | 'bookshelf'
@@ -53,6 +56,8 @@ export type OfficeKind =
   | 'garden-fence'
   // The Door (docs/specs/009-elements/room-builder.md "Door").
   | 'door'
+  // The Window (docs/specs/009-elements/room-builder.md "Window").
+  | 'window'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   | 'directory'
   | 'elevator'
@@ -117,6 +122,7 @@ export type OfficeKind =
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -135,6 +141,7 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'grass',
   'garden-fence',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',
@@ -193,14 +200,27 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
 export type SizedOfficeKind =
-  'room' | 'stage' | 'garden-path' | 'grass' | 'garden-fence' | 'door' | 'pond' | 'swimming-pool';
+  | 'room'
+  | 'corridor'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'garden-fence'
+  | 'door'
+  | 'window'
+  | 'pond'
+  | 'swimming-pool';
 const SIZED_OFFICE_KINDS: readonly string[] = [
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md): its walls keep their thickness.
+  'corridor',
   'stage',
   'garden-path',
   'grass',
   'garden-fence',
   'door',
+  // The Window (room-builder.md "Window"): its light falls past its box, drawn to its size.
+  'window',
   // The pond (docs/specs/009-elements/social-pieces.md "Pond"): resizable, drawn to its size like grass.
   'pond',
   // The Swimming Pool (docs/specs/009-elements/venue-pieces.md "Swimming Pool"): resizable, drawn to its size like the pond.
@@ -226,6 +246,15 @@ export {
   OFFICE_TONES,
   type MachineAnswerSpot,
 } from '@liveworkspace/avatar/furniture-art';
+
+/** Whether a piece is a Long Table (office.md "Long Table"): a Meeting Table of the `long` type. */
+export function isLongTable(el: { shape: string; variant?: unknown }): boolean {
+  return el.shape === 'meeting-table' && el.variant === LONG_TABLE_VARIANT;
+}
+
+// A Long Table's drawings, built for its box at its facing, are shared with the Meeting Table's
+// (@liveworkspace/avatar/furniture-art).
+export { longTableArt } from '@liveworkspace/avatar/furniture-art';
 
 // Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
 export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {

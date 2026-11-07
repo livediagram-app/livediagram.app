@@ -91,8 +91,8 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // A begin* handler ARMS a checkpoint here instead of taking it at
   // pointer-down. It's flushed lazily on the first real `tick` (the first
   // actual mutation) in the move effect below, so a plain click that
-  // selects an element — or a press on a locked element / tab that never
-  // mutates — leaves the undo history untouched. Taking the checkpoint at
+  // selects an element, or a press that never mutates, leaves the undo
+  // history untouched. Taking the checkpoint at
   // pointer-down pushed a no-op snapshot (and cleared the redo stack) on
   // every click, evicting real states from the bounded HISTORY_LIMIT.
   const checkpointPendingRef = useRef(false);
@@ -172,7 +172,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   // Shared opening for every arrow-handle drag: refuse to start while a
   // format-painter gesture is live, then resolve the
   // target as a typed arrow. Returns the deps snapshot + arrow, or null
-  // when the drag shouldn't begin. The setSelectedId / locked / style
+  // when the drag shouldn't begin. The setSelectedId / style
   // guards stay per-handler because their order differs between gestures.
   const {
     beginArrowTranslate,

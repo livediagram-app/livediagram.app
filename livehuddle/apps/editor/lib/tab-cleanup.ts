@@ -12,7 +12,6 @@
 // is on screen still starts from the real pre-hover state.
 
 import type { Element } from '@livehuddle/document';
-import { lockedElementIds } from '@/lib/locked-element-ids';
 import { autoAlignElements } from '@/lib/auto-align';
 
 /**
@@ -21,8 +20,5 @@ import { autoAlignElements } from '@/lib/auto-align';
  */
 export function cleanupElements(elements: Element[]): Element[] {
   if (elements.length === 0) return elements;
-  // Locked elements stay exactly where they are (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
-  return autoAlignElements(elements, lockedElementIds(elements));
+  return autoAlignElements(elements);
 }
-
-export { lockedElementIds };

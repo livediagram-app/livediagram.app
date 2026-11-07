@@ -73,6 +73,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   components: '#d946ef',
   devices: '#0284c7',
   icons: '#ec4899',
+  'audit-log': '#10b981',
   'roles-and-invites': '#a855f7',
   'team-shared-designs': '#0ea5e9',
   'assigned-actions': '#22c55e',

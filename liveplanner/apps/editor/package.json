@@ -36,6 +36,7 @@
     "@liveplanner/template-previews": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community-ui": "workspace:^",
     "@liveworkspace/explorer": "workspace:*",
@@ -60,18 +61,18 @@
     "@liveworkspace/source-ast": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",
-    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/postcss": "^4.3.4",
     "@testing-library/react": "^16.3.3",
     "@types/jsdom": "^30.0.0",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitest/coverage-v8": "^5.0.3",
-    "fake-indexeddb": "^6.2.5",
+    "@vitest/coverage-v8": "^5.1.0",
+    "fake-indexeddb": "^6.2.7",
     "jsdom": "^30.1.2",
     "oxlint": "^1.90.0",
-    "tailwindcss": "^4.3.3",
+    "tailwindcss": "^4.3.4",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   }
 }
