@@ -37,6 +37,7 @@
     "./signed-in-hint": "./src/signed-in-hint.ts",
     "./snapshot-svg": "./src/snapshot-svg.ts",
     "./tab-size": "./src/tab-size.ts",
+    "./tab-connection": "./src/tab-connection.ts",
     "./teams": "./src/teams.ts",
     "./title-case": "./src/title-case.ts",
     "./trash": "./src/trash.ts",

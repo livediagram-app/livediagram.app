@@ -14,6 +14,8 @@ import type { RouteIdentity } from './document-room/document-route';
 import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { HearingAnswer, HearingAsk } from './calls/room-calls';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 // What the canvas's action-assigned and mention emails are told (email/notifications.ts): all but the canvas,
@@ -72,6 +74,8 @@ export type DocumentRoomClient = {
   // action's phone notification skips an assignee already there). False for a canvas not started.
   notifyAction(input: ActionNotice): Promise<boolean>;
   notifyMention(input: MentionNotice): Promise<boolean>;
+  // The index's reverse write of a connected tab (document-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
   // join recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -96,6 +100,7 @@ export function documentRoom(
     exportFile: (query) => room.exportFile(documentId, query),
     importFile: (file) => room.importFile(documentId, file),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
@@ -124,6 +129,7 @@ export type DocumentRoomRpc = {
   exportFile(documentId: string, query: ExportQuery): Promise<ExportResult>;
   importFile(documentId: string, file: DocumentFileImport): Promise<void>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(
     documentId: string,

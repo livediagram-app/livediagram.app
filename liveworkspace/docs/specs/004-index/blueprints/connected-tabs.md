@@ -11,7 +11,7 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | 1    | This spec and blueprint; the shared contract in `packages/index-client/src/connections.ts` (`TabConnection`, the readers, the doors' paths, the limits and the default role)                                                                                      | on main |
 | 2    | The index: the `connections` table, `POST /items/:id/connections`, `GET /connections/:id`, the take-back, the app's confirm and removal doors, the sweep, purges, the pass's mark in `GET /items/:id/share`, the error codes, the index-client calls              | on main |
-| 3    | Each app (livediagram, liveplanner, livedocuments, livedesign, livehuddle) keeps a connected tab: the `tabs.connection` column, its summaries and reads, the internal door for the reverse tab, telling the index on removal, scope redaction, copies and exports | planned |
+| 3    | Each app (livediagram, liveplanner, livedocuments, livedesign, livehuddle) keeps a connected tab: the `tabs.connection` column, its summaries and reads, the internal door for the reverse tab, telling the index on removal, scope redaction, copies and exports | on main |
 | 4    | The shared UI, not yet mounted: the connected tab in `packages/workbench`'s tab strip, the Connect picker (Recent across apps, the role, both ways) and the opening states, in `packages/explorer` or `packages/workbench`                                        | planned |
 | 5    | Every editor mounts it: connected tabs in the tab bar, Connect liveworkspace File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                             | planned |
 
@@ -25,8 +25,10 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | `liveworkspace/apps/index/src/connection-rows.ts`           | dropping connections, purges' statements, href | 2    |
 | `liveworkspace/apps/index/src/own-grants.ts`                | checking a grant the index signed              | 2    |
 | `liveworkspace/apps/index/migrations/0010_connections.sql`  | the `connections` table                        | 2    |
-| `<app>/apps/api/migrations/NNNN_tab_connection.sql`         | `tabs.connection` in each app                  | 3    |
-| `<app>/apps/api/src/routes/internal-connected-tabs.ts`      | each app's door for the reverse tab            | 3    |
+| `packages/index-app/src/connected-tabs.ts`                  | the column, the reverse write, confirm, remove | 3    |
+| `packages/index-app/src/internal.ts` (`connectedTab`)       | the internal door for the reverse tab          | 3    |
+| `<app>/apps/api/src/<room>/<item>-schema.ts`                | `tabs.connection`, a schema step in each app   | 3    |
+| `<app>/apps/api/src/<room>/connected-tab.ts`                | each app's reverse tab and its room op         | 3    |
 | `packages/workbench/src/components/chrome/ConnectedTab.tsx` | the tab: the target app's logo and name        | 4    |
 
 ## Domain and naming
@@ -134,14 +136,37 @@ Timeline event: a tab that never appeared is not news.
 
 ### Each app (part 3)
 
-- `tabs.connection TEXT NULL`, the `tabConnectionText` of the tab's connection, read with `parseTabConnectionText`
-  into `TabSummary.connection` and the full tab's `connection`; never in `tabs.data`.
-- Written only by the room's tab add from an editor and by the internal door; REST tab writes, changesets and
-  imports drop it (`readTabConnection` for everything read).
-- A tab outside a tab-scoped visitor's scope drops `connection` with its name. A connected tab is never linked into
-  another document, duplicated within one, rendered, counted in stats or exported as an image.
-- When a tab with a connection leaves its last document, the server calls the removal door after the write.
-- Copies and exports keep `{ id, app, itemId }`; the index refuses it outside its host and tab.
+The shared part is `packages/index-app` `connected-tabs.ts`; each app binds it to its own tables and room.
+
+- **The column.** `tabs.connection TEXT NULL`, the `tabConnectionText` of the tab's connection, added by a schema step
+  in the item's Durable Object SQLite (`TAB_CONNECTION_SCHEMA`, a plain `ALTER`, run once by the schema's version
+  row; the apps have no D1, so no migration file). Read with `parseTabConnectionText` (`storedTabConnection`) into
+  `TabSummary.connection` and the full tab's `connection` (the wire shape `TabConnectionWire`,
+  `@liveworkspace/api-schema/tab-connection`); never in `tabs.data`: every body write drops a `connection` field.
+- **The editor's add.** Each app's editor adds a tab with the whole-tab save (`PUT /api/<items>/:id/tabs/:tabId`),
+  which a token never makes. Its `connection` (`tabConnectionOf`, exactly `{ id, app, itemId }`) is kept, in the same
+  batch as the body, onto a tab that is new or already connected (Connect Again, `connectionToKeep`), never onto a tab
+  of content; left out, the stored one stays. A connection that differs from the stored one is confirmed to the index
+  after the write (`confirmTabConnection`, `confirmConnection(host, cid, tabId)`, off the response path). The answer
+  echoes the tab's connection.
+- **The reverse write.** `POST /api/internal/items/:id/connected-tabs` (`handleInternalItems`' `connectedTab`, the
+  index's key alone) reads `readConnectedTabWrite`, else `400`. `appendConnectedTab` makes one read (the tab already
+  holding this connection id, the number of connected tabs, the next place) and one batch: an empty tab named `name`,
+  loose, at the end, stored as the app stores any new tab, then its column. The same connection id answers `200
+{ tabId }` and adds nothing; past `CONNECTIONS_PER_ITEM`, `409 connection_limit`; an item not started `404`; a
+  failure `503`; else `201 { tabId }`. The room then sends its tab outline as an ordered `document-meta` op (each
+  app's own outline op), carrying the tab's connection, so open editors place it.
+- **Removing.** The tab delete (`DELETE /api/<items>/:id/tabs/:tabId`) reads the tab's connection with its body in
+  the delete itself and, once the tab has left, tells the index (`tellConnectionLeft`, `removeConnection`), off the
+  response path. One item per Durable Object, so a tab leaving its item has left its last one.
+- **Redaction.** A tab outside a tab-scoped visitor's scope drops `connection` with its name (the document read and
+  the room's outline op are rebuilt from id and position alone). A Community visitor's document and tab reads drop
+  it, and a copy through a Community link keeps none.
+- **Never elsewhere.** `createTabShares`' `copyOf` answers a connected tab as no such tab, so it is never shared into
+  another item. Its body is empty, so it renders nothing and counts nothing in stats. Changesets and agent writes
+  never touch the column; a token's create drops it.
+- **Copies and exports.** The copy door, the Drive file's envelope and its import, and an editor's create (an Offline
+  Mode sync) keep exactly `{ id, app, itemId }` in the column; the index refuses it outside its host and tab.
 
 ## Data and persistence
 
@@ -192,6 +217,10 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 - Purges: two statements more per chunk of items, whatever the number of connections.
 - Each app's summary reads `tabs.connection` beside `name`, a column under 200 bytes, parsed only when not null; the
   tab body is never read for it.
+- Each app's tab save adds no read (the stored tab is already read for its revision) and one statement to its batch
+  only when it carries a connection; a tab delete reads the connection in its own `RETURNING`. The reverse write is
+  one read of three scalar subqueries over the item's tabs (at most a few hundred rows, the connection id matched with
+  `json_extract` only on the non-null rows) and one batch.
 - `CONNECTIONS_PER_ITEM` 50 bounds every host's rows.
 
 ## Testing
@@ -202,9 +231,12 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 | `liveworkspace/apps/index/src/connections.test.ts`      | making (each refusal; roles: a link Editor or Viewer of the host, and a link Editor of the target, may not), both ways (made, unreached, the caps), Connect Again, opening (item, link, gone, removed, copies, scoped and public grants, agents, the limit), taking back |
 | `liveworkspace/apps/index/src/connection-doors.test.ts` | the confirm and removal doors (wrong app, host, tab; twice), the pair kept, the sweep, purges of host and target, the Share dialog's mark                                                                                                                                |
 
-Parts 2 to 5 add theirs: the index's routes against each refusal above; each app's column, door, scope redaction and
-removal call; the UI's states and roles (Editor, Participant, Viewer each see and open a connected tab; only an Editor
-removes or connects).
+| `packages/index-app/src/connected-tabs.test.ts` | the reverse write (appended once, the cap, a fresh id), the column, what a save keeps, confirm and removal calls, the door's answers |
+| `packages/index-app/src/tab-shares.test.ts` | a connected tab is never shared into another item |
+| `<app>/apps/api/src/routes/connected-tabs.test.ts` | each app: the save keeps and confirms, autosave and Connect Again, a tab of content refused, removal told, a token's create, the reverse write and its room op, scope and Community redaction, copies and the Drive file, the roles (Editor adds and removes; all read) |
+
+Parts 4 and 5 add theirs: the UI's states and roles (Editor, Participant, Viewer each see and open a connected tab;
+only an Editor removes or connects).
 
 ## Constants and configuration
 

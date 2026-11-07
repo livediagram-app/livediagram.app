@@ -142,7 +142,8 @@ export type ShareSend = (to: string, messages: ShareMessage[]) => Promise<ShareA
 
 export type TabShares<E> = ReturnType<typeof createTabShares<E>>;
 
-type StoredTab = { name: string; data: string; updated_at: number };
+// `connection`: a connected tab's (connected-tabs.ts), which is never shared into another item.
+type StoredTab = { name: string; data: string; updated_at: number; connection: string | null };
 type ShareRow = {
   id: number;
   kind: 'body' | 'join' | 'leave';
@@ -160,7 +161,7 @@ export function createTabShares<E>(config: TabSharesConfig<E>) {
   async function storedTab(db: ShareDb, itemId: string, tabId: string): Promise<StoredTab | null> {
     return db
       .prepare(
-        `SELECT t.name, t.data, t.updated_at FROM tabs t JOIN ${linkTable} l ON l.tab_id = t.id
+        `SELECT t.name, t.data, t.updated_at, t.connection FROM tabs t JOIN ${linkTable} l ON l.tab_id = t.id
           WHERE l.${itemColumn} = ? AND t.id = ?`,
       )
       .bind(itemId, tabId)
@@ -223,7 +224,9 @@ export function createTabShares<E>(config: TabSharesConfig<E>) {
   async function copyOf(env: E, itemId: string, tabId: string): Promise<SharedTabCopy | null> {
     const db = config.db(env);
     const tab = await storedTab(db, itemId, tabId);
-    if (!tab) return null;
+    // A connected tab stands for another item and holds nothing of its own to share (connected-tabs.md): it is
+    // refused as a tab this item does not have.
+    if (!tab || tab.connection) return null;
     const body = { id: tabId, name: tab.name, data: tab.data, updatedAt: tab.updated_at };
     const extra = await extraOf(env, itemId, body);
     return {

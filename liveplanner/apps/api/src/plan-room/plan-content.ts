@@ -16,6 +16,8 @@ import { threadForViewer, type CardThread } from '@liveplanner/project';
 import { sheetRefIds } from '../db/sheet-refs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { rowToTabSummary, type TabRow } from '../tab-row';
+import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import type { PlanEnv, TabSummaryDTO } from '../types';
 
 // What the plan knows of itself (plan-schema.ts): its name, owner, team, provenance and creation intent. Null
@@ -76,7 +78,7 @@ function metaOf(head: PlanHeadRow | null): PlanMeta | null {
 export async function readPlanOutline(env: PlanEnv, planId: string): Promise<PlanOutline> {
   const [tabs, plan] = await env.PLAN_DB.batch([
     env.PLAN_DB.prepare(
-      `SELECT t.id, dt.plan_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
+      `SELECT t.id, dt.plan_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
          FROM plan_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.plan_id = ?
@@ -274,6 +276,9 @@ export type PlanCopy = {
     folder: string | null;
     data: string;
     elementCount: number | null;
+    // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
+    // nothing"): the index opens it only in its own host and tab, so in the copy it offers Connect Again.
+    connection?: TabConnection | null;
   }[];
   items: Record<string, unknown>[];
   sheets: Record<string, unknown>[];
@@ -341,6 +346,7 @@ export type ContentTabRow = {
   folder: string | null;
   data: string;
   element_count: number | null;
+  connection: string | null;
 };
 
 export async function readContentTabRows(
@@ -349,7 +355,7 @@ export async function readContentTabRows(
   onlyTabId: string | null,
 ): Promise<ContentTabRow[]> {
   const tabRows = await env.PLAN_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
        FROM plan_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.plan_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -386,6 +392,7 @@ export async function exportPlanCopy(
       data: redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
+      connection: storedTabConnection(row.connection),
     };
   });
   const itemIds = await copiedItemIds(env, planId, rows, onlyTabId);
@@ -549,6 +556,7 @@ export async function importPlanCopy(
       // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
     );
+    if (tab.connection) stmts.push(tabConnectionStatement(db, tab.id, tab.connection));
   }
   stmts.push(...insertItemRowsStatements(env, planId, copy.items));
   for (const chunk of chunksOf(copy.sheets)) {

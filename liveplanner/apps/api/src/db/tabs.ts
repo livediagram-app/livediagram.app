@@ -1,7 +1,13 @@
 // tabs — one row per tab in the plan's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the plan by
 // `plan_tabs`. Runs only inside the plan's Durable Object, on `env.PLAN_DB` (plan-room/plan-db.ts).
 
-import { shareLeaveStatements } from '@liveworkspace/index-app';
+import {
+  shareLeaveStatements,
+  storedTabConnection,
+  tabConnectionOf,
+  tabConnectionStatement,
+} from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import { capElementActions, drawnCount, type Tab } from '@liveplanner/project';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -29,7 +35,7 @@ export async function getTab(
   // also carries the per-project order_index, so the returned summary's
   // position is correct for whichever project the caller asked about.
   const row = await env.PLAN_DB.prepare(
-    `SELECT t.id, dt.plan_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.plan_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN plan_tabs dt ON dt.tab_id = t.id
       WHERE t.id = ? AND dt.plan_id = ?`,
@@ -83,7 +89,7 @@ export async function tabBodiesInOrder(
   limit: number,
 ): Promise<TabDTO[]> {
   const { results } = await env.PLAN_DB.prepare(
-    `SELECT t.id, dt.plan_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.plan_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN plan_tabs dt ON dt.tab_id = t.id
       WHERE dt.plan_id = ?
@@ -215,7 +221,9 @@ export function tabWriteStatements(
   // Action panel lists are bounded here, the one place every tab write
   // meets (docs/specs/012-collaboration/action-panel.md "The data").
   const tab = { ...input, elements: capElementActions(input.elements) };
-  const { id, name, ...rest } = tab;
+  // A connected tab's connection is its own column (tabConnectionStatement), set only by the editor's save and the
+  // index's reverse write: never part of the body, and never written by a body write.
+  const { id, name, connection: _connection, ...rest } = tab as Tab & { connection?: unknown };
   const data = JSON.stringify(rest);
   assertTabDataFits(id, data, 'upsertTab');
   const advance = 'advance' in revision;
@@ -280,16 +288,20 @@ export async function upsertTab(
 
 // A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
 // `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
+// `connection`: the editor's save of a connected tab (routes/tab-put-route.ts) sets it in the same batch; left out,
+// the stored connection stays as it is.
 export async function upsertTabAtRev(
   env: PlanEnv,
   projectId: string,
   input: Tab,
   orderIndex: number,
   expectedRev: number,
+  connection?: TabConnection,
 ): Promise<number> {
-  const results = await env.PLAN_DB.batch(
-    tabWriteStatements(env, projectId, input, orderIndex, { expected: expectedRev }),
-  );
+  const results = await env.PLAN_DB.batch([
+    ...tabWriteStatements(env, projectId, input, orderIndex, { expected: expectedRev }),
+    ...(connection ? [tabConnectionStatement(env.PLAN_DB, input.id, connection)] : []),
+  ]);
   return revFromBatch(results);
 }
 
@@ -321,12 +333,19 @@ export async function seedTabs(
   if (tabs.length === 0) return;
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
+  // A connected tab a create carries (an Offline Mode sync's, an import's) keeps exactly `{ id, app, itemId }` in its
+  // column, never in its body (connected-tabs.md "Copies carry nothing"): the index opens it only in its own host and
+  // tab, so anywhere else it offers Connect Again. A token's create never gets here with one (routes/projects.ts).
+  const bodies = capped.map(
+    ({ connection: _connection, ...tab }: Tab & { connection?: unknown }) => tab,
+  );
   // Every tab measured before any is written: a create seeds all or none.
-  for (const { id, name: _name, ...rest } of capped) {
+  for (const { id, name: _name, ...rest } of bodies) {
     assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
   }
-  const stmts = capped.flatMap((tab, idx) => {
+  const stmts = bodies.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
+    const connection = tabConnectionOf(capped[idx]);
     const data = JSON.stringify(rest);
     return [
       env.PLAN_DB.prepare(
@@ -345,6 +364,7 @@ export async function seedTabs(
          ON CONFLICT (plan_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
       ).bind(projectId, id, idx, now),
       tabStatsStatement(env, id, storedTabStatsOf(rest, data), now),
+      ...(connection ? [tabConnectionStatement(env.PLAN_DB, id, connection)] : []),
     ];
   });
   stmts.push(
@@ -367,16 +387,21 @@ export async function seedTabs(
 //
 // Answers the tab's stored body as it was removed (null when this plan did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this project's feed with it.
+// delete: the caller retracts the tab's comment events from this project's feed with it. And its
+// connection, when it was a connected tab: the caller tells the index it has left
+// (connected-tabs.md "Removing").
+export type DeletedTab = { data: string; connection: TabConnection | null };
+
 export async function deleteTabRow(
   env: PlanEnv,
   projectId: string,
   tabId: string,
-): Promise<string | null> {
+): Promise<DeletedTab | null> {
   const [unlinked] = await env.PLAN_DB.batch([
     env.PLAN_DB.prepare(
       `DELETE FROM plan_tabs WHERE plan_id = ? AND tab_id = ?
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data`,
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = plan_tabs.tab_id) AS data,
+                  (SELECT t.connection FROM tabs t WHERE t.id = plan_tabs.tab_id) AS connection`,
     ).bind(projectId, tabId),
     // A shared tab (plan-room/tab-shares.ts): every other holder hears that this plan left, and nothing else it
     // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
@@ -387,8 +412,11 @@ export async function deleteTabRow(
     // The tab's references are gone with it, so the plan's sheets settle here.
     ...sheetSettleStatements(env, projectId, Date.now()),
   ]);
-  const row = (unlinked as { results?: { data?: string | null }[] } | undefined)?.results?.[0];
-  return row?.data ?? null;
+  const row = (
+    unlinked as { results?: { data?: string | null; connection?: string | null }[] } | undefined
+  )?.results?.[0];
+  if (row?.data == null) return null;
+  return { data: row.data, connection: storedTabConnection(row.connection) };
 }
 
 // One position in a reorder request: the tab id plus its per-project

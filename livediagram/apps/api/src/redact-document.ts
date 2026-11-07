@@ -45,8 +45,16 @@ export function redactDocumentForReader(liveDoc: DocumentDTO, caller: string | n
 // A Community visitor's copy (docs/specs/025-community/community.md "Viewing a post's document"), on top of the
 // reader redaction: the post names its author (or "Anonymous") itself, so the document carries nobody's name or
 // colour, and nothing about where it sits in its owner's library or came from.
+// A connected tab keeps its name and loses its connection (connected-tabs.md): a stranger is told of no other item.
 export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
-  return { ...liveDoc, ownerName: null, ownerColor: null, folderId: null, source: null };
+  return {
+    ...liveDoc,
+    ownerName: null,
+    ownerColor: null,
+    folderId: null,
+    source: null,
+    tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => tab),
+  };
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

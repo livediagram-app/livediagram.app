@@ -10,6 +10,13 @@ import {
   parseChangesetSeen,
 } from '@livehuddle/api-schema';
 import { isValidTab, migrateIncomingTab, type Tab } from '@livehuddle/document';
+import {
+  confirmTabConnection,
+  connectionToKeep,
+  sameConnection,
+  tabConnectionOf,
+} from '@liveworkspace/index-app';
+import { indexAppClient } from '../index-service';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
@@ -26,7 +33,8 @@ import { grantOn, readBody, type DocumentRouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
-const RECORD_FIELDS = ['rev', 'documentId', 'orderIndex', 'updatedAt'] as const;
+// `connection` is the tab's own column (connected-tabs.md), read from the save on its own (connectionToKeep).
+const RECORD_FIELDS = ['rev', 'documentId', 'orderIndex', 'updatedAt', 'connection'] as const;
 
 // A token never does a whole-tab save (CS45): answered before anything is read.
 export function refuseTokenTabPut(
@@ -66,6 +74,9 @@ export async function handleTabPut(
   // element + comment tree). See bodyExceedsCap for why the header alone isn't enough.
   if (bodyExceedsCap(request, received, MAX_TAB_BYTES)) return payloadTooLarge();
   const incoming = withoutRecordFields({ ...received, id: tabId });
+  // A connected tab the editor adds, or connects again (connected-tabs.md "Connecting"): exactly
+  // `{ id, app, itemId }`, after the index made the connection for this tab. The index opens it only here.
+  const sentConnection = tabConnectionOf(received);
   const seenHeader = request.headers.get(CHANGESET_SEEN_HEADER);
   const seen = parseChangesetSeen(seenHeader);
   if (seenHeader !== null && seen === null) {
@@ -119,12 +130,23 @@ export async function handleTabPut(
         commentAuthors,
       ),
     };
+    const connection = connectionToKeep(sentConnection, {
+      exists: existingTab !== null,
+      connection: existingTab?.connection ?? null,
+    });
     let rev = 0;
     try {
       // The merged tab may outgrow the request: the storage layer measures what it stores
       // (docs/specs/015-api/api.md "Tab size").
       const written = await storeTab(async () => {
-        rev = await upsertTabAtRev(env, id, sanitised, orderIndex, existingTab?.rev ?? 0);
+        rev = await upsertTabAtRev(
+          env,
+          id,
+          sanitised,
+          orderIndex,
+          existingTab?.rev ?? 0,
+          connection,
+        );
       });
       if (!written) return payloadTooLarge();
     } catch (err) {
@@ -133,6 +155,11 @@ export async function handleTabPut(
       continue;
     }
     logMerge(id, tabId, merge);
+    // The tab holding a new connection is in: the index confirms it, or its sweep takes it back within the hour.
+    const kept = connection ?? existingTab?.connection;
+    if (connection && !sameConnection(connection, existingTab?.connection)) {
+      ctx.waitUntil?.(confirmTabConnection(indexAppClient(env), id, tabId, connection));
+    }
     // The owner's activity for liveworkspace's onboarding series goes with the canvas's summary push
     // (document-room/document-outbox.ts), at most once a minute.
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
@@ -173,6 +200,7 @@ export async function handleTabPut(
         orderIndex,
         updatedAt: Date.now(),
         rev,
+        ...(kept ? { connection: kept } : {}),
       },
     });
   }

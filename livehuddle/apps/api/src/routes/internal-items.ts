@@ -105,6 +105,9 @@ export function handleInternalItems(
       // docs/migration.md): added as a guest's are on sign-in, an id already there left alone.
       migratePerson: (payload) =>
         personStore(env, payload.personId).adoptShapeLibraries(payload.shapeLibraries),
+      // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
+      // connected tab at the end of the canvas's tab bar.
+      connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
       // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },

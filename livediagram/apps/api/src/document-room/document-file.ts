@@ -18,7 +18,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
-import type { ExportResult } from '@liveworkspace/index-app';
+import { storedTabConnection, tabConnectionOf, type ExportResult } from '@liveworkspace/index-app';
 import { MAX_DECK_LEN, MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
 import type { DocumentEnv } from '../types';
@@ -43,7 +43,15 @@ function envelopeTabOf(row: ContentTabRow): EnvelopeTab {
     'id' | 'name'
   > & { folder?: unknown };
   const { folder: _stale, ...rest } = body;
-  return { ...rest, id: row.id, name: row.name, ...(row.folder ? { folder: row.folder } : {}) };
+  // A connected tab's connection travels as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry nothing").
+  const connection = storedTabConnection(row.connection);
+  return {
+    ...rest,
+    id: row.id,
+    name: row.name,
+    ...(row.folder ? { folder: row.folder } : {}),
+    ...(connection ? { connection } : {}),
+  };
 }
 
 // The file, or `unchanged` when the caller already holds this last save, or `not_found` for a canvas not started.
@@ -75,7 +83,15 @@ export type DocumentFileRead =
 
 // The fields a tab read adds beside the body (tab-row.ts rowToTab), which a file the CLI wrote carries; the body
 // is stored without them.
-const ROW_FIELDS = ['documentId', 'orderIndex', 'updatedAt', 'rev', 'folder'] as const;
+// A connected tab's `connection` is its own column, read with tabConnectionOf, never stored in the body.
+const ROW_FIELDS = [
+  'documentId',
+  'orderIndex',
+  'updatedAt',
+  'rev',
+  'folder',
+  'connection',
+] as const;
 
 // Read a file's text as a new canvas's content: another kind, an unreadable envelope or a malformed tab is
 // `invalid_file`; a tab past the tab cap, or a deck past its cap, `too_large` (docs/specs/015-api/api.md "Tab size").
@@ -109,6 +125,7 @@ export function readDocumentFile(text: string): DocumentFileRead {
       folder,
       data,
       elementCount: drawnCount(tab),
+      connection: tabConnectionOf(incoming) ?? null,
     });
   }
   return { ok: true, content: { presentation, copy: { tabs: copied, images: [] } } };

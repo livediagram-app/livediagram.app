@@ -114,6 +114,16 @@ describe('redactDocumentForCommunity', () => {
     ownerColor: '#f97316',
     folderId: 'f1',
     source: 'mcp',
+    tabs: [
+      {
+        id: 't9',
+        documentId: 'd1',
+        name: 'Roadmap',
+        orderIndex: 0,
+        updatedAt: 1,
+        connection: { id: 'cn_abcdefghijklmnop', app: 'liveplanner', itemId: 'p1' },
+      },
+    ],
     presentation: JSON.stringify({
       decks: [
         {
@@ -136,6 +146,10 @@ describe('redactDocumentForCommunity', () => {
     const out = redactDocumentForCommunity(posted);
     expect(out).toMatchObject({ ownerName: null, ownerColor: null, folderId: null, source: null });
     expect(out.name).toBe('Plan');
+    // A connected tab keeps its name and names no other item (connected-tabs.md).
+    expect(out.tabs).toEqual([
+      { id: 't9', documentId: 'd1', name: 'Roadmap', orderIndex: 0, updatedAt: 1 },
+    ]);
   });
 
   it('keeps the slides without their presenter notes', () => {

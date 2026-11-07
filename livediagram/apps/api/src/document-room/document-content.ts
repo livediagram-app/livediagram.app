@@ -9,6 +9,8 @@ import { servableImageIds } from '../db/image-grants';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
+import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
 
 // What the document knows of itself (document-schema.ts): its name, owner, team and provenance. Null until the
@@ -60,7 +62,7 @@ export async function readDocumentOutline(
 ): Promise<DocumentOutline> {
   const [tabs, document] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
-      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
+      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?
@@ -229,6 +231,9 @@ export type DocumentCopy = {
     folder: string | null;
     data: string;
     elementCount: number | null;
+    // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
+    // nothing"): the index opens it only in its own host and tab, so in the copy it offers Connect Again.
+    connection?: TabConnection | null;
   }[];
   // The images its bodies place that the source may serve (db/image-grants.ts): the copy is granted each, so an
   // image a teammate placed in the source still shows in a copy its new owner makes.
@@ -244,6 +249,7 @@ export type ContentTabRow = {
   folder: string | null;
   data: string;
   element_count: number | null;
+  connection: string | null;
 };
 
 export async function readContentTabRows(
@@ -252,7 +258,7 @@ export async function readContentTabRows(
   onlyTabId: string | null,
 ): Promise<ContentTabRow[]> {
   const tabRows = await env.DOCUMENT_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
        FROM document_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.document_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -293,6 +299,8 @@ export async function exportDocumentCopy(
             : remapped,
         // Link remapping rewrites ids inside elements, never their number, so the count carries over.
         elementCount: row.element_count,
+        // Not through a Community post's link: a stranger's copy names no other item.
+        connection: redactForCommunity ? null : storedTabConnection(row.connection),
       };
     }),
   };
@@ -362,6 +370,7 @@ export async function importDocumentCopy(
       // From the copied body itself (docs/specs/013-workspace/explorer-details-view.md).
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
     );
+    if (tab.connection) stmts.push(tabConnectionStatement(db, tab.id, tab.connection));
     // Image references from the copied body itself, so a copy is indexed even if its source never was.
     if (images.length > 0) {
       stmts.push(
