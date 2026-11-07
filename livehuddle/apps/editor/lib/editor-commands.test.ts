@@ -7,7 +7,6 @@ function handlers(): CommandHandlers {
   return {
     deleteSelection: vi.fn(),
     duplicateSelection: vi.fn(),
-    toggleLockSelection: vi.fn(),
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
@@ -101,11 +100,13 @@ describe('buildEditorCommands — in a workbench', () => {
 });
 
 describe('buildEditorCommands — selection commands', () => {
-  it('offers delete/duplicate/lock/reorder for any selection (incl. multi)', () => {
+  it('offers delete/duplicate/reorder for any selection (incl. multi), and no Lock', () => {
     const out = ids({ ...base, selectionCount: 3 });
     expect(out).toEqual(
-      expect.arrayContaining(['delete', 'duplicate', 'lock', 'bring-to-front', 'send-to-back']),
+      expect.arrayContaining(['delete', 'duplicate', 'bring-to-front', 'send-to-back']),
     );
+    // not-in-livehuddle.md "Element and Tab Locking".
+    expect(out).not.toContain('lock');
     // Single-only commands stay hidden for a multi-selection.
     expect(out).not.toContain('rotate-90');
     expect(out).not.toContain('note');
@@ -360,35 +361,32 @@ describe('canvas tool commands', () => {
 
 // docs/specs/009-elements/step-number.md: Renumber Steps in the command palette, for an editor on a tab with steps.
 describe('buildEditorCommands — Renumber Steps', () => {
-  it('offers it only when the tab holds a step, and never read-only or on a locked tab', () => {
+  it('offers it only when the tab holds a step, and never read-only', () => {
     expect(ids(base)).not.toContain('renumber-steps');
     expect(ids({ ...base, tabHasSteps: true })).toContain('renumber-steps');
     expect(ids({ ...base, tabHasSteps: true, isReadOnly: true })).not.toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true, tabLocked: true })).not.toContain('renumber-steps');
   });
 });
 
-// docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
-// offers none.
-describe('buildEditorCommands — locked tab', () => {
-  it('offers no element edits or layout cleanup on a locked tab', () => {
-    const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
-    expect(got).not.toContain('delete');
-    expect(got).not.toContain('duplicate');
-    expect(got.some((id) => id.startsWith('auto-layout'))).toBe(false);
-    expect(got).not.toContain('auto-align');
-    // The document and the view stay workable.
-    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
-  });
-
-  it('keeps them on an unlocked tab', () => {
+// The element edits and layout cleanup an editor's search offers alongside the document and view verbs.
+describe('buildEditorCommands: an editor', () => {
+  it('offers the element edits, layout cleanup and the document and view verbs together', () => {
     const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(got).toEqual(expect.arrayContaining(['auto-align']));
+    expect(got).toEqual(
+      expect.arrayContaining([
+        'delete',
+        'duplicate',
+        'auto-align',
+        'create-tab',
+        'rename-document',
+        'fit-to-screen',
+      ]),
+    );
   });
 
-  it('offers Walk on a locked tab, read-only or not, but not while walking (avatar-mode.md)', () => {
-    expect(ids({ ...base, tabLocked: true })).toContain('tool:avatar');
-    expect(ids({ ...base, tabLocked: true, isReadOnly: true })).toContain('tool:avatar');
+  it('offers Walk, read-only or not, but not while walking (avatar-mode.md)', () => {
+    expect(ids(base)).toContain('tool:avatar');
+    expect(ids({ ...base, isReadOnly: true })).toContain('tool:avatar');
     expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
   });
 });

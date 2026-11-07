@@ -11,7 +11,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 // shape whose kind livehuddle no longer has (one of the Collaborate elements Work Tracker #423 part 4 deleted, or a
 // kind it never had) draws as a plain card in its own box. A dashed outline, a muted fill, the kind's name, "Not in
 // livehuddle" beneath it and the stored label beneath that when it has one. It presses nothing and opens nothing:
-// the element still selects, moves, resizes, copies, locks, layers, deletes and takes comments through the wrapper
+// the element still selects, moves, resizes, copies, layers, deletes and takes comments through the wrapper
 // around it, like any element.
 //
 // The card is laid out once, in @livehuddle/document (retiredPlaceholderLayout), and drawn here from the same layout

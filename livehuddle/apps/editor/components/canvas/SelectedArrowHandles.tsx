@@ -22,7 +22,6 @@ export function SelectedArrowHandles({
   curveControl,
   curveAnchors,
   elbowPoint,
-  isLocked,
   guardPress,
   onBeginEndpointDrag,
   onBeginCurveDrag,
@@ -36,7 +35,6 @@ export function SelectedArrowHandles({
   curveControl: { x: number; y: number } | null;
   curveAnchors: { x: number; y: number }[] | null;
   elbowPoint: { x: number; y: number } | null;
-  isLocked: boolean;
   // Records the press; true when it was consumed as a double-press.
   guardPress: (e: ReactPointerEvent) => boolean;
   onBeginEndpointDrag: (id: string, end: ArrowEnd, e: ReactPointerEvent) => void;
@@ -45,37 +43,37 @@ export function SelectedArrowHandles({
   onDeleteCurvePoint?: (id: string, index: number) => void;
   onBeginElbowDrag?: (id: string, e: ReactPointerEvent) => void;
 }) {
-  // Primary button only, not locked, and not the second half of a double.
+  // Primary button only, and not the second half of a double.
   const pressed = (e: ReactPointerEvent): boolean => {
-    if (isLocked || e.button !== 0) return false;
+    if (e.button !== 0) return false;
     e.stopPropagation();
     return !guardPress(e);
   };
   return (
     <>
       <EndpointHandle
+        disabled={false}
         cx={from.x}
         cy={from.y}
         pinned={arrow.from.kind !== 'free'}
-        disabled={isLocked}
         onPointerDown={(e) => {
           if (pressed(e)) onBeginEndpointDrag(arrow.id, 'from', e);
         }}
       />
       <EndpointHandle
+        disabled={false}
         cx={to.x}
         cy={to.y}
         pinned={arrow.to.kind !== 'free'}
-        disabled={isLocked}
         onPointerDown={(e) => {
           if (pressed(e)) onBeginEndpointDrag(arrow.id, 'to', e);
         }}
       />
       {curveControl && onBeginCurveDrag ? (
         <CurveHandle
+          disabled={false}
           cx={curveControl.x}
           cy={curveControl.y}
-          disabled={isLocked}
           onPointerDown={(e) => {
             if (pressed(e)) onBeginCurveDrag(arrow.id, e);
           }}
@@ -84,10 +82,10 @@ export function SelectedArrowHandles({
       {curveAnchors && onBeginCurvePointDrag
         ? curveAnchors.map((a, i) => (
             <CurveHandle
+              disabled={false}
               key={i}
               cx={a.x}
               cy={a.y}
-              disabled={isLocked}
               onPointerDown={(e) => {
                 // A right-click must fall through to onContextMenu (delete
                 // this point) WITHOUT arming a drag: arming one and then
@@ -97,14 +95,14 @@ export function SelectedArrowHandles({
                 if (pressed(e)) onBeginCurvePointDrag(arrow.id, i, e);
               }}
               onContextMenu={
-                isLocked || !onDeleteCurvePoint
-                  ? undefined
-                  : (e) => {
+                onDeleteCurvePoint
+                  ? (e) => {
                       // Right-click a control point to delete it.
                       e.preventDefault();
                       e.stopPropagation();
                       onDeleteCurvePoint(arrow.id, i);
                     }
+                  : undefined
               }
             />
           ))
@@ -114,9 +112,9 @@ export function SelectedArrowHandles({
         // (white square, brand-600 outline) so the two read as siblings: each
         // one bends its respective arrow style. Sits exactly on the elbow.
         <CurveHandle
+          disabled={false}
           cx={elbowPoint.x}
           cy={elbowPoint.y}
-          disabled={isLocked}
           onPointerDown={(e) => {
             if (pressed(e)) onBeginElbowDrag(arrow.id, e);
           }}

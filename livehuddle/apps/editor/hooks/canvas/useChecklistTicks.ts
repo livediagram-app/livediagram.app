@@ -17,7 +17,7 @@ export function useChecklistTicks({
   applyElementDelta: ApplyElementDelta;
   // The active tab's elements, to read a checklist row before ticking it.
   activeElements: Element[];
-  // A view-role visitor / locked tab. The room already drops their mutations
+  // A view-role visitor. The room already drops their mutations
   // (docs/specs/015-api/api.md), so this is about not lying to them in the UI.
   editsBlocked: boolean;
 }) {

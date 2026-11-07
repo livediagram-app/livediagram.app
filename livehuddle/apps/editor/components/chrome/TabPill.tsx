@@ -3,7 +3,6 @@ import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameE
 import type { Tab } from '@livehuddle/document';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
-import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
 import { SideBySideIcon } from '@livehuddle/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
@@ -100,7 +99,6 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       readOnly={readOnly}
       // The open tab's name takes the tab theme's accent, made legible on its card; the others keep neutral ink.
       accent={isActive ? legibleTabAccent(tab, isDark) : undefined}
-      lockIcon={tab.locked ? <TabLockIcon /> : null}
       // Tour anchor (docs/specs/007-editor/editor-tour.md): the Tabs step highlights the open tab together with the
       // add button.
       tourId={isActive ? 'active-tab' : undefined}

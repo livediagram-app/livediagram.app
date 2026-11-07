@@ -57,9 +57,6 @@ export type CommandContext = {
   workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT side (Edit or Walk) is dropped.
   canvasTool: string;
-  // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
-  // offers none of them: no selection verbs, no layout cleanup.
-  tabLocked?: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -67,7 +64,6 @@ export type CommandContext = {
 export type CommandHandlers = {
   deleteSelection: () => void;
   duplicateSelection: () => void;
-  toggleLockSelection: () => void;
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
@@ -160,7 +156,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   const out: EditorCommand[] = [];
 
-  if (!ctx.tabLocked) out.push(...selectionCommands(ctx, h));
+  out.push(...selectionCommands(ctx, h));
 
   // Walking (docs/specs/008-canvas/avatar-mode.md "No editing chrome while walking"): no history and no Tab Style.
   const walking = ctx.canvasTool === 'avatar';
@@ -240,23 +236,19 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // Layout cleanup (docs/specs/008-canvas/layout-cleanup.md, here and nowhere else) + the app-level dialogs, then the
   // view-safe verbs last so selection / document commands keep the better
   // ranks for ambiguous queries.
-  // Layout cleanup moves the tab's elements, so a locked tab offers none of it.
-  if (!ctx.tabLocked) {
+  out.push({
+    id: 'auto-align',
+    name: 'Auto-align to Grid',
+    keywords: 'align grid snap straighten cleanup arrange tidy up layout',
+    run: () => h.autoAlign(),
+  });
+  if (ctx.tabHasSteps) {
     out.push({
-      id: 'auto-align',
-      name: 'Auto-align to Grid',
-      keywords: 'align grid snap straighten cleanup arrange tidy up layout',
-      run: () => h.autoAlign(),
+      id: 'renumber-steps',
+      name: 'Renumber Steps',
+      keywords: 'renumber step steps number numbers order sequence walkthrough 1 2 3 reading order',
+      run: h.renumberSteps,
     });
-    if (ctx.tabHasSteps) {
-      out.push({
-        id: 'renumber-steps',
-        name: 'Renumber Steps',
-        keywords:
-          'renumber step steps number numbers order sequence walkthrough 1 2 3 reading order',
-        run: h.renumberSteps,
-      });
-    }
   }
   out.push({
     id: 'import',

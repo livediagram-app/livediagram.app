@@ -109,7 +109,6 @@ describe('ElementTourHost offer', () => {
   it.each([
     ['a Participant', { can: { level: 'participate' } }],
     ['a Viewer', { can: { level: 'view' } }],
-    ['locked', { activeTab: { id: 'tab1', elements: [{ ...portal, locked: true }] } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['under a welcome overlay', { anyWelcomeOpen: true }],

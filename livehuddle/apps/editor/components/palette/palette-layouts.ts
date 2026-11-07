@@ -153,7 +153,7 @@ export function paletteLandingCategory(): string {
 
 // A Participant has no palette (docs/specs/013-workspace/share-roles.md "A Participant walks").
 
-// The canvas tools a read-only session (an Editor on a locked tab) presses on a Selection Mode button: the two sides
+// The canvas tools a read-only Editor presses on a Selection Mode button: the two sides
 // of the Edit | Walk toggle, neither of which writes. A Participant and a Viewer press none: they are always walking
 // (docs/specs/013-workspace/share-roles.md "Always walking").
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [

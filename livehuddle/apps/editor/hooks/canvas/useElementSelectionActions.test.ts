@@ -55,59 +55,25 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
 
 const ids = (els: Element[] | null) => (els ?? []).map((e) => e.id).sort();
 
-describe('deleteSelected lock protection', () => {
-  it('keeps a locked element and never commits when only it is selected', () => {
-    const { actions, getResult } = setup([shape('a', { locked: true }), shape('b')], {
-      selection: ['a'],
-    });
-    actions.deleteSelected();
-    // Nothing deletable → no commit ran at all.
-    expect(getResult()).toBeNull();
-  });
-
-  it('deletes unlocked members of a group but spares the locked one', () => {
-    const els = [shape('a'), shape('b', { locked: true })];
-    const { actions, getResult } = setup(els, { selection: ['a', 'b'] });
-    actions.deleteSelected();
-    expect(ids(getResult())).toEqual(['b']);
-  });
-
-  it('refuses to delete anything when the tab is locked', () => {
-    const { actions, getResult } = setup([shape('a'), shape('b')], {
-      selection: ['a'],
-      tabLocked: true,
-    });
-    actions.deleteSelected();
-    expect(getResult()).toBeNull();
-  });
-
-  it('cascades arrows of a deleted element but spares a locked arrow', () => {
+// A tab or element saved locked before locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and
+// Tab Locking") deletes like any other.
+describe('deleting what was saved locked', () => {
+  it('deletes a locked element, on a locked tab, with its locked arrow', () => {
     const els = [
-      shape('a'),
+      shape('a', { locked: true } as Partial<ShapeElement>),
       shape('b'),
-      pinnedArrow('open', 'a', 'b'),
-      { ...pinnedArrow('locked', 'a', 'b'), locked: true } as ArrowElement,
+      { ...pinnedArrow('arrow', 'a', 'b'), locked: true } as ArrowElement,
     ];
-    const { actions, getResult } = setup(els, { selection: ['a'] });
+    const { actions, getResult } = setup(els, { selection: ['a'], tabLocked: true });
     actions.deleteSelected();
-    // 'a' goes, its unlocked arrow cascades away, the locked arrow + 'b' stay.
-    expect(ids(getResult())).toEqual(['b', 'locked']);
-  });
-});
-
-describe('deleteMultiSelected lock protection', () => {
-  it('keeps locked members and deletes the rest', () => {
-    const els = [shape('a'), shape('b', { locked: true }), shape('c')];
-    const { actions, getResult } = setup(els, { selection: ['a', 'b', 'c'] });
-    actions.deleteMultiSelected();
     expect(ids(getResult())).toEqual(['b']);
   });
 
-  it('is a no-op when every member is locked', () => {
-    const els = [shape('a', { locked: true }), shape('b', { locked: true })];
+  it('deletes every member of a multi-selection, locked ones included', () => {
+    const els = [shape('a'), shape('b', { locked: true } as Partial<ShapeElement>), shape('c')];
     const { actions, getResult } = setup(els, { selection: ['a', 'b'] });
     actions.deleteMultiSelected();
-    expect(getResult()).toBeNull();
+    expect(ids(getResult())).toEqual(['c']);
   });
 });
 

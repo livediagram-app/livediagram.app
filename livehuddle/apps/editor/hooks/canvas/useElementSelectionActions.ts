@@ -1,7 +1,7 @@
 // Structural element operations, lifted out of editor-page.tsx.
 // Where useElementStyle mutates *fields* on the selection, these
 // handlers change the element *set* and/or the selection itself:
-// delete, marquee commit, lock, and the duplicate family
+// delete, marquee commit, and the duplicate family
 // (single, multi-select, and duplicate-and-connect).
 //
 // They all run through the page's history-aware `commit`, and most
@@ -70,29 +70,17 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
   });
 
   const deleteSelected = () => {
-    // A locked tab protects everything on it — nothing is deletable.
-    if (activeTab.locked === true) return;
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    // Locked elements can't be deleted: drop them from the delete set so
-    // only the unlocked part of the selection (and arrows pinned to it)
-    // goes. If the whole selection is locked, the delete is a no-op.
-    const targetIds = deletableIds(ids);
-    if (targetIds.size === 0) return;
-    removeSelected(targetIds);
+    removeSelected(ids);
   };
 
   const removeSelected = (targetIds: Set<string>) => {
     haptic('delete');
     commit((els) => {
       // The arrows attached to what goes, and those hung off them in turn (withAttachedArrows).
-      const gone = withAttachedArrows(els, targetIds, isProtected);
-      return els.filter((el) => {
-        // Belt-and-suspenders: never drop a locked element, even via the
-        // arrow cascade (a locked arrow survives its endpoint going).
-        if (el.locked === true) return true;
-        return !gone.has(el.id);
-      });
+      const gone = withAttachedArrows(els, targetIds);
+      return els.filter((el) => !gone.has(el.id));
     });
     setSelectedId(null);
     setEditingId(null);
@@ -107,18 +95,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     const deleted = activeTab.elements.filter((el) => targetIds.has(el.id));
     if (deleted.length === 0) return;
     announce(`Deleted ${deleted.length === 1 ? describeOne(deleted[0]!) : describeMany(deleted)}`);
-  };
-
-  // A locked element: a delete leaves it, and a mind branch walk stops at it.
-  const isProtected = (el: Element) => el.locked === true;
-
-  // The deletable subset of a selection: ids whose element isn't locked.
-  // Locked elements are protected from deletion (docs/specs/008-canvas/canvas-and-palette.md Locking).
-  const deletableIds = (ids: ReadonlySet<string>): Set<string> => {
-    const lockedIds = new Set(
-      activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
-    );
-    return new Set([...ids].filter((id) => !lockedIds.has(id)));
   };
 
   // Marquee box-select committed by Canvas on pointer-up. Mutex with
@@ -144,45 +120,21 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     setFormatSourceId(null);
   };
 
-  // Toggle lock across every multi-selected element. If any member is
-  // unlocked, the click locks everyone — so a partial-locked selection
-  // resolves toward "all locked" with one click instead of leaving the
-  // user to figure out the inverse state.
-  const toggleLockMultiSelected = () => {
-    const { multiSelectedIds } = readSelection();
-    if (multiSelectedIds.size === 0) return;
-    const anyUnlocked = activeTab.elements.some(
-      (el) => multiSelectedIds.has(el.id) && el.locked !== true,
-    );
-    commit((els) =>
-      els.map((el) => (multiSelectedIds.has(el.id) ? { ...el, locked: anyUnlocked } : el)),
-    );
-    track('Element', anyUnlocked ? 'Locked' : 'Unlocked');
-  };
-
   // Multi-select delete: removes every marquee-selected element plus any
   // arrows that reference one of them. Falls back to single-element delete
   // when there's no active multi-selection.
   const deleteMultiSelected = () => {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
-    if (activeTab.locked === true) return;
-    // Same lock rule as deleteSelected: protect locked members, delete the
-    // rest. A fully-locked marquee is a no-op (selection stays put).
-    const targetIds = deletableIds(multiSelectedIds);
-    if (targetIds.size === 0) return;
-    removeMultiSelected(targetIds);
+    removeMultiSelected(new Set(multiSelectedIds));
   };
 
   const removeMultiSelected = (targetIds: Set<string>) => {
     track('Element', 'Deleted'); // parity with single-element deleteSelected
     announceDeleted(targetIds);
     commit((els) => {
-      const gone = withAttachedArrows(els, targetIds, isProtected);
-      return els.filter((el) => {
-        if (el.locked === true) return true;
-        return !gone.has(el.id);
-      });
+      const gone = withAttachedArrows(els, targetIds);
+      return els.filter((el) => !gone.has(el.id));
     });
     setMultiSelectedIds(new Set());
     setEditingId(null);
@@ -223,7 +175,6 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
     selectMarquee,
-    toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
     narrowMultiSelection,

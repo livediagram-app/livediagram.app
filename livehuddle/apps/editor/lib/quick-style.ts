@@ -70,13 +70,10 @@ export type QuickStyleView = {
   caption?: string;
 };
 
-// An unlocked shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
+// A shape, arrow, text element or path (docs/specs/023-draw-mode/path-tool.md "Style"):
 // the only elements the panel styles.
 export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
-  return (
-    (el.type === 'shape' || el.type === 'arrow' || el.type === 'text' || el.type === 'path') &&
-    el.locked !== true
-  );
+  return el.type === 'shape' || el.type === 'arrow' || el.type === 'text' || el.type === 'path';
 }
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {

@@ -27,8 +27,6 @@ function props(over: Partial<Props> = {}): Props {
     onImport: noop,
     onExport: noop,
     onCopyTo: noop,
-    onToggleLock: noop,
-    locked: false,
     selfId: 'me',
     otherDocuments: [],
     folderNames: [],

@@ -102,12 +102,12 @@ export function usePathTool({
   // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
   const pathOf = (id: string | null): PathElement | null => {
     const el = id ? elements.find((e) => e.id === id) : undefined;
-    return el?.type === 'path' && el.locked !== true && !isCompoundPath(el) ? el : null;
+    return el?.type === 'path' && !isCompoundPath(el) ? el : null;
   };
   const editable = canvasTool === 'select' && pendingDraw === null;
   const edited = pathOf(editingId);
   const editing = editable ? edited : null;
-  // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
+  // A tool picked, the path out of reach or deleted (by a peer too): edit mode leaves.
   const stale =
     editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
   // Edit mode asked of a combined shape, which has no points to edit one by one.
