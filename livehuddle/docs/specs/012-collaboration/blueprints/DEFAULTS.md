@@ -27,9 +27,9 @@ One row per default applied where a spec is silent or qualitative.
 | PM1 | presentation-mode | What counts as a step (counted from the slide asked for) | A move of exactly one slide; a jump (list, Home, End) is taken as given                            |
 | PM2 | presentation-mode | What logs a refused fullscreen                           | `console.warn`, always shown ([Console logging](../../003-system-architecture/console-logging.md)) |
 
-| #   | Blueprint       | Spec silence                                    | Default applied                                                                          |
-| --- | --------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| PA1 | proximity-audio | "The mic is only on while someone is in range"  | Open while another walker is on your tab (they may hear you or see your bars)            |
-| PA2 | proximity-audio | What starts audio                               | A Join Audio press: the browser's gesture for sound and the microphone prompt            |
-| PA4 | proximity-audio | How a late joiner learns a speaker's microphone | The speaker resends its locator when a new walker reaches its tab, at most once a second |
-| PA6 | proximity-audio | Where the equaliser sits                        | Above the name chip, at reading size, in the speaker's colour                            |
+| #   | Blueprint       | Spec silence                                    | Default applied                                                                                                                           |
+| --- | --------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| PA1 | proximity-audio | "The mic is only on while someone is in range"  | Open while another walker is on your tab (they may hear you or see your bars)                                                             |
+| PA2 | proximity-audio | What starts audio                               | Walking where there is a call (muted, no prompt); sound resumes on the next press or key, the microphone prompt comes on the first unmute |
+| PA4 | proximity-audio | How a late joiner learns a speaker's microphone | The speaker resends its locator when a new walker reaches its tab, at most once a second                                                  |
+| PA6 | proximity-audio | Where the equaliser sits                        | Above the name chip, at reading size, in the speaker's colour                                                                             |

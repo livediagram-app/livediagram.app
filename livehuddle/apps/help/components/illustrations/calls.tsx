@@ -1,15 +1,15 @@
-// Calls illustrations (docs/specs/018-help/help-app.md): the call group at the left of the avatar palette, the
+// Calls illustrations (docs/specs/018-help/help-app.md): the call group on the Call dock at the bottom centre, the
 // microphone's states, earshot and the talking bars, and the camera and screen bubbles. Calls cannot run without
 // the Realtime secrets, so these are drawn rather than shot, from the call components' own words and tones:
 // apps/editor/components/calls/CallStripGroup.tsx (the strip and its hover cards), TalkingBars.tsx
 // ("Sam is talking, walk over"), MediaBubble.tsx ("Maximise Sam's Camera"), CallBubbles.tsx (a close group's row
 // and tails), MaximisedBubble.tsx (Restore) and
-// ScreenShareStripGroup.tsx (Sharing and Stop Sharing, in the look's place while you share). Icons are the strip's own Lucide glyphs.
+// ScreenShareStripGroup.tsx (Sharing and Stop Sharing, after the call group on the Call dock while you share) and
+// CallDock.tsx (the card). Icons are the strip's own Lucide glyphs.
 
 import type { ReactNode } from 'react';
 import {
   lucideCircleDot,
-  lucideHeadphoneOff,
   lucideMaximize2,
   lucideMic,
   lucideMicOff,
@@ -77,14 +77,15 @@ type Seg = {
   name: string;
   icon?: readonly IconPrim[];
   tone?: Tone;
+  // The microphone's level meter is filling (it is open and somebody hears you).
   ring?: boolean;
   w?: number;
-  // The glyph alone, square: Join Audio, the microphone, the Camera and Share (avatar-mode.md "The avatar palette").
-  glyph?: boolean;
+  // A divider before it: the Screen Share group sits behind one (avatar-mode.md "The Call dock").
+  divider?: boolean;
 };
 
-const segWidth = (s: Seg) =>
-  s.w ?? (s.glyph ? SEG_H : s.icon ? Math.round(s.name.length * 6 + 36) : 28);
+// Every button is named beside its glyph on a desktop (avatar-mode.md "The Call dock").
+const segWidth = (s: Seg) => s.w ?? (s.icon ? Math.round(s.name.length * 6 + 36) : 28);
 
 /** A cluster strip: a white frame of segments parted by hairlines, each its icon and its name (a wide desktop's
  *  look). A segment with no icon is the strip's `?`. Returns the frame at (x, y). */
@@ -121,31 +122,29 @@ function Strip({ x, y, segs }: { x: number; y: number; segs: Seg[] }) {
               />
             )}
             {s.ring && (
+              // The level meter: the button fills from its foot with your voice (brand tint on white here).
               <rect
-                x={sx + 4}
-                y={y + 4}
-                width={w - 8}
-                height={SEG_H - 8}
-                rx={5}
-                className="fill-none stroke-brand-400"
-                strokeWidth={1.6}
+                x={sx + 2}
+                y={y + SEG_H - 4 - 14}
+                width={w - 4}
+                height={14}
+                rx={4}
+                className="fill-brand-200"
                 opacity={0.7}
               />
             )}
             {s.icon ? (
               <>
                 <Icon prims={s.icon} cx={sx + 17} cy={y + SEG_H / 2} className={ink.stroke} />
-                {s.glyph ? null : (
-                  <Label
-                    x={sx + 28}
-                    y={y + SEG_H / 2 + 1}
-                    size={10.5}
-                    weight={600}
-                    className={ink.fill}
-                  >
-                    {s.name}
-                  </Label>
-                )}
+                <Label
+                  x={sx + 28}
+                  y={y + SEG_H / 2 + 1}
+                  size={10.5}
+                  weight={600}
+                  className={ink.fill}
+                >
+                  {s.name}
+                </Label>
               </>
             ) : (
               <Label
@@ -166,49 +165,57 @@ function Strip({ x, y, segs }: { x: number; y: number; segs: Seg[] }) {
   );
 }
 
-/** The avatar palette's row across the top of the canvas: the call group at its left, its buttons side by side, then a
- *  divider and the start of the look's categories, faded where the strip runs on (avatar-mode.md "The avatar
- *  palette"). */
-function PaletteRow({
-  y,
-  segs,
-  look: lookShown,
-}: {
-  y: number;
-  segs: Seg[];
-  // The look's categories after the group; while you share only Status is left.
-  look?: readonly string[];
-}) {
-  const x = 16;
+/** The Call dock: a card at the bottom centre of the canvas holding the call's buttons side by side (Say's tint under
+ *  each, desktop names beside the glyphs), centred in the scene (avatar-mode.md "The Call dock"). */
+function DockRow({ y, segs }: { y: number; segs: Seg[] }) {
+  const gap = 4;
+  const divW = 9;
   const widths = segs.map(segWidth);
-  const lefts = widths.map((_, i) => x + 4 + widths.slice(0, i).reduce((a, b) => a + b, 0));
-  const groupEnd = x + 4 + widths.reduce((a, b) => a + b, 0);
-  const look = lookShown ?? ['Gender', 'Clothes', 'Hair', 'Status'];
+  // Each button's left edge, a divider (the Screen Share group's) taking a little room before its button.
+  const lefts: number[] = [];
+  let cursor = 4;
+  segs.forEach((seg, i) => {
+    if (seg.divider) cursor += divW;
+    lefts.push(cursor);
+    cursor += (widths[i] ?? 0) + gap;
+  });
+  const cardW = cursor - gap + 4;
+  const x = (420 - cardW) / 2;
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={404 - x}
+        width={cardW}
         height={SEG_H + 8}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.2}
       />
       {segs.map((s, i) => {
-        const sx = lefts[i] ?? x;
         const w = widths[i] ?? 0;
-        // Say's tint under every call button; on (live) is the solid brand, its ink white.
+        const sx = x + (lefts[i] ?? 0);
+        // on (live) is the solid brand, its ink white.
         const live = s.tone === 'live';
         const ink = live
           ? { stroke: 'stroke-white', fill: 'fill-white' }
           : TONE_INK[s.tone ?? 'rest'];
         return (
           <g key={s.name}>
+            {s.divider && (
+              <line
+                x1={sx - (divW + gap) / 2}
+                y1={y + 10}
+                x2={sx - (divW + gap) / 2}
+                y2={y + SEG_H - 2}
+                className="stroke-slate-200"
+                strokeWidth={1}
+              />
+            )}
             <rect
-              x={sx + 1}
+              x={sx}
               y={y + 5}
-              width={w - 2}
+              width={w}
               height={SEG_H - 2}
               rx={5}
               className={
@@ -220,15 +227,15 @@ function PaletteRow({
               }
             />
             {s.ring && (
+              // The level meter: white fill from the button's foot as you speak (somebody hears you).
               <rect
-                x={sx + 3}
-                y={y + 7}
-                width={w - 6}
-                height={SEG_H - 6}
-                rx={4}
-                className="fill-none stroke-white"
-                strokeWidth={1.6}
-                opacity={0.7}
+                x={sx}
+                y={y + 5 + (SEG_H - 2) - 16}
+                width={w}
+                height={16}
+                rx={5}
+                className="fill-white"
+                opacity={0.3}
               />
             )}
             <Icon prims={s.icon ?? []} cx={sx + 17} cy={y + 4 + SEG_H / 2} className={ink.stroke} />
@@ -237,24 +244,6 @@ function PaletteRow({
             </Label>
           </g>
         );
-      })}
-      <line
-        x1={groupEnd + 4}
-        y1={y + 10}
-        x2={groupEnd + 4}
-        y2={y + SEG_H - 2}
-        className="stroke-slate-200"
-        strokeWidth={1}
-      />
-      {look.map((name, i) => {
-        const lx = groupEnd + 14 + i * 64;
-        return lx < 380 ? (
-          <g key={name} opacity={1 - i * 0.25}>
-            <Label x={lx} y={y + 5 + SEG_H / 2} size={10.5} weight={500} tone="muted">
-              {name}
-            </Label>
-          </g>
-        ) : null;
       })}
     </g>
   );
@@ -268,28 +257,27 @@ function RowLabel({ y, children }: { y: number; children: ReactNode }) {
   );
 }
 
-/** The call group at the left of the avatar palette: Join Audio before you join, then the microphone, Camera, Share
- *  and Leave. */
+/** The Call dock at the bottom centre: the microphone muted when you walk in, then unmuted, with Camera and Share. No
+ *  Join, no Leave. */
 export function CallStrip() {
   return (
     <Scene w={420} h={168}>
-      <RowLabel y={24}>Before you join</RowLabel>
-      <PaletteRow
+      <RowLabel y={24}>Walking in: muted</RowLabel>
+      <DockRow
         y={38}
         segs={[
-          { name: 'Join Audio', icon: lucideMic, glyph: true },
-          { name: 'Camera', icon: lucideVideoOff, glyph: true },
-          { name: 'Share', icon: lucideScreenShare, glyph: true },
+          { name: 'Muted', icon: lucideMicOff, tone: 'muted' },
+          { name: 'Camera', icon: lucideVideoOff },
+          { name: 'Share', icon: lucideScreenShare },
         ]}
       />
-      <RowLabel y={102}>Once you are in</RowLabel>
-      <PaletteRow
+      <RowLabel y={102}>After you unmute</RowLabel>
+      <DockRow
         y={116}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
-          { name: 'Camera', icon: lucideVideoOff, glyph: true },
-          { name: 'Share', icon: lucideScreenShare, glyph: true },
-          { name: 'Leave', icon: lucideHeadphoneOff },
+          { name: 'Mic', icon: lucideMic, tone: 'live', ring: true },
+          { name: 'Camera', icon: lucideVideoOff },
+          { name: 'Share', icon: lucideScreenShare },
         ]}
       />
     </Scene>
@@ -298,25 +286,25 @@ export function CallStrip() {
 
 const MIC_STATES: { seg: Seg; line: string }[] = [
   {
-    seg: { name: 'Live', icon: lucideMic, tone: 'live', ring: true, w: 118 },
+    seg: { name: 'Mic', icon: lucideMic, tone: 'live', ring: true, w: 118 },
     line: 'Somebody near you hears you.',
   },
   {
-    seg: { name: 'Nobody Near', icon: lucideMic, w: 118 },
+    seg: { name: 'Mic', icon: lucideMic, w: 118 },
     line: 'Your mic is on, but nobody is close enough.',
   },
   { seg: { name: 'Muted', icon: lucideMicOff, tone: 'muted', w: 118 }, line: 'Nobody hears you.' },
   {
-    seg: { name: 'Mic Blocked', icon: lucideMicOff, tone: 'warn', w: 118 },
+    seg: { name: 'Blocked', icon: lucideMicOff, tone: 'warn', w: 118 },
     line: 'The browser refused the mic. You still hear.',
   },
   {
     seg: { name: 'Mic Off', icon: lucideMic, w: 118 },
-    line: 'Nobody else is on this tab, so it is closed.',
+    line: 'You just unmuted and it is still opening.',
   },
 ];
 
-/** The microphone's five states, each as the strip shows it, with what it means. */
+/** The microphone's five states, each as the Call dock names it on a desktop, with what it means. */
 export function MicStates() {
   return (
     <Scene w={420} h={222} bg="plain">
@@ -457,22 +445,21 @@ export function Earshot() {
   );
 }
 
-// A bubble is 16:9; drawn 96 wide.
-const BUBBLE_W = 96;
-const BUBBLE_H = 54;
+// A bubble is 16:9, 180 canvas px wide in the editor; drawn 120 wide (the pictures below are laid out on 96 x 54 and
+// scaled up by BUBBLE_K).
+const BUBBLE_W = 120;
+const BUBBLE_H = 68;
+const BUBBLE_K = BUBBLE_W / 96;
 
 /** A camera bubble's picture: a head and shoulders on the person's colour, the same in both appearances. */
 function CameraPicture({ x, y, hue }: { x: number; y: number; hue: 'emerald' | 'violet' }) {
   const tint = { emerald: 'fill-emerald-500/35', violet: 'fill-violet-500/35' }[hue];
   return (
-    <g className="help-art-as-drawn">
-      <rect x={x} y={y} width={BUBBLE_W} height={BUBBLE_H} rx={9} className="fill-slate-800" />
-      <rect x={x} y={y} width={BUBBLE_W} height={BUBBLE_H} rx={9} className={tint} />
-      <circle cx={x + BUBBLE_W / 2} cy={y + 22} r={10} className="fill-amber-200" />
-      <path
-        d={`M${x + BUBBLE_W / 2 - 22} ${y + BUBBLE_H} q0 -18 22 -18 q22 0 22 18 z`}
-        className="fill-slate-300"
-      />
+    <g className="help-art-as-drawn" transform={`translate(${x} ${y}) scale(${BUBBLE_K})`}>
+      <rect x={0} y={0} width={96} height={54} rx={9} className="fill-slate-800" />
+      <rect x={0} y={0} width={96} height={54} rx={9} className={tint} />
+      <circle cx={48} cy={22} r={10} className="fill-amber-200" />
+      <path d="M26 54 q0 -18 22 -18 q22 0 22 18 z" className="fill-slate-300" />
     </g>
   );
 }
@@ -480,42 +467,15 @@ function CameraPicture({ x, y, hue }: { x: number; y: number; hue: 'emerald' | '
 /** A screen bubble's picture: a shared window of slides, with the small screen badge in its corner. */
 function ScreenPicture({ x, y }: { x: number; y: number }) {
   return (
-    <g className="help-art-as-drawn">
-      <rect x={x} y={y} width={BUBBLE_W} height={BUBBLE_H} rx={9} className="fill-slate-800" />
-      <rect
-        x={x + 8}
-        y={y + 6}
-        width={BUBBLE_W - 16}
-        height={BUBBLE_H - 12}
-        rx={3}
-        className="fill-white"
-      />
-      <rect
-        x={x + 8}
-        y={y + 6}
-        width={BUBBLE_W - 16}
-        height={7}
-        rx={2}
-        className="fill-slate-200"
-      />
-      <rect x={x + 16} y={y + 19} width={40} height={4} rx={2} className="fill-slate-400" />
-      <rect x={x + 16} y={y + 27} width={56} height={3} rx={1.5} className="fill-slate-300" />
-      <rect x={x + 16} y={y + 33} width={48} height={3} rx={1.5} className="fill-slate-300" />
-      <rect
-        x={x + 3}
-        y={y + BUBBLE_H - 15}
-        width={16}
-        height={12}
-        rx={3}
-        className="fill-slate-900/80"
-      />
-      <Icon
-        prims={lucideScreenShare}
-        cx={x + 11}
-        cy={y + BUBBLE_H - 9}
-        size={9}
-        className="stroke-white"
-      />
+    <g className="help-art-as-drawn" transform={`translate(${x} ${y}) scale(${BUBBLE_K})`}>
+      <rect x={0} y={0} width={96} height={54} rx={9} className="fill-slate-800" />
+      <rect x={8} y={6} width={80} height={42} rx={3} className="fill-white" />
+      <rect x={8} y={6} width={80} height={7} rx={2} className="fill-slate-200" />
+      <rect x={16} y={19} width={40} height={4} rx={2} className="fill-slate-400" />
+      <rect x={16} y={27} width={56} height={3} rx={1.5} className="fill-slate-300" />
+      <rect x={16} y={33} width={48} height={3} rx={1.5} className="fill-slate-300" />
+      <rect x={3} y={39} width={16} height={12} rx={3} className="fill-slate-900/80" />
+      <Icon prims={lucideScreenShare} cx={11} cy={45} size={9} className="stroke-white" />
     </g>
   );
 }
@@ -527,17 +487,17 @@ function BubbleRing({ x, y, hue }: { x: number; y: number; hue: 'emerald' | 'vio
       y={y}
       width={BUBBLE_W}
       height={BUBBLE_H}
-      rx={9}
+      rx={11}
       className={`fill-none ${hue === 'emerald' ? 'stroke-emerald-500' : 'stroke-violet-500'}`}
       strokeWidth={2}
     />
   );
 }
 
-// Bubbles of people standing close share a row (apps/editor/lib/calls/bubble-layout.ts), drawn at 96/120 of the
-// editor's canvas px: the gap between bubbles, and how far a tail keeps from a row's ends.
-const BUBBLE_GAP = 6;
-const TAIL_INSET = 11;
+// Bubbles of people standing close share a row (apps/editor/lib/calls/bubble-layout.ts), drawn at 120/180 of the
+// editor's canvas px (2/3): the gap between bubbles, and how far a tail keeps from a row's ends.
+const BUBBLE_GAP = 5;
+const TAIL_INSET = 9;
 
 /** The tail under a person's bubbles, in their colour, slid back towards their head and held inside the row's ends
  *  (`tailShift`). Drawn before the bubbles, so only its lower half shows. */
@@ -570,7 +530,8 @@ function BubbleTail({
 export function CallBubbles() {
   const sam = { x: 176, y: 236 };
   const priya = { x: 244, y: 236 };
-  const by = sam.y - CHIP_TOP - 8 - BUBBLE_H;
+  // Just over the head (32 canvas px above it, 21 here), clear of the name chip, which a bubble covers.
+  const by = sam.y - 69 - 21 - BUBBLE_H;
   const priyaWidth = BUBBLE_W * 2 + BUBBLE_GAP;
   const rowWidth = BUBBLE_W + BUBBLE_GAP + priyaWidth;
   const samX = (sam.x + priya.x) / 2 - rowWidth / 2;
@@ -610,6 +571,9 @@ export function CallBubbles() {
       <BubbleRing x={priyaCam} y={by} hue="violet" />
       <ScreenPicture x={priyaScreen} y={by} />
       <BubbleRing x={priyaScreen} y={by} hue="violet" />
+      {/* Sam is talking: his equaliser rides his bubble's top-left corner, not his head. */}
+      <rect x={samX + 4} y={by + 4} width={22} height={18} rx={5} className="fill-slate-950/65" />
+      <TalkingBars cx={samX + 15} y={by + 18} hue="emerald" />
       <PixelCharacter fx={sam.x} fy={sam.y} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={priya.x} fy={priya.y} shirt="violet" name="Priya" hair="fill-slate-900" />
       <Card x={samX} y={by - 34} w={150} title="Maximise Sam's Camera" />
@@ -704,30 +668,27 @@ export function MaximisedBubble() {
   );
 }
 
-/** Sharing a screen: the bar only the sharer sees, with Stop Sharing, over the strip with the camera on and the
- *  share pressed; under audio only, the strip's one calm Video Paused. */
+/** Sharing a screen: Sharing and Stop Sharing join the Call dock after the call group, behind a divider, with the
+ *  camera on; under audio only, the dock's one calm Video Paused. */
 export function SharingAndVideoPaused() {
   return (
     <Scene w={420} h={150}>
       <RowLabel y={22}>While you share, camera on</RowLabel>
-      <PaletteRow
+      <DockRow
         y={34}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
-          { name: 'Camera', icon: lucideVideo, tone: 'live', glyph: true },
-          { name: 'Leave', icon: lucideHeadphoneOff },
-          { name: 'Sharing', icon: lucideCircleDot, tone: 'muted' },
+          { name: 'Mic', icon: lucideMic, tone: 'live', ring: true },
+          { name: 'Camera', icon: lucideVideo, tone: 'live' },
+          { name: 'Sharing', icon: lucideCircleDot, tone: 'muted', divider: true },
           { name: 'Stop Sharing', icon: lucideScreenShareOff, tone: 'muted' },
         ]}
-        look={['Status']}
       />
       <RowLabel y={90}>While video is paused</RowLabel>
-      <PaletteRow
+      <DockRow
         y={102}
         segs={[
-          { name: 'Live', icon: lucideMic, tone: 'live', ring: true, glyph: true },
+          { name: 'Mic', icon: lucideMic, tone: 'live', ring: true },
           { name: 'Video Paused', icon: lucidePause },
-          { name: 'Leave', icon: lucideHeadphoneOff },
         ]}
       />
     </Scene>

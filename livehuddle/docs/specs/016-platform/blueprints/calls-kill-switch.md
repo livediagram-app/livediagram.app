@@ -98,7 +98,7 @@ from a Viewer or malformed, `room-op-gate.ts`), then noted and never relayed.
 - `CallSelf.mode` (default `on`) is set from `/api/capabilities` (`callsMode`), from a session's answer, from the
   room's `calls-mode` op (only `from: 'system'`) and from a `paused` refusal.
 - `ProximityCall` subscribes to `onCallsMode`; a mode that no longer allows a `session`, or a `calls_off` `paused`
-  refusal from any route (session, publish, subscribe), ends the call (`pause()`): the same teardown as Leave Audio,
+  refusal from any route (session, publish, subscribe), ends the call (`pause()`): the same teardown as leaving the mode,
   then phase `off` with mode `off`.
 - `ProximityCall` sends everything to the room through one `send`, which re-arms a `CALLS_CHECK_MS` timeout
   (`VOICE_REFRESH_MS` plus two voice samples, 5.1 s: just past a talking speaker's level refresh, so a talker never
@@ -115,7 +115,7 @@ an unknown mode is ignored (`parseCallsModeOp`); a pause arriving while joining 
 **Performance**: the room's watch is one number compare per call op inside the window, and at most one KV read per
 5 s per isolate outside it (`callsMode`'s cache). A silent publisher adds one inbound socket message per 5 s (about
 36 billed requests an hour at the 20 to 1 rate), consumed with that same compare; a talking one adds none. Capabilities add the same cached read per page load. The editor's
-store adds one listener set; the paused control is the same `Segment` as Join Audio.
+store adds one listener set; the paused control is the same `Segment` as Connecting and Retry.
 
 **Testing**:
 

@@ -15,28 +15,34 @@ sharing stay [Future work](../005-project-roadmap/future-work.md).
 
 Audio rides [Avatar mode](../008-canvas/avatar-mode.md): only a walking character has a place on the board, so only
 someone in the mode hears or is heard. Leaving the mode, changing tab or closing the page leaves the call. A board
-that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls; the
-camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
+that is not shared (a This Browser Space, or one with no room) has nobody to talk to; the
+microphone, camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
 
-- **Join Audio.** Entering the mode does not open the microphone by itself. A **Join Audio** button sits first on the
-  [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette), at the strip's left, while calls are on (owner,
-  2026-11-06: moved there from the bottom-right cluster, so the call's controls are at the top with the rest of the
-  walk's). Pressing it is the gesture a browser needs before it plays
-  sound, and asks for the microphone (once per site, as the browser decides). Someone who may only listen joins without
-  a microphone.
-- **Leave Audio** ends it: the microphone is released, every subscription closes and the session ends. Leaving the
-  mode does the same.
+- **Walking in joins.** There is no Join and no Leave button (owner, 2026-11-07: "Currently we have this concept of
+  Joining audio and leaving audio, which is friction I don't like. When you join, you can automatically hear others
+  near you etc, but your mic stays muted by default when joining"). Walking where there is a call (Avatar mode, a
+  Space synced to the server, calls on) joins it by itself: you hear the people near you at once, and a Viewer
+  listens likewise. A browser keeps sound from a page until it is touched, so if it held the audio back, it starts on
+  your next press or key. The call still ends on leaving the mode, the room or the tab; to stop hearing people, set
+  [Do Not Disturb](meeting-rooms-and-stage.md#do-not-disturb-part-3-built).
+- **Muted by default.** Your microphone starts **muted and is not opened**, so walking in never shows the browser's
+  microphone prompt. It is asked for the first time you **unmute**.
+- **While it connects** the [Call dock](../008-canvas/avatar-mode.md#the-call-dock) (a card at the bottom centre of the canvas; owner, 2026-11-07: "Audio,
+  Camera and Share buttons should be moved from the palette and put as buttons in the bottom, but for livehuddle,
+  center them") shows a greyed **Connecting…** (hover title Connecting Audio). If it fails, a warn **Retry** (Audio
+  Unavailable) appears and a press tries again; under the kill switch it reads **Calls Paused** and a press tries
+  again. Neither retries by itself: no loop after a failure or a pause.
 
 ## Share roles
 
-| Act                                        | Editor | Participant | Viewer |
-| ------------------------------------------ | ------ | ----------- | ------ |
-| Join Audio, hear the people near you       | Yes    | Yes         | Yes    |
-| Speak (publish a microphone), mute, unmute | Yes    | Yes         | No     |
-| Show a talking equaliser to others         | Yes    | Yes         | No     |
-| See who is talking, walk over              | Yes    | Yes         | Yes    |
+| Act                                          | Editor | Participant | Viewer |
+| -------------------------------------------- | ------ | ----------- | ------ |
+| Hear the people near you (joined by walking) | Yes    | Yes         | Yes    |
+| Speak (publish a microphone), mute, unmute   | Yes    | Yes         | No     |
+| Show a talking equaliser to others           | Yes    | Yes         | No     |
+| See who is talking, walk over                | Yes    | Yes         | Yes    |
 
-- A Viewer listens: its Join Audio says **Listen In**, its session may subscribe but never publish, and the room drops
+- A Viewer listens: it joins by walking in like the others and its dock reads **Listening**; its session may subscribe but never publish, and the room drops
   any `avatar-voice` or `call-track` op it sends.
 - **Guests speak too**, wherever their Participant link lets them (owner, 2026-11-03): audio asks for no sign-in. This
   overrides #316's "sign in to publish media" for audio; #316 keeps its other limits.
@@ -64,34 +70,48 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
 
 ## The microphone
 
-- **Mute** and **Unmute** are one button, next to Avatar, once you have joined. Muted sends nothing: no audio, no
-  equaliser.
-- **The microphone is only open while someone could hear or see you**: while at least one other walker is on your tab.
-  Alone on a tab for 15 seconds, the microphone closes (the browser's recording light goes out) and the button says so;
-  it opens again the moment somebody arrives.
+- **Mute** and **Unmute** are one button on the Call dock. It starts **muted**. Muted sends nothing: no audio, no
+  equaliser. The first unmute opens the microphone (the browser asks then).
+- **Unmuted, the microphone stays open**, alone or not, so you can see it work. Muted and alone on a tab for 15
+  seconds, it is released (the browser's recording light goes out) and opens again on your next unmute.
 - **The mic indicator** on the button shows, at a glance:
-  - **Live** (a soft brand ring and your own small level meter): somebody is in earshot and hears you (in a room,
+  - **Live** (the button fills from its foot with your voice level, white on the solid brand: you are transmitting to someone): somebody is in earshot and hears you (in a room,
     anyone else in it).
   - **Nobody Near**: your microphone is open but nobody hears you (in the open, nobody within the hearing radius); your equaliser still shows to
-    the people further away.
+    the people further away. The button fills the same way, in a brand tint on the tint.
   - **Muted** (a struck-through microphone).
-  - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it. You still hear
-    everyone.
-  - **Mic Off**: nobody else is on your tab, so the microphone is closed until somebody arrives.
-- The button is the glyph alone, square, in the avatar palette's call group; the hover card names it and its state in
-  words ("Mic: Live", "Mic: Muted"), and the button's label is the action it takes.
+  - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it, then press to
+    try again (a press asks the browser again). You still hear everyone.
+  - **Mic Off**: you are unmuted and the microphone is still opening, a moment after you unmute.
+- On a desktop the button is named beside its glyph on the [Call dock](../008-canvas/avatar-mode.md#the-call-dock) with a short label that follows its state:
+  **Mic**, **Muted**, **Blocked**, **Mic Off**, **Listening** (owner, 2026-11-07: "On desktop add short labels to each,
+  on mobile do not"). On a phone it is the glyph alone, square. The hover card names it and its state in words ("Mic:
+  Live", "Mic: Muted") either way.
 
 ## No call here
 
-While walking somewhere calls cannot reach (a space kept in This Browser, which has no server room to call through,
-or a server with calls switched off), the avatar palette still shows **Join Audio**, greyed and `aria-disabled` so its
-hover card shows, saying why (owner, 2026-11-06: "audio which I don't see for some reason locally"):
+While walking somewhere calls cannot reach (a space kept in This Browser, which has no server room to call through, a
+server with calls switched off, calls paused, or a call that failed), the dock still shows the microphone, **Muted**,
+as a **local preview** (owner, 2026-11-07: "I can't use audio when on this browser or alone, which makes it hard to
+test, do what we did with camera and allow me to do it anyway, just don't transmit it to a server"):
 
-- **This Browser**: "Join Audio: This space is only saved in your browser, so nobody else can join. Save it online to talk with people."
-- **Calls off on this server**: "Join Audio: Calls are not available on this server."
+- Pressing it opens the microphone **on your own screen only**, and drives your own talking equaliser. Nothing is
+  sent: no session, no track, no signal to the room. Its title reads **Mic: Only You**, in the live tone, with the
+  short card "Nothing is sent. Press to mute." (before the press: "Try your mic. Nothing is sent."), and pressing
+  again mutes it (owner, 2026-11-07: "shorten the tooltips when local, its way to long for all 3 buttons mic, cam,
+  etc"). The dock no longer explains why there is no call (the greyed Join Audio's reason text is gone): the preview
+  itself says what matters, that only you see it.
+- A call that starts takes over, **muted**. The camera and Share Screen beside it preview locally too, titled
+  **Camera: Only You** and **Share Screen: Only You**.
 
-A press does nothing. The camera and Share Screen beside it still preview locally. Someone who may not speak (a
-Viewer) gets no greyed button. The reason comes from `useProximityCall` (`CallSelf.unavailableReason`).
+Someone who may not speak (a Viewer) has no microphone to preview. The preview is `CallSelf.canPreviewMic` and
+`previewMic`, run by `LocalMic` (`lib/calls/local-mic.ts`).
+
+**The level meter** (owner, 2026-11-07: "show my voice volume etc in the mic button as I speak so I can see how loud it
+is etc and see when I am transmitting"): while the microphone is open and unmuted (in a call, Live and Nobody Near;
+the local preview while on) the button **fills from its foot** with your level (0 to 4, gliding). White on the solid
+brand means somebody hears you; a brand tint on the tint means Nobody Near. It replaced the soft ring round the
+microphone.
 
 ## The talking equaliser
 
@@ -104,7 +124,8 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
   again every 5 seconds while it holds (so a receiver can tell a long speech from a lost stop), and a stop (0). At
   most about 4 messages a second per speaker, and none from someone silent or muted.
 - **Drawn above every talking character**, out of earshot and in it alike: three small bars in the speaker's colour
-  just above the name chip. The bars move locally from the last level, so the motion is smooth without more
+  just above the name chip (someone wearing a camera or screen bubble shows them on the bubble's top-left corner
+  instead: [Bubble size and place](video-and-screen-bubbles.md#bubble-size-and-place)). The bars move locally from the last level, so the motion is smooth without more
   messages. Out of earshot they are calm and faint, fading with distance (full at the release radius, a third as
   strong at 1,500 canvas px and beyond), so the nearest groups stand out; in earshot they are brighter, so you see
   who you are hearing.
@@ -172,7 +193,7 @@ checks every session and track against its mode ([Calls kill switch](../016-plat
 
 Calls run on any deployment, production (`www.livehuddle.app`) included, where both of these hold (the owner lifted
 the earlier off flag for production on 2026-11-05); the editor learns it from `/api/capabilities` (`callsEnabled`) and
-shows no audio controls otherwise (the camera and screen buttons stay, as a
+shows no call otherwise (the microphone, camera and screen buttons stay, as a
 [local preview](video-and-screen-bubbles.md#local-preview) only you see).
 
 - **The secrets are set**: the Realtime app's id and token, and a TURN key's id and API token. They are the owner's to
@@ -192,7 +213,7 @@ hour. The equaliser adds no Realtime cost, only small presence messages.
 ## Telemetry
 
 `track('Canvas', 'Used', 'CallNotHeard')` when the mint route refuses a subscription as not heard (#483: counts
-false refusals). `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on joining (by the door: speaker or listener),
+false refusals). `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on the automatic join (by the door: speaker or listener; there is no leave event),
 `track('UI', 'Changed', 'AudioMute')` on a mute or unmute, and `track('Canvas', 'Used', 'WalkToTalker')` on pressing
 someone's bars. Never who, never how long, never anything heard.
 

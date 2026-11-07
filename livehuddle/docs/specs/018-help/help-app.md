@@ -289,12 +289,12 @@ live. The pitch it opens with is the product's: a team **meets in a shared Space
   Work Tracker #423 part 2. Diagram vocabulary stays where it names a real canvas thing (a diagram key, a Mermaid diagram,
   a swimlane, a draw.io import), never as the name of what a person makes.
 - **Calls** have two articles under Collaboration, each describing what the editor does today: **Proximity Audio**
-  (`/help/collaboration/proximity-audio/`: Join Audio and Listen In, earshot, the microphone's states, the talking
+  (`/help/collaboration/proximity-audio/`: walking in joins, muted, earshot, the microphone's states, the talking
   bars and walking over, who may speak) and **Cameras and Screen Sharing**
   (`/help/collaboration/cameras-and-screen-sharing/`: the camera, an Editor's screen share, the bubbles, maximising,
   Video Paused), linked both ways. Calls run only where they are switched on
   ([Proximity audio](../012-collaboration/proximity-audio.md#turning-calls-on)), so both say that where they are off
-  there is no Join Audio button, and neither promises when they come on. Calls cannot run locally without the
+  there is no microphone to join, and neither promises when they come on. Calls cannot run locally without the
   Realtime secrets, so their figures are drawn from the call components' own labels and states rather than shot.
   The **Stage** ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)) has its own article
   under Palette › Virtual Office (`/help/palette/virtual-office/stage/`: adding one, speaking from it, Who Can Speak
