@@ -105,6 +105,14 @@ const FLOOR: OfficePiece[] = [
   ...booths(RIGHT_BOOTHS),
   // Along the top right, beside the meeting room: a notice board of the day's talks and plants.
   { kind: 'notice-board', x: 1860, y: 120 },
+  // The free corner by the Meeting Room: a Vending Machine and a Team Photo Wall for the show's photos
+  // (docs/specs/009-elements/piece-moments.md).
+  { kind: 'vending-machine', x: 2080, y: 120 },
+  { kind: 'photo-wall', x: 1820, y: 470 },
+  // A cloakroom corner by the entrance: Lockers, a Coat Rack and an Umbrella Stand.
+  { kind: 'lockers', x: 120, y: 1310 },
+  { kind: 'coat-rack', x: 280, y: 1310 },
+  { kind: 'umbrella-stand', x: 352, y: 1374 },
   { kind: 'plant', x: 1820, y: 340 },
   { kind: 'plant', x: 2080, y: 340 },
   // The Directory beside the entrance.

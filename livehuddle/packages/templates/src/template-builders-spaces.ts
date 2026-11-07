@@ -62,6 +62,13 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: COWORK_W,
       h: COWORK_H,
       door: 's',
+      // Windows along its outside walls, the back and the left (docs/specs/009-elements/room-builder.md "Window").
+      windows: [
+        { side: 'n', at: 300 },
+        { side: 'n', at: 640 },
+        { side: 'w', at: 200 },
+        { side: 'w', at: 520 },
+      ],
       pieces: [
         // Two clusters an aisle apart, the lounge an aisle below them.
         ...deskCluster(50, 56),
@@ -77,11 +84,13 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'chair', x: 660, y: 490, facing: 'e' },
         { kind: 'plant', x: 760, y: 560 },
         { kind: 'bookshelf', x: 720, y: 46 },
+        // The members' lockers in the free corner under the booths (docs/specs/009-elements/office-amenities.md).
+        { kind: 'lockers', x: 900, y: 540 },
       ],
     },
     // Two phone booths along the right, for a call without the room, each a Phone Booth piece in a booth room
     // (docs/specs/009-elements/workday-pieces.md). Their doors face the open floor: a door in a booth's front wall
-    // opened onto a 40 px strip by the room's own wall, too narrow to walk.
+    // opened onto a 40 px strip by the room's own wall, too narrow to walk. Glass, so a free booth shows from the floor.
     {
       name: 'Booth 1',
       x: 860,
@@ -89,6 +98,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
+      glass: true,
       pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
     {
@@ -98,6 +108,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
+      glass: true,
       pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
   ];
@@ -142,12 +153,20 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
       w: POD_W,
       h: POD_H,
       door: 's',
+      windows: [
+        { side: 'n', at: 300 },
+        { side: 'n', at: 560 },
+        { side: 'w', at: 260 },
+      ],
       pieces: [
         ...deskCluster(50, 56),
         { kind: 'meeting-table', x: 440, y: 80 },
         { kind: 'coffee-machine', x: 50, y: 330 },
         { kind: 'plant', x: 140, y: 360 },
         { kind: 'bookshelf', x: 600, y: 300 },
+        // The team's dog (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), between the pad and the
+        // table, right of the doorway's column.
+        { kind: 'pet-bed', x: 456, y: 422 },
       ],
     },
   ];
@@ -219,6 +238,13 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
       w: HALL_W,
       h: HALL_H,
       door: 's',
+      // Windows down both long walls, between the rows.
+      windows: [
+        { side: 'w', at: 400 },
+        { side: 'w', at: 800 },
+        { side: 'e', at: 400 },
+        { side: 'e', at: 800 },
+      ],
       pieces: [
         // The stage, and rows of chairs facing it either side of an aisle. Whoever speaks from it is heard by the
         // whole hall, and seen: the hall exists for a presenter everyone watches.

@@ -61,6 +61,11 @@ function classroom(name: string, y: number): CampusRoom {
     w: SIDE_W,
     h: SIDE_H,
     door: { side: 'e', at: SIDE_DOOR, sign: -1 },
+    // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'w', at: 150 },
+      { side: 'w', at: 400 },
+    ],
     pieces: [
       { kind: 'screen', x: 170, y: 44, w: 176 },
       ...deskRow([16, 136, 256], 180),
@@ -76,6 +81,10 @@ const ROOMS: CampusRoom[] = [
     name: 'Lecture Hall',
     ...HALL,
     door: { side: 's', at: 380, sign: 1 },
+    windows: [
+      { side: 'w', at: 300 },
+      { side: 'e', at: 300 },
+    ],
     pieces: [
       { kind: 'stage', x: 200, y: 48, stageCameras: true },
       { kind: 'screen', x: 40, y: 44, w: 140 },
@@ -91,10 +100,17 @@ const ROOMS: CampusRoom[] = [
     w: SIDE_W,
     h: SIDE_H,
     door: { side: 'w', at: SIDE_DOOR, sign: -1 },
+    windows: [
+      { side: 'e', at: 150 },
+      { side: 'e', at: 400 },
+    ],
     pieces: [
       // Shelves along the back wall, a row of study desks in front of them, clear of the door's way in.
       ...[40, 170, 300].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       ...deskRow([150, 280], 292),
+      // A reading corner below the way in: two Bean Bags side by side.
+      { kind: 'bean-bag', x: 20, y: 452 },
+      { kind: 'bean-bag', x: 84, y: 452 },
       { kind: 'plant', x: 380, y: 440 },
     ],
   },
@@ -105,6 +121,10 @@ const ROOMS: CampusRoom[] = [
     w: SIDE_W,
     h: SIDE_H,
     door: { side: 'w', at: SIDE_DOOR, sign: -1 },
+    windows: [
+      { side: 'e', at: 150 },
+      { side: 'e', at: 440 },
+    ],
     pieces: [
       // The counter with its stools, coffee beside it, and a table an aisle in front of the stools.
       // Along the back wall away from the door's side, so no stool stands in its way in.

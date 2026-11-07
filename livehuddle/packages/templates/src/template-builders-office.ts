@@ -34,6 +34,11 @@ const ROOMS: RoomSpec[] = [
     y: 0,
     w: 420,
     door: 's',
+    // Windows in its outside walls, the back and the left (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'n', at: 330 },
+      { side: 'w', at: 140 },
+    ],
     pieces: [
       // The sofa on its rug at the back, clear of the doorway.
       { kind: 'rug', x: 110, y: 40 },
@@ -53,6 +58,10 @@ const ROOMS: RoomSpec[] = [
     y: 0,
     w: 620,
     door: 's',
+    windows: [
+      { side: 'n', at: 200 },
+      { side: 'n', at: 420 },
+    ],
     pieces: [
       // One bench of desks, the near row facing the back row across it, so the floor round it is open aisle
       // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
@@ -75,6 +84,8 @@ const ROOMS: RoomSpec[] = [
     y: 0,
     w: 400,
     door: 's',
+    // Glass, so you see from the corridor who is meeting (docs/specs/009-elements/office.md "Glass walls").
+    glass: true,
     pieces: [
       { kind: 'meeting-table', x: 84, y: 80 },
       { kind: 'plant', x: 22, y: 52 },
@@ -87,6 +98,11 @@ const ROOMS: RoomSpec[] = [
     y: ROW_H + CORRIDOR,
     w: 520,
     door: 'n',
+    windows: [
+      { side: 's', at: 130 },
+      { side: 's', at: 390 },
+      { side: 'w', at: 170 },
+    ],
     pieces: [
       // A kitchenette along the back wall, either side of the door (docs/specs/009-elements/office-amenities.md
       // "Kitchenette"): a fridge and a counter with the microwave and the kettle on it, then the sink and the coffee
@@ -111,6 +127,10 @@ const ROOMS: RoomSpec[] = [
     // 500 wide, so the bottom row is the top row's 1560.
     w: 500,
     door: 'n',
+    windows: [
+      { side: 's', at: 120 },
+      { side: 's', at: 380 },
+    ],
     pieces: [
       // The sofa on its rug, well inside: just behind the doorway it sat whoever walked in.
       { kind: 'rug', x: 150, y: 180 },
@@ -120,6 +140,9 @@ const ROOMS: RoomSpec[] = [
       { kind: 'chair', x: 86, y: 196, facing: 'w' },
       { kind: 'chair', x: 338, y: 196, facing: 'e' },
       { kind: 'plant', x: 420, y: 52 },
+      // The office dog's bed (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), off the doorway's
+      // column, its dog wandering the Lounge.
+      { kind: 'pet-bed', x: 330, y: 100 },
     ],
   },
   {
@@ -128,6 +151,10 @@ const ROOMS: RoomSpec[] = [
     y: ROW_H + CORRIDOR,
     w: 420,
     door: 'n',
+    windows: [
+      { side: 's', at: 110 },
+      { side: 'e', at: 200 },
+    ],
     pieces: [
       // Off the doorway's column, so walking in reaches the room before the desk.
       { kind: 'desk', x: 40, y: 120, facing: 's' },

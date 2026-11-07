@@ -43,6 +43,11 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     h: 560,
     indoor: true,
     door: { side: 's', at: 140, sign: 1 },
+    // Windows in the building's outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'w', at: 220 },
+      { side: 'w', at: 440 },
+    ],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-cabinet', x: 300, y: 36 },
@@ -57,6 +62,8 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     ...BALLROOM,
     indoor: true,
     door: { side: 's', at: 380, sign: 1 },
+    windows: [{ side: 'n', at: 660 }],
+
     pieces: [
       { kind: 'stage', x: 200, y: 48, stageCameras: true },
       { kind: 'screen', x: 40, y: 44, w: 140 },
@@ -73,6 +80,10 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     h: 360,
     indoor: true,
     door: { side: 's', at: 300, sign: 1 },
+    windows: [
+      { side: 'n', at: 300 },
+      { side: 'e', at: 200 },
+    ],
     pieces: [
       { kind: 'meeting-table', x: 40, y: 80 },
       { kind: 'screen', x: 330, y: 44, w: 176 },
@@ -87,6 +98,7 @@ const LOBBY_ROOMS: IndoorRoom[] = [
     h: 360,
     indoor: true,
     door: { side: 'w', at: 180, sign: 1 },
+    windows: [{ side: 'e', at: 120 }],
     pieces: [
       ...[110, 240, 370].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       { kind: 'rug', x: 200, y: 210 },
@@ -103,15 +115,18 @@ const LOBBY_FLOOR: OfficePiece[] = [
   { kind: 'plant', x: 910, y: 890 },
   { kind: 'plant', x: 1234, y: 890 },
   // Sofas on rugs to wait on.
-  { kind: 'rug', x: 300, y: 860 },
-  { kind: 'sofa', x: 324, y: 880, facing: 'n' },
-  { kind: 'rug', x: 300, y: 1080 },
-  { kind: 'sofa', x: 324, y: 1100, facing: 's' },
+  { kind: 'rug', x: 340, y: 860 },
+  { kind: 'sofa', x: 364, y: 880, facing: 'n' },
+  { kind: 'rug', x: 340, y: 1080 },
+  { kind: 'sofa', x: 364, y: 1100, facing: 's' },
   // Two pairs of columns either side of the way in from the front door, past the reception
   // (docs/specs/009-elements/venue-pieces.md "In the templates").
   ...[700, 860, 1276, 1436].map((x) => ({ kind: 'column' as const, x, y: 1010 })),
   // The Lobby Lift, by the bar.
   lift(80, 1000, 'Lobby Lift'),
+  // The Stairs beside the lift (docs/specs/009-elements/stairs.md "In the templates"), open floor below them to step
+  // off onto.
+  { kind: 'stairs', x: 210, y: 1000 },
   { kind: 'plant', x: 2060, y: 1140 },
   // The Directory beside the front door.
   { kind: 'directory', x: LOBBY_MID + 60, y: 1150 },
@@ -163,6 +178,8 @@ function suite(name: string, x: number, top: boolean): IndoorRoom {
     h: SUITE_H,
     indoor: true,
     door: { side: top ? 's' : 'n', at: 300, sign: 1 },
+    // A window in every suite, in its outside wall (docs/specs/009-elements/room-builder.md "Window").
+    windows: [{ side: top ? 'n' : 's', at: 300 }],
     pieces: top
       ? [
           { kind: 'rug', x: 60, y: 150 },
@@ -191,6 +208,8 @@ const SUITES_FLOOR: OfficePiece[] = [
   // The floor's Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): in the corridor
   // past the Directory, so someone who changes floor from the tab bar arrives by the lift.
   { kind: 'avatar-pad', x: 290, y: 560 },
+  // The Stairs below the lift lobby, clear of the Directory, open floor below them to step off onto.
+  { kind: 'stairs', x: 200, y: 720 },
   { kind: 'plant', x: 2120, y: 520 },
 ];
 
@@ -224,6 +243,7 @@ const ROOF_ROOMS: IndoorRoom[] = [
     h: 520,
     indoor: true,
     door: { side: 's', at: 140, sign: 1 },
+    windows: [{ side: 'w', at: 260 }],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
@@ -241,6 +261,10 @@ const ROOF_ROOMS: IndoorRoom[] = [
     h: 400,
     indoor: true,
     door: { side: 's', at: 280, sign: 1 },
+    windows: [
+      { side: 'n', at: 140 },
+      { side: 'e', at: 220 },
+    ],
     pieces: [
       { kind: 'office-pod', x: 40, y: 150 },
       { kind: 'office-pod', x: 224, y: 150 },
@@ -262,6 +286,10 @@ const TERRACE: OfficePiece[] = [
   { kind: 'hammock', x: 1150, y: 820 },
   { kind: 'hammock', x: 1450, y: 820 },
   { kind: 'outdoor-plant', x: 1860, y: 960 },
+  // A Ping-Pong Table on the terrace, past the Spa Room's way out (docs/specs/009-elements/social-pieces.md).
+  { kind: 'ping-pong-table', x: 1730, y: 580 },
+  // The Stairs right of the Rooftop Bar's way out and its sign, the lift lobby below them.
+  { kind: 'stairs', x: 370, y: 600 },
   // The lift and the Directory beside it.
   lift(60, 880, 'Rooftop Lift'),
   { kind: 'directory', x: 200, y: 890 },

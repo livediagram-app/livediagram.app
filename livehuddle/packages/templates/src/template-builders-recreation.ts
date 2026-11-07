@@ -111,6 +111,12 @@ export function buildCafe(cx: number, cy: number): Element[] {
       w: CAFE_W,
       h: CAFE_H,
       door: 's',
+      // Windows in the front and left walls, onto the street (docs/specs/009-elements/room-builder.md "Window").
+      windows: [
+        { side: 's', at: 220 },
+        { side: 's', at: 790 },
+        { side: 'w', at: 300 },
+      ],
       pieces: [
         // The counter, its stools, and the coffee machine and the fridge behind the end of it.
         { kind: 'bar', x: 40, y: 40 },
@@ -126,6 +132,8 @@ export function buildCafe(cx: number, cy: number): Element[] {
         // The sofa nook.
         { kind: 'rug', x: 60, y: 420 },
         { kind: 'sofa', x: 84, y: 440, facing: 'n' },
+        // The cafe's dog, beside the nook (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog").
+        { kind: 'pet-bed', x: 292, y: 482 },
         { kind: 'plant', x: 920, y: 50 },
         { kind: 'plant', x: 920, y: 480 },
       ],

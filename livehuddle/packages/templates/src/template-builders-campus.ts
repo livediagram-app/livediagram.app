@@ -54,6 +54,11 @@ const ROOMS: CampusRoom[] = [
     w: COLUMN_W,
     h: 640,
     door: { side: 'e', at: 320, sign: -1 },
+    // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'w', at: 160 },
+      { side: 'w', at: 480 },
+    ],
     pieces: [
       // Two islands of four desks, 120 px apart, and the way in from the door clear to both.
       { kind: 'desk', x: 40, y: 56, facing: 'n' },
@@ -76,6 +81,7 @@ const ROOMS: CampusRoom[] = [
     w: COLUMN_W,
     h: 280,
     door: { side: 'e', at: 140, sign: -1 },
+    windows: [{ side: 'w', at: 140 }],
     pieces: [
       { kind: 'screen', x: 184, y: 4, w: 106 },
       { kind: 'meeting-table', x: 120, y: 74 },
@@ -89,6 +95,7 @@ const ROOMS: CampusRoom[] = [
     w: COLUMN_W,
     h: 220,
     door: { side: 'e', at: 110, sign: -1 },
+    windows: [{ side: 'w', at: 110 }],
     pieces: [
       { kind: 'bookshelf', x: 40, y: 40 },
       { kind: 'desk', x: 200, y: 60, facing: 's' },
@@ -105,6 +112,12 @@ const ROOMS: CampusRoom[] = [
       sign: 1,
       reach: CROSS_Y - PLAZA_IN - HALL.y - HALL.h - PATH / 2,
     },
+    windows: [
+      { side: 'w', at: 300 },
+      { side: 'w', at: 480 },
+      { side: 'e', at: 300 },
+      { side: 'e', at: 480 },
+    ],
     pieces: [
       { kind: 'stage', x: 260, y: 48, w: 440, h: 150, stageCameras: true },
       { kind: 'screen', x: 40, y: 44, w: 176 },
@@ -126,6 +139,10 @@ const ROOMS: CampusRoom[] = [
     w: COLUMN_W,
     h: 620,
     door: { side: 'w', at: 310, sign: -1 },
+    windows: [
+      { side: 'e', at: 160 },
+      { side: 'e', at: 460 },
+    ],
     pieces: [
       // The bar along the back with its stools, a clear band in front of them, and a lounge at the front.
       { kind: 'drinks-cabinet', x: 40, y: 40 },
@@ -147,8 +164,14 @@ const ROOMS: CampusRoom[] = [
     w: COLUMN_W,
     h: 540,
     door: { side: 'w', at: 270, sign: -1 },
+    windows: [
+      { side: 'e', at: 140 },
+      { side: 'e', at: 400 },
+    ],
     pieces: [
       { kind: 'fireplace', x: 20, y: 40 },
+      // The dog's bed by the fire (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"), above the way in.
+      { kind: 'pet-bed', x: 30, y: 166 },
       { kind: 'ping-pong-table', x: 190, y: 60 },
       { kind: 'arcade-machine', x: 410, y: 44 },
       { kind: 'arcade-machine', x: 410, y: 230 },

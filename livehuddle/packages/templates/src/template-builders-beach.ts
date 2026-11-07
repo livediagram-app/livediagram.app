@@ -39,6 +39,11 @@ const ROOMS: CampusRoom[] = [
     w: 520,
     h: ROOM_H,
     door: { side: 's', at: 260, sign: 1, reach: DOWN },
+    // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'n', at: 380 },
+      { side: 'w', at: 220 },
+    ],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
@@ -54,6 +59,10 @@ const ROOMS: CampusRoom[] = [
     w: 560,
     h: ROOM_H,
     door: { side: 's', at: 280, sign: 1, reach: DOWN },
+    windows: [
+      { side: 'n', at: 360 },
+      { side: 'e', at: 220 },
+    ],
     pieces: [
       { kind: 'screen', x: 24, y: 44, w: 140 },
       { kind: 'meeting-table', x: 164, y: 110 },
@@ -71,6 +80,8 @@ const BEACH: OfficePiece[] = [
   plaza(GATE, JOIN_Y, JUNCTION),
   // The lagoon, and palms beside it.
   { kind: 'pond', x: 60, y: 70, w: 560, h: 300 },
+  // A Ping-Pong Table on the sand between the lagoon and the walk (docs/specs/009-elements/social-pieces.md).
+  { kind: 'ping-pong-table', x: 300, y: 410 },
   { kind: 'tree', x: 650, y: 120, w: 80 },
   { kind: 'tree', x: 1290, y: 300, w: 64 },
   // Hammocks under the palms, left of the path up.
