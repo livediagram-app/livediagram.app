@@ -249,9 +249,64 @@ function isEraserEvent(category: string, action: string, type: string | null): b
   return false;
 }
 
+// The diagram, slide and workshop features livehuddle let go (docs/specs/002-project-scope/not-in-livehuddle.md), whose
+// charts left the dashboard in the telemetry review of 2026-11-07 because nothing sends them any more: presenting and
+// the Slide Deck, data models, the mind map's outline, the Session strip's Timer, Vote and Poll buttons, Zen mode,
+// the canvas gestures of the diagram notes and lanes, and the Settings rows of the diagram editor (Quick-Add on
+// Hover, Auto-Attach Arrows, the Layers panel's options, the whiteboard dock, the panel layout).
+const LEFT_LIVEHUDDLE_UI = new Set([
+  'Started|Presentation',
+  'Closed|Presentation',
+  'Moved|Slide',
+  'Changed|SlideNotes',
+  'Toggled|SlideShown',
+  'Toggled|SlideHidden',
+  'Opened|SlideDeck',
+  'Opened|PresentationSettings',
+  'Opened|MindOutline',
+  'Opened|SessionTimer',
+  'Opened|SessionVote',
+  'Opened|SessionPoll',
+  'Toggled|ZenModeOn',
+  'Toggled|ZenModeOff',
+  'Toggled|QuickAddHoverOn',
+  'Toggled|QuickAddHoverOff',
+  'Toggled|AutoRebindOn',
+  'Toggled|AutoRebindOff',
+  'Toggled|LayerPreviewOn',
+  'Toggled|LayerPreviewOff',
+  'Toggled|LayerCountOn',
+  'Toggled|LayerCountOff',
+  'Toggled|LayerHoverPreviewOn',
+  'Toggled|LayerHoverPreviewOff',
+]);
+const LEFT_LIVEHUDDLE_UI_PREFIX =
+  /^(Changed|Toggled)\|(Presentation-|WhiteboardDockPosition|PanelLayout)/;
+const LEFT_LIVEHUDDLE_CANVAS_TYPES = new Set([
+  'InsertBetween',
+  'AddNextNote',
+  'ChangeNoteKind',
+  'LanesSettled',
+]);
+const LEFT_LIVEHUDDLE_ELEMENT = new Set([
+  'Added|EntityField',
+  'Changed|Entity',
+  'Changed|Cardinality',
+]);
+
+function isLeftLivehuddleEvent(category: string, action: string, type: string | null): boolean {
+  const key = `${action}|${type ?? ''}`;
+  if (category === 'UI') return LEFT_LIVEHUDDLE_UI.has(key) || LEFT_LIVEHUDDLE_UI_PREFIX.test(key);
+  if (category === 'Canvas')
+    return action === 'Used' && LEFT_LIVEHUDDLE_CANVAS_TYPES.has(type ?? '');
+  if (category === 'Element') return LEFT_LIVEHUDDLE_ELEMENT.has(key);
+  return false;
+}
+
 // What livehuddle inherited from livediagram and never had as its own, per the above.
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
+  if (isLeftLivehuddleEvent(category, action, type)) return true;
   if (category === 'Token') return action === 'Created' && AGENT_DOOR_TOKEN_TYPES.has(t);
   if (category === 'Tab') return action === 'Changed' && MODE_OPENS_IN_TYPES.has(t);
   if (category === 'Canvas') return action === 'Used' && POINTER_TOOL_TYPES.has(t);

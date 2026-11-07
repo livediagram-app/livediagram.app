@@ -21,8 +21,20 @@ export function settingsRowEmits(path: string, row: ObjectLiteralExpression): Em
   const event = propertyValue(row, 'event');
   if (!event || !isObjectLiteralExpression(event)) return [];
   const category = propertyValue(event, 'category');
-  const kind = propertyValue(row, 'kind');
-  if (!category || !kind || !isStringLiteral(kind) || !isStringLiteral(category)) return [];
+  if (!category || !isStringLiteral(category)) return [];
+  // A row built by a helper (`emailSwitch('notifyTips', { ..., event })`) or spread from a shared base
+  // (`{ ...UI_SCALE_SLIDER, event }`) carries its `kind` elsewhere, so it is read from the event's own keys: an
+  // on/off pair is a toggle, a lone `changed` a slider.
+  const written = propertyValue(row, 'kind');
+  const kind =
+    written && isStringLiteral(written)
+      ? written.text
+      : propertyValue(event, 'on')
+        ? 'toggle'
+        : propertyValue(event, 'changed')
+          ? 'slider'
+          : null;
+  if (!kind) return [];
   const emit = (action: string, type: Value): Emit => ({
     category: category.text,
     action,
@@ -33,11 +45,11 @@ export function settingsRowEmits(path: string, row: ObjectLiteralExpression): Em
     const v = propertyValue(event, key);
     return v && isStringLiteral(v) ? v.text : COMPUTED;
   };
-  if (kind.text === 'toggle') {
+  if (kind === 'toggle') {
     return [emit('Toggled', literal('on')), emit('Toggled', literal('off'))];
   }
-  if (kind.text === 'slider') return [emit('Changed', literal('changed'))];
-  if (kind.text === 'choice') {
+  if (kind === 'slider') return [emit('Changed', literal('changed'))];
+  if (kind === 'choice') {
     const changed = literal('changed');
     const options = propertyValue(row, 'options');
     if (changed === COMPUTED || !options || !isArrayLiteralExpression(options)) {

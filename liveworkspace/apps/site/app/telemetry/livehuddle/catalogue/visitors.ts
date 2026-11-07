@@ -133,14 +133,6 @@ export const WELCOME_DIALOG_CLOSED = chart(
 );
 
 // The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel.
-export const AVATAR_TOUR_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Avatar Tours Declined',
-  'The Avatar tour turned down on its welcome card, before it started (until 25 October 2026, when tours stopped offering themselves).',
-  { types: ['AvatarTourOffer'], rising: 'neutral' },
-);
-
 export const AVATAR_TOURS_STARTED = chart(
   'UI',
   'Started',
@@ -180,7 +172,6 @@ export const AVATAR_TOUR: MetricStack = {
     'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
   members: [
     AVATAR_TOUR_OFFERED,
-    AVATAR_TOUR_DECLINED,
     AVATAR_TOURS_STARTED,
     AVATAR_TOUR_STEPS_VIEWED,
     AVATAR_TOURS_COMPLETED,
@@ -190,15 +181,7 @@ export const AVATAR_TOUR: MetricStack = {
 };
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
-// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
-export const ELEMENT_TOURS_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Element Tours Declined',
-  'An element tour turned down with the cross on its Tour toolbar.',
-  { types: elementTourTokens('Offer'), rising: 'neutral' },
-);
-
+// One stack for them all, as Show Me's: offered, started (and started per element), steps, how they end.
 export const ELEMENT_TOURS_STARTED = chart(
   'UI',
   'Started',
@@ -244,7 +227,6 @@ export const ELEMENT_TOURS: MetricStack = {
     'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
   members: [
     ELEMENT_TOURS_OFFERED,
-    ELEMENT_TOURS_DECLINED,
     ELEMENT_TOURS_STARTED,
     ...ELEMENT_TOURS_BY_KIND,
     ELEMENT_TOUR_STEPS_VIEWED,

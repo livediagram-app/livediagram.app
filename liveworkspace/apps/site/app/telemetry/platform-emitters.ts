@@ -101,6 +101,20 @@ export function sharedClientEmitters(): Emit[] {
   return clientCached;
 }
 
+// Avatar mode (@liveworkspace/avatar) sends through the bound `track` of the editor that mounts it
+// (`avatarBindings.track(...)`): a character's customisations, its status, its speech bubbles and its arrival on
+// an Avatar Pad. Only livediagram and livehuddle mount it, so only their scans add these.
+export const AVATAR_ROOTS = ['packages/avatar/src'];
+
+let avatarCached: Emit[] | undefined;
+
+export function avatarEmitters(): Emit[] {
+  avatarCached ??= scanEmitters(MONOREPO, AVATAR_ROOTS, '').filter(
+    (e) => typeof e.category === 'string' && typeof e.action === 'string',
+  );
+  return avatarCached;
+}
+
 // The values each of the Explorer's computed emit sites can send, by the scan's site key
 // (`<path> <Category>·<Action>`), for the app's computed-emitters.ts: the Explorer's closed list.
 export function platformComputedEmitters(
