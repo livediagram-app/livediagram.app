@@ -127,9 +127,9 @@ describe('the Rotate buttons', () => {
       elements: [{ ...sofa, locked: true }, plant],
       onTurnSelected: vi.fn(),
     });
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled,
-    ).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled).toBe(
+      true,
+    );
   });
 
   it('are not offered for a piece that does not turn, or read-only', () => {
