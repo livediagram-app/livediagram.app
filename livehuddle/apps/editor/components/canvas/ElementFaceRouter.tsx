@@ -115,6 +115,9 @@ type ElementFaceRouterProps = Pick<
   labelFrame: CSSProperties | null;
   // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
   hitLine: boolean;
+  // The box the element's indicators take, in its own units (indicatorClusterRect), so a retired element's Delete
+  // keeps clear of them; absent or null when it has none.
+  indicatorRect?: { x: number; y: number; width: number; height: number } | null;
 };
 
 export function ElementFaceRouter(props: ElementFaceRouterProps) {
@@ -127,6 +130,7 @@ export function ElementFaceRouter(props: ElementFaceRouterProps) {
         fontFamily={props.fontFamily}
         selected={props.isSelected}
         onDelete={props.readOnly ? undefined : props.onDeleteRetired}
+        indicators={props.indicatorRect}
       />
     );
   return <KnownElementFace {...props} />;

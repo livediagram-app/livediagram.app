@@ -449,10 +449,11 @@ has deleted so far, any other shape kind livehuddle does not know, and an elemen
 - **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target that keeps its size on screen
   at every zoom, as the selection grips do) in the card's top-right corner while the pointer is over the card, it has
   keyboard focus or the card is selected (a touch screen has no hover, so selecting it shows the button). It sits far
-  enough in that a tap on it never lands on a resize grip. A card that is smaller than 72 by 48 on screen, or whose
-  words would reach the button's corner, has no room for it inside: there the button shows just outside the card's
-  top-right corner, past the corner grip, while the card is selected (so a phone at its Fit zoom still reaches it),
-  and not at all otherwise. Pressing it removes the element as Delete would, as one undo step; it never selects or drags the element
+  enough in that a tap on it never lands on a resize grip, and when the card shows indicators in that corner (its
+  comment pip, its link, note or action) it steps left of them, so a tap meant for the comments never deletes the
+  card. It only ever shows inside the card. A card smaller than 72 by 48 on screen, or with no room for it clear of
+  the indicators and the words, shows none: an Editor selects it and uses the selection toolbar's **Delete**, which
+  is also how a phone at its Fit zoom removes one. Pressing it removes the element as Delete would, as one undo step; it never selects or drags the element
   on its way. It has a tooltip and an accessible name ("Delete <kind name>"), takes a keyboard focus ring, and draws in
   the card's own quiet ink in light and dark. A Participant and a Viewer never see it (`can.remove`), and an Editor
   with Delete, the context menu or a multi-selection removes one the usual way too. Because its face can hold this

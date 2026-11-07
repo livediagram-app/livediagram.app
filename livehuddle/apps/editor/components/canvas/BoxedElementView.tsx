@@ -54,7 +54,7 @@ import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
-import { ElementIndicators } from '@/components/canvas/ElementIndicators';
+import { ElementIndicators, indicatorClusterRect } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
@@ -541,6 +541,16 @@ function BoxedElementViewImpl({
             onSetHeroCaptionLine={onSetHeroCaptionLine}
             onOpenElementSettings={onOpenElementSettings}
             onDeleteRetired={onDeleteRetired}
+            indicatorRect={
+              onDeleteRetired && indicators.layout && retired
+                ? indicatorClusterRect(
+                    element,
+                    indicators.items,
+                    indicators.layout,
+                    indicators.cornerPx,
+                  )
+                : null
+            }
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).

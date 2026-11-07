@@ -10,6 +10,7 @@ import {
   RETIRED_ELEMENT_NOTE,
   RETIRED_PLACEHOLDER_COLOURS,
   retiredPlaceholderLayout,
+  type BoxedElement,
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -20,11 +21,13 @@ import { ElementFaceRouter } from './ElementFaceRouter';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { HIT_PAD_INWARD } from './element-parts';
 import { SelectionGripsContext } from './SelectionGripsLayer';
+import { indicatorClusterRect } from './ElementIndicators';
+import type { IndicatorItem } from './indicator-items';
+import { placeCluster } from './useIndicatorLayout';
 import {
   RETIRED_DELETE_INSET,
   RETIRED_DELETE_MIN_HEIGHT,
   RETIRED_DELETE_MIN_WIDTH,
-  RETIRED_DELETE_OUTSIDE,
   RETIRED_DELETE_SIZE,
   RetiredElementFace,
   retiredDeletePlacement,
@@ -172,6 +175,27 @@ describe('RetiredElementFace on a retired type', () => {
 });
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it": the placeholder's one action, an Editor's alone.
+// Screen-pixel boxes for the button's placement checks.
+type Rect = { x0: number; y0: number; x1: number; y1: number };
+const overlaps = (a: Rect, b: Rect) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+const binRect = (p: { left: number; top: number; size: number }): Rect => ({
+  x0: p.left,
+  y0: p.top,
+  x1: p.left + p.size,
+  y1: p.top + p.size,
+});
+const layoutOf = (width: number, height: number) =>
+  retiredPlaceholderLayout({ type: 'shape', shape: 'pie-chart', label: '', width, height });
+const SIZES: [number, number][] = [
+  [40, 30],
+  [72, 48],
+  [100, 56],
+  [160, 80],
+  [240, 160],
+  [320, 220],
+  [800, 600],
+];
+
 describe('the placeholder Delete button', () => {
   const button = (root: ParentNode) =>
     root.querySelector<HTMLButtonElement>('button[data-retired-delete]');
@@ -264,9 +288,7 @@ describe('the placeholder Delete button', () => {
           <RetiredElementFace element={big} onDelete={() => {}} />
         </CanvasZoomProvider>,
       );
-      const b = button(container)!;
-      expect(b.getAttribute('data-retired-delete')).toBe('inside');
-      expect(b.className).toContain('h-6 w-6');
+      expect(button(container)!.className).toContain('h-6 w-6');
       const slot = container.querySelector<HTMLElement>('[data-retired-delete-slot]')!;
       expect(slot.style.transform).toBe(`scale(${1 / zoom})`);
       expect(slot.style.transformOrigin).toBe('0 0');
@@ -279,56 +301,47 @@ describe('the placeholder Delete button', () => {
     }
   });
 
-  it('measures the room on screen: a card big in its own units but small on screen holds no button inside', () => {
-    const pie = board({ width: 320, height: 220, shape: 'pie-chart' });
-    const at = (zoom: number) => {
-      const { container } = render(
-        <CanvasZoomProvider zoom={zoom}>
-          <RetiredElementFace element={pie} onDelete={() => {}} />
-        </CanvasZoomProvider>,
-      );
-      const found = button(container)?.getAttribute('data-retired-delete') ?? null;
-      cleanup();
-      return found;
-    };
-    expect(at(1)).toBe('inside');
-    // A phone's Fit zoom: the card is 80 by 55 on screen and its name reaches the corner.
-    expect(at(0.25)).toBeNull();
-  });
-
-  it('shows outside the card, up in the grips layer, when the selected card is too small on screen', () => {
+  it('only ever shows inside the card: none outside it, or in the grips layer, at any zoom', () => {
     const host = document.createElement('div');
     const arrows = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     document.body.appendChild(host);
-    const onDelete = vi.fn();
     const pie = board({ x: 40, y: 80, width: 320, height: 220, shape: 'pie-chart' });
-    const { container } = render(
-      <SelectionGripsContext.Provider value={{ box: host, arrows }}>
-        <CanvasZoomProvider zoom={0.25}>
-          <RetiredElementFace element={pie} selected onDelete={onDelete} />
-        </CanvasZoomProvider>
-      </SelectionGripsContext.Provider>,
+    for (const zoom of [0.1, 0.25, 0.5, 1, 2, 4]) {
+      for (const selected of [false, true]) {
+        const { container } = render(
+          <SelectionGripsContext.Provider value={{ box: host, arrows }}>
+            <CanvasZoomProvider zoom={zoom}>
+              <RetiredElementFace element={pie} selected={selected} onDelete={() => {}} />
+            </CanvasZoomProvider>
+          </SelectionGripsContext.Provider>,
+        );
+        expect(host.childElementCount, `zoom ${zoom}`).toBe(0);
+        const slot = container.querySelector<HTMLElement>('[data-retired-delete-slot]');
+        if (slot) {
+          const left = parseFloat(slot.style.left) * zoom;
+          const top = parseFloat(slot.style.top) * zoom;
+          expect(left).toBeGreaterThanOrEqual(RETIRED_DELETE_INSET);
+          expect(left + RETIRED_DELETE_SIZE).toBeLessThanOrEqual(320 * zoom - RETIRED_DELETE_INSET);
+          expect(top + RETIRED_DELETE_SIZE).toBeLessThanOrEqual(220 * zoom);
+        }
+        cleanup();
+      }
+    }
+    // A phone's Fit zoom: the card is 80 by 55 on screen and its name reaches the corner, so it shows none; the
+    // selection toolbar's Delete removes it.
+    const fit = render(
+      <CanvasZoomProvider zoom={0.25}>
+        <RetiredElementFace element={pie} selected onDelete={() => {}} />
+      </CanvasZoomProvider>,
     );
-    expect(button(container)).toBeNull();
-    const b = button(host)!;
-    expect(b.getAttribute('data-retired-delete')).toBe('outside');
-    const frame = host.querySelector<HTMLElement>('[data-ride-id="qa"]')!;
-    expect(frame.style.left).toBe('40px');
-    expect(frame.style.top).toBe('80px');
-    const slot = host.querySelector<HTMLElement>('[data-retired-delete-slot]')!;
-    expect(slot.style.transform).toBe('scale(4)');
-    expect(parseFloat(slot.style.left)).toBeCloseTo((320 * 0.25 + RETIRED_DELETE_OUTSIDE) / 0.25);
-    fireEvent.pointerDown(b);
-    fireEvent.click(b);
-    expect(onDelete).toHaveBeenCalledWith('qa');
+    expect(button(fit.container)).toBeNull();
     host.remove();
   });
 
-  it("never sits on a selection grip's touch pad, inside or outside, at any size or zoom", () => {
+  it("never sits on a selection grip's touch pad, at any size or zoom", () => {
     // The grips on screen (element-parts.tsx): a 12px corner grip and a 6 by 16 edge grip centred on the edge, each
     // with a touch pad 16px out and 4px in past the grip (HIT_PAD_INWARD).
     for (const classes of Object.values(HIT_PAD_INWARD)) expect(classes).toContain('[-4px]');
-    type Rect = { x0: number; y0: number; x1: number; y1: number };
     const pads = (w: number, h: number): Rect[] => [
       { x0: -22, y0: -22, x1: 10, y1: 10 },
       { x0: w - 10, y0: -22, x1: w + 22, y1: 10 },
@@ -339,46 +352,81 @@ describe('the placeholder Delete button', () => {
       { x0: -19, y0: h / 2 - 24, x1: 7, y1: h / 2 + 24 },
       { x0: w - 7, y0: h / 2 - 24, x1: w + 19, y1: h / 2 + 24 },
     ];
-    const overlaps = (a: Rect, b: Rect) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
-    const seen = { inside: 0, outside: 0 };
-    const sizes: [number, number][] = [
-      [40, 30],
-      [72, 48],
-      [100, 56],
-      [160, 80],
-      [240, 160],
-      [320, 220],
-      [800, 600],
-    ];
+    let shown = 0;
     for (const zoom of [0.1, 0.25, 0.5, 1, 2, 4])
-      for (const [w, h] of sizes) {
-        const card = retiredPlaceholderLayout({
-          type: 'shape',
-          shape: 'pie-chart',
-          label: '',
-          width: w,
-          height: h,
-        });
-        const place = retiredDeletePlacement(card, w, h, zoom, true)!;
-        seen[place.where] += 1;
-        const bin = {
-          x0: place.left,
-          y0: place.top,
-          x1: place.left + place.size,
-          y1: place.top + place.size,
-        };
+      for (const [w, h] of SIZES) {
+        const place = retiredDeletePlacement(layoutOf(w, h), w, h, zoom);
+        if (!place) continue;
+        shown += 1;
         for (const pad of pads(w * zoom, h * zoom))
-          expect(overlaps(bin, pad), `${w}x${h} at ${zoom}`).toBe(false);
+          expect(overlaps(binRect(place), pad), `${w}x${h} at ${zoom}`).toBe(false);
       }
-    expect(seen.inside).toBeGreaterThan(0);
-    expect(seen.outside).toBeGreaterThan(0);
+    expect(shown).toBeGreaterThan(0);
   });
 
-  it('shows nowhere on a card too small on screen that is not selected, nor on an empty box', () => {
-    const layout = (width: number, height: number) =>
-      retiredPlaceholderLayout({ type: 'shape', shape: 'pie-chart', label: '', width, height });
-    expect(retiredDeletePlacement(layout(40, 30), 40, 30, 1, false)).toBeNull();
-    expect(retiredDeletePlacement(layout(0, 0), 0, 0, 1, true)).toBeNull();
+  it('steps left of the comment pip, and of a cluster of several indicators, with a 4px gap', () => {
+    const item = (kind: IndicatorItem['kind'], count?: number): IndicatorItem => ({
+      kind,
+      label: kind,
+      onClick: () => {},
+      ...(count ? { count } : {}),
+    });
+    const el = board({ width: 320, height: 220, shape: 'pie-chart' }) as BoxedElement;
+    for (const items of [[item('comment', 1)], [item('link'), item('note'), item('comment', 12)]]) {
+      for (const style of ['top', 'footer'] as const) {
+        const placed = placeCluster(el, 8, items, style);
+        const cluster = indicatorClusterRect(el, items, placed, 8)!;
+        for (const zoom of [0.5, 1, 2]) {
+          const place = retiredDeletePlacement(layoutOf(320, 220), 320, 220, zoom, cluster);
+          expect(place, `${items.length} at ${zoom}`).not.toBeNull();
+          const drawn = {
+            x0: cluster.x * zoom - 4,
+            y0: cluster.y * zoom - 4,
+            x1: (cluster.x + cluster.width) * zoom + 4,
+            y1: (cluster.y + cluster.height) * zoom + 4,
+          };
+          expect(overlaps(binRect(place!), drawn), `${items.length} ${style} at ${zoom}`).toBe(
+            false,
+          );
+          expect(place!.top).toBe(RETIRED_DELETE_INSET);
+          expect(place!.size).toBe(RETIRED_DELETE_SIZE);
+        }
+      }
+    }
+    // The pip sits across the top-right corner, so the bin leaves its corner for it.
+    const pipItems = [item('comment', 1)];
+    const pip = indicatorClusterRect(
+      el,
+      pipItems,
+      { form: 'pip', box: null, pip: null, inset: { top: 0, bottom: 0 } },
+      8,
+    )!;
+    const stepped = retiredDeletePlacement(layoutOf(320, 220), 320, 220, 1, pip)!;
+    expect(stepped.left + RETIRED_DELETE_SIZE).toBeLessThanOrEqual(pip.x - 4);
+    // Below the zoom the indicators stop drawing at, there is nothing to step round.
+    const far = retiredDeletePlacement(layoutOf(800, 600), 800, 600, 0.3, pip)!;
+    expect(far.left).toBeCloseTo(800 * 0.3 - RETIRED_DELETE_INSET - RETIRED_DELETE_SIZE);
+  });
+
+  it('is hidden where there is no room: on a small card, or with no room left of the indicators', () => {
+    expect(retiredDeletePlacement(layoutOf(40, 30), 40, 30, 1)).toBeNull();
+    expect(retiredDeletePlacement(layoutOf(0, 0), 0, 0, 1)).toBeNull();
+    // A cluster across the whole top leaves no room left of it.
+    const across = { x: 0, y: 0, width: 160, height: 24 };
+    expect(retiredDeletePlacement(layoutOf(160, 140), 160, 140, 1, across)).toBeNull();
+    // Stepped left onto the words: hidden too.
+    const wide = { x: 60, y: 0, width: 100, height: 24 };
+    expect(wordsClearOfDelete(layoutOf(160, 80), 160, 1, 56)).toBe(false);
+    expect(retiredDeletePlacement(layoutOf(160, 80), 160, 80, 1, wide)).toBeNull();
+    // The face draws no button then.
+    const { container } = render(
+      <RetiredElementFace
+        element={board({ width: 160, height: 140 })}
+        indicators={across}
+        onDelete={() => {}}
+      />,
+    );
+    expect(button(container)).toBeNull();
   });
 
   it('is not there without a delete handler', () => {
