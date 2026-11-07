@@ -138,6 +138,50 @@ describe('a match', () => {
     expect(applyPongEvent(null, event({ score: [1, 0] }), 0)).toBeNull();
   });
 
+  it('joins a game already under way from its next moment, as a late screen does', () => {
+    const back = strike(open.ball!, 1, 0.5)!;
+    const hit = applyPongEvent(
+      null,
+      event({ seat: 1, seq: 9, event: 'hit', ball: back, score: [2, 1] }),
+      50,
+    )!;
+    expect(hit).toMatchObject({ seq: 9, score: [2, 1], phase: 'flight', ball: back, since: 50 });
+    expect(nextSeat(hit)).toBe(0);
+    const miss = applyPongEvent(null, event({ seat: 1, seq: 9, event: 'miss', score: [3, 1] }), 0)!;
+    expect(miss).toMatchObject({ phase: 'serve', score: [3, 1], ball: null });
+    const serve = applyPongEvent(null, event({ seat: 1, seq: 9, ball: back, score: [1, 1] }), 0)!;
+    expect(serve).toMatchObject({ phase: 'flight', score: [1, 1] });
+    const lastPoint = event({ seat: 1, seq: 30, event: 'miss', score: [11, 3] });
+    expect(applyPongEvent(null, lastPoint, 0)).toMatchObject({ phase: 'won', score: [11, 3] });
+    // After a won game, a later moment of the next one; but never another match over one in play.
+    const won: PongMatch = { ...open, phase: 'won', score: [11, 4], ball: null };
+    expect(
+      applyPongEvent(
+        won,
+        event({ match: 'm2', seat: 1, seq: 5, event: 'hit', ball: back, score: [1, 1] }),
+        0,
+      )!.match,
+    ).toBe('m2');
+    expect(
+      applyPongEvent(
+        open,
+        event({ match: 'm2', seat: 1, seq: 5, event: 'hit', ball: back, score: [1, 1] }),
+        0,
+      ),
+    ).toBe(open);
+    // Moments that could not be: a strike toward the striker, a serve from the wrong seat or before any point, a miss
+    // with no point to give, a broken score, a moment after the winning point.
+    const impossible = [
+      event({ seat: 0, seq: 9, event: 'hit', ball: back, score: [2, 1] }),
+      event({ seat: 0, seq: 9, ball: back, score: [1, 1] }),
+      event({ seat: 1, seq: 2, ball: back, score: [0, 0] }),
+      event({ seat: 0, seq: 9, event: 'miss', score: [3, 0] }),
+      event({ seat: 1, seq: 9, event: 'hit', ball: back, score: [-1, 2] }),
+      event({ seat: 1, seq: 9, event: 'hit', ball: back, score: [11, 2] }),
+    ];
+    for (const ev of impossible) expect(applyPongEvent(null, ev, 0)).toBeNull();
+  });
+
   it('takes a strike from the end the ball reached, and nothing out of turn', () => {
     expect(nextSeat(open)).toBe(1);
     const back = strike(open.ball!, 1, 0.5)!;

@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { walkInputBlocked } from '../walk-guard';
+import { avatarKeyClaimed } from '../key-claims';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
 
@@ -54,6 +55,8 @@ export function useAvatarKeys({
       // A panel input (search, rename), an open modal or a start screen in front of the canvas owns the keyboard
       // (walk-guard): arrowing through Start a Space's templates never walks the character behind it.
       if (isTypingTarget(e.target, { select: false }) || walkInputBlocked()) return;
+      // A key a piece holds (a game's paddle, key-claims) is that piece's: it neither steers nor stands you up.
+      if (avatarKeyClaimed(e)) return;
       const dir = ARROW_KEYS[e.key];
       if (dir) {
         e.preventDefault();

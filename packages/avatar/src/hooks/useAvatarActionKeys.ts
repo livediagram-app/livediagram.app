@@ -10,6 +10,7 @@ import { avatarActionForKey } from '../action-keys';
 import type { AvatarReactionKind } from '../reactions';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { walkInputBlocked } from '../walk-guard';
+import { avatarKeyClaimed } from '../key-claims';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useAvatarActionKeys({
@@ -26,7 +27,7 @@ export function useAvatarActionKeys({
     if (!active) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || isTypingTarget(e.target) || walkInputBlocked()) return;
-      if (isInMenuSurface(e.target)) return;
+      if (isInMenuSurface(e.target) || avatarKeyClaimed(e)) return;
       const action = avatarActionForKey(e);
       if (!action) return;
       e.preventDefault();

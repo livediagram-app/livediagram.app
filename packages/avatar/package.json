@@ -30,6 +30,7 @@
     "./hooks/useAvatarStatus": "./src/hooks/useAvatarStatus.ts",
     "./hooks/useAvatarWalk": "./src/hooks/useAvatarWalk.ts",
     "./hooks/useSeatYield": "./src/hooks/useSeatYield.ts",
+    "./key-claims": "./src/key-claims.ts",
     "./office-geometry": "./src/office-geometry.ts",
     "./pathing": "./src/pathing.ts",
     "./pad": "./src/pad.ts",

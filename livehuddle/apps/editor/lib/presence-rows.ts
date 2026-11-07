@@ -7,7 +7,7 @@
 // without standing up the room. `now` and the last-seen map are passed in
 // rather than read from Date.now() / a ref, keeping the functions pure.
 import { avatarGlideMs } from '@liveworkspace/avatar/relay';
-import type { AvatarPresence } from '@livehuddle/api-schema';
+import type { AccessLevel, AvatarPresence } from '@livehuddle/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
 
 // Row shapes the builders below return. Module-private: only this file's own
@@ -166,6 +166,16 @@ export function buildRemoteCursorRows(
 // one carries a live name + colour (the wire packet carries neither). Same
 // filters as cursors: never yourself, only the active tab, only participants
 // still in the room.
+/** A peer's walking character as the canvas draws it. */
+export type RemoteAvatarRow = {
+  id: string;
+  name: string;
+  color: string;
+  avatar: AvatarPresence;
+  glideMs: number;
+  role?: AccessLevel;
+};
+
 export function buildRemoteAvatarRows(
   remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>,
   livePresenceById: Map<string, Participant>,
@@ -174,14 +184,8 @@ export function buildRemoteAvatarRows(
   // Each peer's tab from the tab bar's presence. Travel keeps Avatar mode across tabs (avatar-mode.md "Changing
   // tab"), so a peer who rode away leaves their last packet behind on this tab: it is dropped once their tab moved.
   tabFocus?: ReadonlyMap<string, string>,
-): { id: string; name: string; color: string; avatar: AvatarPresence; glideMs: number }[] {
-  const rows: {
-    id: string;
-    name: string;
-    color: string;
-    avatar: AvatarPresence;
-    glideMs: number;
-  }[] = [];
+): RemoteAvatarRow[] {
+  const rows: RemoteAvatarRow[] = [];
   // A busy room sends fewer steps, so a peer glides between them (docs/specs/008-canvas/avatar-mode.md
   // "A busy room"). The roster holds the peers; the room holds us too.
   const glideMs = avatarGlideMs(livePresenceById.size + 1);
@@ -192,7 +196,17 @@ export function buildRemoteAvatarRows(
     if (focus !== undefined && focus !== entry.tabId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, avatar: entry.avatar, glideMs });
+    const row: RemoteAvatarRow = {
+      id,
+      name: p.name,
+      color: p.color,
+      avatar: entry.avatar,
+      glideMs,
+    };
+    // Their share role, from the room's stamp: a game piece seats only an Editor or a Participant as a player
+    // (docs/specs/009-elements/social-pieces.md "A game").
+    if (p.role) row.role = p.role;
+    rows.push(row);
   }
   return rows;
 }

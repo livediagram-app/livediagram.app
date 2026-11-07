@@ -159,7 +159,12 @@ export function applyPongEvent(
     if (current?.match === ev.match) return current;
     return { match: ev.match, seq: 1, score: [0, 0], phase: 'flight', ball: ev.ball!, since: now };
   }
-  if (!current || ev.match !== current.match || ev.seq !== current.seq + 1) return current;
+  // A screen that opened the tab (or came back) mid-game joins from its next moment, which carries the score after
+  // it (the spec's "Watching"): with no game on show, or only a won one, a later moment of another match is taken.
+  if (!current || (current.phase === 'won' && ev.match !== current.match)) {
+    return joinLate(ev, now) ?? current;
+  }
+  if (ev.match !== current.match || ev.seq !== current.seq + 1) return current;
   if (ev.seat !== nextSeat(current)) return current;
   if (ev.event === 'serve') {
     if (current.phase !== 'serve' || !sameScore(ev.score, current.score)) return current;
@@ -174,6 +179,26 @@ export function applyPongEvent(
   if (!sameScore(ev.score, score)) return current;
   const phase = winnerAt(score) === null ? 'serve' : 'won';
   return { ...current, seq: ev.seq, score, phase, ball: null, since: now };
+}
+
+/**
+ * A match picked up from one moment of it, or null when the moment could not be one: a serve from the seat that
+ * serves at that score, after a point; a strike sending the ball away from the striker; a miss giving the other seat
+ * a point.
+ */
+function joinLate(ev: GameEventOp, now: number): PongMatch | null {
+  const score: Score = [ev.score[0], ev.score[1]];
+  if (ev.seq < 2 || !score.every((n) => Number.isInteger(n) && n >= 0)) return null;
+  if (ev.event === 'miss') {
+    if (score[ev.seat === 0 ? 1 : 0] < 1) return null;
+    const phase = winnerAt(score) === null ? 'serve' : 'won';
+    return { match: ev.match, seq: ev.seq, score, phase, ball: null, since: now };
+  }
+  if (!ev.ball || winnerAt(score) !== null) return null;
+  if (ev.event === 'serve' && (score[0] + score[1] === 0 || serverAt(score) !== ev.seat))
+    return null;
+  if (endOf(ev.ball) === ev.seat) return null;
+  return { match: ev.match, seq: ev.seq, score, phase: 'flight', ball: ev.ball, since: now };
 }
 
 /** Where the ball is drawn at `now`: in flight, held at the far paddle line until that end's word comes; else none. */

@@ -95,7 +95,8 @@ there).
   bars) stands the character up and starts that move in the same gesture, with no second press. Clicking **the piece
   you are sitting on** keeps you in it. Keys typed into a field (a panel's search, the message composer) are the
   field's, not movement, so typing never stands you up; nor do a pressed piece that acts in place, a reaction or a
-  wave.
+  wave. While a game runs at the Ping-Pong Table you sit at, **W**, **S**, **Arrow Up** and **Arrow Down** are your
+  paddle's and stand nobody up ([Social pieces](social-pieces.md#controls)); every other move still does.
 - **A taken seat is not sat in.** Walking into a chair somebody is already sitting in does not seat
   you: your character **stops beside it**, just outside the piece on the side it came from, and
   stays standing. A piece with more than one seat (a sofa, a meeting table) seats you on the **free

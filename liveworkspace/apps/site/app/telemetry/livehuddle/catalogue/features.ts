@@ -398,6 +398,16 @@ export const WORKDAY_PIECES_USED = chart(
   { types: ['ReceptionBell', 'PatPet'] },
 );
 
+// A ping-pong game played to its end (docs/specs/009-elements/social-pieces.md "Telemetry"), counted once, by the
+// left player's screen.
+export const PING_PONG_GAMES = chart(
+  'Canvas',
+  'Used',
+  'Ping-Pong Games',
+  'A game of ping-pong played to its end at a Ping-Pong Table in a Space.',
+  { types: ['PingPong'] },
+);
+
 // A Door swung open or shut (docs/specs/009-elements/room-builder.md).
 export const DOORS_SWUNG = chart(
   'Canvas',
@@ -444,6 +454,7 @@ export const CANVAS_MODES: MetricStack = {
     ...MODE_METRICS,
     OFFICE_DRINKS,
     WORKDAY_PIECES_USED,
+    PING_PONG_GAMES,
     DOORS_SWUNG,
     SCREENS_OPENED,
     AVATAR_PAD_ARRIVALS,
