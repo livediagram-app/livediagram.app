@@ -474,8 +474,8 @@ export function EditorView() {
                                               value={!(embedMode && isReadOnly)}
                                             >
                                               {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                              {/* A connected tab's page stands in the board's place (connected-tabs.md). */}
-                                              {ctx.activeTabConnected ? (
+                                              {/* A connected tab's page stands in the board's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                              {ctx.activeTabConnected && !anyWelcomeOpen ? (
                                                 <ConnectedTabHost />
                                               ) : (
                                                 <SuppressElementIndicators when={embedMode}>

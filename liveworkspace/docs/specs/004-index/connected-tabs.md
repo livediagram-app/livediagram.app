@@ -126,7 +126,8 @@ file, needs attention"). It is dragged, foldered and opened like any tab, and it
 opens nothing, Connect Again, never Duplicate.
 
 **The tab's page.** Opened, a connected tab shows one calm card in place of a canvas, the target app's logo over the
-target's name and a line:
+target's name and a line. A visitor whose share link lands on a connected tab is asked for their name first, as on any
+tab, and sees the card once they have joined:
 
 | State                                | Line                                         | Actions (an Editor)       |
 | ------------------------------------ | -------------------------------------------- | ------------------------- |

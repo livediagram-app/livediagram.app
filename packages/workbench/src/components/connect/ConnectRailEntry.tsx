@@ -49,9 +49,11 @@ export function ConnectRailEntry({
 }) {
   const fan = FAN.filter((app) => app !== hostApp).slice(0, 3);
   return (
-    // Desktop: stuck to the rail's bottom whatever the categories' length, over the panel's paper. Phone: one more chip.
+    // Desktop: stuck to the rail's bottom whatever the categories' length, over the panel's paper, and flush with it
+    // (-bottom-4 undoes the rail's p-4, which a sticky bottom otherwise leaves for scrolled rows to show through).
+    // Phone: one more chip.
     <div
-      className="contents sm:sticky sm:bottom-0 sm:-mx-4 sm:-mb-4 sm:mt-auto sm:block sm:border-t sm:px-4 sm:pb-4 sm:pt-3"
+      className="contents sm:sticky sm:-bottom-4 sm:-mx-4 sm:-mb-4 sm:mt-auto sm:block sm:border-t sm:px-4 sm:pb-4 sm:pt-3"
       style={{ borderColor: colours.border, backgroundColor: colours.card }}
     >
       <button
