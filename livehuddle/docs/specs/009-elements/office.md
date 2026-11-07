@@ -26,7 +26,7 @@ places, so an office is drawn with the same tools as a diagram.
 
 ## Where they live
 
-Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
+Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `corridor`, `stage` and `rug` in **Rooms**
 (with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
 `water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
 [Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
@@ -90,6 +90,50 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
   ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
 
+### Room presets
+
+The Room tile opens six rooms to start from, the way the Card tile opens its presets ([Card presets](card.md#card-presets)):
+on the Toolbar strip and in the Rooms flyout it is an opener whose side panel lists them, one card each, and each places,
+drags and previews as the Room tile did (dropped at its own size, lining up with its neighbours). Every preset is an
+ordinary Room (`shape: 'room'`) placed already furnished, as the [Restroom](office-amenities.md#the-restroom-preset) is:
+the room, its Door and the pieces that show what the room is for arrive in one change (one undo). Nothing about the
+preset is stored on the room or its pieces: each is an ordinary element, so a placed one is moved, resized, renamed,
+recoloured, refurnished or emptied like any room, and its pieces like any piece.
+
+| Preset    | Variant     | Shape                                                     | Size      | Name      | Door                    |
+| --------- | ----------- | --------------------------------------------------------- | --------- | --------- | ----------------------- |
+| Room      | (none)      | A rectangle with its back wall standing up                | 480 × 320 | Room      | The front wall's middle |
+| Office    | `office`    | A small rectangle for one or two desks                    | 360 × 240 | Office    | The front wall's middle |
+| Boardroom | `boardroom` | A long rectangle round a big table                        | 800 × 400 | Boardroom | The front wall's middle |
+| Open Plan | `open-plan` | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan | The wing's front wall   |
+| Kitchen   | `kitchen`   | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall   |
+| Lounge    | `lounge`    | An octagon, every wall the same length                    | 440 × 440 | Lounge    | The front wall          |
+
+- The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
+  ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
+  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name inside their walls: at the top left
+  where the floor reaches it (the Open Plan, the Kitchen), else centred along the top (the Lounge's octagon). A room
+  drawn with the Room Builder places its name the same way.
+- Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
+  the room's stroke: one change, one undo, the room selected.
+- Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
+  (DEFAULTS.md D226):
+
+  | Preset    | Furnishings                                                                                                                                         |
+  | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Room      | None: the empty room to furnish from scratch                                                                                                        |
+  | Office    | A desk against the back wall, a plant and a bookshelf                                                                                               |
+  | Boardroom | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
+  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
+  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
+  | Lounge    | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
+
+  A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
+  own size.
+
+- The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
+- For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
+
 ## Meeting Table
 
 A table with six chairs round it, every seat facing the table.
@@ -107,6 +151,25 @@ A table with six chairs round it, every seat facing the table.
   sitter now facing the other way. Turned to face left it is a tall table: the two chairs that were beyond sit down its
   right facing left, the two in front down its left facing right, and the end chairs at its top and its foot.
   Aspect locked. Default 232 × 168.
+
+### Long Table
+
+The Meeting Table's `long` type (`variant: 'long'`, the stored type field doors and rugs use): a boardroom table drawn to
+its width, the Boardroom preset's table.
+
+- Its top runs the box's width less 40 px each end, the same 168 px deep drawing as the Meeting Table's. Chairs stand
+  along both sides, as many as fit at 60 px apart between 86 px in from each end (seats per side: the room left over
+  divided by 60, plus one), spaced evenly, and one chair at each end in profile. At 560 wide, seven a side and two
+  ends: **sixteen seats**.
+- Every seat sits as the Meeting Table's do: the far side faces down, the near side up, the ends inward; nearest free
+  seat, one sitter each, rings and the sitters' pill (`@liveworkspace/avatar/seats`, `longTableGrid`).
+- Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Its drawing keeps its
+  proportions; a box of other proportions is drawn as wide as that depth allows. Default 560 × 168.
+- **Turned** ([Turning furniture](furniture-facing.md)), it turns as the Meeting Table does, at its own length: from
+  behind it reads the same with every chair a half turn round; on its side it is a tall table, its length down the box,
+  the far row's chairs in profile down its right, the near row's down its left, the left end's chair at its top and the
+  right end's at its foot. Its side chairs keep their places along it, drawn a little closer as the Meeting Table's are
+  on its side.
 
 ## Plant, Bookshelf
 
@@ -148,6 +211,30 @@ placed **behind everything** like a room, so it lies on the floor under the furn
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
 room's floor, and a room never covers what stands in it. Default 200 × 120. Turned, it is the same flat pattern from
 behind and lies the other way round on its side, its box's sides swapped.
+
+### Rug types
+
+The Rug tile opens eight rugs, as the Room tile opens its presets: shapes, sizes and patterns to dress a floor with. A
+rug's type is stored in `variant` (the field the [Door types](room-builder.md#door-types) use), so it keeps its pattern
+when moved, resized or recoloured; absent is the Oval, and a value a rug does not take draws as the Oval.
+
+| Type     | `variant`  | Shape and pattern                                                         | Size      |
+| -------- | ---------- | ------------------------------------------------------------------------- | --------- |
+| Oval     | (none)     | An oval with rings (the rug as it always was)                             | 200 × 120 |
+| Round    | `round`    | A circle with a braided border and rings to the middle                    | 160 × 160 |
+| Bordered | `bordered` | A rectangle with a wide border band and a plain field                     | 240 × 160 |
+| Runner   | `runner`   | A long narrow rug with banded ends and a fringe, for a hall or a corridor | 320 × 88  |
+| Striped  | `striped`  | A rectangle in bold stripes across it                                     | 220 × 150 |
+| Persian  | `persian`  | A rectangle with a medallion, corner spandrels, a double border, a fringe | 260 × 170 |
+| Kilim    | `kilim`    | A rectangle in rows of stepped diamonds                                   | 240 × 150 |
+| Doormat  | `doormat`  | A small mat with a coir weave, for a doorway                              | 120 × 72  |
+
+- **Drawn to its size**, every type but the Oval: its border bands and pattern keep their thickness however big the
+  rug, and stripes, rows and diamonds repeat to fill it rather than stretch (the Oval keeps its drawing, scaled, as
+  before). The pattern is woven in the rug's own fill: tints of its stroke and a light sheen over the fill, so a
+  recoloured rug keeps its pattern, and a rug on dark paper (its deep fill) reads as well as on light.
+- A Round rug is aspect locked (it stays a circle); the others take any box.
+- Export draws each type as the canvas does.
 
 ## Stage
 

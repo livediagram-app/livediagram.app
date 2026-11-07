@@ -83,6 +83,7 @@ export const ELEMENT_FIELD_NAMES = {
     'roomDoor',
     'roomOutline',
     'doorClosed',
+    'variant',
     'stageSpeakers',
     'stageCameras',
     'noticeNotes',

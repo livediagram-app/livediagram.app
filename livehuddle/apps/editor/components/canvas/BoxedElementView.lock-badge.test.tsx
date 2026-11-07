@@ -13,8 +13,12 @@ function wrapperFor(props: {
   locked?: boolean;
   tabLocked?: boolean;
   remoteSelectors?: { id: string; name: string; color: string; holds: boolean }[];
+  kind?: 'square' | 'door';
 }) {
-  const element = { ...createShape('square', 0, 0), locked: props.locked } as BoxedElement;
+  const element = {
+    ...createShape(props.kind ?? 'square', 0, 0),
+    locked: props.locked,
+  } as BoxedElement;
   const { container } = render(
     <BoxedElementView
       element={element}
@@ -58,6 +62,10 @@ describe('the lock badge', () => {
 
   it('stays off an unlocked element on a locked tab', () => {
     expect(badge({ readOnly: false, tabLocked: true })).toBeNull();
+  });
+
+  it('stays off a locked Door, which shows its own upright padlock (room-builder.md "Locked doors")', () => {
+    expect(badge({ readOnly: false, locked: true, kind: 'door' })).toBeNull();
   });
 
   it('stays off an unlocked element', () => {

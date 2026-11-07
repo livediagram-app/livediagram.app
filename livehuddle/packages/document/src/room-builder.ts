@@ -18,6 +18,8 @@ import {
 import type { Element, ElementId, ShapeElement } from './index';
 import { createShape } from './shape-factory';
 import { roomPresetCompanions } from './room-presets';
+import { outlineNameAlign, roomPresetDoorAt } from './room-preset-shapes';
+import { corridorWalls } from './piece-variants';
 
 export { snap45, pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
 
@@ -91,24 +93,37 @@ export function createOutlinedRoom(corners: readonly OutlinePoint[]): ShapeEleme
   const height = Math.max(...ys) + half - y0;
   if (width <= ROOM_WALL || height <= ROOM_WALL) return null;
   const base = createShape('room', x0, y0);
+  const roomOutline = distinct.map((p) => ({ x: (p.x - x0) / width, y: (p.y - y0) / height }));
   return {
     ...base,
     width,
     height,
-    roomOutline: distinct.map((p) => ({ x: (p.x - x0) / width, y: (p.y - y0) / height })),
+    roomOutline,
     // The doorway is the Door's job on a custom room.
     roomDoor: 'none',
     aspectLocked: true,
+    // Its name inside its walls, wherever the corners left the box's top left.
+    ...outlineNameAlign(roomOutline, width, height),
   };
 }
 
-// Every room's walls, uncut, with the room each belongs to.
+/** Whether an element has walls a Door stands on: a Room, or a Corridor (docs/specs/009-elements/corridor.md). */
+function isWalled(el: Element): el is ShapeElement {
+  return el.type === 'shape' && (el.shape === 'room' || el.shape === 'corridor');
+}
+
+// A room's or a corridor's walls, uncut by any door.
+function wallLines(el: ShapeElement) {
+  if (el.shape === 'corridor') return corridorWalls(el);
+  return isOutlinedRoom(el) ? outlineWalls(el, el.roomOutline) : roomWalls(el);
+}
+
+// Every room's and corridor's walls, uncut, with the piece each belongs to.
 function wallsOf(elements: readonly Element[]) {
   const out: { room: ShapeElement; a: OutlinePoint; b: OutlinePoint }[] = [];
   for (const el of elements) {
-    if (el.type !== 'shape' || el.shape !== 'room') continue;
-    const walls = isOutlinedRoom(el) ? outlineWalls(el, el.roomOutline) : roomWalls(el);
-    for (const w of walls) out.push({ room: el, ...w });
+    if (!isWalled(el)) continue;
+    for (const w of wallLines(el)) out.push({ room: el, ...w });
   }
   return out;
 }
@@ -153,10 +168,9 @@ export function snapMovedDoors(els: Element[], ids: { has(id: ElementId): boolea
 
 /** Whether a door stands on one of the room's walls (so it rides the room's drag and cuts its wall). */
 export function doorOnRoom(door: ShapeElement, room: ShapeElement): boolean {
-  if (door.shape !== 'door' || room.shape !== 'room') return false;
+  if (door.shape !== 'door' || !isWalled(room)) return false;
   const line = doorLine(door);
-  const walls = isOutlinedRoom(room) ? outlineWalls(room, room.roomOutline) : roomWalls(room);
-  return walls.some((w) => doorSpanOnWall(w, line) !== null);
+  return wallLines(room).some((w) => doorSpanOnWall(w, line) !== null);
 }
 
 /** `ids` plus every door standing on a wall of a room in `ids`: a moved room carries its doors. */
@@ -164,9 +178,7 @@ export function withAttachedDoors(
   elements: readonly Element[],
   ids: ReadonlySet<ElementId>,
 ): ReadonlySet<ElementId> {
-  const rooms = elements.filter(
-    (el): el is ShapeElement => el.type === 'shape' && el.shape === 'room' && ids.has(el.id),
-  );
+  const rooms = elements.filter((el): el is ShapeElement => isWalled(el) && ids.has(el.id));
   if (rooms.length === 0) return ids;
   let out: Set<ElementId> | null = null;
   for (const el of elements) {
@@ -237,12 +249,34 @@ export function roomWithDoorPiece(room: ShapeElement): {
 export function withDoorPiece(el: Element, variant?: string): Element[] {
   if (el.type !== 'shape' || el.shape !== 'room') return [el];
   const { room, door } = roomWithDoorPiece(el);
-  return [room, ...(door ? [door] : []), ...roomPresetCompanions(room, variant)];
+  const shaped = door ? null : presetDoor(room, variant);
+  return [
+    room,
+    ...(door ? [door] : []),
+    ...(shaped ? [shaped] : []),
+    ...roomPresetCompanions(room, variant),
+  ];
+}
+
+// A shaped room preset's Door (docs/specs/009-elements/office.md "Room presets"), stood on the wall its preset names
+// and snapped onto it in the room's stroke and floor; null for any other room.
+function presetDoor(room: ShapeElement, variant: string | undefined): ShapeElement | null {
+  const at = roomPresetDoorAt(room, variant);
+  if (!at) return null;
+  const base = createShape('door', 0, 0);
+  const free: ShapeElement = {
+    ...base,
+    x: at.x - base.width / 2,
+    y: at.y - base.height / 2,
+    ...(room.strokeColor ? { strokeColor: room.strokeColor } : {}),
+  };
+  return snapDoorToWall(free, [room]);
 }
 
 // A room's walls, uncut by any built-in doorway, in an order that survives a resize (a rectangle's four sides, a
-// custom room's outline walls).
+// custom room's outline walls, a corridor's runs).
 function wholeWalls(room: ShapeElement) {
+  if (room.shape === 'corridor') return corridorWalls(room);
   return isOutlinedRoom(room)
     ? outlineWalls(room, room.roomOutline)
     : roomWalls({ ...room, roomDoor: 'none', roomOutline: undefined });
@@ -257,10 +291,10 @@ function wholeWalls(room: ShapeElement) {
  */
 export function doorsFollowRooms(before: readonly Element[], after: Element[]): Element[] {
   const was = new Map<ElementId, ShapeElement>();
-  for (const el of before) if (el.type === 'shape' && el.shape === 'room') was.set(el.id, el);
+  for (const el of before) if (isWalled(el)) was.set(el.id, el);
   const changed: { from: ShapeElement; to: ShapeElement }[] = [];
   for (const el of after) {
-    if (el.type !== 'shape' || el.shape !== 'room') continue;
+    if (!isWalled(el)) continue;
     const from = was.get(el.id);
     if (
       from &&

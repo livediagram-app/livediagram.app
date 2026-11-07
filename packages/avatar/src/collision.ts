@@ -12,6 +12,7 @@ import { segmentDistance as sharedSegmentDistance } from '@liveworkspace/model-c
 import { fenceLine, type FencePoint } from './fence';
 import { boxEdges, officeFootprint, roomWalls } from './office-geometry';
 import { cutByDoors, doorLine } from './room-outline';
+import { corridorWalls } from './corridor';
 import { podWalls } from './pod';
 import { isSceneShape, type AvatarSceneElement } from './scene';
 
@@ -68,6 +69,8 @@ export function fenceSegments(elements: readonly AvatarSceneElement[]): FenceSeg
     // A garden fence (livehuddle's docs/specs/009-elements/office.md "Garden Fence") blocks as a fence does.
     if (el.shape === 'fence' || el.shape === 'garden-fence') out.push(fenceLine(el));
     else if (el.shape === 'room') out.push(...cutByDoors(roomWalls(el), doors));
+    // A Corridor (livehuddle's docs/specs/009-elements/corridor.md): the walls down its sides, cut by its doors.
+    else if (el.shape === 'corridor') out.push(...cutByDoors(corridorWalls(el), doors));
     // An Office Pod (office.md "Office Pod"): its walls, its doorway shut while both seats are held.
     else if (el.shape === 'office-pod') out.push(...podWalls(el));
     else {

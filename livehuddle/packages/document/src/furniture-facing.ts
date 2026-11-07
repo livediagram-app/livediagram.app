@@ -9,7 +9,7 @@ import { turnWithArt } from '@liveworkspace/avatar/furniture-art';
 import { DEFAULT_SEATING_FACING } from '@liveworkspace/avatar/seats';
 import { seatsACharacter } from '@liveworkspace/avatar/office-geometry';
 import { FURNITURE_ART, isSeatingShape, type FurnitureArt } from './seating';
-import { isGridOfficeShape, OFFICE_ART } from './office';
+import { isGridOfficeShape, isLongTable, longTableArt, OFFICE_ART } from './office';
 
 /** The facing a number of clockwise quarter turns away, for the editor's turn while placing. */
 export { turnFacing };
@@ -110,7 +110,12 @@ export function pieceFacing(el: { shape: string; chairFacing?: SeatFacing }): Se
   return el.chairFacing ?? defaultPieceFacing(el.shape);
 }
 
-type Turnable = Rect & { shape: string; chairFacing?: SeatFacing; rotation?: number };
+type Turnable = Rect & {
+  shape: string;
+  chairFacing?: SeatFacing;
+  rotation?: number;
+  variant?: unknown;
+};
 
 /**
  * A piece turned to face `to` (furniture-facing.md "A turn"): its box keeps its centre and scale and takes the turned
@@ -119,7 +124,10 @@ type Turnable = Rect & { shape: string; chairFacing?: SeatFacing; rotation?: num
  * as it was.
  */
 export function turnPiece<E extends Turnable>(el: E, to: SeatFacing): E {
-  const art = pieceArt(el.shape);
+  // A Long Table's drawings are built for its box (office.md "Long Table"), so it turns from its own.
+  const art = isLongTable(el)
+    ? longTableArt(el.width, el.height, pieceFacing(el))
+    : pieceArt(el.shape);
   if (!art || !turnsWithFacing(el.shape)) return el;
   return turnWithArt(el, art, pieceFacing(el), to);
 }
