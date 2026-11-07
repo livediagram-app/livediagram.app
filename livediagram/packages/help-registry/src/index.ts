@@ -151,7 +151,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one canvas: organise, link, and move between multiple boards with tabs.',
-    articleCount: 9,
+    articleCount: 10,
     kind: 'feature',
   },
   {
