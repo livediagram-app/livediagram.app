@@ -18,8 +18,8 @@ export const WAYFINDING_TONES = {
   display: '#1e293b',
   lamp: '#fbbf24',
   // The Stairs' stone: a tread's top lit, a riser's front in shade.
-  tread: '#e7e5e4',
-  riser: '#a8a29e',
+  tread: '#f5f5f4',
+  riser: '#c7c2bd',
 } as const;
 
 const T = WAYFINDING_TONES;
@@ -75,33 +75,43 @@ const ELEVATOR_VIEW: FurnitureDrawing = {
   ring: { cx: 56, cy: 128, rx: 50, ry: 8 },
 };
 
-// The Stairs (docs/specs/009-elements/stairs.md): a flight of seven steps rising away from you between two side walls,
-// each step a lit tread over a shaded riser, a handrail along each wall with a newel cap at its foot, the landing at
-// the top opening dark onto the floor above, and a blue sign over it with an up and a down arrow.
+// The Stairs (docs/specs/009-elements/stairs.md): a flight of seven steps rising away from you, narrowing as it goes,
+// between two side walls that lean in with it, each step a lit tread over a shaded riser, a handrail along each wall
+// with a newel cap at its foot, the landing at the top opening dark onto the floor above, and a blue sign over it with
+// an up and a down arrow.
 const STAIRS_STEPS = 7;
 const STAIRS_LANDING = 28;
 const STAIRS_STEP = 13;
+const STAIRS_FOOT = STAIRS_LANDING + STAIRS_STEPS * STAIRS_STEP;
+// The flight's sides: 16..80 at its foot, 26..70 at the landing, straight between.
+const stairsSide = (y: number): [number, number] => {
+  const t = (STAIRS_FOOT - y) / (STAIRS_FOOT - STAIRS_LANDING);
+  return [16 + 10 * t, 80 - 10 * t];
+};
+// One band of the flight between two heights, as wide as the flight there.
+const band = (y0: number, y1: number): string => {
+  const [a0, b0] = stairsSide(y0);
+  const [a1, b1] = stairsSide(y1);
+  return `M${a0} ${y0}H${b0}L${b1} ${y1}H${a1}z`;
+};
 const STAIRS_VIEW: FurnitureDrawing = {
   width: 96,
   height: 128,
   parts: [
     ellipse('shadow', 48, 124, 44, 3.5),
-    rect('face', 4, 14, 12, 108, 3),
-    rect('face', 80, 14, 12, 108, 3),
-    rect('panel', 16, 14, 64, STAIRS_LANDING - 14, 1, T.display),
+    path('face', 'M4 122h12l10-108h-8z'),
+    path('face', 'M92 122h-12l-10-108h8z'),
+    rect('panel', 24, 14, 48, STAIRS_LANDING - 14, 1, T.display),
     ...Array.from({ length: STAIRS_STEPS }, (_, k) => {
       const y = STAIRS_LANDING + k * STAIRS_STEP;
-      return [
-        rect('panel', 16, y, 64, 5, 0.5, T.tread),
-        rect('face', 16, y + 5, 64, 8, 0.5, T.riser),
-      ];
+      return [path('panel', band(y, y + 5), T.tread), path('face', band(y + 5, y + 13), T.riser)];
     }).flat(),
-    path('line', 'M10 20v96M86 20v96'),
+    path('line', 'M10 116l11-96M86 116l-11-96'),
     ellipse('panel', 10, 116, 3.5, 3.5),
     ellipse('panel', 86, 116, 3.5, 3.5),
     rect('panel', 32, 2, 32, 14, 4, T.sign),
-    path('panel', 'M38.5 12l4-6 4 6z', T.white),
-    path('panel', 'M49.5 6l4 6 4-6z', T.white),
+    path('mark', 'M37.5 12l4.5-6.5 4.5 6.5z', T.white),
+    path('mark', 'M49.5 5.5l4.5 6.5 4.5-6.5z', T.white),
   ],
   seats: [],
   ring: { cx: 48, cy: 118, rx: 42, ry: 7 },
