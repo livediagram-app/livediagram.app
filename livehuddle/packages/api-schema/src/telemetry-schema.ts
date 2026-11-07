@@ -339,6 +339,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Room',
     // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md "Telemetry").
     'CustomRoom',
+    // The Corridor (docs/specs/009-elements/corridor.md), beside the rooms.
+    'Corridor',
     'Door',
     'Fence',
     'Stage',

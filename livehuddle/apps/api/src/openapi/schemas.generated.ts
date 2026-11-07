@@ -5335,6 +5335,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "shape",
         "type": "string"
       },
+      "variant": {
+        "type": "string"
+      },
       "width": {
         "type": "number"
       },
@@ -5387,6 +5390,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "desk",
       "sofa",
       "room",
+      "corridor",
       "meeting-table",
       "plant",
       "bookshelf",

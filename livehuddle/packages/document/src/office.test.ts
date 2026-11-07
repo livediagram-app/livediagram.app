@@ -30,6 +30,7 @@ describe('the office pieces', () => {
   it('are eighteen shape kinds, each made at its drawing’s size', () => {
     expect(OFFICE_KINDS).toEqual([
       'room',
+      'corridor',
       'meeting-table',
       'plant',
       'bookshelf',
@@ -109,6 +110,7 @@ describe('the office pieces', () => {
     ]);
     const sized = [
       'room',
+      'corridor',
       'stage',
       'garden-path',
       'grass',
@@ -136,9 +138,10 @@ describe('the office pieces', () => {
     expect(room.aspectLocked).toBeFalsy();
   });
 
-  it('puts the room, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
+  it('puts the room, the corridor, the rug, the stage, the garden path and grass on the floor, and nothing else', () => {
     expect(OFFICE_KINDS.filter(isFloorShape)).toEqual([
       'room',
+      'corridor',
       'rug',
       'stage',
       'garden-path',

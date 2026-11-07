@@ -16,6 +16,12 @@ describe('fixed-size shapes', () => {
       expect(isFixedSizeElement({ type: 'shape', shape })).toBe(true);
     for (const shape of ['room', 'stage', 'rug', 'grass'])
       expect(isFixedSizeElement({ type: 'shape', shape })).toBe(false);
+    // A Long Table resizes to take more chairs (office.md "Long Table"); the Meeting Table keeps its size.
+    expect(isFixedSizeElement({ type: 'shape', shape: 'meeting-table' })).toBe(true);
+    expect(isFixedSizeElement({ type: 'shape', shape: 'meeting-table', variant: 'long' })).toBe(
+      false,
+    );
+    expect(isFixedSizeElement({ type: 'text' })).toBe(false);
   });
 
   // A retired Session button or Done check (docs/specs/002-project-scope/not-in-livehuddle.md) is a placeholder,

@@ -1,11 +1,12 @@
-// Who is in and who runs a team, and what people are called, as accounts says now (liveworkspace/docs/specs/004-index/webhooks.md "Who adds one",
-// "What it sends", "Security"): adding or changing a team's webhook, and sending one, each ask whether the person is
-// an admin of the team at that moment, and a mention asks whether the mentioned person is one of the item's team's
-// people (`POST /api/account/index/teams`, with the key the two share, as a team filter asks). A token's `teams` claim
-// can be an hour old, so it is never trusted for this.
+// Who is in and who runs a team, and what people are called, as accounts says now (`POST /api/account/index/teams`
+// and `/people`, with the key the two share). Team webhooks ask whether the person is an admin of the team at that
+// moment, and a mention whether the mentioned person is one of the item's team's people
+// (liveworkspace/docs/specs/004-index/webhooks.md "Who adds one", "Security"); the team audit log asks who runs the
+// team and names its people (team-audit-log.md "Who reads it"). A token's `teams` claim can be an hour old, so it is
+// never trusted for this.
 
 import { readTeamsClaim, type TeamClaim } from '@liveworkspace/auth-client';
-import { accountsUrl, type Env } from '../env';
+import { accountsUrl, type Env } from './env';
 
 /** Teams of a person's now (those they run, or every one they are in), or null when accounts can't say (unreachable,
  *  no key). */

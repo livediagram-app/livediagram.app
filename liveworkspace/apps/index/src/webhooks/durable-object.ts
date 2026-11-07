@@ -6,7 +6,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { roomAlarmAt } from '@liveworkspace/api-kit/room-alarm';
 import type { Env } from '../env';
-import { accountsAdminTeams } from './access';
+import { accountsAdminTeams } from '../accounts-access';
 import { dohResolve } from './address';
 import { dispatch, type DispatchDeps } from './dispatch';
 

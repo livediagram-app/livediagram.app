@@ -15,7 +15,7 @@
 
 import { isAccountId } from '@liveworkspace/auth-client';
 import type { CollabThreadInput } from '@liveworkspace/index-client';
-import type { PersonTeams } from './access';
+import type { PersonTeams } from '../accounts-access';
 import type { MentionDelivery } from './outbox';
 
 // The most mentions one tab's push hands on: past any real save, and it bounds the accounts asks.
