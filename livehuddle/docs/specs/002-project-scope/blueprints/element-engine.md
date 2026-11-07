@@ -56,9 +56,12 @@ height }`.
 ## Errors and edge cases
 
 - A retired element with a zero or non-finite box draws an empty card (the layout clamps to 0) and shows no button.
-- A box too small for the button (under 72 by 40, a zero box included) shows no button, and so does a box where the
-  button would touch a line of words (the layout's `top` and `width` for each line, against the button's corner plus a
-  4px gap); the Delete key, the context menu and the multi-selection still remove it.
+- The button is measured on screen: `retiredDeletePlacement(card, width, height, zoom, selected)` puts it inside
+  the card when the card is at least 72 by 48 screen px and no line of words reaches the button's corner (the
+  layout's `top` and `width` for each line, against the corner plus a 4px gap, measured back into the card's units
+  by the zoom). Otherwise a selected card shows it outside, 26 px past its right edge at its top, in the grips layer
+  (`BoxGripsPortal`, on a frame turned and moved as the element is, so later elements never cover it); an unselected
+  one shows none. A zero box shows none. The Delete key, the context menu and the multi-selection still remove it.
 - A retired type with no `label` shows no label line.
 
 ## Security and trust
@@ -76,8 +79,12 @@ height }`.
 - The button: icon only, 24 by 24 px with a rounded-md corner, the Lucide bin glyph at 14 px in the card's ink.
   Hidden (`opacity-0`) until the element is hovered (`group-hover/el`), the button holds keyboard focus
   (`focus-visible`, with the brand ring `focus-visible:ring-2`) or the element is selected. Hover tints it
-  (`bg-black/10`, `bg-white/10` in dark). Tooltip "Delete <name>". Top-right, 4 px inset. On touch, where there is no
-  hover, a tap selects the element and shows the button.
+  (`bg-black/10`, `bg-white/10` in dark). Tooltip "Delete <name>". Counter-scaled by `1 / zoom` (as the grips are), so
+  it is 24 screen px at every zoom, 12 screen px in from the top and right edges: the grips' touch pads reach 10 px
+  into a card at a corner and 7 px at an edge's middle (`HIT_PAD_INWARD`), so the button never sits under one. Outside
+  the card it wears a white (slate-900 in dark) chip with a border and a small shadow, always shown, since it only
+  appears on a selected card. On touch, where there is no hover, a tap selects the element and shows the button. Only
+  the button reads the zoom, so a zoom re-renders it and not the card.
 
 ## Accessibility
 
@@ -90,8 +97,10 @@ height }`.
   through `migrateStoredTab` and `migrateIncomingTab` deep-equal to what was stored, passes `isValidTab`, and names
   each.
 - `svg-render-retired.test.ts`: the export draws the placeholder for a retired type and kind.
-- `RetiredElementFace.test.tsx` (editor): the face shows the name and the note; Delete renders only with `onDelete` and
-  a box of at least 72 by 40 whose words sit clear of the button's corner; a press calls it with the id and stops the pointer from reaching the wrapper; the
+- `RetiredElementFace.test.tsx` (editor): the face shows the name and the note; Delete renders only with `onDelete`
+  and, inside, on a card of at least 72 by 48 on screen whose words sit clear of the button's corner; it keeps 24
+  screen px at zoom 0.5, 1 and 2; a phone's Fit zoom puts it outside a selected card, in the grips layer; across sizes
+  and zooms 0.1 to 4 it never overlaps a grip's touch pad; a press calls it with the id and stops the pointer from reaching the wrapper; the
   router passes Delete only when not read-only (a Participant or a Viewer); `deleteElementById` removes one id as one
   commit.
 - `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
@@ -99,8 +108,10 @@ height }`.
 
 ## Constants and configuration
 
-- `RETIRED_DELETE_MIN_WIDTH = 72`, `RETIRED_DELETE_MIN_HEIGHT = 40`: the smallest card that can hold the button at
-  all. A card at least that big still shows it only when no line of words reaches its corner (D18).
+- `RETIRED_DELETE_MIN_WIDTH = 72`, `RETIRED_DELETE_MIN_HEIGHT = 48` (screen px): the smallest card that can hold the
+  button inside. A card at least that big still holds it only when no line of words reaches its corner (D18).
+- `RETIRED_DELETE_SIZE = 24`, `RETIRED_DELETE_INSET = 12`, `RETIRED_DELETE_OUTSIDE = 26` (screen px): the button, its
+  inset from the top-right corner and its offset past the right edge when outside (D17).
 
 ## Defaults ledger
 

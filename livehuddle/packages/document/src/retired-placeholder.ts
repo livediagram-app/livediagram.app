@@ -58,7 +58,9 @@ const LINE_STYLES: Record<
   { size: number; weight: number; opacity: number }
 > = {
   name: { size: 15, weight: 600, opacity: 1 },
-  note: { size: 12, weight: 400, opacity: 0.7 },
+  // 11px, so the whole note ("No longer supported in livehuddle") fits on one line from a 210px card up: the
+  // Collaborate elements Work Tracker #423 deleted were stored 220px wide.
+  note: { size: 11, weight: 400, opacity: 0.7 },
   label: { size: 13, weight: 500, opacity: 0.85 },
 };
 

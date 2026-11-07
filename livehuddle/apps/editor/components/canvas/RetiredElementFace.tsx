@@ -4,12 +4,15 @@ import {
   RETIRED_PLACEHOLDER_COLOURS,
   retiredElementName,
   retiredPlaceholderLayout,
+  rotationOf,
   type BoxedElement,
   type RetiredPlaceholderLayout,
 } from '@livehuddle/document';
 import { Glyph, Prims, Tooltip } from '@livehuddle/ui';
 import { lucideTrash2 } from '@liveworkspace/icons/lucide';
+import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 
 // A retired element's placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored
 // element whose kind or type livehuddle no longer has (a Collaborate element Work Tracker #423 part 4 deleted, a
@@ -20,32 +23,87 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 //
 // An Editor also gets a Delete button on the card ("Deleting it"): the one action the placeholder offers, so a board
 // can be cleared of what it can no longer show without hunting for the menu. It shows on hover, on keyboard focus and
-// while the element is selected (so a touch, which has no hover, finds it after the tap that selects), and only on a
-// card big enough to hold it clear of the words.
+// while the element is selected (so a touch, which has no hover, finds it after the tap that selects). It keeps one
+// size on screen at every zoom and stays clear of the selection grips; on a card too small on screen to hold it clear
+// of the words, it shows just outside the card's top-right corner while the card is selected.
 //
 // The card is laid out once, in @livehuddle/document (retiredPlaceholderLayout), and drawn here from the same layout
 // and colours the export and the thumbnail draw it from (svg-render-retired.ts), so the canvas and an exported image
 // never disagree. Nothing here reads or writes the element's own fields beyond its kind, label and size, so whatever
 // it carries (a poll's question, a chart's rows) rides through untouched.
 
-// The smallest box that holds the button clear of the name: below it the card shows words only, and the element
-// still deletes from its menu and the Delete key.
+// The button keeps one size on screen at every zoom, as the selection grips do: it is drawn in screen pixels and
+// counter-scaled inside the zoomed card. Every measure below is in screen pixels.
+//
+// The smallest card, on screen, that holds the button inside it: below it (a card at a phone's Fit zoom, say) the
+// button shows outside the card while it is selected, and not at all otherwise.
 export const RETIRED_DELETE_MIN_WIDTH = 72;
-export const RETIRED_DELETE_MIN_HEIGHT = 40;
+export const RETIRED_DELETE_MIN_HEIGHT = 48;
 
-// The button's corner of the card, in the card's own box: a 24px square 6px in from the top and right edges (the
-// `top-1.5 right-1.5` below, which keeps its focus ring off the outline), plus a 4px gap the words must keep from it.
-const DELETE_SIZE = 24;
-const DELETE_EDGE = 6;
+// A 24px square, 12px in from the top and right edges, plus a 4px gap the words must keep from it. The 12px keeps it
+// clear of the selection grips' touch pads, which reach at most 10px into a card at a corner and 7px at an edge's
+// middle (element-parts.tsx, HIT_PAD_INWARD), so a tap on the button on a selected card is never a resize.
+export const RETIRED_DELETE_SIZE = 24;
+export const RETIRED_DELETE_INSET = 12;
 const DELETE_GAP = 4;
+// Outside the card, the button sits past the top-right corner's touch pad, which reaches 22px out (a 6px half grip
+// and its 16px pad), with 4px to spare.
+export const RETIRED_DELETE_OUTSIDE = 26;
 
-// Does every line of words keep clear of the button's corner? A line is clear when it starts below the button or ends
-// left of it; the lines are centred across the box, so a long name on a small card reaches the corner and the button
-// stays away rather than sit on the words.
-export function wordsClearOfDelete(card: RetiredPlaceholderLayout, width: number): boolean {
-  const left = width - DELETE_EDGE - DELETE_SIZE - DELETE_GAP;
-  const bottom = DELETE_EDGE + DELETE_SIZE + DELETE_GAP;
-  return card.lines.every((line) => line.top >= bottom || (width + line.width) / 2 <= left);
+// Where the button goes on a card of this size at this zoom, as a box in screen pixels from the card's top-left
+// corner: inside the card's top-right corner when it fits clear of the words, else outside the card, past its
+// top-right corner, while it is selected (the only way a touch reaches it), else nowhere.
+export type RetiredDeletePlacement = {
+  where: 'inside' | 'outside';
+  left: number;
+  top: number;
+  size: number;
+};
+
+export function retiredDeletePlacement(
+  card: RetiredPlaceholderLayout,
+  width: number,
+  height: number,
+  zoom: number,
+  selected: boolean,
+): RetiredDeletePlacement | null {
+  const screenWidth = width * zoom;
+  const screenHeight = height * zoom;
+  if (
+    screenWidth >= RETIRED_DELETE_MIN_WIDTH &&
+    screenHeight >= RETIRED_DELETE_MIN_HEIGHT &&
+    wordsClearOfDelete(card, width, zoom)
+  ) {
+    return {
+      where: 'inside',
+      left: screenWidth - RETIRED_DELETE_INSET - RETIRED_DELETE_SIZE,
+      top: RETIRED_DELETE_INSET,
+      size: RETIRED_DELETE_SIZE,
+    };
+  }
+  if (selected && width > 0 && height > 0) {
+    return {
+      where: 'outside',
+      left: screenWidth + RETIRED_DELETE_OUTSIDE,
+      top: 0,
+      size: RETIRED_DELETE_SIZE,
+    };
+  }
+  return null;
+}
+
+// Does every line of words keep clear of the button's corner, at this zoom? The words are laid out in the card's own
+// units and the button in screen pixels, so the button's corner is measured back into the card's units. A line is
+// clear when it starts below the button or ends left of it; the lines are centred across the box, so a long name on
+// a small card reaches the corner and the button stays away rather than sit on the words.
+export function wordsClearOfDelete(
+  card: RetiredPlaceholderLayout,
+  width: number,
+  zoom = 1,
+): boolean {
+  const reach = (RETIRED_DELETE_INSET + RETIRED_DELETE_SIZE + DELETE_GAP) / zoom;
+  const left = width - reach;
+  return card.lines.every((line) => line.top >= reach || (width + line.width) / 2 <= left);
 }
 
 export function RetiredElementFace({
@@ -67,12 +125,6 @@ export function RetiredElementFace({
   const width = Math.max(0, element.width);
   const height = Math.max(0, element.height);
   const kind = element.type === 'shape' ? element.shape : element.type;
-  const canDelete =
-    !!onDelete &&
-    width >= RETIRED_DELETE_MIN_WIDTH &&
-    height >= RETIRED_DELETE_MIN_HEIGHT &&
-    wordsClearOfDelete(card, width);
-  const deleteLabel = `Delete ${retiredElementName(element)}`;
   return (
     <>
       <svg
@@ -112,32 +164,103 @@ export function RetiredElementFace({
           </text>
         ))}
       </svg>
-      {canDelete ? (
-        <span className="absolute right-1.5 top-1.5 z-10">
-          <Tooltip label={deleteLabel}>
-            <button
-              type="button"
-              aria-label={deleteLabel}
-              data-retired-delete
-              // The canvas reads a press on an element as select-and-maybe-drag: stop it here, or the press that
-              // deletes would first start a drag of the card it removes.
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(element.id);
-              }}
-              className={`pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 ${
-                selected ? 'opacity-100' : 'opacity-0 group-hover/el:opacity-100'
-              }`}
-              style={{ color: colours.ink }}
-            >
-              <Glyph size={14} units={24}>
-                <Prims prims={lucideTrash2} />
-              </Glyph>
-            </button>
-          </Tooltip>
-        </span>
+      {onDelete ? (
+        <RetiredDeleteButton
+          element={element}
+          card={card}
+          selected={selected}
+          ink={colours.ink}
+          onDelete={onDelete}
+        />
       ) : null}
     </>
+  );
+}
+
+// The button, apart from the card so that only it re-renders as the zoom changes.
+function RetiredDeleteButton({
+  element,
+  card,
+  selected,
+  ink,
+  onDelete,
+}: {
+  element: BoxedElement;
+  card: RetiredPlaceholderLayout;
+  selected: boolean;
+  ink: string;
+  onDelete: (elementId: string) => void;
+}) {
+  const zoom = useCanvasZoom();
+  const width = Math.max(0, element.width);
+  const height = Math.max(0, element.height);
+  const place = retiredDeletePlacement(card, width, height, zoom, selected);
+  if (!place) return null;
+  const label = `Delete ${retiredElementName(element)}`;
+  const button = (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        data-retired-delete={place.where}
+        // The canvas reads a press on an element as select-and-maybe-drag: stop it here, or the press that deletes
+        // would first start a drag of the card it removes.
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(element.id);
+        }}
+        className={`pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 ${
+          place.where === 'outside'
+            ? 'border border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-900'
+            : selected
+              ? 'opacity-100'
+              : 'opacity-0 group-hover/el:opacity-100'
+        }`}
+        style={{ color: place.where === 'outside' ? undefined : ink }}
+      >
+        <Glyph size={14} units={24}>
+          <Prims prims={lucideTrash2} />
+        </Glyph>
+      </button>
+    </Tooltip>
+  );
+  // Counter-scaled about its top-left corner, so it keeps its size on screen and its place on the card.
+  const slot = (
+    <span
+      className="absolute"
+      data-retired-delete-slot=""
+      style={{
+        left: place.left / zoom,
+        top: place.top / zoom,
+        transform: `scale(${1 / zoom})`,
+        transformOrigin: '0 0',
+      }}
+    >
+      {button}
+    </span>
+  );
+  if (place.where === 'inside')
+    return <span className="pointer-events-none absolute inset-0 z-10">{slot}</span>;
+  // Outside the card it would sit under any element drawn after this one, so it goes up into the grips layer with the
+  // selection's own grips, on a frame turned and moved as the element is (as SelectionChromeLayer's is).
+  const rotation = rotationOf(element);
+  return (
+    <BoxGripsPortal>
+      <div
+        data-ride-id={element.id}
+        className="pointer-events-none absolute"
+        style={{
+          left: element.x,
+          top: element.y,
+          width,
+          height,
+          transform: rotation % 360 !== 0 ? `rotate(${rotation}deg)` : undefined,
+          transformOrigin: 'center',
+        }}
+      >
+        {slot}
+      </div>
+    </BoxGripsPortal>
   );
 }

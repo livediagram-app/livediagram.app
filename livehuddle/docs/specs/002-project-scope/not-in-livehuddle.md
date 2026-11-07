@@ -446,10 +446,13 @@ has deleted so far, any other shape kind livehuddle does not know, and an elemen
   ("Q&A Board", "Poll", "Bar Chart", "Embed"; "Unknown Element" for a kind livehuddle never had) and, beneath it,
   "No longer supported in livehuddle", so the two lines read as one sentence about this element. Its stored label
   shows below that when it has one. The export and the thumbnail draw the same card, without the Delete button.
-- **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target) in the card's top-right corner
-  while the pointer is over the card, it has keyboard focus or the card is selected (a touch screen has no hover, so
-  selecting it shows the button). A card smaller than 72 by 40, or one whose words would
-  reach the button's corner, has no room for it, so it shows words only and deletes the usual ways. Pressing it removes the element as Delete would, as one undo step; it never selects or drags the element
+- **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target that keeps its size on screen
+  at every zoom, as the selection grips do) in the card's top-right corner while the pointer is over the card, it has
+  keyboard focus or the card is selected (a touch screen has no hover, so selecting it shows the button). It sits far
+  enough in that a tap on it never lands on a resize grip. A card that is smaller than 72 by 48 on screen, or whose
+  words would reach the button's corner, has no room for it inside: there the button shows just outside the card's
+  top-right corner, past the corner grip, while the card is selected (so a phone at its Fit zoom still reaches it),
+  and not at all otherwise. Pressing it removes the element as Delete would, as one undo step; it never selects or drags the element
   on its way. It has a tooltip and an accessible name ("Delete <kind name>"), takes a keyboard focus ring, and draws in
   the card's own quiet ink in light and dark. A Participant and a Viewer never see it (`can.remove`), and an Editor
   with Delete, the context menu or a multi-selection removes one the usual way too. Because its face can hold this

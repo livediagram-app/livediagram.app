@@ -77,6 +77,20 @@ describe('retiredPlaceholderLayout', () => {
     expect(mid.lines.map((l) => l.role)).toEqual(['name', 'note']);
   });
 
+  it('keeps the whole note on a card 210px wide, as the deleted Collaborate elements were stored', () => {
+    for (const width of [210, 220]) {
+      const card = retiredPlaceholderLayout({
+        type: 'shape',
+        shape: 'session-button',
+        width,
+        height: 150,
+      });
+      expect(card.lines.find((l) => l.role === 'note')!.text).toBe(
+        'No longer supported in livehuddle',
+      );
+    }
+  });
+
   it('survives a box with no size, and a label that is not text', () => {
     const card = retiredPlaceholderLayout(
       retired('hologram', { width: Number.NaN, height: -4, label: 7 }),
