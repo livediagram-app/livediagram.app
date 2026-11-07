@@ -18,9 +18,9 @@ export type ConnectedTabActionsDeps<T extends TabLike> = {
   tabs: readonly T[];
   // The host's kind in words: "diagram", "plan".
   hostKind: string;
-  documentId: string | null;
+  hostId: string | null;
   // The host's grant (X-Index-Grant) for this session, null when refused or out of reach.
-  grantFor: (documentId: string) => Promise<string | null>;
+  grantFor: (hostId: string) => Promise<string | null>;
   // A blank tab named `name` (the app's createTab).
   createTab: (name: string) => T;
   // The app's whole-tab save (`PUT /api/<items>/:id/tabs/:tabId`), throwing when it fails.
@@ -42,7 +42,7 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
   const {
     tabs,
     hostKind,
-    documentId,
+    hostId,
     grantFor,
     createTab,
     saveTab,
@@ -59,8 +59,8 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
     grantForRef.current = grantFor;
   });
   const grant = useCallback(
-    () => (documentId ? grantForRef.current(documentId) : Promise.resolve(null)),
-    [documentId],
+    () => (hostId ? grantForRef.current(hostId) : Promise.resolve(null)),
+    [hostId],
   );
 
   // The Connect list's add: a new tab `tabId` at the end of the bar holding the connection, saved before it shows.
@@ -88,11 +88,11 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
   const connectAgainTab = async (tabId: string) => {
     const tab = tabs.find((t) => t.id === tabId);
     const connection = connectionOf(tab);
-    if (!tab || !connection || !documentId) return;
+    if (!tab || !connection || !hostId) return;
     try {
       const made = await connectAgain({
         client,
-        hostId: documentId,
+        hostId,
         grant,
         tabId,
         connection,

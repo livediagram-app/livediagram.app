@@ -27,7 +27,7 @@ const setup = (tabs: Tab[], over: Partial<ConnectedTabActionsDeps<Tab>> = {}) =>
   const deps: ConnectedTabActionsDeps<Tab> = {
     tabs,
     hostKind: 'canvas',
-    documentId: 'host',
+    hostId: 'host',
     grantFor: vi.fn().mockResolvedValue('grant'),
     createTab: (name) => ({ id: 'minted', name }),
     saveTab: vi.fn().mockResolvedValue(undefined),
@@ -147,7 +147,7 @@ describe('useConnectedTabActions', () => {
     expect([...hook.result.current.connected]).toEqual([['p1', 'c']]);
     hook.result.current.goTo('c');
     expect(deps.openTab).toHaveBeenCalledWith('c');
-    hook.rerender({ ...deps, documentId: null });
+    hook.rerender({ ...deps, hostId: null });
     await expect(hook.result.current.grant()).resolves.toBeNull();
     await act(() => hook.result.current.connectAgainTab('c'));
   });
