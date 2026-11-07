@@ -112,7 +112,7 @@ export function DoNotDisturbSegment({ onClear }: { onClear?: () => void }) {
   );
 }
 
-/** Under the call group while you speak from a stage (meeting-rooms-and-stage.md "You are told you are on it"). */
+/** Over the call group while you speak from a stage (meeting-rooms-and-stage.md "You are told you are on it"). */
 export const ON_STAGE_LINE = "You're on stage. Everyone on this tab hears you.";
 
 export function StageLine({
@@ -127,8 +127,9 @@ export function StageLine({
     <span
       data-stage-line=""
       aria-live="polite"
-      // Hung under the call group, clear of the strip's card (meeting-rooms-and-stage.md "The stage line").
-      className="pointer-events-none absolute top-full left-0 mt-3 whitespace-nowrap"
+      // Hung over the call group, clear of the Call dock's card, centred on it (meeting-rooms-and-stage.md "The stage
+      // line").
+      className="pointer-events-none absolute bottom-full left-1/2 mb-3 -translate-x-1/2 whitespace-nowrap"
     >
       {barredBy ? (
         <span className="block rounded-md bg-slate-900/90 px-2.5 py-1 text-xs font-medium text-white shadow-md motion-safe:animate-card-rise dark:bg-slate-100/95 dark:text-slate-900">

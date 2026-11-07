@@ -19,7 +19,7 @@ Disturb and the stage line) and part 4 (the palette tile, settings, template and
 | hand (part 3)           | presence op `avatar-hand` `{ kind, tabId, raised, letSpeak? }`                                     | Your raised hand, and the presence id of who let it speak (absent: nobody)     |
 | let speak (part 3)      | presence op `avatar-let-speak` `{ kind, tabId, targetId, on }`                                     | Let a raised hand speak (`on`), or Done; addressed to the hand's owner         |
 | hands (part 3)          | `CallHand` `{ tabId, letSpeak, at }` by presence id in the calls store                             | Every peer's raised hand, in the order they went up                            |
-| stage place (part 3)    | `CallSelf.stage`: `'none' \| 'audience' \| 'speaker' \| 'barred'`, `CallSelf.barredBy`             | Where you stand towards a live stage, for the call strip                       |
+| stage place (part 3)    | `CallSelf.stage`: `'none' \| 'audience' \| 'speaker' \| 'barred'`, `CallSelf.barredBy`             | Where you stand towards a live stage, for the Call dock                        |
 | your hand (part 3)      | `CallSelf.hand`: `'down' \| 'raised' \| 'speaking'`, `CallSelf.handsUp`                            | Your own hand, and how many hands are up on the tab (for a speaker)            |
 | Do Not Disturb (part 3) | `AvatarStatus` `'dnd'`; `AVATAR_CALL_STATUSES`                                                     | The fifth status, and the list livehuddle offers                               |
 
@@ -165,11 +165,11 @@ catalogue (`../packages/avatar/src/status.ts`: label "Do Not Disturb", colour `#
 livediagram's Avatar Panel offers the four, and livehuddle's avatar palette (its Status flyout,
 `AvatarPaletteFlyouts.tsx`) the five. While your status is `dnd`, `ProximityCall.setDoNotDisturb(true)` makes `hear()` want
 nothing (no audio, no bubbles, `heard` empty) and `useCanvasCall`'s `hidePeers` is true; publishing is untouched. The
-call strip shows a **Do Not Disturb** segment that clears it (`onClearDoNotDisturb`).
+Call dock shows a **Do Not Disturb** segment that clears it (`onClearDoNotDisturb`).
 
-**The call group** (`components/calls/CallStripGroup.tsx`, `StageSegments.tsx`, at the left of the avatar palette): as audience with a speaking level,
+**The call group** (`components/calls/CallStripGroup.tsx`, `StageSegments.tsx`, on the Call dock, `CallDock.tsx`): as audience with a speaking level,
 Raise Hand / Lower Hand (pressed, amber), or Speaking (brand) while let speak; as a speaker, a count of raised hands
-when there are any; and under the group, while `barredBy` is set, the stage line (`StageLine`).
+when there are any; and over the group (centred on it, `bottom-full`), while `barredBy` is set, the stage line (`StageLine`).
 
 ## Interfaces and contracts
 

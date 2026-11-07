@@ -172,8 +172,9 @@ export function ToolbarPalette(props: Props) {
   // so a scaled tile takes more of the window.
   const scale = useUiScale('toolbar');
   const cardRef = useRef<HTMLDivElement>(null);
-  // The category bar names its categories while the strip has room for the names (useBarLabels).
-  const barLabels = useBarLabels(cardRef, {
+  // The category bar names its categories while the strip has room for the names (useBarLabels); on a phone, where the
+  // bar swipes sideways, always (owner, 2026-11-07: "it scrolls so its not an issue that they don't all fit").
+  const fittedLabels = useBarLabels(cardRef, {
     enabled: !isMobile,
     categoriesKey: barCategories.map((c) => c.label).join('|'),
     scale,
@@ -183,6 +184,7 @@ export function ToolbarPalette(props: Props) {
   const crowded = useStripCrowded(cardRef, leading == null);
   // On a phone the strip swipes sideways (docs/specs/007-editor/toolbar-layout.md "On a phone").
   const swipe = phoneRow;
+  const barLabels = fittedLabels || swipe;
 
   // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
   const beforeSearch = () => {

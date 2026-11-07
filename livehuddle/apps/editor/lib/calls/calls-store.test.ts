@@ -143,7 +143,6 @@ describe('calls store self', () => {
     expect(result.current.self).toMatchObject({ available: true, canSpeak: true });
     const actions = {
       join: vi.fn(),
-      leave: vi.fn(),
       toggleMute: vi.fn(),
       toggleCamera: vi.fn(),
       toggleScreen: vi.fn(),

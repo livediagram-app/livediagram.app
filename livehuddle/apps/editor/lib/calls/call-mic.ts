@@ -1,6 +1,8 @@
 // A proximity call's microphone (docs/specs/012-collaboration/proximity-audio.md "The microphone", "The talking
-// equaliser"): opened once somebody is on your tab, published once and swapped in place after, closed after a quiet
-// spell alone, muted on demand, and sampled for your own equaliser. The call owns one and tells it what happens.
+// equaliser"): muted when the call starts and not opened at all until your first unmute (owner, 2026-11-07: "your mic
+// stays muted by default when joining"), so walking in never asks for the microphone. Opened on an unmute, published
+// once and swapped in place after; kept open while unmuted, alone or not, so you can see it work; released after a
+// quiet spell muted and alone; sampled for your own equaliser. The call owns one and tells it what happens.
 import type { VoiceLevel } from '@livehuddle/api-schema';
 import type { AudioGraph } from './audio-graph';
 import { setCallSelf } from './calls-store';
@@ -36,12 +38,16 @@ export type CallMicHost = {
 export class CallMic {
   private readonly host: CallMicHost;
   private stream: MediaStream | null = null;
-  private muted = false;
+  private muted = true;
+  // Somebody else walks the tab (keepFor).
+  private company = false;
   private voice: VoiceState = SILENT;
   private sampler: ReturnType<typeof setInterval> | null = null;
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
   /** The browser refused the microphone. */
   blocked = false;
+  // A capture is on its way: a second open (an unmute, then somebody arriving) waits on it rather than asking again.
+  private opening = false;
   /** Published once in this call: the locator carries it from then on, even while closed. */
   published = false;
 
@@ -49,18 +55,21 @@ export class CallMic {
     this.host = host;
   }
 
-  /** Open the microphone (a speaker's) and publish it, or swap it back in after a close. */
+  /** Open the microphone (a speaker's) and publish it, or swap it back in after a close. One capture at a time. */
   async open(): Promise<void> {
     const sfu = this.host.sfu();
-    if (this.stream || this.blocked || !sfu || !this.host.trackToken()) return;
+    if (this.stream || this.opening || this.blocked || !sfu || !this.host.trackToken()) return;
     let stream: MediaStream;
+    this.opening = true;
     try {
       stream = await userMediaOf(this.host.input)(MIC_CONSTRAINTS);
     } catch {
+      this.opening = false;
       this.blocked = true;
       setCallSelf({ mic: 'blocked' });
       return;
     }
+    this.opening = false;
     if (this.host.stopped()) {
       for (const t of stream.getTracks()) t.stop();
       return;
@@ -90,13 +99,15 @@ export class CallMic {
     setCallSelf({ mic: 'closed' });
   }
 
-  /** Open while somebody else walks the tab; closed after MIC_IDLE_CLOSE_MS alone. */
+  /** Open while unmuted; muted, kept while somebody else walks the tab and released after MIC_IDLE_CLOSE_MS alone. */
   keepFor(company: boolean): void {
-    if (!this.host.input.canSpeak || !this.published) return;
-    if (company) {
+    this.company = company;
+    if (!this.host.input.canSpeak) return;
+    if (!this.muted || company) {
       if (this.idleTimer) clearTimeout(this.idleTimer);
       this.idleTimer = null;
-      if (!this.stream) void this.open();
+      // Swapped back in for an unmuted speaker after a release (never opened here while muted: no prompt).
+      if (!this.muted && !this.stream && this.published) void this.open();
       return;
     }
     if (!this.stream || this.idleTimer) return;
@@ -130,12 +141,24 @@ export class CallMic {
     setCallSelf({ level: step.send });
   }
 
-  /** Mute or unmute: muted sends nothing, no audio and no equaliser. */
+  /**
+   * Mute or unmute: muted sends nothing, no audio and no equaliser. The first unmute opens the microphone (the browser
+   * asks then, never on walking in); a press on Mic Blocked asks again.
+   */
   toggleMute(): void {
+    if (this.blocked) {
+      this.blocked = false;
+      this.muted = false;
+      setCallSelf({ muted: false, mic: 'closed' });
+      void this.open();
+      return;
+    }
     this.muted = !this.muted;
     for (const t of this.stream?.getAudioTracks() ?? []) t.enabled = !this.muted;
     if (this.muted) this.applyVoice(silenceVoice(this.voice, performance.now()));
     setCallSelf({ muted: this.muted });
+    if (!this.muted && !this.stream && this.host.input.canSpeak) void this.open();
+    this.keepFor(this.company);
   }
 
   /** The call is ending: no idle close is due. */

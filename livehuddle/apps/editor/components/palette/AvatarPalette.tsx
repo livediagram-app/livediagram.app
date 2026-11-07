@@ -38,9 +38,6 @@ import {
 } from '@/components/chrome/toolbar-surface';
 import { AVATAR_PALETTE_CATEGORIES, type AvatarPaletteCategoryId } from '@/lib/avatar-palette';
 import { CategoryBarButtons, useCategoryBar, type BarCategory } from './CategoryBar';
-import { CallStripGroup, useCallGroupShape } from '@/components/calls/CallStripGroup';
-import { ScreenShareStripGroup, useScreenSharing } from '@/components/calls/ScreenShareStripGroup';
-import { CallNames } from '@/components/calls/CallSegment';
 import { CARD_CLASS, CardWidth, StripRow, stripRootLayout } from './ToolbarPalette';
 import { Divider } from './strip-rail-items';
 import { FlyoutHeader } from './CategoryFlyout';
@@ -69,11 +66,10 @@ const AvatarPalettePreview = dynamic(() => loadToolPanels().then((m) => m.Avatar
 
 // The avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): while you walk, the palette strip
 // dresses and moves your character instead of building the board. Same place, same parts as the building strip
-// (ToolbarPalette): an Editor's Edit | Walk toggle first (its way back to building), then the call group
-// (CallStripGroup: Join Audio or the microphone, the camera, Share Screen; owner 2026-11-06, moved up from the
-// bottom-right cluster), then the look's categories on the left and the actions on the right, each a category-bar
-// button opening its flyout (AvatarPaletteFlyouts), then Say where Search sits. A Participant and a Viewer never leave,
-// so theirs has no toggle.
+// (ToolbarPalette): an Editor's Edit | Walk toggle first (its way back to building), then the look's categories on the
+// left and the actions on the right, each a category-bar button opening its flyout (AvatarPaletteFlyouts), then Say
+// where Search sits. A Participant and a Viewer never leave, so theirs has no toggle. The call's buttons are not the
+// strip's: they sit in the Call dock, bottom centre (CallDock; owner 2026-11-07).
 
 const SAY_SELECTOR = '[data-avatar-say], [data-avatar-say-button]';
 
@@ -112,12 +108,6 @@ const CATEGORIES: readonly (BarCategory & { id: AvatarPaletteCategoryId })[] =
     };
   });
 const LOOK = CATEGORIES.filter((c) => c.group === 0);
-// While you share your screen, the look's dressing-up leaves the strip and the Screen Share group takes its place
-// (docs/specs/012-collaboration/video-and-screen-bubbles.md "The screen share"); Status stays.
-const LOOK_WHILE_SHARING = LOOK.filter((c) => c.id === 'status');
-const SHARING_HIDES: ReadonlySet<string> = new Set(
-  LOOK.filter((c) => !LOOK_WHILE_SHARING.includes(c)).map((c) => c.id),
-);
 const ACTIONS = CATEGORIES.filter((c) => c.group === 1);
 
 export type AvatarPaletteProps = AvatarPaletteActions & {
@@ -144,27 +134,17 @@ export function AvatarPalette(props: AvatarPaletteProps) {
   const isMobile = useIsMobileViewport();
   const scale = useUiScale('toolbar');
   const swipe = leading !== undefined;
-  // Do Not Disturb shows in the call group, which clears it.
-  const doNotDisturb = props.status === 'dnd';
-  // The call group grows and shrinks as a call goes (Join Audio, then the microphone, Leave and the rest): its shape is
-  // part of what the named width was measured with, so a bigger group measures afresh rather than overflowing.
-  const callShape = useCallGroupShape(doNotDisturb);
-  const sharing = useScreenSharing();
-  const barLabels = useBarLabels(cardRef, {
+  // Named while the strip has room (useBarLabels); on a phone, where the look and the actions swipe, always (owner,
+  // 2026-11-07: "it scrolls so its not an issue that they don't all fit on screen"), Say with them.
+  const fittedLabels = useBarLabels(cardRef, {
     enabled: !isMobile,
     // The toggle comes and goes with an Editor's role preview, so it is part of the shape measured too.
-    categoriesKey: `${CATEGORIES.map((c) => c.label).join('|')}#${callShape}#${props.editWalk ? 'toggle' : ''}#${sharing ? 'sharing' : ''}`,
+    categoriesKey: `${CATEGORIES.map((c) => c.label).join('|')}#${props.editWalk ? 'toggle' : ''}`,
     scale,
   });
+  const barLabels = fittedLabels || swipe;
   const crowded = useStripCrowded(cardRef, leading == null);
   const open = CATEGORIES.find((c) => c.id === bar.openId) ?? null;
-  // A look flyout open when a share starts would hang from a button that has gone: it closes.
-  const closeHiddenFlyout = useEffectEvent(() => {
-    if (bar.openId && SHARING_HIDES.has(bar.openId)) bar.close(false);
-  });
-  useEffect(() => {
-    if (sharing) closeHiddenFlyout();
-  }, [sharing]);
   // The preview card: a desktop's, while a flyout is open, where the window has room right of it. Measured when the
   // flyout opens or moves and on a resize, never per frame.
   const [previewRoom, setPreviewRoom] = useState(false);
@@ -228,7 +208,7 @@ export function AvatarPalette(props: AvatarPaletteProps) {
         onClick={(e) =>
           say.open ? say.setOpen(false) : say.openFrom(e.currentTarget, 'right', 320)
         }
-        // The tinted strip button the call group shares (toolbar-surface).
+        // The tinted strip button the Call dock's buttons share (toolbar-surface).
         className={`${STRIP_TINT_BUTTON} ${barLabels ? STRIP_CONTROL_NAMED : STRIP_CONTROL_GLYPH} ${
           say.open ? STRIP_TINT_OPEN : TOOLBAR_TRIGGER_TONE
         }`}
@@ -244,12 +224,7 @@ export function AvatarPalette(props: AvatarPaletteProps) {
   const groups = (
     <>
       <div data-tour-id="avatar-character" className="flex">
-        <CategoryBarButtons
-          bar={bar}
-          categories={sharing ? LOOK_WHILE_SHARING : LOOK}
-          labels={barLabels}
-          ariaLabel="Your Look"
-        />
+        <CategoryBarButtons bar={bar} categories={LOOK} labels={barLabels} ariaLabel="Your Look" />
       </div>
       <Divider />
       <div data-tour-id="avatar-actions" className="flex">
@@ -292,24 +267,7 @@ export function AvatarPalette(props: AvatarPaletteProps) {
                 <Divider />
               </>
             ) : null}
-            {/* The call, then (docs/specs/008-canvas/avatar-mode.md "The avatar palette"), its divider drawn only
-                while it shows. Named as the bar is. */}
-            <CallNames.Provider value={barLabels}>
-              <CallStripGroup
-                doNotDisturb={doNotDisturb}
-                onClearDoNotDisturb={() => props.onSetStatus?.(null)}
-                after={<Divider />}
-              />
-              {/* While you share: Sharing and Stop Sharing, in the look's place; they stay put on a phone, as the
-                  call group does. */}
-              {sharing ? (
-                <>
-                  <ScreenShareStripGroup />
-                  <Divider />
-                </>
-              ) : null}
-            </CallNames.Provider>
-            {/* On a phone the look and the actions swipe together; the call group and Say stay put. */}
+            {/* On a phone the look and the actions swipe together; Say stays put. */}
             {swipe ? (
               <div data-strip-rail="" className={`flex min-w-0 items-center ${STRIP_RAIL_SCROLL}`}>
                 {groups}

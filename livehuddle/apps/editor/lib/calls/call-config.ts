@@ -42,10 +42,7 @@ export {
   SCREEN_MAX_FPS,
 } from './media-constraints';
 
-export const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-  video: false,
-};
+export { MIC_CONSTRAINTS } from './media-constraints';
 
 /** Which bubble a received track fills; the microphone's is none (it goes to the audio graph). */
 export const MEDIA_OF: Readonly<Record<string, CallMedia | undefined>> = {

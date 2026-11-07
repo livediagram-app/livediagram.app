@@ -3,7 +3,7 @@
 // brush is loaded, and the pixel characters Avatar mode walks. The toggle replaced the Selection Mode picker: Select,
 // Hand, Eraser and Format are no longer modes to pick.
 //
-// Labels are lifted from apps/editor: the toggle's sides (Edit, Walk), the avatar palette's call controls and
+// Labels are lifted from apps/editor: the toggle's sides (Edit, Walk), the avatar palette's
 // categories, and the format-config catalogue (the Format panel's rows and values).
 
 import type { ReactNode } from 'react';
@@ -72,7 +72,7 @@ function ToggleRow({
 }
 
 /** The Edit | Walk toggle in both its states: building, with Edit on and the palette's categories after it, and
- *  walking, with Walk on at the start of the avatar palette, ahead of the call controls. */
+ *  walking, with Walk on at the start of the avatar palette, ahead of the look. */
 export function EditWalkToggleScene() {
   return (
     <Scene w={420} h={176}>
@@ -82,7 +82,7 @@ export function EditWalkToggleScene() {
         on="edit"
         after={['Write', 'Rooms', 'Seats', 'Travel']}
       />
-      <ToggleRow y={112} caption="WALKING" on="walk" after={['Join Audio', 'Gender', 'Actions']} />
+      <ToggleRow y={112} caption="WALKING" on="walk" after={['Gender', 'Clothes', 'Actions']} />
     </Scene>
   );
 }

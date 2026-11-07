@@ -84,10 +84,6 @@ export type MicState = 'closed' | 'open' | 'blocked';
 export type CallSelf = {
   // Calls are on for this Space (capabilities, a shared room, Avatar mode).
   available: boolean;
-  // Why there is no call while walking, so Join Audio can say so rather than vanish (proximity-audio.md "No call
-  // here"): `unsynced`, a Space kept in This Browser has no shared room; `off`, this server has no calls. Null
-  // otherwise (a call is on offer, or you are not walking).
-  unavailableReason: 'unsynced' | 'off' | null;
   // This session may publish (an Editor or a Participant).
   canSpeak: boolean;
   phase: CallPhase;
@@ -111,6 +107,10 @@ export type CallSelf = {
   canPreviewScreen: boolean;
   previewCamera: CameraState;
   previewScreen: ScreenState;
+  // The microphone with no call to send it on (proximity-audio.md "Local preview"): whether the browser can capture it
+  // here, and the preview's own state, sampled for your own equaliser and sent to nobody.
+  canPreviewMic: boolean;
+  previewMic: CameraState;
   // Raise hand (meeting-rooms-and-stage.md "Raise hand"): where you stand towards a live stage, the Who Can Speak of
   // a stage you stand on that bars you (for the stage line), your hand, and the hands up on the tab.
   stage: StagePlace;
@@ -121,8 +121,8 @@ export type CallSelf = {
 
 /** What the control's buttons do; set by the running call, absent while there is none to drive. */
 export type CallActions = {
+  // Join again after a failure or a pause (walking in joins by itself).
   join: () => void;
-  leave: () => void;
   toggleMute: () => void;
   toggleCamera: () => void;
   toggleScreen: () => void;
@@ -133,7 +133,6 @@ export type CallActions = {
 const EMPTY_HEARD: ReadonlySet<string> = new Set();
 const OFF: CallSelf = {
   available: false,
-  unavailableReason: null,
   canSpeak: false,
   phase: 'off',
   mic: 'closed',
@@ -149,6 +148,8 @@ const OFF: CallSelf = {
   canPreviewScreen: false,
   previewCamera: 'off',
   previewScreen: 'off',
+  canPreviewMic: false,
+  previewMic: 'off',
   stage: 'none',
   barredBy: null,
   hand: 'down',

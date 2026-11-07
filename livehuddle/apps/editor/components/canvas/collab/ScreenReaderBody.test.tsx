@@ -27,7 +27,6 @@ const element = {
 
 const actions = (toggleScreen = vi.fn()): CallActions => ({
   join: vi.fn(),
-  leave: vi.fn(),
   toggleMute: vi.fn(),
   toggleCamera: vi.fn(),
   toggleScreen,

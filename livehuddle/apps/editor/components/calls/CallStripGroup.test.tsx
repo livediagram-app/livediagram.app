@@ -11,14 +11,14 @@ import {
 import {
   CALLS_PAUSED_ANNOUNCEMENT,
   CallStripGroup,
-  NO_CALL_REASON,
-  callGroupShape,
+  MicMeter,
+  PREVIEW_TEXT,
   micIndicator,
 } from './CallStripGroup';
 import { CallNames, Segment } from './CallSegment';
 import { ScreenShareStripGroup } from './ScreenShareStripGroup';
 
-// The call group and, while you share, the Screen Share group beside it, as the avatar palette draws them.
+// The call group and, while you share, the Screen Share group beside it, as the Call dock draws them.
 const WithShare = () => (
   <>
     <CallStripGroup />
@@ -28,7 +28,6 @@ const WithShare = () => (
 
 const actions = {
   join: vi.fn(),
-  leave: vi.fn(),
   toggleMute: vi.fn(),
   toggleCamera: vi.fn(),
   toggleScreen: vi.fn(),
@@ -72,24 +71,35 @@ describe('CallStripGroup', () => {
     }
   });
 
-  it('offers Join Audio to a speaker and Listen In to a Viewer', () => {
+  // Walking in joins by itself (proximity-audio.md "Who is in a call"): no Join Audio, no Listen In, no Leave.
+  it('reads Connecting, greyed, while the call is on its way, for a speaker and a Viewer alike', () => {
     render(<CallStripGroup />);
-    show({});
-    fireEvent.click(screen.getByRole('button', { name: 'Join Audio' }));
-    expect(actions.join).toHaveBeenCalledTimes(1);
-    show({ canSpeak: false });
-    expect(screen.getByRole('button', { name: 'Listen In' })).toBeTruthy();
+    for (const patch of [{}, { phase: 'joining' }, { canSpeak: false }] as const) {
+      show(patch);
+      const connecting = screen.getByRole<HTMLButtonElement>('button', {
+        name: 'Connecting audio',
+      });
+      expect(connecting.disabled).toBe(true);
+      fireEvent.click(connecting);
+    }
+    expect(actions.join).not.toHaveBeenCalled();
+    for (const name of ['Join Audio', 'Listen In', 'Leave Audio'])
+      expect(screen.queryByRole('button', { name })).toBeNull();
   });
 
-  it('waits while joining and offers a retry after a failure', () => {
+  it('offers a retry after a failure, in the warn tone, saying audio is unavailable', () => {
     render(<CallStripGroup />);
-    show({ phase: 'joining' });
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Join Audio' }).disabled).toBe(
-      true,
-    );
     show({ phase: 'error' });
-    fireEvent.click(screen.getByRole('button', { name: 'Join Audio' }));
-    expect(actions.join).toHaveBeenCalled();
+    const retry = screen.getByRole('button', { name: 'Retry Audio' });
+    expect(retry.className).toContain('amber');
+    fireEvent.click(retry);
+    expect(actions.join).toHaveBeenCalledTimes(1);
+    fireEvent.pointerEnter(retry, { pointerType: 'mouse' });
+    expect(document.body.textContent).toContain('Audio Unavailable');
+    // A Viewer retries too.
+    show({ phase: 'error', canSpeak: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Retry Audio' }));
+    expect(actions.join).toHaveBeenCalledTimes(2);
   });
 
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
@@ -102,7 +112,7 @@ describe('CallStripGroup', () => {
     const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Calls Paused' });
     expect(button.className).not.toMatch(/amber|rose/);
     expect(live()).toBe(CALLS_PAUSED_ANNOUNCEMENT);
-    expect(screen.queryByRole('button', { name: 'Join Audio' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Connecting audio' })).toBeNull();
     fireEvent.click(button);
     expect(actions.join).toHaveBeenCalledTimes(1);
     show({ mode: 'off', phase: 'joining' });
@@ -113,11 +123,11 @@ describe('CallStripGroup', () => {
     expect(screen.getByRole('button', { name: 'Calls Paused' })).toBeTruthy();
     // Audio only changes nothing while calls are audio alone.
     show({ mode: 'audio-only' });
-    expect(screen.getByRole('button', { name: 'Join Audio' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Connecting audio' })).toBeTruthy();
     expect(live()).toBe('');
   });
 
-  it('once in, mutes and unmutes, and leaves', () => {
+  it('once in, mutes and unmutes, with no Leave', () => {
     render(<CallStripGroup />);
     show({ phase: 'live', mic: 'open', someoneNear: true, level: 2 });
     const mute = screen.getByRole('button', { name: 'Mute' });
@@ -128,19 +138,24 @@ describe('CallStripGroup', () => {
     expect(screen.getByRole('button', { name: 'Unmute' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Leave Audio' }));
-    expect(actions.leave).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Leave Audio' })).toBeNull();
   });
 
-  it('a blocked microphone and a listener have nothing to mute', () => {
+  // call-mic.ts: a press on Mic Blocked asks the browser again; a listener has nothing to mute.
+  it('a blocked microphone is pressed to try again, and a listener has nothing to mute', () => {
     render(<CallStripGroup />);
     show({ phase: 'live', mic: 'blocked' });
-    fireEvent.click(screen.getByRole('button', { name: 'Mute' }));
-    expect(actions.toggleMute).not.toHaveBeenCalled();
+    const blocked = screen.getByRole('button', { name: 'Mute' });
+    expect(blocked.className).toContain('amber');
+    fireEvent.click(blocked);
+    expect(actions.toggleMute).toHaveBeenCalledTimes(1);
+    fireEvent.pointerEnter(blocked, { pointerType: 'mouse' });
+    expect(document.body.textContent).toContain('press to try again');
     show({ canSpeak: false, mic: 'closed' });
-    expect(
-      screen.getByRole('button', { name: 'Listening' }).getAttribute('aria-pressed'),
-    ).toBeNull();
+    const listening = screen.getByRole('button', { name: 'Listening' });
+    expect(listening.getAttribute('aria-pressed')).toBeNull();
+    fireEvent.click(listening);
+    expect(actions.toggleMute).toHaveBeenCalledTimes(1);
   });
 
   it('names the indicator state', () => {
@@ -209,10 +224,11 @@ describe('CallStripGroup', () => {
     const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
     const preview = { canPreviewCamera: true, canPreviewScreen: true };
 
-    it('offers the camera and screen with no call, alone with the help link', () => {
+    it('offers the camera and screen with no call, with no Join Audio', () => {
       render(<CallStripGroup />);
       show({ available: false, ...preview });
       expect(button('Join Audio')).toBeNull();
+      expect(button('Connecting audio')).toBeNull();
       fireEvent.click(button('Turn On Camera')!);
       fireEvent.click(button('Share Screen')!);
       expect(actions.toggleCamera).toHaveBeenCalledTimes(1);
@@ -236,10 +252,10 @@ describe('CallStripGroup', () => {
       expect(button('Share Screen')!.disabled).toBe(true);
     });
 
-    it('sits beside Join Audio and Calls Paused, and a Participant previews a screen in a call', () => {
+    it('sits beside Connecting and Calls Paused, and a Participant previews a screen in a call', () => {
       render(<WithShare />);
       show({ ...preview });
-      expect(button('Join Audio')).not.toBeNull();
+      expect(button('Connecting audio')).not.toBeNull();
       expect(button('Turn On Camera')).not.toBeNull();
       show({ ...preview, mode: 'off' });
       expect(button('Calls Paused')).not.toBeNull();
@@ -293,7 +309,7 @@ describe('CallStripGroup', () => {
       expect(screen.getByRole('button', { name: '120 raised hands' }).textContent).toContain('99+');
     });
 
-    it('says which stage bars you, under the group', () => {
+    it('says which stage bars you, over the group', () => {
       const { container } = render(<CallStripGroup />);
       const line = () => container.querySelector('[data-stage-line]')!;
       show({ ...live, barredBy: 'edit' });
@@ -303,9 +319,9 @@ describe('CallStripGroup', () => {
       show({ ...live, barredBy: null });
       expect(line().textContent).toBe('');
       expect(line().getAttribute('aria-live')).toBe('polite');
-      // Hung under the group, at the top of the canvas, not above it (it would leave the screen).
-      expect(line().className).toContain('top-full');
-      expect(line().className).not.toContain('bottom-full');
+      // Hung over the group, which sits on the Call dock at the bottom of the canvas (under it would leave the screen).
+      expect(line().className).toContain('bottom-full');
+      expect(line().className).not.toContain('top-full');
     });
 
     it('shows Do Not Disturb in the strip, and a press clears it', () => {
@@ -318,9 +334,9 @@ describe('CallStripGroup', () => {
   });
 });
 
-// docs/specs/008-canvas/avatar-mode.md "The avatar palette": the group sits at the left of the strip, as its buttons.
-describe('the call group on the strip', () => {
-  it('is one labelled group, with the tour anchor, followed by what the strip puts after it', () => {
+// docs/specs/008-canvas/avatar-mode.md "The Call dock": the group sits on the dock, bottom centre, as its buttons.
+describe('the call group on the Call dock', () => {
+  it('is one labelled group, with the tour anchor, followed by what the dock puts after it', () => {
     render(<CallStripGroup after={<span data-testid="after" />} />);
     show({});
     const group = screen.getByRole('group', { name: 'Call' });
@@ -335,22 +351,45 @@ describe('the call group on the strip', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  // Owner, 2026-11-06: "camera and share don't need labels, same with audio". Their name and state ride the hover
-  // card and the label; Leave keeps its name.
-  it('shows Join Audio, the microphone, the camera and Share as glyphs alone, even while the strip shows names', () => {
-    const { rerender } = render(<CallStripGroup />);
-    show({ canPreviewCamera: true, canPreviewScreen: true });
-    rerender(
-      <CallNames.Provider value={true}>
-        <CallStripGroup />
-      </CallNames.Provider>,
+  // Owner, 2026-11-07: "On desktop add short labels to each, on mobile do not".
+  const named = (ui = <CallStripGroup />) => (
+    <CallNames.Provider value={true}>{ui}</CallNames.Provider>
+  );
+
+  it('names each button with a short label on a desktop', () => {
+    render(named());
+    show({ phase: 'live', mic: 'open', someoneNear: true, canShare: true });
+    expect(screen.getByRole('button', { name: 'Mute' }).textContent).toBe('Mic');
+    expect(screen.getByRole('button', { name: 'Turn On Camera' }).textContent).toBe('Camera');
+    expect(screen.getByRole('button', { name: 'Share Screen' }).textContent).toBe('Share');
+    show({ phase: 'off' });
+    expect(screen.getByRole('button', { name: 'Connecting audio' }).textContent).toBe(
+      'Connecting…',
     );
-    for (const name of ['Join Audio', 'Turn On Camera', 'Share Screen'])
-      expect(screen.getByRole('button', { name }).textContent, name).toBe('');
+    show({ phase: 'error' });
+    expect(screen.getByRole('button', { name: 'Retry Audio' }).textContent).toBe('Retry');
+  });
+
+  it('names the microphone by its state', () => {
+    render(named());
+    const mic = (label: string) => screen.getByRole('button', { name: label }).textContent;
+    show({ phase: 'live', mic: 'open', someoneNear: false, muted: false });
+    expect(mic('Mute')).toBe('Mic');
+    show({ muted: true });
+    expect(mic('Unmute')).toBe('Muted');
+    show({ muted: false, mic: 'closed' });
+    expect(mic('Mute')).toBe('Mic Off');
+    show({ mic: 'blocked' });
+    expect(mic('Mute')).toBe('Blocked');
+    show({ canSpeak: false, mic: 'closed' });
+    expect(mic('Listening')).toBe('Listening');
+  });
+
+  it('shows glyphs alone without names (a phone)', () => {
+    render(<CallStripGroup />);
     show({ phase: 'live', mic: 'open', someoneNear: true, canShare: true });
     for (const name of ['Mute', 'Turn On Camera', 'Share Screen'])
       expect(screen.getByRole('button', { name }).textContent, name).toBe('');
-    expect(screen.getByRole('button', { name: 'Leave Audio' }).textContent).toBe('Leave');
   });
 
   it('names the camera and Share Screen by their state in the hover card', () => {
@@ -371,145 +410,213 @@ describe('the call group on the strip', () => {
   // Owner, 2026-11-06: "the same background as Say, rather than palette categories".
   it('is drawn as Say is, on the brand tint, and a live mic reads solid against it', () => {
     render(<CallStripGroup />);
-    show({});
-    const join = screen.getByRole('button', { name: 'Join Audio' });
-    for (const cls of ['h-9', 'rounded-md', 'bg-brand-50']) expect(join.className).toContain(cls);
-    expect(join.className).not.toContain('h-11');
-    expect(join.className).not.toContain('border-l');
+    show({ phase: 'live', mic: 'open', someoneNear: false });
+    const mic = screen.getByRole('button', { name: 'Mute' });
+    for (const cls of ['h-9', 'rounded-md', 'bg-brand-50']) expect(mic.className).toContain(cls);
+    expect(mic.className).not.toContain('h-11');
+    expect(mic.className).not.toContain('border-l');
     show({ phase: 'live', mic: 'open', someoneNear: true });
     expect(screen.getByRole('button', { name: 'Mute' }).className).toContain('bg-brand-600');
   });
 });
 
-// docs/specs/012-collaboration/proximity-audio.md "No call here": walking with no call on offer, Join Audio stays,
-// greyed with why, rather than vanishing.
-describe('no call here', () => {
-  const joinAudio = () => screen.getByRole('button', { name: 'Join Audio' });
+// The microphone's level meter (owner, 2026-11-07: "show my voice volume ... in the mic button as I speak").
+describe('MicMeter', () => {
+  const fill = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('[data-mic-meter] > span')!;
 
-  it('greys Join Audio in a Space kept in This Browser, and a press joins nothing', () => {
-    render(<CallStripGroup />);
-    show({ available: false, unavailableReason: 'unsynced' });
-    expect(joinAudio().getAttribute('aria-disabled')).toBe('true');
-    // aria-disabled, not disabled, so the hover card still says why.
-    expect((joinAudio() as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(joinAudio());
-    expect(actions.join).not.toHaveBeenCalled();
-    fireEvent.pointerEnter(joinAudio(), { pointerType: 'mouse' });
-    expect(document.body.textContent).toContain(NO_CALL_REASON.unsynced);
+  it('fills to the level, 0 to 4, clamped', () => {
+    for (const [level, height] of [
+      [0, '0%'],
+      [1, '25%'],
+      [2, '50%'],
+      [4, '100%'],
+      [9, '100%'],
+      [-1, '0%'],
+    ] as const) {
+      const { container, unmount } = render(<MicMeter level={level} onSolid />);
+      expect(container.querySelector('[data-mic-meter]')!.getAttribute('data-mic-meter')).toBe(
+        String(level),
+      );
+      expect(fill(container).style.height).toBe(height);
+      unmount();
+    }
   });
 
-  it('says calls are off on this server', () => {
-    render(<CallStripGroup />);
-    show({ available: false, unavailableReason: 'off' });
-    expect(joinAudio().getAttribute('aria-disabled')).toBe('true');
-    fireEvent.pointerEnter(joinAudio(), { pointerType: 'mouse' });
-    expect(document.body.textContent).toContain(NO_CALL_REASON.off);
+  it('is white on a live mic, the brand tint otherwise', () => {
+    const { container, rerender } = render(<MicMeter level={2} onSolid />);
+    expect(fill(container).className).toContain('bg-white/30');
+    rerender(<MicMeter level={2} onSolid={false} />);
+    expect(fill(container).className).toContain('bg-brand-500/25');
   });
 
-  it('reads the two reasons as the spec words them', () => {
-    expect(NO_CALL_REASON).toEqual({
-      unsynced:
-        'This space is only saved in your browser, so nobody else can join. Save it online to talk with people.',
-      off: 'Calls are not available on this server.',
-    });
-  });
-
-  it('offers a Viewer nothing to grey', () => {
+  it('shows in the microphone while it is open and unmuted, never while muted', () => {
     const { container } = render(<CallStripGroup />);
-    show({ available: false, canSpeak: false, unavailableReason: 'unsynced' });
-    expect(screen.queryByRole('button', { name: 'Join Audio' })).toBeNull();
+    const meter = () => container.querySelector<HTMLElement>('[data-mic-meter]');
+    show({ phase: 'live', mic: 'open', someoneNear: true, level: 3 });
+    expect(meter()!.getAttribute('data-mic-meter')).toBe('3');
+    expect(meter()!.firstElementChild!.className).toContain('bg-white/30');
+    show({ someoneNear: false, level: 1 });
+    expect(meter()!.firstElementChild!.className).toContain('bg-brand-500/25');
+    show({ muted: true });
+    expect(meter()).toBeNull();
+    show({ muted: false, mic: 'blocked' });
+    expect(meter()).toBeNull();
+  });
+});
+
+// docs/specs/012-collaboration/proximity-audio.md "No call here", "Local preview": walking with no call on offer, the
+// microphone is a local preview only you see, with the camera and the screen.
+describe('no call here', () => {
+  const button = (name: string) => screen.queryByRole<HTMLButtonElement>('button', { name });
+  const hover = (name: string) => {
+    fireEvent.pointerEnter(button(name)!, { pointerType: 'mouse' });
+    return document.body.textContent;
+  };
+
+  it('offers the microphone as a local preview, muted to start, and a press tries it', () => {
+    render(<CallNames.Provider value={true}>{<CallStripGroup />}</CallNames.Provider>);
+    show({ available: false, canPreviewMic: true });
+    const mic = button('Unmute')!;
+    expect(mic.getAttribute('aria-pressed')).toBe('true');
+    expect(mic.textContent).toBe('Muted');
+    expect(mic.className).toContain('rose');
+    expect(hover('Unmute')).toContain('Mic: Muted');
+    expect(document.body.textContent).toContain(PREVIEW_TEXT.micOff);
+    fireEvent.click(mic);
+    expect(actions.toggleMute).toHaveBeenCalledTimes(1);
+    expect(actions.join).not.toHaveBeenCalled();
+    expect(button('Join Audio')).toBeNull();
+  });
+
+  it('reads Starting, then Only You with its meter, then Blocked', () => {
+    const { container } = render(
+      <CallNames.Provider value={true}>{<CallStripGroup />}</CallNames.Provider>,
+    );
+    show({ available: false, canPreviewMic: true, previewMic: 'starting' });
+    expect(button('Unmute')!.disabled).toBe(true);
+    expect(button('Unmute')!.textContent).toBe('Starting…');
+    show({
+      available: false,
+      canPreviewMic: true,
+      canPreviewCamera: true,
+      canPreviewScreen: true,
+      previewMic: 'on',
+      level: 2,
+    });
+    const on = button('Mute')!;
+    expect(on.getAttribute('aria-pressed')).toBe('false');
+    expect(on.textContent).toBe('Mic');
+    expect(on.className).toContain('bg-brand-600');
+    expect(container.querySelector('[data-mic-meter]')!.getAttribute('data-mic-meter')).toBe('2');
+    expect(hover('Mute')).toContain('Mic: Only You');
+    expect(document.body.textContent).toContain(PREVIEW_TEXT.micOn);
+    show({
+      available: false,
+      canPreviewMic: true,
+      canPreviewCamera: true,
+      canPreviewScreen: true,
+      previewMic: 'blocked',
+    });
+    expect(container.querySelector('[data-mic-meter]')).toBeNull();
+    expect(button('Unmute')!.textContent).toBe('Blocked');
+    expect(button('Unmute')!.className).toContain('amber');
+    expect(hover('Unmute')).toContain('Mic: Blocked');
+    expect(document.body.textContent).toContain(PREVIEW_TEXT.blocked);
+  });
+
+  it('offers a Viewer nothing, nor a browser that cannot capture', () => {
+    const { container } = render(<CallStripGroup />);
+    show({ available: false, canSpeak: false, canPreviewMic: true, canPreviewCamera: true });
+    expect(container.innerHTML).toBe('');
+    show({ available: false, canSpeak: true, canPreviewMic: false, canPreviewCamera: false });
     expect(container.innerHTML).toBe('');
   });
 
-  it('sits before a local preview', () => {
+  it('sits before the camera and screen previews', () => {
     render(<CallStripGroup />);
     show({
       available: false,
-      unavailableReason: 'unsynced',
+      canPreviewMic: true,
       canPreviewCamera: true,
       canPreviewScreen: true,
     });
     const names = screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
-    expect(names).toEqual(['Join Audio', 'Turn On Camera', 'Share Screen']);
+    expect(names).toEqual(['Unmute', 'Turn On Camera', 'Share Screen']);
+  });
+
+  it('keeps the preview microphone beside a retry and Calls Paused', () => {
+    render(<CallStripGroup />);
+    show({ phase: 'error', canPreviewMic: true });
+    expect(button('Retry Audio')).not.toBeNull();
+    expect(button('Unmute')).not.toBeNull();
+    show({ phase: 'off', mode: 'off', canPreviewMic: true });
+    expect(button('Calls Paused')).not.toBeNull();
+    expect(button('Unmute')).not.toBeNull();
+  });
+
+  it('says only you see the camera and screen previews, in one short line', () => {
+    render(<CallStripGroup />);
+    show({ available: false, canPreviewCamera: true, canPreviewScreen: true });
+    expect(hover('Turn On Camera')).toContain('Camera: Off');
+    expect(document.body.textContent).toContain(PREVIEW_TEXT.cameraOff);
+    expect(hover('Share Screen')).toContain(PREVIEW_TEXT.screenOff);
+    show({
+      available: false,
+      canPreviewMic: true,
+      canPreviewCamera: true,
+      canPreviewScreen: true,
+      previewCamera: 'on',
+    });
+    expect(hover('Turn Off Camera')).toContain('Camera: Only You');
+    expect(document.body.textContent).toContain(PREVIEW_TEXT.cameraOn);
+    show({
+      available: false,
+      canPreviewMic: true,
+      canPreviewCamera: true,
+      canPreviewScreen: true,
+      previewCamera: 'blocked',
+    });
+    expect(hover('Turn On Camera')).toContain('Camera: Blocked');
+  });
+
+  it('a Participant in a call previews a screen, told the link cannot share', () => {
+    render(<CallStripGroup />);
+    show({ phase: 'live', mic: 'open', canShare: false, canPreviewScreen: true });
+    expect(hover('Share Screen')).toContain(PREVIEW_TEXT.noShare);
   });
 });
 
-// A greyed segment (CallSegment's `unavailable`) never runs its press.
-describe('Segment unavailable', () => {
-  it('calls no onClick, and is aria-disabled', () => {
+// A segment runs its press, and names itself only while the dock names its buttons.
+describe('Segment', () => {
+  it('runs its press, and shows its name only under CallNames', () => {
     const onClick = vi.fn();
-    render(
+    const segment = (
       <Segment
-        label="Join Audio"
-        name="Join Audio"
-        title="Join Audio"
+        label="Mute"
+        name="Mic"
+        title="Mic: Live"
         description="Why"
         icon={null}
         onClick={onClick}
-        unavailable
-      />,
+      />
     );
-    const button = screen.getByRole('button', { name: 'Join Audio' });
-    fireEvent.click(button);
-    expect(onClick).not.toHaveBeenCalled();
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-  });
-
-  it('runs its press when available', () => {
-    const onClick = vi.fn();
-    render(
-      <Segment
-        label="Join Audio"
-        name="Join Audio"
-        title="Join Audio"
-        description="Why"
-        icon={null}
-        onClick={onClick}
-      />,
-    );
-    const button = screen.getByRole('button', { name: 'Join Audio' });
+    const { rerender } = render(segment);
+    const button = screen.getByRole('button', { name: 'Mute' });
     fireEvent.click(button);
     expect(onClick).toHaveBeenCalledTimes(1);
-    expect(button.getAttribute('aria-disabled')).toBeNull();
-  });
-});
-
-describe('callGroupShape', () => {
-  const self = (patch: Partial<CallSelf>) => ({
-    ...callSelf(),
-    available: true,
-    canSpeak: true,
-    ...patch,
-  });
-  it('changes when the group gains or loses a button', () => {
-    const before = callGroupShape(self({}), false);
-    expect(callGroupShape(self({ phase: 'live' }), false)).not.toBe(before);
-    expect(callGroupShape(self({ phase: 'live' }), true)).not.toBe(
-      callGroupShape(self({ phase: 'live' }), false),
-    );
-    expect(callGroupShape(self({ phase: 'live', hand: 'raised' }), false)).not.toBe(
-      callGroupShape(self({ phase: 'live' }), false),
-    );
+    expect(button.className).toContain('cursor-pointer');
+    expect(button.textContent).toBe('');
+    rerender(<CallNames.Provider value={true}>{segment}</CallNames.Provider>);
+    expect(screen.getByRole('button', { name: 'Mute' }).textContent).toBe('Mic');
   });
 
-  it('changes with why there is no call, for a speaker alone', () => {
-    const none = (patch: Partial<CallSelf>) => self({ available: false, ...patch });
-    const unsynced = callGroupShape(none({ unavailableReason: 'unsynced' }), false);
-    const off = callGroupShape(none({ unavailableReason: 'off' }), false);
-    const nothing = callGroupShape(none({ unavailableReason: null }), false);
-    expect(new Set([unsynced, off, nothing]).size).toBe(3);
-    // A Viewer has no Join Audio to grey, so the reason changes nothing for them.
-    expect(callGroupShape(none({ canSpeak: false, unavailableReason: 'unsynced' }), false)).toBe(
-      callGroupShape(none({ canSpeak: false, unavailableReason: 'off' }), false),
+  it('reads as a plain mark with no press', () => {
+    render(
+      <Segment label="Video Paused" name="Video Paused" title="t" description="d" icon={null} />,
     );
-  });
-
-  it('holds still as the microphone changes state on a walk', () => {
-    const a = callGroupShape(self({ phase: 'live', someoneNear: true, level: 3 }), false);
-    const b = callGroupShape(
-      self({ phase: 'live', someoneNear: false, level: 0, muted: true }),
-      false,
+    expect(screen.getByRole('button', { name: 'Video Paused' }).className).toContain(
+      'cursor-default',
     );
-    expect(a).toBe(b);
   });
 });
