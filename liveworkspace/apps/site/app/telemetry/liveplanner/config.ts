@@ -30,6 +30,10 @@ import {
   CALLS_TO_ACTION,
   CLIENT_EXCEPTIONS,
   CLI_COMMANDS_STACK,
+  COMMUNITY_DISCOVERY,
+  COMMUNITY_ENGAGEMENT,
+  COMMUNITY_MODERATION,
+  COMMUNITY_PUBLISHING,
   COUNTDOWNS,
   DISCUSSION,
   DRY_HELP_SEARCHES,
@@ -138,6 +142,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Warm stone: a quiet backstop, apart from Project's sky and Error's red.
   Trash: '#78716c',
   Mcp: '#f43f5e',
+  // Deep pink, the heart on a Community card, apart from Canvas's lighter pink and Page's darker one.
+  Community: '#db2777',
   // Terminal ink: the command line, darker than the stone greys of Trash and Draw.
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
@@ -159,7 +165,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Timing: '#047857',
 };
 
-const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
+const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
 
 const FUNNEL = createCtaFunnel({
   surfaces: CTA_SURFACES,
@@ -297,6 +303,15 @@ export const LIVEPLANNER: TelemetryAppConfig = {
       {
         title: 'Explorer',
         metrics: [TIMELINE, EXPLORER_FILTERS_PICKED, SHARE_LINKS_MADE, SHARE_PASSES, INBOX],
+      },
+      {
+        title: 'Community',
+        metrics: [
+          COMMUNITY_PUBLISHING,
+          COMMUNITY_ENGAGEMENT,
+          COMMUNITY_DISCOVERY,
+          COMMUNITY_MODERATION,
+        ],
       },
     ],
   },

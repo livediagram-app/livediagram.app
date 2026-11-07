@@ -5,6 +5,7 @@ import { comparisonSitemap } from '@liveworkspace/comparisons';
 import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { SITE_URL } from '@liveplanner/ui';
+import { COMMUNITY_HOME_PATH } from '@liveplanner/api-schema';
 
 // Required for `output: 'export'` (same reason as robots.ts):
 // route handlers must declare themselves fully static so Next
@@ -66,6 +67,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
+    // The Community's gallery (docs/specs/025-community/community.md "Where Community is linked from"):
+    // liveworkspace.app's page on this address, whose router lists each post's page in /community/sitemap.xml.
+    {
+      url: `${base}${COMMUNITY_HOME_PATH}`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
     // /terms and /privacy are intentionally omitted: both legal pages live on
     // liveworkspace.app (they cover every liveworkspace app), and each
     // marketing route is now a noindex redirect there.

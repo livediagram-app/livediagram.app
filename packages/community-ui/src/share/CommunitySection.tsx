@@ -158,7 +158,7 @@ export function CommunitySection({
               {post.title}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {communityCategoryLabel(post.category)} ·{' '}
+              {communityCategoryLabel(post.app, post.category)} ·{' '}
               <span className="tabular-nums">
                 <span aria-hidden>♥</span>
                 <span className="sr-only">Likes</span> {post.likeCount} · Copied {post.copyCount}{' '}

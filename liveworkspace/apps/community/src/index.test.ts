@@ -4,6 +4,7 @@ import {
   COMMUNITY_POSTS_PER_AUTHOR,
   type CommunityAppPost,
   type CommunityAppPublish,
+  type CommunityFacetsResponse,
   type CommunityListResponse,
   type CommunityMineResponse,
   type CommunityPostResponse,
@@ -51,7 +52,7 @@ const publishing = (patch: Partial<CommunityAppPublish> = {}): CommunityAppPubli
   input: {
     title: 'Payments platform',
     description: 'How our payment services talk to each other.',
-    category: 'architecture',
+    category: 'software',
     tags: ['AWS', 'event driven'],
     anonymous: false,
   },
@@ -134,7 +135,7 @@ describe('the app routes', () => {
   it("take only a category of the publishing app's own", async () => {
     const theirs = await asApp('/app/documents/d1', {
       method: 'PUT',
-      ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+      ...body(publishing({ input: { ...publishing().input, category: 'branding' } })),
     });
     expect(theirs.status).toBe(400);
     expect(await theirs.json()).toEqual({ error: 'invalid_category' });
@@ -142,7 +143,7 @@ describe('the app routes', () => {
       '/app/documents/d1',
       {
         method: 'PUT',
-        ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+        ...body(publishing({ input: { ...publishing().input, category: 'branding' } })),
       },
       'livedesign.app',
       'ls-key',
@@ -310,7 +311,7 @@ describe('the public routes', () => {
         ...body(
           publishing({
             shareCode: 'CODE2',
-            input: { ...publishing().input, title: 'Launch plan', category: 'projects' },
+            input: { ...publishing().input, title: 'Launch plan', category: 'planning' },
           }),
         ),
       },
@@ -325,15 +326,29 @@ describe('the public routes', () => {
         [plan.id, 'liveplanner.app'],
       ].sort(),
     );
+    // A diagram filed under livediagram's Planning too: a bare id finds both apps' posts, a qualified one its app's.
+    await asApp('/app/documents/d1', {
+      method: 'PUT',
+      ...body(publishing({ input: { ...publishing().input, category: 'planning' } })),
+    });
+    const bare = (await (
+      await call('/posts?app=all&category=planning')
+    ).json()) as CommunityListResponse;
+    expect(bare.posts).toHaveLength(2);
     const projects = (await (
-      await call('/posts?app=all&category=projects')
+      await call(`/posts?app=all&q=${encodeURIComponent('category:liveplanner/planning')}`)
     ).json()) as CommunityListResponse;
     expect(projects.posts.map((p) => p.id)).toEqual([plan.id]);
-    const counts = (await (await call('/facets?app=all')).json()) as { total: number };
+    const counts = (await (await call('/facets?app=all')).json()) as CommunityFacetsResponse;
     expect(counts.total).toBe(2);
+    expect(counts.apps).toEqual({
+      'livediagram.app': { planning: 1 },
+      'liveplanner.app': { planning: 1 },
+    });
     // A post, its likes and reports, the featured six and the sitemap are always one app's.
     expect((await call(`/posts/${plan.id}?app=all`)).status).toBe(400);
     expect((await call('/featured?app=all')).status).toBe(400);
+    expect((await call('/start?app=all')).status).toBe(400);
     expect((await call('/sitemap?app=all')).status).toBe(400);
     expect(
       (await call(`/posts/${plan.id}/like?app=all`, { method: 'PUT', headers: fromPage() })).status,
@@ -349,7 +364,7 @@ describe('the public routes', () => {
     expect(anon.headers.get('Cache-Control')).toBe('public, max-age=30');
     const keyed = await call('/posts?app=livediagram.app', { headers: fromPage() });
     expect(keyed.headers.get('Cache-Control')).toBe('private, no-store');
-    for (const path of ['/facets', '/featured', '/sitemap']) {
+    for (const path of ['/facets', '/featured', '/start', '/sitemap']) {
       const res = await call(`${path}?app=livediagram.app`);
       expect(res.status).toBe(200);
       expect(res.headers.get('Cache-Control')).toMatch(/^public, max-age=\d+$/);

@@ -1,6 +1,6 @@
 ---
 name: pr-loop
-description: One pass over your open PRs on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run with `/loop /pr-loop` in a session of its own: a watcher wakes it the minute a PR changes.
+description: One pass over your open PRs and Dependabot's on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run with `/loop /pr-loop` in a session of its own: a watcher wakes it the minute a PR changes.
 ---
 
 # PR loop: one pass
@@ -20,8 +20,8 @@ reason the loop orchestrates and helper agents do the fixing (section 2).
 ## 1. Collect
 
 1. `git fetch -q origin`.
-2. `.claude/skills/pr-loop/prs.py digest`: one GraphQL call, one line per open PR of yours, PRs needing work
-   first. Each line starts with what the PR needs:
+2. `.claude/skills/pr-loop/prs.py digest`: one GraphQL call, one line per open PR of yours or Dependabot's, PRs
+   needing work first. Each line starts with what the PR needs:
    - `CONFLICT`, `RED` (failing checks named), `COMMENTS` (unresolved threads, or comments and reviews newer than
      the head commit): work it (section 2).
    - `MERGE` (green, `CLEAN`, no blocking label): merge it (section 3).
@@ -116,7 +116,7 @@ clears those.
 6. **Watch it through to mergeable: one watcher for every PR (the loop, not a helper).** At the end of every pass
    and after handling its lines, make sure the watcher runs: if `.claude/skills/pr-loop/prs.py running` exits 1,
    start `.claude/skills/pr-loop/prs.py watch` as a **background Bash command** (`run_in_background`), never a
-   Monitor and never one per PR. It watches every open PR of yours, including ones other sessions open later,
+   Monitor and never one per PR. It watches every open PR of yours and Dependabot's, including ones other sessions open later,
    with one `gh` call a minute. It exits at the first change worth acting on, printing one line per PR that went
    RED (a check failed, even with others still running), GREEN (every check passed), CONFLICTING, or COMMENTED (a
    new comment or review). That exit is what wakes the loop, so a red check or a new comment gets picked up within

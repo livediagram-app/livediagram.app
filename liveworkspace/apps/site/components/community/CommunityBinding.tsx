@@ -1,11 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
-import {
-  communitySearchMine,
-  setCommunitySearchMine,
-  type CommunityApp,
-} from '@liveworkspace/community';
+import type { CommunityApp } from '@liveworkspace/community';
 import { communityKeyStorage } from '@liveworkspace/community/paths';
 import { COMMUNITY_APP_WORDS, type CommunityWords } from '@liveworkspace/community-ui/words';
 import { CommunityHelpLink as HelpLinkLook } from '@liveworkspace/community-ui/help-link';
@@ -16,7 +12,7 @@ import { communityTelemetry } from '@/lib/community/telemetry';
 import { appOrigin, pageApp } from '@/lib/explorer/page-app';
 import { CommunitySiteProvider, type CommunityHelpLinkProps, type CommunitySite } from './client';
 import { communityAppOf, communityLinks } from './lib/links';
-import { readQueryState, writeQueryState } from './lib/query-state';
+import { carrySearch } from './lib/query-state';
 import { replaceSearch } from './lib/url-search';
 
 // The Community page's binding, worked out from where the page is (liveworkspace/docs/specs/007-community/
@@ -50,14 +46,6 @@ function makeHelpLink(onApp: boolean): (props: CommunityHelpLinkProps) => ReactN
 const AppHelpLink = makeHelpLink(true);
 const WorkspaceHelpLink = makeHelpLink(false);
 
-/** Takes My Shares out of the address's search: All Apps has no My Shares (it is one app's, on its address). */
-function leaveMine() {
-  const params = new URLSearchParams(window.location.search);
-  if (!communitySearchMine(params.get('q') ?? '')) return;
-  const filters = readQueryState(params);
-  replaceSearch(writeQueryState({ ...filters, q: setCommunitySearchMine(filters.q, false) }));
-}
-
 const noChange = () => () => {};
 const notYet = () => undefined;
 
@@ -68,10 +56,14 @@ export function CommunityBinding({ children }: { children: ReactNode }) {
   const app: CommunityApp | null = host ? communityAppOf(host) : null;
   // The switch's own choice, on an app's address; it starts on the app, as the Explorer's does.
   const [choice, setChoice] = useState<AppScope>('app');
-  const set = useCallback((next: AppScope) => {
-    if (next === 'all') leaveMine();
-    setChoice(next);
-  }, []);
+  const set = useCallback(
+    (next: AppScope) => {
+      const carried = app ? carrySearch(window.location.search, next, app) : null;
+      if (carried !== null) replaceSearch(carried);
+      setChoice(next);
+    },
+    [app],
+  );
 
   const site = useMemo<CommunitySite>(() => {
     const scope = app && choice === 'app' ? app : 'all';

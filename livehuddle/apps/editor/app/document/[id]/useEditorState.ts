@@ -1519,7 +1519,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       getViewportCenter,
       commit,
       commitTabs,
-      setSelectedId,
+      setSelection: selectionStore.setSelection,
       setEditingId,
       setFormatSourceId,
     });
@@ -1775,6 +1775,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
+    setSelection: selectionStore.setSelection,
     setEditingId,
     zoomRef,
     styleNewElement: styleMemory.styleNewElement,

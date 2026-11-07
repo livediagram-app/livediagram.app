@@ -409,7 +409,9 @@ deleted the index is told (`removeConnection`), which deletes its pass. Only an 
 Participant and a Viewer read it. A tab outside a tab-scoped visitor's scope drops its connection with its name, and a
 connected tab is never shared into another item. Copies, the Drive file and an
 editor's create (an Offline Mode sync) keep exactly `{ id, app, itemId }`, which the index opens only in its own host
-and tab, so anywhere else it offers Connect Again. (liveplanner has no Community posts, so no Community read or copy.)
+and tab, so anywhere else it offers Connect Again. Through a Community post's link a connected tab keeps its name and
+loses its connection, in the read and in a copy ([Community](../025-community/community.md)): a stranger is told of no
+other item.
 
 ## Realtime model
 

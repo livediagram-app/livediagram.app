@@ -39,18 +39,31 @@ A logo, a wireframe or an edited photo someone is proud of has nowhere to be see
 
 ## Categories
 
-livedesign's closed set, in display order (the platform spec's "Categories"). The id is stored; the label is shown; the
-line beside it is the description the publish dialog shows for the chosen category.
+livedesign's Community categories are its template categories ([Canvas and
+palette](../008-canvas/canvas-and-palette.md#template-categories), `TEMPLATE_CATEGORIES`): the same ids, labels,
+order and one-line descriptions, then Something Else (owner, 2026-11-07). The id is stored; the label is shown; the
+line beside it is the description the publish dialog shows for the chosen category. The publish dialog offers these
+alone, and `packages/templates/src/community-categories.test.ts` keeps the two lists equal. Posts filed under the old
+set (Logos & Branding, Wireframes & Mockups, Photo Edits, Social & Marketing, Posters & Flyers, Icons &
+Illustrations) were moved by the service's migration (the platform spec's [Moving to the template
+categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)).
 
-| id              | Label                 | For                                    |
-| --------------- | --------------------- | -------------------------------------- |
-| `logos`         | Logos & Branding      | Logos, marks, brand kits               |
-| `wireframes`    | Wireframes & Mockups  | Screens, flows, app and web layouts    |
-| `photos`        | Photo Edits           | Retouched photos, composites, collages |
-| `social`        | Social & Marketing    | Social posts, banners, ads             |
-| `posters`       | Posters & Flyers      | Posters, flyers, invitations, cards    |
-| `illustrations` | Icons & Illustrations | Icons, illustrations, patterns         |
-| `other`         | Something Else        | Anything that fits nowhere above       |
+| id           | Label                  | For                                                |
+| ------------ | ---------------------- | -------------------------------------------------- |
+| `branding`   | Branding               | Logos, wordmarks, emblems and app icons.           |
+| `health`     | Health and Fitness     | Workouts, heart rate and activity on the wrist.    |
+| `media`      | Music and Video        | Music, podcast and video players, and galleries.   |
+| `photos`     | Photos                 | Photo edits, retouches and layered pictures.       |
+| `shopping`   | Shopping               | Stores, carts, checkouts and order tracking.       |
+| `onboarding` | Sign Up and Onboarding | First runs: welcome, sign up, verify, permissions. |
+| `social`     | Social and Messaging   | Feeds, stories, posts, chat and profiles.          |
+| `travel`     | Travel and Transport   | Flights, boarding passes, maps and rides.          |
+| `websites`   | Websites               | Landing pages, blogs, stores and help sites.       |
+| `work`       | Work and Productivity  | Dashboards, boards, tasks, calendars and inboxes.  |
+| `other`      | Something Else         | Anything that fits nowhere above.                  |
+
+The month's most liked posts in each category also show in the editor's template start, after that category's
+templates ([Start Making Pages "From the Community"](../007-editor/start-diagramming.md#from-the-community)).
 
 ## What a post shows
 
@@ -173,7 +186,7 @@ fewer than six to show (a young Community, or the service unreachable), the sect
 ## Telemetry
 
 Category `Community`, as livediagram's: `Community·Shared|Changed·<Category>` and `Community·Removed·Post` from the
-Share dialog; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
+Share dialog; `Community·Copied·StartWith` on choosing a Community tile in the template start; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
 `Community·Searched·Query` and `Community·Selected·<Category|Tag|Sort|Mine>` from the gallery, sent in livedesign's
 name by liveworkspace.app's page while it is on livedesign's address (`liveworkspace/apps/site/lib/community/telemetry.ts`;
 on liveworkspace.app it sends nothing). `<Category>` is the category's type (its id in PascalCase).

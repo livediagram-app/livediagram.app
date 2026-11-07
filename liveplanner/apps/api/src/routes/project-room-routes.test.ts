@@ -60,6 +60,8 @@ function roomEnv() {
           seen.push(req);
           return new Response(null, { status: REACHED_ROOM });
         },
+        // No Community post: a link visitor joins as any link's does.
+        community: async () => null,
       }),
     },
   } as unknown as Env;

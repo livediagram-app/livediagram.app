@@ -79,7 +79,7 @@ describe('CommunityPublishDialog validation', () => {
     fireEvent.change(description(), {
       target: { value: 'Long enough to describe the document well.' },
     });
-    fireEvent.click(screen.getByRole('radio', { name: /Infographics/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /Retrospectives/ }));
     submit();
     await waitFor(() => expect(description().getAttribute('aria-invalid')).toBe('true'));
     // Focus lands on it once the form is enabled again (it was disabled while saving).
@@ -98,7 +98,7 @@ describe('CommunityPublishDialog anonymous', () => {
     fireEvent.change(description(), {
       target: { value: 'Long enough to describe the document well.' },
     });
-    fireEvent.click(screen.getByRole('radio', { name: /Infographics/ }));
+    fireEvent.click(screen.getByRole('radio', { name: /Retrospectives/ }));
   };
   const toggle = () => screen.getByRole('switch', { name: /Share Anonymously/ });
 

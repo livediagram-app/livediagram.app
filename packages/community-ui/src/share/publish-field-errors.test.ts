@@ -7,7 +7,7 @@ const words = COMMUNITY_APP_WORDS['livediagram.app'];
 const valid = {
   title: 'Team Birthday Card',
   description: 'A card the whole team signs, with a page of sticky messages.',
-  category: 'infographics',
+  category: 'ideas',
   tags: ['birthday'],
 };
 

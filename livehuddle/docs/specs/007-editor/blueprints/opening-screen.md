@@ -45,21 +45,23 @@ size for size: `viewBox="-24 -34 528 392"`.
 
 ## Behaviour and timeline
 
-One loop of `LOOP_MS = 12000`, every moment a percentage of it:
+One loop of `LOOP_MS = 9000`, every moment a percentage of it (1% is 90ms). Front-loaded: loads usually finish
+within a second or two, so the room is built, the door open and the first character walking by about 0.6s, and
+everything is furnished by about 1.2s.
 
-| %        | What happens                                                                  |
-| -------- | ----------------------------------------------------------------------------- |
-| 0 to 4   | Floor fades and scales up from 0.96                                           |
-| 3 to 23  | Walls draw clockwise from the top-left (`scaleX` / `scaleY` from their start) |
-| 15       | Door posts and threshold pop; the leaf shows closed (rotated 90deg)           |
-| 22 to 25 | Name band fades in                                                            |
-| 23 to 33 | Rug, table, bookshelf, coffee machine, plants pop (scale 0.6, 1.06, 1)        |
-| 31 to 36 | Leaf swings open to 0deg; the arc fades in                                    |
-| 35 to 61 | You walk in at a constant pace, facing each segment's direction, then sit     |
-| 40 to 66 | Sam follows, then sits                                                        |
-| 66 to 70 | The pool of light scales in round the pair                                    |
-| 68 to 78 | Your equaliser talks; then Sam's, 77 to 88                                    |
-| 92 to 97 | The whole scene fades out; everything resets unseen at 100%                   |
+| %        | What happens                                                                        |
+| -------- | ----------------------------------------------------------------------------------- |
+| 0 to 3   | Floor fades and scales up from 0.96                                                 |
+| 0 to 6   | Walls draw clockwise from the top-left in overlapping strokes (`scaleX` / `scaleY`) |
+| 2        | Door posts and threshold pop; the leaf shows closed (rotated 90deg)                 |
+| 3 to 8   | Leaf swings open to 0deg; the arc fades in                                          |
+| 5 to 7   | Name band fades in                                                                  |
+| 5 to 13  | Rug, table, bookshelf, coffee machine, plants pop (scale 0.6, 1.06, 1)              |
+| 7 to 35  | You walk in at a constant pace, facing each segment's direction, then sit           |
+| 11 to 39 | Sam follows, then sits                                                              |
+| 39 to 43 | The pool of light scales in round the pair                                          |
+| 41 to 58 | Your equaliser talks; then Sam's, 57 to 76                                          |
+| 90 to 96 | The whole scene fades out; everything resets unseen at 100%                         |
 
 - Facing switches and the walker-to-sitter handover are instant (two stops 0.01% apart).
 - The stride: frames `.lhs-f0` / `.lhs-f1` swap on their own `360ms steps(1, end)` loop; only seen while walking.

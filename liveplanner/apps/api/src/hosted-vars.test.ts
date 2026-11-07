@@ -63,6 +63,16 @@ describe('hosted profile', () => {
     expect(vars.TELEMETRY_ENABLED).toBe('true');
   });
 
+  it('points each environment at its Community service', async () => {
+    const { environments } = (await load()).readHostedProfile();
+    expect(environments.production.COMMUNITY_URL).toBe(
+      'https://www.liveworkspace.app/api/community',
+    );
+    expect(environments.staging.COMMUNITY_URL).toBe(
+      'https://staging.liveworkspace.app/api/community',
+    );
+  });
+
   it('names only vars the worker reads', async () => {
     const types = readApiFile('src/types.ts');
     const { shared, environments } = (await load()).readHostedProfile();

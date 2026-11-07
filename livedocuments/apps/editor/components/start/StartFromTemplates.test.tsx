@@ -1,17 +1,42 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CommunityStartPost } from '@livedocuments/api-schema';
+import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
+import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
+import { track } from '@/lib/telemetry';
 import { StartFromTemplates } from './StartFromTemplates';
 import { closeStartForBlank } from './close-start-for-blank';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+
+// The Community's Start With read (liveworkspace/docs/specs/007-community/community.md "Start With"): none unless a
+// test gives some.
+let startTiles: Record<string, CommunityStartPost[]> = {};
+beforeEach(() => {
+  startTiles = {};
+  resetCommunityStartForTests();
+  resetCommunityEnabledForTests();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string) =>
+      String(url).includes('/start?')
+        ? Response.json({ categories: startTiles })
+        : Response.json({ communityEnabled: true }),
+    ),
+  );
+});
 
 // docs/specs/007-editor/start-diagramming.md
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  vi.unstubAllGlobals();
+  vi.mocked(track).mockClear();
 });
 
-const mount = (onTemplate = vi.fn(), tabId = 't1') =>
-  render(<StartFromTemplates tabId={tabId} onTemplate={onTemplate} />);
+const mount = (onTemplate = vi.fn(), tabId = 't1', leave = vi.fn()) =>
+  render(<StartFromTemplates tabId={tabId} onTemplate={onTemplate} leave={leave} />);
 
 describe('StartFromTemplates', () => {
   it('names its start', () => {
@@ -85,5 +110,95 @@ describe('StartFromTemplates, switching category', () => {
     scroller.scrollTop = 300;
     fireEvent.click(document.querySelector('[data-rail="team"]')!);
     expect(scroller.scrollTop).toBe(0);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "From the Community".
+describe('StartFromTemplates, from the Community', () => {
+  const tile = (id: string, title: string, category = 'reports'): CommunityStartPost => ({
+    id,
+    app: 'livedocuments.app',
+    title,
+    category: category as CommunityStartPost['category'],
+    shareCode: `CODE-${id}`,
+    likeCount: 9,
+    copyCount: 1,
+    anonymous: false,
+    authorName: 'Ada',
+    line: 'How our quarter went.',
+  });
+  const cardIds = () =>
+    [...document.querySelectorAll('[data-start-card]')].map((c) =>
+      c.getAttribute('data-start-card'),
+    );
+
+  it("follows a group's templates with its Community tiles, badged, the rail counting templates only", async () => {
+    startTiles = { reports: [tile('r1', 'Annual Report'), tile('r2', 'Board Update')] };
+    mount();
+    const rail = document.querySelector<HTMLElement>('[data-rail="reports"]')!;
+    const count = rail.textContent;
+    fireEvent.click(rail);
+    const first = await screen.findByRole('button', { name: /^Annual Report from the Community/ });
+    expect(within(first).getByText('Community')).toBeTruthy();
+    expect(within(first).getByText('By Ada')).toBeTruthy();
+    expect(first.querySelector('img')!.getAttribute('src')).toBe('/api/share/CODE-r1/image.svg');
+    const ids = cardIds();
+    expect(ids.slice(-2)).toEqual(['community:r1', 'community:r2']);
+    expect(ids.slice(0, -2).length).toBeGreaterThan(0);
+    expect(ids.slice(0, -2).every((id) => !id!.startsWith('community:'))).toBe(true);
+    expect(rail.textContent).toBe(count);
+    // Blank Pages stays the blanks only.
+    fireEvent.click(document.querySelector('[data-rail="blank-pages"]')!);
+    expect(cardIds().some((id) => id!.startsWith('community:'))).toBe(false);
+  });
+
+  it("opens the person's own copy of a chosen tile, counted as a copy", async () => {
+    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    const onTemplate = vi.fn();
+    const leave = vi.fn();
+    mount(onTemplate, 't1', leave);
+    fireEvent.click(document.querySelector('[data-rail="reports"]')!);
+    fireEvent.click(
+      await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
+    );
+    expect(leave).toHaveBeenCalledWith('/document/shared?s=CODE-r1&copy=1');
+    expect(track).toHaveBeenCalledWith('Community', 'Copied', 'StartWith');
+    expect(onTemplate).not.toHaveBeenCalled();
+  });
+
+  it('finds a tile by its title in a search, after the templates of its group', async () => {
+    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    mount();
+    const search = screen.getByRole('textbox', { name: 'Find a template' });
+    fireEvent.change(search, { target: { value: 'annual report' } });
+    expect(
+      await screen.findByRole('button', { name: /^Annual Report from the Community/ }),
+    ).toBeTruthy();
+    fireEvent.change(search, { target: { value: 'zzzz nothing' } });
+    expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();
+  });
+
+  it('shows only templates when the Community is off', async () => {
+    startTiles = { reports: [tile('r1', 'Annual Report')] };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        String(url).includes('/start?')
+          ? Response.json({ categories: startTiles })
+          : Response.json({ communityEnabled: false }),
+      ),
+    );
+    mount();
+    fireEvent.click(document.querySelector('[data-rail="reports"]')!);
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.queryByRole('button', { name: /from the Community/ })).toBeNull();
+  });
+
+  it('asks nothing while the start is closed', async () => {
+    closeStartForBlank('t-closed', 'blank');
+    mount(vi.fn(), 't-closed');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

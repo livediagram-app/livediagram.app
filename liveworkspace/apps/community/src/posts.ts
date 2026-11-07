@@ -11,6 +11,9 @@ import {
   COMMUNITY_POPULAR_TAGS,
   COMMUNITY_RELATED_POSTS,
   COMMUNITY_SITEMAP_MAX,
+  COMMUNITY_START_MIN_LIKES,
+  COMMUNITY_START_PER_CATEGORY,
+  COMMUNITY_START_WINDOW_MS,
   communitySearchTags,
   communitySearchTerms,
   type CommunityApp,
@@ -267,6 +270,12 @@ export async function listPosts(
     where.push('p.category = ?');
     binds.push(query.category);
   }
+  // A category named with its app (All Apps' menu, `category:liveplanner/planning`): that app's posts only. Served by
+  // idx_posts_category (app, category, state, document_state, published_at).
+  if (query.category && query.categoryApp) {
+    where.push('p.app = ?');
+    binds.push(query.categoryApp);
+  }
   // Every tag asked for must be on the post: the `tag` parameter and each `#tag` in the search.
   const tags = [...new Set([...(query.tag ? [query.tag] : []), ...communitySearchTags(query.q)])];
   for (const tag of tags) {
@@ -330,12 +339,14 @@ export async function listSitemap(env: Env, app: CommunityApp): Promise<Communit
 }
 
 // The filter counts: posts per category and the most used tags, over what the public can see of one app, or of
-// every app (`all`).
+// every app (`all`). Counted per app and category, so All Apps' menu can count each app's own (`apps`); one app's
+// answer is the same rows with one app.
 export async function facets(env: Env, app: CommunityScope): Promise<CommunityFacetsResponse> {
   const { where, binds } = publicWhere(app);
-  const [categories, tags] = await env.COMMUNITY_DB.batch<{ key: string; n: number }>([
+  const [categories, tags] = await env.COMMUNITY_DB.batch<{ app: string; key: string; n: number }>([
     env.COMMUNITY_DB.prepare(
-      `SELECT p.category AS key, COUNT(*) AS n FROM posts p WHERE ${where} GROUP BY p.category`,
+      `SELECT p.app AS app, p.category AS key, COUNT(*) AS n FROM posts p WHERE ${where}
+        GROUP BY p.app, p.category`,
     ).bind(...binds),
     env.COMMUNITY_DB.prepare(
       `SELECT t.tag AS key, COUNT(*) AS n FROM post_tags t JOIN posts p ON p.id = t.post_id
@@ -343,14 +354,19 @@ export async function facets(env: Env, app: CommunityScope): Promise<CommunityFa
     ).bind(...binds, COMMUNITY_POPULAR_TAGS),
   ]);
   const categoryCounts: CommunityFacetsResponse['categories'] = {};
+  const apps: NonNullable<CommunityFacetsResponse['apps']> = {};
   let total = 0;
   for (const row of categories?.results ?? []) {
-    categoryCounts[row.key as CommunityCategory] = row.n;
+    const key = row.key as CommunityCategory;
+    categoryCounts[key] = (categoryCounts[key] ?? 0) + row.n;
+    const own = (apps[row.app as CommunityApp] ??= {});
+    own[key] = row.n;
     total += row.n;
   }
   return {
     total,
     categories: categoryCounts,
+    ...(app === 'all' ? { apps } : {}),
     tags: (tags?.results ?? []).map((row) => ({ tag: row.key, count: row.n })),
   };
 }
@@ -398,3 +414,51 @@ export async function listFeaturedPosts(
     .all<PostRow>();
   return [...rows, ...(fill.results ?? [])];
 }
+
+// Start With's Community tiles (liveworkspace/docs/specs/007-community/community.md "Start With"): for every category of
+// the app, up to COMMUNITY_START_PER_CATEGORY public posts, ranked by the likes they received in the last
+// COMMUNITY_START_WINDOW_MS (capped per network, as the like count and the featured six are), then copies, then newest.
+// Only posts with at least COMMUNITY_START_MIN_LIKES likes in that window qualify.
+// One statement for every category, never one per category, and no UNION (production D1 refuses a compound of more
+// than five terms): the app's public posts on their (app, state, document_state) index, each one's likes in the window
+// on the covering idx_likes_post_created (migration 0004), so the read grows with the app's own month of likes rather
+// than every app's; each qualifying post found again by its key (CROSS JOIN keeps that order: without statistics the
+// planner otherwise walks the app's posts a second time); ROW_NUMBER over the category picking each one's best.
+// Rows come back ordered by category, then rank.
+export async function listStartPosts(
+  env: Env,
+  app: CommunityApp,
+  now: number = Date.now(),
+): Promise<PostRow[]> {
+  const result = await env.COMMUNITY_DB.prepare(START_POSTS_SQL)
+    .bind(
+      COMMUNITY_COUNTED_PER_NETWORK,
+      now - COMMUNITY_START_WINDOW_MS,
+      app,
+      COMMUNITY_START_MIN_LIKES,
+      app,
+      COMMUNITY_START_PER_CATEGORY,
+    )
+    .all<PostRow>();
+  return result.results ?? [];
+}
+
+// Exported for the query plan test (posts.test.ts), which checks it stays on its indexes.
+export const START_POSTS_SQL = `WITH recent AS (
+     SELECT post_id, SUM(MIN(n, ?)) AS recent_likes FROM (
+       SELECT l.post_id AS post_id, COUNT(*) AS n
+         FROM posts q JOIN likes l INDEXED BY idx_likes_post_created
+           ON l.post_id = q.id AND l.created_at >= ?
+        WHERE q.app = ? AND q.state = 'listed' AND q.document_state = 'public'
+        GROUP BY l.post_id, l.network_hash)
+      GROUP BY post_id
+     HAVING recent_likes >= ?),
+   ranked AS (
+     SELECT ${POST_COLS},
+            ROW_NUMBER() OVER (
+              PARTITION BY p.category
+              ORDER BY recent.recent_likes DESC, p.copy_count DESC, p.published_at DESC, p.id
+            ) AS place
+       FROM recent CROSS JOIN posts p ON p.id = recent.post_id
+      WHERE ${PUBLIC_POST})
+   SELECT * FROM ranked WHERE place <= ? ORDER BY category, place`;

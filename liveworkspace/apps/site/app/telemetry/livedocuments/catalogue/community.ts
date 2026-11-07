@@ -64,7 +64,7 @@ export const COMMUNITY_COPIES = chart(
   'Community',
   'Copied',
   'Copies Made',
-  'Someone pressed Make a Copy on a post to start their own document from it.',
+  'Someone made their own copy of a post to start from: Make a Copy in the gallery, or a Community tile on Start Making Pages.',
 );
 
 // Discovery: how people look for documents. Only the kind of filter, never what was typed or picked.

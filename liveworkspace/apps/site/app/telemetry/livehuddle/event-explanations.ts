@@ -775,6 +775,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
   'Community|Copied|Post':
     'Someone pressed Make a Copy on a Community post, to start their own document from it.',
+  'Community|Copied|StartWith':
+    'Someone chose a Community post among the Start a Space tiles, to start their own Space from it.',
   ...perReportReason,
   'Community|Searched|Query':
     'Someone searched the Community gallery. Counted once per search, never what they typed.',

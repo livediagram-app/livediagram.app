@@ -51,12 +51,14 @@ let refuseUpload: { status: number; body: Record<string, unknown> } | null;
 let indexGrantAsks: string[];
 let indexGrantAnswer: { status: number; body: Record<string, unknown> };
 
-// The plan's room: what it was told and what it answers.
+// The plan's room: what it was told and what it answers, its Community post's link included (none by default).
 let granted: string[];
 let serves: boolean;
+let post: { code: string; open: boolean } | null;
 const room = {
   grantImage: vi.fn(async (_plan: string, id: string) => void granted.push(id)),
   servesImage: vi.fn(async () => serves),
+  community: vi.fn(async () => post),
 };
 
 let env: Env;
@@ -69,6 +71,7 @@ beforeEach(() => {
   indexGrantAnswer = { status: 404, body: { error: 'not_found' } };
   granted = [];
   serves = true;
+  post = null;
   room.grantImage.mockClear();
   room.servesImage.mockClear();
   pushPersonEvents.mockClear();
@@ -440,6 +443,21 @@ describe('GET /api/images/{id}', () => {
     expect(res.status).toBe(200);
     // Nobody to compare with the owner: the service is asked for the bytes only.
     expect(serviceCalls.map((c) => c.path)).toEqual([`/app/images/${id}/bytes`]);
+  });
+
+  // docs/specs/025-community/community.md "Viewing a post's plan": a card's picture is the plan's content, so the post's
+  // link reads it while the post is open, and nothing once it is not; it never uploads.
+  it("answers a Community post's open link, and 404s once the post no longer opens the plan", async () => {
+    const id = await uploaded();
+    const visitor = { person: null, grant: grantOf('link:POST1', 'view') };
+    post = { code: 'POST1', open: true };
+    expect((await read(id, visitor)).status).toBe(200);
+    expect(room.community).toHaveBeenCalled();
+    post = { code: 'POST1', open: false };
+    expect((await read(id, visitor)).status).toBe(404);
+    post = { code: 'POST1', open: true };
+    const res = await upload({ person: 'link:POST1', grant: grantOf('link:POST1', 'participate') });
+    expect(res.status).toBe(403);
   });
 
   it('404 when the plan does not serve it (no grant there, or no card holds it)', async () => {

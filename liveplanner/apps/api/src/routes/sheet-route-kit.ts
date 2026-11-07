@@ -11,8 +11,10 @@ import {
   gateParticipate,
   gateGrant,
   gateRead,
+  grantOn,
   missingProject,
   requireOwner,
+  type GateOptions,
   type RouteContext,
 } from './context';
 import { forbidden } from '../responses';
@@ -25,6 +27,9 @@ export type SheetCaller = {
   // The project's owner and team, for a second gate on the same caller (sheetCallerEdits).
   ownerId: string;
   teamId: string | null;
+  // Through the plan's Community post's link (docs/specs/025-community/community.md "Viewing a post's plan"): every
+  // sheet it is answered is redacted (community-redact.ts redactSheetForCommunity).
+  community?: boolean;
 };
 
 // Whether a caller already admitted at participate also holds edit (docs/specs/013-workspace/share-roles.md): one
@@ -69,11 +74,23 @@ export async function sheetCaller(
   ctx: RouteContext,
   projectId: string,
   level: 'read' | 'participate' | 'edit',
+  opts: GateOptions = {},
 ): Promise<SheetCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const doc = await getProject(ctx.env, projectId);
   if (!doc) return missingProject(ctx, projectId);
+  // A Community post's link reads (never writes) every sheet, redacted.
+  if (level === 'read' && opts.community && grantOn(ctx, projectId, opts)?.community) {
+    return {
+      projectId,
+      owner,
+      scopeTab: null,
+      ownerId: doc.ownerId,
+      teamId: doc.teamId,
+      community: true,
+    };
+  }
   const gate = GATES[level];
   if (await gate(ctx, projectId, doc.ownerId, doc.teamId))
     return { projectId, owner, scopeTab: null, ownerId: doc.ownerId, teamId: doc.teamId };

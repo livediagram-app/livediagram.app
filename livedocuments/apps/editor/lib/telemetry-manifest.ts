@@ -33,8 +33,10 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Resolved',
   'Comment·Unresolved',
   // Community (docs/specs/025-community/blueprints/community.md "Telemetry"): publish, Edit Listing and Remove
-  // From Community in the Share dialog.
+  // From Community in the Share dialog; Copied when a Community tile on Start Making Pages is chosen
+  // (docs/specs/007-editor/start-diagramming.md "From the Community").
   'Community·Changed',
+  'Community·Copied',
   'Community·Removed',
   'Community·Shared',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new

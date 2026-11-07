@@ -7,14 +7,16 @@ import {
   MAX_TAB_BYTES,
   type ShapeLibraryItem,
 } from '@livehuddle/api-schema';
+import { personStore } from '../person-client';
 import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 import { handleShapeLibraries, shapePreviews } from './shape-libraries';
 
 // handleShapeLibraries (docs/specs/013-workspace/blueprints/shape-libraries.md "Interfaces and
-// contracts"): each person's libraries in their own store, plus the cap, the size budget, item
-// validation and the name rules. Runs against real PersonStores on node:sqlite.
+// contracts"): each person's libraries in their own store, read-only since Work Tracker #515 (the
+// cap, size budget and name rules live in the store's own tests). Runs against real PersonStores
+// on node:sqlite.
 
 const square = { id: 'e1', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60 };
 const item = { id: 'i1', title: 'Service', width: 120, height: 60, elements: [square] };
@@ -40,10 +42,15 @@ const ctx = (
 const send = (method: string, path: string, opts: { owner?: string | null; body?: unknown } = {}) =>
   handleShapeLibraries(ctx(method, path, opts));
 const errorOf = async (res: Response) => (await res.json<{ error: string }>()).error;
+// The routes no longer write, so a stored library is seeded the way an old import left it: straight into the store.
 const create = async (over: Record<string, unknown> = {}, owner = 'owner-1') => {
-  const res = await send('POST', '/api/shape-libraries', { body: body(over), owner });
-  expect(res.status).toBe(201);
-  return (await res.json<{ library: { id: string; name: string } }>()).library;
+  const { id, name, items } = body(over) as { id: string; name: string; items: ShapeLibraryItem[] };
+  const library = await personStore(env, owner).createShapeLibrary(
+    { id, name, source: 'drawio', items },
+    MAX_SHAPE_LIBRARIES_PER_OWNER,
+  );
+  expect(typeof library).toBe('object');
+  return library as { id: string; name: string };
 };
 const list = async (owner = 'owner-1') =>
   (
@@ -75,104 +82,59 @@ describe('GET /api/shape-libraries', () => {
     expect(mine.every((l) => l.ownerId === 'owner-1')).toBe(true);
     expect(mine[0]!.items).toEqual([item]);
   });
+
+  it('404 for a path that is not a route of this resource', async () => {
+    expect((await send('GET', '/api/shape-libraries/lib-1')).status).toBe(404);
+    expect((await send('GET', '/api/other')).status).toBe(404);
+  });
 });
 
-describe('POST /api/shape-libraries', () => {
-  it('creates a library for the person, trimmed', async () => {
-    const library = await create({ name: '  Team icons ' });
-    expect(library).toMatchObject({ id: 'lib-1', name: 'Team icons', ownerId: 'owner-1' });
-  });
+// Work Tracker #515: every caller is refused the same way, whatever their share role on any Space (this resource is
+// the person's own, with no role of its own): the owner, an Editor, a Participant or a Viewer reaching it with a
+// token or session, and a caller with no owner at all.
+describe('writes are refused', () => {
+  const callers: [string, string | null][] = [
+    ['the owner', 'owner-1'],
+    ['an Editor', 'editor-1'],
+    ['a Participant', 'participant-1'],
+    ['a Viewer', 'viewer-1'],
+    ['an anonymous caller', null],
+  ];
+  const writes: [string, string, unknown][] = [
+    ['POST', '/api/shape-libraries', body({ id: 'lib-new' })],
+    ['PUT', '/api/shape-libraries/lib-1', { name: 'Renamed' }],
+    ['DELETE', '/api/shape-libraries/lib-1', undefined],
+  ];
 
-  it('suffixes a name the person already uses', async () => {
-    await create({ id: 'a', name: 'team icons' });
-    await create({ id: 'b', name: 'Team icons (2)' });
-    expect((await create({ id: 'c' })).name).toBe('Team icons (3)');
-  });
+  it.each(callers.flatMap(([who, owner]) => writes.map((w) => [who, owner, ...w] as const)))(
+    '403 shape_libraries_read_only for %s on %s %s',
+    async (_who, owner, method, path, payload) => {
+      await create();
+      const res = await send(method, path, { owner, body: payload });
+      expect(res.status).toBe(403);
+      expect(await errorOf(res)).toBe('shape_libraries_read_only');
+    },
+  );
 
-  it.each([
-    ['no id', { id: undefined }],
-    ['a malformed id', { id: 'a/b' }],
-    ['an empty name', { name: '  ' }],
-    ['an unknown source', { source: 'visio' }],
-    ['items that are not a list', { items: 'x' }],
-    ['an invalid element', { items: [{ ...item, elements: [{ id: 'x', type: 'nope' }] }] }],
-  ])('400 for %s', async (_, over) => {
-    const res = await send('POST', '/api/shape-libraries', { body: body(over) });
-    expect(res.status).toBe(400);
-    expect(await list()).toEqual([]);
-  });
-
-  it('409 at the cap', async () => {
-    for (let i = 0; i < MAX_SHAPE_LIBRARIES_PER_OWNER; i++) {
-      await create({ id: `L${i}`, name: `L${i}` });
+  it('changes, creates and deletes nothing, and still lists what was stored', async () => {
+    await create();
+    for (const [method, path, payload] of writes) {
+      await send(method, path, { body: payload });
     }
-    const res = await send('POST', '/api/shape-libraries', { body: body() });
-    expect(res.status).toBe(409);
-    expect(await errorOf(res)).toBe('shape_library_cap');
+    expect(await list()).toMatchObject([{ id: 'lib-1', name: 'Team icons', items: [item] }]);
   });
 
-  it('409 for an id the person already uses', async () => {
-    await create();
-    const res = await send('POST', '/api/shape-libraries', { body: body({ name: 'Other' }) });
-    expect(res.status).toBe(409);
-    expect(await errorOf(res)).toBe('shape_library_exists');
+  it('answers 404, not 403, for a write to a path the resource never had', async () => {
+    expect((await send('PUT', '/api/shape-libraries')).status).toBe(404);
+    expect((await send('DELETE', '/api/shape-libraries/bad id!')).status).toBe(404);
+    expect((await send('POST', '/api/shape-libraries/lib-1/previews')).status).toBe(404);
   });
 
-  it('413 over the row budget', async () => {
-    const big = { ...item, title: '', elements: [{ ...square, label: 'x'.repeat(MAX_TAB_BYTES) }] };
-    const res = await send('POST', '/api/shape-libraries', { body: body({ items: [big] }) });
-    expect(res.status).toBe(413);
-    expect(await list()).toEqual([]);
-  });
-});
-
-describe('PUT /api/shape-libraries/:id', () => {
-  it("404 for a missing library, and for another person's", async () => {
-    await create({}, 'owner-2');
-    expect((await send('PUT', '/api/shape-libraries/lib-9', { body: { name: 'x' } })).status).toBe(
-      404,
-    );
-    expect((await send('PUT', '/api/shape-libraries/lib-1', { body: { name: 'x' } })).status).toBe(
-      404,
-    );
-    expect((await list('owner-2'))[0]!.name).toBe('Team icons');
-  });
-
-  it('renames, refusing a name another library uses but not its own', async () => {
-    await create();
-    await create({ id: 'lib-2', name: 'UML' });
-    const clash = await send('PUT', '/api/shape-libraries/lib-1', { body: { name: 'uml' } });
-    expect(clash.status).toBe(409);
-    expect(await errorOf(clash)).toBe('shape_library_name_taken');
-    const same = await send('PUT', '/api/shape-libraries/lib-1', { body: { name: 'TEAM ICONS' } });
-    expect(same.status).toBe(200);
-    expect((await same.json<{ library: { name: string } }>()).library.name).toBe('TEAM ICONS');
-  });
-
-  it('replaces the items with validated ones', async () => {
-    await create();
-    const res = await send('PUT', '/api/shape-libraries/lib-1', { body: { items: [] } });
-    expect(res.status).toBe(200);
-    expect((await list())[0]!.items).toEqual([]);
-  });
-
-  it('400 for invalid items or name', async () => {
-    await create();
-    for (const b of [{ items: [{ id: '' }] }, { name: '' }]) {
-      expect((await send('PUT', '/api/shape-libraries/lib-1', { body: b })).status).toBe(400);
-    }
-    expect((await list())[0]).toMatchObject({ name: 'Team icons', items: [item] });
-  });
-});
-
-describe('DELETE /api/shape-libraries/:id', () => {
-  it("deletes the person's library; 404 for another's", async () => {
-    await create();
-    await create({ id: 'lib-2' }, 'owner-2');
-    expect((await send('DELETE', '/api/shape-libraries/lib-1')).status).toBe(204);
-    expect(await list()).toEqual([]);
-    expect((await send('DELETE', '/api/shape-libraries/lib-2')).status).toBe(404);
-    expect(await list('owner-2')).toHaveLength(1);
+  it('refuses before reading the body or reaching the store', async () => {
+    const stores = env.PERSON_STORE as ReturnType<typeof testPersonStores>;
+    const res = await send('POST', '/api/shape-libraries', { owner: 'fresh', body: 'not json' });
+    expect(res.status).toBe(403);
+    expect(stores.databaseOf('fresh')).toBeUndefined();
   });
 });
 
@@ -206,6 +168,13 @@ describe('GET /api/shape-libraries/:id/previews', () => {
       (await send('GET', `/api/shape-libraries/${lib.id}/previews`, { owner: 'owner-2' })).status,
     ).toBe(404);
     expect((await send('GET', '/api/shape-libraries/bad id!/previews')).status).toBe(404);
+  });
+
+  it('leaves out a shape the renderer cannot draw, and draws the rest', () => {
+    const broken = { ...item, id: 'bad', elements: [null] };
+    const fine = { ...item, id: 'ok' };
+    const items = [broken, fine] as unknown as ShapeLibraryItem[];
+    expect(Object.keys(shapePreviews(items))).toEqual(['ok']);
   });
 
   it('needs a person', async () => {

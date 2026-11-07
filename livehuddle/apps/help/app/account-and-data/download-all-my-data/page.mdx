@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Download All My Data',
+  description:
+    'Download every space you own, with a picture of each tab and the comments you wrote, as one zip from Settings.',
+  path: '/help/account-and-data/download-all-my-data/',
+});
+
+<ArticleLayout title="Download All My Data" description="Get everything you own, from every liveworkspace app, as one zip: each space as a portable file, a picture of each tab and the comments you wrote." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+When you want all of your work in one place, to keep a backup or to move on, you do not have to export spaces one at a time. **Download All My Data** builds a single zip of everything you own, across livehuddle and the other liveworkspace apps, and emails you a link when it is ready.
+
+## Starting a download
+
+You need to be [signed in](/help/account-and-data/signing-in/). A guest owns nothing that outlives their browser, so there is nothing to download until you have an account.
+
+1. Open **Settings** on liveworkspace.app and go to **Your Data**, under **Account**.
+2. Choose **Download All My Data**. The row shows its progress while the zip is built, and you can close Settings and carry on working.
+3. When it is ready, we email you a link, and the row shows the size and when the link lapses, with **Download** and a button to make a new one.
+
+The link works for 3 days, and only while you are signed in as the address it was sent to. After that, make a new one from the same row. You can have one download building at a time. If one fails, the row says so and offers **Try Again**.
+
+## What the zip holds for your spaces
+
+Each space you own gets its own folder, named after the space and followed by its id, so two spaces with the same name never collide. Inside it:
+
+- **The space's file**, a `.livehuddle` file with the whole space in it. It is the same file the [Google Drive](/help/account-and-data/google-drive/) mirror writes, so you can open it with livehuddle again and use **Import as a copy** to make a new space from it.
+- **A picture of each tab**, as a PNG, in tab order and numbered (`01 Agenda.png`, `02 Ideas.png`), for up to 20 tabs. A tab with nothing on it has no picture.
+- **The comments you wrote** in it, gathered with the rest in `comments.json` and `comments.csv` at the top of the zip. Each row names the space, the tab, the thread, whether it is resolved, when you wrote it and the text. The CSV opens safely in a spreadsheet.
+
+The zip also holds a `README.txt` saying what each folder is, your profile, and the images you uploaded. If you use the other liveworkspace apps, their diagrams, plans, documents and designs are in the same zip, each in a folder for its app.
+
+## What is not in it
+
+- **Spaces shared with you.** Only spaces you own are included, and so are only the comments you wrote inside them. A space someone else owns is theirs to download, and so are the comments you left in it.
+- **Anything in the Trash.** [Restore it](/help/account-and-data/trash/) first if you want it in the zip.
+- **Shape libraries.** livehuddle no longer offers them, and the download does not read them. Any you imported earlier stay stored until you delete your account.
+- **Anything over the size cap.** A download stops adding files at 2 GiB, or at a set number of items, and the README and Settings say how many were left out. A space that cannot be read at the time is named in the README, and the download carries on without it.
+
+<Tip>
+  A download is a copy, not a deletion. Your spaces stay where they are. To remove them, see
+  [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+</Tip>
+
+For a single tab as an image, a PDF or a portable file, see [Exporting Spaces](/help/account-and-data/exporting-spaces/).
+
+</ArticleLayout>

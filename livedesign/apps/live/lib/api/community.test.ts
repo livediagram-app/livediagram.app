@@ -49,7 +49,7 @@ afterEach(() => {
 const INPUT = {
   title: 'Harbour cafe logo',
   description: 'A round mark for a harbour cafe, in two colours.',
-  category: 'logos' as const,
+  category: 'branding' as const,
   tags: ['logo'],
   anonymous: true,
 };

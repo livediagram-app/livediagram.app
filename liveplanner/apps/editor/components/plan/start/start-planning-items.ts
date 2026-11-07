@@ -418,6 +418,17 @@ export function itemsIn(items: readonly StartItem[], category: StartCategory): S
   return items.filter((i) => i.kind === KIND_OF[category]);
 }
 
+// The order a search's groups follow: the rail's, Recommended left out, then Import.
+export const START_SEARCH_ORDER = [
+  'boards',
+  'sheets',
+  'forms',
+  'visualisations',
+  'dashboards',
+  'inspiration',
+  'import',
+] as const satisfies readonly Exclude<StartCategory, 'recommended'>[];
+
 // The items a search matches, by name, line, kind and a board's card types (case and spacing ignored), grouped by
 // kind in the rail's order.
 export function searchStartItems(
@@ -438,9 +449,8 @@ export function searchStartItems(
       .join(' ')
       .toLowerCase();
   const found = items.filter((i) => words.every((w) => hay(i).includes(w)));
-  return (
-    ['boards', 'sheets', 'forms', 'visualisations', 'dashboards', 'inspiration', 'import'] as const
-  )
-    .map((category) => ({ category, items: found.filter((i) => i.kind === KIND_OF[category]) }))
-    .filter((g) => g.items.length > 0);
+  return START_SEARCH_ORDER.map((category) => ({
+    category,
+    items: found.filter((i) => i.kind === KIND_OF[category]),
+  })).filter((g) => g.items.length > 0);
 }

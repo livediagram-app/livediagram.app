@@ -54,6 +54,15 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   with the tile armed, a drop from the palette, and a template's rooms (`roomWithDoorPiece` in
   `@livehuddle/document`, which also stands a Door where a template asked for a doorway on another wall). Delete
   the Door for a closed room you reach only through a [Portal](portal-element.md); add more Doors for more ways in.
+- <a id="placing-selects-every-piece"></a>**Placing selects every piece.** An insert that lands several elements at
+  once (a Room with its Door, a [room preset](#room-presets) with its Door and furnishings, the
+  [Restroom](office-amenities.md#the-restroom-preset)) leaves all of them selected, as one multi-selection, so the
+  very next drag moves the room and everything in it together, and one undo puts it back. Every way they land does
+  this: a tap or a draw with the tile armed, and a drop from the palette. An insert of one element (a chair, a
+  plant, a Room Builder room) stays a single selection, with its element menu and, for a sticky, its caret. The room
+  still goes in behind everything; selecting its pieces changes no order. The owner asked for this (2026-11-07):
+  "When I add a room, like the office, I often want to drag it to a new position, but only the room is selected once
+  dropped, not all the items in it." It replaces "the room keeps the selection".
 - **Older rooms keep their built-in doorway.** A room stored before this (`ShapeElement.roomDoor`: `'n' | 'e' |
 's' | 'w'`, absent meaning the front wall `'s'`) still draws, walks and calls exactly as it did: a centred gap in
   that wall, 96 canvas px wide (narrower if the wall is short), leaving a character 72 px to walk through once the
@@ -116,7 +125,8 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
   where the floor reaches it (the Open Plan, the Kitchen), else centred along the top (the Lounge's octagon). A room
   drawn with the Room Builder places its name the same way.
 - Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
-  the room's stroke: one change, one undo, the room selected.
+  the room's stroke: one change, one undo, every piece selected
+  ([Placing selects every piece](#placing-selects-every-piece)).
 - Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
   (DEFAULTS.md D226):
 

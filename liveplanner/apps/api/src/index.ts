@@ -27,6 +27,7 @@ import { handleAccount } from './routes/account';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
+import { handleCommunity } from './routes/community';
 import { handleOpenapi } from './routes/openapi';
 import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleProjects } from './routes/projects';
@@ -322,6 +323,9 @@ async function routeApiRequest(
       return await handleEvents(ctx);
     case 'share':
       return await handleShare(ctx);
+    // My Shares (docs/specs/025-community/community.md "My Shares").
+    case 'community':
+      return await handleCommunity(ctx);
     case 'projects':
       return await handleProjects(ctx);
     case 'folders':

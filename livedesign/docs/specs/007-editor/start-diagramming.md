@@ -34,6 +34,9 @@ are, the panel draws them.
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. With no name beginning so, there is no Best Match and the
   groups lead.
+- **The Community joins the search.** A Community tile ([From the Community](#from-the-community)) matches when every
+  word of the search is in its title, listed after its group's matching templates, and may lead under Best Match as
+  a template would.
 - **The start is the whole catalogue.** It holds every listed Pages template; there is no bigger picker behind it.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
@@ -64,6 +67,27 @@ there).
 
 Every listed template is in exactly one group, so every one is reachable. Blank
 Illustration is not offered: closing the panel leaves the same empty tab.
+
+### From the Community
+
+After each catalogue category's templates come up to three of people's Community posts in that category, the
+month's most liked (at least five likes in 30 days), as the platform spec says ([007-community "Start
+With"](../../../../liveworkspace/docs/specs/007-community/community.md#start-with)). The Community's categories are
+the template categories (`TEMPLATE_CATEGORIES`), so a post sits beside the templates it was filed with. Recommended
+and Blank Pages keep to templates: they are no category of the catalogue's, and neither are the other catalogues a
+design picks from (a logo's layouts, a wireframe's sections), so no Community tile shows there.
+
+Each tile is the post's live card image (`communityImagePath`, on the api), its title, the first line of its
+description and its credit ("By Ada", or "Shared anonymously") in the panel's muted ink, badged **Community**; a
+screen reader hears "<title> from the Community". The rail's counts are the templates' alone, so they do not change
+as tiles arrive.
+
+The posts load once a session, the first time a start opens (`useCommunityStart`, never on the editor's load),
+and arrive after the panel has painted: they join the end of each group's grid, below what is drawn, so nothing
+moves. With the Community switched off, unreachable or empty, the start is its templates alone and says nothing.
+Choosing a tile does not touch the tab: it makes the person's own copy of the post's design through its community
+link (`/design/shared?s=<code>&copy=1`, the Community page's Make a Copy), which counts as a copy and opens the
+copy.
 
 ## When it shows
 
@@ -156,7 +180,8 @@ through its `footer`, in the panel's own colours.
 
 ## Telemetry
 
-A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
+A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A Community tile chosen fires
+`Community · Copied · StartWith`.
 
 ## Tests
 
@@ -166,7 +191,11 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when the start shows.
-- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top.
+- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top; from the
+  Community: tiles after a category's templates with their badge, none in Recommended or Blank Pages, the rail's
+  counts unchanged, search, choosing one (the telemetry and the copy link), nothing while closed or switched off.
+- `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
+  in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
   back), `hooks/editor/page-edits.test.ts` (the last page).

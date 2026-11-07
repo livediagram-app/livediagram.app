@@ -49,7 +49,7 @@ afterEach(() => {
 const INPUT = {
   title: 'Quarterly report',
   description: 'Our quarter on one page, with the numbers that matter.',
-  category: 'articles' as const,
+  category: 'reports' as const,
   tags: ['report'],
   anonymous: true,
 };

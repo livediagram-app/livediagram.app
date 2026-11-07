@@ -115,7 +115,8 @@ livehuddle keeps every feature the platform gives all its apps, and cuts only wh
 - **Google Drive sync** (above), the platform service
   ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)).
 - **The Community** ([Community](../025-community/community.md)): publishing a Space to the gallery at
-  `/community`, on the platform's Community service, with categories for meetings and workshops.
+  `/community`, on the platform's Community service, filed under its template categories, its best also shown in
+  Start a Space.
 - **The REST API and API tokens** ([Public API and tokens](../015-api/public-api-and-tokens.md)): a script finds,
   reads, creates and changes Spaces. The MCP server and the CLI went later
   ([Not in livehuddle](not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).

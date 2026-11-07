@@ -35,7 +35,13 @@ import {
 import { getProject, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { projectDates, isProjectSource } from '@liveplanner/api-schema';
-import { redactProjectForReader, redactProjectForScope } from '../redact-project';
+import {
+  redactProjectForCommunity,
+  redactProjectForReader,
+  redactProjectForScope,
+} from '../redact-project';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
+import { readOwnerCommunityState } from '../plan-room/community-post';
 import { answerOverview, parseViewQuery } from './project-views-route';
 import { handleProjectSharedTabs } from './project-shared-tabs-route';
 import { relayProjectRename } from '../room-client';
@@ -54,6 +60,7 @@ import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleProjectIndexRoutes, handleProjectList } from './project-index-routes';
 import { resolvePlanGrant } from './plan-grant';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateGrant,
   grantCallerOf,
@@ -239,9 +246,9 @@ async function startedProject(ctx: PlanRouteContext, id: string): Promise<Projec
 // /api/projects/<id>/tabs: the plan's tabs alone, `{ tabs: [{ id, name, kind }] }` (@liveworkspace/index-app
 // tabs.ts), for the Share dialog's tab picker on liveworkspace.app, which would otherwise read the whole plan. Gated
 // like a read: a miss is 404; a tab's share link sees its own tab alone. The kind is the plan's word for the tab
-// (board, sheet, dashboard, form, or diagram for an ordinary tab).
+// (board, sheet, dashboard, form, or diagram for an ordinary tab). A Community post's link lists every tab.
 async function projectTabs(ctx: PlanRouteContext, id: string): Promise<Response> {
-  const grant = await gateGrant(ctx, id);
+  const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
   if (!grant) return notFound();
   const rows = await readPlanTabs(ctx.env, id);
   if (rows.length === 0 && !(await readPlanMeta(ctx.env, id))) return notFound();
@@ -470,16 +477,26 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
       // guessed id can't probe existence.
       const view = parseViewQuery(new URL(request.url), 'project');
       if (view instanceof Response) return view;
-      const grant = await gateGrant(ctx, id);
+      const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       const d = await startedProject(ctx, id);
       if (!d) return missingProject(ctx, id);
-      // Redacted for every non-owner (redact-project.ts); a tab-scoped visitor
+      // Redacted for every non-owner (redact-project.ts); a Community visitor sees the post's redactions
+      // (docs/specs/025-community/community.md "Viewing a post's plan"); a tab-scoped visitor
       // (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
-      const reader = redactProjectForReader(d, ctx.resolveOwner());
-      const liveDoc = redactProjectForScope(reader, grant.tabScope);
+      // The owner's read carries their post's state, for the header's Public badge after a reload.
+      const caller = ctx.resolveOwner();
+      const own =
+        caller !== null && caller === d.ownerId
+          ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
+          : d;
+      const reader = redactProjectForReader(own, caller);
+      const liveDoc = redactProjectForScope(
+        grant.community ? redactProjectForCommunity(reader) : reader,
+        grant.tabScope,
+      );
       // The overview view (docs/specs/024-agents/project-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ project: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -523,6 +540,13 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
   {
     const sharedTabsResp = await handleProjectSharedTabs(ctx);
     if (sharedTabsResp) return sharedTabsResp;
+  }
+
+  // /api/projects/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md "Publishing").
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   const subResp = await handleProjectSubresources(ctx);

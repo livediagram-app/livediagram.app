@@ -174,7 +174,7 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
 const body = {
   title: 'Harbour logo',
   description: 'A mark for a seaside cafe, in three colourways.',
-  category: 'logos',
+  category: 'branding',
   tags: ['Branding'],
   anonymous: false,
 };
@@ -370,7 +370,7 @@ describe('owner routes', () => {
       post: {
         id: post.id,
         title: 'Harbour logo',
-        category: 'logos',
+        category: 'branding',
         tags: ['branding'],
         state: 'listed',
         author: { name: 'Ada', color: '#f97316' },

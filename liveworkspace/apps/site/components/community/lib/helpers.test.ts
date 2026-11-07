@@ -46,6 +46,20 @@ describe('links', () => {
     expect(links.embed({ app: 'livedesign.app', shareCode: 'S1' })).toBe('/embed?s=S1');
   });
 
+  it("opens and copies liveplanner's plans at its project addresses (Open Plan, Make a Copy)", () => {
+    const links = communityLinks('liveplanner.app', origin);
+    expect(links.openDocument({ app: 'liveplanner.app', shareCode: 'S 1' })).toBe(
+      '/project/shared?s=S%201',
+    );
+    expect(links.makeCopy({ app: 'liveplanner.app', shareCode: 'S1' })).toBe(
+      '/project/shared?s=S1&copy=1',
+    );
+    expect(links.editDocument({ app: 'liveplanner.app', documentId: 'p1' })).toBe('/project/p1');
+    expect(communityLinks(null, origin).makeCopy({ app: 'liveplanner.app', shareCode: 'S1' })).toBe(
+      'https://www.liveplanner.app/project/shared?s=S1&copy=1',
+    );
+  });
+
   it('leads every post away from liveworkspace.app, and Share Your Own to its Explorer', () => {
     const links = communityLinks(null, origin);
     expect(links.post({ id: 'p1', app: 'livediagram.app' }).external).toBe(true);

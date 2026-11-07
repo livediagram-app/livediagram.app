@@ -17,6 +17,8 @@ import {
   statusRedirect,
   wwwRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
+import { siteOfApp } from '@liveworkspace/sites';
+import { routeCommunity, type CommunityRouteSite } from '@liveworkspace/community-site/router';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -33,6 +35,9 @@ export interface Env {
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
   DEPLOY_ENV?: string;
+  // liveworkspace's Community service (liveworkspace/docs/specs/007-community/community.md), read for the Community
+  // page's head and its sitemap. Unset means production's.
+  COMMUNITY_URL?: string;
   // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
   // (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
@@ -56,6 +61,14 @@ const API_PATH = '/api';
 const INDEX_PATH = '/api/index';
 const TELEMETRY_PATH = '/telemetry';
 const HELP_PATH = '/help';
+
+// Whose Community the page at /community is here: liveplanner's posts, at its canonical address, in its words.
+const COMMUNITY_SITE: CommunityRouteSite = {
+  app: 'liveplanner.app',
+  siteUrl: siteOfApp('liveplanner').url,
+  product: 'liveplanner',
+  nouns: 'plans',
+};
 
 // The editor app's top-level page route segments. These serve at CLEAN
 // URLs (no `/live` prefix) — the editor worker's `out/` files are already
@@ -220,6 +233,15 @@ async function route(request: Request, env: Env): Promise<Response> {
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
   const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
   if (www) return www;
+  // The Community page is liveworkspace's, one page for every app (liveworkspace/docs/specs/007-community/
+  // community.md "One page for every app"), served here at /community scoped to liveplanner: its head made this
+  // app's own and its sitemap answered here (@liveworkspace/community-site/router).
+  const community = routeCommunity(request, {
+    site: COMMUNITY_SITE,
+    communityUrl: env.COMMUNITY_URL,
+    forward: (req) => routeToWorkspace(req, { app: 'liveplanner', origin: env.WORKSPACE_ORIGIN }),
+  });
+  if (community) return community;
   // liveworkspace's Explorer under this address, while liveplanner's switch is on (@liveworkspace/sites/workspace-proxy):
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, { app: 'liveplanner', origin: env.WORKSPACE_ORIGIN });

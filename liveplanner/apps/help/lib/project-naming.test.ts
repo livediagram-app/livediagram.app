@@ -36,6 +36,17 @@ const DOM_DOCUMENT =
 const SHARED_PLATFORM =
   /OpenApiDocument|OpenAPI document|X-Media-Document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
 
+// The Community service's contract, shared by every app (liveworkspace/docs/specs/007-community/community.md): a
+// post's `documentId` and `document_state`, the Share tab's `documentName`, the `empty_document` and `team_document`
+// refusals, read only in the Community's own files and the generated schemas; the shared help slug
+// `finding-community-documents` anywhere; and the `documentName` prop handed to the shared Community tab.
+const COMMUNITY_CONTRACT =
+  /\bdocumentId\b|\bdocument_state\b|\bdocumentName\b|\b(empty|team)_document\b/;
+const COMMUNITY_FILE = /community|\/openapi\/schemas\.generated\.ts$/i;
+const COMMUNITY_ANYWHERE = /finding-community-documents|^\s*documentName=\{\w+\}$/;
+const sharedCommunity = (line: string, file: string) =>
+  COMMUNITY_ANYWHERE.test(line) || (COMMUNITY_FILE.test(file) && COMMUNITY_CONTRACT.test(line));
+
 // Every app's own items named together (closing an account deletes them all), and the documents of the old
 // livediagram.app that the migration brings over.
 const OTHER_APP_ITEMS =
@@ -56,12 +67,13 @@ const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
 // A line stating the rule itself.
 const RULE = /never "document"/;
 const NAMED = /document/i;
-const misnames = (line: string) =>
+const misnames = (line: string, file = '') =>
   NAMED.test(line.replace(DOM_WORDS, '').replace(OTHER_APP_NAME, '')) &&
   !DOM_DOCUMENT.test(line) &&
   !FLOWCHART_DOCUMENT.test(line) &&
   !PAGE_SEARCH_WORDS.test(line) &&
   !SHARED_PLATFORM.test(line) &&
+  !sharedCommunity(line, file) &&
   !OTHER_APP_ITEMS.test(line) &&
   !OTHER_APP_PATHS.test(line) &&
   !RULE.test(line);
@@ -85,7 +97,7 @@ describe('a project is never called a document', () => {
       const text = readFileSync(`${ROOT}/${file}`, 'utf8');
       if (!NAMED.test(text)) continue;
       text.split('\n').forEach((line, i) => {
-        if (!misnames(line)) return;
+        if (!misnames(line, file)) return;
         misnamed.push(`${file}:${i + 1}: ${line.trim().slice(0, 120)}`);
       });
     }

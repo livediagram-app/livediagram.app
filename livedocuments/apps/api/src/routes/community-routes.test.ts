@@ -170,7 +170,7 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
 const body = {
   title: 'Quarterly report',
   description: 'How the quarter went, in four pages.',
-  category: 'articles',
+  category: 'reports',
   tags: ['Finance'],
   anonymous: false,
 };
@@ -324,7 +324,7 @@ describe('owner routes', () => {
       post: {
         id: post.id,
         title: 'Quarterly report',
-        category: 'articles',
+        category: 'reports',
         tags: ['finance'],
         state: 'listed',
         author: { name: 'Ada', color: '#f97316' },

@@ -35,6 +35,8 @@ export interface Sources {
   /** An image's bytes, or null when it is gone. */
   imageBytes(id: string): Promise<Uint8Array | null>;
   doors: Pick<AppDoors, 'exportFile' | 'exportSvg' | 'exportTables' | 'exportComments'>;
+  /** Whether the service has the app's origin and key: an app it can't reach is never asked for an item. */
+  reachable(app: App): boolean;
   ready(call: ExportReadyCall): Promise<void>;
 }
 
@@ -135,6 +137,8 @@ export function createSources(env: Env, count: () => void = () => {}): Sources {
     },
 
     doors,
+
+    reachable: (app) => Boolean(appOrigin(env, app) && appKey(env, app)),
 
     async ready(call) {
       const res = await accounts(DATA_EXPORT_READY_PATH, {

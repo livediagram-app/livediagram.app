@@ -5,12 +5,17 @@ import {
   COMMUNITY_COUNTED_PER_NETWORK,
   COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
+  COMMUNITY_START_MIN_LIKES,
   EMPTY_COMMUNITY_QUERY,
+  isCommunityCategoryOf,
   type CommunityApp,
   type CommunityAppPublish,
   type CommunityListQuery,
   type CommunityPostInput,
 } from '@liveworkspace/community';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   forgetCopier,
@@ -31,10 +36,13 @@ import {
   listHiddenSince,
   listPosts,
   listRelatedPosts,
+  listStartPosts,
   mineTotals,
+  START_POSTS_SQL,
   syncDocuments,
   updatePost,
 } from './posts';
+import { startResponse } from './public-routes';
 import { rowCategory, rowToPost } from './rows';
 import { testDb, type TestDb } from './test-sqlite-d1';
 
@@ -45,7 +53,7 @@ const LP: CommunityApp = 'liveplanner.app';
 const input = (patch: Partial<CommunityPostInput> = {}): CommunityPostInput => ({
   title: 'Payments platform',
   description: 'How our payment services talk to each other.',
-  category: 'architecture',
+  category: 'software',
   tags: ['aws', 'event-driven'],
   anonymous: false,
   ...patch,
@@ -148,18 +156,20 @@ describe('publishing', () => {
 
 describe("a post's category", () => {
   it('reads one its app no longer offers as Something Else, and leaves the row alone', async () => {
-    await publish('d1', { category: 'workshops' }, 1000, 'livehuddle.app');
+    // A retired id, as a row from before it was retired holds it.
+    await publish('d1', { category: 'workshops' as never }, 1000, 'livehuddle.app');
     const row = (await getPostForDocument(db.env, 'livehuddle.app', 'd1'))!;
     expect(row.category).toBe('workshops');
     expect(rowToPost(row, false).category).toBe('other');
-    // livediagram still has Workshops.
-    expect(rowCategory({ app: LD, category: 'workshops' })).toBe('workshops');
-    expect(rowCategory({ app: 'livehuddle.app', category: 'retrospectives' })).toBe('other');
-    expect(rowCategory({ app: 'livehuddle.app', category: 'socials' })).toBe('socials');
+    // An id one app retired and another still offers reads by the post's own app.
+    expect(rowCategory({ app: LD, category: 'architecture' })).toBe('other');
+    expect(rowCategory({ app: LD, category: 'meetings' })).toBe('meetings');
+    expect(rowCategory({ app: 'livehuddle.app', category: 'meetings' })).toBe('other');
+    expect(rowCategory({ app: 'livehuddle.app', category: 'recreation' })).toBe('recreation');
   });
 
   it("falls back to any app's categories for a row whose app is unknown", () => {
-    expect(rowCategory({ app: 'nope.app', category: 'logos' })).toBe('logos');
+    expect(rowCategory({ app: 'nope.app', category: 'branding' })).toBe('branding');
     expect(rowCategory({ app: 'nope.app', category: 'nope' })).toBe('other');
   });
 });
@@ -220,12 +230,12 @@ describe('public reads', () => {
     await publish('d1', { title: 'Cloud map', tags: ['aws'] });
     await publish('d2', {
       title: 'Sprint retro',
-      category: 'workshops',
+      category: 'retros',
       tags: ['agile'],
       description: 'What went well and what did not.',
     });
     await publish('d3', { title: 'Cloud costs', category: 'planning', tags: ['finops'] });
-    expect(await list({ category: 'workshops' })).toEqual(['Sprint retro']);
+    expect(await list({ category: 'retros' })).toEqual(['Sprint retro']);
     expect(await list({ tag: 'aws' })).toEqual(['Cloud map']);
     expect((await list({ q: 'cloud' })).sort()).toEqual(['Cloud costs', 'Cloud map']);
     expect(await list({ q: 'cloud FINOPS' })).toEqual(['Cloud costs']);
@@ -292,11 +302,11 @@ describe('public reads', () => {
   it('counts categories and popular tags', async () => {
     await publish('d1', { tags: ['aws', 'k8s'] });
     await publish('d2', { tags: ['aws'] });
-    await publish('d3', { category: 'art', tags: [] });
+    await publish('d3', { category: 'ideas', tags: [] });
     await publish('d4', { tags: ['aws'] }, 1000, LP);
     expect(await facets(db.env, LD)).toEqual({
       total: 3,
-      categories: { architecture: 2, art: 1 },
+      categories: { software: 2, ideas: 1 },
       tags: [
         { tag: 'aws', count: 2 },
         { tag: 'k8s', count: 1 },
@@ -308,10 +318,10 @@ describe('public reads', () => {
     const a = await publish('d1', { title: 'A' });
     const b = await publish('d2', { title: 'B' });
     const c = await publish('d3', { title: 'C' });
-    await publish('d4', { title: 'D', category: 'art' });
+    await publish('d4', { title: 'D', category: 'ideas' });
     await publish('d5', { title: 'E' }, 1000, LP);
     await setLike(db.env, c, 'k1', true, 'n1');
-    const related = await listRelatedPosts(db.env, LD, a, 'architecture');
+    const related = await listRelatedPosts(db.env, LD, a, 'software');
     expect(related.map((r) => r.id)).toEqual([c, b]);
   });
 });
@@ -471,5 +481,210 @@ describe('featured on the home page', () => {
     expect(rows).toHaveLength(6);
     expect(rows.map((r) => r.title)).not.toContain('P7');
     expect(rows.map((r) => r.title)).not.toContain('Plan');
+  });
+});
+
+describe('Start With', () => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const NOW = 400 * DAY;
+  // `n` likes on a post from `n` browsers on `n` networks, `ago` days before NOW.
+  const likes = async (postId: string, n: number, ago = 1) => {
+    for (let i = 0; i < n; i++) {
+      await setLike(db.env, postId, `${postId}-k${i}`, true, `${postId}-n${i}`, NOW - ago * DAY);
+    }
+  };
+  const start = async (app: CommunityApp = LD) =>
+    startResponse(await listStartPosts(db.env, app, NOW)).categories;
+  const titles = (posts: { title: string }[] | undefined) => (posts ?? []).map((p) => p.title);
+
+  it('gives each category its three most liked of the month, best first, a category with none absent', async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 4; i++) ids.push(await publish(`s${i}`, { title: `S${i}` }, i));
+    const retro = await publish('r1', { title: 'Retro', category: 'retros' }, 9);
+    await publish('q1', { title: 'Quiet', category: 'ideas' }, 10);
+    await likes(ids[0]!, COMMUNITY_START_MIN_LIKES + 1);
+    await likes(ids[1]!, COMMUNITY_START_MIN_LIKES + 3);
+    await likes(ids[2]!, COMMUNITY_START_MIN_LIKES);
+    await likes(ids[3]!, COMMUNITY_START_MIN_LIKES + 2);
+    await likes(retro, COMMUNITY_START_MIN_LIKES);
+    const categories = await start();
+    expect(titles(categories.software)).toEqual(['S1', 'S3', 'S0']);
+    expect(titles(categories.retros)).toEqual(['Retro']);
+    expect(categories.ideas).toBeUndefined();
+    expect(Object.keys(categories).sort()).toEqual(['retros', 'software']);
+    expect(categories.software![0]).toEqual({
+      id: ids[1],
+      app: LD,
+      title: 'S1',
+      category: 'software',
+      shareCode: 'code-s1',
+      likeCount: COMMUNITY_START_MIN_LIKES + 3,
+      copyCount: 0,
+      anonymous: false,
+      authorName: 'Ada',
+      line: 'How our payment services talk to each other.',
+    });
+  });
+
+  it(`needs ${COMMUNITY_START_MIN_LIKES} likes inside the last 30 days`, async () => {
+    const few = await publish('d1', { title: 'Few' }, 1);
+    const old = await publish('d2', { title: 'Old' }, 2);
+    const fresh = await publish('d3', { title: 'Fresh' }, 3);
+    await likes(few, COMMUNITY_START_MIN_LIKES - 1);
+    await likes(old, COMMUNITY_START_MIN_LIKES + 5, 31);
+    await likes(fresh, COMMUNITY_START_MIN_LIKES, 29);
+    expect(titles((await start()).software)).toEqual(['Fresh']);
+  });
+
+  it('counts at most five likes from one network', async () => {
+    const crowd = await publish('d1', { title: 'One network' }, 1);
+    for (let i = 0; i < 20; i++) await setLike(db.env, crowd, `k${i}`, true, 'one', NOW - DAY);
+    expect(COMMUNITY_COUNTED_PER_NETWORK).toBeLessThanOrEqual(COMMUNITY_START_MIN_LIKES);
+    const spread = await publish('d2', { title: 'Many networks' }, 2);
+    await likes(spread, COMMUNITY_START_MIN_LIKES + 1);
+    expect(titles((await start()).software)).toEqual(['Many networks', 'One network']);
+  });
+
+  it('breaks a tie on copies, then on the newest', async () => {
+    const a = await publish('d1', { title: 'Older' }, 1);
+    const b = await publish('d2', { title: 'Newer' }, 2);
+    const c = await publish('d3', { title: 'Copied' }, 0);
+    for (const id of [a, b, c]) await likes(id, COMMUNITY_START_MIN_LIKES);
+    await recordCopy(db.env, c, 'p1', 'n1');
+    expect(titles((await start()).software)).toEqual(['Copied', 'Newer', 'Older']);
+  });
+
+  it("is only the app's own public posts", async () => {
+    const hidden = await publish('d1', { title: 'Hidden' }, 1);
+    const closed = await publish('d2', { title: 'Closed' }, 2);
+    const plan = await publish('p1', { title: 'Plan', category: 'planning' }, 3, LP);
+    const shown = await publish('d3', { title: 'Shown', category: 'planning' }, 4);
+    for (const id of [hidden, closed, plan, shown]) await likes(id, COMMUNITY_START_MIN_LIKES);
+    db.sql.prepare("UPDATE posts SET state = 'hidden' WHERE id = ?").run(hidden);
+    await syncDocuments(db.env, LD, { documents: [{ document: 'd2', state: 'closed' }], gone: [] });
+    expect(await start()).toEqual({ planning: [expect.objectContaining({ title: 'Shown' })] });
+    expect(titles((await start(LP)).planning)).toEqual(['Plan']);
+  });
+
+  it('reads a retired id as Something Else, still at most three there', async () => {
+    for (let i = 0; i < 4; i++) {
+      const id = await publish(`d${i}`, { title: `R${i}`, category: 'other' }, i);
+      db.sql.prepare("UPDATE posts SET category = 'architecture' WHERE id = ?").run(id);
+      await likes(id, COMMUNITY_START_MIN_LIKES + i);
+    }
+    expect(titles((await start()).other)).toEqual(['R3', 'R2', 'R1']);
+  });
+
+  it("stays one statement on its indexes: the app's posts, their month of likes, each post by its key", () => {
+    const plan = db.sql
+      .prepare(`EXPLAIN QUERY PLAN ${START_POSTS_SQL}`)
+      .all(5, 0, LD, 5, LD, 3)
+      .map((row) => String((row as { detail: string }).detail));
+    // The app's posts on an (app, state, document_state) index, each one's month of likes on the covering index.
+    expect(plan.some((d) => /SEARCH q USING INDEX idx_posts_\w+ \(app=\?/.test(d))).toBe(true);
+    expect(plan.some((d) => d.includes('COVERING INDEX idx_likes_post_created'))).toBe(true);
+    // Never a walk of the whole posts or likes table.
+    expect(plan.filter((d) => /\bSCAN (p|q|l|posts|likes)\b/.test(d))).toEqual([]);
+    expect(plan.some((d) => /SEARCH p USING .*INDEX/.test(d))).toBe(true);
+  });
+
+  it('answers a busy month quickly', async () => {
+    // 2,000 posts over seven categories, 20,000 likes in the window.
+    const insertPost = db.sql.prepare(
+      `INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, title, description,
+         category, search_text, published_at, updated_at)
+       VALUES (?, 'livediagram.app', ?, ?, 'o', 'A', '#000000', 'P', 'A post.', ?, 'p', ?, ?)`,
+    );
+    const insertLike = db.sql.prepare(
+      'INSERT INTO likes (post_id, liker_key, network_hash, created_at) VALUES (?, ?, ?, ?)',
+    );
+    const categories = [
+      'ideas',
+      'decisions',
+      'goals',
+      'meetings',
+      'people',
+      'planning',
+      'software',
+    ];
+    db.sql.exec('BEGIN');
+    for (let i = 0; i < 2000; i++) {
+      insertPost.run(`post${i}`, `doc${i}`, `code${i}`, categories[i % categories.length]!, i, i);
+      for (let j = 0; j < 10; j++) insertLike.run(`post${i}`, `k${i}-${j}`, `n${j}`, NOW - DAY);
+    }
+    db.sql.exec('COMMIT');
+    let answer: Awaited<ReturnType<typeof start>> = {};
+    const took = await cpuMsOfAsync(async () => {
+      answer = await start();
+    });
+    expect(Object.keys(answer)).toHaveLength(categories.length);
+    for (const list of Object.values(answer)) expect(list).toHaveLength(3);
+    // A CPU-time budget for a shared CI runner, far above what it takes.
+    expect(took).toBeLessThan(cpuBudgetMs(1000));
+  });
+});
+
+describe('moving to the template categories (migration 0003)', () => {
+  const MIGRATION = readFileSync(
+    fileURLToPath(new URL('../migrations/0003_template_categories.sql', import.meta.url).href),
+    'utf8',
+  );
+  const OLD: [CommunityApp, string, string][] = [
+    [LD, 'architecture', 'software'],
+    [LD, 'flows', 'processes'],
+    [LD, 'planning', 'planning'],
+    [LD, 'workshops', 'meetings'],
+    [LD, 'mindmaps', 'ideas'],
+    [LD, 'design', 'product'],
+    [LD, 'data', 'software'],
+    [LD, 'learning', 'learning'],
+    [LD, 'infographics', 'other'],
+    [LD, 'art', 'other'],
+    [LD, 'other', 'other'],
+    [LP, 'projects', 'planning'],
+    [LP, 'roadmaps', 'planning'],
+    [LP, 'workflows', 'planning'],
+    [LP, 'trackers', 'planning'],
+    [LP, 'budgets', 'finance'],
+    [LP, 'events', 'events'],
+    [LP, 'forms', 'other'],
+    [LP, 'dashboards', 'planning'],
+    [LP, 'personal', 'personal'],
+    ['livedocuments.app', 'articles', 'reports'],
+    ['livedocuments.app', 'decks', 'pitches'],
+    ['livedocuments.app', 'infographics', 'marketing'],
+    ['livedocuments.app', 'guides', 'team'],
+    ['livedocuments.app', 'proposals', 'plans'],
+    ['livedocuments.app', 'newsletters', 'team'],
+    ['livedocuments.app', 'learning', 'learning'],
+    ['livedesign.app', 'logos', 'branding'],
+    ['livedesign.app', 'wireframes', 'websites'],
+    ['livedesign.app', 'photos', 'photos'],
+    ['livedesign.app', 'social', 'social'],
+    ['livedesign.app', 'posters', 'other'],
+    ['livedesign.app', 'illustrations', 'branding'],
+    ['livehuddle.app', 'offices', 'office'],
+    ['livehuddle.app', 'meetings', 'office'],
+    ['livehuddle.app', 'socials', 'recreation'],
+    ['livehuddle.app', 'communities', 'recreation'],
+    ['livehuddle.app', 'learning', 'events'],
+    ['livehuddle.app', 'workshops', 'other'],
+  ];
+
+  it("moves every old id to its app's closest new one, or Something Else, and is safe to run twice", async () => {
+    const insert = db.sql.prepare(
+      `INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, title, description,
+         category, search_text, published_at, updated_at)
+       VALUES (?, ?, ?, ?, 'o', 'A', '#000000', 'P', 'A post.', ?, 'p', 1, 1)`,
+    );
+    OLD.forEach(([app, category], i) => insert.run(`m${i}`, app, `doc${i}`, `code${i}`, category));
+    db.sql.exec(MIGRATION);
+    db.sql.exec(MIGRATION);
+    const moved = db.sql.prepare('SELECT category FROM posts WHERE id = ?');
+    OLD.forEach(([app, from, to], i) => {
+      const row = moved.get(`m${i}`) as { category: string };
+      expect(row.category, `${app} ${from}`).toBe(to);
+      expect(isCommunityCategoryOf(app, row.category), `${app} ${to}`).toBe(true);
+    });
   });
 });

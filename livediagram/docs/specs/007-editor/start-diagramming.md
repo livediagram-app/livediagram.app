@@ -42,6 +42,9 @@ draws them.
   longer one, then in the order the groups list them. Typing "flowchart" leads with Flowchart, though Design's
   Service Blueprint, which matches through its search words, comes earlier in the rail. With no name beginning so,
   there is no Best Match and the groups lead as before.
+- **The Community joins the search.** A Community tile ([From the Community](#from-the-community)) matches when every
+  word of the search is in its title, listed after its group's matching templates, and may lead under Best Match as
+  a template would. Another mode's results stay templates only.
 - **There is no way out to a bigger picker.** Each start holds every listed template of its mode, the mode switch
   reaches the others, and a search finds a template in any mode; the start is the whole catalogue. There is no modal of every template ([New document route](new-document-route.md)).
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
@@ -77,6 +80,24 @@ every start's rail with no change here.
 
 Every listed template of the mode has a primary category, so every one is reachable. The blank appears only in
 Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
+
+### From the Community
+
+After each group's templates come up to three of people's Community posts in that category, the month's most liked
+(at least five likes in 30 days), as the platform spec says ([007-community "Start
+With"](../../../../liveworkspace/docs/specs/007-community/community.md#start-with)). The groups are the Community's
+categories (the Community's categories are the template categories), so a post sits beside the templates it was
+filed with. Each tile is the post's live card image, its title, the first line of its description and its credit
+("By Ada", or "Shared anonymously") in the panel's muted ink, badged **Community**; a screen reader hears "<title>,
+from the Community". Recommended keeps to templates, and the rail's counts are the templates' alone, so they do not
+change as tiles arrive. A group the mode leaves out of its rail has no tiles in that mode.
+
+The posts load once a session, the first time a start opens (`useCommunityStart`, never on the editor's load),
+and arrive after the panel has painted: they join the end of each group's grid, below what is drawn, so nothing
+moves. With the Community switched off, unreachable or empty, the start is its templates alone and says nothing.
+Choosing a tile does not touch the tab: it makes the person's own copy of the post's diagram through its community
+link (`/document/shared?s=<code>&copy=1`, the Community page's Make a Copy), which counts as a copy and opens the
+copy.
 
 ## When it shows
 
@@ -207,7 +228,8 @@ through its `footer`, in the panel's own colours.
 ## Telemetry
 
 A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A template chosen from another mode's
-results also fires `UI · Used · StartOtherMode`, so how often a search crosses modes is measurable.
+results also fires `UI · Used · StartOtherMode`, so how often a search crosses modes is measurable. A Community tile
+chosen fires `Community · Copied · StartWith`.
 
 ## Tests
 
@@ -222,7 +244,11 @@ results also fires `UI · Used · StartOtherMode`, so how often a search crosses
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: titles per mode, choosing, the blank closing, the per-mode close,
-  scroll to top.
+  scroll to top; from the Community: tiles after a group's templates with their badge, none in Recommended, the
+  rail's counts unchanged, search, choosing one (the telemetry and the copy link), nothing while closed or switched
+  off.
+- `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
+  in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/StartModeSwitch.test.tsx`, `hooks/editor/useEditorMode.test.tsx`.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

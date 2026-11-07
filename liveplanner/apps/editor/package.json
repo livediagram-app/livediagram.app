@@ -38,6 +38,7 @@
     "@liveplanner/ui": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:^",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
@@ -49,7 +50,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
-    "next": "^16.4.3",
+    "next": "^16.4.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

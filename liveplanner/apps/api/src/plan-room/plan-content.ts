@@ -5,11 +5,19 @@
 import {
   itemIdsShownOnTab,
   readItemTypeCatalogue,
+  typesOf,
   type ItemTypeCatalogue,
 } from '@liveplanner/items';
 import type { TabItemElement } from '@liveplanner/items';
 import { remapTabLinks, type Element } from '@liveplanner/project';
 import { redactTabDataAuthors } from '../comments';
+import {
+  COMMUNITY_PERSON,
+  redactItemRowForCommunity,
+  redactPlanTabDataForCommunity,
+  redactSheetCellRowsForCommunity,
+  responseSheetIds,
+} from '../community-redact';
 import { listItems } from '../db/items';
 import { insertLinkStatement, insertThreadStatement, listHomeThreads } from '../db/card-threads';
 import { threadForViewer, type CardThread } from '@liveplanner/project';
@@ -368,11 +376,15 @@ export async function readContentTabRows(
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only (and the items it shows).
 // `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
+// `community`: a copy through the plan's Community post's open link (docs/specs/025-community/community.md "Viewing a
+// post's plan") carries exactly what the link shows (community-redact.ts): no comment threads, no people, no votes,
+// and a form's responses without their answers.
 export async function exportPlanCopy(
   env: PlanEnv,
   planId: string,
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
+  community = false,
 ): Promise<PlanCopy | null> {
   const plan = await env.PLAN_DB.prepare(
     'SELECT item_types, items_rev, items_next_key FROM plan WHERE id = ?',
@@ -389,7 +401,11 @@ export async function exportPlanCopy(
       name: row.name,
       orderIndex: row.order_index,
       folder: row.folder,
-      data: redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped,
+      data: community
+        ? redactPlanTabDataForCommunity(remapped)
+        : redactAuthorsFor !== null
+          ? redactTabDataAuthors(remapped, redactAuthorsFor)
+          : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
       connection: storedTabConnection(row.connection),
@@ -417,21 +433,36 @@ export async function exportPlanCopy(
   )
     .bind(planId, sourceTabs)
     .all<Record<string, unknown>>();
-  const threads = await copiedThreads(
-    env,
-    planId,
-    itemIds === null ? null : new Set(itemIds),
-    redactAuthorsFor,
-  );
+  // A Community copy takes no conversation at all.
+  const threads = community
+    ? []
+    : await copiedThreads(
+        env,
+        planId,
+        itemIds === null ? null : new Set(itemIds),
+        redactAuthorsFor,
+      );
+  const itemRows = items.results ?? [];
+  const sheetRows = sheets.results ?? [];
+  const cellRows = cells.results ?? [];
+  const types = community ? typesOf(readItemTypeCatalogue(plan?.item_types ?? null)) : [];
+  const responseSheets = community ? responseSheetIds(rows) : new Set<string>();
+  const person = JSON.stringify(COMMUNITY_PERSON);
   return {
     itemTypes: plan?.item_types ?? null,
     itemsRev: plan?.items_rev ?? 0,
     itemsNextKey: plan?.items_next_key ?? 1,
     tabs,
-    items: items.results ?? [],
+    items: community ? itemRows.map((row) => redactItemRowForCommunity(row, types)) : itemRows,
     ...(threads.length ? { threads } : {}),
-    sheets: (sheets.results ?? []).map((s) => ({ ...s, tab_id: tabIdMap.get(String(s.tab_id)) })),
-    cells: cells.results ?? [],
+    sheets: sheetRows.map((s) => ({
+      ...s,
+      tab_id: tabIdMap.get(String(s.tab_id)),
+      ...(community ? { updated_by: person } : {}),
+    })),
+    cells: community
+      ? redactSheetCellRowsForCommunity(cellRows, sheetRows, responseSheets)
+      : cellRows,
   };
 }
 

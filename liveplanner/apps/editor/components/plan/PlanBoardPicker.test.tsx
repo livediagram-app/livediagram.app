@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanBoardPicker } from './PlanBoardPicker';
 
 let plan: { items: Map<string, unknown> } | null = null;
@@ -16,7 +16,17 @@ let justLeft = false;
 
 // docs/specs/026-plan/plan-mode.md "Starting a board": one panel, a rail of categories beside a grid of cards, and a
 // search across them.
-afterEach(cleanup);
+// Inspiration asks the Community for its tiles (StartPlanning.community.test.tsx covers them): none here, offline.
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => Response.json({ communityEnabled: false })),
+  );
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 const rail = (name: RegExp) =>
   within(screen.getByRole('navigation', { name: 'Categories' })).getByRole('button', { name });

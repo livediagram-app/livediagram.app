@@ -6,6 +6,8 @@
 import {
   COMMUNITY_ALL_APPS,
   COMMUNITY_APP_PARAM,
+  COMMUNITY_START_PER_CATEGORY,
+  communityStartPost,
   COMMUNITY_KEY_HEADER,
   COMMUNITY_REPORT_NOTE_MAX,
   isCommunityApp,
@@ -14,6 +16,7 @@ import {
   parseCommunityListQuery,
   type CommunityPost,
   type CommunityScope,
+  type CommunityStartResponse,
 } from '@liveworkspace/community';
 import { FEATURED_MAX_AGE_S, LIST_MAX_AGE_S, MAX_BODY_BYTES, SITEMAP_MAX_AGE_S } from './config';
 import { likedPostIds, recordReport, setLike } from './engagement';
@@ -28,6 +31,7 @@ import {
   listPosts,
   listRelatedPosts,
   listSitemap,
+  listStartPosts,
 } from './posts';
 import { rowToPost, type PostRow } from './rows';
 
@@ -121,6 +125,12 @@ export async function handlePublic(
         return edgeCached(env, ctx, appUrl(url, app), FEATURED_MAX_AGE_S, async () =>
           json({ posts: (await listFeaturedPosts(env, app)).map((row) => rowToPost(row, false)) }),
         );
+      // Start With's Community tiles: every category's best of the month, asked once when a template picker opens.
+      // The same for everyone, so the edge answers it for a minute, as the featured six.
+      case 'start':
+        return edgeCached(env, ctx, appUrl(url, app), FEATURED_MAX_AGE_S, async () =>
+          json(startResponse(await listStartPosts(env, app))),
+        );
       // What each app's sitemap lists. Crawlers read it rarely, so an hour at the edge is plenty.
       case 'sitemap':
         return edgeCached(env, ctx, appUrl(url, app), SITEMAP_MAX_AGE_S, async () =>
@@ -173,6 +183,18 @@ export async function handlePublic(
   // The answer is the same whether or not this report hid the post: a reporter learns nothing about
   // the others.
   return noContent();
+}
+
+// The rows by the category each reads as (a retired id reads as Something Else, so it is capped again there), each
+// list best first, a category with none absent.
+export function startResponse(rows: PostRow[]): CommunityStartResponse {
+  const categories: CommunityStartResponse['categories'] = {};
+  for (const row of rows) {
+    const post = rowToPost(row, false);
+    const list = (categories[post.category] ??= []);
+    if (list.length < COMMUNITY_START_PER_CATEGORY) list.push(communityStartPost(post));
+  }
+  return { categories };
 }
 
 // One edge cache entry per app and route, whatever else the URL carries.

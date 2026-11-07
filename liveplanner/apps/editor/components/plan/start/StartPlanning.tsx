@@ -3,7 +3,9 @@
 // Start Planning (docs/specs/026-plan/plan-mode.md "Starting a board"): an empty tab's start panel (StartPanel). A rail
 // of categories (Recommended, Boards, Spreadsheets, Dashboards, Inspiration) beside a grid of large cards, each a
 // picture of what it makes over its name, line and (a board's) card types; a search across all of them, which finds
-// only Plan's own. Choosing a card acts at once. In the tab's own light or dark look (planPalette).
+// only Plan's own. Choosing a card acts at once. In the tab's own light or dark look (planPalette). After Inspiration's
+// templates come the Community's tiles (community-start-cards.ts), each category's most liked posts of the month,
+// badged Community; choosing one opens the person's own copy of it.
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { DASHBOARD_PRESETS } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
@@ -16,7 +18,16 @@ import {
   lucideSquareKanban,
   lucideStar,
 } from '@liveworkspace/icons/lucide';
+import {
+  communityStartCardsIn,
+  communityStartHref,
+  findCommunityStartPost,
+  useCommunityStart,
+  withCommunityStartMatches,
+} from '@liveworkspace/community-ui/start';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
+import { API_BASE } from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
 import { StartSaveSwitch } from '@/components/start/StartSaveSwitch';
 import type { PlanTemplateKind } from '@liveplanner/templates';
 import type { Tab } from '@liveplanner/project';
@@ -34,6 +45,7 @@ import type { PlanVisualisation } from '@liveplanner/items';
 import {
   KIND_NAMES,
   START_CATEGORIES,
+  START_SEARCH_ORDER,
   itemsIn,
   searchStartItems,
   startItems,
@@ -43,6 +55,7 @@ import {
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
 import { useConnectStart } from '@/components/connect/useConnectStart';
+import { COMMUNITY_START_GROUP, communityStartTiles } from './community-start-cards';
 
 const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
   recommended: lucideGlyph(lucideStar, 16),
@@ -157,6 +170,7 @@ export function StartPlanning({
   onVisualisation,
   onForm,
   onImport,
+  leave = (href) => window.location.assign(href),
 }: {
   onPickBoard: (preset: string) => void;
   // Absent where sheets cannot be placed: Spreadsheets is left out.
@@ -176,11 +190,15 @@ export function StartPlanning({
   onForm?: ((starter: StarterId) => void) | undefined;
   // Opens the Import dialog on its list (an Editor's: plan-tabs.md "The Import dialog"); absent, no Import card.
   onImport?: (() => void) | undefined;
+  // Leaving for a Community tile's copy (a full navigation; tests watch it instead).
+  leave?: (href: string) => void;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
   // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
   const connect = useConnectStart();
+  // How the Community's tiles draw here: all in Inspiration, the credit in the panel's muted ink.
+  const tiles = communityStartTiles(palette);
   const plan = usePlan();
   const hasCards = (plan?.items.size ?? 0) > 0;
   // Fetched as the panel opens; the effect returns nothing (the fetch is a promise).
@@ -214,12 +232,29 @@ export function StartPlanning({
       onImport,
     ],
   );
+  // The Community's tiles join Inspiration: one read the first time the panel shows this session, none where
+  // Inspiration is left out.
+  const community = useCommunityStart(
+    {
+      app: 'liveplanner.app',
+      communityApi: process.env.NEXT_PUBLIC_COMMUNITY_API,
+      apiBase: API_BASE,
+    },
+    !!onTemplate,
+  );
   const categories = START_CATEGORIES.filter((c) => itemsIn(items, c.id).length > 0).map((c) => ({
     ...c,
     icon: RAIL_ICONS[c.id],
     below: c.id === 'inspiration',
   }));
   const choose = (id: string) => {
+    const post = findCommunityStartPost(community, id);
+    if (post) {
+      // Your own copy, through the post's community link, as the gallery's Make a Copy (and counted as one).
+      track('Community', 'Copied', 'StartWith');
+      leave(communityStartHref(post));
+      return;
+    }
     const item = items.find((i) => i.id === id);
     if (!item) return;
     if (item.kind === 'board') onPickBoard(item.preset);
@@ -242,17 +277,26 @@ export function StartPlanning({
       palette={palette}
       categories={categories}
       initialCategory="recommended"
-      cardsIn={(category) =>
-        itemsIn(items, category).map((item) => toCard(item, palette, category === 'recommended'))
-      }
-      search={(query) =>
-        searchStartItems(items, query).map((g) => ({
+      cardsIn={(category) => [
+        ...itemsIn(items, category).map((item) =>
+          toCard(item, palette, category === 'recommended'),
+        ),
+        ...communityStartCardsIn(community, category, tiles),
+      ]}
+      // The rail counts Start Planning's own: the Community's tiles arriving never change it.
+      countIn={(category) => itemsIn(items, category).length}
+      search={(query) => {
+        const found = searchStartItems(items, query).map((g) => ({
           category: g.category,
           // Import has no rail entry to name its group.
           ...(g.category === 'import' ? { name: KIND_NAMES.import } : {}),
           cards: g.items.map((item) => toCard(item, palette, false)),
-        }))
-      }
+        }));
+        // The tiles join only where Inspiration is offered.
+        return categories.some((c) => c.id === COMMUNITY_START_GROUP)
+          ? withCommunityStartMatches(found, community, query, START_SEARCH_ORDER, tiles)
+          : found;
+      }}
       onChoose={choose}
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}

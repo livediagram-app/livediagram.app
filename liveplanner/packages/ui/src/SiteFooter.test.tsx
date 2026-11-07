@@ -43,6 +43,13 @@ describe('SiteFooter', () => {
     expect(footerNav).toContain('href="/ai"');
     expect(labels).not.toContain('AI &amp; MCP');
   });
+
+  // docs/specs/025-community/community.md "Where Community is linked from": under Product, until an answer says the
+  // Community is off (it asks only once the footer nears the viewport).
+  it("links this app's Community page under Product", () => {
+    expect(labels.slice(0, labels.indexOf('FAQ') + 1)).toContain('Community');
+    expect(footerNav).toContain('href="/community"');
+  });
 });
 
 describe('SiteFooter credits', () => {

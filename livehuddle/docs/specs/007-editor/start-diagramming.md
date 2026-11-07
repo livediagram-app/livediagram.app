@@ -39,6 +39,9 @@ draws them.
   longer one, then in the order the groups list them. Typing "retro" leads with Retrospective, though a template
   matching through its search words may come earlier in the rail. With no name beginning so,
   there is no Best Match and the groups lead as before.
+- **The Community joins the search.** A Community tile ([From the Community](#from-the-community)) matches when every
+  word of the search is in its title, listed after its group's matching templates, and may lead under Best Match as
+  a template would.
 - **There is no way out to a bigger picker.** The start holds every listed template; it is the whole catalogue. There is no modal of every template ([New document route](new-document-route.md)).
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
@@ -82,6 +85,24 @@ Every listed template has a primary category, so every one is reachable. The bla
 Recommended. Choosing the blank lands its [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
 a little below the middle of the view and closes the panel, leaving the view, the selection and the tool in hand as
 they were; the × does the same.
+
+### From the Community
+
+After each group's templates come up to three of people's Community posts in that category, the month's most liked
+(at least five likes in 30 days), as the platform spec says ([007-community "Start
+With"](../../../../liveworkspace/docs/specs/007-community/community.md#start-with)). The groups are the Community's
+categories (livehuddle's Community categories are its template categories: Campus, Events, Office, Outdoor and
+Recreation), so a post sits beside the templates it was filed with; Something Else has no group in the rail, so its
+posts show only in the Community gallery. Each tile is the post's live card image, its title, the first line of its
+description and its credit ("By Ada", or "Shared anonymously") in the panel's muted ink, badged **Community**; a
+screen reader hears "<title>, from the Community". Recommended keeps to templates, and the rail's counts are the
+templates' alone, so they do not change as tiles arrive.
+
+The posts load once a session, the first time a start opens (`useCommunityStart`, never on the editor's load), and
+arrive after the panel has painted: they join the end of each group's grid, below what is drawn, so nothing moves.
+With the Community switched off, unreachable or empty, the start is its templates alone and says nothing. Choosing a
+tile does not touch the tab: it makes the person's own copy of the post's Space through its community link
+(`/document/shared?s=<code>&copy=1`, the Community page's Make a Copy), which counts as a copy and opens the copy.
 
 ## When it shows
 
@@ -167,7 +188,8 @@ through its `footer`, in the panel's own colours.
 
 ## Telemetry
 
-A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
+A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A Community tile chosen fires
+`Community · Copied · StartWith`.
 
 ## Tests
 
@@ -176,7 +198,11 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
-- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top.
+- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top;
+  from the Community: tiles after a group's templates with their badge, none in Recommended, the rail's counts
+  unchanged, search, choosing one (the telemetry and the copy link), nothing while closed or switched off.
+- `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
+  in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `../packages/avatar/src/walk-guard.test.ts`, `components/palette/EditWalkToggle.test.tsx`: no walking over a start.
 - `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

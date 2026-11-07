@@ -23,7 +23,9 @@ are, the panel draws them.
   press connects the file: the document gains the connected tab, which takes the place of this empty tab unless it is
   the document's only tab, and opens ready. Offered only to a signed-in Editor of a document on the server, outside a
   tab-scoped link, an embed and a workbench. A connected tab never shows this start.
-- **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
+- **Cards:** each template's preview on a soft plate, its name and its description in full (a Community tile, after
+  a group's templates, the same with a **Community** badge and its credit, [From the
+  Community](#from-the-community)). Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the panel picks no theme, so
   the scaffold takes the colours the tab already wears (its own theme, or the one a new tab inherited from the tab it
   was added beside) rather than the template's built-in ones. The tab's backdrop is left as it is.
@@ -34,6 +36,9 @@ are, the panel draws them.
   as the search's own) is listed first, under **Best Match**, and not again under its group: an exact name before a
   longer one, then in the order the groups list them. With no name beginning so, there is no Best Match and the
   groups lead.
+- **The Community joins the search.** A Community tile ([From the Community](#from-the-community)) matches when every
+  word of the search is in its title, listed after its group's matching templates, and may lead under Best Match as
+  a template would.
 - **The start is the whole catalogue.** It holds every listed Pages template; there is no bigger picker behind it.
 - **Picking a category** opens it at the top of its cards, never part way down the last one's.
 - **Keyboard:** the search is focused on a fine pointer, as the panel opens, unless focus has gone somewhere since: the
@@ -69,6 +74,28 @@ Infographic is the same empty page, already chosen.
 picks swapped for blanks of a page kind). Retired 2026-11-04: each of its picks already sat in Blank Pages or in its
 own group, so it was a second place to look rather than a quicker start. The marketing gallery's Popular shelf
 (`POPULAR_TEMPLATE_KINDS`) is its own and stays.
+
+### From the Community
+
+After each group's templates come up to three of people's Community posts in that category, the month's most liked
+(at least five likes in 30 days), as the platform spec says ([007-community "Start
+With"](../../../../liveworkspace/docs/specs/007-community/community.md#start-with)). The groups are the Community's
+categories (the Community's categories are the template categories, [Community](../025-community/community.md)
+"Categories"), so a post sits beside the templates it was filed with. Each tile is the post's live card image, its
+title, the first line of its description and its credit ("By Ada", or "Shared anonymously") in the panel's muted
+ink, badged **Community**; a screen reader hears "<title> from the Community". Blank Pages keeps to its blanks, and
+the rail's counts are the templates' alone, so they do not change as tiles arrive. A category with no listed
+template has no group on the rail, so no tiles either, and Something Else (`other`) is never one.
+
+The posts load once a session, the first time a start opens (`useCommunityStart` from
+`@liveworkspace/community-ui/start`, never on the editor's load, never for a start closed by an explicit blank), and
+arrive after the panel has painted: they join the end of each group's grid, below what is drawn, so nothing moves.
+With the Community switched off, unreachable or empty, the start is its templates alone and says nothing. Choosing a
+tile does not touch the tab: it makes the person's own copy of the post's document through its community link
+(`/document/shared?s=<code>&copy=1`, the Community page's Make a Copy), which counts as a copy and opens the copy.
+
+Only an **Editor** ever sees a start ([When it shows](#when-it-shows)), so only an Editor sees the tiles; a
+Participant or Viewer sees none. The copy is the person's own new document, whatever their role on this one.
 
 ## A choice first
 
@@ -172,7 +199,8 @@ through its `footer`, in the panel's own colours.
 
 ## Telemetry
 
-A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
+A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A Community tile chosen fires
+`Community · Copied · StartWith`.
 
 ## Tests
 
@@ -182,7 +210,11 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
 - `components/start/template-start-mode.test.ts`: when the start shows.
-- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top.
+- `components/start/StartFromTemplates.test.tsx`: the title, choosing, the close, scroll to top; from the Community:
+  tiles after a group's templates with their badge, none in Blank Pages, the rail's counts unchanged, search,
+  choosing one (the telemetry and the copy link), nothing while closed or switched off.
+- `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
+  in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
   back), `hooks/editor/page-edits.test.ts` (the last page).

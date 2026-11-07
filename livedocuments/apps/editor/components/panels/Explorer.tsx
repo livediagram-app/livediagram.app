@@ -70,18 +70,19 @@ function ExplorerImpl({
   // Take Offline and Sync Document on a document's menu.
   const itemMenu = useOfflineItemMenu(viewerId);
   const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId, currentDocumentId ?? null);
-  // The Community tab for a signed-in account's own documents (lib/explorer-community-host.ts), asked whether the
-  // Community is on only for an account.
-  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  // The Community tab for the person's own documents (lib/explorer-community-host.ts), a guest's included (with Sign
+  // In to Share), so whether the Community is on is asked for a guest too.
+  const communityOn = useCommunityEnabled(API_BASE);
   const shareHost = useMemo(
     () => ({
       ...explorerShareHost(viewerId),
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
+        guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The pane's verbs: this app's threads, and an action on the open document's active tab.

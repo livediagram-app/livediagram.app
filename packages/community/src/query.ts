@@ -11,7 +11,8 @@ import {
   COMMUNITY_TAGS_MAX,
   normaliseCommunityTag,
 } from './post';
-import { isCommunityCategory, type CommunityCategory } from './categories';
+import { isCommunityApp, type CommunityApp } from './apps';
+import { isCommunityCategory, isCommunityCategoryOf, type CommunityCategory } from './categories';
 
 // ---------------------------------------------------------------------
 // List query
@@ -32,6 +33,9 @@ function isCommunitySort(value: unknown): value is CommunitySort {
 export type CommunityListQuery = {
   q: string;
   category: CommunityCategory | null;
+  // The app a category belongs to, when the search names it with its app (`category:livediagram/meetings`, All Apps'
+  // category menu): the list keeps to that app's posts in that category. Null for a bare `category:<id>`.
+  categoryApp: CommunityApp | null;
   tag: string | null;
   sort: CommunitySort;
   offset: number;
@@ -40,6 +44,7 @@ export type CommunityListQuery = {
 export const EMPTY_COMMUNITY_QUERY: CommunityListQuery = {
   q: '',
   category: null,
+  categoryApp: null,
   tag: null,
   sort: 'new',
   offset: 0,
@@ -111,22 +116,54 @@ export function setCommunitySearchSort(q: string, sort: CommunitySort): string {
   return (sort === 'new' ? words : [...words, `${SORT_PREFIX}${sort}`]).join(' ');
 }
 
-// The category a search string asks for: its last valid `category:<id>` token, or null.
-export function communitySearchCategory(q: string): CommunityCategory | null {
-  let category: CommunityCategory | null = null;
+// A category as a search names it: a bare id (`category:meetings`, one app's gallery, whose own set it must be in), or
+// an app's category qualified by the app (`category:livediagram/meetings`, All Apps). Ids repeat across apps with
+// different meanings (liveworkspace/docs/specs/007-community/community.md "Categories"), so All Apps' menu names the
+// app, and its list keeps to that app's posts.
+export type CommunityCategoryFilter = { app: CommunityApp | null; id: CommunityCategory };
+
+// `livediagram.app` is `livediagram` in a search word.
+const appWord = (app: CommunityApp) => app.replace(/\.app$/, '');
+
+function readCategoryWord(raw: string): CommunityCategoryFilter | null {
+  const value = raw.slice(CATEGORY_PREFIX.length).toLowerCase();
+  const slash = value.indexOf('/');
+  if (slash < 0) return isCommunityCategory(value) ? { app: null, id: value } : null;
+  const app = `${value.slice(0, slash)}.app`;
+  const id = value.slice(slash + 1);
+  return isCommunityApp(app) && isCommunityCategoryOf(app, id) ? { app, id } : null;
+}
+
+// The category a search string asks for, with its app when it names one: its last valid `category:` token, or null.
+export function communitySearchCategoryFilter(q: string): CommunityCategoryFilter | null {
+  let category: CommunityCategoryFilter | null = null;
   for (const raw of q.split(/\s+/)) {
     if (!isCategoryToken(raw)) continue;
-    const id = raw.slice(CATEGORY_PREFIX.length).toLowerCase();
-    if (isCommunityCategory(id)) category = id;
+    category = readCategoryWord(raw) ?? category;
   }
   return category;
 }
 
-// The search string with its category set (null for All): any `category:` token removed, and one added
-// at the end for a category, leaving the rest of what was typed alone.
-export function setCommunitySearchCategory(q: string, category: CommunityCategory | null): string {
+// The category id a search string asks for (whichever app's), or null.
+export function communitySearchCategory(q: string): CommunityCategory | null {
+  return communitySearchCategoryFilter(q)?.id ?? null;
+}
+
+// The search string with its category set (null for All): any `category:` token removed, and one added at the end
+// for a category (qualified by its app when the filter names one), leaving the rest of what was typed alone.
+export function setCommunitySearchCategory(
+  q: string,
+  category: CommunityCategory | CommunityCategoryFilter | null,
+): string {
   const words = q.split(/\s+/).filter((w) => w && !isCategoryToken(w));
-  return (category ? [...words, `${CATEGORY_PREFIX}${category}`] : words).join(' ');
+  if (!category) return words.join(' ');
+  const word =
+    typeof category === 'string'
+      ? category
+      : category.app
+        ? `${appWord(category.app)}/${category.id}`
+        : category.id;
+  return [...words, `${CATEGORY_PREFIX}${word}`].join(' ');
 }
 
 // Whether a search string asks for the caller's own posts (My Shares).
@@ -158,11 +195,13 @@ export function parseCommunityListQuery(
   const offset = Number.isFinite(rawOffset)
     ? Math.min(Math.max(rawOffset, 0), COMMUNITY_MAX_OFFSET)
     : 0;
+  const asked = communitySearchCategoryFilter(q);
   return {
     ok: true,
     value: {
       q,
-      category: communitySearchCategory(q) ?? (rawCategory as CommunityCategory | null) ?? null,
+      category: asked?.id ?? (rawCategory as CommunityCategory | null) ?? null,
+      categoryApp: asked?.app ?? null,
       tag,
       sort,
       offset,
@@ -171,9 +210,12 @@ export function parseCommunityListQuery(
 }
 
 // The inverse, omitting defaults so URLs stay short. `offset` is never written: the gallery always starts at the
-// top of a filter, and Load More pages in memory.
+// top of a filter, and Load More pages in memory. A category's app travels only in `q`'s `category:` word.
 export function communityQueryParams(
-  query: Omit<CommunityListQuery, 'offset'> & { offset?: number },
+  query: Omit<CommunityListQuery, 'offset' | 'categoryApp'> & {
+    offset?: number;
+    categoryApp?: CommunityApp | null;
+  },
 ): URLSearchParams {
   const params = new URLSearchParams();
   if (query.q) params.set('q', query.q);

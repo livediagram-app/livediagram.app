@@ -73,9 +73,8 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
 On the Community page (`/community` and a post under it, on liveworkspace.app and on each app's own address), each
 site's row goes to **that site's Community**: an app's row to its own `/community`, which opens on its posts, and
 liveworkspace's row to liveworkspace.app's, every app's posts together. Nothing else carries over (a post is one
-app's; the search is the gallery's). An app whose router serves no Community page yet (liveplanner) leads to its home.
-The app whose address the page is on is the one marked. `communitySwitchHref(site)` in the site's
-`lib/community/switch-href.ts` works it out, with `hasCommunityPage` from `@liveworkspace/sites/workspace-proxy`.
+app's; the search is the gallery's). The app whose address the page is on is the one marked.
+`communitySwitchHref(site)` in the site's `lib/community/switch-href.ts` works it out.
 
 ## The list
 

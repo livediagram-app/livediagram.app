@@ -159,6 +159,10 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a project view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
+  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the Share dialog
+  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters on
+  // the Community page. Never a title, tag or id.
+  'Community',
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and
   // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
   // gesture ('Board', 'Keyboard', 'Card'), never item content.
@@ -270,8 +274,12 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
-  // Forms (docs/specs/030-forms/forms.md "Abuse and limits"): a form link reported, typed by reason.
+  // Forms (docs/specs/030-forms/forms.md "Abuse and limits"): a form link reported, typed by reason. The Community
+  // (docs/specs/025-community/community.md): a post reported, typed by reason.
   'Reported',
+  // Community (docs/specs/025-community/community.md): a post liked or unliked.
+  'Liked',
+  'Unliked',
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',

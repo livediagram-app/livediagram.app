@@ -1,0 +1,49 @@
+diff --git a/dist/authorize-BnSO_Slc.mjs b/dist/authorize-BnSO_Slc.mjs
+index b60fcb71b9818b580a7407f301f237f430647486..c911f3242c5c5a8003eb036abd66f1639937c2f2 100644
+--- a/dist/authorize-BnSO_Slc.mjs
++++ b/dist/authorize-BnSO_Slc.mjs
+@@ -1172,6 +1172,7 @@ async function seedResources(ctx, opts) {
+ 	if (inputs.length === 0) return;
+ 	const mode = opts.resourceSeedMode ?? "insertOnly";
+ 	const modelName = opts.schema?.oauthResource?.modelName ?? "oauthResource";
++	const checked = [];
+ 	for (const rawInput of inputs) {
+ 		const check = await checkIdentifier(opts, rawInput.identifier);
+ 		if (!check.ok) {
+@@ -1184,14 +1185,32 @@ async function seedResources(ctx, opts) {
+ 			const { signingAlgorithm: _, ...rest } = input;
+ 			input = rest;
+ 		}
++		checked.push(input);
++	}
++	if (checked.length === 0) return;
++	// One lookup for every configured identifier (in chunks, under SQL parameter limits) rather than one per resource.
++	const SEED_LOOKUP_CHUNK = 50;
++	const stored = /* @__PURE__ */ new Set();
++	const identifiers = [...new Set(checked.map((input) => input.identifier))];
++	for (let i = 0; i < identifiers.length; i += SEED_LOOKUP_CHUNK) {
++		const chunk = identifiers.slice(i, i + SEED_LOOKUP_CHUNK);
++		const rows = await ctx.adapter.findMany({
++			model: modelName,
++			where: [{
++				field: "identifier",
++				operator: "in",
++				value: chunk
++			}],
++			limit: chunk.length
++		});
++		for (const row of rows ?? []) stored.add(row.identifier);
++	}
++	for (const input of checked) {
+ 		const where = [{
+ 			field: "identifier",
+ 			value: input.identifier
+ 		}];
+-		const existing = await ctx.adapter.findOne({
+-			model: modelName,
+-			where
+-		});
++		const existing = stored.has(input.identifier);
+ 		const now = /* @__PURE__ */ new Date();
+ 		if (!existing) try {
+ 			await ctx.adapter.create({

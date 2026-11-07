@@ -51,6 +51,7 @@ const CONTRACT: Record<string, ReadonlySet<string>> = {
   'apps/api/src/routes/community-owner-routes.ts': new Set(['documentId']),
   'docs/specs/025-community/blueprints/community.md': new Set(['empty_document', 'team_document']),
   'apps/live/lib/community-share-host.tsx': new Set(['documentName']),
+  'apps/live/lib/explorer-community-host.test.ts': new Set(['documentName']),
 };
 // The platform's shared names, which say document for every app's item: an OpenAPI document, the
 // @liveworkspace/api-schema/document-* modules and the names this product re-exports from them as its own.

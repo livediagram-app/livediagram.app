@@ -912,7 +912,7 @@ export function CommunityShareSection() {
         Quarterly report, on one page
       </Label>
       <Label x={x + 30} y={84} size={10} tone="muted">
-        Articles &amp; Reports · ♥ 12 · Copied 3 times
+        Reports · ♥ 12 · Copied 3 times
       </Label>
       <Button x={x + 30} y={108} w={78} h={26} label="View Post" />
       <Button x={x + 116} y={108} w={88} h={26} label="Edit Listing" />

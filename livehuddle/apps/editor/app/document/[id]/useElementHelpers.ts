@@ -23,6 +23,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
 import { selectionIds, type Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { placedSelection } from '@/lib/placed-selection';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -45,7 +46,8 @@ export function useElementHelpers(opts: {
   getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  setSelectedId: SetState<string | null>;
+  // One write of the whole selection: an insert of several pieces selects them all in one store notify.
+  setSelection: (next: Selection) => void;
   setEditingId: SetState<string | null>;
   setFormatSourceId: SetState<string | null>;
 }) {
@@ -59,7 +61,7 @@ export function useElementHelpers(opts: {
     getViewportCenter,
     commit,
     commitTabs,
-    setSelectedId,
+    setSelection,
     setEditingId,
     setFormatSourceId,
   } = opts;
@@ -155,17 +157,18 @@ export function useElementHelpers(opts: {
     // furniture already there, and any dropped on it later, stands on it.
     const onFloor = el.type === 'shape' && isFloorShape(el.shape);
     // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), in front of the
-    // room so a click lands on it, and a room preset's pieces after it (office-amenities.md "The Restroom preset"); the
-    // room keeps the selection, and one commit makes them all one undo step.
+    // room so a click lands on it, and a room preset's pieces after it (office-amenities.md "The Restroom preset"). One
+    // commit makes them all one undo step, and every piece lands selected (office.md "Placing selects every piece").
+    // Selecting them changes no order: the room stays on the floor.
     const [placed, ...companions] = withDoorPiece(el, variant);
     const after = onFloor
       ? [placed!, ...before, ...companions]
       : [...before, placed!, ...companions];
     commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
-    if (select) setSelectedId(el.id);
+    if (select) setSelection(placedSelection([placed!, ...companions]));
     // Only kinds that take typed text: a sticker or a session button renders
-    // its own face from its setting, so a caret there edits nothing.
-    if (edit && takesTypedLabel(el)) setEditingId(el.id);
+    // its own face from its setting, so a caret there edits nothing. A caret belongs to a lone piece.
+    if (edit && companions.length === 0 && takesTypedLabel(el)) setEditingId(el.id);
   };
 
   // --- Selection helpers ---------------------------------------------------

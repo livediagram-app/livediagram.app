@@ -2,6 +2,7 @@ import {
   COMMUNITY_HOME_PATH,
   communityImagePath,
   communityPostPath,
+  communityViewerPath,
 } from '@liveworkspace/community/paths';
 import type { CommunityApp } from '@liveworkspace/community';
 import { appSignInHref } from '@liveworkspace/account-menu';
@@ -52,8 +53,10 @@ export type CommunitySiteLinks = {
 };
 
 const shareQuery = (shareCode: string) => `s=${encodeURIComponent(shareCode)}`;
-// livedesign's documents are designs; every other app's are documents.
-const kindOf = (app: CommunityApp) => (app === 'livedesign.app' ? 'design' : 'document');
+// livedesign's documents are designs and liveplanner's are projects; every other app's are documents (the editor's own
+// address, as `communityViewerPath` names the viewer's).
+const kindOf = (app: CommunityApp) =>
+  app === 'livedesign.app' ? 'design' : app === 'liveplanner.app' ? 'project' : 'document';
 
 /** The links for a page on `pageApp`'s address (null: liveworkspace.app's), with `originOf` naming another app's
  *  origin (@/lib/explorer/page-app appOrigin). */
@@ -71,10 +74,8 @@ export function communityLinks(
         : { href: on(post.app, path), external: true };
     },
     image: (post) => on(post.app, `/api${communityImagePath(post.shareCode)}`),
-    openDocument: (post) =>
-      on(post.app, `/${kindOf(post.app)}/shared?${shareQuery(post.shareCode)}`),
-    makeCopy: (post) =>
-      on(post.app, `/${kindOf(post.app)}/shared?${shareQuery(post.shareCode)}&copy=1`),
+    openDocument: (post) => on(post.app, communityViewerPath(post.app, post.shareCode)),
+    makeCopy: (post) => on(post.app, communityViewerPath(post.app, post.shareCode, true)),
     embed: (post) => on(post.app, `/embed?${shareQuery(post.shareCode)}`),
     editDocument: (post) =>
       on(post.app, `/${kindOf(post.app)}/${encodeURIComponent(post.documentId)}`),
