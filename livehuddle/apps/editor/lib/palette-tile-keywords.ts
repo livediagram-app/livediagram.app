@@ -120,6 +120,10 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'hot-desk': 'hot desk hot-desking hotdesk desk claim name card flexible seat work',
   'pet-bed': 'pet bed dog cat office dog pet corner puppy animal pat',
   'reception-desk': 'reception desk front desk welcome lobby arrival bell service bell concierge',
+  'calendar-wall': 'calendar wall planner month dates days schedule events notes year diary',
+  'suggestion-box': 'suggestion box ideas feedback anonymous idea box comments survey drop note',
+  signpost: 'signpost sign post arrows directions wayfinding finger post way walk rooms nearest',
+  'photo-wall': 'team photo wall photos portraits pictures frames people faces who is here gallery',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':

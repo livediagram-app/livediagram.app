@@ -41,6 +41,12 @@ import {
 } from './palette-icons-garden';
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
 import {
+  CalendarWallIcon,
+  PhotoWallIcon,
+  SignpostIcon,
+  SuggestionBoxIcon,
+} from './palette-icons-team';
+import {
   HotDeskIcon,
   NapPodIcon,
   PetBedIcon,
@@ -755,6 +761,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'directory' },
     icon: <DirectoryIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md): arrows to the nearest rooms, each a Walk There.
+    id: 'tools:signpost',
+    tileGroup: 'travel',
+    blurb: 'Arrows to the nearest rooms',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Signpost',
+    caption: 'Signpost',
+    description:
+      'A wooden signpost whose arrows name the three nearest rooms, pods and stages. Click an arrow to walk there.',
+    filled: true,
+    action: { type: 'shape', kind: 'signpost' },
+    icon: <SignpostIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Elevator (docs/specs/009-elements/elevator.md): a lift between the space's tabs, its floors.
@@ -1785,6 +1806,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'world-clock' },
     icon: <WorldClockIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:calendar-wall',
+    tileGroup: 'meeting',
+    blurb: 'A month with notes on its days',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Calendar Wall',
+    caption: 'Calendar Wall',
+    description:
+      'A month planner for the wall. Editors and participants pin notes to its days; it shows each viewer this month, with today circled.',
+    filled: true,
+    action: { type: 'shape', kind: 'calendar-wall' },
+    icon: <CalendarWallIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:suggestion-box',
+    tileGroup: 'meeting',
+    blurb: 'Anonymous ideas, read by Editors',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Suggestion Box',
+    caption: 'Suggestion Box',
+    description:
+      'A box anyone taking part drops an idea into, with no name on it. Only Editors read them, and never who wrote them.',
+    filled: true,
+    action: { type: 'shape', kind: 'suggestion-box' },
+    icon: <SuggestionBoxIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:photo-wall',
+    tileGroup: 'meeting',
+    blurb: 'Portraits of who is here',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Team Photo Wall',
+    caption: 'Team Photo Wall',
+    description:
+      'A wall of eight frames showing the characters of the people in this Space right now, you first.',
+    filled: true,
+    action: { type: 'shape', kind: 'photo-wall' },
+    icon: <PhotoWallIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Timer (docs/specs/009-elements/timer-and-stopwatch.md).

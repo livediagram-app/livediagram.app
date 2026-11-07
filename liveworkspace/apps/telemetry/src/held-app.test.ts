@@ -114,6 +114,10 @@ describe('livehuddle in the telemetry service', () => {
       'Hot-desk',
       'Pet-bed',
       'Reception-desk',
+      'Calendar-wall',
+      'Suggestion-box',
+      'Signpost',
+      'Photo-wall',
       'Timer',
       'Stopwatch',
     ]);

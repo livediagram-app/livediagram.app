@@ -41,11 +41,15 @@ const IN_PLACE = [
   'jukebox',
   'link-card',
   'video',
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
 ];
 
 // Walked to only when arriving is the point: floor, seats, drinks, proximity, scenery, areas and marks.
 const WALK = [
   'avatar-pad',
+  'photo-wall',
   'stage',
   'room',
   'office-pod',
