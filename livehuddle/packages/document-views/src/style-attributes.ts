@@ -5,7 +5,6 @@ import {
   createPinnedArrow,
   createShape,
   createSticky,
-  createTable,
   createText,
   SHAPE_KINDS,
   styleKeysFor,
@@ -30,8 +29,6 @@ function factoryOutput(el: Element): object | null {
       return createText(0, 0);
     case 'sticky':
       return createSticky(0, 0);
-    case 'table':
-      return createTable(0, 0);
     case 'arrow':
       return createPinnedArrow('from', 'e', 'to', 'w');
     default:

@@ -631,9 +631,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/PathElement"
       },
       {
-        "$ref": "#/components/schemas/TableElement"
-      },
-      {
         "$ref": "#/components/schemas/AnnotationElement"
       },
       {
@@ -2166,9 +2163,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/MediaAnimation"
-      },
-      {
-        "$ref": "#/components/schemas/TableAnimation"
       }
     ]
   },
@@ -4645,7 +4639,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "type": {
-        "const": "video",
+        "enum": [
+          "video",
+          "table"
+        ],
         "type": "string"
       },
       "width": {
@@ -6091,237 +6088,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "orderIndex",
       "updatedAt"
-    ],
-    "type": "object"
-  },
-  "TableAnimation": {
-    "enum": [
-      "rows",
-      "columns",
-      "cells",
-      "scan",
-      "sweep",
-      "header",
-      "pulse",
-      "glow"
-    ],
-    "type": "string"
-  },
-  "TableCellStyle": {
-    "additionalProperties": false,
-    "properties": {
-      "alignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "bg": {
-        "type": "string"
-      },
-      "bold": {
-        "type": "boolean"
-      },
-      "italic": {
-        "type": "boolean"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "underline": {
-        "type": "boolean"
-      }
-    },
-    "type": "object"
-  },
-  "TableElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "cellStyles": {
-        "items": {
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/TableCellStyle"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "type": "array"
-      },
-      "cells": {
-        "items": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "type": "array"
-      },
-      "colWidths": {
-        "items": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "type": "array"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "finish": {
-        "$ref": "#/components/schemas/Finish"
-      },
-      "font": {
-        "type": "string"
-      },
-      "headerColumn": {
-        "type": "boolean"
-      },
-      "headerFill": {
-        "type": "string"
-      },
-      "headerRow": {
-        "type": "boolean"
-      },
-      "headerTextColor": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "rowHeights": {
-        "items": {
-          "type": [
-            "number",
-            "null"
-          ]
-        },
-        "type": "array"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "strokeStyle": {
-        "$ref": "#/components/schemas/BorderStyle"
-      },
-      "strokeWidth": {
-        "$ref": "#/components/schemas/BorderStroke"
-      },
-      "tablePreset": {
-        "type": "string"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textAnimation": {
-        "$ref": "#/components/schemas/TextAnimation"
-      },
-      "textAnimationRepeat": {
-        "type": "boolean"
-      },
-      "textAnimationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "table",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      },
-      "zebra": {
-        "type": "boolean"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height",
-      "cells"
     ],
     "type": "object"
   },

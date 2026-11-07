@@ -5,7 +5,6 @@ import {
   createPinnedArrow,
   createShape,
   createSticky,
-  createTable,
   createText,
   type Anchor,
   type ArrowElement,
@@ -15,6 +14,7 @@ import {
   type ShapeKind,
   type Tab,
 } from '@livehuddle/document';
+import { storedTableAt } from './build';
 
 export const CHECKOUT_TAB_ID = '0b3481f3-59fb-4bd0-a21a-152f1ba9bba5';
 export const CHECKOUT_REV = 41;
@@ -126,8 +126,7 @@ export function checkoutElements(): Element[] {
       link: { kind: 'url', url: 'https://stripe.com/docs/api' },
     }),
     shape('square', ID.order, 'Order', [40, 580, 220, 140]),
-    {
-      ...createTable(40, 760),
+    storedTableAt(40, 760, {
       id: ID.slos,
       width: 420,
       height: 160,
@@ -137,7 +136,7 @@ export function checkoutElements(): Element[] {
         ['Payments', '340 ms', '99.9%'],
         ['Inventory', '80 ms', '99.99%'],
       ],
-    },
+    }),
     {
       ...createSticky(520, 760),
       id: ID.sticky,

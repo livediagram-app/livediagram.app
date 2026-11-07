@@ -1,14 +1,8 @@
 // The edge cases of docs/specs/024-agents/blueprints/document-views.md "Errors and edge cases" (E2 to
 // E28) composed in one tab, with every kind that has a state attribute. Unknown kinds make it a tab
 // `isValidTab` refuses, which is the point: views never drop what they do not know.
-import {
-  createSticky,
-  createTable,
-  type Element,
-  type ShapeKind,
-  type Tab,
-} from '@livehuddle/document';
-import { arrowBetween, shapeAt, strokeAt } from './build';
+import { createSticky, type Element, type ShapeKind, type Tab } from '@livehuddle/document';
+import { arrowBetween, shapeAt, storedTableAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
   ['timeline-rail', {}],
@@ -40,14 +34,13 @@ export function edgeCasesTab(): Tab {
     shapeAt('square', 'Q1', ...cell(7), 100, 50, { label: 'Short id' }),
     shapeAt('square', 'abcd', ...cell(8), 100, 50, { label: 'Slug prefix' }),
     shapeAt('square', 'abcd9999-X', ...cell(9), 100, 50, { label: 'Longer id' }),
-    {
-      ...createTable(...cell(10)),
+    storedTableAt(...cell(10), {
       id: 'ragged',
       cells: [
         ['Name', 'Owner'],
         ['Orders', 'Sam', 'extra'],
       ],
-    },
+    }),
     {
       ...createSticky(...cell(11)),
       id: 'customer',

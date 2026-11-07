@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 boundaries, 110 arrows · threads 10 open/20
+tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 boundaries, 110 arrows · 10 unknown · threads 10 open/20
 text e712 "Checkout platform: production"
 text 024b "Checkout platform: production"
 text 9474 "Checkout platform: production"
@@ -145,24 +145,24 @@ square 661b "Order"
 square 46da "Order"
 square 58f5 "Order"
 square 85a4 "Order"
-table 3ab0
+? table 3ab0
 sticky fa7c "Payment retries are not idempotent yet!" comments=2 open
-table 2154
+? table 2154
 sticky d826 "Payment retries are not idempotent yet!" comments=2 open
-table c7f2
+? table c7f2
 sticky bef1 "Payment retries are not idempotent yet!" comments=2 open
-table 29ea
+? table 29ea
 sticky 2819 "Payment retries are not idempotent yet!" comments=2 open
-table 4550
+? table 4550
 sticky d910 "Payment retries are not idempotent yet!" comments=2 open
-table 128b
+? table 128b
 sticky cc83 "Payment retries are not idempotent yet!" comments=2 open
-table 406f
+? table 406f
 sticky 43c4 "Payment retries are not idempotent yet!" comments=2 open
-table b1c9
+? table b1c9
 sticky 87c2 "Payment retries are not idempotent yet!" comments=2 open
-table dc85
+? table dc85
 sticky 57a2 "Payment retries are not idempotent yet!" comments=2 open
-table 80a2
+? table 80a2
 sticky 5573 "Payment retries are not idempotent yet!" comments=2 open
 … notes hidden; attributes hidden; 13 elements in boundary 82f7 hidden; 13 elements in boundary 6b96 hidden; 13 elements in boundary 9914 hidden; 13 elements in 1 other container hidden: view --only 82f7

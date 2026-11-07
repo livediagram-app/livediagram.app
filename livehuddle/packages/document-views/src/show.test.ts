@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createTable, ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
-import { arrowBetween, shapeAt } from './__fixtures__/build';
+import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
+import { arrowBetween, shapeAt, storedTableAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
 import { buildViewModel } from './model';
@@ -27,7 +27,7 @@ describe('showView (R17, VW34)', () => {
     expect(json.fields).not.toHaveProperty('id');
   });
 
-  it("renders a table's cells and a thread, root elements with no container", () => {
+  it("renders a stored table's cells and a thread, root elements with no container", () => {
     const model = checkout();
     const table = showView(model, elementOf(model, CHECKOUT_IDS.slos)).text.split('\n');
     expect(table).toContain('    | Service | p99 latency | Availability |');
@@ -38,14 +38,13 @@ describe('showView (R17, VW34)', () => {
   });
 
   it("prints an arrow's ends, rotation and odd cells, and an element without geometry", () => {
-    const a = {
-      ...createTable(0, 0),
+    const a = storedTableAt(0, 0, {
       id: 'a',
       width: 100,
       height: 50,
       cells: [['x|y', 3], 'row'],
       rotation: 30,
-    };
+    });
     const e = shapeAt('square', 'e', 0, 0, 100, 50, { label: 'Box' });
     const odd = { id: 'odd', type: 'hologram', note: 'n' };
     const arrow = {
@@ -62,7 +61,7 @@ describe('showView (R17, VW34)', () => {
       elements: [a, e, odd, arrow, onArrow] as unknown as Element[],
     });
     expect(showView(model, elementOf(model, 'a')).text.split('\n').slice(1, 3)).toEqual([
-      'table a',
+      '? table a',
       '  at 0,0 100x50 r=30',
     ]);
     expect(showView(model, elementOf(model, 'a')).text).toContain('    | x\\|y |  |\n    |  |');

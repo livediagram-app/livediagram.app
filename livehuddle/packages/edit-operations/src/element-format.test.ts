@@ -16,7 +16,8 @@ describe('the element format', () => {
     const text = elementKindsText();
     for (const kind of addableKinds()) expect(text).toContain(kind);
     expect(text).toContain('arrow: connect <a> -> <b>');
-    expect(text).toContain('image, video, freehand, path: made in the editor');
+    expect(text).toContain('image, freehand, path: made in the editor');
+    expect(text).toContain('video, table: no longer supported in livehuddle');
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md: no agent schema names the Page or a retired kind.
@@ -56,6 +57,7 @@ describe('the element format', () => {
     // Nor of a retired one (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
     expect(elementFormatText('code-block')).toBeNull();
     expect(elementFormatText('video')).toBeNull();
+    expect(elementFormatText('table')).toBeNull();
   });
 
   it('names only stored shape fields, so the map cannot drift', () => {

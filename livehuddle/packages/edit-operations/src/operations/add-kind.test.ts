@@ -51,8 +51,8 @@ describe('add <kind>', () => {
     });
   });
 
-  it('makes text, stickies, tables, annotations and link cards from their factories', () => {
-    for (const kind of ['text', 'sticky', 'table', 'annotation', 'link-card']) {
+  it('makes text, stickies, annotations and link cards from their factories', () => {
+    for (const kind of ['text', 'sticky', 'annotation', 'link-card']) {
       expect(added(`add ${kind}`).type).toBe(kind);
     }
     expect(added('add shape')).toMatchObject({ shape: 'square' });
@@ -65,6 +65,10 @@ describe('add <kind>', () => {
     ]);
     expect(refused(run('add arrow')).details).toEqual(['kind="arrow": use connect']);
     expect(refused(run('add image')).code).toBe('invalid_value');
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": tables are retired, as embeds are.
+    expect(refused(run('add table')).details).toEqual([
+      'kind="table": tables are no longer supported in livehuddle',
+    ]);
     expect(refused(run('add square id=n3')).code).toBe('id_taken');
     expect(refused(run('add square colour=red')).code).toBe('unknown_field');
     expect(refused(run('add square below:nope')).code).toBe('target_not_found');
