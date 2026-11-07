@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Audit Log',
+  description:
+    'What a team admin can look back on: who joined, left or changed role, who shared, moved or deleted the team’s designs, and its webhooks.',
+  path: '/help/collaboration/teams/audit-log/',
+});
+
+<ArticleLayout title="Audit Log" description="Who did what in your team, for its admins: members, shares, moves, deletes and webhooks, kept for a year." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "audit-log")}>
+
+A team's **Audit Log** answers the questions an admin gets asked: who shared this, who joined, who removed that member, who added that webhook. It is the same log in every liveworkspace app, livedesign included, and only the team's Admins can see it.
+
+## Where to find it
+
+Open your team in the Explorer: it's a space under **Spaces** in the sidebar. Below the team's card, its library and **Team Activity** is a section headed **Audit Log**, marked "Admins only · kept a year". It starts closed; open it to read the log. Members don't see the section at all, and if you stop being an Admin it tells you the log is for Admins only.
+
+Team Activity and the Audit Log are different things. **Team Activity** is what the whole team sees: the work going on in the team's designs. The **Audit Log** is for Admins and holds only team-level events, never what happens inside a design: no edits, comments or content, just names and ids.
+
+## What it records
+
+- **People:** an invitation sent, someone joining (by email or the invite link), an invitation declined, a role changed between Admin and Member, someone removed or leaving, and the team renamed.
+- **Designs:** a share link made (and its level, or a public link for a Community post) or removed, a design moved into or out of the team, sent to the Trash, restored, or deleted for good (including an owner's Take Offline).
+- **Webhooks:** a team webhook added or removed, with the address it sends to and its kind (Slack, Microsoft Teams or signed JSON).
+
+Each row says who did it and what, the design or person it was about, which app it came from and when. Rows are grouped by day, newest first; hover a time to see it in UTC. Someone whose account has closed shows as **Deleted account**. API tokens and connected apps belong to a person, not a team, so they never show here.
+
+## Filtering
+
+Above the list are four filters, and you can combine them:
+
+- **Person:** who did it. The team's members are listed by name, and anyone else the log names (someone who has since left) is marked "not in the team".
+- **Event:** one kind of event, grouped into People, Designs and Webhooks.
+- **From** and **To:** whole days, both included.
+
+**Clear Filters** puts everything back. The list shows 50 events at a time; **Show More** reads the next 50.
+
+## Exporting as CSV
+
+**Export CSV** saves every event your filters match as one CSV file named after the team and the day, ready for a spreadsheet. Each row has the time in UTC, the event, the app, who did it, whom it was about, the design and the detail, each with its id. A very large export (more than 200,000 events) saves the newest 200,000 and asks you to narrow the dates for the rest.
+
+## How long it is kept
+
+Each event is kept for a year from when it happened, then deleted. When someone closes their liveworkspace account, their name is taken out of the log and their rows show as Deleted account.
+
+See [Roles and Invites](/help/collaboration/teams/roles-and-invites/) for what Admins can do, and [Team Shared Designs](/help/collaboration/teams/team-shared-designs/) for the team library.
+
+</ArticleLayout>

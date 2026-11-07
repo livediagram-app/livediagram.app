@@ -31,7 +31,7 @@ import {
   accountsPeopleNames,
   type AdminTeams,
   type PeopleNames,
-} from './webhooks/access';
+} from './accounts-access';
 
 export type TeamAuditDeps = { adminTeams: AdminTeams; names: PeopleNames };
 

@@ -1,7 +1,9 @@
 'use client';
 
 // A team's view, at its root (liveplanner's TeamPane): the team card (teams/TeamCard.tsx), where the team is run in
-// place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a not-found card instead.
+// place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened, and for an admin the
+// team's Audit Log (audit/AuditLog.tsx), closed too. A team the person is not in (gone, left, never joined) is a
+// not-found card instead.
 
 import { useEffect, type ReactNode } from 'react';
 import { LIST_CARD } from '../ui/classes';
@@ -10,6 +12,7 @@ import { useTeams } from '../teams/context';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
 import { TeamActivity } from './TeamActivity';
+import { AuditLog } from './audit/AuditLog';
 import { NotFoundCard } from './NotFoundCard';
 
 export { initialsOf, teamHeadline } from '../teams/TeamCard';
@@ -46,8 +49,24 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
       {children}
       {/* Keyed on the team: another team's view starts its feed, and its open state, afresh. */}
       <TeamActivity key={teamId} teamId={teamId} />
+      {/* The team's admins alone: drawn only when accounts says the reader runs the team, as the read checks too. */}
+      {load.state === 'found' && load.details.team.myRole === 'admin' ? (
+        <AuditLog
+          key={`audit-${teamId}`}
+          teamId={teamId}
+          teamName={load.details.team.name}
+          members={load.details.members}
+          helpHref={auditHelpOf(helpHref?.({ kind: 'team', id: teamId }))}
+        />
+      ) : null}
     </div>
   );
+}
+
+// The Audit Log's article beside the team's own, in the same help centre (`…/help/collaboration/teams/audit-log/`).
+function auditHelpOf(teamHelp: string | undefined): string | undefined {
+  const at = teamHelp?.indexOf('/help/') ?? -1;
+  return at < 0 ? undefined : `${teamHelp!.slice(0, at)}/help/collaboration/teams/audit-log/`;
 }
 
 /** After leaving or deleting a team its card, and the control that was focused, are gone: the keyboard lands on My

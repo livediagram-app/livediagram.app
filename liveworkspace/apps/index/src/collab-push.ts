@@ -31,7 +31,7 @@ import { isId, isPartId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject } from './http';
 import { bulkEventStatements, type BulkEvent } from './timeline';
-import { accountsPersonTeams } from './webhooks/access';
+import { accountsPersonTeams } from './accounts-access';
 import {
   freshMentions,
   linkReadersStatement,

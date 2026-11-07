@@ -1578,6 +1578,17 @@ export const articles: Article[] = [
 
   // ---- Sub-articles: Teams ----
   {
+    slug: 'audit-log',
+    title: 'Audit Log',
+    description:
+      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+    keywords:
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/teams',
+    parentSlug: 'teams',
+  },
+  {
     slug: 'roles-and-invites',
     title: 'Roles and Invites',
     description: 'Admin and Member roles, and inviting people by email.',
