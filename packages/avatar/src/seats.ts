@@ -36,6 +36,12 @@ export const DEFAULT_SEATING_FACING: Readonly<Record<SitKind, SeatFacing>> = {
   hammock: 'n',
   'bean-bag': 'n',
   'reading-nook': 'n',
+  'nap-pod': 'n',
+  treadmill: 'n',
+  'weight-bench': 'n',
+  'phone-booth': 'n',
+  'standing-desk': 'n',
+  'hot-desk': 'n',
 };
 
 export function seatingFacing(el: { shape: SitKind; chairFacing?: SeatFacing }): SeatFacing {
@@ -209,6 +215,46 @@ export const READING_NOOK_SEATS: FixedSeatGrid = {
   seats: [{ u: 76 / 160, v: 64 / 112, facing: 'down' }],
 };
 
+// livehuddle's workday pieces (its docs/specs/009-elements/workday-pieces.md "How each one walks"): one seat each. A nap
+// pod's sitter reclines facing you; a treadmill's stands on its belt, a standing desk's in front of it and a hot desk's
+// sits in front of it, all three facing up the canvas (at the console or the monitor); a weight bench's sits on the
+// bench and a phone booth's on its stool, facing you.
+export const NAP_POD_SEATS: FixedSeatGrid = {
+  width: 120,
+  height: 112,
+  seats: [{ u: 0.5, v: 78 / 112, facing: 'down' }],
+};
+
+export const TREADMILL_SEATS: FixedSeatGrid = {
+  width: 72,
+  height: 112,
+  seats: [{ u: 0.5, v: 86 / 112, facing: 'up' }],
+};
+
+export const WEIGHT_BENCH_SEATS: FixedSeatGrid = {
+  width: 136,
+  height: 88,
+  seats: [{ u: 80 / 136, v: 60 / 88, facing: 'down' }],
+};
+
+export const PHONE_BOOTH_SEATS: FixedSeatGrid = {
+  width: 80,
+  height: 136,
+  seats: [{ u: 0.5, v: 112 / 136, facing: 'down' }],
+};
+
+export const STANDING_DESK_SEATS: FixedSeatGrid = {
+  width: 112,
+  height: 104,
+  seats: [{ u: 0.5, v: 96 / 104, facing: 'up' }],
+};
+
+export const HOT_DESK_SEATS: FixedSeatGrid = {
+  width: 120,
+  height: 112,
+  seats: [{ u: 0.5, v: 84 / 112, facing: 'up' }],
+};
+
 const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
   'office-pod': POD_SEATS,
   'bar-stool': BAR_STOOL_SEATS,
@@ -218,6 +264,12 @@ const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
   hammock: HAMMOCK_SEATS,
   'bean-bag': BEAN_BAG_SEATS,
   'reading-nook': READING_NOOK_SEATS,
+  'nap-pod': NAP_POD_SEATS,
+  treadmill: TREADMILL_SEATS,
+  'weight-bench': WEIGHT_BENCH_SEATS,
+  'phone-booth': PHONE_BOOTH_SEATS,
+  'standing-desk': STANDING_DESK_SEATS,
+  'hot-desk': HOT_DESK_SEATS,
 };
 
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */

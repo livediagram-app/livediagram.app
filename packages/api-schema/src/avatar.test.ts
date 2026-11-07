@@ -23,6 +23,8 @@ describe('avatar wire shapes', () => {
       'celebrating',
       'thinking',
       'sick',
+      'break',
+      'busy',
     ]);
   });
 

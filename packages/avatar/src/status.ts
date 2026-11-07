@@ -48,6 +48,23 @@ export const AVATAR_DND_STATUS: AvatarStatusEntry = {
   line: 'Mutes voices. A no-entry sign.',
 };
 
+/**
+ * The two statuses livehuddle's seat pieces set (its docs/specs/009-elements/workday-pieces.md "Statuses a piece
+ * sets"): On a Break from a Treadmill or a Weight Bench, Busy from a Phone Booth. Anyone may pick them too.
+ */
+export const AVATAR_BREAK_STATUS: AvatarStatusEntry = {
+  id: 'break',
+  label: 'On a Break',
+  colour: '#3b82f6',
+  line: 'Stretching the legs, water in hand.',
+};
+export const AVATAR_BUSY_STATUS: AvatarStatusEntry = {
+  id: 'busy',
+  label: 'Busy',
+  colour: '#a16207',
+  line: 'On the phone, back in a bit.',
+};
+
 /** livehuddle's Availability group: can people come over? */
 export const AVATAR_AVAILABILITY_STATUSES: readonly AvatarStatusEntry[] = [
   AVAILABLE,
@@ -58,6 +75,7 @@ export const AVATAR_AVAILABILITY_STATUSES: readonly AvatarStatusEntry[] = [
     line: 'Stuck? A question mark bobs overhead.',
   },
   AWAY,
+  AVATAR_BUSY_STATUS,
   AVATAR_DND_STATUS,
 ];
 
@@ -71,6 +89,7 @@ export const AVATAR_ACTIVITY_STATUSES: readonly AvatarStatusEntry[] = [
     colour: '#14b8a6',
     line: 'Back soon, sandwich in hand.',
   },
+  AVATAR_BREAK_STATUS,
 ];
 
 /** livehuddle's Mood group: how you feel. Cosmetic, each with its signature on the character. */

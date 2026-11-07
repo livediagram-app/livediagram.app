@@ -37,6 +37,8 @@
     "./pad-art": "./src/pad-art.ts",
     "./palette": "./src/palette.ts",
     "./pod": "./src/pod.ts",
+    "./booth": "./src/booth.ts",
+    "./seat-status": "./src/seat-status.ts",
     "./reaction-bursts": "./src/reaction-bursts.ts",
     "./reactions": "./src/reactions.ts",
     "./relay": "./src/relay.ts",

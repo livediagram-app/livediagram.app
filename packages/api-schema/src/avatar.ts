@@ -96,7 +96,8 @@ export type AvatarConfig = {
 // receiver's type does not name. `dnd` (Do Not Disturb) is livehuddle's call status (its
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md): every product parses and draws it, only livehuddle offers it.
 // So do the rest after it (livehuddle's Need Help, Out to Lunch and its moods), appended so the list only grows: a
-// client that predates a token reads it as no status, never as an error.
+// client that predates a token reads it as no status, never as an error. `break` (On a Break) and `busy` (Busy) are
+// the two livehuddle's seat pieces set (its docs/specs/009-elements/workday-pieces.md "Statuses a piece sets").
 export const AVATAR_STATUS_IDS = [
   'available',
   'focus',
@@ -109,6 +110,8 @@ export const AVATAR_STATUS_IDS = [
   'celebrating',
   'thinking',
   'sick',
+  'break',
+  'busy',
 ] as const;
 export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
 

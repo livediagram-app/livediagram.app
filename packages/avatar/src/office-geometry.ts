@@ -43,7 +43,15 @@ export type FixedSeatKind =
   | 'picnic-table'
   | 'hammock'
   | 'bean-bag'
-  | 'reading-nook';
+  | 'reading-nook'
+  // livehuddle's workday pieces (its docs/specs/009-elements/workday-pieces.md): a nap pod, a treadmill and a weight
+  // bench, a phone booth, a standing desk and a hot desk, one seat each.
+  | 'nap-pod'
+  | 'treadmill'
+  | 'weight-bench'
+  | 'phone-booth'
+  | 'standing-desk'
+  | 'hot-desk';
 
 const FIXED_SEAT_KINDS: readonly string[] = [
   'office-pod',
@@ -54,10 +62,23 @@ const FIXED_SEAT_KINDS: readonly string[] = [
   'hammock',
   'bean-bag',
   'reading-nook',
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
 ];
 
 export function isFixedSeatShape(kind: string): kind is FixedSeatKind {
   return FIXED_SEAT_KINDS.includes(kind);
+}
+
+// Seats you stand at rather than sit in (livehuddle's workday-pieces.md "How each one walks"): held like any seat, the
+// character there drawn standing.
+const STANDING_SEAT_KINDS: readonly string[] = ['treadmill', 'standing-desk'];
+export function isStandingSeatShape(kind: string): boolean {
+  return STANDING_SEAT_KINDS.includes(kind);
 }
 
 // Pieces that hang on a wall (livehuddle's social-pieces.md "How each one walks"): walked past, never blocking and
@@ -148,6 +169,9 @@ const OFFICE_FOOTPRINT: Partial<
   'car-park': { x0: 0, x1: 1, y0: 44 / 128, y1: 124 / 128 },
   'bike-rack': { x0: 4 / 136, x1: 132 / 136, y0: 52 / 80, y1: 76 / 80 },
   podium: { x0: 8 / 56, x1: 48 / 56, y0: 74 / 88, y1: 86 / 88 },
+  // livehuddle's workday pieces (its workday-pieces.md): the reception desk's counter, from the middle of its top down to
+  // its foot, full width.
+  'reception-desk': { x0: 0.02, x1: 0.98, y0: 52 / 112, y1: 106 / 112 },
 };
 
 // livehuddle's Swimming Pool (its venue-pieces.md "How each one walks"): drawn to its size, its deck a fixed band, so
