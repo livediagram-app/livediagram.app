@@ -95,26 +95,25 @@ function SignpostBoards({
       >
         {boards.map((b, i) => {
           const r = SIGNPOST_BOARD_RECTS[i]!;
-          const shift = b.dir === 'right' ? 0 : SIGNPOST_TIP / 2;
+          // The arrow's body sits exactly over the drawn board, so none of the blank board shows round it; its tip
+          // reaches past the board on its own side.
           return (
             <g key={b.place.id} data-signpost-board={b.dir}>
               <path
                 d={signpostArrowPath(i, b.dir)}
-                transform={`translate(${b.dir === 'right' ? -SIGNPOST_TIP / 2 : SIGNPOST_TIP / 2} 1.2)`}
+                transform="translate(0 1.2)"
                 fill="#000"
                 opacity={0.14}
               />
               <path
                 d={signpostArrowPath(i, b.dir)}
-                transform={`translate(${b.dir === 'right' ? -SIGNPOST_TIP / 2 : SIGNPOST_TIP / 2} 0)`}
                 fill={TEAM_TONES.board}
                 stroke={TEAM_TONES.woodDeep}
                 strokeWidth={1.2}
                 strokeLinejoin="round"
               />
-              <circle cx={art.width / 2} cy={r.y + r.h / 2} r={1.3} fill={TEAM_TONES.nail} />
               <text
-                x={r.x + r.w / 2 - SIGNPOST_TIP / 2 + shift}
+                x={r.x + r.w / 2}
                 y={r.y + r.h / 2 + 3.3}
                 textAnchor="middle"
                 fontSize={9}
@@ -146,8 +145,8 @@ function BoardButton({
   const r = SIGNPOST_BOARD_RECTS[index]!;
   const place: SpacePlace = board.place;
   const press = usePressWithoutDrag(() => wayfinding.actions.walkThere(place));
-  // The board and its tip, where the arrow is drawn: either way it spans the same width, shifted half a tip.
-  const left = r.x - SIGNPOST_TIP / 2;
+  // The board and its tip, where the arrow is drawn: the tip is on the left of a left arrow, the right of a right one.
+  const left = board.dir === 'right' ? r.x : r.x - SIGNPOST_TIP;
   return (
     <Tooltip label={`Walk to ${place.name}`}>
       <button
