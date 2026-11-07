@@ -45,11 +45,22 @@ describe('DoorView', () => {
     expect(wings.style.transform).toBe('translateX(0px) rotate(45deg)');
   });
 
-  it('shows a locked door: a padlock and its leaves shaded', () => {
+  it('shows a locked door: a padlock mid-doorway and its leaves shaded', () => {
     const c = draw(door('double', { locked: true }));
     expect(c.querySelector('[aria-label="Locked open door"]')).not.toBeNull();
-    expect(c.querySelectorAll('[opacity="0.22"]')).toHaveLength(2);
-    expect(c.querySelectorAll('rect[width="9"]')).toHaveLength(1);
+    expect(c.querySelectorAll('[opacity="0.45"]')).toHaveLength(2);
+    const lock = c.querySelector('[data-door-lock]')!;
+    expect(lock.querySelectorAll('rect[width="9"]')).toHaveLength(1);
+    expect(lock.querySelector('circle')?.getAttribute('cx')).toBe('72');
+    expect(lock.getAttribute('transform')).toBeNull();
+  });
+
+  it('keeps the padlock upright on a door turned onto its wall', () => {
+    const c = draw(door(undefined, { locked: true, rotation: 135 }));
+    expect(c.querySelector('[data-door-lock]')?.getAttribute('transform')).toBe(
+      'rotate(-135 48 12)',
+    );
+    expect(draw(door()).querySelector('[data-door-lock]')).toBeNull();
   });
 });
 

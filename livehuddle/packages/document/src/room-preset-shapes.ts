@@ -1,8 +1,9 @@
 // The Room tile's presets (docs/specs/009-elements/office.md "Room presets"): six rooms to start from, each an ordinary
 // Room placed at a size and a name, the shaped ones with their walls (a custom room's `roomOutline`) and the point their
-// Door stands at. Nothing about a preset is stored. A LEAF module: types only.
+// Door stands at; the pieces each is furnished with are room-presets.ts's. Nothing about a preset is stored. A LEAF
+// module: types and the avatar's outline geometry only.
 
-import type { OutlinePoint } from '@liveworkspace/avatar/room-outline';
+import { pointInPolygon, type OutlinePoint } from '@liveworkspace/avatar/room-outline';
 import type { ShapeElement } from './index';
 
 type RoomPreset = {
@@ -21,7 +22,7 @@ const oct = (v: number) => Math.round(v * 100) / 100;
 
 /** The Room presets after the plain Room (no variant), in palette order (DEFAULTS.md D220). */
 export const ROOM_PRESETS: Readonly<Record<string, RoomPreset>> = {
-  office: { label: 'Office', width: 280, height: 220 },
+  office: { label: 'Office', width: 360, height: 240 },
   boardroom: { label: 'Boardroom', width: 800, height: 400 },
   // An L: a wide floor along the top and a wing down the left, its Door in the wing's front wall.
   'open-plan': {
@@ -75,8 +76,30 @@ export function roomPreset(variant: string | undefined): RoomPreset | null {
   return variant && Object.hasOwn(ROOM_PRESETS, variant) ? ROOM_PRESETS[variant]! : null;
 }
 
+// How far in from the box's top-left a room's name sits, and how far down from its top (px).
+const NAME_IN = { x: 64, y: 18 } as const;
+
+/**
+ * Where a custom room's name sits so it reads inside its walls (office.md "Room presets"): at the top left, as on any
+ * room, when the outline's floor is there; else centred along the top when the floor is there (an octagon's top wall);
+ * else in the middle. `outline` is the room's `roomOutline`, a fraction of its box.
+ */
+export function outlineNameAlign(
+  outline: readonly OutlinePoint[],
+  width: number,
+  height: number,
+): Pick<ShapeElement, 'textAlignX' | 'textAlignY'> {
+  const inside = (x: number, y: number) =>
+    pointInPolygon({ x: x / width, y: y / height }, outline) &&
+    pointInPolygon({ x: (x + NAME_IN.x) / width, y: y / height }, outline);
+  if (inside(NAME_IN.y, NAME_IN.y)) return { textAlignX: 'left', textAlignY: 'top' };
+  if (inside(width / 2 - NAME_IN.x / 2, NAME_IN.y))
+    return { textAlignX: 'center', textAlignY: 'top' };
+  return { textAlignX: 'center', textAlignY: 'middle' };
+}
+
 /** `room` placed as a preset: its size and name, and a shaped one's outline (a custom room: aspect locked, no
- *  built-in doorway). */
+ *  built-in doorway, its name where the floor is). */
 export function roomAsPreset(room: ShapeElement, preset: RoomPreset): ShapeElement {
   const sized: ShapeElement = {
     ...room,
@@ -85,11 +108,16 @@ export function roomAsPreset(room: ShapeElement, preset: RoomPreset): ShapeEleme
     label: preset.label,
   };
   if (!preset.outline) return sized;
+  const roomOutline = preset.outline.map((p) => ({
+    x: p.x / preset.width,
+    y: p.y / preset.height,
+  }));
   return {
     ...sized,
-    roomOutline: preset.outline.map((p) => ({ x: p.x / preset.width, y: p.y / preset.height })),
+    roomOutline,
     roomDoor: 'none',
     aspectLocked: true,
+    ...outlineNameAlign(roomOutline, preset.width, preset.height),
   };
 }
 

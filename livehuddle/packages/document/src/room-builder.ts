@@ -18,7 +18,7 @@ import {
 import type { Element, ElementId, ShapeElement } from './index';
 import { createShape } from './shape-factory';
 import { roomPresetCompanions } from './room-presets';
-import { roomPresetDoorAt } from './room-preset-shapes';
+import { outlineNameAlign, roomPresetDoorAt } from './room-preset-shapes';
 import { corridorWalls } from './piece-variants';
 
 export { snap45, pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
@@ -93,14 +93,17 @@ export function createOutlinedRoom(corners: readonly OutlinePoint[]): ShapeEleme
   const height = Math.max(...ys) + half - y0;
   if (width <= ROOM_WALL || height <= ROOM_WALL) return null;
   const base = createShape('room', x0, y0);
+  const roomOutline = distinct.map((p) => ({ x: (p.x - x0) / width, y: (p.y - y0) / height }));
   return {
     ...base,
     width,
     height,
-    roomOutline: distinct.map((p) => ({ x: (p.x - x0) / width, y: (p.y - y0) / height })),
+    roomOutline,
     // The doorway is the Door's job on a custom room.
     roomDoor: 'none',
     aspectLocked: true,
+    // Its name inside its walls, wherever the corners left the box's top left.
+    ...outlineNameAlign(roomOutline, width, height),
   };
 }
 

@@ -16,13 +16,15 @@ const preset =
     blurb: string,
     description: string,
     icon: React.ReactNode,
+    // A caption that is already a whole noun (a Doormat is not a "Doormat Rug") names the tile on its own.
+    own = false,
   ): PaletteTileDef => ({
     id: `tools:${id}${variant ? `-${variant}` : ''}`,
     section: 'tools',
     toolGroup: 'behaviour',
     tileGroup: 'rooms',
     caption,
-    label: `Add ${caption}${noun && !caption.endsWith(noun) ? ` ${noun}` : ''}`,
+    label: `Add ${caption}${noun && !own && !caption.endsWith(noun) ? ` ${noun}` : ''}`,
     blurb,
     description,
     filled: true,
@@ -50,8 +52,8 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     'office',
     'Office',
-    'A small room for one or two',
-    'A small office for one or two desks: a room 280 by 220 with its door in the front wall.',
+    'A desk, a plant and a bookshelf',
+    'A small office, furnished: a desk against the back wall, a plant and a bookshelf, its door in the front wall.',
     <>
       <path d="M10.5 18H5V7h14v11h-5.5" />
       <path d="M5 9.5h14" />
@@ -61,8 +63,8 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     'boardroom',
     'Boardroom',
-    'A long room round a big table',
-    'A boardroom: a long room, 800 by 400, with space for a big table down the middle and its door in the front wall.',
+    'A long table for sixteen',
+    'A boardroom, furnished: two meeting tables end to end down the middle for sixteen, plants in the back corners, and a water cooler and a coffee machine by the door.',
     <>
       <path d="M9.5 18H1.5V7h21v11h-8" />
       <path d="M1.5 9.5h21" />
@@ -72,8 +74,8 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     'open-plan',
     'Open Plan',
-    'An L of floor with a wing',
-    'An open-plan floor shaped like an L: a wide space along the top and a wing down the left, its door in the wing.',
+    'Ten desks in pods, an L of floor',
+    'An open-plan floor shaped like an L: five pods of two desks face to face across the wide part, and a printer, a coffee machine, a water cooler and plants in the wing by the door.',
     <>
       <path d="M5.5 20H3V4h18v9H11v7H8.5" />
       <path d="M14 7h4M14 9.5h4" opacity="0.5" />
@@ -82,8 +84,8 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     'kitchen',
     'Kitchen',
-    'A corner cut at 45 degrees',
-    'A kitchen with its front corner cut at 45 degrees and the door in the cut, ready for a counter along the back.',
+    'Fridge, sink, counter and stools',
+    'A kitchen, furnished: a fridge, a sink, a counter with a microwave and a coffee machine along the back wall, three bar stools at the counter and a water cooler. Its front corner is cut at 45 degrees, with the door in the cut.',
     <>
       <path d="M16.5 18.5 15 20H3V4h18v10l-1.5 1.5" />
       <path d="M5.5 6.5h13v2.5h-13z" opacity="0.5" />
@@ -92,8 +94,8 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
   room(
     'lounge',
     'Lounge',
-    'An octagon to gather in',
-    'A lounge with eight equal walls, 440 across: a room to gather in, its door in the front wall.',
+    'Sofas round a fire',
+    'A lounge with eight equal walls, furnished: a fireplace on the back wall, a round rug before it, two sofas facing in across it and plants either side of the door.',
     <>
       <path d="M10 21H8.5L3 15.5v-7L8.5 3h7L21 8.5v7L15.5 21H14" />
       <circle cx="12" cy="12" r="3" opacity="0.5" />
@@ -283,5 +285,6 @@ export const RUG_PRESET_TILES: readonly PaletteTileDef[] = [
       <rect x="4" y="7" width="16" height="10" rx="2" />
       <path d="M7 10h10M7 12h10M7 14h10" />
     </>,
+    true,
   ),
 ];

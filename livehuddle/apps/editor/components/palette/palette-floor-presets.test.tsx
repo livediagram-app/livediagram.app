@@ -54,6 +54,8 @@ describe('the floor presets', () => {
       'Add Revolving Door',
     ]);
     expect(RUG_PRESET_TILES[0]!.label).toBe('Add Oval Rug');
+    // A Doormat is a whole noun: not "Add Doormat Rug".
+    expect(RUG_PRESET_TILES.at(-1)!.label).toBe('Add Doormat');
     expect(CORRIDOR_PRESET_TILES[2]!.label).toBe('Add T-Junction Corridor');
   });
 

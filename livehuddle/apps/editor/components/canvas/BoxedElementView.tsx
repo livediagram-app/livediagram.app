@@ -614,7 +614,10 @@ function BoxedElementViewImpl({
 
       {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
           (canvas-and-palette.md "Locking"). */}
-      {element.locked === true ? <LockBadge /> : null}
+      {/* A locked Door shows its own upright padlock instead (room-builder.md "Locked doors"). */}
+      {element.locked === true && !(element.type === 'shape' && element.shape === 'door') ? (
+        <LockBadge />
+      ) : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 

@@ -20,6 +20,32 @@ const SIDE_GAP_PX = 8;
 
 export type SideOpen = { def: PaletteTileDef; top: number; right: number };
 
+// How far clear of the canvas region's bottom (the tab bar below it) the panel keeps.
+const FLOOR_GAP_PX = 8;
+
+/** The lowest the panel may reach, in window px: the canvas region's bottom (above the tab bar), else the window's. */
+export function sideFloor(panel: HTMLElement): number {
+  const region = panel.ownerDocument.querySelector('[data-canvas-root]')?.getBoundingClientRect();
+  const bottom = region && region.height > 0 ? region.bottom : window.innerHeight;
+  return Math.min(bottom, window.innerHeight) - FLOOR_GAP_PX;
+}
+
+/** The scale a computed `transform` draws at (`matrix(a, …)`'s `a`): 1 for none, or one this cannot read. */
+export function animationScale(transform: string): number {
+  const a = /^matrix\(\s*([-\d.e]+)/.exec(transform)?.[1];
+  const scale = a ? Number(a) : 1;
+  return scale > 0 ? scale : 1;
+}
+
+/**
+ * How far the panel rises to fit: its bottom where it would hang unlifted (`naturalBottom`), against `floor`, never
+ * more than `maxLift` (the strip's top). 0 when it fits.
+ */
+export function sideLift(naturalBottom: number, floor: number, maxLift: number): number {
+  const over = naturalBottom - floor;
+  return over > 0 ? Math.min(over, Math.max(0, maxLift)) : 0;
+}
+
 /** Where the panel hangs for a tile, as offsets into the strip's root (screen px, as the flyout's `right` is). */
 export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen | null {
   const root = tile.closest('[data-toolbar-palette]')?.getBoundingClientRect();
@@ -73,14 +99,33 @@ export function CategoryFlyoutSide({
   const [hovered, setHovered] = useState<PaletteTileDef | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  // Lined up with its tile, unless that runs it off the bottom of the window: then it rises just enough to fit
-  // (8px clear), never above the strip's top. Measured once it has laid out, before it paints.
+  // Lined up with its tile, unless that runs it below the canvas region (under the tab bar): then it rises just enough
+  // to fit (8px clear), never above the strip's top. Measured before it paints, again once its opening animation has
+  // settled (mid-animation it is scaled down, so it reads short), and whenever its size or the window's changes.
   const [lift, setLift] = useState(0);
+  const liftRef = useRef(0);
   useLayoutEffect(() => {
-    const box = panelRef.current?.getBoundingClientRect();
-    if (!box) return;
-    const over = box.bottom - (window.innerHeight - 8);
-    setLift(over > 0 ? Math.min(over, side.top) : 0);
+    const panel = panelRef.current;
+    if (!panel) return;
+    const measure = () => {
+      // Its settled height (the opening animation scales it from its top left), from where its top stands now less
+      // the lift it has.
+      const box = panel.getBoundingClientRect();
+      const height = box.height / animationScale(getComputedStyle(panel).transform);
+      const next = sideLift(box.top + liftRef.current + height, sideFloor(panel), side.top);
+      liftRef.current = next;
+      setLift(next);
+    };
+    measure();
+    panel.addEventListener('animationend', measure);
+    window.addEventListener('resize', measure);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(panel);
+    return () => {
+      panel.removeEventListener('animationend', measure);
+      window.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
   }, [side.top]);
   const a = def.action;
   const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;

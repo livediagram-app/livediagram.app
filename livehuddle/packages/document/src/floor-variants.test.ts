@@ -20,7 +20,12 @@ import {
   withAttachedDoors,
   withDoorPiece,
   DOOR_VARIANTS,
+  LOCKED_DOOR_SHADE,
   ROOM_PRESETS,
+  createOutlinedRoom,
+  doorLockCentre,
+  outlineNameAlign,
+  pointInPolygon,
   RUG_VARIANTS,
   type ShapeElement,
 } from './index';
@@ -80,15 +85,102 @@ describe('a piece type (variant)', () => {
 });
 
 describe('room presets', () => {
-  it('places a rectangle at its size and name, its Door its own in the front wall', () => {
+  it('places a rectangle at its size and name, its Door its own in the front wall, then its furnishings', () => {
     const office = applyShapeVariant(createShape('room', 0, 0), 'office');
-    expect(office).toMatchObject({ width: 280, height: 220, label: 'Office' });
+    expect(office).toMatchObject({ width: 360, height: 240, label: 'Office' });
     expect(office.roomOutline).toBeUndefined();
     expect(office.variant).toBeUndefined();
     const [room, door, ...rest] = withDoorPiece(office, 'office');
     expect(room).toMatchObject({ roomDoor: 'none' });
     expect(door).toMatchObject({ shape: 'door' });
-    expect(rest).toEqual([]);
+    expect(rest.map((p) => (p as ShapeElement).shape)).toEqual(['desk', 'plant', 'bookshelf']);
+    // The plain Room is the empty one.
+    expect(withDoorPiece(createShape('room', 0, 0))).toHaveLength(2);
+  });
+
+  it('furnishes every preset inside its walls, each piece valid and in the room stroke', () => {
+    for (const variant of Object.keys(ROOM_PRESETS)) {
+      const placed = at(applyShapeVariant(createShape('room', 0, 0), variant), 100, 50);
+      const [room, , ...pieces] = withDoorPiece(
+        { ...placed, strokeColor: '#123456' },
+        variant,
+      ) as ShapeElement[];
+      expect(pieces.length, variant).toBeGreaterThan(2);
+      for (const p of pieces) {
+        expect(isValidElement(p), `${variant} ${p.shape}`).toBe(true);
+        expect(p.strokeColor).toBe('#123456');
+        const corners = [
+          { x: p.x, y: p.y },
+          { x: p.x + p.width, y: p.y },
+          { x: p.x, y: p.y + p.height },
+          { x: p.x + p.width, y: p.y + p.height },
+        ].map((c) => ({ x: (c.x - room!.x) / room!.width, y: (c.y - room!.y) / room!.height }));
+        for (const c of corners) {
+          expect(c.x >= 0 && c.x <= 1 && c.y >= 0 && c.y <= 1, `${variant} ${p.shape}`).toBe(true);
+          if (room!.roomOutline)
+            expect(pointInPolygon(c, room!.roomOutline), `${variant} ${p.shape}`).toBe(true);
+        }
+      }
+    }
+    // The Lounge's sofas face in across its round rug, which lies under them.
+    const lounge = withDoorPiece(
+      applyShapeVariant(createShape('room', 0, 0), 'lounge'),
+      'lounge',
+    ) as ShapeElement[];
+    expect(lounge[2]).toMatchObject({ shape: 'rug', variant: 'round' });
+    expect(
+      lounge.filter((p) => p.shape === 'sofa').map((p) => [p.chairFacing, p.width, p.height]),
+    ).toEqual([
+      ['w', 85, 152],
+      ['e', 85, 152],
+    ]);
+  });
+
+  it("spreads a preset's pieces with a room placed bigger, each keeping its size", () => {
+    const board = applyShapeVariant(createShape('room', 0, 0), 'boardroom');
+    const [, , first] = withDoorPiece(board, 'boardroom') as ShapeElement[];
+    const [, , wide] = withDoorPiece(
+      { ...board, width: 1600, height: 800 },
+      'boardroom',
+    ) as ShapeElement[];
+    expect(wide!.x).toBe(first!.x * 2);
+    expect(wide!.width).toBe(first!.width);
+  });
+
+  it("puts a shaped room's name inside its walls", () => {
+    expect(applyShapeVariant(createShape('room', 0, 0), 'kitchen')).toMatchObject({
+      textAlignX: 'left',
+      textAlignY: 'top',
+    });
+    expect(applyShapeVariant(createShape('room', 0, 0), 'lounge')).toMatchObject({
+      textAlignX: 'center',
+      textAlignY: 'top',
+    });
+    // A diamond, its floor reaching neither the top left nor the top's middle at the name's height.
+    expect(
+      outlineNameAlign(
+        [
+          { x: 0.5, y: 0 },
+          { x: 1, y: 0.5 },
+          { x: 0.5, y: 1 },
+          { x: 0, y: 0.5 },
+        ],
+        200,
+        200,
+      ),
+    ).toEqual({
+      textAlignX: 'center',
+      textAlignY: 'middle',
+    });
+    // A Room Builder room whose top left is cut away.
+    const drawn = createOutlinedRoom([
+      { x: 100, y: 0 },
+      { x: 400, y: 0 },
+      { x: 400, y: 300 },
+      { x: 0, y: 300 },
+      { x: 0, y: 100 },
+    ])!;
+    expect(drawn).toMatchObject({ textAlignX: 'center', textAlignY: 'top' });
   });
 
   it('places a shaped one as a custom room with its Door on the wall it names', () => {
@@ -164,10 +256,14 @@ describe('doorArt', () => {
     expect(doorArt(96, 24, 'double').filter((p) => p.openOnly)).toHaveLength(2);
   });
 
-  it('adds a padlock when locked', () => {
+  it('adds a padlock mid-doorway when locked, on its disc, drawn last', () => {
     const locked = doorArt(96, 24, 'sliding', true);
-    expect(locked.length - doorArt(96, 24, 'sliding').length).toBe(2);
-    expect(locked.at(-1)).toMatchObject({ tag: 'rect', paint: 'ink', w: 9 });
+    const lock = locked.filter((p) => p.lock);
+    expect(locked.length - doorArt(96, 24, 'sliding').length).toBe(4);
+    expect(locked.slice(-4)).toEqual(lock);
+    expect(lock[0]).toMatchObject({ tag: 'circle', paint: 'plate', cx: 48, cy: 12, r: 10 });
+    expect(lock[2]).toMatchObject({ tag: 'rect', paint: 'ink', w: 9 });
+    expect(doorLockCentre(144, 24)).toEqual({ x: 72, y: 12 });
   });
 
   it('writes a pose as a transform, nothing for the rest pose', () => {
@@ -201,8 +297,13 @@ describe('the export of doors and corridors', () => {
       'fill-opacity',
     );
     const locked = doorSvg(door({ locked: true, doorClosed: true }), '#fff', '#000');
-    expect(locked).toContain('opacity="0.22"');
+    expect(locked).toContain(`opacity="${LOCKED_DOOR_SHADE}"`);
     expect(locked).toContain('stroke-linecap="round"');
+    expect(locked).not.toContain('<g transform="rotate');
+    // Turned onto its wall, its padlock is turned back upright about the doorway's middle.
+    expect(doorSvg(door({ locked: true, rotation: 90 }), '#fff', '#000')).toContain(
+      '<g transform="rotate(-90 48 12)">',
+    );
   });
 
   it('draws a corridor floor and walls, and routes both kinds through the face export', () => {
