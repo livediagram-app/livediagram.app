@@ -74,8 +74,6 @@ export type BoxedElementViewProps = {
       >
     >,
   ) => void;
-  // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
-  chartPalette?: readonly string[];
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): switches the LOCAL participant into
@@ -135,12 +133,9 @@ export type BoxedElementViewProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
-  // Omitted for read-only viewers.
-  onOpenEditDialog?: (id: string) => void;
-  // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
-  // checkbox. Omitted for read-only viewers.
-  onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // Delete a retired element from its placeholder's button (docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Deleting it"). An Editor's alone: omitted for a Participant and a Viewer.
+  onDeleteRetired?: (elementId: string) => void;
   // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
   stackGlide?: boolean;
   // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).

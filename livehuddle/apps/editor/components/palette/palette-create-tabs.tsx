@@ -4,7 +4,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
-import { EmbedGroupIcon, WebGroupIcon } from '@livehuddle/ui';
+import { WebGroupIcon } from '@livehuddle/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Every tile is
@@ -51,15 +51,6 @@ export function PaletteDrawTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// Charts, meters and tables (docs/specs/009-elements/pie-chart.md, docs/specs/010-palette/palette-top-level-categories.md): pie / bar / line charts,
-// progress bars and rings, ratings, and the editable grid. Rows with a blurb,
-// like Behaviour: "Pie" and "Donut" name the picture but not the job, and
-// "Proportions of a whole" vs "How far along something is" is the thing you
-// are actually choosing between.
-export function PaletteDataTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
 // The Collaborate elements (docs/specs/012-collaboration/workshop-mode.md "The palette"): six
 // categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
 // like Build and Data: mode buttons look alike at palette size, and
@@ -84,17 +75,6 @@ export function PaletteMediaTab({ pendingDraw, actions, tiles: media }: TabProps
         actions={actions}
         pendingDraw={pendingDraw}
       />
-      {/* A layout that leaves the whole group out leaves its row out too. */}
-      {media.some((t) => t.tileGroup === 'embed') ? (
-        <PaletteTileGroup
-          title="Embed"
-          blurb="Load a page on the canvas"
-          icon={<EmbedGroupIcon />}
-          tiles={media.filter((t) => t.tileGroup === 'embed')}
-          actions={actions}
-          pendingDraw={pendingDraw}
-        />
-      ) : null}
     </div>
   );
 }

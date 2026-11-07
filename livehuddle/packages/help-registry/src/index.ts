@@ -679,7 +679,7 @@ export const articles: Article[] = [
     title: 'My Changes Are Missing',
     description: 'How autosave works, what a failed save looks like, and how to recover.',
     keywords:
-      'lost work autosave recover restore disappeared gone save history new version reload update',
+      'lost work autosave recover restore disappeared gone save history new version reload update no longer supported chart checklist embed placeholder',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
   },

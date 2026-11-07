@@ -24,7 +24,6 @@ describe('searchElementTiles', () => {
     const found = ids(searchElementTiles({ query: 'room', hasImage: true }));
     expect(found).toContain('tools:room');
     expect(found).not.toContain('tools:frame');
-    expect(ids(searchElementTiles({ query: 'pie', hasImage: true }))).not.toContain('data:pie');
   });
 
   it('lists the element types already on the tab before anything is typed', () => {
@@ -67,10 +66,10 @@ describe('mergeByName', () => {
   const t = (id: string) => tileById(id)!;
 
   it('puts a name match from a later list above a keyword-only match from an earlier one', () => {
-    // "flowchart" is a keyword of the diamond; "Pie Chart" names the pie (its caption here, to read in full).
-    const pie = { ...t('data:pie'), caption: 'Pie Chart' };
-    expect(ids(mergeByName('chart', [t('shapes:diamond')], [pie]))).toEqual([
-      'data:pie',
+    // "flowchart" is a keyword of the diamond; "Org Chart" names the hexagon (its caption here, to read in full).
+    const org = { ...t('shapes:hexagon'), caption: 'Org Chart' };
+    expect(ids(mergeByName('chart', [t('shapes:diamond')], [org]))).toEqual([
+      'shapes:hexagon',
       'shapes:diamond',
     ]);
   });

@@ -1,4 +1,3 @@
-import type { EmbedProvider } from '@livehuddle/document';
 import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
@@ -32,13 +31,8 @@ export function usePaletteCatalogue({
   onAddTable,
   onAddAnnotation,
   onAddLinkCard,
-  onAddVideo,
-  onAddBanner,
   onAddHero,
-  onAddHeader,
   onAddCallout,
-  onAddStatRow,
-  onAddProcess,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -71,7 +65,6 @@ export function usePaletteCatalogue({
   // fixed 44x44 marker has no box to draw.
   const addAnnotation = armed(onAddAnnotation);
   const addLinkCard = armed(onAddLinkCard);
-  const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
   // Components arm the draw gesture (tap-or-drag) and close a popover
   // palette so the canvas is clear to draw on.
   const addArrow = (ends?: import('@livehuddle/document').ArrowEnds) =>
@@ -87,12 +80,8 @@ export function usePaletteCatalogue({
   const addComponent = (kind: import('@livehuddle/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
-      banner: onAddBanner,
       hero: onAddHero,
-      header: onAddHeader,
       callout: onAddCallout,
-      stat: onAddStatRow,
-      process: onAddProcess,
     } as const;
     armed(byKind[kind])();
   };
@@ -118,7 +107,6 @@ export function usePaletteCatalogue({
       addImage,
       addAnnotation,
       addLinkCard,
-      addVideo,
       addSticker,
       addComponent,
       cancelDraw: onCancelDraw,

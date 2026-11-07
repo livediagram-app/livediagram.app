@@ -21,6 +21,24 @@ export function shapeAt(
   return { ...createShape(kind, x, y), id, x, y, width, height, ...extra };
 }
 
+// A stored shape of a kind livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+// elements"): a square's box carrying the old kind word and whatever fields it was stored with.
+export function retiredShapeAt(
+  kind: string,
+  id: string,
+  x: number,
+  y: number,
+  width = 100,
+  height = 50,
+  extra: Record<string, unknown> = {},
+): ShapeElement {
+  return {
+    ...shapeAt('square', id, x, y, width, height),
+    shape: kind,
+    ...extra,
+  } as unknown as ShapeElement;
+}
+
 export function strokeAt(id: string, x: number, y: number, closed = false): Element {
   return {
     ...createFreehand(

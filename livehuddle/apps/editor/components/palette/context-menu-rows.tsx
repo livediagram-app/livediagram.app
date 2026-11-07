@@ -27,26 +27,8 @@ import { lucideCircleDot } from '@liveworkspace/icons/lucide';
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
-// Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
-// live in context-menu-data-rows.tsx; re-exported so importers keep
-// resolving.
-export {
-  ChecklistRowsEditor,
-  CodeSummary,
-  LegendDataEditor,
-  LineDataSummary,
-  PieDataEditor,
-} from './context-menu-data-editors';
-export {
-  ChartMenuGlyph,
-  DataMenuGlyph,
-  PieAnimTiles,
-  ProgressAnimTiles,
-  ProgressRow,
-  RatingAnimTiles,
-  RatingMenuGlyph,
-  RatingPickerRow,
-} from './context-menu-data-rows';
+// The shared category glyphs live in context-menu-data-rows.tsx; re-exported so importers keep resolving.
+export { DataMenuGlyph, RatingMenuGlyph } from './context-menu-data-rows';
 export { ColourRow, IconPositionGrid, MenuToggleRow };
 export function BorderGrid({
   label,

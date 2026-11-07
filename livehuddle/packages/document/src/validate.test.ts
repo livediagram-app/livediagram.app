@@ -11,6 +11,7 @@ import {
   TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
+import { CARD_TAG_MAX, CARD_TAGS_MAX } from './card';
 import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
 import { MAX_FREEHAND_POINTS, encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
@@ -72,19 +73,6 @@ describe('isValidElement', () => {
       }),
     ).toBe(true);
     expect(isValidElement({ id: 'x', type: 'text', ...box })).toBe(true);
-  });
-
-  it('bounds the code block + checklist fields (docs/specs/009-elements/code-block.md, docs/specs/009-elements/checklist.md)', () => {
-    const shape = (o: object) => ({ id: 's', type: 'shape', shape: 'code-block', ...box, ...o });
-    expect(isValidElement(shape({ code: 'const x = 1;', codeLanguage: 'ts' }))).toBe(true);
-    expect(isValidElement(shape({ code: 'x'.repeat(4001) }))).toBe(false);
-    expect(isValidElement(shape({ codeLanguage: 'brainfuck' }))).toBe(false);
-    const list = (items: unknown) =>
-      isValidElement({ id: 'c', type: 'shape', shape: 'checklist', ...box, checklistItems: items });
-    expect(list([{ text: 'Task', done: false }])).toBe(true);
-    expect(list([{ text: 'Task', done: 'yes' }])).toBe(false);
-    expect(list([{ text: 42, done: true }])).toBe(false);
-    expect(list(Array.from({ length: 31 }, () => ({ text: 't', done: false })))).toBe(false);
   });
 
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
@@ -506,25 +494,25 @@ describe('elementValidationIssue', () => {
     const issue = elementValidationIssue({
       id: 'a',
       type: 'shape',
-      shape: 'code-block',
-      codeLanguage: 'cobol',
+      shape: 'card',
+      cardMedia: 'cobol',
       ...box,
     });
-    expect(issue?.field).toBe('codeLanguage');
-    expect(issue?.rule).toContain('python');
+    expect(issue?.field).toBe('cardMedia');
+    expect(issue?.rule).toContain('badge');
   });
 
   it('names an over-cap array with its cap', () => {
     const issue = elementValidationIssue({
       id: 'a',
       type: 'shape',
-      shape: 'pie-chart',
-      pieSlices: Array.from({ length: 5001 }, () => ({ label: 'x', value: 1 })),
+      shape: 'card',
+      tags: Array.from({ length: CARD_TAGS_MAX + 1 }, () => 'x'),
       ...box,
     });
     expect(issue).toEqual({
-      field: 'pieSlices',
-      rule: 'an array of at most 5000 slices, each { label, value }',
+      field: 'tags',
+      rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
     });
   });
 

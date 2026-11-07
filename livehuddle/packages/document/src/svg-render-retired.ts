@@ -11,7 +11,7 @@ import { svgFace } from './svg-render-faces';
 import { r2, xmlEscape } from './svg-render-primitives';
 
 export function svgRetiredElement(
-  el: BoxedElement & { type: 'shape' },
+  el: BoxedElement,
   surface: CanvasSurface = 'light',
   fontFamily?: string,
 ): string {

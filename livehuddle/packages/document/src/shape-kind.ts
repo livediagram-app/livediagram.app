@@ -20,15 +20,8 @@ export type ShapeKind =
   | 'parallelogram'
   | 'hexagon'
   | 'document'
-  // Document element (docs/specs/009-elements/page-element.md). Named 'page' because 'document' above is
-  // the flowchart output symbol.
-  | 'page'
   // Lane (docs/specs/009-elements/lane.md): a titled horizontal band that carries its contents.
   | 'lane'
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md): single elements that lay themselves out,
-  // replacing the grouped composites the Components palette used to build.
-  // Banner: an accent bar, title (the label) over a subtitle line.
-  | 'banner'
   // Callout: a card with an accent badge, a heading line and a body (label).
   | 'callout'
   // Card (docs/specs/009-elements/card.md): a diagram node with slots (header band, media, title, meta line,
@@ -46,13 +39,6 @@ export type ShapeKind =
   | 'stack'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
-  // Stat row: KPI cards, a big value over a caption each, in `stats`.
-  | 'stat-row'
-  // Process steps: numbered circles joined by arrows, captions in
-  // `processSteps`.
-  | 'process'
-  // Header: a website header bar, logo + brand (the label) + `navLinks`.
-  | 'site-header'
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode — Avatar by default. Which mode lives in the
   // element's `mode` field.
@@ -184,31 +170,8 @@ export type ShapeKind =
   | 'star'
   // Speech bubble / callout: a rounded body with a tail at the bottom-left.
   | 'speech-bubble'
-  // Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that show a
-  // 0–100 percentage. They carry `progress` / `progressAnim` (below).
-  | 'progress-bar'
-  | 'progress-ring'
   // The Timeline (docs/specs/009-elements/timeline.md): milestones along a spine.
   | 'timeline-rail'
-  // Rating (docs/specs/009-elements/rating.md): a row of five stars showing a 1–5 score. Carries
-  // `rating` / `ratingAnim` (below).
-  | 'rating'
-  // Pie + bar charts (docs/specs/009-elements/pie-chart.md): data charts sized by value. Share `pieSlices` /
-  // `pieAnim` / `chartLegend` (below). The "Data" component family.
-  | 'pie-chart'
-  | 'bar-chart'
-  // Line chart (docs/specs/009-elements/pie-chart.md): a 2-D chart with `lineCategories` + `lineSeries`
-  // (CSV-importable). Shares `pieAnim` / `chartLegend`.
-  | 'line-chart'
-  // Code block (docs/specs/009-elements/code-block.md): a monospace snippet card. Carries `code` +
-  // `codeLanguage` (below); keeps a fixed dark identity regardless of theme.
-  | 'code-block'
-  // Checklist (docs/specs/009-elements/checklist.md): checkable to-do rows. Carries `checklistItems`
-  // (below); boxes toggle on-canvas like the rating's stars.
-  | 'checklist'
-  // Legend (docs/specs/009-elements/pie-chart.md): a card of colour-coded rows (a swatch + a label), the
-  // key you put beside a chart or a colour-coded board.
-  | 'legend'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
   // a jump to it, on your tab.
   | 'focus-button'

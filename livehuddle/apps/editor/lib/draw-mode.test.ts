@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EMBED_PROVIDERS } from '@livehuddle/document';
 import {
   drawBannerMessage,
   drawIntentCursor,
@@ -37,13 +36,6 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   image: [{ type: 'image' }],
   table: [{ type: 'table' }],
   'link-card': [{ type: 'link-card' }],
-  // Every provider, plus the no-provider case the empty state falls back on.
-  // The banner names the service, so a new EMBED_PROVIDERS member without a
-  // label would otherwise reach the user as "undefined".
-  video: [
-    { type: 'video' },
-    ...EMBED_PROVIDERS.map((provider): PendingDraw => ({ type: 'video', provider })),
-  ],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
   'room-walls': [{ type: 'room-walls' }],
@@ -51,7 +43,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
-  component: [{ type: 'component', kind: 'banner' }],
+  component: [{ type: 'component', kind: 'hero' }],
   // Plain pen plus every variant.
   freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
 };
@@ -81,25 +73,6 @@ describe('drawBannerMessage', () => {
     );
   });
 
-  it('names the embed service rather than saying "video" for all six', () => {
-    expect(drawBannerMessage({ type: 'video', provider: 'loom' }, false)).toBe(
-      'Click to drop or drag to draw Loom (stays 16:9)',
-    );
-    expect(drawBannerMessage({ type: 'video', provider: 'gdocs' }, false)).toBe(
-      'Click to drop or drag to draw Google Docs (stays 16:9)',
-    );
-    // No provider = the generic website embed, not a blank.
-    expect(drawBannerMessage({ type: 'video' }, false)).toBe(
-      'Click to drop or drag to draw Website (stays 16:9)',
-    );
-  });
-
-  it('drops the 16:9 note on mobile, where it overflows the banner', () => {
-    expect(drawBannerMessage({ type: 'video', provider: 'vimeo' }, true)).toBe(
-      'Tap to drop or drag to draw Vimeo',
-    );
-  });
-
   // The banner names the shape as the tile just picked does: the palette's Square and Circle (and the selection
   // badge's), Draw mode's dock its Rectangle and Ellipse. Its own aliases (Rectangle, Oval) matched neither.
   it('names the shape as the tile that armed it', () => {
@@ -118,19 +91,16 @@ describe('drawBannerMessage', () => {
     expect(drawBannerMessage({ type: 'shape', kind: 'diamond' }, false)).toBe(
       'Click to drop or drag to draw Diamond',
     );
-    expect(drawBannerMessage({ type: 'shape', kind: 'pie-chart' }, false)).toBe(
-      'Click to drop or drag to draw Pie chart',
-    );
   });
 
   it('spells out a hyphenated kind instead of leaving the hyphen in', () => {
-    // 'Mode-button' / 'Code-block' is the capitalise-the-first-letter fallback
+    // 'Mode-button' / 'Water-cooler' is the capitalise-the-first-letter fallback
     // showing through; these are two-word names.
     expect(drawBannerMessage({ type: 'shape', kind: 'mode-button' }, false)).toBe(
       'Click to drop or drag to draw Mode button',
     );
-    expect(drawBannerMessage({ type: 'shape', kind: 'code-block' }, false)).toBe(
-      'Click to drop or drag to draw Code block',
+    expect(drawBannerMessage({ type: 'shape', kind: 'water-cooler' }, false)).toBe(
+      'Click to drop or drag to draw Water cooler',
     );
   });
 
@@ -195,15 +165,15 @@ describe('drawBannerMessage', () => {
 
   it('uses the friendly component name, not the raw kind', () => {
     // Components have their own label table rather than the shape
-    // capitalise-fallback, so 'stat' reads "Stat row" and not "Stat".
-    expect(drawBannerMessage({ type: 'component', kind: 'banner' }, false)).toBe(
-      'Click to drop or drag to draw Banner',
+    // capitalise-fallback, so each reads as its palette tile does.
+    expect(drawBannerMessage({ type: 'component', kind: 'hero' }, false)).toBe(
+      'Click to drop or drag to draw Hero',
     );
-    expect(drawBannerMessage({ type: 'component', kind: 'stat' }, false)).toBe(
-      'Click to drop or drag to draw Stat row',
+    expect(drawBannerMessage({ type: 'component', kind: 'callout' }, false)).toBe(
+      'Click to drop or drag to draw Callout',
     );
-    expect(drawBannerMessage({ type: 'component', kind: 'process' }, false)).toBe(
-      'Click to drop or drag to draw Process steps',
+    expect(drawBannerMessage({ type: 'component', kind: 'avatar' }, false)).toBe(
+      'Click to drop or drag to draw Avatar',
     );
   });
 
@@ -249,7 +219,7 @@ describe('drawIntentCursor', () => {
   it('gives every component kind the stacked-blocks glyph cursor', () => {
     // One cursor for the whole category (matching the Components palette
     // tile), so the kind doesn't change it.
-    for (const kind of ['banner', 'hero', 'avatar'] as const) {
+    for (const kind of ['callout', 'hero', 'avatar'] as const) {
       expect(isInlineSvgCursor(drawIntentCursor({ type: 'component', kind }))).toBe(true);
     }
   });
@@ -338,9 +308,8 @@ describe('dropsOnTap', () => {
       { type: 'image' },
       { type: 'table' },
       { type: 'link-card' },
-      { type: 'video' },
       { type: 'arrow' },
-      { type: 'component', kind: 'banner' },
+      { type: 'component', kind: 'hero' },
     ];
     for (const intent of taps) expect(dropsOnTap(intent)).toBe(true);
   });

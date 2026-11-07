@@ -10,21 +10,14 @@ import {
   type BodyAnimationSet,
   type ShapeAnimation,
 } from './animation-sets';
-import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
 import { isConceptShape } from './concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
 
-// Shapes with a set of their own (Icon, Chart, Progress, Rating), owned outside these catalogues.
+// Shapes with a set of their own (the Icon), owned outside these catalogues.
 function hasOwnShapeSet(el: Element): boolean {
-  return (
-    el.type === 'shape' &&
-    (el.shape === 'icon' ||
-      isChartShape(el.shape) ||
-      isProgressShape(el.shape) ||
-      isRatingShape(el.shape))
-  );
+  return el.type === 'shape' && el.shape === 'icon';
 }
 
 // Shapes whose rows are what moves, not the box (the Timeline), so they take their own set instead of Shape. A Shape
@@ -43,7 +36,6 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
     case 'path':
       return 'drawing';
     case 'image':
-    case 'video':
       return 'media';
     case 'table':
       return 'table';
@@ -68,7 +60,6 @@ export function takesShapeMotions(el: Element): boolean {
     case 'freehand':
     case 'path':
     case 'image':
-    case 'video':
     case 'table':
       return true;
     case 'shape':

@@ -42,7 +42,6 @@ const IN_PLACE = [
   'stopwatch',
   'jukebox',
   'link-card',
-  'video',
   'calendar-wall',
   'suggestion-box',
   'signpost',
@@ -50,6 +49,7 @@ const IN_PLACE = [
 
 // Walked to only when arriving is the point: floor, seats, drinks, proximity, scenery, areas and marks.
 const WALK = [
+  'video',
   'avatar-pad',
   'photo-wall',
   'stage',
@@ -148,16 +148,7 @@ describe('avatarClickIntent', () => {
   it('opens everything else in the reader: content to read', () => {
     for (const kind of ALL_KINDS.filter((k) => !IN_PLACE.includes(k) && !WALK.includes(k)))
       expect(avatarClickIntent(kind), kind).toBe('read');
-    for (const kind of [
-      'sticky',
-      'text',
-      'image',
-      'table',
-      'checklist',
-      'code-block',
-      'bar-chart',
-      'callout',
-    ])
+    for (const kind of ['sticky', 'text', 'image', 'table', 'callout'])
       expect(avatarClickIntent(kind), kind).toBe('read');
   });
 

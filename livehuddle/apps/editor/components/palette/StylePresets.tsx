@@ -8,12 +8,8 @@
 //     that's the user's own silhouette choice) + a reset.
 //   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
 //     flows) + a reset.
-//   - CodeThemePresets: a code block's colour scheme (docs/specs/009-elements/code-block.md), the one
-//     style choice that element has: it paints its own card and takes no
-//     element colours, so there is nothing to reset it TO but another scheme.
 //   - TablePresets: a table's four surfaces (cells, grid, header band, header
 //     text) plus the banding, which only read well in combination.
-//   - ChartPalettePresets: a chart's categorical ramp (docs/specs/009-elements/pie-chart.md).
 // Purely presentational: every apply is a callback prop. Shape presets are
 // theme-derived (passed in); arrow presets are the static table below. Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
@@ -21,13 +17,6 @@
 
 import {
   ARROW_THICKNESS_PX,
-  CHART_PALETTES,
-  CODE_THEMES,
-  DEFAULT_CODE_THEME,
-  type ChartPalette,
-  type ChartPaletteId,
-  type CodeTheme,
-  type CodeThemeId,
   type TablePreset,
   type ArrowFlow,
   type ArrowThickness,
@@ -266,67 +255,6 @@ export function ArrowPresets({
   );
 }
 
-// ── Code-block schemes ──────────────────────────────────────────────────
-
-// A miniature of the card itself: the surface + border, then three token-
-// coloured bars standing in for a line of code. The tile has to answer "what
-// will my block look like", and only the real colours can.
-function CodeThemeSwatch({ theme }: { theme: CodeTheme }) {
-  return (
-    <svg width="28" height="18" viewBox="0 0 28 18" aria-hidden>
-      <rect
-        x="0.75"
-        y="0.75"
-        width="26.5"
-        height="16.5"
-        rx="2.5"
-        fill={theme.surface}
-        stroke={theme.border}
-        strokeWidth="1.5"
-      />
-      <rect x="4" y="4.5" width="7" height="2" rx="1" fill={theme.keyword} />
-      <rect x="12.5" y="4.5" width="9" height="2" rx="1" fill={theme.string} />
-      <rect x="4" y="8.5" width="14" height="2" rx="1" fill={theme.text} />
-      <rect x="4" y="12.5" width="10" height="2" rx="1" fill={theme.comment} />
-    </svg>
-  );
-}
-
-export function CodeThemePresets({
-  current,
-  onApply,
-  onPreview,
-  onPreviewEnd,
-}: {
-  // The block's stored scheme id; absent means the default card.
-  current: string | undefined;
-  onApply: (id: CodeThemeId) => void;
-  onPreview: (id: CodeThemeId) => void;
-  onPreviewEnd: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd);
-  const active = current ?? DEFAULT_CODE_THEME;
-  return (
-    <div className="px-2 py-1">
-      <div className="grid grid-cols-4 gap-1">
-        {CODE_THEMES.map((theme) => (
-          <SizeButton
-            key={theme.id}
-            active={active === theme.id}
-            onClick={() => onApply(theme.id)}
-            onPointerEnter={onMouseHover(() => onPreview(theme.id))}
-            onPointerLeave={onMouseHover(onPreviewEnd)}
-          >
-            <PresetLabel name={theme.name}>
-              <CodeThemeSwatch theme={theme} />
-            </PresetLabel>
-          </SizeButton>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Table looks ─────────────────────────────────────────────────────────
 
 // A miniature of the table: header band, grid lines, and a banded body row
@@ -393,71 +321,6 @@ export function TablePresets({
           >
             <PresetLabel name={p.name}>
               <TablePresetSwatch preset={p} />
-            </PresetLabel>
-          </SizeButton>
-        ))}
-      </div>
-      <ResetButton onReset={onReset} />
-    </div>
-  );
-}
-
-// ── Chart palettes ──────────────────────────────────────────────────────
-
-// The ramp itself, as the stripe of colours a legend will run through. Four
-// of the eight: enough to tell the palettes apart at tile size, where eight
-// slivers would read as mud.
-function ChartPaletteSwatch({ palette }: { palette: ChartPalette }) {
-  return (
-    <svg width="28" height="18" viewBox="0 0 28 18" aria-hidden>
-      {palette.colors.slice(0, 4).map((color, i) => (
-        <rect key={i} x={i * 7} y={1} width={7} height={16} fill={color} />
-      ))}
-      <rect
-        x="0.5"
-        y="1"
-        width="27"
-        height="16"
-        rx="1.5"
-        fill="none"
-        stroke="currentColor"
-        strokeOpacity="0.25"
-        strokeWidth="1"
-      />
-    </svg>
-  );
-}
-
-export function ChartPalettePresets({
-  current,
-  onApply,
-  onPreview,
-  onPreviewEnd,
-  onReset,
-}: {
-  // The chart's stored palette id; absent means it follows the tab theme.
-  current: string | undefined;
-  onApply: (id: ChartPaletteId) => void;
-  onPreview: (id: ChartPaletteId) => void;
-  onPreviewEnd: () => void;
-  // Back to no palette, i.e. following the theme again. Unlike the other
-  // grids this genuinely has something to reset TO.
-  onReset: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd);
-  return (
-    <div className="px-2 py-1">
-      <div className="mb-1.5 grid grid-cols-4 gap-1">
-        {CHART_PALETTES.map((palette) => (
-          <SizeButton
-            key={palette.id}
-            active={current === palette.id}
-            onClick={() => onApply(palette.id)}
-            onPointerEnter={onMouseHover(() => onPreview(palette.id))}
-            onPointerLeave={onMouseHover(onPreviewEnd)}
-          >
-            <PresetLabel name={palette.name}>
-              <ChartPaletteSwatch palette={palette} />
             </PresetLabel>
           </SizeButton>
         ))}

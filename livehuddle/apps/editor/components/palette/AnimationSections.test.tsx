@@ -32,10 +32,10 @@ describe('animationCategoriesOf (one category per set present)', () => {
     ]);
   });
 
-  it('icons, charts and arrows keep their own categories', () => {
-    const sel = [of('arrow'), createShape('icon', 0, 0), createShape('pie-chart', 0, 0)];
-    expect(animationCategoriesOf(sel)).toEqual(['shape', 'icon', 'chart', 'arrow']);
-    // The Shape category there is the chart's: an icon or an arrow alone takes none.
+  it('icons and arrows keep their own categories', () => {
+    const sel = [of('arrow'), createShape('icon', 0, 0), createShape('square', 0, 0)];
+    expect(animationCategoriesOf(sel)).toEqual(['shape', 'icon', 'text', 'arrow']);
+    // The Shape category there is the square's: an icon or an arrow alone takes none.
     expect(animationCategoriesOf([createShape('icon', 0, 0)])).toEqual(['icon']);
     expect(animationCategoriesOf([of('arrow')])).toEqual(['arrow']);
   });
@@ -45,18 +45,15 @@ describe('animationCategoriesOf (one category per set present)', () => {
   });
 
   // docs/specs/028-animation/element-animations.md "Shape motions": a photo on a slide can bounce.
-  it('an image or a video shows Shape beside Media', () => {
+  it('an image shows Shape beside Media', () => {
     expect(animationCategoriesOf([of('image')])).toEqual(['shape', 'media']);
-    expect(animationCategoriesOf([of('video')])).toEqual(['shape', 'media']);
   });
 
   // docs/specs/028-animation/element-animations.md "The menu": an element's own animation is a category of the
   // Animation row, never a picker in its own section.
-  it('progress, rating and the timeline take their own category, with the Shape motions', () => {
+  it('the timeline takes its own category, with the Shape motions', () => {
     const own = (shape: string) =>
       animationCategoriesOf([createShape(shape as never, 0, 0)]).filter((c) => c !== 'text');
-    expect(own('progress-bar')).toEqual(['shape', 'progress']);
-    expect(own('rating')).toEqual(['shape', 'rating']);
     expect(own('timeline-rail')).toEqual(['shape', 'concept']);
   });
 });

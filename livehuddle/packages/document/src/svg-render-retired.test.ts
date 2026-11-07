@@ -27,7 +27,7 @@ describe('retiredPlaceholderLayout', () => {
     const card = retiredPlaceholderLayout(retired('qa-board', { label: 'Sprint questions' }));
     expect(card.lines.map((l) => [l.role, l.text])).toEqual([
       ['name', 'Q&A Board'],
-      ['note', 'Not in livehuddle'],
+      ['note', 'No longer supported in livehuddle'],
       ['label', 'Sprint questions'],
     ]);
     const [name, note, label] = card.lines;
@@ -40,6 +40,21 @@ describe('retiredPlaceholderLayout', () => {
     expect(Math.abs(top - bottom)).toBeLessThan(6);
     expect(card.strokeWidth).toBe(1.5);
     expect(card.dash.length).toBe(2);
+  });
+
+  it('gives each line its box: the top it starts at and the width it fills, within the padding', () => {
+    const card = retiredPlaceholderLayout(retired('qa-board', { label: 'Sprint questions' }));
+    const [name, note, label] = card.lines;
+    expect(name!.top).toBeLessThan(name!.baseline);
+    expect(note!.top).toBeGreaterThanOrEqual(name!.baseline - name!.size);
+    expect(label!.top).toBeGreaterThan(note!.top);
+    // "Q&A Board" is 9 characters of the bold name.
+    expect(name!.width).toBeCloseTo(9 * 15 * 0.58);
+    // A line cut to the box stays inside the room the padding leaves.
+    const narrow = retiredPlaceholderLayout(retired('qa-board', { width: 100, height: 56 }));
+    const cut = narrow.lines.find((l) => l.role === 'note')!;
+    expect(cut.text.endsWith('…')).toBe(true);
+    expect(cut.width).toBeLessThanOrEqual(80);
   });
 
   it('leaves out an empty label', () => {
@@ -62,6 +77,20 @@ describe('retiredPlaceholderLayout', () => {
     expect(mid.lines.map((l) => l.role)).toEqual(['name', 'note']);
   });
 
+  it('keeps the whole note on a card 210px wide, as the deleted Collaborate elements were stored', () => {
+    for (const width of [210, 220]) {
+      const card = retiredPlaceholderLayout({
+        type: 'shape',
+        shape: 'session-button',
+        width,
+        height: 150,
+      });
+      expect(card.lines.find((l) => l.role === 'note')!.text).toBe(
+        'No longer supported in livehuddle',
+      );
+    }
+  });
+
   it('survives a box with no size, and a label that is not text', () => {
     const card = retiredPlaceholderLayout(
       retired('hologram', { width: Number.NaN, height: -4, label: 7 }),
@@ -78,7 +107,11 @@ describe('svgRetiredElement', () => {
     expect(svg).toContain(`fill="${RETIRED_PLACEHOLDER_COLOURS.light.fill}"`);
     expect(svg).toContain('stroke-width="1.5"');
     expect(svg).toContain('stroke-dasharray="6 4"');
-    expect(texts(svg)).toEqual(['Q&amp;A Board', 'Not in livehuddle', 'Ask &lt;us&gt;']);
+    expect(texts(svg)).toEqual([
+      'Q&amp;A Board',
+      'No longer supported in livehuddle',
+      'Ask &lt;us&gt;',
+    ]);
     // In the element's box: the outline inset by half its stroke.
     expect(svg).toContain('<rect x="100.75" y="50.75" width="318.5" height="218.5"');
   });
@@ -105,7 +138,7 @@ describe('a retired element in the export', () => {
       strokeColor: '#00ff00',
     });
     const svg = svgBoxed(el);
-    expect(texts(svg)).toEqual(['Poll', 'Not in livehuddle', 'Lunch?']);
+    expect(texts(svg)).toEqual(['Poll', 'No longer supported in livehuddle', 'Lunch?']);
     expect(svg).not.toContain('#ff0000');
     expect(svg).not.toContain('#00ff00');
     expect(svg).not.toContain('Where?');
@@ -117,7 +150,10 @@ describe('a retired element in the export', () => {
   });
 
   it('names a kind livehuddle never had an Unknown Element', () => {
-    expect(texts(svgBoxed(retired('hologram')))).toEqual(['Unknown Element', 'Not in livehuddle']);
+    expect(texts(svgBoxed(retired('hologram')))).toEqual([
+      'Unknown Element',
+      'No longer supported in livehuddle',
+    ]);
   });
 
   it('draws the same card in a whole-tab render, on dark paper too', () => {

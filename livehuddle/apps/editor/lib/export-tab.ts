@@ -43,7 +43,6 @@ import {
 } from '@liveworkspace/workbench/lib/icon-registry';
 import { drawBoxed } from './export-tab-canvas-draw';
 import type { ExportImageMap } from './export-tab-images';
-import { exportChartInk } from './export-chart-ink';
 
 // Shared options for the image exports (PNG / SVG / PDF). `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
@@ -137,7 +136,6 @@ export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
-  const chartInk = exportChartInk(tab);
   // `ordered` is the canvas's paint order, frames first (docs/specs/006-document/layers.md "Stacking").
   const els = tab.elements;
   const ordered = paintOrder(tab.elements);
@@ -245,7 +243,6 @@ export async function renderTabToCanvas(
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
         surface,
-        ...chartInk,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -329,7 +326,6 @@ export async function renderTabToCanvas(
 // three image formats under the current pattern option.
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // The same paint order as the canvas renderer above.
-  const chartInk = exportChartInk(tab);
   const els = tab.elements;
   const ordered = paintOrder(tab.elements);
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
@@ -391,7 +387,6 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             tabFinish: tab.finish,
             sketchBackdrop: backdrops.has(el.id),
             surface,
-            ...chartInk,
           }),
         );
     }

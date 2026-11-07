@@ -95,12 +95,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize,
-    onToggleChecklistItem,
+    onDeleteRetired,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
     onSetHeroCaptionLine,
-    chartPalette,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -110,7 +109,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onOpenEditDialog,
     onLinkCell,
     onShiftSelect,
     readOnly,
@@ -172,7 +170,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
             alignment: alignmentCoordinates(elements, axis, excludeId),
           }).value,
-    onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
+    onDeleteRetired: readOnly ? undefined : onDeleteRetired,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
@@ -184,7 +182,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onOpenEditDialog,
     onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onOpenElementSettings,
@@ -219,11 +216,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => paintOrder(elements).map((element) => ({ element, layerOpacity: 1 })),
     [elements],
   );
-  // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views
-  // re-render only when the colours change.
-  const paletteKey = chartPalette?.join('|') ?? '';
-  // oxlint-disable-next-line react/exhaustive-deps
-  const stablePalette = useMemo(() => chartPalette, [paletteKey]);
 
   // What every boxed element view takes from this layer, the same for each element.
   const boxedShared = useMemo<BoxedShared>(
@@ -241,12 +233,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onCommitTable: h.onCommitTable,
       onCommitHeaderSize: h.onCommitHeaderSize,
       onSnapSeam: h.onSnapSeam,
-      onToggleChecklistItem: h.onToggleChecklistItem,
+      onDeleteRetired: h.onDeleteRetired,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
       onSetPointerTip: h.onSetPointerTip,
       onSetHeroCaptionLine: h.onSetHeroCaptionLine,
-      chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
       onFollowLink: h.onFollowLink,
       onPressModeButton: h.onPressModeButton,
@@ -262,12 +253,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
-      onOpenEditDialog: h.onOpenEditDialog,
       onLinkCell: h.onLinkCell,
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [h, isPaintMode, tabSummaries, readOnly, stablePalette, chairSitters, canvasTool, imageContext],
+    [h, isPaintMode, tabSummaries, readOnly, chairSitters, canvasTool, imageContext],
   );
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).

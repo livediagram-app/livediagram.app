@@ -640,7 +640,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/LinkCardElement"
       },
       {
-        "$ref": "#/components/schemas/VideoElement"
+        "$ref": "#/components/schemas/RetiredTypeElement"
       }
     ]
   },
@@ -959,53 +959,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ChartLegendPosition": {
-    "enum": [
-      "top",
-      "right",
-      "bottom",
-      "left"
-    ],
-    "type": "string"
-  },
-  "ChartPaletteId": {
-    "enum": [
-      "vivid",
-      "ocean",
-      "forest",
-      "sunset",
-      "berry",
-      "earth",
-      "grey",
-      "contrast"
-    ],
-    "type": "string"
-  },
-  "ChartVariant": {
-    "enum": [
-      "horizontal",
-      "area",
-      "scatter",
-      "doughnut"
-    ],
-    "type": "string"
-  },
-  "ChecklistItem": {
-    "additionalProperties": false,
-    "properties": {
-      "done": {
-        "type": "boolean"
-      },
-      "text": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "text",
-      "done"
-    ],
-    "type": "object"
-  },
   "ChipLook": {
     "enum": [
       "solid",
@@ -1032,34 +985,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label"
     ],
     "type": "object"
-  },
-  "CodeLanguage": {
-    "enum": [
-      "plain",
-      "ts",
-      "js",
-      "python",
-      "json",
-      "bash",
-      "sql",
-      "html",
-      "css",
-      "yaml"
-    ],
-    "type": "string"
-  },
-  "CodeThemeId": {
-    "enum": [
-      "midnight",
-      "graphite",
-      "ocean",
-      "forest",
-      "plum",
-      "contrast",
-      "paper",
-      "parchment"
-    ],
-    "type": "string"
   },
   "Comment": {
     "additionalProperties": false,
@@ -2439,17 +2364,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "EmbedProvider": {
-    "enum": [
-      "youtube",
-      "vimeo",
-      "loom",
-      "figma",
-      "gdocs",
-      "website"
-    ],
-    "type": "string"
-  },
   "Endpoint": {
     "anyOf": [
       {
@@ -3389,47 +3303,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "LegendItem": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "label": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "label"
-    ],
-    "type": "object"
-  },
-  "LineSeries": {
-    "additionalProperties": false,
-    "properties": {
-      "axis": {
-        "const": "right",
-        "type": "string"
-      },
-      "color": {
-        "type": "string"
-      },
-      "name": {
-        "type": "string"
-      },
-      "values": {
-        "items": {
-          "type": "number"
-        },
-        "type": "array"
-      }
-    },
-    "required": [
-      "name",
-      "values"
-    ],
-    "type": "object"
-  },
   "LinkCardElement": {
     "additionalProperties": false,
     "properties": {
@@ -4317,34 +4190,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
-  "PieAnim": {
-    "enum": [
-      "grow",
-      "pop",
-      "spin",
-      "pulse"
-    ],
-    "type": "string"
-  },
-  "PieSlice": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "label": {
-        "type": "string"
-      },
-      "value": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "label",
-      "value"
-    ],
-    "type": "object"
-  },
   "PieceTimer": {
     "additionalProperties": false,
     "description": "What a Timer or Stopwatch stores (`ShapeElement.pieceTimer`): one shape for both.",
@@ -4374,14 +4219,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ProgressAnim": {
-    "enum": [
-      "fill",
-      "pulse",
-      "stripes"
-    ],
-    "type": "string"
-  },
   "QuickSwatchSlot": {
     "enum": [
       1,
@@ -4392,15 +4229,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       6
     ],
     "type": "number"
-  },
-  "RatingAnim": {
-    "enum": [
-      "pop",
-      "twinkle",
-      "pulse",
-      "rock"
-    ],
-    "type": "string"
   },
   "Reaction": {
     "enum": [
@@ -4726,6 +4554,120 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "RetiredTypeElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "shadow": {
+        "$ref": "#/components/schemas/ElementShadow"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "video",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
   "RevertKept": {
     "additionalProperties": false,
     "properties": {
@@ -4907,30 +4849,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chairFacing": {
         "$ref": "#/components/schemas/ChairFacing"
       },
-      "chartAxis": {
-        "type": "boolean"
-      },
-      "chartLegend": {
-        "type": "boolean"
-      },
-      "chartLegendPosition": {
-        "$ref": "#/components/schemas/ChartLegendPosition"
-      },
-      "chartPalette": {
-        "$ref": "#/components/schemas/ChartPaletteId"
-      },
-      "chartValues": {
-        "type": "boolean"
-      },
-      "chartVariant": {
-        "$ref": "#/components/schemas/ChartVariant"
-      },
-      "checklistItems": {
-        "items": {
-          "$ref": "#/components/schemas/ChecklistItem"
-        },
-        "type": "array"
-      },
       "chipLook": {
         "$ref": "#/components/schemas/ChipLook"
       },
@@ -4939,18 +4857,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/ClockZone"
         },
         "type": "array"
-      },
-      "code": {
-        "type": "string"
-      },
-      "codeLanguage": {
-        "$ref": "#/components/schemas/CodeLanguage"
-      },
-      "codeTheme": {
-        "$ref": "#/components/schemas/CodeThemeId"
-      },
-      "codeWrap": {
-        "type": "boolean"
       },
       "colorPreset": {
         "type": "string"
@@ -5042,24 +4948,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label": {
         "type": "string"
       },
-      "legendItems": {
-        "items": {
-          "$ref": "#/components/schemas/LegendItem"
-        },
-        "type": "array"
-      },
-      "lineCategories": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "lineSeries": {
-        "items": {
-          "$ref": "#/components/schemas/LineSeries"
-        },
-        "type": "array"
-      },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
@@ -5071,12 +4959,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mode": {
         "$ref": "#/components/schemas/SelectionMode"
-      },
-      "navLinks": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
       },
       "note": {
         "type": "string"
@@ -5111,21 +4993,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "penTextColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
-      "pieAnim": {
-        "$ref": "#/components/schemas/PieAnim"
-      },
-      "pieAnimRepeat": {
-        "type": "boolean"
-      },
-      "pieAnimSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "pieSlices": {
-        "items": {
-          "$ref": "#/components/schemas/PieSlice"
-        },
-        "type": "array"
-      },
       "pieceTimer": {
         "$ref": "#/components/schemas/PieceTimer"
       },
@@ -5148,24 +5015,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
       },
-      "processSteps": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "progress": {
-        "type": "number"
-      },
-      "progressAnim": {
-        "$ref": "#/components/schemas/ProgressAnim"
-      },
-      "progressAnimRepeat": {
-        "type": "boolean"
-      },
-      "progressAnimSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
       "railCount": {
         "type": "number"
       },
@@ -5174,18 +5023,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
-      },
-      "rating": {
-        "type": "number"
-      },
-      "ratingAnim": {
-        "$ref": "#/components/schemas/RatingAnim"
-      },
-      "ratingAnimRepeat": {
-        "type": "boolean"
-      },
-      "ratingAnimSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
       },
       "reaction": {
         "$ref": "#/components/schemas/Reaction"
@@ -5250,12 +5087,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "stageSpeakers": {
         "$ref": "#/components/schemas/StageSpeakers"
-      },
-      "stats": {
-        "items": {
-          "$ref": "#/components/schemas/StatItem"
-        },
-        "type": "array"
       },
       "stepSequence": {
         "type": "boolean"
@@ -5358,9 +5189,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parallelogram",
       "hexagon",
       "document",
-      "page",
       "lane",
-      "banner",
       "callout",
       "card",
       "badge",
@@ -5369,9 +5198,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagram-key",
       "stack",
       "boundary",
-      "stat-row",
-      "process",
-      "site-header",
       "mode-button",
       "portal",
       "chair",
@@ -5466,16 +5292,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trapezoid",
       "star",
       "speech-bubble",
-      "progress-bar",
-      "progress-ring",
       "timeline-rail",
-      "rating",
-      "pie-chart",
-      "bar-chart",
-      "line-chart",
-      "code-block",
-      "checklist",
-      "legend",
       "focus-button",
       "icon",
       "sticker"
@@ -5838,22 +5655,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "take-part"
     ],
     "type": "string"
-  },
-  "StatItem": {
-    "additionalProperties": false,
-    "properties": {
-      "caption": {
-        "type": "string"
-      },
-      "value": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "value",
-      "caption"
-    ],
-    "type": "object"
   },
   "StickyAnimation": {
     "enum": [
@@ -7255,123 +7056,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "url"
-    ],
-    "type": "object"
-  },
-  "VideoElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "embedProvider": {
-        "$ref": "#/components/schemas/EmbedProvider"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "font": {
-        "type": "string"
-      },
-      "headerFill": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "shadow": {
-        "$ref": "#/components/schemas/ElementShadow"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "video",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height"
     ],
     "type": "object"
   },

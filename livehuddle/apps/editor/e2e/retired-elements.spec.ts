@@ -84,7 +84,7 @@ test.describe('Retired elements', () => {
     for (const el of RETIRED) {
       const face = page.locator(`[data-element-id="${String(el.id)}"] [data-retired-element]`);
       await expect(face).toHaveAttribute('data-retired-element', String(el.shape));
-      await expect(face).toContainText('Not in livehuddle');
+      await expect(face).toContainText('No longer supported in livehuddle');
     }
     await expect(page.locator('[data-element-id="r9"]')).toContainText('Q&A Board');
     await expect(page.locator('[data-element-id="r0"]')).toContainText('Poll');

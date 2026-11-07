@@ -75,6 +75,10 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     removeSelected(ids);
   };
 
+  // One element by id, whatever is selected: a retired element's placeholder Delete
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it"). The same removal as the Delete key.
+  const deleteElementById = (id: string) => removeSelected(new Set([id]));
+
   const removeSelected = (targetIds: Set<string>) => {
     haptic('delete');
     commit((els) => {
@@ -174,6 +178,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     stackSelectedFront: () => stackSelected('front'),
     stackSelectedBack: () => stackSelected('back'),
     deleteSelected,
+    deleteElementById,
     selectMarquee,
     duplicateMultiSelected,
     deleteMultiSelected,

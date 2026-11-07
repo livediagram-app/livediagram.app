@@ -1,23 +1,12 @@
-// Live miniatures for the animation sets that predate the per-kind sets: arrow flow, icon glyph
-// motion, and the progress, rating and chart animations (docs/specs/028-animation/element-animations.md
+// Live miniatures for the animation sets that predate the per-kind sets: arrow flow and icon glyph
+// motion (docs/specs/028-animation/element-animations.md
 // "The menu"). Each renders the canvas's own renderer (or its own classes) at tile size, so a tile
 // shows exactly what picking it does; AnimationPreviewTile freezes it and plays it on hover.
 
 import { useRef, type CSSProperties } from 'react';
-import type {
-  ArrowElement,
-  ArrowFlow,
-  IconAnimation,
-  PieAnim,
-  ProgressAnim,
-  RatingAnim,
-  ShapeElement,
-} from '@livehuddle/document';
+import type { ArrowElement, ArrowFlow, IconAnimation } from '@livehuddle/document';
 import { ArrowFlowOverlays, FLOW_PATH_CLASS, FLOW_PATH_DASH } from '@/components/canvas/arrow-flow';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { ProgressView } from '@/components/canvas/ProgressView';
-import { RatingView } from '@/components/canvas/RatingView';
-import { PieChartView } from '@/components/canvas/PieChartView';
 import { BRAND_RAMP } from '@livehuddle/ui';
 
 // The tiles' own art wears the app's brand (brand-500), as the palette around them does.
@@ -97,71 +86,6 @@ export function IconAnimationPreview({ animation }: { animation: IconAnimation |
         stroke="currentColor"
         animation={animation ?? undefined}
         animationSpeed="normal"
-      />
-    </span>
-  );
-}
-
-// A data shape stand-in at tile size: only what its view reads.
-const shape = (extra: Record<string, unknown>) =>
-  ({ id: 'tile', type: 'shape', x: 0, y: 0, ...extra }) as unknown as ShapeElement;
-
-/** A progress bar at 65%, its percentage hidden at this size. */
-export function ProgressAnimPreview({ anim }: { anim: ProgressAnim | null }) {
-  return (
-    <span className="relative block h-[9px] w-[38px] [&_.text-optical-centre]:hidden">
-      <ProgressView
-        element={shape({
-          shape: 'progress-bar',
-          width: 38,
-          height: 9,
-          progress: 65,
-          progressAnim: anim ?? undefined,
-          progressAnimSpeed: 'normal',
-        })}
-        accent={ACCENT}
-        track={BRAND_RAMP[100]}
-        textColor="transparent"
-      />
-    </span>
-  );
-}
-
-/** Three of five stars, drawn at canvas size and scaled down so the stars stay crisp. */
-export function RatingAnimPreview({ anim }: { anim: RatingAnim | null }) {
-  return (
-    <span className="relative block h-[16px] w-[44px]">
-      <span className="absolute left-0 top-0 block h-[40px] w-[110px] origin-top-left scale-[0.4]">
-        <RatingView
-          element={shape({
-            shape: 'rating',
-            width: 110,
-            height: 40,
-            rating: 3,
-            ratingAnim: anim ?? undefined,
-            ratingAnimSpeed: 'normal',
-          })}
-          accent="#f59e0b"
-        />
-      </span>
-    </span>
-  );
-}
-
-/** A small pie, no legend. */
-export function PieAnimPreview({ anim }: { anim: PieAnim | null }) {
-  return (
-    <span className="relative block h-[28px] w-[28px]">
-      <PieChartView
-        element={shape({
-          shape: 'pie-chart',
-          width: 28,
-          height: 28,
-          chartLegend: false,
-          pieAnim: anim ?? undefined,
-          pieAnimSpeed: 'normal',
-        })}
-        textColor="currentColor"
       />
     </span>
   );

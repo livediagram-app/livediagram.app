@@ -27,8 +27,7 @@ import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
-import { pageBodyTop } from './svg-render-page';
-import { borderOf } from './svg-render-border';
+import { isRetiredElementType } from './retired-kinds';
 import { chipColours, chipLookOf, isChipShape } from './chip';
 import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
@@ -121,10 +120,6 @@ export type BoxedExportOptions = {
   surface?: CanvasSurface;
   // The paper colour under the element, for what cuts through to it (a page's fold).
   paper?: string;
-  // The tab theme's categorical ramp, for the chart elements (docs/specs/009-elements/pie-chart.md). The
-  // canvas hands its charts the same list; without it they fall back to the
-  // built-in one, which is what a caller with no theme in hand wants.
-  chartPalette?: readonly string[];
 };
 
 // The face a label paints in: the author's own choice, else the tab default. The
@@ -323,14 +318,10 @@ export function describeBoxedExport(
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  // A page's body starts under its masthead, so its label does too; a cylinder's label sits on its
-  // body, under the lid and over the base (labelBodyInset).
-  const isPage = el.type === 'shape' && el.shape === 'page';
+  // A cylinder's label sits on its body, under the lid and over the base (labelBodyInset).
   const body = labelBodyInset(el);
-  const bodyTop = isPage ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyTop = el.y + body.top;
   const bodyBottom = el.y + el.height - body.bottom;
-  // ...and inside its border, lining up with the masthead.
-  const bodyInset = isPage ? borderOf(el).width : 0;
   const upright =
     el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
       ? uprightTitleStrip(el, el.width, el.height)
@@ -374,7 +365,7 @@ export function describeBoxedExport(
           alignX === 'right'
             ? el.x + el.width - pad
             : alignX === 'left'
-              ? el.x + pad + bodyInset
+              ? el.x + pad
               : el.x + el.width / 2,
         y:
           alignY === 'top'
@@ -396,13 +387,14 @@ export function describeBoxedExport(
   return { opacity, shape, label };
 }
 
-// A shape that writes its own text, so no centred label is printed over it: a self-drawing shape
-// (charts; the legend is its own case), a Behaviour face other than the chair, a web component, a retired
-// element's placeholder (svg-render-retired.ts, its stored label under its name).
+// An element that writes its own text, so no centred label is printed over it: a self-drawing shape, a Behaviour
+// face other than the chair, a web component, a retired element's placeholder (svg-render-retired.ts, its stored
+// label under its name), of a retired kind or a retired type.
 export function selfLabelled(el: BoxedElement): boolean {
+  if (isRetiredElementType(el.type)) return true;
   if (el.type !== 'shape') return false;
   return (
-    (isSelfDrawingShape(el.shape) && el.shape !== 'legend') ||
+    isSelfDrawingShape(el.shape) ||
     !SHAPE_KINDS.has(el.shape) ||
     // A room's and a stage's label is their name plate (docs/specs/009-elements/office.md).
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) &&
@@ -418,24 +410,18 @@ export function selfLabelled(el: BoxedElement): boolean {
 }
 
 // Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
-// stroke, path, code block, legend or checklist (each draws its own), nor a self-labelled shape.
+// stroke or path (each draws its own), nor a self-labelled element.
 export function drawsStandardLabel(el: BoxedElement): boolean {
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
-  if (
-    el.type === 'shape' &&
-    (el.shape === 'code-block' || el.shape === 'legend' || el.shape === 'checklist')
-  )
-    return false;
   return !selfLabelled(el);
 }
 
 // The room the ordinary label wraps in: the width it may run to and the height between its padding,
-// exactly as `describeBoxedExport` lays the label out (a page's body starts under its masthead).
+// exactly as `describeBoxedExport` lays the label out.
 export function labelRoom(el: BoxedElement): { width: number; height: number } {
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
   const body = labelBodyInset(el);
-  const bodyTop =
-    el.type === 'shape' && el.shape === 'page' ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyTop = el.y + body.top;
   const bodyBottom = el.y + el.height - body.bottom;
   return { width: labelMaxWidth(el, pad), height: bodyBottom - pad - (bodyTop + pad) };
 }

@@ -89,15 +89,6 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Accessibility")', () =>
   });
 });
 
-describe('a chart', () => {
-  it('is named by its chart type, as the palette names it', () => {
-    expect(kindLabel(createShape('bar-chart', 0, 0))).toBe('Column chart');
-    expect(kindLabel({ ...createShape('bar-chart', 0, 0), chartVariant: 'horizontal' })).toBe(
-      'Bar chart',
-    );
-  });
-});
-
 describe('shapeKindLabel', () => {
   it('reads a shape kind as prose, for the Shape tiles of the element menu', () => {
     expect(shapeKindLabel('square')).toBe('Square');
@@ -159,8 +150,18 @@ describe('a retired element’s kind', () => {
     expect(elementAriaLabel(retired('agenda', { label: 'Monday' }))).toBe('Agenda "Monday"');
   });
 
-  it('is a picture: its placeholder holds no controls', () => {
-    expect(elementRole(retired('quiz'))).toBe('img');
+  it("is a group: its placeholder holds an Editor's Delete button", () => {
+    expect(elementRole(retired('quiz'))).toBe('group');
+    expect(
+      elementRole({
+        id: 'v',
+        type: 'video',
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+      } as unknown as Element),
+    ).toBe('group');
   });
 });
 
@@ -183,7 +184,7 @@ describe('elementRole', () => {
   });
 
   it('makes an element with controls on its face a group', () => {
-    for (const kind of ['checklist', 'mode-button', 'page', 'focus-button', 'portal'])
+    for (const kind of ['mode-button', 'focus-button', 'portal'])
       expect(elementRole(shape(kind))).toBe('group');
     expect(
       elementRole({

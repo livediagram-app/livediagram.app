@@ -8,18 +8,7 @@ const state = (kind: Parameters<typeof shapeAt>[0], extra: Record<string, unknow
     .join(' ');
 
 describe('stateAttributeOf (R14, VW22)', () => {
-  it('counts the structured kinds', () => {
-    expect(state('stat-row', { stats: [{}, {}] })).toBe('stats=2');
-    expect(state('process', { processSteps: ['a'] })).toBe('steps=1');
-    expect(state('site-header', { navLinks: ['a', 'b'] })).toBe('links=2');
-    expect(state('legend', { legendItems: [{}] })).toBe('items=1');
-  });
-
-  it('reads values, falling back to what the editor draws', () => {
-    expect(state('rating', { rating: 4 })).toBe('rating=4/5');
-    expect(state('rating', { rating: undefined })).toBe('rating=3/5');
-    expect(state('progress-bar', { progress: 40 })).toBe('progress=40');
-    expect(state('progress-ring', { progress: undefined })).toBe('progress=50');
+  it("counts a Timeline's milestones", () => {
     // A Timeline counts its milestones (docs/specs/009-elements/timeline.md "Timeline").
     expect(state('timeline-rail', {})).toBe('milestones=4');
     expect(state('timeline-rail', { conceptRows: [{ label: 'A' }, { label: 'B' }] })).toBe(
@@ -27,13 +16,13 @@ describe('stateAttributeOf (R14, VW22)', () => {
     );
   });
 
-  it('titles a page, cut like a note', () => {
+  it('titles a card, cut like a note', () => {
     expect(
-      state('page', {
+      state('card', {
         pageTitle: 'Quarterly review of the checkout platform and its many services',
       }),
     ).toBe('title="Quarterly review of the checkout platform and"…');
-    expect(state('page', { pageTitle: ' ' })).toBe('');
+    expect(state('card', { pageTitle: ' ' })).toBe('');
   });
 
   it('titles a card, and flags a badge or step that is attached to a node', () => {
@@ -56,5 +45,10 @@ describe('stateAttributeOf (R14, VW22)', () => {
     );
     expect(state('square', { shape: 'session-button', session: { tool: 'timer' } })).toBe('');
     expect(state('square', { shape: 'qa-board', qaNotes: [{}] })).toBe('');
+    // And the diagram tools Work Tracker #459 deleted.
+    expect(state('square', { shape: 'stat-row', stats: [{}, {}] })).toBe('');
+    expect(state('square', { shape: 'rating', rating: 4 })).toBe('');
+    expect(state('square', { shape: 'progress-bar', progress: 40 })).toBe('');
+    expect(state('square', { shape: 'page', pageTitle: 'Quarterly review' })).toBe('');
   });
 });

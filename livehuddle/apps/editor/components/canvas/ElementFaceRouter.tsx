@@ -32,7 +32,6 @@ import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
-import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PortalFace } from '@/components/canvas/PortalFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
@@ -40,7 +39,6 @@ import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
 import { loadTableView } from '@/lib/editor-deferred-code';
 import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
-import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
 import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
@@ -96,6 +94,7 @@ type ElementFaceRouterProps = Pick<
   | 'onSetWebRows'
   | 'onSetHeroCaptionLine'
   | 'onOpenElementSettings'
+  | 'onDeleteRetired'
 > & {
   // Derived once by the host and shared with the branches here, rather than
   // recomputed per branch: several of them render the same label node.
@@ -116,13 +115,24 @@ type ElementFaceRouterProps = Pick<
   labelFrame: CSSProperties | null;
   // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
   hitLine: boolean;
+  // The box the element's indicators take, in its own units (indicatorClusterRect), so a retired element's Delete
+  // keeps clear of them; absent or null when it has none.
+  indicatorRect?: { x: number; y: number; width: number; height: number } | null;
 };
 
 export function ElementFaceRouter(props: ElementFaceRouterProps) {
   // A kind livehuddle no longer has draws its placeholder and nothing else: no settings `…`, no face of its own,
   // and no label editor however it was asked for one.
-  if (isRetiredElement(props.element) && props.element.type === 'shape')
-    return <RetiredElementFace element={props.element} fontFamily={props.fontFamily} />;
+  if (isRetiredElement(props.element))
+    return (
+      <RetiredElementFace
+        element={props.element}
+        fontFamily={props.fontFamily}
+        selected={props.isSelected}
+        onDelete={props.readOnly ? undefined : props.onDeleteRetired}
+        indicators={props.indicatorRect}
+      />
+    );
   return <KnownElementFace {...props} />;
 }
 
@@ -246,8 +256,6 @@ function KnownElementFace({
         <AnnotationGlyph
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
-      ) : element.type === 'video' ? (
-        <VideoView element={element} />
       ) : element.type === 'link-card' ? (
         <LinkCardView
           element={element}
@@ -409,34 +417,9 @@ function KnownElementFace({
           />
         </InsetContent>
       ) : element.type === 'shape' && isSelfDrawingShape(element.shape) ? (
-        // Progress / rail / rating / chart elements draw their own content, so
-        // they render no standard editable label.
+        // A self-drawing piece (a rail, a sticker, a Space piece) draws its own content, so
+        // it renders no standard editable label.
         <></>
-      ) : element.type === 'shape' && element.shape === 'page' ? (
-        // A Page stacks a fixed masthead over its body (docs/specs/009-elements/page-element.md). The body
-        // node positions itself `absolute inset-0`, so it gets a `relative`
-        // region of its own that starts under the rule rather than the whole
-        // box — that is what stops the prose from running up into the title.
-        <div
-          className="absolute inset-0 flex flex-col"
-          style={{ padding: PADDING_PX[element.padding ?? defaultPadding(element)] }}
-        >
-          <PageMasthead
-            element={element}
-            readOnly={readOnly}
-            onSetHeading={onSetPageHeading}
-            fontFamily={fontFamily}
-          />
-          {/* The body keeps its own padding, which reads as the gap under the
-              rule; only the horizontal padding would double up, so the label's
-              is left to do the work and this container has none. */}
-          <div
-            className="relative min-h-0 flex-1"
-            style={{ marginInline: -PADDING_PX[element.padding ?? defaultPadding(element)] }}
-          >
-            {labelNode}
-          </div>
-        </div>
       ) : labelFrame ? (
         // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): the label and its
         // editor turn together in the strip.

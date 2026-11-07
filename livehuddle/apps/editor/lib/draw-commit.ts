@@ -9,7 +9,6 @@ import {
   createSticky,
   createTable,
   createText,
-  createVideo,
   defaultIconAnimation,
   snapToArrowPoint,
   type ArrowElement,
@@ -47,25 +46,10 @@ const TAP_TRAVEL_PX = 16;
 const isDrawTap = (startX: number, startY: number, endX: number, endY: number): boolean =>
   Math.abs(endX - startX) < TAP_TRAVEL_PX && Math.abs(endY - startY) < TAP_TRAVEL_PX;
 
-// Largest box of the given aspect (width / height) that fits inside w x h.
-// Used by the embed draw (docs/specs/009-elements/youtube-video.md): its 16:9 lock means the drag chooses the
-// scale, not the ratio, so the frame is fitted into the drawn box rather than
-// stretched to fill it.
-function fitToAspect(w: number, h: number, aspect: number): { width: number; height: number } {
-  return w / h > aspect ? { width: h * aspect, height: h } : { width: w, height: w / aspect };
-}
-
-// The embed's locked ratio (docs/specs/009-elements/youtube-video.md), read off the factory rather than
-// written twice — createVideo's 480x270 IS the definition of 16:9 here.
-const EMBED_ASPECT = 16 / 9;
-
-// The box a DRAG lands, in canvas coords: the drawn rectangle as-is for every
-// intent except an aspect-locked embed, which is fitted inside it and centred
-// on it (docs/specs/009-elements/youtube-video.md). Exported so CanvasDrawPreview outlines exactly the box
-// that will commit — previewing the raw drag while the commit fitted it would
-// show the user one rectangle and hand them another.
+// The box a DRAG lands, in canvas coords: the drawn rectangle, at least a tap's travel each way. Exported so
+// CanvasDrawPreview outlines exactly the box that will commit.
 export function drawnDragBox(
-  intent: PendingDraw,
+  _intent: PendingDraw,
   startX: number,
   startY: number,
   endX: number,
@@ -75,17 +59,7 @@ export function drawnDragBox(
   const drawnHeight = Math.max(TAP_TRAVEL_PX, Math.abs(endY - startY));
   const left = Math.min(startX, endX);
   const top = Math.min(startY, endY);
-  if (intent.type !== 'video') {
-    return { x: left, y: top, width: drawnWidth, height: drawnHeight };
-  }
-  const fitted = fitToAspect(drawnWidth, drawnHeight, EMBED_ASPECT);
-  return {
-    // Centre the slack, so the frame sits where the user aimed rather than
-    // hugging one corner of the box they drew.
-    x: left + (drawnWidth - fitted.width) / 2,
-    y: top + (drawnHeight - fitted.height) / 2,
-    ...fitted,
-  };
+  return { x: left, y: top, width: drawnWidth, height: drawnHeight };
 }
 
 // Arrow branch. A stray click lays the default 160px horizontal arrow
@@ -185,7 +159,7 @@ export function buildDrawnComponent(
 export function buildDrawnBoxed(
   intent: Extract<
     PendingDraw,
-    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' | 'video' }
+    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' }
   >,
   startX: number,
   startY: number,
@@ -209,18 +183,12 @@ export function buildDrawnBoxed(
             ? createTable(startX, startY)
             : intent.type === 'link-card'
               ? createLinkCard(startX, startY)
-              : intent.type === 'video'
-                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
-                  // choice arrives on the intent and lands on the element
-                  // here rather than leaving a bare embed to re-point.
-                  createVideo(startX, startY, intent.provider)
-                : createImage(startX, startY);
+              : createImage(startX, startY);
   const tapSize = placed ? base : inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
   const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
-  // Shared with the live preview so the outline the user sizes against is the
-  // box that lands — including the embed's 16:9 fit (docs/specs/009-elements/youtube-video.md).
+  // Shared with the live preview so the outline the user sizes against is the box that lands.
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
   const drawnWidth = fixedSize || isTap ? tapSize.width : dragBox.width;
   const height = fixedSize || isTap ? tapSize.height : dragBox.height;

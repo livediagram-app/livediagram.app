@@ -4,9 +4,9 @@
 // An element change otherwise leaves a browser as an `el` `update` op that
 // replaces the whole element on every receiver (docs/specs/012-collaboration/realtime-conflict-resolution.md). That is fine for an
 // author editing a shape, which the selection lock makes a one-writer affair,
-// and wrong for a checklist the whole room ticks in the same second: each
-// receiver took the other's copy, and one tick vanished. A delta names one
-// tick or one comment, so concurrent deltas commute and every peer lands on the same element.
+// and wrong for a comment thread the whole room writes in the same second: each
+// receiver took the other's copy, and one comment vanished. A delta names one
+// comment or one pinned note, so concurrent deltas commute and every peer lands on the same element.
 //
 // Three pieces, all pure:
 //   - `applyElementDelta`: the one place a delta changes an element, run by
@@ -22,7 +22,6 @@
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
-import type { ChecklistItem } from './data-shapes';
 import { holdsNotes, isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import { arcadeTableWith, type ArcadeScore } from './arcade-scores';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
@@ -41,10 +40,6 @@ const COMMENT_MAX_TEXT = 5000;
 export const COMMENTS_MAX = 500;
 
 export type ElementDelta =
-  // Tick or untick one checklist row (docs/specs/009-elements/checklist.md). Rows have no ids, so the row
-  // is named by its index AND its text: a peer who reordered or retitled the
-  // rows meanwhile gets the row with that text, or nothing.
-  | { kind: 'check'; index: number; text: string; done: boolean }
   // Comment threads (docs/specs/008-canvas/canvas-and-palette.md): append, delete, the server's id replacing the
   // local one, and resolve / unresolve.
   // `before`: a refused delete put back ahead of the comment that followed it (useEditorComments).
@@ -124,19 +119,6 @@ const holdsComment = (el: Element, commentId: string): boolean =>
 // here because a delta is the one element write that skips `validate.ts`.
 export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   switch (delta.kind) {
-    case 'check': {
-      if (el.type !== 'shape' || !el.checklistItems) return el;
-      const items = el.checklistItems;
-      const at =
-        items[delta.index]?.text === delta.text
-          ? delta.index
-          : items.findIndex((item) => item.text === delta.text);
-      if (at === -1 || items[at]!.done === delta.done) return el;
-      return {
-        ...el,
-        checklistItems: items.map((item, i) => (i === at ? { ...item, done: delta.done } : item)),
-      };
-    }
     case 'comment-add': {
       if (!isComment(delta.comment)) return el;
       const thread = threadOf(el);
@@ -236,26 +218,11 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   }
 }
 
-// Carry our `done` flags onto an incoming list of checklist rows, matched by
-// position and text the same way a `check` delta finds its row. Rows the peer
-// added, removed or retitled come from them; ticks come from us, because every
-// tick arrived as a delta.
-export function keepLocalTicks(local: ChecklistItem[], incoming: ChecklistItem[]): ChecklistItem[] {
-  let changed = false;
-  const next = incoming.map((item, i) => {
-    const mine = local[i]?.text === item.text ? local[i] : local.find((l) => l.text === item.text);
-    if (!mine || mine.done === item.done) return item;
-    changed = true;
-    return { ...item, done: mine.done };
-  });
-  return changed ? next : incoming;
-}
-
 // A peer's whole-element copy (an `el` update, or an element inside a whole
 // `tab` op), folded into ours. Everything the peer changed is taken, EXCEPT the
 // delta-carried fields: those reached us one delta at a time and ours is
 // already the merged copy, where theirs is a snapshot from their last save that
-// can be missing somebody's tick or comment.
+// can be missing somebody's comment or note.
 export function mergeIncomingElement(local: Element, incoming: Element): Element {
   if (local.type !== incoming.type) return incoming;
   let next = incoming;
@@ -264,10 +231,6 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
   if (localThread !== incomingThread) next = withThread(next, localThread);
   if (local.type === 'shape' && next.type === 'shape') {
     const shape: ShapeElement = next;
-    if (local.checklistItems && shape.checklistItems) {
-      const items = keepLocalTicks(local.checklistItems, shape.checklistItems);
-      if (items !== shape.checklistItems) next = { ...shape, checklistItems: items };
-    }
     // A notice board's notes are ours whole: every pin and unpin reached us as a delta, so a peer's update (an
     // Editor moving the board) never carries its older list over somebody's new note.
     if (local.noticeNotes !== shape.noticeNotes) {
@@ -306,16 +269,8 @@ function withoutNotes(el: ShapeElement): ShapeElement {
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const {
-    checklistItems,
-    noticeNotes: _n,
-    pieceTimer: _p,
-    arcadeScores: _a,
-    ...shape
-  } = rest as ShapeElement;
-  return checklistItems
-    ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
-    : shape;
+  const { noticeNotes: _n, pieceTimer: _p, arcadeScores: _a, ...shape } = rest as ShapeElement;
+  return shape;
 }
 
 // Did this element change ONLY in fields that travel as deltas? Then the
@@ -323,13 +278,4 @@ function withoutDeltaFields(el: Element): unknown {
 // on top would only hand receivers a snapshot to be wrong with.
 export function elementChangeIsDeltaOnly(before: Element, after: Element): boolean {
   return JSON.stringify(withoutDeltaFields(before)) === JSON.stringify(withoutDeltaFields(after));
-}
-
-// The tick a press on row `index` sends: the row's opposite state, named by
-// index and text. Null when there is no such row.
-export function checklistDeltaFor(el: Element, index: number): ElementDelta | null {
-  if (el.type !== 'shape') return null;
-  const item = el.checklistItems?.[index];
-  if (!item) return null;
-  return { kind: 'check', index, text: item.text, done: !item.done };
 }

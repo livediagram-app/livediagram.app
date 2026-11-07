@@ -73,27 +73,6 @@ describe('graftLiveTabState live clocks (docs/specs/009-elements/timer-and-stopw
   });
 });
 
-describe('graftLiveTabState collaborative fields (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-  it("keeps checklist ticks but undoes the rows' own edit", () => {
-    const live: ShapeElement = {
-      ...shape('list'),
-      checklistItems: [
-        { text: 'one', done: true },
-        { text: 'two', done: false },
-      ],
-    };
-    // The undone step renamed a row; the tick on 'one' came after it.
-    const snapshot: ShapeElement = {
-      ...shape('list'),
-      checklistItems: [{ text: 'one', done: false }],
-    };
-    const restored = graftLiveTabState([tab('t1', [live])], [tab('t1', [snapshot])]);
-    expect((restored[0]!.elements[0] as ShapeElement).checklistItems).toEqual([
-      { text: 'one', done: true },
-    ]);
-  });
-});
-
 describe('opForTheWire on a changeset (docs/specs/024-agents/agent-changesets.md)', () => {
   it('strips comment author ids from every element an add or update carries', () => {
     const authored = shape('a', {

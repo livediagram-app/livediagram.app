@@ -5,13 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  createShape,
-  NAV_LINKS_MAX,
-  PROCESS_MIN_STEPS,
-  STATS_MIN,
-  type WebRows,
-} from '@livehuddle/document';
+import { CARD_TAGS_MAX, createShape, type WebRows } from '@livehuddle/document';
 
 import { ConceptRowsEditor, TextRowsEditor, WebRowsMenuSection } from './context-menu-web-editors';
 
@@ -32,52 +26,39 @@ function renderSection(shape: Parameters<typeof createShape>[0], patch: object =
 }
 
 describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-  it('adds a step and removes one', () => {
-    const onSetRows = renderSection('process');
-    fireEvent.click(screen.getByRole('button', { name: 'Add Step' }));
-    expect(onSetRows).toHaveBeenLastCalledWith({
-      processSteps: ['Plan', 'Build', 'Ship', 'Step 4'],
-    });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove step' })[0]!);
-    expect(onSetRows).toHaveBeenLastCalledWith({ processSteps: ['Build', 'Ship'] });
+  it("adds a card's tag and removes one", () => {
+    const onSetRows = renderSection('card', { tags: ['Design', 'Q3'] });
+    fireEvent.click(screen.getByRole('button', { name: 'Add Tag' }));
+    expect(onSetRows).toHaveBeenLastCalledWith({ tags: ['Design', 'Q3', 'Tag'] });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Remove tag' })[0]!);
+    expect(onSetRows).toHaveBeenLastCalledWith({ tags: ['Q3'] });
   });
 
-  it('reorders a link, and disables moves past either end', () => {
-    const onSetRows = renderSection('site-header');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Move link down' })[0]!);
-    expect(onSetRows).toHaveBeenLastCalledWith({ navLinks: ['About', 'Home', 'Contact'] });
+  it('reorders a tag, and disables moves past either end', () => {
+    const onSetRows = renderSection('card', { tags: ['Design', 'Q3', 'Live'] });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Move tag down' })[0]!);
+    expect(onSetRows).toHaveBeenLastCalledWith({ tags: ['Q3', 'Design', 'Live'] });
     expect(
-      (screen.getAllByRole('button', { name: 'Move link up' })[0] as HTMLButtonElement).disabled,
+      (screen.getAllByRole('button', { name: 'Move tag up' })[0] as HTMLButtonElement).disabled,
     ).toBe(true);
   });
 
-  it('will not remove below the minimum or add above the maximum', () => {
-    renderSection('process', { processSteps: Array(PROCESS_MIN_STEPS).fill('s') });
-    for (const b of screen.getAllByRole('button', { name: 'Remove step' })) {
-      expect((b as HTMLButtonElement).disabled).toBe(true);
-    }
-    cleanup();
-    renderSection('stat-row', { stats: [{ value: '1', caption: 'a' }].slice(0, STATS_MIN) });
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Remove stat' }).disabled).toBe(
-      true,
-    );
-    cleanup();
-    renderSection('site-header', { navLinks: Array(NAV_LINKS_MAX).fill('l') });
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Add Link' }).disabled).toBe(true);
+  it('will not add above the maximum', () => {
+    renderSection('card', { tags: Array(CARD_TAGS_MAX).fill('t') });
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Add Tag' }).disabled).toBe(true);
   });
 
-  it('commits a retyped stat on blur', () => {
-    const onSetRows = renderSection('stat-row');
-    const input = screen.getByRole('textbox', { name: 'Stat 1 caption' });
-    fireEvent.change(input, { target: { value: 'Customers' } });
+  it('commits a retyped tag on blur', () => {
+    const onSetRows = renderSection('card', { tags: ['Design', 'Q3'] });
+    const input = screen.getByRole('textbox', { name: 'Tag 1' });
+    fireEvent.change(input, { target: { value: 'Research' } });
     fireEvent.blur(input);
-    expect(onSetRows).toHaveBeenLastCalledWith({
-      stats: [
-        { value: '1.2k', caption: 'Customers' },
-        { value: '98%', caption: 'Uptime' },
-        { value: '4.7', caption: 'Rating' },
-      ],
-    });
+    expect(onSetRows).toHaveBeenLastCalledWith({ tags: ['Research', 'Q3'] });
+  });
+
+  it('shows nothing for an element with no rows', () => {
+    renderSection('square');
+    expect(screen.queryByRole('button', { name: /^Add / })).toBeNull();
   });
 });
 

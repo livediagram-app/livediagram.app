@@ -95,6 +95,6 @@ describe('outlineHit', () => {
   it('keeps the box of a note, a text box and a kind that paints its own face', () => {
     const note = { id: 'n', type: 'sticky', x: 0, y: 0, width: 100, height: 100 } as Element;
     expect(outlineHit(note, free)).toBeNull();
-    expect(outlineHit(shape({ shape: 'pie-chart' }), free)).toBeNull();
+    expect(outlineHit(shape({ shape: 'sticker' }), free)).toBeNull();
   });
 });

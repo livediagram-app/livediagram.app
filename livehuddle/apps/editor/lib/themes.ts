@@ -40,7 +40,6 @@ export {
   tableColorPresets,
   rederiveColorPresetForTheme,
   themePresetColors,
-  themeChartPalette,
 } from '@livehuddle/document';
 export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livehuddle/document';
 
@@ -135,11 +134,6 @@ export function deriveNewBoxedColours(
   ) {
     return colours;
   }
-  // A page (docs/specs/009-elements/page-element.md) is paper, not a node in the tab's theme.
-  // Tinting it with the backdrop-derived shape colours is what stopped it
-  // reading as a page at all, so it keeps the fill / stroke createShape gave
-  // it. The user can still recolour it from the menu like anything else.
-  if (base.type === 'shape' && base.shape === 'page') return colours;
   // The Behaviour and Collaborate elements used to opt OUT of theme tinting on
   // the reasoning that they are controls and scenery rather than nodes in the
   // tab's theme. Dropped: it left a canvas where a mode button, a

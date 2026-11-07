@@ -32,7 +32,7 @@ import type {
   PathElement,
   AnnotationElement,
   LinkCardElement,
-  VideoElement,
+  RetiredTypeElement,
 } from './element-types';
 export {
   IMAGE_CREDIT_TEXT_MAX,
@@ -42,7 +42,6 @@ export {
   type ImageCredit,
 } from './image-credit';
 export type {
-  ChartLegendPosition,
   ShapeElement,
   TextElement,
   TextSizing,
@@ -58,7 +57,7 @@ export type {
   AnnotationElement,
   LinkCardMeta,
   LinkCardElement,
-  VideoElement,
+  RetiredTypeElement,
 } from './element-types';
 
 // Arrow appearance preset types used by ArrowElement's fields below. The
@@ -153,7 +152,7 @@ export type BoxedElement =
   | TableElement
   | AnnotationElement
   | LinkCardElement
-  | VideoElement;
+  | RetiredTypeElement;
 export type Element = BoxedElement | ArrowElement;
 
 // What KIND of board this tab is (see ./tab-kind). 'diagram' is an ordinary tab and is written explicitly onto tabs the
@@ -368,13 +367,6 @@ export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
-export * from '@liveworkspace/model-core/code-themes';
-export * from './chart-palettes';
-export * from './chart-frame';
-export * from './chart-types';
-export * from './chart-marks';
-export * from './chart-axis';
-export * from './chart-values';
 // The chair's facings and which kinds draw their own face (docs/specs/009-elements/chair.md). A leaf module, for the
 // factories cycle.
 export * from './collab-shapes';
@@ -421,7 +413,6 @@ export * from './behaviour-shapes';
 export * from './colors';
 export * from './cell-colours';
 export * from './table-header-colours';
-export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
 export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';

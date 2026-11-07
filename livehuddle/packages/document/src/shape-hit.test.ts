@@ -30,7 +30,6 @@ describe('pickedByOutline', () => {
     'square',
     'circle',
     'stadium',
-    'page',
     'diamond',
     'cylinder',
     'triangle',
@@ -42,7 +41,7 @@ describe('pickedByOutline', () => {
     expect(pickedByOutline(shape(kind))).toBe(true);
   });
 
-  it.each<ShapeKind>(['icon', 'pie-chart', 'callout', 'chair', 'mode-button'])(
+  it.each<ShapeKind>(['icon', 'plant', 'callout', 'chair', 'mode-button'])(
     'keeps the box of a %s, which paints its own face',
     (kind) => {
       expect(pickedByOutline(shape(kind))).toBe(false);
@@ -162,8 +161,8 @@ describe('shapeTouchesBrush', () => {
   });
 
   it('touches the whole box of a kind that paints its own face', () => {
-    expect(hits(shape('pie-chart'), { x: 50, y: 50 })).toBe(true);
-    expect(hits(shape('pie-chart', { rotation: 45 }), { x: 2, y: 2 })).toBe(false);
+    expect(hits(shape('plant'), { x: 50, y: 50 })).toBe(true);
+    expect(hits(shape('plant', { rotation: 45 }), { x: 2, y: 2 })).toBe(false);
   });
 });
 

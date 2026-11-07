@@ -9,14 +9,7 @@ import {
   type ConceptRow,
   CARD_TAG_MAX,
   CARD_TAGS_MAX,
-  NAV_LINKS_MAX,
-  PROCESS_MAX_STEPS,
-  PROCESS_MIN_STEPS,
-  STATS_MAX,
-  STATS_MIN,
-  WEB_TEXT_MAX,
   type ShapeElement,
-  type StatItem,
   type WebRows,
 } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
@@ -27,10 +20,9 @@ import {
 } from '@liveworkspace/workbench/components/palette/menu-editor-classes';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
-// The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
-// checklist's and the entity's: a stat row's cards, a process's steps and a
-// header's links. The canvas edits each row's WORDS in place; this is where
-// rows are added, removed and reordered, bounded to each kind's min and max.
+// The row editors in the Tools flyout (docs/specs/009-elements/web-components-and-no-groups.md): a card's tags and a
+// concept graphic's rows. The canvas edits each row's WORDS in place; this is where rows are added, removed and
+// reordered, bounded to each kind's min and max.
 
 const rowButton =
   'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
@@ -145,48 +137,6 @@ function RowListEditor<T>({
   );
 }
 
-function StatsEditor({
-  stats,
-  onChange,
-}: {
-  stats: StatItem[];
-  onChange: (stats: StatItem[]) => void;
-}) {
-  return (
-    <RowListEditor
-      rows={stats}
-      min={STATS_MIN}
-      max={STATS_MAX}
-      noun="stat"
-      addLabel="Add Stat"
-      newRow={() => ({ value: '0', caption: 'Metric' })}
-      onChange={onChange}
-      cells={(st, i, { update, commit }) => (
-        <>
-          <input
-            className={`${MENU_CELL_INPUT} w-[4.5rem]`}
-            value={st.value}
-            placeholder="value"
-            aria-label={`Stat ${i + 1} value`}
-            maxLength={WEB_TEXT_MAX}
-            onChange={(e) => update((s) => ({ ...s, value: e.target.value }))}
-            onBlur={commit}
-          />
-          <input
-            className={`${MENU_CELL_INPUT} flex-1`}
-            value={st.caption}
-            placeholder="caption"
-            aria-label={`Stat ${i + 1} caption`}
-            maxLength={WEB_TEXT_MAX}
-            onChange={(e) => update((s) => ({ ...s, caption: e.target.value }))}
-            onBlur={commit}
-          />
-        </>
-      )}
-    />
-  );
-}
-
 export function TextRowsEditor({
   rows,
   min,
@@ -195,7 +145,7 @@ export function TextRowsEditor({
   addLabel,
   nextRow,
   onChange,
-  maxLength = WEB_TEXT_MAX,
+  maxLength = CARD_TAG_MAX,
 }: {
   rows: string[];
   min: number;
@@ -204,7 +154,7 @@ export function TextRowsEditor({
   addLabel: string;
   nextRow: (count: number) => string;
   onChange: (rows: string[]) => void;
-  // Per-row bound; a card's tags are shorter than a step (docs/specs/009-elements/card.md).
+  // Per-row bound; a card's tag by default (docs/specs/009-elements/card.md).
   maxLength?: number;
 }) {
   return (
@@ -296,51 +246,6 @@ export function WebRowsMenuSection({
   sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
   onSetRows: (rows: WebRows) => void;
 }) {
-  if (target.shape === 'stat-row') {
-    return (
-      <MenuAccordionSection title="Stats" icon={<DataMenuGlyph />} {...sectionProps('stats')}>
-        {/* Keyed on the rows so a change from elsewhere (an inline edit, the
-            ring's Add) resets the local draft rather than being shadowed by it. */}
-        <StatsEditor
-          key={JSON.stringify(target.stats ?? [])}
-          stats={target.stats ?? []}
-          onChange={(stats) => onSetRows({ stats })}
-        />
-      </MenuAccordionSection>
-    );
-  }
-  if (target.shape === 'process') {
-    return (
-      <MenuAccordionSection title="Steps" icon={<DataMenuGlyph />} {...sectionProps('steps')}>
-        <TextRowsEditor
-          key={JSON.stringify(target.processSteps ?? [])}
-          rows={target.processSteps ?? []}
-          min={PROCESS_MIN_STEPS}
-          max={PROCESS_MAX_STEPS}
-          noun="Step"
-          addLabel="Add Step"
-          nextRow={(n) => `Step ${n + 1}`}
-          onChange={(processSteps) => onSetRows({ processSteps })}
-        />
-      </MenuAccordionSection>
-    );
-  }
-  if (target.shape === 'site-header') {
-    return (
-      <MenuAccordionSection title="Links" icon={<DataMenuGlyph />} {...sectionProps('links')}>
-        <TextRowsEditor
-          key={JSON.stringify(target.navLinks ?? [])}
-          rows={target.navLinks ?? []}
-          min={0}
-          max={NAV_LINKS_MAX}
-          noun="Link"
-          addLabel="Add Link"
-          nextRow={() => 'Link'}
-          onChange={(navLinks) => onSetRows({ navLinks })}
-        />
-      </MenuAccordionSection>
-    );
-  }
   // Chevrons edit their stages on the canvas (ConceptRowBar), so they have no Rows section.
   if (isConceptShape(target.shape)) {
     const bounds = CONCEPT_ROWS[target.shape];
@@ -382,10 +287,6 @@ export function WebRowsMenuSection({
 export function hasWebRowsSection(target: { type: string; shape?: string }): boolean {
   return (
     target.type === 'shape' &&
-    (target.shape === 'stat-row' ||
-      target.shape === 'process' ||
-      target.shape === 'site-header' ||
-      target.shape === 'card' ||
-      (isConceptShape(target.shape ?? '') && target.shape !== 'chevrons'))
+    (target.shape === 'card' || (isConceptShape(target.shape ?? '') && target.shape !== 'chevrons'))
   );
 }

@@ -9,18 +9,7 @@
 // SVG and a plain box in a PNG. That is the exact bug docs/specs/020-import-export/export-fidelity.md exists to stop,
 // and keeping the pair in one module is how it is stopped.
 
-import {
-  isBarShape,
-  isLineShape,
-  isPieShape,
-  isRatingShape,
-  isSelfDrawingShape,
-} from './data-shapes';
-import { defaultPadding, PADDING_PX } from './index';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { svgPageMasthead } from './svg-render-page';
-import { progressTrackColour } from './progress-colours';
+import { isSelfDrawingShape } from './data-shapes';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
 import { SHAPE_KINDS } from './shape-kinds';
 import { svgWebComponent } from './svg-render-web';
@@ -52,7 +41,6 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     kind === 'pointer-note' ||
     kind === 'diagram-key' ||
     isConceptShape(kind) ||
-    kind === 'page' ||
     kind === 'lane'
   );
 }
@@ -72,8 +60,6 @@ export function svgElementBody(
     /** The element's resolved stroke + fill, which its body paints with. */
     stroke: string;
     fill: string;
-    /** The tab theme's categorical ramp, for the charts. */
-    chartPalette?: readonly string[];
     /** The element's label text, for the faces that write their own title. */
     label: string;
     /** The paper under the element, for the faces whose base follows it. */
@@ -90,17 +76,7 @@ export function svgElementBody(
   },
 ): string {
   if (el.type !== 'shape') return '';
-  const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
-  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
-  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
-  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
-  // The empty track is the element's OWN fill, else the paper's default track,
-  // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
-  const track = progressTrackColour(el, o.surface);
-  if (el.shape === 'progress-bar') return svgProgressBar(el, stroke, track, labelColor, fontFamily);
-  if (el.shape === 'progress-ring')
-    return svgProgressRing(el, stroke, track, labelColor, fontFamily);
-  if (isRatingShape(el.shape)) return svgRating(el, stroke);
+  const { labelColor, fontFamily, stroke, fill, label } = o;
   // A Timeline's milestones (docs/specs/009-elements/timeline.md).
   if (isConceptShape(el.shape)) {
     const rows = el.conceptRows ?? [];
@@ -134,8 +110,6 @@ export function svgElementBody(
       resolveIconArt: o.resolveIconArt,
       tagColours: o.tagColours,
     });
-  if (el.shape === 'page')
-    return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
   // The Behaviour faces (docs/specs/009-elements/mode-button.md to /137), which all exported as the same blank
   // labelled box as each other.
   return svgFace(

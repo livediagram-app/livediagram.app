@@ -130,12 +130,8 @@ export function elementTelemetryType(element: Element): string {
 // one in the drawing hook is how `Video` came to be missing from the
 // dashboard catalogue, unseen by the test that walks this file.
 export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
-  banner: 'Banner',
   hero: 'Hero',
-  header: 'Header',
   callout: 'Callout',
-  stat: 'StatRow',
-  process: 'ProcessSteps',
   avatar: 'Avatar',
 };
 

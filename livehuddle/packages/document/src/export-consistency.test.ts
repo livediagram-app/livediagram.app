@@ -48,14 +48,7 @@ describe('every kind with a body draws one', () => {
   // exported as a rounded rectangle with its own name centred in it, which is
   // not a degraded render, it is a blank.
   const WITH_BODY: ShapeKind[] = [
-    'pie-chart',
-    'bar-chart',
-    'line-chart',
-    'progress-bar',
-    'progress-ring',
-    'rating',
     'timeline-rail',
-    'page',
     'lane',
     'chair',
     'portal',
@@ -78,9 +71,9 @@ describe('every kind with a body draws one', () => {
   });
 
   it('does not print the kind name over a face that writes its own', () => {
-    // "pie-chart" centred in the middle of a pie chart was the tell.
+    // "pie-chart" centred in the middle of a pie chart was the tell; a plant draws itself the same way.
     const el = {
-      ...createShape('pie-chart', 0, 0),
+      ...createShape('plant', 0, 0),
       label: 'Quarterly split',
       width: 220,
       height: 160,
@@ -116,9 +109,9 @@ describe('a self-painting element gets no box drawn round it', () => {
   const hasElementRect = (svg: string) =>
     svgTags(svg, 'rect').some((r) => r.width === '198' && r.height === '158');
 
-  it('leaves a chart unframed, the way the canvas does', () => {
+  it('leaves a self-drawing plant unframed, the way the canvas does', () => {
     const svg = renderElementsToSvg(
-      tabOf([{ ...createShape('pie-chart', 0, 0), width: 200, height: 160 }]),
+      tabOf([{ ...createShape('plant', 0, 0), width: 200, height: 160 }]),
     );
     expect(hasElementRect(svg)).toBe(false);
   });

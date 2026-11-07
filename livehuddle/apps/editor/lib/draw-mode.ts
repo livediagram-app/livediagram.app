@@ -1,14 +1,8 @@
 import { DEFAULT_PEN_CURSOR, penCursor } from './whiteboard-pen-cursor';
 import { WHITEBOARD_SHAPES } from './whiteboard-tool';
 import { shapeKindLabel } from './element-names';
-import type {
-  ArrowEnds,
-  ComponentKind,
-  EmbedProvider,
-  SelectionMode,
-  ShapeKind,
-} from '@livehuddle/document';
-import { EMBED_PROVIDER_LABEL, penColourCss, type PenColour } from '@livehuddle/document';
+import type { ArrowEnds, ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/document';
+import { penColourCss, type PenColour } from '@livehuddle/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -57,11 +51,6 @@ export type PendingDraw =
   // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
   | { type: 'table' }
   | { type: 'link-card' }
-  // `provider` rides the intent the way `mode` does above: the
-  // Media tab offers a tile per service and they are all one `video` kind, so
-  // the choice has to survive the gesture or "Add Loom" would place a bare
-  // embed the user then has to go and re-point.
-  | { type: 'video'; provider?: EmbedProvider }
   // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
   // (docs/specs/023-draw-mode/draw-mode.md), which differ only in their heads.
   | { type: 'arrow'; ends?: ArrowEnds; board?: true }
@@ -141,12 +130,8 @@ function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): strin
 
 // User-facing component names for the draw-mode banner.
 const COMPONENT_LABELS: Record<ComponentKind, string> = {
-  banner: 'Banner',
   hero: 'Hero',
-  header: 'Header',
   callout: 'Callout',
-  stat: 'Stat row',
-  process: 'Process steps',
   avatar: 'Avatar',
 };
 
@@ -246,14 +231,6 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       return `${press} to drop or drag to draw a table`;
     case 'link-card':
       return `${press} to drop or drag to draw a link card`;
-    case 'video':
-      // Names the service the tile promised (docs/specs/009-elements/embed-providers.md) rather than saying
-      // "video" for all six, so the banner confirms which one is queued. The
-      // 16:9 note is the one surprising thing about this drag, so it earns
-      // its place on desktop; a phone-width banner can't hold it.
-      return isMobile
-        ? `${press} to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']}`
-        : `${press} to drop or drag to draw ${EMBED_PROVIDER_LABEL[intent.provider ?? 'website']} (stays 16:9)`;
     case 'arrow':
       // The Line is the arrow without its heads, and its tile says Line (docs/specs/008-canvas/canvas-and-palette.md).
       return intent.ends === 'none'
@@ -359,14 +336,6 @@ export function drawIntentCursor(intent: PendingDraw): string {
     // reading rather than repeating the plain image rectangle.
     return drawCursorFromGlyph(
       `<rect x="12" y="14" width="13" height="9" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M16 18.5 a1.8 1.8 0 0 1 1.8 -1.8 h1.4 M21 18.5 a1.8 1.8 0 0 1 -1.8 1.8 h-1.4" stroke="black" stroke-width="1.2" stroke-linecap="round" fill="none" /><path d="M17 20.5 H20.5" stroke="black" stroke-width="1.2" stroke-linecap="round" />`,
-    );
-  }
-  if (intent.type === 'video') {
-    // A 16:9 frame with a play triangle — one glyph for all six providers.
-    // Painting a per-provider mark here would mean six more inline SVGs to
-    // read at 12px, and the banner already names the service.
-    return drawCursorFromGlyph(
-      `<rect x="12" y="14.5" width="14" height="8" rx="1.5" fill="none" stroke="black" stroke-width="1.3" /><path d="M17.5 16.8 L21.5 18.5 L17.5 20.2 Z" fill="black" />`,
     );
   }
   if (intent.type === 'freehand') {

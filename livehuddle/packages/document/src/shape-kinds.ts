@@ -13,14 +13,9 @@ export const SHAPE_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  // Document element (docs/specs/009-elements/page-element.md): a paper-proportioned page you write
-  // prose into. Named 'page' internally because the flowchart output symbol
-  // above already owns 'document'.
-  'page',
   // Lane (docs/specs/009-elements/lane.md).
   'lane',
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
-  'banner',
+  // The card and its Callout preset (docs/specs/009-elements/card.md).
   'callout',
   'card',
   'badge',
@@ -29,9 +24,6 @@ export const SHAPE_KINDS = new Set<string>([
   'diagram-key',
   'stack',
   'boundary',
-  'stat-row',
-  'process',
-  'site-header',
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -148,16 +140,7 @@ export const SHAPE_KINDS = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'progress-bar',
-  'progress-ring',
   'timeline-rail',
-  'rating',
-  'pie-chart',
-  'bar-chart',
-  'line-chart',
-  'code-block',
-  'checklist',
-  'legend',
   'focus-button',
   'icon',
   'sticker',

@@ -53,7 +53,7 @@ describe('elementFingerprint', () => {
     expect(elementFingerprint({ ...square, x: 1 })).not.toBe(elementFingerprint(square));
   });
 
-  it('ignores live fields and checklist ticks', () => {
+  it('ignores live fields', () => {
     const live: ShapeElement = {
       ...square,
       commentThread: {
@@ -63,11 +63,5 @@ describe('elementFingerprint', () => {
       actions: [],
     };
     expect(elementFingerprint(live)).toBe(elementFingerprint(square));
-    const list = (done: boolean): ShapeElement => ({
-      ...square,
-      checklistItems: [{ text: 'Write it', done }],
-    });
-    expect(elementFingerprint(list(true))).toBe(elementFingerprint(list(false)));
-    expect(elementFingerprint(list(false))).not.toBe(elementFingerprint(square));
   });
 });

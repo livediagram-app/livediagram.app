@@ -43,9 +43,9 @@ describe('elementSupportsText', () => {
     expect(elementSupportsText(el({ type: 'arrow' }))).toBe(true);
   });
 
-  it('is false for the self-drawing data shapes', () => {
-    expect(elementSupportsText(el({ type: 'shape', shape: 'progress-bar' }))).toBe(false);
-    expect(elementSupportsText(el({ type: 'shape', shape: 'pie-chart' }))).toBe(false);
+  it('is false for the self-drawing shapes', () => {
+    expect(elementSupportsText(el({ type: 'shape', shape: 'sticker' }))).toBe(false);
+    expect(elementSupportsText(el({ type: 'shape', shape: 'plant' }))).toBe(false);
   });
 
   it('is false for label-less kinds (table / image / annotation / link-card)', () => {

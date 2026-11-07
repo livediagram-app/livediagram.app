@@ -25,9 +25,9 @@ describe('slug ids round trip (R7)', () => {
     label: 'Redis cache',
   };
   const list: Element = {
-    ...createShape('checklist', 0, 200),
-    id: mint('Launch checklist', 'checklist'),
-    checklistItems: [{ text: 'Ship', done: false }],
+    ...createShape('square', 0, 200),
+    id: mint('Launch checklist', 'square'),
+    label: 'Launch checklist',
   };
   const arrow = { ...createPinnedArrow(cache.id, 'e', twin.id, 'w'), id: mint('', 'arrow') };
   const tab = { id: 'tab-1', name: 'Agent built', elements: [cache, twin, list, arrow] };
@@ -47,7 +47,10 @@ describe('slug ids round trip (R7)', () => {
   });
 
   it('takes an element delta and keeps the id', () => {
-    const ticked = applyElementDelta(list, { kind: 'check', index: 0, text: 'Ship', done: true });
+    const ticked = applyElementDelta(list, {
+      kind: 'comment-add',
+      comment: { id: 'c1', text: 'Ship', createdAt: 1, authorName: 'Sam', authorColor: '#f00' },
+    });
     expect(ticked.id).toBe('launch-checklist');
     expect(ticked).not.toBe(list);
   });

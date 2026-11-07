@@ -1,14 +1,9 @@
 // Where a structured element stands, in one attribute (docs/specs/024-agents/blueprints/
 // document-views.md "State attributes", VW22). A retired element (docs/specs/002-project-scope/not-in-livehuddle.md)
 // has none: its kind word already says livehuddle does not know it.
-import { RATING_DEFAULT, type Element } from '@livehuddle/document';
-import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
-import {
-  arrayField,
-  numberField,
-  stringField,
-  textField,
-} from '@liveworkspace/document-views/fields';
+import type { Element } from '@livehuddle/document';
+import { NOTE_CUT_CHARS } from './constants';
+import { arrayField, stringField, textField } from '@liveworkspace/document-views/fields';
 import { jsonString } from '@liveworkspace/document-views/text';
 import {
   countAttribute,
@@ -29,19 +24,6 @@ function textState(
 
 export function stateAttributeOf(el: Element): ViewAttribute[] {
   switch (shapeKindOf(el)) {
-    case 'stat-row':
-      return [countAttribute('stats', countOf(el, 'stats'))];
-    case 'process':
-      return [countAttribute('steps', countOf(el, 'processSteps'))];
-    case 'site-header':
-      return [countAttribute('links', countOf(el, 'navLinks'))];
-    case 'legend':
-      return [countAttribute('items', countOf(el, 'legendItems'))];
-    case 'rating':
-      return [countAttribute('rating', `${numberField(el, 'rating') ?? RATING_DEFAULT}/5`)];
-    case 'progress-bar':
-    case 'progress-ring':
-      return [countAttribute('progress', numberField(el, 'progress') ?? PROGRESS_DEFAULT)];
     case 'timeline-rail':
       return [countAttribute('milestones', countOf(el, 'conceptRows'))];
     case 'badge':
@@ -49,7 +31,6 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
       // Attached to a node (docs/specs/009-elements/badge.md): it moves, copies and deletes with it.
       return stringField(el, 'attachedTo') ? [flagAttribute('attached')] : [];
     case 'card':
-    case 'page':
       return textState('title', textField(el, 'pageTitle'), (t) => jsonString(t, NOTE_CUT_CHARS));
     default:
       return [];

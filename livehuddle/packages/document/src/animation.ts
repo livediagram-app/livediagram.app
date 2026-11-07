@@ -100,27 +100,3 @@ export const DEFAULT_ICON_ANIMATION: Readonly<Record<string, IconAnimation>> = {
 export function defaultIconAnimation(iconId: string | undefined): IconAnimation | undefined {
   return iconId ? DEFAULT_ICON_ANIMATION[iconId] : undefined;
 }
-
-// Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that display a
-// 0–100 `progress` value. `progressAnim` animates HOW the filled portion
-// behaves: 'fill' repeatedly grows it from 0 to the value, 'pulse' breathes its
-// opacity, 'stripes' runs a barber-pole / marching pattern over the fill.
-// Undefined = a static fill. Mapped to `lvd-prog-*` classes by ProgressView.
-export type ProgressAnim = 'fill' | 'pulse' | 'stripes';
-export const PROGRESS_ANIMS: readonly ProgressAnim[] = ['fill', 'pulse', 'stripes'];
-// Progress animations that loop by default: 'fill' fills in once and holds;
-// 'pulse' / 'stripes' cycle forever (see animLoops).
-export const PROGRESS_LOOPING_ANIMS: readonly ProgressAnim[] = ['pulse', 'stripes'];
-
-// Whether an element's animation should loop. The explicit per-element `repeat`
-// override wins; otherwise it loops only if it's one of `loopingAnims` (the
-// rest play once and hold). Centralises the "does this anim loop by default"
-// rule the progress / rating / pie renderers + their context-menu Repeat
-// toggles all share, so adding a looping animation is a one-line change.
-export function animLoops<T>(
-  anim: T | null | undefined,
-  repeat: boolean | undefined,
-  loopingAnims: readonly T[],
-): boolean {
-  return repeat ?? (anim != null && loopingAnims.includes(anim));
-}

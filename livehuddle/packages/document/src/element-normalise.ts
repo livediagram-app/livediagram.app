@@ -1,6 +1,5 @@
 // A model's raw elements made safe to author (livediagram/docs/specs/015-api/mcp-server.md §4.7a). Runs BEFORE
-// validation, so a near miss draws correctly rather than failing the call (an
-// unknown code language used to reject the whole tab) or drawing wrongly (a
+// validation, so a near miss draws correctly rather than failing the call or drawing wrongly (a
 // lane with no title alignment put its title strip down the middle). Every
 // element takes the text size and layout defaults the editor's own factory
 // gives a new one of its kind, and the content-carrying kinds get their fields
@@ -11,9 +10,6 @@ import { anchorPrimarySide } from './anchors';
 import { asText } from '@liveworkspace/model-core/as-text';
 import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
-import { CODE_LANGUAGES } from './data-shapes';
-import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
-import { variantFitsKind } from './chart-types';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
@@ -26,10 +22,6 @@ import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
 
-const num = (v: unknown) => {
-  const n = typeof v === 'number' ? v : Number(v);
-  return Number.isFinite(n) ? n : 0;
-};
 const str = asText;
 
 function normaliseTable(el: Raw): Raw {
@@ -37,44 +29,6 @@ function normaliseTable(el: Raw): Raw {
   if (!Array.isArray(cells) || !cells.every(Array.isArray)) return el;
   const stringCells = (cells as unknown[][]).map((row) => row.map(str));
   return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement);
-}
-
-function normaliseCodeBlock(el: Raw): Raw {
-  const out = { ...el };
-  if (
-    out.codeLanguage !== undefined &&
-    !(CODE_LANGUAGES as readonly unknown[]).includes(out.codeLanguage)
-  )
-    out.codeLanguage = 'plain';
-  if (out.codeTheme !== undefined && !isCodeThemeId(out.codeTheme as string)) delete out.codeTheme;
-  return out;
-}
-
-function normaliseChart(el: Raw): Raw {
-  const out = { ...el };
-  // A variant its kind does not take (docs/specs/009-elements/pie-chart.md "Chart types") draws as the kind's first
-  // type anyway; dropped, so what is stored says what is drawn.
-  if (out.chartVariant !== undefined && !variantFitsKind(String(el.shape), out.chartVariant))
-    delete out.chartVariant;
-  if (Array.isArray(el.pieSlices))
-    out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
-      ...s,
-      label: str(s.label),
-      value: Math.max(0, num(s.value)),
-    }));
-  if (Array.isArray(el.lineCategories)) out.lineCategories = el.lineCategories.map(str);
-  if (Array.isArray(el.lineSeries)) {
-    const count = Array.isArray(out.lineCategories) ? out.lineCategories.length : undefined;
-    out.lineSeries = el.lineSeries.filter(isRecord).map((s) => {
-      const values = Array.isArray(s.values) ? s.values.map(num) : [];
-      const fitted =
-        count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
-      // A second axis is `right` or nothing.
-      const { axis, ...rest } = s;
-      return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
-    });
-  }
-  return out;
 }
 
 // A sticky given a colour takes the palette's borderless look: its default
@@ -145,16 +99,7 @@ function normaliseContent(el: Raw): unknown {
   if (el.type === 'table') return normaliseTable(el);
   if (el.type === 'sticky') return normaliseSticky(el);
   if (el.type !== 'shape') return el;
-  switch (el.shape) {
-    case 'code-block':
-      return normaliseCodeBlock(el);
-    case 'bar-chart':
-    case 'pie-chart':
-    case 'line-chart':
-      return normaliseChart(el);
-    default:
-      return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
-  }
+  return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
 }
 
 // A Timeline's milestones within its range (docs/specs/009-elements/timeline.md): validation takes any 0 to 8, but

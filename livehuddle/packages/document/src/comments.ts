@@ -9,7 +9,7 @@ import type { Element, Tab } from './index';
 import type { ElementAction } from './element-action';
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
-import { isComment, keepLocalTicks } from './element-deltas';
+import { isComment } from './element-deltas';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/editor/lib/identity.ts`). The participant model is
@@ -223,21 +223,7 @@ export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
         if (next === el) next = { ...el };
         applyLiveField(next as LiveFieldBag, field, liveValue);
       }
-      // Checklist ticks are live too (docs/specs/012-collaboration/collab-race-hardening.md), but the rows themselves are
-      // authored and undoable, so only the `done` flags carry over, row by row.
       const liveEl = srcById.get(el.id);
-      if (
-        next.type === 'shape' &&
-        liveEl?.type === 'shape' &&
-        liveEl.checklistItems &&
-        next.checklistItems
-      ) {
-        const items = keepLocalTicks(liveEl.checklistItems, next.checklistItems);
-        if (items !== next.checklistItems) {
-          changed = true;
-          next = { ...next, checklistItems: items };
-        }
-      }
       // A notice board's notes are live whole (docs/specs/009-elements/social-pieces.md "Notice Board"): a pin is
       // not undoable, like a comment, so a restored snapshot keeps the board's notes as they are now.
       if (

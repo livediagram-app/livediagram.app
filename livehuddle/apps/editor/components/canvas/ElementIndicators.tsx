@@ -27,6 +27,7 @@ import {
   TOP_BACKING_PAD_PX,
   FOOTER_PAD_PX,
   FOOTER_ROW_PX,
+  clusterSize,
   type IndicatorItem,
   type IndicatorKind,
 } from './indicator-items';
@@ -43,6 +44,45 @@ const TONE = 'opacity-50 group-hover/el:opacity-85';
 // state names its own pointer-events, so the two never sit on one element to fight over order.
 const SHOWN = 'pointer-events-auto transition';
 const SELECTED_HIDDEN = 'pointer-events-none scale-75 opacity-0 transition';
+
+// The pip's height: h-[22px] below.
+const PIP_HEIGHT_PX = 22;
+
+// The pip's point on the outline, inset from the element's top-right corner: where its centre sits.
+function pipInsetOf(
+  element: BoxedElement,
+  placed: IndicatorLayout,
+  cornerPx: number,
+): { x: number; y: number } {
+  const shape = element.type === 'shape' ? element.shape : undefined;
+  return placed.pip ?? badgeCornerInset(shape, element.width, element.height, cornerPx);
+}
+
+/** The box the cluster takes, in the element's own units from its top-left corner: from the same placement and sizes
+ *  the cluster draws itself with, so whatever keeps clear of it (a retired element's Delete,
+ *  docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it") keeps clear of what is drawn. */
+export function indicatorClusterRect(
+  element: BoxedElement,
+  items: readonly IndicatorItem[],
+  placed: IndicatorLayout,
+  cornerPx: number,
+): { x: number; y: number; width: number; height: number } | null {
+  if (items.length === 0) return null;
+  if (placed.form === 'pip' || !placed.box) {
+    const inset = pipInsetOf(element, placed, cornerPx);
+    // The pip's buttons are the Top form's (h-5 min-w-5 and a count), in a px-0.5 backing.
+    const width = clusterSize(items, 'top').width;
+    const cx = element.width - inset.x;
+    return { x: cx - width / 2, y: inset.y - PIP_HEIGHT_PX / 2, width, height: PIP_HEIGHT_PX };
+  }
+  const { box } = placed;
+  return {
+    x: box.x,
+    y: box.y,
+    width: box.width,
+    height: placed.form === 'top' ? box.height : FOOTER_ROW_PX,
+  };
+}
 
 const GLYPHS: Record<IndicatorKind, typeof NoteIcon> = {
   link: LinkIcon,
@@ -79,7 +119,7 @@ export function ElementIndicators({
   let shapeClass: string;
   let glyphPx: number;
   if (placed.form === 'pip' || !placed.box) {
-    const inset = placed.pip ?? badgeCornerInset(shape, element.width, element.height, cornerPx);
+    const inset = pipInsetOf(element, placed, cornerPx);
     const round = shape === 'circle' || shape === 'stadium' || cornerPx >= ROUND_PIP_FROM_PX;
     position = { right: inset.x, top: inset.y, transform: 'translate(50%, -50%)' };
     shapeClass = `h-[22px] px-0.5 ring-1 ring-current/15 ${round ? 'rounded-full' : 'rounded-md'} ${

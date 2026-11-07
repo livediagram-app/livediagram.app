@@ -23,7 +23,7 @@ import {
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
-import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
@@ -159,7 +159,6 @@ export function Minimap({
   // dark card on a dark canvas is a dark card here too, not the light skin.
   const surface = useCanvasSurface();
   const tabFinish = useTabFinish();
-  const chartPalette = useCanvasChartPalette();
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
@@ -198,7 +197,6 @@ export function Minimap({
           tabFinish,
           sketchBackdrop: backdrops.has(el.id),
           surface,
-          chartPalette,
         }),
       );
       corners.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
@@ -239,7 +237,7 @@ export function Minimap({
       picture: { ...box, href: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(doc)}` },
       bounds: content,
     };
-  }, [elements, tabFont, tabFinish, iconsLoaded, surface, chartPalette]);
+  }, [elements, tabFont, tabFinish, iconsLoaded, surface]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

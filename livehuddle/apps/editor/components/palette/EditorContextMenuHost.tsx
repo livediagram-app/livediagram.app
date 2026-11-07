@@ -8,7 +8,7 @@ import { tagColoursOf } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
+import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -59,12 +59,8 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
-    commitCodeTheme,
-    previewCodeTheme,
     commitTablePreset,
     previewTablePreset,
-    commitChartPalette,
-    previewChartPalette,
     setLabelFillSelected,
     commitLabelFill,
     previewLabelFill,
@@ -94,26 +90,6 @@ export function EditorContextMenuHost() {
     previewMarker,
     commitMarkerSize,
     previewMarkerSize,
-    setRatingSelected,
-    setRatingAnimSelected,
-    setRatingAnimSpeedSelected,
-    setRatingAnimRepeatSelected,
-    setPieDataSelected,
-    setPieAnimSelected,
-    setPieAnimSpeedSelected,
-    setPieAnimRepeatSelected,
-    setChartLegendSelected,
-    setChartValuesSelected,
-    setChartAxisSelected,
-    setChartRightAxisSelected,
-    setChartLegendPositionSelected,
-    setChartTypeSelected,
-    setLineDataOpenForId,
-    setCodeEditOpenForId,
-    setCodeWrapSelected,
-    setLegendItemsSelected,
-    setChecklistItemsSelected,
-    toggleChecklistItem,
     setWebRowsSelected,
     setHeroCaptionSelected,
     setChairFacingSelected,
@@ -147,10 +123,6 @@ export function EditorContextMenuHost() {
     previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
-    setProgressSelected,
-    setProgressAnimSelected,
-    setProgressAnimSpeedSelected,
-    setProgressAnimRepeatSelected,
     setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
     setSetAnimationRepeatSelected,
@@ -280,27 +252,6 @@ export function EditorContextMenuHost() {
       onPreviewMarker={previewMarker}
       onSetMarkerSize={commitMarkerSize}
       onPreviewMarkerSize={previewMarkerSize}
-      onSetRating={setRatingSelected}
-      onSetRatingAnim={setRatingAnimSelected}
-      onSetRatingAnimSpeed={setRatingAnimSpeedSelected}
-      onSetRatingAnimRepeat={setRatingAnimRepeatSelected}
-      onSetPieData={setPieDataSelected}
-      onSetPieAnim={setPieAnimSelected}
-      onSetPieAnimSpeed={setPieAnimSpeedSelected}
-      onSetPieAnimRepeat={setPieAnimRepeatSelected}
-      onSetChartLegend={setChartLegendSelected}
-      onSetChartValues={setChartValuesSelected}
-      onSetChartAxis={setChartAxisSelected}
-      onSetChartRightAxis={setChartRightAxisSelected}
-      onSetChartLegendPosition={setChartLegendPositionSelected}
-      onSetChartType={setChartTypeSelected}
-      onEditLineData={setLineDataOpenForId}
-      onEditCodeBlock={setCodeEditOpenForId}
-      onSetCodeWrap={setCodeWrapSelected}
-      onSetLegendItems={setLegendItemsSelected}
-      chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
-      onSetChecklistItems={setChecklistItemsSelected}
-      onToggleChecklistItem={toggleChecklistItem}
       onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
       onSetChairFacing={setChairFacingSelected}
@@ -333,13 +284,9 @@ export function EditorContextMenuHost() {
           track('Element', 'Changed', telemetryType);
         },
       }}
-      onApplyCodeTheme={commitCodeTheme}
-      onPreviewCodeTheme={previewCodeTheme}
       tableColorPresets={tableColorPresets(getTheme(activeTab.theme))}
       onApplyTablePreset={commitTablePreset}
       onPreviewTablePreset={previewTablePreset}
-      onApplyChartPalette={commitChartPalette}
-      onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
       onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
@@ -349,10 +296,6 @@ export function EditorContextMenuHost() {
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
       onSetIconAnimationSpeed={setIconAnimationSpeedSelected}
-      onSetProgress={setProgressSelected}
-      onSetProgressAnim={setProgressAnimSelected}
-      onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
-      onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
       onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
       onSetSetAnimationRepeat={setSetAnimationRepeatSelected}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
-import { applyElementDelta, checklistDeltaFor, type ShapeElement } from '@livehuddle/document';
+import { applyElementDelta, type ElementDelta, type ShapeElement } from '@livehuddle/document';
 import type { RoomOp } from '@livehuddle/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
@@ -203,31 +203,24 @@ describe('applyRoomOpToTabs: a payload naming another tab', () => {
   });
 });
 
-describe('two people ticking one checklist', () => {
-  const check = (): ShapeElement =>
-    el('card', {
-      shape: 'checklist',
-      checklistItems: [
-        { text: 'a', done: false },
-        { text: 'b', done: false },
-      ],
-    }) as ShapeElement;
-  const start = (): Tab[] => [tab({ elements: [check()] })];
+describe('two people pinning on one notice board', () => {
+  const board = (): ShapeElement => el('card', { shape: 'notice-board' }) as ShapeElement;
+  const start = (): Tab[] => [tab({ elements: [board()] })];
 
-  // Each person ticks their own row: 'a' ticks the first, 'b' the second.
+  // Each person pins their own note: 'a' pins note 'a', 'b' pins note 'b'.
   const press = (tabs: Tab[], who: 'a' | 'b') => {
     const card = tabs[0]!.elements[0] as ShapeElement;
-    const delta = checklistDeltaFor(card, who === 'a' ? 0 : 1)!;
+    const delta: ElementDelta = {
+      kind: 'notice-pin',
+      note: { id: who, text: `note ${who}`, author: who, by: `adder-${who}`, at: 1 },
+    };
     const op: RoomOp = { kind: 'el-delta', tabId: 't1', elementId: 'card', delta };
     return { tabs: [{ ...tabs[0]!, elements: [applyElementDelta(card, delta)] }], op };
   };
   const marks = (tabs: Tab[]) =>
-    ((tabs[0]!.elements[0] as ShapeElement).checklistItems ?? [])
-      .filter((item) => item.done)
-      .map((item) => item.text)
-      .sort();
+    ((tabs[0]!.elements[0] as ShapeElement).noticeNotes ?? []).map((n) => n.id).sort();
 
-  it('converges on both ticks, and neither autosave re-sends the card', () => {
+  it('converges on both pins, and neither autosave re-sends the board', () => {
     const saved = start();
     const a = press(start(), 'a');
     const b = press(start(), 'b');
@@ -236,14 +229,14 @@ describe('two people ticking one checklist', () => {
     const bTabs = applyRoomOpToTabs(b.tabs, a.op);
     expect(marks(aTabs)).toEqual(['a', 'b']);
     expect(marks(bTabs)).toEqual(['a', 'b']);
-    // Their saves: the only change is a tick, which the delta already said.
+    // Their saves: the only change is a pin, which the delta already said.
     expect(tabBroadcastOps(saved[0], a.tabs[0]!)).toEqual([]);
   });
 
-  it("a peer's whole-element update (they moved the card) keeps both ticks", () => {
+  it("a peer's whole-element update (they moved the board) keeps both pins", () => {
     const a = press(start(), 'a');
     const bothMarked = applyRoomOpToTabs(a.tabs, press(start(), 'b').op);
-    // Their copy was saved with only their own tick, before a's arrived.
+    // Their copy was saved with only their own pin, before a's arrived.
     const theirs = { ...(press(start(), 'b').tabs[0]!.elements[0] as ShapeElement), x: 80 };
     const next = applyRoomOpToTabs(bothMarked, {
       kind: 'el',
@@ -254,7 +247,7 @@ describe('two people ticking one checklist', () => {
     expect(marks(next)).toEqual(['a', 'b']);
   });
 
-  it('a whole-tab op keeps both ticks too', () => {
+  it('a whole-tab op keeps both pins too', () => {
     const bothMarked = applyRoomOpToTabs(press(start(), 'a').tabs, press(start(), 'b').op);
     const theirTab = press(start(), 'b').tabs[0]!;
     const next = applyRoomOpToTabs(bothMarked, { kind: 'tab', tabId: 't1', tab: theirTab });

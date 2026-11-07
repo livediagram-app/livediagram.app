@@ -7,7 +7,6 @@ import {
 } from './palette-floor-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { badgePresetFace } from '@livehuddle/document';
-import type { EmbedProvider } from '@livehuddle/document';
 
 import type { ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/document';
 import {
@@ -115,8 +114,6 @@ import {
 import {
   lucideCircle,
   lucideDiamond,
-  lucideFileText,
-  lucideGlobe,
   lucideImage,
   lucideMoveRight,
   lucideSquare,
@@ -126,14 +123,6 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livehuddle/ui';
 import { tileCaption } from './tile-caption';
-
-import {
-  CodeBlockTileArt,
-  FigmaTileArt,
-  LoomTileArt,
-  VimeoTileArt,
-  YouTubeTileArt,
-} from '@/components/palette/palette-tile-art';
 
 // Every palette tile glyph is drawn at this size (docs/specs/004-interface-design/iconography.md), so a strip of
 // tiles reads as one set.
@@ -164,7 +153,6 @@ export type PaletteTileSection =
   // like; what they have in common is that they hold other work.
   | 'build'
   | 'tools'
-  | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md), and the collaboration elements
   // with it (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   | 'media'
@@ -193,7 +181,6 @@ type PaletteTileAction =
   // are separate action types, so each tile maps to its own arm-handler and pressed state.
   | { type: 'highlighter' }
   | { type: 'shape-pen' }
-  | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
   // The Room Builder (docs/specs/009-elements/room-builder.md): walls placed corner by corner.
@@ -620,17 +607,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <Prims prims={lucideTable} />
       </Glyph>
     ),
-  },
-  {
-    id: 'tools:code-block',
-    blurb: 'Syntax-highlighted code card',
-    section: 'components',
-    label: 'Add Code Block',
-    caption: 'Code',
-    description: 'Monospace code snippet with syntax highlighting. Double-click to edit.',
-    noTint: true,
-    action: { type: 'shape', kind: 'code-block' },
-    icon: <CodeBlockTileArt />,
   },
   {
     // Portal (docs/specs/009-elements/portal-element.md): step in here, come out of the portal it is linked to.
@@ -1997,25 +1973,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <ColumnIcon size={TILE_GLYPH_PX} />,
   },
   {
-    id: 'tools:checklist',
-    blurb: 'Tickable to-do rows',
-    section: 'components',
-    label: 'Add Checklist',
-    caption: 'Checklist',
-    description: 'Checkable to-do rows. Tick boxes on the canvas; edit rows from the menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'checklist' },
-    icon: (
-      <Glyph size={18} units={18}>
-        <rect x="2.5" y="3" width="4" height="4" rx="1" />
-        <path d="M3.7 5 L4.6 5.9 L6 4.3" strokeWidth="1.2" />
-        <path d="M9 5 H15.5" />
-        <rect x="2.5" y="10.5" width="4" height="4" rx="1" />
-        <path d="M9 12.5 H15.5" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'tools:image',
     blurb: 'Place an uploaded picture',
     section: 'media',
@@ -2029,87 +1986,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: (
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <Prims prims={lucideImage} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'media:embed-youtube',
-    tileGroup: 'embed',
-    blurb: 'A YouTube video',
-    caption: 'YouTube',
-    section: 'media',
-    label: 'Add YouTube Embed',
-    description:
-      'Embeds a YouTube link on the canvas. Double-click it to set the link; it loads when you press play.',
-    action: { type: 'video', provider: 'youtube' },
-    icon: <YouTubeTileArt />,
-  },
-  {
-    id: 'media:embed-vimeo',
-    tileGroup: 'embed',
-    blurb: 'A Vimeo video',
-    caption: 'Vimeo',
-    section: 'media',
-    label: 'Add Vimeo Embed',
-    description:
-      'Embeds a Vimeo link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
-    action: { type: 'video', provider: 'vimeo' },
-    icon: <VimeoTileArt />,
-  },
-  {
-    id: 'media:embed-loom',
-    tileGroup: 'embed',
-    blurb: 'A Loom recording',
-    caption: 'Loom',
-    section: 'media',
-    label: 'Add Loom Embed',
-    description:
-      'Embeds a Loom link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
-    action: { type: 'video', provider: 'loom' },
-    icon: <LoomTileArt />,
-  },
-  {
-    id: 'media:embed-figma',
-    tileGroup: 'embed',
-    blurb: 'A Figma file or prototype',
-    caption: 'Figma',
-    section: 'media',
-    label: 'Add Figma Embed',
-    description:
-      'Embeds a Figma link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
-    action: { type: 'video', provider: 'figma' },
-    icon: <FigmaTileArt />,
-  },
-  {
-    id: 'media:embed-gdocs',
-    tileGroup: 'embed',
-    blurb: 'A Doc, Sheet or Slide deck',
-    caption: 'Google Docs',
-    section: 'media',
-    label: 'Add Google Docs Embed',
-    description:
-      'Embeds a Google Docs link on the canvas. Double-click it to set the link; it loads when you press Load embed.',
-    action: { type: 'video', provider: 'gdocs' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideFileText} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'media:embed-website',
-    tileGroup: 'embed',
-    blurb: 'Any site, framed on the canvas',
-    caption: 'Website',
-    section: 'media',
-    label: 'Add Website Embed',
-    description:
-      'Embeds any website on the canvas. Double-click it to set the address; it loads when you press Load embed. Some sites refuse to be framed and will come up blank.',
-    dividerAfter: true,
-    action: { type: 'video', provider: 'website' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideGlobe} />
       </Glyph>
     ),
   },
@@ -2344,145 +2220,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
-  // --- Data (docs/specs/009-elements/pie-chart.md) -------------------------------------------------------
-  {
-    id: 'data:pie',
-    blurb: 'Proportions of a whole',
-    section: 'data',
-    label: 'Add Pie Chart',
-    caption: 'Pie',
-    description: 'A pie chart. Edit its labels + values from the Data menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'pie-chart' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24} filled>
-        <circle cx="12" cy="12" r="9" opacity="0.25" />
-        <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:bar',
-    blurb: 'Compare values side by side',
-    section: 'data',
-    // Upright bars: a Column chart, as Google Sheets and Excel name it (docs/specs/009-elements/pie-chart.md
-    // "Chart types"); its Chart Type menu turns it into a Bar chart (horizontal) or any other type.
-    label: 'Add Column Chart',
-    caption: 'Column',
-    description: 'A column chart. Edit its labels + values from the Data menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'bar-chart' },
-    icon: (
-      <Glyph size={18} units={24} filled>
-        <rect x="4" y="12" width="4" height="8" rx="1" opacity="0.45" />
-        <rect x="10" y="7" width="4" height="13" rx="1" />
-        <rect x="16" y="10" width="4" height="10" rx="1" opacity="0.7" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:line',
-    blurb: 'A trend over time',
-    section: 'data',
-    label: 'Add Line Chart',
-    caption: 'Line',
-    description:
-      'A multi-series line chart. Edit the data grid or import a CSV from the Data menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'line-chart' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M4 18 L9 11 L14 14 L20 6" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:legend',
-    blurb: 'A key for your colours',
-    section: 'data',
-    label: 'Add Legend',
-    caption: 'Legend',
-    description:
-      'A key: a colour-coded dot and a label per row. Edit the colours and words from the Legend menu.',
-    filled: true,
-    dividerAfter: true,
-    action: { type: 'shape', kind: 'legend' },
-    icon: (
-      <Glyph size={18} units={24} strokeLinejoin="miter">
-        <circle cx="5" cy="6" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="5" cy="18" r="1.8" fill="currentColor" stroke="none" />
-        <path d="M10 6 H20 M10 12 H20 M10 18 H16" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:progress-bar',
-    blurb: 'How far along something is',
-    section: 'data',
-    label: 'Add Progress Bar',
-    caption: 'Progress',
-    description: 'Horizontal progress bar. Set the percentage from its menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'progress-bar' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={18}>
-        <rect x="2" y="6.5" width="14" height="5" rx="2.5" />
-        <rect x="2" y="6.5" width="8" height="5" rx="2.5" fill="currentColor" stroke="none" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:progress-ring',
-    blurb: 'The same, as a donut meter',
-    section: 'data',
-    label: 'Add Progress Ring',
-    caption: 'Donut',
-    description: 'Donut progress ring. Set the percentage from its menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'progress-ring' },
-    icon: (
-      <Glyph size={18} units={18} strokeLinecap="butt" strokeLinejoin="miter">
-        <circle cx="9" cy="9" r="6" strokeWidth="2.4" opacity="0.3" />
-        <path d="M9 3 a6 6 0 0 1 5.2 9" strokeWidth="2.4" strokeLinecap="round" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'data:rating',
-    blurb: 'A score out of five stars',
-    section: 'data',
-    label: 'Add Rating',
-    caption: 'Rating',
-    description: 'A 1–5 star rating. Set the score + an animation from its menu.',
-    filled: true,
-    action: { type: 'shape', kind: 'rating' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24} filled>
-        <path d="M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z" />
-      </Glyph>
-    ),
-  },
   // --- Components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): each one element that lays itself out -
-  {
-    id: 'components:banner',
-    tileGroup: 'web',
-    blurb: 'A themed title block for the top',
-    caption: 'Banner',
-    section: 'components',
-    label: 'Add Banner',
-    description:
-      'Banner. A themed title block (an accent bar with a title and subtitle) to head your diagram. Click to drop or drag to size; double-click to edit the title, click the subtitle once it is selected to edit it.',
-    noTint: true,
-    action: { type: 'component', kind: 'banner' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="5.5" width="19" height="13" rx="2" />
-        <path d="M7 10.75h10" strokeWidth="2.2" />
-        <path d="M9 14.25h6" />
-      </Glyph>
-    ),
-  },
   {
     id: 'components:callout',
     tileGroup: 'web',
@@ -2503,46 +2241,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'components:stat',
-    tileGroup: 'web',
-    blurb: 'Three KPI cards side by side',
-    caption: 'Stat Row',
-    section: 'components',
-    label: 'Add Stat Row',
-    description:
-      'Stat row. KPI cards (big number + caption) for dashboards and summaries. Resize to spread the cards; click a number to edit it, and add or remove stats from its menu.',
-    noTint: true,
-    action: { type: 'component', kind: 'stat' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2" y="6" width="6" height="12" rx="1" />
-        <rect x="9" y="6" width="6" height="12" rx="1" />
-        <rect x="16" y="6" width="6" height="12" rx="1" />
-        <path d="M3.5 10.5h3M10.5 10.5h3M17.5 10.5h3" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'components:process',
-    tileGroup: 'web',
-    blurb: 'Numbered steps joined by arrows',
-    caption: 'Process',
-    section: 'components',
-    label: 'Add Process Steps',
-    description:
-      'Process steps. Numbered circles joined by arrows with captions, for flows. Resize to spread the steps; click a caption to edit it, and add or remove steps from its menu.',
-    noTint: true,
-    action: { type: 'component', kind: 'process' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <circle cx="5" cy="12" r="3" />
-        <circle cx="12" cy="12" r="3" />
-        <circle cx="19" cy="12" r="3" />
-        <path d="M8 12h1M15 12h1" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'components:hero',
     tileGroup: 'web',
     blurb: 'A big image with a title card',
@@ -2559,25 +2257,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
         <path d="M2.5 14l5-4 4 3 3-2.5 7 5.5" />
         <path d="M7 17.5h10" strokeWidth="2.2" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'components:header',
-    tileGroup: 'web',
-    blurb: 'A website-style nav bar',
-    caption: 'Header',
-    section: 'components',
-    label: 'Add Header',
-    description:
-      'Header. A website-style bar with a logo, brand name, and nav links. Resize to make room for more links; drop an icon on it to set the logo.',
-    noTint: true,
-    action: { type: 'component', kind: 'header' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="6.5" width="19" height="11" rx="2" />
-        <circle cx="7" cy="12" r="2.2" />
-        <path d="M14 10.5h5M14 13.5h5" />
       </Glyph>
     ),
   },

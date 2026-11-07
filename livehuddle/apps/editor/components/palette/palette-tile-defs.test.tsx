@@ -64,9 +64,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   write: 4,
   draw: 6,
   stickers: 0,
-  media: 9,
-  components: 11,
-  data: 7,
+  media: 3,
+  components: 5,
   // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
   // "The Space categories"): 88 tiles between them.
   // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").

@@ -17,16 +17,9 @@ import {
   DEFAULT_ICON_SIZE,
   defaultPadding,
   isBoxed,
-  isChartShape,
   positionsInlineIcon,
   isLaneBand,
   laneEdgeOfElement,
-  isChecklistShape,
-  isCodeBlockShape,
-  isLegendShape,
-  isLineShape,
-  isProgressShape,
-  isRatingShape,
   supportsMarkers,
   supportsTextAlign,
   supportsBorderControls,
@@ -122,13 +115,6 @@ export function ElementAppearanceSections({
   // shape is its own glyph and excluded.
   const hasInlineIcon =
     target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
-  const isProgress = target.type === 'shape' && isProgressShape(target.shape);
-  const isRating = target.type === 'shape' && isRatingShape(target.shape);
-  const isChart = target.type === 'shape' && isChartShape(target.shape);
-  const isLine = target.type === 'shape' && isLineShape(target.shape);
-  const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
-  const isLegend = target.type === 'shape' && isLegendShape(target.shape);
-  const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
   const isPortal = target.type === 'shape' && target.shape === 'portal';
   // Every piece of furniture that turns has a facing section titled for it
@@ -151,7 +137,7 @@ export function ElementAppearanceSections({
     target.type !== 'image' &&
     !(target.type === 'shape' && !supportsTextAlign(target.shape)) &&
     hasText;
-  // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
+  // The shape-only sections below (Marker and the Tools sections)
   // all render under a `target.type === 'shape'` guard, so this is non-null
   // wherever they read it — `shapeTarget?.field ?? default` reads the shape
   // fields without an `as ShapeElement` assertion at each site.
@@ -162,16 +148,12 @@ export function ElementAppearanceSections({
   // The Style flyout shows when any of its children would: presets
   // (shapes with looks / arrow line looks), Colours, or Border — the
   // same gates the sections carry inside.
-  // A code block takes no element colours (docs/specs/009-elements/code-block.md) but it does pick a colour
-  // SCHEME, so the band opens for it carrying only Presets: Colours and Border
-  // gate themselves off it already.
   const showStyle =
-    isCodeBlock ||
     hasStylePresets(target) ||
     target.type === 'sticky' ||
     target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart) ||
-    (borderable && !isChart) ||
+    (boxed && supportsColours(target)) ||
+    borderable ||
     // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
     // which sits in this flyout: without this it was never reachable on one.
     supportsShadow(target);
@@ -188,8 +170,7 @@ export function ElementAppearanceSections({
       {showStyle ? (
         <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
           {/* Which Presets grid this element gets: shape looks, a sticky's
-              pad of note colours, a code block's colour scheme, or an arrow's
-              line looks. See PresetSections. */}
+              pad of note colours, or an arrow's line looks. See PresetSections. */}
           <TargetPresetsSection
             target={target}
             props={props}
@@ -202,7 +183,6 @@ export function ElementAppearanceSections({
             target={target}
             boxed={boxed}
             isIcon={isIcon}
-            isChart={isChart}
             borderable={borderable}
             onClose={onClose}
             sectionProps={sectionProps}
@@ -218,13 +198,6 @@ export function ElementAppearanceSections({
       <ElementDataSections
         props={props}
         target={target}
-        isProgress={isProgress}
-        isRating={isRating}
-        isChart={isChart}
-        isLine={isLine}
-        isCodeBlock={isCodeBlock}
-        isLegend={isLegend}
-        isChecklist={isChecklist}
         isPortal={isPortal}
         isChair={isChair}
         sectionProps={sectionProps}

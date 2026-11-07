@@ -1,6 +1,6 @@
 # Progress elements
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/progress.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 1): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/progress.md) is the one to read and change. livehuddle has no tile, menu, dialog or renderer for it: a stored progress bar or ring is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder, which an Editor can delete. The rest of this page describes the element as livediagram has it.
 
 Two canvas elements for showing a 0–100 percentage: a **horizontal progress bar** and a **donut progress ring**. They're added from the palette's **Data** category (captions "Progress" and "Donut", [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) and behave like any other shape (move, resize, colour, copy, format-paint, theme).
 
@@ -20,7 +20,7 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
 
 ## Rendering
 
-`ProgressView` (`apps/editor/components/canvas/ProgressView.tsx`), rendered by `ShapeContentRouter` (inside `BoxedElementView`) for the two kinds (ahead of the generic `ShapeSvgOverlay` branch, which has no case for them):
+`ProgressView` (`../livediagram/apps/editor/components/canvas/ProgressView.tsx`), rendered by `ShapeContentRouter` (inside `BoxedElementView`) for the two kinds (ahead of the generic `ShapeSvgOverlay` branch, which has no case for them):
 
 - **Bar**: an HTML track (the element's **fill** colour, fully rounded) with an inner fill (the element's **stroke/accent** colour) sized to `progress%`.
 - **Ring**: an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).

@@ -498,7 +498,7 @@ describe('fitPaintToTarget with Shape motions', () => {
   it('paints a motion onto any element that takes it', () => {
     const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
     expect(paint(bounce, image).animation).toBe('bounce');
-    expect(paint(bounce, createShape('pie-chart', 0, 0)).animation).toBe('bounce');
+    expect(paint(bounce, createShape('circle', 0, 0)).animation).toBe('bounce');
     expect(paint({ ...image, animation: 'float' }, createSticky(0, 0)).animation).toBe('float');
   });
 
@@ -517,9 +517,9 @@ describe('fitPaintToTarget with Shape motions', () => {
 });
 
 describe('fitPaintToTarget between elements with no body set', () => {
-  it('never paints an animation onto an icon or chart', () => {
+  it('never paints an animation onto an icon', () => {
     const text = { ...createText(0, 0), animation: 'pulse' as const };
-    const out = fitPaintToTarget(text, createShape('pie-chart', 0, 0), paintableBoxedFields(text));
+    const out = fitPaintToTarget(text, createShape('icon', 0, 0), paintableBoxedFields(text));
     expect('animation' in out).toBe(false);
   });
 

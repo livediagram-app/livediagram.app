@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
-import { arrowBetween, shapeAt } from './__fixtures__/build';
+import { arrowBetween, retiredShapeAt, shapeAt } from './__fixtures__/build';
 import { checkoutTab } from './__fixtures__/checkout-tab';
 import { CHECKOUT_AFTER_REV, checkoutTabAfter } from './__fixtures__/checkout-tab-after';
 import { golden } from './__fixtures__/golden-path';
@@ -47,7 +47,7 @@ describe('diffView (R17, VW36)', () => {
   it('names kind, label, note, container, summary and attribute changes', () => {
     const frame = shapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
     const a = shapeAt('square', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
-    const b = shapeAt('checklist', 'b', 10, 100, 100, 50, {
+    const b = retiredShapeAt('checklist', 'b', 10, 100, 100, 50, {
       checklistItems: [{ text: 'x', done: false }],
     });
     const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
@@ -70,13 +70,13 @@ describe('diffView (R17, VW36)', () => {
         [
           frame,
           { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
-          { ...b, checklistItems: [{ text: 'x', done: true }] },
+          { ...b, checklistItems: [{ text: 'x', done: true }] } as unknown as Element,
           { ...c, note: 'new', label: 'C', action: task('done') } as unknown as Element,
         ],
       ),
     ).toEqual([
       '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
-      '~ checklist b done=0/1 → done=1/1',
+      '~ ? checklist b +1 other field',
       '~ square c label none → "C" · note changed · done none → on',
     ]);
     expect(
@@ -111,11 +111,15 @@ describe('diffView (R17, VW36)', () => {
       '~ arrow ab from a → c · to b → free',
     ]);
     expect(changeLines([a!], [{ ...a!, opacity: 0.5 }])).toEqual(['~ square a +1 other field']);
-    expect(changeLines([a!], [{ ...a!, shape: 'code-block' }])).toEqual([
-      '~ code-block a kind square → code-block · none → lang=plain lines=0',
+    expect(changeLines([a!], [{ ...a!, shape: 'stack' }])).toEqual([
+      '~ stack a kind square → stack · none → direction=row',
     ]);
-    expect(changeLines([{ ...a!, shape: 'code-block' }], [a!])).toEqual([
-      '~ square a kind code-block → square · lang=plain lines=0 → none',
+    expect(changeLines([{ ...a!, shape: 'stack' }], [a!])).toEqual([
+      '~ square a kind stack → square · direction=row → none',
+    ]);
+    // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md) prints as unknown and summarises nothing.
+    expect(changeLines([a!], [{ ...a!, shape: 'code-block' } as unknown as Element])).toEqual([
+      '~ ? code-block a kind square → ? code-block',
     ]);
   });
 

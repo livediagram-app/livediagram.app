@@ -34,12 +34,12 @@ describe('InfoFooter height', () => {
     const expected = { height: `${FLYOUT_FOOTER_HEIGHT}px`, minHeight: '' };
     expect(height(null)).toEqual(expected);
     expect(height(tileById('tools:text')!)).toEqual(expected);
-    expect(height(tileById('data:pie')!)).toEqual(expected);
+    expect(height(tileById('tools:column')!)).toEqual(expected);
   });
 
   it('clamps the description to the two lines it has room for', () => {
-    render(<InfoFooter def={tileById('data:pie')!} />);
-    const description = screen.getByText(tileById('data:pie')!.description);
+    render(<InfoFooter def={tileById('tools:column')!} />);
+    const description = screen.getByText(tileById('tools:column')!.description);
     expect(description.className).toMatch(/\bline-clamp-2\b/);
     expect(description.className).toMatch(/\bleading-4\b/);
   });

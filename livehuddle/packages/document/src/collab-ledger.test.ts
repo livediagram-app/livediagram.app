@@ -77,25 +77,6 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     expect(mergeLedgerAnswersIntoTab(save, { elements: { card: old } })).toBe(save);
   });
 
-  it("re-sets a tick the saver hadn't seen", () => {
-    const list = card({
-      shape: 'checklist',
-      checklistItems: [
-        { text: 'one', done: false },
-        { text: 'two', done: false },
-      ],
-    });
-    const ledger = ledgerOf([
-      delta({ kind: 'check', index: 0, text: 'one', done: true }),
-      delta({ kind: 'check', index: 1, text: 'two', done: true }),
-    ]);
-    const merged = mergeLedgerIntoTab(tab([list]), ledger, 1);
-    expect((merged.elements[0] as ShapeElement).checklistItems?.map((i) => i.done)).toEqual([
-      false,
-      true,
-    ]);
-  });
-
   it('skips malformed and untracked ops', () => {
     expect(ledgerKey({ kind: 'el', tabId: 't1' })).toBeNull();
     expect(recordInLedger(undefined, delta({ kind: 'check', index: -1 }), 1)).toBeNull();
@@ -177,10 +158,14 @@ describe('comments in the ledger (docs/specs/012-collaboration/collab-race-harde
 });
 
 describe('mergeLedgerAnswersIntoTab (docs/specs/013-workspace/share-roles.md "Integrity")', () => {
-  it('leaves ticks, threads and board changes to an Editor', () => {
-    const list = card({ shape: 'checklist', checklistItems: [{ text: 'one', done: false }] });
-    const ledger = ledgerOf([delta({ kind: 'check', index: 0, text: 'one', done: true })]);
-    const stored = tab([list]);
+  it('leaves threads and board changes to an Editor', () => {
+    const ledger = ledgerOf([
+      delta({
+        kind: 'comment-add',
+        comment: { id: 'c1', text: 'hi', createdAt: 1, authorName: 'Bea', authorColor: '#f00' },
+      }),
+    ]);
+    const stored = tab([card()]);
     expect(mergeLedgerAnswersIntoTab(stored, ledger)).toBe(stored);
   });
 });

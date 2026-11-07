@@ -48,7 +48,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
-    kind !== 'page' &&
     kind !== 'mode-button' &&
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a filled rounded box with a glyph + label on
     // top, same as the mode button beside it. This predicate is allow-BY-

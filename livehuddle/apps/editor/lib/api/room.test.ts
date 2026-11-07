@@ -537,7 +537,7 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       kind: 'el-delta',
       tabId: 't',
       elementId: 'e',
-      delta: { kind: 'check', index: 0, text: 'Agenda', done: true },
+      delta: { kind: 'comment-resolve', resolved: true },
     } as const;
     const open = () => {
       const room = connectRoom(

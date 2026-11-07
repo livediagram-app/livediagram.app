@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   RETIRED_ELEMENT_NOTE,
+  RETIRED_ELEMENT_TYPES,
   RETIRED_SHAPE_NAMES,
   UNKNOWN_ELEMENT_NAME,
   isRetiredElement,
@@ -147,6 +148,47 @@ const RETIRED: Record<string, unknown>[] = [
     padding: 'lg',
     fillColor: '#fef3c7',
   }),
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": the content widgets.
+  box('pie', 'pie-chart', 6400, {
+    pieSlices: [
+      { label: 'Yes', value: 3 },
+      { label: 'No', value: 1 },
+    ],
+    chartVariant: 'doughnut',
+    chartLegendPosition: 'bottom',
+  }),
+  box('bars', 'bar-chart', 6800, {
+    pieSlices: [{ label: 'Q1', value: 4 }],
+    chartValues: true,
+    chartAxis: true,
+  }),
+  box('trend', 'line-chart', 7200, {
+    lineCategories: ['Mon', 'Tue'],
+    lineSeries: [{ label: 'Visits', values: [1, 2] }],
+    chartVariant: 'area',
+  }),
+  box('key', 'legend', 7600, { legendItems: [{ label: 'Done', color: '#16a34a' }] }),
+  box('bar', 'progress-bar', 8000, { progress: 40, progressAnim: 'fill' }),
+  box('ring', 'progress-ring', 8400, { progress: 75 }),
+  box('stars', 'rating', 8800, { rating: 4 }),
+  box('snippet', 'code-block', 9200, {
+    code: 'const x = 1;',
+    codeLanguage: 'ts',
+    codeTheme: 'dracula',
+    codeWrap: false,
+  }),
+  box('ticks', 'checklist', 9600, {
+    label: 'Launch',
+    checklistItems: [
+      { text: 'Ship', done: true },
+      { text: 'Tell people', done: false },
+    ],
+  }),
+  box('doc', 'page', 10000, { label: 'Notes', pageTitle: 'Notes', pageSubtitle: 'Week 3' }),
+  box('hero', 'banner', 10400, { label: 'Welcome', pageSubtitle: 'Say hello' }),
+  box('kpis', 'stat-row', 10800, { stats: [{ value: '1.2k', caption: 'Users' }] }),
+  box('steps', 'process', 11200, { processSteps: ['Plan', 'Build', 'Ship'] }),
+  box('nav', 'site-header', 11600, { label: 'Brand', navLinks: ['Home', 'About'] }),
 ];
 
 const storedTab = (): Tab =>
@@ -191,6 +233,35 @@ describe('a stored tab of retired elements', () => {
     const [poll] = storedTab().elements;
     expect(isKnownElement(poll!)).toBe(false);
     expect(kindWordOf(poll!)).toBe('? session-button');
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": an embed (the `video` type) is a deleted
+// element type, kept exactly as stored like a deleted shape kind.
+describe('a stored embed', () => {
+  const embed = {
+    id: 'clip',
+    type: 'video',
+    x: 0,
+    y: 0,
+    width: 480,
+    height: 270,
+    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    videoStart: 30,
+  };
+  const tab = (): Tab =>
+    structuredClone({ id: 't2', name: 'Demo', elements: [embed] }) as unknown as Tab;
+
+  it('is the one deleted element type, named Embed', () => {
+    expect([...RETIRED_ELEMENT_TYPES]).toEqual(['video']);
+    expect(isRetiredElement(embed)).toBe(true);
+    expect(retiredElementName(embed)).toBe('Embed');
+  });
+
+  it('reads back exactly as stored, and is valid', () => {
+    expect(migrateStoredTab(tab())).toEqual(tab());
+    expect(migrateIncomingTab(tab())).toEqual(tab());
+    expect(isValidTab(tab())).toBe(true);
   });
 });
 
@@ -243,7 +314,7 @@ describe('retiredElementName', () => {
     expect(retiredElementName({ shape: 'toString' })).toBe(UNKNOWN_ELEMENT_NAME);
     expect(retiredElementName({})).toBe(UNKNOWN_ELEMENT_NAME);
     expect(UNKNOWN_ELEMENT_NAME).toBe('Unknown Element');
-    expect(RETIRED_ELEMENT_NOTE).toBe('Not in livehuddle');
+    expect(RETIRED_ELEMENT_NOTE).toBe('No longer supported in livehuddle');
   });
 
   it('is the name a selection caption gives it', () => {

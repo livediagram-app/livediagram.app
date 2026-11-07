@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { defaultTextColor } from './colors';
 import { ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK, STAGE_FRONT } from './office';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { svgBoxed } from './svg-render';
@@ -74,28 +73,5 @@ describe('svgBoxed on dark paper', () => {
     expect(svgBoxed({ ...stage, fillColor: '#123456' }, { surface: 'light' })).toContain(
       'fill="#123456"',
     );
-  });
-});
-
-describe('a checklist and a legend write their rows in the page’s ink', () => {
-  // The canvas writes a row in the element's text colour, else its ink for the page
-  // (defaultTextColor); an export wrote slate-800 whatever the page, so on dark paper the rows
-  // sank into their dark card.
-  for (const kind of ['checklist', 'legend'] as const) {
-    it(`draws a ${kind}'s rows in the ink the canvas uses, on dark and light paper`, () => {
-      const el = createShape(kind, 0, 0);
-      const fills = (svg: string) =>
-        [...svg.matchAll(/<text\b[^>]*fill="(#[0-9a-fA-F]{3,8})"/g)].map((m) => m[1]);
-      for (const surface of ['dark', 'light'] as const) {
-        const rows = fills(svgBoxed(el, { surface }));
-        expect(rows.length).toBeGreaterThan(0);
-        expect(new Set(rows)).toEqual(new Set([defaultTextColor(el, surface)]));
-      }
-      expect(isLight(defaultTextColor(el, 'dark'))).toBe(true);
-    });
-  }
-  it('keeps a stored text colour', () => {
-    const el = { ...createShape('checklist', 0, 0), textColor: '#b91c1c' };
-    expect(svgBoxed(el, { surface: 'dark' })).toContain('fill="#b91c1c">');
   });
 });

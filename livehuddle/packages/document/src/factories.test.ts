@@ -96,7 +96,7 @@ describe('boxed-element factories', () => {
   });
 
   it('scaleElements scales boxed position + size about the origin, 2x', () => {
-    const before = createComponent('banner', 0, 0, {
+    const before = createComponent('callout', 0, 0, {
       accent: '#000',
       surface: '#fff',
       ink: '#111',

@@ -10,16 +10,10 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
-  ChartLegendPosition,
-  ChartType,
-  ChecklistItem,
   ChairFacing,
   Element,
-  ChartPaletteId,
-  CodeThemeId,
   ElementShadow,
   Finish,
-  LegendItem,
   AnimationSetId,
   IconAnimation,
   IconPosition,
@@ -28,10 +22,6 @@ import type {
   Padding,
   TextAlignX,
   TextAlignY,
-  PieAnim,
-  PieSlice,
-  ProgressAnim,
-  RatingAnim,
   ShapeKind,
   ShapeMarker,
   TablePreset,
@@ -145,46 +135,8 @@ export type EditorContextMenuProps = {
   onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
   onPreviewMarkerSize: (value: TextSizePreset) => void;
-  // Rating (docs/specs/009-elements/rating.md): the star score + its animation.
-  onSetRating: (value: number) => void;
-  onSetRatingAnim: (value: RatingAnim | null) => void;
-  onSetRatingAnimSpeed: (value: AnimationSpeed) => void;
-  onSetRatingAnimRepeat: (value: boolean) => void;
-  // Pie chart (docs/specs/009-elements/pie-chart.md): the data rows + the slice animation.
-  onSetPieData: (slices: PieSlice[]) => void;
-  onSetPieAnim: (value: PieAnim | null) => void;
-  onSetPieAnimSpeed: (value: AnimationSpeed) => void;
-  onSetPieAnimRepeat: (value: boolean) => void;
-  onSetChartLegend: (value: boolean) => void;
-  // Show Values (docs/specs/009-elements/pie-chart.md).
-  onSetChartValues: (value: boolean) => void;
-  // Show Axis and Right Axis (docs/specs/009-elements/pie-chart.md): the value axis, and the series on a second.
-  onSetChartAxis: (value: boolean) => void;
-  onSetChartRightAxis: (index: number | null) => void;
-  onSetChartLegendPosition: (position: ChartLegendPosition) => void;
-  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
-  onSetChartType: (type: ChartType) => void;
-  // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D
-  // grid is too wide for the menu, which just summarises the series).
-  onEditLineData: (elementId: string) => void;
-  // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
-  // (same too-big-for-the-menu rationale as the line chart's grid).
-  onEditCodeBlock: (elementId: string) => void;
-  // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
-  onSetCodeWrap: (wrap: boolean) => void;
-  // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
-  onSetLegendItems: (items: LegendItem[]) => void;
-  // The tab theme's chart ramp (themeChartPalette), so a chart or legend's data-row swatches show the colours the
-  // canvas draws (chartRamp). Absent falls back to the built-in ramp.
-  chartThemeRamp?: readonly string[];
-  // Checklist (docs/specs/009-elements/checklist.md): replace the selected checklist's rows.
-  onSetChecklistItems: (items: ChecklistItem[]) => void;
-  // Tick one row, as the on-canvas checkbox does: a delta the room merges,
-  // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
-  onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
-  // header (each field only lands on its own kind), and an image's hero
-  // caption card on or off.
+  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected card or concept
+  // graphic (each field only lands on its own kind), and an image's hero caption card on or off.
   onSetWebRows: (rows: import('@livehuddle/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
@@ -225,19 +177,11 @@ export type EditorContextMenuProps = {
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
   onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
-  // Code-block colour scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset,
-  // and the only style choice it has. Same hover-preview / click-commit flow.
-  onApplyCodeTheme: (id: CodeThemeId) => void;
-  onPreviewCodeTheme: (id: CodeThemeId) => void;
   // Table looks (docs/specs/010-palette/style-presets.md): cells + grid + header band + banding in one step.
   // Theme-derived, like the shape presets.
   tableColorPresets: TablePreset[];
   onApplyTablePreset: (preset: TablePreset) => void;
   onPreviewTablePreset: (preset: TablePreset) => void;
-  // Chart palettes (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-  // `null` back to the theme's ramp (a Legend's reset; a chart's goes through Reset Colours).
-  onApplyChartPalette: (id: ChartPaletteId | null) => void;
-  onPreviewChartPalette: (id: ChartPaletteId | null) => void;
   // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
@@ -257,10 +201,6 @@ export type EditorContextMenuProps = {
   onPreviewArrowFlow: (value: ArrowFlow | null) => void;
   onPreviewIconAnimation: (value: IconAnimation | null) => void;
   onAnimationPreviewEnd: () => void;
-  onSetProgress: (value: number) => void;
-  onSetProgressAnim: (value: ProgressAnim | null) => void;
-  onSetProgressAnimSpeed: (value: AnimationSpeed) => void;
-  onSetProgressAnimRepeat: (value: boolean) => void;
   onSetFlowSpeed: (value: AnimationSpeed) => void;
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops, false plays once.
   onSetIconAnimationRepeat: (value: boolean) => void;

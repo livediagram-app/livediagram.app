@@ -52,7 +52,6 @@ const CSS_OUTLINE_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'square',
   'circle',
   'stadium',
-  'page',
 ]);
 const DRAWN_KINDS: ReadonlySet<ShapeKind> = new Set(SHAPE_GEOMETRY_KINDS);
 // The corner a CSS-drawn box gets with no radius of its own (element-variant.ts).

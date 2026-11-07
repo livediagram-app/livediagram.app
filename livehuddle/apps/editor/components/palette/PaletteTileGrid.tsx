@@ -1,6 +1,5 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@livehuddle/document';
-import type { EmbedProvider } from '@livehuddle/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -29,7 +28,6 @@ export type PaletteTileActions = {
   addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
-  addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
   addComponent: (kind: ComponentKind) => void;
   // Puts the armed tool down (its tile pressed again).
@@ -86,8 +84,6 @@ export function tileHandler(
       return actions.addAnnotation;
     case 'link-card':
       return actions.addLinkCard;
-    case 'video':
-      return () => actions.addVideo(a.provider);
     case 'sticker':
       return () => actions.addSticker(a.stickerId);
     case 'component':
@@ -129,11 +125,6 @@ export function tileActive(
       return pendingDraw.type === 'freehand' && pendingDraw.variant === 'shape-pen';
     case 'room-walls':
       return pendingDraw.type === 'room-walls';
-    // The Media tab has a tile per service and they all arm one `video`
-    // intent, so match on the provider too or picking Loom would light up
-    // Vimeo alongside it (the same trap the shape branch above avoids).
-    case 'video':
-      return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
     // Sticker tiles DO arm (they ride the shape intent carrying their

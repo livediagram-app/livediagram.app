@@ -16,7 +16,6 @@ import { PALETTE_CATEGORIES } from './palette-categories';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
 import {
   PaletteCollaborateTab,
-  PaletteDataTab,
   PaletteMediaTab,
   PaletteDrawTab,
   PaletteBuildTab,
@@ -88,8 +87,6 @@ export function paletteCategoryTabs(
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       case 'components':
         return <PaletteComponentsTab {...tab} tiles={tiles} />;
-      case 'data':
-        return <PaletteDataTab {...tab} tiles={tiles} />;
       default:
         // The meeting categories (the Space categories and Selection Mode) by their group, so a new one needs no case.
         return c.id in COLLABORATE_CATEGORY_GROUPS ? (

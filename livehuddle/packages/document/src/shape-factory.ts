@@ -12,19 +12,10 @@ import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
 import { isMeetingPieceShape, MEETING_PIECE_SIZE } from './meeting-pieces';
 import { isTimerPieceShape, TIMER_PIECE_SIZE } from './timer-pieces';
 import { DEFAULT_BUTTON_MODE } from './selection-mode';
-import {
-  CHECKLIST_DEFAULT_ITEMS,
-  LEGEND_DEFAULT_ITEMS,
-  LINE_DEFAULT_CATEGORIES,
-  LINE_DEFAULT_SERIES,
-  PIE_DEFAULT_SLICES,
-  RATING_DEFAULT,
-} from './data-shapes';
 import { DEFAULT_CHAIR_FACING } from './collab-shapes';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from '@liveworkspace/avatar/fence';
 import { AVATAR_PAD_DEFAULT_SIZE } from '@liveworkspace/avatar/pad-art';
-import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
 // --- Factories -------------------------------------------------------------
@@ -42,9 +33,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   parallelogram: { width: 160, height: 100 },
   hexagon: { width: 140, height: 120 },
   document: { width: 140, height: 110 },
-  // Document (docs/specs/009-elements/page-element.md): 420x594 is the A-series root-2 ratio, at a size that
-  // reads as a page beside a 120px square without swallowing the canvas.
-  page: { width: 420, height: 594 },
   // Lane (docs/specs/009-elements/lane.md): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
@@ -79,28 +67,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // creation path widens it for a word badge off STICKER_ASPECT, since the
   // default table is per-kind and a badge and an emoji are one kind.
   sticker: { width: 104, height: 104 },
-  // Progress bar: a wide, short pill. Progress ring: a square donut
-  // (aspect-locked on create so it stays circular).
-  'progress-bar': { width: 220, height: 44 },
-  'progress-ring': { width: 130, height: 130 },
   // Timeline (docs/specs/009-elements/timeline.md): four milestones, words above and below.
   'timeline-rail': { width: 720, height: 240 },
-  // Rating: a row of five stars.
-  rating: { width: 200, height: 44 },
-  // Charts default their legend BELOW the plot (docs/specs/009-elements/pie-chart.md), so the starting box
-  // is squarer than it was when the legend took a side strip: the width goes to
-  // the plot and the extra height carries the legend band.
-  'pie-chart': { width: 260, height: 220 },
-  'bar-chart': { width: 260, height: 220 },
-  // Line chart: a touch wider for the x-axis labels.
-  'line-chart': { width: 300, height: 240 },
-  // Code block: room for a dozen-ish monospace lines (docs/specs/009-elements/code-block.md).
-  'code-block': { width: 320, height: 180 },
-  // Checklist: a card of starter rows (docs/specs/009-elements/checklist.md).
-  checklist: { width: 240, height: 180 },
-  // Legend (docs/specs/009-elements/pie-chart.md): narrower than a checklist, because a key is a swatch and
-  // a word, and short enough to sit in a corner beside the thing it explains.
-  legend: { width: 180, height: 132 },
   // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -217,9 +185,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).
   timer: TIMER_PIECE_SIZE.timer,
   stopwatch: TIMER_PIECE_SIZE.stopwatch,
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
-  // replace arrived at, so a canvas built from either reads the same.
-  banner: { width: 440, height: 104 },
+  // The Callout (docs/specs/009-elements/card.md), at the size the grouped composite it replaced arrived at.
   callout: { width: 380, height: 116 },
   // Card (docs/specs/009-elements/card.md): room for a title, a meta line, two body lines and a tag row.
   card: { width: 300, height: 150 },
@@ -235,10 +201,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   stack: { width: 360, height: 160 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
-  // Three 150px cards and two 16px gaps.
-  'stat-row': { width: 482, height: 96 },
-  process: { width: 420, height: 110 },
-  'site-header': { width: 640, height: 84 },
 };
 
 // New boxed elements default to Medium text size per spec 09 ("Text size").
@@ -456,28 +418,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       label: 'Lane',
     };
   }
-  if (kind === 'page') {
-    return {
-      ...base,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      // Paper, explicitly, rather than whatever fill the tab theme gives
-      // every other box — a page tinted like the shapes around it stops
-      // reading as a page. Set as ELEMENT colours (not a theme entry), so
-      // they behave like any user-picked colour and can be changed from the
-      // menu; a theme with per-shape overrides can still claim the kind.
-      fillColor: '#ffffff',
-      strokeColor: '#d4d4d8',
-      // A soft lift is the other half of "paper": it sits ON the canvas
-      // rather than being drawn into it (docs/specs/008-canvas/element-shadows.md).
-      shadow: { offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 },
-      // Body text wants reading size, not the label size a shape defaults to.
-      textSize: 'sm',
-      // A generous margin, like a word processor's — text running to the
-      // edge of a page is the other half of "this isn't paper".
-      padding: 'lg',
-    };
-  }
   // The actor is a figure with its label beneath the legs, not text
   // inside a box. Lock the aspect ratio so resizing never warps the
   // stickman, and default the label to the bottom band.
@@ -495,59 +435,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // an icon carries would undo the die-cut look.
   if (kind === 'sticker') {
     return { ...base, aspectLocked: true };
-  }
-  // Progress ring is drawn as a donut, so lock the aspect ratio to keep it
-  // circular. Both progress kinds start half-filled so the fill is visible the
-  // moment they're dropped, and default to the `fill` animation — which plays
-  // once on drop and holds the filled state (it doesn't loop), so a freshly
-  // dropped progress element animates in and stays done.
-  if (kind === 'progress-ring') {
-    return { ...base, aspectLocked: true, progress: 50, progressAnim: 'fill' };
-  }
-  if (kind === 'progress-bar') {
-    return { ...base, progress: 50, progressAnim: 'fill' };
-  }
-  // Rating: a row of stars, three filled by default, amber accent. See docs/specs/009-elements/rating.md.
-  if (kind === 'rating') {
-    return { ...base, rating: RATING_DEFAULT, strokeColor: '#f59e0b' };
-  }
-  // Pie + bar charts: start with three sample data points; edit from the menu.
-  // See docs/specs/009-elements/pie-chart.md.
-  if (kind === 'pie-chart' || kind === 'bar-chart') {
-    return { ...base, pieSlices: PIE_DEFAULT_SLICES.map((s) => ({ ...s })) };
-  }
-  // Line chart: shared categories + a couple of sample series (CSV-importable).
-  if (kind === 'line-chart') {
-    return {
-      ...base,
-      lineCategories: [...LINE_DEFAULT_CATEGORIES],
-      lineSeries: LINE_DEFAULT_SERIES.map((s) => ({ ...s, values: [...s.values] })),
-    };
-  }
-  // Code block: empty snippet, plain language; the view renders a
-  // double-click-to-edit placeholder until code lands. See docs/specs/009-elements/code-block.md.
-  if (kind === 'code-block') {
-    return { ...base, codeLanguage: 'plain' };
-  }
-  // Checklist: starter rows so the affordance is obvious on drop. See docs/specs/009-elements/checklist.md.
-  if (kind === 'checklist') {
-    return { ...base, checklistItems: CHECKLIST_DEFAULT_ITEMS.map((i) => ({ ...i })) };
-  }
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the starting content each one shows on drop,
-  // so a new one reads as what it is. Colours come from the caller
-  // (createComponent maps the theme); without one the renderer's fallbacks
-  // apply, which is what an MCP- or AI-authored one gets.
-  if (kind === 'banner') {
-    return {
-      ...base,
-      label: 'Banner title',
-      pageSubtitle: 'Subtitle or description',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'center',
-      textAlignY: 'middle',
-      borderRadius: 'lg',
-    };
   }
   // A Timeline's milestones, each with its when (docs/specs/009-elements/timeline.md).
   if (kind === 'timeline-rail')
@@ -646,30 +533,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       strokeWidth: 'thin',
       borderRadius: 'md',
     };
-  }
-  if (kind === 'stat-row') {
-    return { ...base, stats: STAT_DEFAULTS.map((st) => ({ ...st })), borderRadius: 'md' };
-  }
-  if (kind === 'process') {
-    return { ...base, processSteps: [...PROCESS_DEFAULT_STEPS] };
-  }
-  if (kind === 'site-header') {
-    return {
-      ...base,
-      label: 'Brand',
-      navLinks: [...NAV_DEFAULT_LINKS],
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-      textAlignY: 'middle',
-      borderRadius: 'md',
-    };
-  }
-  // Legend: starter rows so the card is not an empty box on drop. Their
-  // colours are left unset, so they take the chart palette by index and a
-  // legend beside a chart matches it without being told to. See docs/specs/009-elements/pie-chart.md.
-  if (kind === 'legend') {
-    return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
   }
   return base;
 }

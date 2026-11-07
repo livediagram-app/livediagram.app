@@ -1843,14 +1843,14 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'e', name: 'E', color: '#000' } });
     return ws;
   }
-  // One checklist row ticked, the multi-writer field a room records (the `check` delta).
-  const answer = (row: string) => ({
+  // One comment removed, a multi-writer change a room records (the `comment-remove` delta).
+  const answer = (commentId: string) => ({
     kind: 'op',
     op: {
       kind: 'el-delta',
       tabId: 't1',
       elementId: 'card',
-      delta: { kind: 'check', index: 0, text: row, done: true },
+      delta: { kind: 'comment-remove', commentId },
     },
   });
   const ledger = async (room: DocumentRoom, epoch = room.epoch) =>
@@ -1862,10 +1862,9 @@ describe('DocumentRoom collaboration ledger (docs/specs/012-collaboration/collab
     sendFrame(room, ws, answer('a'));
     sendFrame(room, ws, answer('b'));
     const body = (await ledger(room)) as {
-      elements: Record<string, { ticks: Record<string, { seq: number }> }>;
+      elements: Record<string, { comments: { removes: Record<string, number> } }>;
     };
-    expect(body.elements.card!.ticks['0\u0000a']!.seq).toBe(1);
-    expect(body.elements.card!.ticks['0\u0000b']!.seq).toBe(2);
+    expect(body.elements.card!.comments.removes).toEqual({ a: 1, b: 2 });
   });
 
   it('serves nothing to a cursor from another epoch', async () => {

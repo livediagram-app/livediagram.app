@@ -37,7 +37,9 @@ import type { AddKindOperation, Fields } from '../types';
 export const NOT_ADDED: Readonly<Record<string, string>> = {
   arrow: 'use connect',
   image: 'images are uploaded in the editor',
-  video: 'videos are added in the editor',
+  // An embed is retired (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored one still
+  // draws as its placeholder, and nothing makes a new one.
+  video: 'embeds are no longer supported in livehuddle',
   freehand: 'strokes are drawn in the editor',
   path: 'paths are drawn in the editor',
 };
@@ -53,12 +55,9 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
 // The kinds besides the shape kinds that `add` makes.
 export const OTHER_KINDS: readonly string[] = Object.keys(FACTORIES);
 
-// The shape kinds an agent may make (docs/specs/002-project-scope/not-in-livehuddle.md): every one but the Page,
-// which stays a shape kind only so a stored one still draws. `add page` makes a square, as an unknown kind does.
-const NOT_FOR_AGENTS: ReadonlySet<string> = new Set(['page']);
-export const AGENT_SHAPE_KINDS: readonly string[] = [...SHAPE_KINDS].filter(
-  (kind) => !NOT_FOR_AGENTS.has(kind),
-);
+// The shape kinds an agent may make: every one livehuddle has. A retired kind (docs/specs/002-project-scope/
+// not-in-livehuddle.md "Retired elements"), the Page or a chart among them, is an unknown kind: `add` makes a square.
+export const AGENT_SHAPE_KINDS: readonly string[] = [...SHAPE_KINDS];
 
 export type Built = { el: BoxedElement; coerced: string | null };
 
@@ -69,7 +68,7 @@ export function buildKind(kind: string): Built | { refusal: string } {
   if (refused !== undefined) return { refusal: refused };
   const factory = FACTORIES[kind];
   if (factory) return { el: { ...factory(), textSize: 'sm' }, coerced: null };
-  const shape = kind === 'shape' || NOT_FOR_AGENTS.has(kind) ? 'square' : coerceShapeKind(kind);
+  const shape = kind === 'shape' ? 'square' : coerceShapeKind(kind);
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
     coerced: kind === 'shape' || shape === kind ? null : shape,

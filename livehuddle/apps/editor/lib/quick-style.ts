@@ -14,7 +14,6 @@ import {
   quickSwatches,
   supportsBorderControls,
   supportsColours,
-  takesChartPalette,
   supportsFillColor,
   type ArrowElement,
   type Element,
@@ -78,18 +77,14 @@ export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
   switch (section) {
-    // A chart paints from its palette per datum (docs/specs/009-elements/pie-chart.md): a stroke or fill swatch
-    // would write a colour nothing draws.
     case 'stroke':
       return (
-        el.type === 'arrow' ||
-        el.type === 'path' ||
-        (el.type === 'shape' && supportsColours(el) && !takesChartPalette(el.shape))
+        el.type === 'arrow' || el.type === 'path' || (el.type === 'shape' && supportsColours(el))
       );
     case 'background':
       // A path fills only when closed.
       if (el.type === 'path') return el.closed;
-      return el.type === 'shape' && supportsFillColor(el) && !takesChartPalette(el.shape);
+      return el.type === 'shape' && supportsFillColor(el);
     case 'textColour':
       return el.type === 'text';
     case 'width':

@@ -1,7 +1,7 @@
 // A retired element's placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), laid out
 // once for every surface that draws it: the export and the thumbnail (svg-render-retired.ts) and the editor's canvas
-// face. A plain card in the element's own box: a dashed outline, a muted fill, the kind's name centred, "Not in
-// livehuddle" smaller beneath it, and the stored label beneath that when there is one. Pure: the caller places the
+// face. A plain card in the element's own box: a dashed outline, a muted fill, the kind's name centred, "No longer
+// supported in livehuddle" smaller beneath it, and the stored label beneath that when there is one. Pure: the caller places the
 // card at the element's position and draws it in its own medium.
 
 import type { CanvasSurface } from './colors';
@@ -17,8 +17,9 @@ export const RETIRED_PLACEHOLDER_COLOURS: Readonly<
   dark: { fill: '#1c2533', stroke: '#64748b', ink: '#cbd5e1' },
 };
 
-/** One line of the card's words: its text (already cut to fit), its size and weight, how strongly it is inked, and
- *  where its baseline sits, measured down from the top of the element's box. */
+/** One line of the card's words: its text (already cut to fit), its size and weight, how strongly it is inked, where
+ *  its baseline sits, measured down from the top of the element's box, and the box it fills: its top and its estimated
+ *  width, centred across the element (what keeps the editor's Delete button clear of the words). */
 export type RetiredPlaceholderLine = {
   role: 'name' | 'note' | 'label';
   text: string;
@@ -26,6 +27,8 @@ export type RetiredPlaceholderLine = {
   weight: number;
   opacity: number;
   baseline: number;
+  top: number;
+  width: number;
 };
 
 /** The whole card, in the element's own box (0, 0 at its top-left): the outline's inset, corner radius, width and
@@ -55,11 +58,14 @@ const LINE_STYLES: Record<
   { size: number; weight: number; opacity: number }
 > = {
   name: { size: 15, weight: 600, opacity: 1 },
-  note: { size: 12, weight: 400, opacity: 0.7 },
+  // 11px, so the whole note ("No longer supported in livehuddle") fits on one line from a 210px card up: the
+  // Collaborate elements Work Tracker #423 deleted were stored 220px wide.
+  note: { size: 11, weight: 400, opacity: 0.7 },
   label: { size: 13, weight: 500, opacity: 0.85 },
 };
 
 type RetiredSource = {
+  type?: unknown;
   shape?: unknown;
   session?: unknown;
   label?: unknown;
@@ -88,11 +94,14 @@ export function retiredPlaceholderLayout(el: RetiredSource): RetiredPlaceholderL
   const lines = wanted.map(({ role, text }) => {
     const style = LINE_STYLES[role];
     const em = style.weight >= 600 ? BOLD_EM : REGULAR_EM;
+    const fitted = fitLine(text, room, style.size, em);
     const line: RetiredPlaceholderLine = {
       role,
-      text: fitLine(text, room, style.size, em),
+      text: fitted,
       ...style,
       baseline: cursor + (lineBox(role) - style.size) / 2 + style.size * ASCENT,
+      top: cursor,
+      width: Math.min(room, fitted.length * style.size * em),
     };
     cursor += lineBox(role);
     return line;

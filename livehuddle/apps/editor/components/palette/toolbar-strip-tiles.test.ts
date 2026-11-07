@@ -67,15 +67,13 @@ describe('stripTilesFor', () => {
   it.each([
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
-    ['media', ['media:embed-website']],
-    ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
   it('keeps every tile of a category short of the strip', () => {
     const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(11);
+    expect(components.tiles).toHaveLength(5);
     expect([...components.dividersAfter]).toEqual([]);
     // Six since the Frame left (not-in-livehuddle.md "The Frame").
     expect(stripTilesFor('build', NONE).tiles).toHaveLength(6);

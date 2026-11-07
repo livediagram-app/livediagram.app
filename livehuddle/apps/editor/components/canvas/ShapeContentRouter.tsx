@@ -11,16 +11,7 @@ import {
   defaultStrokeColor,
   ICON_REMOTE_HIGHLIGHT_PX,
   iconWeightPx,
-  isBarShape,
-  isChecklistShape,
-  isLegendShape,
-  isCodeBlockShape,
-  isLineShape,
-  isPieShape,
-  isProgressShape,
   isRailShape,
-  progressTrackColour,
-  isRatingShape,
   type ShapeKind,
 } from '@livehuddle/document';
 import type { ReactNode } from 'react';
@@ -33,30 +24,14 @@ import { StickerView } from '@/components/canvas/StickerView';
 import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
 import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { ProgressView } from '@/components/canvas/ProgressView';
-import { RatingView } from '@/components/canvas/RatingView';
-import { PieChartView } from '@/components/canvas/PieChartView';
-import { CodeBlockView } from '@/components/canvas/CodeBlockView';
-import { LegendView } from '@/components/canvas/LegendView';
-import { ChecklistView } from '@/components/canvas/ChecklistView';
-import { BarChartView } from '@/components/canvas/BarChartView';
-import { LineChartView } from '@/components/canvas/LineChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,
-  | 'element'
-  | 'isSelected'
-  | 'readOnly'
-  | 'onToggleChecklistItem'
-  | 'chartPalette'
-  | 'fontFamily'
-  | 'isEditing'
+  'element' | 'isSelected' | 'isEditing'
 > & {
-  accent: string;
-  textColor: string;
   remoteBorderColor: string | null;
   svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
   // Filter-based animation class for silhouette content (a sticker's art).
@@ -69,36 +44,15 @@ type ShapeContentRouterProps = Pick<
  * self-faced kind takes them on the element (docs/specs/028-animation/element-animations.md).
  */
 export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
-  return (
-    isSvgRenderedShape(kind) &&
-    kind !== 'sticker' &&
-    kind !== 'icon' &&
-    !isProgressShape(kind) &&
-    !isRailShape(kind) &&
-    !isRatingShape(kind) &&
-    !isPieShape(kind) &&
-    !isBarShape(kind) &&
-    !isCodeBlockShape(kind) &&
-    !isLegendShape(kind) &&
-    !isChecklistShape(kind) &&
-    !isLineShape(kind)
-  );
+  return isSvgRenderedShape(kind) && kind !== 'sticker' && kind !== 'icon' && !isRailShape(kind);
 }
 
-// The per-shape-type inner content of a boxed element: stickers, tech /
-// curated icons,
-// progress / rail / rating data shapes, pie / bar / line charts, and the
-// SVG-rendered geometric shapes. Returns null for a plain box (whose text +
+// The per-shape-type inner content of a boxed element: stickers, tech / curated icons and the SVG-rendered geometric
+// shapes. Returns null for a plain box (whose text +
 // border render in BoxedElementView itself). Extracted from BoxedElementView.
 export function ShapeContentRouter({
   element,
-  accent,
-  textColor,
   remoteBorderColor,
-  readOnly,
-  onToggleChecklistItem,
-  chartPalette,
-  fontFamily,
   svgAnim,
   artAnimClass,
   isEditing,
@@ -173,69 +127,6 @@ export function ShapeContentRouter({
         animationRepeat={element.iconAnimationRepeat}
       />,
     )
-  ) : element.type === 'shape' && isProgressShape(element.shape) ? (
-    // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
-    // The fill takes the stroke accent; the track takes the fill colour, else the paper's default.
-    <ProgressView
-      element={element}
-      accent={accent}
-      track={progressTrackColour(element, surface)}
-      textColor={textColor}
-    />
-  ) : element.type === 'shape' && isRatingShape(element.shape) ? (
-    // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
-    <RatingView element={element} accent={accent} />
-  ) : element.type === 'shape' && isPieShape(element.shape) ? (
-    // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
-    <PieChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
-  ) : element.type === 'shape' && isBarShape(element.shape) ? (
-    // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
-    <BarChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
-  ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
-    // Code block (docs/specs/009-elements/code-block.md): the fixed dark editor card. Deliberately takes
-    // no theme colours — the dark card is its identity.
-    <CodeBlockView element={element} />
-  ) : element.type === 'shape' && isLegendShape(element.shape) ? (
-    // Legend (docs/specs/009-elements/pie-chart.md): a key card of colour-coded rows, edited from the
-    // menu's Legend section.
-    <LegendView
-      element={element}
-      accent={accent}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      palette={chartPalette}
-    />
-  ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
-    // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
-    // on-canvas for anyone with edit access (no select-first required).
-    <ChecklistView
-      element={element}
-      accent={accent}
-      fill={element.fillColor ?? defaultFillColor(element, surface)}
-      textColor={textColor}
-      fontFamily={fontFamily}
-      editable={!readOnly}
-      onToggle={onToggleChecklistItem}
-    />
-  ) : element.type === 'shape' && isLineShape(element.shape) ? (
-    // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
-    <LineChartView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-    />
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
     <ShapeSvgOverlay
       shape={element.shape}

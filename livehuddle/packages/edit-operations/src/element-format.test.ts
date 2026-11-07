@@ -36,13 +36,13 @@ describe('the element format', () => {
   });
 
   it('gives a kind its add form, first size, aliases with their values, and its own fields', () => {
-    const code = elementFormatText('code-block')!;
-    expect(code).toMatch(
-      /^code-block: a shape\. add code-block \[id=<id>\] key=value… \[<placement>\]\nSize: \d+×\d+ at first/,
+    const lane = elementFormatText('lane')!;
+    expect(lane).toMatch(
+      /^lane: a shape\. add lane \[id=<id>\] key=value… \[<placement>\]\nSize: \d+×\d+ at first/,
     );
-    expect(code).toContain('fill=theme|');
-    expect(code).toContain('codeLanguage');
-    expect(code).toContain('Any other stored field by name');
+    expect(lane).toContain('fill=theme|');
+    expect(lane).toContain('headerFill');
+    expect(lane).toContain('Any other stored field by name');
     const sticky = elementFormatText('sticky')!;
     expect(sticky).toContain('fill=classic|');
     expect(sticky).not.toContain('Any other stored field');
@@ -53,6 +53,9 @@ describe('the element format', () => {
   it('knows nothing of a kind the engine does not make', () => {
     expect(elementFormatText('rectangle')).toBeNull();
     expect(elementFormatText('image')).toBeNull();
+    // Nor of a retired one (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
+    expect(elementFormatText('code-block')).toBeNull();
+    expect(elementFormatText('video')).toBeNull();
   });
 
   it('names only stored shape fields, so the map cannot drift', () => {
@@ -63,6 +66,6 @@ describe('the element format', () => {
   });
 
   it('teaches an add form the parser reads', () => {
-    expect(parseEditOperations('add code-block id=c code="x = 1"')).toHaveProperty('operations');
+    expect(parseEditOperations('add lane id=c label="x = 1"')).toHaveProperty('operations');
   });
 });
