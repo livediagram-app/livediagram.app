@@ -158,9 +158,87 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 - A green table with a white centre line, a net across the middle and a paddle at each end.
 - **Two seats**, the left end facing right and the right end facing left (as a seat at each end of the Meeting
   Table).
-- **When both seats are taken** a tiny rally plays: a ball arcs from one end to the other and back, every 1.2
-  seconds, in CSS. Under reduced motion the ball rests on the net line instead. It is decoration: there is no score
-  and no game. A playable mini-game is a follow-up.
+- **It is playable** (Work Tracker #528): the two people sitting at it play a game of table tennis, seen from above,
+  each moving the paddle at their own end. Everyone else sees the same rally and the same score.
+
+### A game
+
+- **Who plays**: the sitter on the left seat and the sitter on the right seat, each an Editor or a Participant
+  ([Share roles](#share-roles)). A Viewer sitting at the table sits, and its seat counts as empty for the game. Anyone
+  else on the tab watches.
+- **The resting rally**: with both seats taken and no game running (a Viewer in one, or a player's motion reduced, or
+  a screen from before games), the table plays its decorative rally as before: a ball arcing from end to end every 1.2
+  seconds in CSS, no score. Under reduced motion the ball rests on the net line.
+- **Starting**: a game starts once both seats hold a player whose screen can play (motion not reduced, see below).
+  The scoreboard reads **Ready** for a second, then the left player serves. Nobody presses anything to start.
+- **Playing**: the ball crosses the table, bounces off the two long sides, and is struck back by a paddle that
+  meets it at that player's end. Where it meets the paddle sets its angle (the paddle's middle sends it straight,
+  its tips send it steeply). Each strike speeds it up a little, to a cap. A ball that passes a paddle is a point to
+  the other player.
+- **Scoring**: first to 11, by two clear points (at 10 all, play on until one leads by two). Service changes every
+  two points, and every point from 10 all; the left player serves first. The score is shown above the table, left
+  player's points on the left, for everyone on the tab, in a small pill in each player's colour. A won game shows
+  **<Name> Wins** for five seconds, then a new game starts at 0 all if both are still sitting.
+- **Leaving ends your side**: standing up (or leaving Avatar mode, or the tab, or the document) ends the game at
+  once for everyone; the table goes back to its resting state and the score is gone. Nothing about a game is
+  stored: it lives on the screens of the people looking at the table, like a walking character.
+- **Watching**: anyone on the tab sees the ball, both paddles and the score, whether or not they stand nearby. Someone
+  who opens the tab mid-game sees the ball and the score from the next strike or point on (a game's moments are never
+  replayed).
+
+### Controls
+
+Only while you sit at the table, and only for your own paddle:
+
+- **Mouse or pen**: the paddle follows the pointer's height over the table (no press needed) while the pointer is over
+  the table or within its piece's box.
+- **Touch**: drag anywhere on the table; the paddle follows your finger's height. A press on the piece you sit on
+  keeps you in it ([Chair](chair.md)), so playing never stands you up.
+- **Keyboard**: **W** and **S**, or **Arrow Up** and **Arrow Down**, move the paddle while a game runs at your table.
+  They are the paddle's then, an exception to the Chair rule that any arrow key stands you up and to `W` waving:
+  **Arrow Left**, **Arrow Right**, a click elsewhere or any other walk still stands you up, ending your side.
+- Your paddle moves on your screen at once, never waiting for the room.
+
+### Reduced motion
+
+Under reduced motion (the system setting) a screen draws no ball and no moving paddles: it shows the scoreboard
+only, updating as points are won. A **player** whose motion is reduced does not play (a game needs a ball they can
+see): their screen sends no paddle, so no game starts at that table, and its scoreboard reads **Motion Reduced**.
+
+### The wire
+
+A game rides the tab's live room as two presence ops, never stored, never ordered or replayed, so a game costs the
+document nothing and a reconnect only misses moments. Both are built for any game a piece hosts (the Arcade
+Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and carry the game's own payload.
+
+- **`game-input`** `{ tabId, pieceId, seat, axis }`: one player's control, a number from 0 (the top of the play area)
+  to 1 (its bottom). Sent on change, at most every 50 ms (20 a second), only while sitting at the piece with a game
+  to play; nothing is sent while the paddle is still. It is a sample: the room sends it to the sender's tab only and,
+  in a busy room, coalesces it with the walkers' ([A busy room bounds its presence
+  fan-out](../015-api/api.md)). Receivers ease the paddle toward the newest sample.
+- **`game-event`** `{ tabId, pieceId, seat, game: 'ping-pong', match, seq, event, ball?, score }`: one moment of the
+  game, sent by the one player whose moment it is: `serve` (the server), `hit` and `miss` (the player at the end the
+  ball was travelling to). `match` names the game (a fresh id per game, chosen by the left player), `seq` counts its
+  moments from 1, `ball` is the ball as it leaves on a `serve` or `hit` (`x` and `y` from 0 to 1 across and down the play area, the
+  table top from the left seat's end; `vx` and `vy` in play areas per second), and
+  `score` is the score after the moment, so a late watcher is right from its first event.
+- **No ball traffic per frame.** Between two events the ball's flight is a straight line folded at the long sides, the
+  same on every screen from the same start, so each screen draws it from the last event alone. A rally of strikes
+  every second or so is about one event a second; the only steady stream is a moving paddle's 20 samples a second.
+- **Who decides**: each player decides their own end. When the ball reaches your end, your screen, which knows your
+  paddle exactly, says whether you struck it (`hit`, with the ball's new flight) or missed it (`miss`, a point to the
+  other player). So neither player is judged on a paddle position a network delay old, and there is never a second
+  opinion: only one player may send the next moment. Until that word arrives, other screens hold the ball at that
+  end's paddle line.
+- **Trust**: a screen applies an event only from the presence id sitting on the event's seat, for the match it is
+  showing (or a `serve` with `seq` 1 from the left seat, which starts a new match), with the next `seq`, and from the
+  seat whose turn it is. Anything else changes nothing. The room relays both ops from an Editor or a Participant
+  and drops a Viewer's and any that is malformed.
+- **A silent player**: if the word from an end has not come 3 seconds after the ball reached it, every screen treats
+  that player as gone and the game ends, as if they had stood up. A screen that loses its room connection ends its
+  own game the same way.
+
+## Arcade Machine
 
 ## Arcade Machine
 
@@ -182,8 +260,8 @@ Gathering spots with a fire that flickers.
 
 ## Pool Table, Foosball Table, Dartboard
 
-More for the games corner, each a visual only like the Ping-Pong Table: nobody plays, nothing is scored, and nothing
-moves (a game per piece is a follow-up, Work Tracker #528).
+More for the games corner, each a visual only: nobody plays, nothing is scored, and nothing moves (a game per piece
+is a follow-up, built on the Ping-Pong Table's [wire](#the-wire)).
 
 - **Pool Table**: a wooden table on turned legs, green cloth inside its cushions, six pockets, a racked triangle of
   coloured balls with the black, the white cue ball and a cue resting on the cloth.
@@ -236,9 +314,18 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 
 - **Editor**: places, moves and deletes every piece; sets a World Clock's zones and a Jukebox's source; pins notes and
   unpins any note.
-- **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; walks, sits and uses everything like everyone; the participant
-  palette does not offer the pieces.
-- **Viewer**: reads the notes; walks, sits and listens like everyone (all of it is presence or local).
+- **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; plays ping-pong;
+  walks, sits and uses everything like everyone; the participant palette does not offer the pieces.
+- **Viewer**: reads the notes; watches a ping-pong game but never plays (the room drops its `game-input` and
+  `game-event`, and a Viewer on a seat counts as no player); walks, sits and listens like everyone (all of it is
+  presence or local).
+
+| Piece                     | Editor | Participant | Viewer |
+| ------------------------- | ------ | ----------- | ------ |
+| Ping-Pong Table: play     | Yes    | Yes         | No     |
+| Ping-Pong Table: watch    | Yes    | Yes         | Yes    |
+| Notice Board: pin a note  | Yes    | Yes (own)   | No     |
+| World Clock, Jukebox: set | Yes    | No          | No     |
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
@@ -247,10 +334,13 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
   `Campfire`, `Pool-table`, `Foosball-table`, `Dartboard`, `Vending-machine`, `Bean-bag`, `Reading-nook`).
 - A note pinned or unpinned: `Element · Changed · Notice-board`; zones changed: `Element · Changed · World-clock`; a
   source set: `Element · Changed · Jukebox`. Never the note's words, the zones or the address.
+- A ping-pong game played to its end: `Canvas · Used · PingPong`, sent by the left player's screen alone, so a game
+  counts once. Never the score or who played.
 
 ## Not in scope
 
-- Playing ping-pong, pool, foosball, darts or an arcade game (follow-ups: a mini-game per piece).
+- Playing pool, foosball, darts or an arcade game (follow-ups: a mini-game per piece, on the ping-pong wire).
+- Ping-pong against the computer, doubles, a stored score or a leaderboard, sound, and spin.
 - A snack or a can from the Vending Machine.
 - A built-in jukebox playlist, queueing songs, or volume control beyond mute.
 - Replying to, editing or reacting to a note; notes with images or links.
