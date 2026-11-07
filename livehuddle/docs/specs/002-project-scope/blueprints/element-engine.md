@@ -14,7 +14,7 @@ of Work Tracker #459 and the rules every later part follows.
   box. It takes the place of `VideoElement` in `BoxedElement`.
 - **Retired element**: either. `isRetiredElement(el)` is true for both; `retiredElementName(el)` reads
   `RETIRED_SHAPE_NAMES[shape]` for a shape and `RETIRED_TYPE_NAMES[type]` for a type, else `UNKNOWN_ELEMENT_NAME`.
-- Part 1's names: Pie Chart, Bar Chart, Line Chart, Legend, Progress Bar, Progress Ring, Rating, Code Block, Checklist, Page, Banner, Stat Row, Process, Site Header; the type `video` is **Video**.
+- Part 1's names: Pie Chart, Bar Chart, Line Chart, Legend, Progress Bar, Progress Ring, Rating, Code Block, Checklist, Page, Banner, Stat Row, Process, Site Header; the type `video` is **Embed**.
 
 ## Behaviour and state
 
@@ -25,10 +25,12 @@ of Work Tracker #459 and the rules every later part follows.
 - Render: `ElementFaceRouter` and `svgElement` (`svg-render.ts`) take the placeholder branch for `isRetiredElement(el)`
   before any other branch, for any `type`. `paint-order`, the variant chrome (`element-variant.ts`) and the sketch
   finish treat a retired type as they treat a retired shape.
-- Delete: `RetiredElementFace` takes `onDelete?: () => void`. The button renders only when `onDelete` is set; the
-  canvas sets it only when `can.remove(el)`. The press calls `stopPropagation` on `pointerdown` (so the wrapper never
-  starts a select or a drag) and on `click`, then `onDelete()`, which runs the editor's ordinary removal of one id
-  (`removeElements([id])`): one history entry, its arrows' pins released as Delete releases them.
+- Delete: `RetiredElementFace` takes `onDelete?: (elementId: string) => void`. The button renders only when `onDelete`
+  is set; `EditorCanvasHost` sets it only when the tab is not read-only, the elements layer and `ElementFaceRouter`
+  drop it when `readOnly`, and the handler checks `can.remove(el)` again. The press calls `stopPropagation` on
+  `pointerdown` (so the wrapper never starts a select or a drag) and on `click`, then `onDelete(element.id)`, which
+  runs `deleteElementById` (`useElementSelectionActions`): the editor's ordinary removal of one id
+  (`removeSelected(new Set([id]))`), one history entry that takes its attached arrows with it, as Delete does.
 - Visibility: the button is in the DOM for an Editor always and shown by CSS while the element wrapper is hovered
   (`group-hover`), while it holds focus (`focus-visible`), or while the element is selected (`selected` prop).
 
@@ -38,7 +40,7 @@ of Work Tracker #459 and the rules every later part follows.
   `isRetiredElementType(type: unknown): boolean`.
 - `RETIRED_ELEMENT_NOTE = 'No longer supported in livehuddle'`.
 - `RetiredElementFace({ element, fontFamily, selected?, onDelete? })`, `element: { id, type, shape?, label?, width,
-  height }`.
+height }`.
 - `BoxedElementViewProps.onDeleteRetired?: (id: string) => void`, threaded `EditorCanvasHost` → `Canvas` →
   `CanvasElementsLayer` → `BoxedElementView` → `ElementFaceRouter`, replacing part 1's deleted
   `onToggleChecklistItem` plumbing.
@@ -53,10 +55,9 @@ of Work Tracker #459 and the rules every later part follows.
 
 ## Errors and edge cases
 
-- A retired element with a zero or non-finite box draws an empty card (the layout clamps to 0), and its Delete button
-  still shows, so an Editor can clear it.
-- A box too small for the button (under 72 by 40) shows no button; Delete, the context menu and the multi-selection
-  still remove it.
+- A retired element with a zero or non-finite box draws an empty card (the layout clamps to 0) and shows no button.
+- A box too small for the button (under 72 by 40, a zero box included) shows no button; the Delete key, the context
+  menu and the multi-selection still remove it.
 - A retired type with no `label` shows no label line.
 
 ## Security and trust
@@ -71,9 +72,11 @@ of Work Tracker #459 and the rules every later part follows.
 
 ## Presentation and UX
 
-- The button: `IconButton`-sized pill (24 px tall), the bin glyph and "Delete", 12 px text, in the card's ink at 80%
-  over the card's fill, a 1 px border in the card's stroke; hover and focus lift it to full ink with the focus ring
-  (`focus-visible:ring-2`). Tooltip "Delete <name>". Top-right, 6 px inset.
+- The button: icon only, 24 by 24 px with a rounded-md corner, the Lucide bin glyph at 14 px in the card's ink.
+  Hidden (`opacity-0`) until the element is hovered (`group-hover/el`), the button holds keyboard focus
+  (`focus-visible`, with the brand ring `focus-visible:ring-2`) or the element is selected. Hover tints it
+  (`bg-black/10`, `bg-white/10` in dark). Tooltip "Delete <name>". Top-right, 4 px inset. On touch, where there is no
+  hover, a tap selects the element and shows the button.
 
 ## Accessibility
 
@@ -82,12 +85,16 @@ of Work Tracker #459 and the rules every later part follows.
 
 ## Testing
 
-- `retired-element-types.test.ts`: a tab holding a `video` and each part 1 shape kind loads through
-  `migrateStoredTab` with every element deep-equal to what was stored, passes `isValidTab`, and names each.
+- `retired-kinds.test.ts` (`packages/document`): a tab holding each part 1 shape kind, and one holding a `video`, loads
+  through `migrateStoredTab` and `migrateIncomingTab` deep-equal to what was stored, passes `isValidTab`, and names
+  each.
 - `svg-render-retired.test.ts`: the export draws the placeholder for a retired type and kind.
-- `RetiredElementFace.test.tsx`: the face shows the note; Delete renders only with `onDelete`; a press calls it and
-  stops the pointer from reaching the wrapper.
-- `BoxedElementView` wiring: the canvas passes `onDeleteRetired` only when `can.remove` (the elements layer test).
+- `RetiredElementFace.test.tsx` (editor): the face shows the name and the note; Delete renders only with `onDelete` and
+  a box of at least 72 by 40; a press calls it with the id and stops the pointer from reaching the wrapper; the
+  router passes Delete only when not read-only (a Participant or a Viewer); `deleteElementById` removes one id as one
+  commit.
+- `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
+  warning, `add video` is refused, and the views print a retired element as `?` with no state or summary.
 
 ## Constants and configuration
 
@@ -96,4 +103,4 @@ of Work Tracker #459 and the rules every later part follows.
 
 ## Defaults ledger
 
-- D15, D16 in [DEFAULTS.md](DEFAULTS.md).
+- D17, D18 in [DEFAULTS.md](DEFAULTS.md).

@@ -1,6 +1,6 @@
 # Web components are elements; groups are gone
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/web-components-and-no-groups.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Mostly gone from livehuddle** (Work Tracker #423; the Banner, Stat Row, Process Steps and Header deleted by Work Tracker #459, part 1): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps them, and [its spec there](../../../../livediagram/docs/specs/009-elements/web-components-and-no-groups.md) is the one to read and change. A stored banner, stat row, process or header is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder, which an Editor can delete. The card, the callout (drawn as the card it becomes) and the hero's caption stay until a later part. Build nothing new on any of it.
 
 ## What
 

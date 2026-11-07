@@ -81,7 +81,6 @@ ColourPicker({
 | Quick Style custom swatch | components/canvas/SwatchOverridePopover.tsx                                | n/a (editor only)           | n/a                                                                                                                                              | Use saves and closes                                                       |
 | Canvas, pattern           | `components/palette/palette-controls.tsx` (`useColourWell`, `ColorSwatch`) | none                        | soft + strong ("Soft colours", "Strong colours") by hex for the canvas; pattern strong only                                                      | hex                                                                        |
 | Rich-text colour          | `components/canvas/RichTextToolbar.tsx`                                    | none                        | strong hex for the canvas                                                                                                                        | hex                                                                        |
-| Pie and legend rows       | `components/palette/context-menu-data-editors.tsx`                         | none                        | strong light hex                                                                                                                                 | hex                                                                        |
 
 ## Behaviour and state
 

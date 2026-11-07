@@ -224,25 +224,25 @@ click-walk stops against a fence.
 
 ## Testing
 
-| Rule                                        | Test                                               | File                                                        |
-| ------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| Run follows the longer side                 | "runs along the longer side, across when square"   | `../packages/avatar/src/fence.test.ts`                      |
-| End posts inset; even spacing               | `fencePostCentres` block                           | `../packages/avatar/src/fence.test.ts`                      |
-| Rails full length; corner posts coincide    | `fenceParts` block                                 | `../packages/avatar/src/fence.test.ts`                      |
-| Fence line, rotated                         | `fenceLine` block                                  | `../packages/avatar/src/fence.test.ts`                      |
-| Refused from either side; open past the end | `fenceRefuses` block                               | `../packages/avatar/src/collision.test.ts`                  |
-| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"    | `../packages/avatar/src/collision.test.ts`                  |
-| Off a wall it overlaps (I3, I5)             | "a character overlapping a room's wall …"          | `../packages/avatar/src/collision.test.ts`                  |
-| Entry nudge (I4)                            | "clearOfFences …"                                  | `../packages/avatar/src/collision.test.ts`                  |
-| Out of a footprint, never deeper (I3a)      | "a stool tucked under a bar", "inside a footprint" | `../packages/avatar/src/collision.solid.test.ts`            |
-| Stand up from a tucked stool and walk away  | "walks away from the bar after standing up …"      | `../packages/avatar/src/hooks/useAvatarWalk.solid.test.tsx` |
-| No tunnelling (I2)                          | "cannot tunnel through with one long step"         | `../packages/avatar/src/collision.test.ts`                  |
-| Slide                                       | "slides along a fence walked into at an angle"     | `../packages/avatar/src/collision.test.ts`                  |
-| Enclosure keeps people out, outside open    | "walks all the way round the outside …"            | `../packages/avatar/src/collision.test.ts`                  |
-| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                  | `../packages/avatar/src/collision.test.ts`                  |
-| Worst-case budget                           | "keeps a frame within budget …"                    | `../packages/avatar/src/collision.test.ts`                  |
-| Self-drawing (no label)                     | "claims exactly the kinds its members claim …"     | `packages/document/src/data-shapes.test.ts`                 |
-| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                    | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`           |
+| Rule                                        | Test                                                          | File                                                        |
+| ------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------- |
+| Run follows the longer side                 | "runs along the longer side, across when square"              | `../packages/avatar/src/fence.test.ts`                      |
+| End posts inset; even spacing               | `fencePostCentres` block                                      | `../packages/avatar/src/fence.test.ts`                      |
+| Rails full length; corner posts coincide    | `fenceParts` block                                            | `../packages/avatar/src/fence.test.ts`                      |
+| Fence line, rotated                         | `fenceLine` block                                             | `../packages/avatar/src/fence.test.ts`                      |
+| Refused from either side; open past the end | `fenceRefuses` block                                          | `../packages/avatar/src/collision.test.ts`                  |
+| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"               | `../packages/avatar/src/collision.test.ts`                  |
+| Off a wall it overlaps (I3, I5)             | "a character overlapping a room's wall …"                     | `../packages/avatar/src/collision.test.ts`                  |
+| Entry nudge (I4)                            | "clearOfFences …"                                             | `../packages/avatar/src/collision.test.ts`                  |
+| Out of a footprint, never deeper (I3a)      | "a stool tucked under a bar", "inside a footprint"            | `../packages/avatar/src/collision.solid.test.ts`            |
+| Stand up from a tucked stool and walk away  | "walks away from the bar after standing up …"                 | `../packages/avatar/src/hooks/useAvatarWalk.solid.test.tsx` |
+| No tunnelling (I2)                          | "cannot tunnel through with one long step"                    | `../packages/avatar/src/collision.test.ts`                  |
+| Slide                                       | "slides along a fence walked into at an angle"                | `../packages/avatar/src/collision.test.ts`                  |
+| Enclosure keeps people out, outside open    | "walks all the way round the outside …"                       | `../packages/avatar/src/collision.test.ts`                  |
+| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                             | `../packages/avatar/src/collision.test.ts`                  |
+| Worst-case budget                           | "keeps a frame within budget …"                               | `../packages/avatar/src/collision.test.ts`                  |
+| Self-drawing (no label)                     | "claims the Timeline, the sticker, the fence and the scenery" | `packages/document/src/data-shapes.test.ts`                 |
+| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                               | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`           |
 
 ## Constants and configuration
 

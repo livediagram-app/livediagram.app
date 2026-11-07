@@ -277,7 +277,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                     |
 | Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                     |
 | `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                     |
-| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/editor/components/canvas/web/WebComponentFace.test.tsx`      |
+| Faces commit, inert until selected           | CardFace (commits a title and a tag; keeps its lines out of reach until selected)     | `apps/editor/components/canvas/web/CardFace.test.tsx`              |
 | Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/editor/components/palette/context-menu-web-editors.test.tsx` |
 | Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
 | Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                      |

@@ -1,6 +1,6 @@
 # YouTube video element
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/youtube-video.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 1): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/youtube-video.md) is the one to read and change. livehuddle has no tile, menu, dialog or renderer for it: a stored embed (the `video` type) is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder, which an Editor can delete. The rest of this page describes the element as livediagram has it.
 
 ## What
 
