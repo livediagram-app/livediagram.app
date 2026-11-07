@@ -95,15 +95,17 @@ export function communityShareAppsHere(here: AppName | null): readonly AppName[]
   return COMMUNITY_SHARE_APPS.includes(here) ? [here] : [];
 }
 
-/** The signed-in account the Explorer asks as, for the Community tab: its `sub` and the name its listings show. */
-export type ShareAccount = { id: string; name: string | null };
+/** The person the Explorer asks as, for the Community tab: its `sub` and the name its listings show. A guest
+ *  (`guest: true`) gets the tab on their own items too, to see that sharing needs an account and sign in from it. */
+export type ShareAccount = { id: string; name: string | null; guest?: boolean };
 
 // The listing's author colour, which the account doesn't choose here.
 const AUTHOR_COLOUR = '#64748b';
 
 /** An item's Community tab (liveworkspace/docs/specs/007-community/community.md "The Share dialog's Community tab"):
- *  for the account's own items of an app with a Community, through the app's owner route with the workspace token.
- *  On an app's own address the token is that app's alone, so another app's items get none. */
+ *  for the person's own items of an app with a Community, through the app's owner route with the workspace token.
+ *  A guest's are offered signed out: their post is never read, so the owner route is never called for them. On an
+ *  app's own address the token is that app's alone, so another app's items get none. */
 export function communityShareOf(
   item: Pick<Item, 'app' | 'id' | 'title' | 'ownerId'>,
   account: ShareAccount | null,
@@ -136,7 +138,7 @@ export function communityShareOf(
     },
     ownerId: account.id,
     documentName: item.title,
-    signedIn: true,
+    signedIn: !account.guest,
     communityOn,
     signInHref,
     author: { name: account.name || 'You', color: AUTHOR_COLOUR },
@@ -144,7 +146,7 @@ export function communityShareOf(
 }
 
 /** The Share dialog's extras for the page's app (its help), and per item for every app's (tabs, embed, live image,
- *  and the Community tab for the signed-in account's own items while the Community is on). */
+ *  and the Community tab for the person's own items, a guest's included, while the Community is on). */
 export function shareHostFor(
   app: AppName,
   account: ShareAccount | null = null,

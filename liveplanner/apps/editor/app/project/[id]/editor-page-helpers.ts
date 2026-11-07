@@ -214,10 +214,17 @@ export function resolveProjectSession(input: {
   selfId: string;
   shareRole: AccessLevel;
   shareCodeParam: string | null;
+  // A Community post's link is a viewing surface for everyone, its author included
+  // (docs/specs/025-community/community.md "Viewing a post's plan"): it never opens the plan as its
+  // owner, so the author reads it like any visitor and edits it from their own plan instead.
+  community?: boolean;
   // The embed view (docs/specs/013-workspace/embeds.md): below Editor it only looks, having no identity screen to
   // put a name on what it adds (docs/specs/013-workspace/share-roles.md, blueprint SR6).
   embed?: boolean;
 }): ProjectSession {
+  if (input.community) {
+    return { isOwner: false, sessionRole: 'view', sessionShareCode: input.shareCodeParam };
+  }
   const isOwner = input.projectOwnerId === input.selfId;
   const linkRole = input.embed && input.shareRole !== 'edit' ? 'view' : input.shareRole;
   return {

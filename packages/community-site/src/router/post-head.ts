@@ -78,7 +78,7 @@ export function postHead(site: CommunityRouteSite, post: CommunityPost): PostHea
           url: canonical,
           name: post.title,
           description,
-          genre: communityCategoryLabel(post.category),
+          genre: communityCategoryLabel(post.app, post.category),
           ...(post.tags.length > 0 ? { keywords: post.tags.join(', ') } : {}),
           datePublished: new Date(post.publishedAt).toISOString(),
           dateModified: new Date(post.updatedAt).toISOString(),

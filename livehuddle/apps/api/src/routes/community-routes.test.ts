@@ -178,7 +178,7 @@ function indexDoors(env: unknown, caller: GrantCaller): IndexClient | null {
 const body = {
   title: 'Payments platform',
   description: 'How our payment services talk to each other.',
-  category: 'meetings',
+  category: 'office',
   tags: ['AWS'],
   anonymous: false,
 };

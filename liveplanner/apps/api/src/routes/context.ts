@@ -76,6 +76,10 @@ export type RouteContext = {
   // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/projects.ts). It is
   // the whole of who may do what to a plan; null or for another plan, nothing.
   grant?: PlanGrant | null;
+  // The plan's Community post's link as the plan's room holds it (plan-room/community-post.ts): a grant through
+  // `code` is a content-only pass while the post is `open`, and no pass at all otherwise (grantOn). Unset outside a
+  // plan's own routes, and null for a plan with no post.
+  community?: { code: string; open: boolean } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -104,17 +108,42 @@ export function grantCallerOf(ctx: RouteContext): GrantCaller {
 // What a caller holds on a plan (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
 // index's grant, read here; a workbench session holds no more than its own level.
+//
+// `community` marks a grant through the plan's Community post's link (docs/specs/025-community/community.md
+// "Viewing a post's plan"): read-only like any view link, and a content-only pass: no realtime room, no comments.
 export type ProjectGrant = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;
+  community: boolean;
 };
 
-export function grantOn(ctx: RouteContext, projectId: string): ProjectGrant | null {
+// A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
+// community.md "Viewing a post's plan"): the link is a content-only pass, so the plan, its tabs, cards, sheets and
+// images serve it, and comments, threads, history, the form link, the timeline and any door added later do not.
+// Fail closed, like the tab scope.
+export const COMMUNITY_CONTENT = { community: true } as const;
+export type GateOptions = { community?: boolean };
+
+export function grantOn(
+  ctx: RouteContext,
+  projectId: string,
+  opts: GateOptions = {},
+): ProjectGrant | null {
   const grant = ctx.grant;
   if (!grant || grant.item !== projectId) return null;
+  const post = ctx.community ?? null;
+  const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
+  // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
+  if (community && (!post.open || !opts.community)) return null;
   const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
-  return { role, tabScope: grant.tab, shareCode: grant.shareCode };
+  // A Community post's link opens to view, whatever the index's link says.
+  return {
+    role: community ? 'view' : role,
+    tabScope: grant.tab,
+    shareCode: grant.shareCode,
+    community,
+  };
 }
 
 // The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it. `tabId` names the
@@ -125,8 +154,9 @@ function holds(
   projectId: string,
   needs: AccessLevel,
   tabId: string | undefined,
+  opts: GateOptions = {},
 ): boolean {
-  const grant = grantOn(ctx, projectId);
+  const grant = grantOn(ctx, projectId, opts);
   if (!grant || !levelAtLeast(grant.role, needs)) return false;
   return grant.tabScope === null || grant.tabScope === tabId;
 }
@@ -139,8 +169,9 @@ export async function gateRead(
   _projectOwnerId?: string,
   _projectTeamId?: string | null,
   tabId?: string,
+  opts: GateOptions = {},
 ): Promise<boolean> {
-  return holds(ctx, projectId, 'view', tabId);
+  return holds(ctx, projectId, 'view', tabId, opts);
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
@@ -168,14 +199,16 @@ export async function gateEdit(
 
 // The caller's grant on a project, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
+// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access. A Community post's link answers null
+// unless the door passes `COMMUNITY_CONTENT`.
 export async function gateGrant(
   ctx: RouteContext,
   projectId: string,
-  _projectOwnerId?: string,
+  _projectOwnerId?: string | null,
   _projectTeamId?: string | null,
+  opts: GateOptions = {},
 ): Promise<ProjectGrant | null> {
-  return grantOn(ctx, projectId);
+  return grantOn(ctx, projectId, opts);
 }
 
 // The resolved caller id, or the 400 to return when no token identifies the caller.
@@ -184,7 +217,7 @@ export function requireOwner(ctx: RouteContext): string | Response {
 }
 
 // Is `ctx` the plan's owner, as the plan knows it? Only the doors that show the owner more (comment authors,
-// the owner's own notices) ask; who may change or share the plan is the index's.
+// the owner's own notices, publishing to the Community) ask; who may change or share the plan is the index's.
 export async function ownsProject(
   ctx: RouteContext,
   liveDoc: Pick<ProjectDTO, 'id' | 'ownerId'>,

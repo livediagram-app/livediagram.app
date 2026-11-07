@@ -17,6 +17,17 @@ import { type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
 import { personTagFor } from '../person-tag';
 import { isAccountId } from '@liveworkspace/auth-client';
+import { planRoom } from '../plan-client';
+import type { Env } from '../types';
+
+// A Community visitor never joins the author's room (docs/specs/025-community/community.md "Viewing a post's
+// plan"): no presence, no cursors, no live stream. The code the access came through is checked against the plan's
+// post.
+async function isCommunityCode(env: Env, planId: string, code: string | null): Promise<boolean> {
+  if (!code) return false;
+  const post = await planRoom(env, planId).community();
+  return post !== null && post.code === code;
+}
 
 // Returns null when the request isn't a room route.
 export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Response | null> {
@@ -28,6 +39,7 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const grant = await resolvePlanGrant(ctx, id);
     if (grant instanceof Response) return grant;
     if (!grant) return notFound();
+    if (await isCommunityCode(env, id, grant.shareCode)) return forbidden('community_link');
     const workbench = ctx.workbench ?? null;
     const role = workbench ? capWorkbenchRole(grant.level, workbench.level) : grant.level;
     const ticket = await sealRoomTicket(
@@ -59,7 +71,10 @@ export async function handleProjectRoomRoutes(ctx: RouteContext): Promise<Respon
     const person = linkCodeOf(claims.sub) ? null : claims.sub;
     // The share code a session came in by, so revoking it closes exactly its sockets: a link visitor's grant
     // names it; a person who opened a link says so on `?s=` (it only ever closes, so it needs no proof).
-    const shareCode = linkCodeOf(claims.sub) ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    const linkCode = linkCodeOf(claims.sub);
+    const shareCode = linkCode ?? (url.searchParams.get('s')?.slice(0, 64) || null);
+    // The grant's own `link` claim names the code for a signed-in person who opened the link too.
+    if (await isCommunityCode(env, id, claims.link ?? linkCode)) return forbidden('community_link');
     const forwarded = new Request(request);
     // Every trust header is stamped UNCONDITIONALLY: `new Request` copies the client's own headers, and the room
     // believes whatever arrives under these names (room-session.ts).

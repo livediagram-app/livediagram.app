@@ -16,6 +16,7 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
@@ -420,6 +421,31 @@ const V15 = (exec: Exec) => {
   if (!columns.some((c) => c.name === 'connection')) exec(TAB_CONNECTION_SCHEMA);
 };
 
+// The plan's Community post (docs/specs/025-community/community.md), at most one: its link's share code (an index
+// share link; a grant through it is a content-only pass, routes/context.ts), its post at the liveworkspace Community
+// service, what the link's doors show of it, and the listing state last sent (community-post.ts; the table is every
+// app's, @liveworkspace/community/app). A post listed, hidden, moved or taken down changes whether the plan is public,
+// which its summary says. Its own step, appended: every statement is IF NOT EXISTS.
+const V16 = `
+${COMMUNITY_POST_TABLE}
+CREATE TRIGGER IF NOT EXISTS outbox_community_insert AFTER INSERT ON community_post
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT id, 'summary', '' FROM plan);
+  INSERT INTO outbox (plan_id, kind, key) SELECT id, 'summary', '' FROM plan;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT id, 'summary', '' FROM plan);
+  INSERT INTO outbox (plan_id, kind, key) SELECT id, 'summary', '' FROM plan;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_delete AFTER DELETE ON community_post
+BEGIN
+  DELETE FROM outbox WHERE (plan_id, kind, key) IN (SELECT id, 'summary', '' FROM plan);
+  INSERT INTO outbox (plan_id, kind, key) SELECT id, 'summary', '' FROM plan;
+END;
+`;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -436,6 +462,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V13,
   V14,
   V15,
+  V16,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

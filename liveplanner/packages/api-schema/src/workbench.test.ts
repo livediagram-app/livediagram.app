@@ -283,6 +283,11 @@ describe('workbenchRouteVerdict, workspace scope', () => {
     ['GET', 'teams/team1/invite-link'],
     ['GET', 'teams/invite-link/tok'],
     ['PUT', 'projects/any-doc/tabs/t1/presence'],
+    // Community publishing stays the person's own (docs/specs/025-community/community.md).
+    ['GET', 'projects/any-doc/community'],
+    ['PUT', 'projects/any-doc/community'],
+    ['DELETE', 'projects/any-doc/community'],
+    ['GET', 'community/mine'],
     ['GET', 'forms/abc'],
     ['GET', 'telemetry'],
     ['PATCH', 'projects/any-doc'],

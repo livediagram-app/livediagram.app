@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  carrySearch,
   EMPTY_FILTERS,
   hasActiveFilters,
   readQueryState,
@@ -18,9 +19,10 @@ describe('readQueryState', () => {
   });
 
   it('reads every filter', () => {
-    expect(read('?q=cloud+map&category=architecture&tag=aws&sort=loved')).toEqual({
-      q: 'cloud map #aws category:architecture sort:loved',
-      category: 'architecture',
+    expect(read('?q=cloud+map&category=software&tag=aws&sort=loved')).toEqual({
+      q: 'cloud map #aws category:software sort:loved',
+      category: 'software',
+      categoryApp: null,
       tag: null,
       sort: 'loved',
     });
@@ -39,12 +41,34 @@ describe('readQueryState', () => {
   it("drops another app's category, as a parameter or a search word, and keeps the app's own", () => {
     const design = (search: string) =>
       readQueryState(new URLSearchParams(search), 'livedesign.app');
-    expect(design('?category=architecture&q=kanban')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
-    expect(design('?q=kanban+category:architecture')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
-    expect(design('?q=category:logos').q).toBe('category:logos');
-    expect(design('?category=logos').q).toBe('category:logos');
-    // Without an app, any app's category stands, as before.
-    expect(read('?q=category:architecture').q).toBe('category:architecture');
+    expect(design('?category=software&q=kanban')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
+    expect(design('?q=kanban+category:software')).toEqual({ ...EMPTY_FILTERS, q: 'kanban' });
+    expect(design('?q=kanban+category:livediagram/software')).toEqual({
+      ...EMPTY_FILTERS,
+      q: 'kanban',
+    });
+    expect(design('?q=category:branding').q).toBe('category:branding');
+    expect(design('?category=branding').q).toBe('category:branding');
+    // Its own, named with the app (from All Apps), reads bare.
+    expect(design('?q=category:livedesign/branding')).toMatchObject({
+      q: 'category:branding',
+      category: 'branding',
+      categoryApp: null,
+    });
+    // Without a scope, any category stands as written.
+    expect(read('?q=category:software').q).toBe('category:software');
+  });
+
+  it('names each category with its app on All Apps, where a bare id reads as none', () => {
+    const all = (search: string) => readQueryState(new URLSearchParams(search), 'all');
+    expect(all('?q=category:liveplanner/meetings+retro')).toEqual({
+      ...EMPTY_FILTERS,
+      q: 'category:liveplanner/meetings retro',
+      category: 'meetings',
+      categoryApp: 'liveplanner.app',
+    });
+    expect(all('?q=retro+category:meetings')).toEqual({ ...EMPTY_FILTERS, q: 'retro' });
+    expect(all('?category=meetings&q=retro')).toEqual({ ...EMPTY_FILTERS, q: 'retro' });
   });
 
   it('drops a tag that does not normalise but keeps the rest', () => {
@@ -78,15 +102,16 @@ describe('writeQueryState', () => {
 
   it('writes everything inside q, defaults omitted', () => {
     expect(
-      writeQueryState({ ...EMPTY_FILTERS, q: 'retro category:workshops', category: 'workshops' }),
-    ).toBe('?q=retro+category%3Aworkshops');
+      writeQueryState({ ...EMPTY_FILTERS, q: 'retro category:retros', category: 'retros' }),
+    ).toBe('?q=retro+category%3Aretros');
     expect(writeQueryState(EMPTY_FILTERS)).toBe('');
   });
 
   it('round trips through the URL', () => {
     const filters = {
-      q: 'user journey #ux category:flows sort:copied',
-      category: 'flows',
+      q: 'user journey #ux category:processes sort:copied',
+      category: 'processes',
+      categoryApp: null,
       tag: null,
       sort: 'copied',
     } as const;
@@ -101,7 +126,7 @@ describe('hasActiveFilters', () => {
 
   it('is true for a search, a category or a tag', () => {
     expect(hasActiveFilters({ ...EMPTY_FILTERS, q: 'x' })).toBe(true);
-    expect(hasActiveFilters({ ...EMPTY_FILTERS, category: 'art' })).toBe(true);
+    expect(hasActiveFilters({ ...EMPTY_FILTERS, category: 'ideas' })).toBe(true);
     expect(hasActiveFilters({ ...EMPTY_FILTERS, tag: 'aws' })).toBe(true);
   });
 });
@@ -124,5 +149,25 @@ describe('searchEcho', () => {
     expect(searchEcho('cloud ')).toBe('cloud');
     expect(searchEcho('retro sort:')).toBe('retro');
     expect(searchEcho('#AWS sort:loved')).toBe('#AWS sort:loved');
+  });
+});
+
+describe('carrySearch', () => {
+  const LD = 'livediagram.app';
+  it('names the chosen category with the app on the way to All Apps, and takes My Shares out', () => {
+    expect(carrySearch('?q=is%3Amine+retro+category%3Aretros', 'all', LD)).toBe(
+      '?q=retro+category%3Alivediagram%2Fretros',
+    );
+    // Not the app's own: left out.
+    expect(carrySearch('?q=category%3Abranding', 'all', LD)).toBe('');
+    expect(carrySearch('?q=retro', 'all', LD)).toBeNull();
+  });
+
+  it("reads the app's own bare on the way back, and leaves another app's out", () => {
+    expect(carrySearch('?q=category%3Alivediagram%2Fretros', 'app', LD)).toBe(
+      '?q=category%3Aretros',
+    );
+    expect(carrySearch('?q=x+category%3Aliveplanner%2Fmeetings', 'app', LD)).toBe('?q=x');
+    expect(carrySearch('?q=category%3Aretros', 'app', LD)).toBeNull();
   });
 });

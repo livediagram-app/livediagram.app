@@ -1,9 +1,9 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { COMMUNITY_APPS } from './apps';
 import {
-  allCommunityCategories,
   COMMUNITY_APP_CATEGORIES,
   communityCategories,
+  communityCategoryOf,
   communityCategoryLabel,
   communityCategoryType,
   communityCategoryTypes,
@@ -31,6 +31,16 @@ describe("each app's categories", () => {
     }
   });
 
+  it("lists each app's categories as its template picker does: by label, then Something Else", () => {
+    for (const app of COMMUNITY_APPS) {
+      const labels = (communityCategories(app) as readonly CommunityCategoryDef[])
+        .slice(0, -1)
+        .map((c) => c.label);
+      const sorted = [...labels].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
+      expect(labels, app).toEqual(sorted);
+    }
+  });
+
   it('has lowercase ids, PascalCase types and a description each', () => {
     for (const c of all()) {
       expect(c.id).toMatch(/^[a-z]+$/);
@@ -40,52 +50,43 @@ describe("each app's categories", () => {
     }
   });
 
-  it('gives an id two apps share one label and one type', () => {
-    const seen = new Map<string, CommunityCategoryDef>();
-    for (const c of all()) {
-      const first = seen.get(c.id);
-      if (first) {
-        expect(c.label, c.id).toBe(first.label);
-        expect(c.type, c.id).toBe(first.type);
-      } else seen.set(c.id, c);
+  it("gives each app's ids their own label and type, and an app's types are distinct", () => {
+    // The same id can mean different things in two apps: livediagram's Meetings & Workshops, liveplanner's Meetings.
+    expect(communityCategoryLabel('livediagram.app', 'meetings')).toBe('Meetings & Workshops');
+    expect(communityCategoryLabel('liveplanner.app', 'meetings')).toBe('Meetings');
+    expect(communityCategoryLabel('liveplanner.app', 'planning')).toBe('Projects and Teams');
+    for (const app of COMMUNITY_APPS) {
+      const types = communityCategoryTypes(app);
+      expect(new Set(types).size, app).toBe(types.length);
     }
-    // And no two ids share a telemetry type.
-    const types = [...seen.values()].map((c) => c.type);
-    expect(new Set(types).size).toBe(types.length);
   });
 
   it("tells any app's category from one app's own", () => {
-    expect(isCommunityCategory('architecture')).toBe(true);
-    expect(isCommunityCategory('logos')).toBe(true);
+    expect(isCommunityCategory('software')).toBe(true);
+    expect(isCommunityCategory('branding')).toBe(true);
     expect(isCommunityCategory('nope')).toBe(false);
     expect(isCommunityCategory(3)).toBe(false);
-    expect(isCommunityCategoryOf('livedesign.app', 'logos')).toBe(true);
-    expect(isCommunityCategoryOf('livediagram.app', 'logos')).toBe(false);
+    expect(isCommunityCategoryOf('livedesign.app', 'branding')).toBe(true);
+    expect(isCommunityCategoryOf('livediagram.app', 'branding')).toBe(false);
     expect(isCommunityCategoryOf('liveplanner.app', null)).toBe(false);
-    // livediagram keeps Workshops; livehuddle, for meeting in Spaces, retired it (Work Tracker #423).
+    // Retired ids (the sets before they became the template categories) are no app's.
+    expect(isCommunityCategoryOf('livediagram.app', 'architecture')).toBe(false);
     expect(isCommunityCategoryOf('livehuddle.app', 'workshops')).toBe(false);
-    expect(isCommunityCategoryOf('livehuddle.app', 'socials')).toBe(true);
+    expect(isCommunityCategoryOf('livehuddle.app', 'recreation')).toBe(true);
   });
 
-  it("gives All Apps every app's categories once each, Something Else last", () => {
-    const ids = allCommunityCategories().map((c) => c.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(ids)).toEqual(new Set(all().map((c) => c.id)));
-    expect(ids.at(-1)).toBe('other');
-    expect(ids[0]).toBe('architecture');
-  });
-
-  it('labels and types a category by its id', () => {
-    expect(communityCategoryLabel('decks')).toBe('Slide Decks');
-    expect(communityCategoryType('flows')).toBe('Flows');
-    expect(communityCategoryTypes('livedocuments.app')).toEqual([
-      'Articles',
-      'Decks',
-      'Infographics',
-      'Guides',
-      'Proposals',
-      'Newsletters',
-      'Learning',
+  it('labels and types a category by app and id, an unknown one as Something Else', () => {
+    expect(communityCategoryOf('livedocuments.app', 'speeches').label).toBe('Talks');
+    expect(communityCategoryLabel('livedocuments.app', 'pitches')).toBe('Pitches');
+    expect(communityCategoryType('livediagram.app', 'processes')).toBe('Processes');
+    expect(communityCategoryLabel('livedesign.app', 'meetings')).toBe('Something Else');
+    expect(communityCategoryType('livehuddle.app', 'workshops')).toBe('Other');
+    expect(communityCategoryTypes('livehuddle.app')).toEqual([
+      'Campus',
+      'Events',
+      'Office',
+      'Outdoor',
+      'Recreation',
       'Other',
     ]);
   });

@@ -375,7 +375,7 @@ export function DriveCopyArt() {
   );
 }
 
-/** Share a Space with the Community: its card in the gallery, filed under Offices & Spaces, with its likes. */
+/** Share a Space with the Community: its card in the gallery, filed under Office, with its likes. */
 export function CommunitySpaceArt() {
   return (
     <Panel>

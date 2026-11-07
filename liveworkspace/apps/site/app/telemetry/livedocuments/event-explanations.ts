@@ -482,6 +482,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
   'Community|Copied|Post':
     'Someone pressed Make a Copy on a Community post, to start their own document from it.',
+  'Community|Copied|StartWith':
+    'Someone chose a Community post among the tiles on Start Making Pages, to start their own document from it.',
   ...Object.fromEntries(
     COMMUNITY_REPORT_REASONS.map((r) => [
       `Community|Reported|${r.type}`,

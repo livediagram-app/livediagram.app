@@ -39,19 +39,31 @@ A team that has written a good report, a deck that landed or an infographic peop
 
 ## Categories
 
-livedocuments's closed set, in display order (the platform spec's "Categories"). The id is stored; the label is shown; the
-line beside it is the description the publish dialog shows for the chosen category.
+livedocuments's Community categories are its template categories ([Canvas and
+palette](../008-canvas/canvas-and-palette.md#template-categories) "Template categories", `TEMPLATE_CATEGORIES`): the
+same ids, labels, order and one-line descriptions, then Something Else (owner, 2026-11-07). The publish dialog offers
+these alone, and `packages/templates/src/community-categories.test.ts` keeps the two lists equal. Posts filed under
+the old set were moved by the service's migration (the platform spec's [Moving to the template
+categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)). The id
+is stored; the label is shown; the line beside it is the description the publish dialog shows for the chosen
+category.
 
-| id             | Label                 | For                                        |
-| -------------- | --------------------- | ------------------------------------------ |
-| `articles`     | Articles & Reports    | Reports, articles, write-ups, white papers |
-| `decks`        | Slide Decks           | Talks, pitches, reviews, lessons           |
-| `infographics` | Infographics          | Posters, charts and explainers             |
-| `guides`       | Guides & How-Tos      | Handbooks, onboarding, step-by-step guides |
-| `proposals`    | Proposals & Briefs    | Proposals, briefs, plans, one-pagers       |
-| `newsletters`  | Newsletters & Updates | Newsletters, announcements, team updates   |
-| `learning`     | Learning & Teaching   | Explainers, lessons, study notes           |
-| `other`        | Something Else        | Anything that fits nowhere above           |
+| id          | Label          | For                                               |
+| ----------- | -------------- | ------------------------------------------------- |
+| `careers`   | Careers        | Résumés and cover letters for the next job.       |
+| `events`    | Events         | Posters, group cards and toasts for big days.     |
+| `home`      | Home           | Recipes to share and floor plans of a home.       |
+| `learning`  | Learning       | Lesson plans, class slides and school talks.      |
+| `marketing` | Marketing      | Social posts, explainers, ads and comparisons.    |
+| `pitches`   | Pitches        | Decks and cue cards to pitch or launch an idea.   |
+| `plans`     | Plans          | Briefs, proposals, PR/FAQs and design docs.       |
+| `reports`   | Reports        | Status reports, reviews and stories in numbers.   |
+| `speeches`  | Talks          | Cue cards for talks, toasts and presentations.    |
+| `team`      | Teams          | Meeting notes, workshops and welcomes for a team. |
+| `other`     | Something Else | Anything that fits nowhere above.                 |
+
+The month's most liked posts in each category also show on Start Making Pages, after that category's templates
+([Template start "From the Community"](../007-editor/start-diagramming.md#from-the-community)).
 
 ## What a post shows
 
@@ -174,7 +186,8 @@ fewer than six to show (a young Community, or the service unreachable), the sect
 ## Telemetry
 
 Category `Community`, as livediagram's: `Community·Shared|Changed·<Category>` and `Community·Removed·Post` from the
-Share dialog; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
+Share dialog; `Community·Copied·StartWith` from a Community tile chosen on Start Making Pages;
+`Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
 `Community·Searched·Query` and `Community·Selected·<Category|Tag|Sort|Mine>` from the gallery, sent in livedocuments's
 name by liveworkspace.app's page while it is on livedocuments's address (`liveworkspace/apps/site/lib/community/telemetry.ts`;
 on liveworkspace.app it sends nothing). `<Category>` is the category's type (its id in PascalCase).

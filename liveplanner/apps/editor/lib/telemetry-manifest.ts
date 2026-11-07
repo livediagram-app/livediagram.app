@@ -38,6 +38,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Renamed',
   'Comment·Resolved',
   'Comment·Unresolved',
+  // Community (docs/specs/025-community/blueprints/community.md "Telemetry"): publish, Edit Listing and Remove
+  // From Community in the Share dialog; a Community tile chosen in Start Planning ('Copied', type StartWith).
+  'Community·Changed',
+  'Community·Copied',
+  'Community·Removed',
+  'Community·Shared',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
   // ('Opened'), and that visit created a project ('Created'). `type` is the
   // CTA's source from the closed CTA_SOURCES table.

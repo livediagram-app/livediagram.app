@@ -143,7 +143,7 @@ export const EXPLORER_ROUTE: WorkspaceRoute = {
 };
 
 // ---------- The Community on the app's address --------------------------------------------------------------------
-// Every app with a Community serves liveworkspace's Community page at its own /community (liveworkspace/docs/specs/
+// Every app serves liveworkspace's Community page at its own /community (liveworkspace/docs/specs/
 // 007-community/community.md "One page for every app"), scoped to the app with All Apps one click away. The app's
 // router runs @liveworkspace/community-site/router first, which makes the head the app's own and forwards through
 // COMMUNITY_ROUTE below.
@@ -155,15 +155,6 @@ export const COMMUNITY_ROUTE: WorkspaceRoute = {
   target: '/community',
   cookies: 'drop',
 };
-
-// The apps without Community pages yet: liveplanner publishes no posts (its Community is specified, not built), so its
-// router leaves `/community` to its marketing site.
-const NO_COMMUNITY: ReadonlySet<AppName> = new Set(['liveplanner']);
-
-/** Whether `app`'s router serves the Community page at its `/community`. */
-export function hasCommunityPage(app: AppName): boolean {
-  return !NO_COMMUNITY.has(app);
-}
 
 /** The few account reads the Explorer makes (people's names, teams, settings), with the app's bearer token. Under a
  *  path of its own because an app's API may own `/api/account` (liveplanner's account delete does). */
@@ -242,7 +233,7 @@ export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
     ...SIGN_IN_PAGE_ROUTES,
     ACCOUNTS_ROUTE,
     SITE_ASSETS_ROUTE,
-    ...(hasCommunityPage(app) ? [COMMUNITY_ROUTE] : []),
+    COMMUNITY_ROUTE,
     ...(NO_WORKBENCHES.has(app) ? [] : [WORKBENCH_ROUTE]),
   ];
 }

@@ -77,7 +77,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   nothing on it, the Community section holds **Share to Community** and says why beside it, in the refusal's own words
   ("Add something to your first tab before sharing: it is the picture on your Community card."), as it does for a
   share password. Another first tab is not loaded, so for it the server's refusal stays the only word.
-- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** tab beside Passes (its `appTab`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx` over `@liveworkspace/community-ui/share`). It is offered for a signed-in owner's personal canvas while the Community is on; a team canvas's band says team library documents can't be shared to the Community. The same tab opens from the Explorer's Share, in livediagram's Explorer and in the Explorer on
+- **Where**: the editor's Share is the shared Share dialog ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)) with livediagram's **Community** tab beside Passes (its `appTab`; `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx` over `@liveworkspace/community-ui/share`). It is offered for the owner's personal canvas while the Community is on, a guest's included (with the note and **Sign In to Share** above, nothing read for them); a team library's canvas gets the Share dialog without it. The same tab, a guest's too, opens from the Explorer's Share, in livediagram's Explorer and in the Explorer on
   liveworkspace.app ([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#the-share-dialogs-community-tab)). Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
@@ -105,21 +105,33 @@ A post shows every tab of the document. A document that is empty (its first tab 
 
 ## Categories
 
-The closed set, in display order. The id is stored; the label is shown.
+livediagram's Community categories are its template categories ([Canvas and
+palette](../008-canvas/canvas-and-palette.md) "Template categories", `TEMPLATE_CATEGORIES`): the same ids, labels,
+order and one-line descriptions, then Something Else (owner, 2026-11-07). The publish dialog offers these alone, and
+`packages/templates/src/community-categories.test.ts` keeps the two lists equal. Posts filed under the old set were
+moved by the service's migration (the platform spec's [Moving to the template
+categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)).
 
-| id             | Label               | For                                           |
-| -------------- | ------------------- | --------------------------------------------- |
-| `architecture` | Architecture        | Systems, cloud, infrastructure, software      |
-| `flows`        | Flows & Processes   | Flowcharts, processes, journeys, state        |
-| `planning`     | Planning            | Roadmaps, kanban, timelines, gantt            |
-| `workshops`    | Workshops           | Retrospectives, event storming, brainstorming |
-| `mindmaps`     | Mind Maps           | Mind maps, concept maps, notes                |
-| `design`       | Design & Wireframes | Wireframes, mockups, layouts                  |
-| `data`         | Data & Databases    | Entity diagrams, schemas, tables              |
-| `learning`     | Learning & Teaching | Explainers, lessons, study notes              |
-| `infographics` | Infographics        | Posters, charts and explainers                |
-| `art`          | Drawing & Art       | Sketches, illustrations, Draw mode            |
-| `other`        | Something Else      | Anything that fits nowhere above              |
+| id          | Label                 |
+| ----------- | --------------------- |
+| `ideas`     | Brainstorming         |
+| `decisions` | Decisions             |
+| `goals`     | Goals & Metrics       |
+| `meetings`  | Meetings & Workshops  |
+| `people`    | People & Teams        |
+| `planning`  | Planning              |
+| `processes` | Processes & Workflows |
+| `product`   | Product & UX          |
+| `games`     | Quizzes & Games       |
+| `retros`    | Retrospectives        |
+| `software`  | Software & IT         |
+| `strategy`  | Strategy              |
+| `learning`  | Teaching & Learning   |
+| `spaces`    | Virtual Spaces        |
+| `other`     | Something Else        |
+
+The month's most liked posts in each category also show in the editor's template starts, after that category's
+templates ([Start Diagramming "From the Community"](../007-editor/start-diagramming.md#from-the-community)).
 
 ## Tags
 
@@ -391,7 +403,8 @@ Under [Telemetry](../017-telemetry/telemetry.md), category `Community`, reusing 
 only `Liked`, `Unliked` and `Reported`. Types are preset values, never post content:
 
 - Editor: `Community·Shared·<Category>` on publish, `Community·Changed·<Category>` on Edit Listing,
-  `Community·Removed·Post` on Remove From Community.
+  `Community·Removed·Post` on Remove From Community, `Community·Copied·StartWith` on choosing a Community tile in a
+  template start.
 - The Community page: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
   `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort|Mine>`
   (Category, Tag, Sort and Mine from the four controls inside the search box), sent in livediagram's name by
@@ -400,7 +413,7 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
   (publishing, engagement, discovery, reports).
 
-`<Category>` is the category id in PascalCase (`Architecture`, `Flows`, ...); `<Reason>` is `Spam`, `Offensive`,
+`<Category>` is the category id in PascalCase (`Software`, `Processes`, ...); `<Reason>` is `Spam`, `Offensive`,
 `PersonalInfo`, `Copyright` or `Other`.
 
 ## Turning the Community off

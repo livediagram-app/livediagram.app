@@ -3,6 +3,8 @@
 // rest of the contract (the `./paths` entry) so a link to the gallery (an apps menu, a footer, the editor's
 // Community bar) never loads the categories, limits and validation with it.
 
+import type { CommunityApp } from './apps';
+
 // The gallery's own address on the app's site. The page is liveworkspace.app's, served under the app's address by the
 // app's router (liveworkspace/docs/specs/007-community/community.md "One page for every app"), and, like every page
 // of that site, it has no trailing slash: `/community/` still answers, with one redirect that stays on the app.
@@ -16,6 +18,15 @@ export function communityPostPath(postId: string): string {
 // The live image a post's card shows, relative to the app's api base (the community link's card image door).
 export function communityImagePath(shareCode: string): string {
   return `/share/${encodeURIComponent(shareCode)}/image.svg`;
+}
+
+// Where a post's document opens on its own app's site, read-only, through its community link (`s=`): the viewer, which
+// with `copy=1` copies the document into the visitor's own documents in one step and counts the copy (the gallery's
+// Make a Copy, and Start With's Community tiles). livedesign's documents are designs and liveplanner's are projects;
+// every other app's are documents.
+export function communityViewerPath(app: CommunityApp, shareCode: string, copy = false): string {
+  const kind = app === 'livedesign.app' ? 'design' : app === 'liveplanner.app' ? 'project' : 'document';
+  return `/${kind}/shared?s=${encodeURIComponent(shareCode)}${copy ? '&copy=1' : ''}`;
 }
 
 // Where an app's Community pages keep their per-browser key ("Likes"): the app's own, on its own origin.

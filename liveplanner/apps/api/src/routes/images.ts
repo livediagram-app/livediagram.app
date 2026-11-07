@@ -31,8 +31,9 @@ import {
   json,
   notFound,
 } from '../responses';
-import { grantOn, requireOwner, type RouteContext } from './context';
+import { COMMUNITY_CONTENT, grantOn, requireOwner, type RouteContext } from './context';
 import { resolvePlanGrant } from './plan-grant';
+import type { PlanGrant } from '../index-service';
 
 // The longest plan id `p` takes, as the plan routes (routes/projects.ts).
 const PLAN_ID_MAX = 200;
@@ -119,13 +120,22 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
   return json({ image: imageSummary(image), deduped });
 }
 
+// The caller's hold on the plan through `grant`, as the plan's own doors read it. A grant through the plan's
+// Community post's link (docs/specs/025-community/community.md "Viewing a post's plan") holds the plan to view, its
+// cards' pictures included, while the post is open, and nothing once it is not; the plan's room says which.
+async function heldOn(ctx: RouteContext, planId: string, grant: PlanGrant | null) {
+  if (!grant) return null;
+  const community = grant.shareCode ? await planRoom(ctx.env, planId).community() : null;
+  return grantOn({ ...ctx, grant, community }, planId, COMMUNITY_CONTENT);
+}
+
 // Who may upload for a plan: whoever may write its cards, by the index's grant, as every item write checks it
 // (routes/item-route-kit.ts). Cards are the plan's, not a tab's, so a Participant confined to one tab uploads for
 // the cards it shows too. Null lets the upload on; otherwise the refusal to answer.
 async function refusedUpload(ctx: RouteContext, planId: string): Promise<Response | null> {
   const grant = await resolvePlanGrant(ctx, planId);
   if (grant instanceof Response) return grant;
-  const held = grantOn({ ...ctx, grant }, planId);
+  const held = await heldOn(ctx, planId, grant);
   if (!held) return notFound();
   if (levelAtLeast(held.role, 'participate')) return null;
   console.info('[images] upload refused below Participant', { planId });
@@ -150,8 +160,7 @@ async function read(ctx: RouteContext, media: MediaClient, imageId: string): Pro
   if (!allowed && planId && planId.length <= PLAN_ID_MAX) {
     if (!session || planId === session.projectId) {
       const grant = await resolvePlanGrant(ctx, planId);
-      const held =
-        grant && !(grant instanceof Response) ? grantOn({ ...ctx, grant }, planId) : null;
+      const held = grant instanceof Response ? null : await heldOn(ctx, planId, grant);
       if (held) {
         allowed = await planRoom(ctx.env, planId).servesImage(imageId, held.tabScope);
         if (!allowed) console.warn('[images] not served by plan', { planId, imageId });

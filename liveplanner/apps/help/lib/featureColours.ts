@@ -45,6 +45,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'roles-and-invites': '#a855f7',
   'team-shared-projects': '#0ea5e9',
   'share-passwords': '#475569',
+  community: '#ec4899',
+  'finding-community-documents': '#8b5cf6',
   'share-link-expiry': '#f59e0b',
   'one-tab': '#14b8a6',
   embeds: '#6366f1',

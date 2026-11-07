@@ -45,7 +45,13 @@ export const EDITOR_TIMING_METRICS = [
 export type EditorTimingMetric = (typeof EDITOR_TIMING_METRICS)[number];
 
 /** The apps whose pages report Web Vitals: every frontend, named as page views name them. */
-export const WEB_VITAL_APPS: readonly PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
+export const WEB_VITAL_APPS: readonly PageViewApp[] = [
+  'Marketing',
+  'Live',
+  'Help',
+  'Dashboard',
+  'Community',
+];
 
 /** A Web Vitals metric token: `Lcp.Marketing`, `Inp.Live`. */
 export const webVitalMetric = (vital: WebVital, app: PageViewApp): string => `${vital}.${app}`;

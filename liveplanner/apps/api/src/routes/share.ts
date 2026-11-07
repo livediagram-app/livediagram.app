@@ -1,27 +1,38 @@
-// What a share link opens, for API clients (index-adapters.ts). What it shows without opening (its live image, its
+// What a share link opens, for API clients and the live app (index-adapters.ts). What it shows without opening (its live image, its
 // share card and the name on its page's head) is liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the
 // router sends `/api/share/<code>/image.svg|image.png|card` there, and they never reach this api.
 
+import { planRoom } from '../plan-client';
 import { notFound, json } from '../responses';
 import type { RouteContext } from './context';
 import { clientFor, refusal } from './index-adapters';
 
-// GET /api/share/:code.
+// GET /api/share/:code {project, role, tabId, community?}. A Community post's link (docs/specs/025-community/
+// community.md "Viewing a post's plan") is read-only for everyone, covers every tab and carries the post (its id
+// and who it shows as author); while the post is not public it answers 404 and nothing else.
 export async function handleShare(ctx: RouteContext): Promise<Response> {
-  const { request, segments } = ctx;
+  const { request, segments, env } = ctx;
   const code = segments[2];
   if (!code || segments.length !== 3 || request.method !== 'GET') return notFound();
   const client = clientFor(ctx);
   if (client instanceof Response) return client;
+  let resolved: { id: string; name: string; level: string; tabId: string | null };
   try {
     const password = request.headers.get('X-Share-Password');
     const { item, level, tabId } = await client.resolveShare(code, password);
-    return json({
-      project: { id: item.id, name: item.title },
-      role: level,
-      tabId,
-    });
+    resolved = { id: item.id, name: item.title, level, tabId };
   } catch (err) {
     return refusal(err);
   }
+  const room = planRoom(env, resolved.id);
+  const post = await room.community();
+  const isCommunity = post !== null && post.code === code;
+  const community = isCommunity && post.open ? await room.communityListing(code) : null;
+  if (isCommunity && !community) return notFound();
+  return json({
+    project: { id: resolved.id, name: resolved.name },
+    role: isCommunity ? 'view' : resolved.level,
+    tabId: isCommunity ? null : resolved.tabId,
+    ...(community ? { community } : {}),
+  });
 }

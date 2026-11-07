@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareProject } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';
@@ -16,6 +17,10 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 // The room-presence VALUES (cursors, selections, laser trails) live in
 // usePresenceState; this slice owns the gating + connection plumbing the
 // hydration/bootstrap, autosave and room hooks read and write.
+
+// A plan opened from the Community (docs/specs/025-community/community.md): the post and its author, and the plan's
+// own id when the viewer is its author (the Community bar then offers to edit it rather than copy it), else null.
+export type CommunitySession = CommunityShareInfo & { ownProjectId: string | null };
 
 export function useEditorRealtime() {
   // Single open room connection for the current project. Re-opens
@@ -91,6 +96,10 @@ export function useEditorRealtime() {
   // up-to-date sessionShareCode rather than the value captured at
   // mount.
   const sessionShareCodeRef = useLatest(sessionShareCode);
+  // Set when the session came in on a Community post's link (docs/specs/025-community/community.md "Viewing a
+  // post's plan"): the post and its author. Such a visitor never joins the room and sees the Community bar
+  // instead of the identity prompt. Null for every other session.
+  const [sessionCommunity, setSessionCommunity] = useState<CommunitySession | null>(null);
   // Owner, or a joined member of the project's team: see mayShareProject.
   const canShareProject = mayShareProject({
     isOwner,
@@ -100,6 +109,8 @@ export function useEditorRealtime() {
 
   return {
     canShareProject,
+    sessionCommunity,
+    setSessionCommunity,
     roomRef,
     projectServerStored,
     setProjectServerStored,

@@ -17,7 +17,7 @@ export function PostMeta({ post }: { post: CommunityPost }) {
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-3">
         <span className="w-fit rounded-md bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200/60 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
-          {communityCategoryLabel(post.category)}
+          {communityCategoryLabel(post.app, post.category)}
         </span>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
           {post.title}

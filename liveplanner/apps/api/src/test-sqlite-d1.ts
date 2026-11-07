@@ -229,6 +229,20 @@ function testPlanRooms(
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
   type FakeId = DurableObjectId & { planName: string; roomId: unknown };
+  // The plan's Community post's link as the room reads it (plan-room.ts communityOf).
+  const communityOf = async (planId: string) => {
+    const cp = await import('./plan-room/community-post');
+    const post = await cp.readCommunityPost(env);
+    if (!post) return null;
+    const meta = await (await import('./plan-room/plan-content')).readPlanMeta(env, planId);
+    return { code: post.shareCode, open: cp.openCommunityCode(env, post, meta) === post.shareCode };
+  };
+  // The post when `code` is its open link (plan-room.ts openPost).
+  const openPost = async (planId: string, code: string) => {
+    const post = await communityOf(planId);
+    if (!post || post.code !== code || !post.open) return null;
+    return (await import('./plan-room/community-post')).readCommunityPost(env);
+  };
   const roomOf = (id: FakeId) =>
     rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
   const ns = {
@@ -248,21 +262,26 @@ function testPlanRooms(
       },
       outline: async (planId: string) =>
         (await import('./plan-room/plan-content')).readPlanOutline(env, planId),
-      route: async (_planId: string, request: Request, identity: unknown) =>
+      route: async (planId: string, request: Request, identity: unknown) =>
         (await import('./plan-room/plan-route')).answerPlanRequest(
           env,
           request,
           identity as never,
           () => {},
+          await communityOf(planId),
         ),
       exportImage: async (
         planId: string,
-        query: { tabId: string | null; ifVersion: number | null },
+        query: { tabId: string | null; code: string | null; ifVersion: number | null },
       ) => {
         const outline = await (
           await import('./plan-room/plan-content')
         ).readPlanOutline(env, planId);
         if (!outline.meta) return { status: 'not_found' };
+        // A Community post's link draws only while the post is open (plan-room.ts exportImage).
+        const post = query.code ? await communityOf(planId) : null;
+        const onPost = post !== null && post.code === query.code;
+        if (onPost && !post.open) return { status: 'not_found' };
         const version = outline.savedAt;
         if (query.ifVersion === version) return { status: 'unchanged', version };
         if (
@@ -277,6 +296,7 @@ function testPlanRooms(
           env,
           { id: planId, name: outline.meta.name, itemTypes: outline.itemTypes },
           query.tabId,
+          { community: onPost },
         );
         return svg === null
           ? { status: 'empty', version }
@@ -296,8 +316,27 @@ function testPlanRooms(
         (await import('./db/tabs')).planHasTab(env, planId, tabId),
       item: async (planId: string, itemId: string) =>
         (await import('./db/items')).readItem(env, planId, itemId),
-      exportCopy: async (planId: string, onlyTabId: string | null, redact: string | null) =>
-        (await import('./plan-room/plan-content')).exportPlanCopy(env, planId, onlyTabId, redact),
+      exportCopy: async (
+        planId: string,
+        onlyTabId: string | null,
+        copier: { by: string | null; code: string | null } | null,
+      ) => {
+        const post = copier?.code ? await communityOf(planId) : null;
+        const community = post !== null && post.open && post.code === copier?.code;
+        const copy = await (
+          await import('./plan-room/plan-content')
+        ).exportPlanCopy(env, planId, onlyTabId, null, community);
+        return copy ? { copy, community } : null;
+      },
+      community: (planId: string) => communityOf(planId),
+      communityPostTitle: async (planId: string, code: string) =>
+        (await openPost(planId, code))?.title ?? null,
+      communityListing: async (planId: string, code: string) => {
+        const stored = await openPost(planId, code);
+        if (!stored) return null;
+        const cp = await import('./plan-room/community-post');
+        return { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) };
+      },
       joined: async (planId: string, personId: string) => {
         const meta = await (await import('./plan-room/plan-content')).readPlanMeta(env, planId);
         if (!meta) return;

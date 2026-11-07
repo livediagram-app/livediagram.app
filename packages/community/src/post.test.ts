@@ -12,11 +12,15 @@ import {
   setCommunitySearchCategory,
   communitySearchTags,
   communitySearchTerms,
+  communityStartLine,
+  communityStartPost,
+  COMMUNITY_START_LINE_MAX,
   setCommunitySearchSort,
   toggleCommunitySearchTag,
   isCommunityKey,
   normaliseCommunityTag,
   parseCommunityListQuery,
+  communitySearchCategoryFilter,
   validateCommunityPostInput,
   communityInputErrorField,
   communityPostInputErrors,
@@ -25,7 +29,7 @@ import {
 const valid = {
   title: 'Payments platform',
   description: 'How our payment services talk to each other, end to end.',
-  category: 'architecture',
+  category: 'software',
   tags: ['AWS', 'event driven'],
 };
 
@@ -112,17 +116,17 @@ describe("an app's own categories", () => {
       ok: false,
       error: 'invalid_category',
     });
-    expect(validateCommunityPostInput({ ...valid, category: 'logos' }, 'livedesign.app').ok).toBe(
+    expect(validateCommunityPostInput({ ...valid, category: 'branding' }, 'livedesign.app').ok).toBe(
       true,
     );
-    expect(communityPostInputErrors({ ...valid, category: 'decks' }, 'liveplanner.app')).toEqual([
+    expect(communityPostInputErrors({ ...valid, category: 'pitches' }, 'liveplanner.app')).toEqual([
       'invalid_category',
     ]);
   });
 
   it("takes any app's category when none is named", () => {
-    expect(validateCommunityPostInput({ ...valid, category: 'budgets' }).ok).toBe(true);
-    expect(communityPostInputErrors({ ...valid, category: 'decks' })).toEqual([]);
+    expect(validateCommunityPostInput({ ...valid, category: 'finance' }).ok).toBe(true);
+    expect(communityPostInputErrors({ ...valid, category: 'pitches' })).toEqual([]);
   });
 });
 
@@ -155,14 +159,21 @@ describe('parseCommunityListQuery', () => {
   it('defaults an empty query', () => {
     expect(parse('')).toEqual({
       ok: true,
-      value: { q: '', category: null, tag: null, sort: 'new', offset: 0 },
+      value: { q: '', category: null, categoryApp: null, tag: null, sort: 'new', offset: 0 },
     });
   });
 
   it('reads every field', () => {
-    expect(parse('q=retro&category=workshops&tag=Agile&sort=loved&offset=24')).toEqual({
+    expect(parse('q=retro&category=retros&tag=Agile&sort=loved&offset=24')).toEqual({
       ok: true,
-      value: { q: 'retro', category: 'workshops', tag: 'agile', sort: 'loved', offset: 24 },
+      value: {
+        q: 'retro',
+        category: 'retros',
+        categoryApp: null,
+        tag: 'agile',
+        sort: 'loved',
+        offset: 24,
+      },
     });
   });
 
@@ -181,10 +192,13 @@ describe('parseCommunityListQuery', () => {
   });
 
   it('round-trips through communityQueryParams without defaults', () => {
-    const value = { q: 'cloud map', category: 'architecture', tag: 'aws', sort: 'copied' } as const;
+    const value = { q: 'cloud map', category: 'software', tag: 'aws', sort: 'copied' } as const;
     const params = communityQueryParams(value);
-    expect(params.toString()).toBe('q=cloud+map&category=architecture&tag=aws&sort=copied');
-    expect(parse(params.toString())).toEqual({ ok: true, value: { ...value, offset: 0 } });
+    expect(params.toString()).toBe('q=cloud+map&category=software&tag=aws&sort=copied');
+    expect(parse(params.toString())).toEqual({
+      ok: true,
+      value: { ...value, categoryApp: null, offset: 0 },
+    });
     expect(communityQueryParams({ q: '', category: null, tag: null, sort: 'new' }).toString()).toBe(
       '',
     );
@@ -239,24 +253,52 @@ describe('search sort', () => {
 
 describe('search category', () => {
   it('reads the last valid category token, and keeps it out of the terms', () => {
-    expect(communitySearchCategory('retro category:workshops')).toBe('workshops');
+    expect(communitySearchCategory('retro category:retros')).toBe('retros');
     expect(communitySearchCategory('category:nope retro')).toBeNull();
-    expect(communitySearchTerms('retro category:workshops')).toEqual(['retro']);
+    expect(communitySearchTerms('retro category:retros')).toEqual(['retro']);
   });
 
   it('sets the category, or clears it for All', () => {
     expect(setCommunitySearchCategory('retro', 'planning')).toBe('retro category:planning');
-    expect(setCommunitySearchCategory('category:art retro', 'design')).toBe(
-      'retro category:design',
+    expect(setCommunitySearchCategory('category:ideas retro', 'product')).toBe(
+      'retro category:product',
     );
-    expect(setCommunitySearchCategory('retro category:art', null)).toBe('retro');
+    expect(setCommunitySearchCategory('retro category:ideas', null)).toBe('retro');
   });
 
   it('wins over the category parameter', () => {
     const parsed = parseCommunityListQuery(
-      new URLSearchParams('q=category%3Adata&category=planning'),
+      new URLSearchParams('q=category%3Asoftware&category=planning'),
     );
-    expect(parsed.ok && parsed.value.category).toBe('data');
+    expect(parsed.ok && parsed.value.category).toBe('software');
+  });
+
+  it("names an app's category with its app (All Apps), and keeps to that app's set", () => {
+    const meetings = { app: 'liveplanner.app', id: 'meetings' } as const;
+    expect(setCommunitySearchCategory('retro', meetings)).toBe(
+      'retro category:liveplanner/meetings',
+    );
+    expect(setCommunitySearchCategory('x', { app: null, id: 'meetings' })).toBe(
+      'x category:meetings',
+    );
+    expect(communitySearchCategoryFilter('category:LivePlanner/Meetings')).toEqual(meetings);
+    expect(communitySearchCategory('category:liveplanner/meetings')).toBe('meetings');
+    expect(communitySearchCategoryFilter('category:meetings')).toEqual({
+      app: null,
+      id: 'meetings',
+    });
+    // Another app's id, an unknown app, or no id: not a category.
+    expect(communitySearchCategoryFilter('category:livedesign/meetings')).toBeNull();
+    expect(communitySearchCategoryFilter('category:nope/meetings')).toBeNull();
+    expect(communitySearchCategoryFilter('category:liveplanner/')).toBeNull();
+    expect(communitySearchTerms('category:liveplanner/meetings retro')).toEqual(['retro']);
+    const parsed = parseCommunityListQuery(
+      new URLSearchParams('q=category%3Alivediagram%2Fmeetings'),
+    );
+    expect(parsed.ok && parsed.value).toMatchObject({
+      category: 'meetings',
+      categoryApp: 'livediagram.app',
+    });
   });
 });
 
@@ -281,5 +323,48 @@ describe('My Shares in the search', () => {
 
   it('is never a search term', () => {
     expect(communitySearchTerms('is:mine retro')).toEqual(['retro']);
+  });
+});
+
+describe('Start With tiles', () => {
+  it("keeps a short description's first paragraph whole, and cuts a long one at a word", () => {
+    expect(communityStartLine('A plan.\n\nMore below.')).toBe('A plan.');
+    expect(communityStartLine('  Spaces   between\nlines ')).toBe('Spaces between lines');
+    const long = communityStartLine(`${'word '.repeat(40)}end`);
+    expect(long.length).toBeLessThanOrEqual(COMMUNITY_START_LINE_MAX);
+    expect(long.endsWith('word…')).toBe(true);
+    // One unbroken run has no word to cut at: cut where it must.
+    expect(communityStartLine('x'.repeat(300))).toBe(`${'x'.repeat(COMMUNITY_START_LINE_MAX - 1)}…`);
+  });
+
+  it('carries only what a tile shows and opens', () => {
+    const post = {
+      id: 'p1',
+      app: 'livediagram.app' as const,
+      title: 'Retro',
+      description: 'What went well.',
+      category: 'retros' as const,
+      tags: ['agile'],
+      likeCount: 9,
+      copyCount: 2,
+      publishedAt: 1,
+      updatedAt: 2,
+      shareCode: 'CODE',
+      author: { name: 'Anonymous', color: '#64748b', picture: null },
+      anonymous: true,
+      liked: false,
+    };
+    expect(communityStartPost(post)).toEqual({
+      id: 'p1',
+      app: 'livediagram.app',
+      title: 'Retro',
+      category: 'retros',
+      shareCode: 'CODE',
+      likeCount: 9,
+      copyCount: 2,
+      anonymous: true,
+      authorName: 'Anonymous',
+      line: 'What went well.',
+    });
   });
 });

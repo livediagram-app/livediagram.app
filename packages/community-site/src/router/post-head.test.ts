@@ -56,7 +56,7 @@ describe('postHead', () => {
       '@type': 'CreativeWork',
       url: head.canonical,
       name: 'Payments Platform',
-      genre: 'Architecture',
+      genre: 'Software & IT',
       keywords: 'aws, payments',
       datePublished: '2026-01-02T00:00:00.000Z',
       dateModified: '2026-02-03T00:00:00.000Z',

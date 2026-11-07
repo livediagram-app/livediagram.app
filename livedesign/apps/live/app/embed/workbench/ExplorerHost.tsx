@@ -139,14 +139,15 @@ export function ExplorerHost({
   const onFirstRun = useCallback(() => {
     void loadWelcome().then(setWelcome);
   }, []);
-  // The Community tab for a signed-in account's own designs (lib/explorer-community-host.ts).
-  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  // The Community tab for the person's own designs, a guest's included (lib/explorer-community-host.ts).
+  const communityOn = useCommunityEnabled(API_BASE);
   const shareHost = useMemo(
     () => ({
       ...explorerShareHost(viewerId ?? null),
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
+        guestId ?? null,
       ),
     }),
     [viewerId, accountUserId, accountDisplayName, communityOn],

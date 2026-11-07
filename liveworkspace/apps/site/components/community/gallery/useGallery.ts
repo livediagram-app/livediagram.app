@@ -71,12 +71,9 @@ function appendUnique(posts: GalleryPost[], more: GalleryPost[]): GalleryPost[] 
 export function useGallery(session: CommunitySession | null): Gallery {
   const { scope, pageApp, ready, api, telemetry } = useCommunitySite();
   const search = useSyncExternalStore(subscribeSearch, getSearchSnapshot, getServerSearchSnapshot);
-  // Read once the page knows where it is: one app's categories, or (All Apps) any app's.
+  // Read once the page knows where it is: one app's categories, or (All Apps) each named with its app.
   const filters = useMemo(
-    () =>
-      search === null || !ready
-        ? null
-        : readQueryState(new URLSearchParams(search), scope === 'all' ? undefined : scope),
+    () => (search === null || !ready ? null : readQueryState(new URLSearchParams(search), scope)),
     [search, ready, scope],
   );
   // My Shares is one app's, on its own address, where its session is.
@@ -162,6 +159,7 @@ export function useGallery(session: CommunitySession | null): Gallery {
         // Clearing filters keeps My Shares on: it is where you are, not a filter of it.
         q: setCommunitySearchMine(setCommunitySearchSort('', filters.sort), mine),
         category: null,
+        categoryApp: null,
         tag: null,
         sort: filters.sort,
       }),

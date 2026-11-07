@@ -159,6 +159,40 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
   ([New project route](../007-editor/new-project-route.md)).
 
+### From the Community
+
+Start Planning is liveplanner's **Start With** screen, so it shows the Community's best beside its templates, as the
+platform spec sets for every app ([007-community "Start
+With"](../../../../liveworkspace/docs/specs/007-community/community.md#start-with)): in each Community category, up
+to three of people's posts, the month's most liked (at least five likes in 30 days).
+
+- **Where.** The Community files posts under liveplanner's template categories, and Start Planning's rail is kinds of
+  start (Boards, Spreadsheets, Inspiration, ...), not those categories. The Plan templates the categories sort live
+  in **Inspiration**, so every category's tiles come after Inspiration's templates, in the categories' own order
+  (alphabetically by label, Something Else last), each category's best first. Recommended and every other kind keep
+  to Start Planning's own choices, and Inspiration's count is its templates alone, so it does not change as tiles
+  arrive. Where Inspiration is left out (no way to apply a template), there are no tiles and nothing is asked.
+- **A tile** is the post's live card image, its title, the first line of its description and its credit ("By Ada", or
+  "Shared anonymously") in the panel's muted ink, badged **Community**; a screen reader hears "<title> from the
+  Community".
+- **Search.** A tile matches when every word typed is in its title, listed after Inspiration's matching templates
+  (or as Inspiration's group, in its place before Import, when no template matched), and may lead under Best Match
+  as a template would.
+- **When it loads.** One read a session, the first time Start Planning shows (`useCommunityStart`, never on the
+  editor's load), arriving after the panel has painted: the tiles join the end of Inspiration's grid, below what is
+  drawn, so nothing moves. With the Community switched off, unreachable or empty, Start Planning is its own choices
+  alone and says nothing.
+- **Choosing a tile** does not touch the tab: it makes the person's own copy of the post's plan through its
+  community link (`/project/shared?s=<code>&copy=1`, the Community page's Make a Copy), which counts as a copy and
+  opens the copy, and sends `Community·Copied·StartWith`.
+
+The tiles, their placing in the groups and search, their read and their look (the badge's ink reading at AA) are the
+shared `@liveworkspace/community-ui/start`; `components/plan/start/community-start-cards.ts` only folds every category
+into Inspiration (`communityStartPostsInto`). Tests: `community-start-cards.test.ts` (Inspiration's cards and a search with
+them joined in) and `StartPlanning.community.test.tsx` (the tiles after the templates with their badge and image,
+none in Recommended or Boards, the rail's count unchanged, search, choosing one, nothing while switched off or
+without Inspiration).
+
 ### Where it is saved
 
 Under the choices, a quiet strip holds the **Sync Plan to Server** switch: where this plan is saved, with a line that

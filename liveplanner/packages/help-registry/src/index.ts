@@ -1087,6 +1087,27 @@ export const articles: Article[] = [
     parentSlug: 'teams',
   },
   {
+    slug: 'finding-community-documents',
+    title: 'Finding Plans in the Community',
+    description:
+      'Search the Community by words, #tags, category and sort, then make a plan your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden plan board sheet dashboard form template',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'community',
+    title: 'Sharing to the Community',
+    description: 'Publish a plan to the public gallery for others to view and copy.',
+    keywords:
+      'community gallery public publish showcase inspiration examples share plan proud like likes copy copies tags category report moderation discover browse',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'share-passwords',
     title: 'Share Passwords',
     description: 'Guard every share link to a plan with one password.',

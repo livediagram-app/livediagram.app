@@ -1,16 +1,22 @@
 import type { CommunityApp } from './apps';
 
-// Each app's closed set of categories (liveworkspace/docs/specs/007-community/community.md "Categories"; each product's
-// 025-community spec gives their descriptions). One service holds every app's posts, and each gallery filters by its
-// own app's set, so a post's category must be one of its app's. An id two apps share means the same thing in both:
-// one label and one telemetry type, so a label or a type is looked up by id alone.
+// Each app's closed set of categories (liveworkspace/docs/specs/007-community/community.md "Categories"): exactly its
+// Start With template categories (each product's TEMPLATE_CATEGORIES in <product>/packages/templates/src/
+// template-categories.ts: the same ids, labels and order, each blurb its description), then Something Else. So a post
+// is filed where the app's own template picker files its templates, and Start With can show the Community's best
+// beside them. Each product's templates package pins its list to its TEMPLATE_CATEGORIES (community-categories
+// test), so the two cannot drift.
+//
+// One service holds every app's posts, and each gallery filters by its own app's set, so a post's category must be one
+// of its app's. Ids repeat across apps with different meanings and labels (`meetings` is livediagram's Meetings &
+// Workshops and liveplanner's Meetings), so a label, a blurb and a telemetry type are looked up by app and id.
 
 export type CommunityCategoryDef = {
   // Stored on the post.
   id: string;
-  // Shown on cards, filters and the publish dialog's chips.
+  // Shown on cards, filters, the publish dialog's chips and Start With's rail.
   label: string;
-  // The one line the publish dialog shows for the chosen category.
+  // The one line the publish dialog shows for the chosen category: the template category's description.
   blurb: string;
   // The telemetry value (PascalCase, never content).
   type: string;
@@ -19,231 +25,314 @@ export type CommunityCategoryDef = {
 const OTHER = {
   id: 'other',
   label: 'Something Else',
-  blurb: 'Anything that fits nowhere above',
+  blurb: 'Anything that fits nowhere above.',
   type: 'Other',
 } as const;
 
 export const COMMUNITY_APP_CATEGORIES = {
   'livediagram.app': [
     {
-      id: 'architecture',
-      label: 'Architecture',
-      blurb: 'Systems, cloud, infrastructure, software',
-      type: 'Architecture',
+      id: 'ideas',
+      label: 'Brainstorming',
+      blurb: 'Mind maps and boards for getting ideas out.',
+      type: 'Ideas',
     },
     {
-      id: 'flows',
-      label: 'Flows & Processes',
-      blurb: 'Flowcharts, processes, journeys, state',
-      type: 'Flows',
+      id: 'decisions',
+      label: 'Decisions',
+      blurb: 'Priorities, trade-offs, risks and root causes.',
+      type: 'Decisions',
+    },
+    {
+      id: 'goals',
+      label: 'Goals & Metrics',
+      blurb: 'OKRs, metric trees, funnels and growth loops.',
+      type: 'Goals',
+    },
+    {
+      id: 'meetings',
+      label: 'Meetings & Workshops',
+      blurb: 'Agendas, Q&A and formats for running a session.',
+      type: 'Meetings',
+    },
+    {
+      id: 'people',
+      label: 'People & Teams',
+      blurb: 'Org charts, roles, onboarding and family trees.',
+      type: 'People',
     },
     {
       id: 'planning',
       label: 'Planning',
-      blurb: 'Roadmaps, kanban, timelines, gantt',
+      blurb: 'Gantt charts, roadmaps and timelines of work.',
       type: 'Planning',
     },
     {
-      id: 'workshops',
-      label: 'Workshops',
-      blurb: 'Retrospectives, event storming, brainstorming',
-      type: 'Workshops',
+      id: 'processes',
+      label: 'Processes & Workflows',
+      blurb: 'Flowcharts and workflows for how work gets done.',
+      type: 'Processes',
     },
     {
-      id: 'mindmaps',
-      label: 'Mind Maps',
-      blurb: 'Mind maps, concept maps, notes',
-      type: 'Mindmaps',
+      id: 'product',
+      label: 'Product & UX',
+      blurb: 'Prototypes, personas, journeys and discovery.',
+      type: 'Product',
     },
     {
-      id: 'design',
-      label: 'Design & Wireframes',
-      blurb: 'Wireframes, mockups, layouts',
-      type: 'Design',
+      id: 'games',
+      label: 'Quizzes & Games',
+      blurb: 'Quizzes, icebreakers and games for the room.',
+      type: 'Games',
     },
     {
-      id: 'data',
-      label: 'Data & Databases',
-      blurb: 'Entity diagrams, schemas, tables',
-      type: 'Data',
+      id: 'retros',
+      label: 'Retrospectives',
+      blurb: 'Look back as a team and agree what to change.',
+      type: 'Retros',
+    },
+    {
+      id: 'software',
+      label: 'Software & IT',
+      blurb: 'Architecture, data, networks and incidents.',
+      type: 'Software',
+    },
+    {
+      id: 'strategy',
+      label: 'Strategy',
+      blurb: 'Frameworks for where the business stands and goes.',
+      type: 'Strategy',
     },
     {
       id: 'learning',
-      label: 'Learning & Teaching',
-      blurb: 'Explainers, lessons, study notes',
+      label: 'Teaching & Learning',
+      blurb: 'Concept maps, KWL charts and visual notes.',
       type: 'Learning',
     },
     {
-      id: 'infographics',
-      label: 'Infographics',
-      blurb: 'Posters, charts and explainers',
-      type: 'Infographics',
+      id: 'spaces',
+      label: 'Virtual Spaces',
+      blurb: 'Offices and halls to walk round as an avatar.',
+      type: 'Spaces',
     },
-    { id: 'art', label: 'Drawing & Art', blurb: 'Sketches, illustrations, Draw mode', type: 'Art' },
     OTHER,
   ],
   'liveplanner.app': [
     {
-      id: 'projects',
-      label: 'Project Plans',
-      blurb: 'Projects, launches, delivery plans',
-      type: 'Projects',
+      id: 'support',
+      label: 'Customer Support',
+      blurb: 'Tickets, contact forms and what customers say.',
+      type: 'Support',
     },
     {
-      id: 'roadmaps',
-      label: 'Roadmaps & Timelines',
-      blurb: 'Roadmaps, timelines, Gantts, milestones',
-      type: 'Roadmaps',
-    },
-    {
-      id: 'workflows',
-      label: 'Kanban & Workflows',
-      blurb: 'Kanban boards, pipelines, triage',
-      type: 'Workflows',
-    },
-    {
-      id: 'trackers',
-      label: 'Trackers & Sheets',
-      blurb: 'Trackers, logs, inventories, sheets',
-      type: 'Trackers',
-    },
-    {
-      id: 'budgets',
-      label: 'Budgets & Finance',
-      blurb: 'Budgets, forecasts, expenses',
-      type: 'Budgets',
+      id: 'education',
+      label: 'Education',
+      blurb: 'Study plans, coursework and a class grade book.',
+      type: 'Education',
     },
     {
       id: 'events',
-      label: 'Events & Schedules',
-      blurb: 'Events, rotas, schedules, calendars',
+      label: 'Events',
+      blurb: 'Plans, guest lists and RSVPs for any occasion.',
       type: 'Events',
     },
     {
-      id: 'forms',
-      label: 'Forms & Surveys',
-      blurb: 'Forms, surveys, sign-ups, requests',
-      type: 'Forms',
+      id: 'finance',
+      label: 'Finance',
+      blurb: 'Budgets, invoices, expenses, loans and stock.',
+      type: 'Finance',
     },
     {
-      id: 'dashboards',
-      label: 'Dashboards & Reports',
-      blurb: 'Dashboards, status reports, metrics',
-      type: 'Dashboards',
+      id: 'hiring',
+      label: 'Hiring and People',
+      blurb: 'Open roles, candidates and their first month.',
+      type: 'Hiring',
+    },
+    {
+      id: 'marketing',
+      label: 'Marketing',
+      blurb: 'Content and launches, planned to the day.',
+      type: 'Marketing',
+    },
+    {
+      id: 'meetings',
+      label: 'Meetings',
+      blurb: 'Agendas, retros and the actions they lead to.',
+      type: 'Meetings',
     },
     {
       id: 'personal',
-      label: 'Personal & Home',
-      blurb: 'Habits, home, travel, study',
+      label: 'Personal',
+      blurb: 'Your week, goals, habits and household money.',
       type: 'Personal',
+    },
+    {
+      id: 'product',
+      label: 'Product and Engineering',
+      blurb: 'Sprints, bugs and feedback for product teams.',
+      type: 'Product',
+    },
+    {
+      id: 'planning',
+      label: 'Projects and Teams',
+      blurb: 'Boards, trackers and goals that keep teams moving.',
+      type: 'Planning',
+    },
+    {
+      id: 'sales',
+      label: 'Sales',
+      blurb: 'Deals, contacts and the forecast they add up to.',
+      type: 'Sales',
     },
     OTHER,
   ],
   'livedocuments.app': [
     {
-      id: 'articles',
-      label: 'Articles & Reports',
-      blurb: 'Reports, articles, write-ups, white papers',
-      type: 'Articles',
-    },
-    { id: 'decks', label: 'Slide Decks', blurb: 'Talks, pitches, reviews, lessons', type: 'Decks' },
-    {
-      id: 'infographics',
-      label: 'Infographics',
-      blurb: 'Posters, charts and explainers',
-      type: 'Infographics',
+      id: 'careers',
+      label: 'Careers',
+      blurb: 'Résumés and cover letters for the next job.',
+      type: 'Careers',
     },
     {
-      id: 'guides',
-      label: 'Guides & How-Tos',
-      blurb: 'Handbooks, onboarding, step-by-step guides',
-      type: 'Guides',
+      id: 'events',
+      label: 'Events',
+      blurb: 'Posters, group cards and toasts for big days.',
+      type: 'Events',
     },
-    {
-      id: 'proposals',
-      label: 'Proposals & Briefs',
-      blurb: 'Proposals, briefs, plans, one-pagers',
-      type: 'Proposals',
-    },
-    {
-      id: 'newsletters',
-      label: 'Newsletters & Updates',
-      blurb: 'Newsletters, announcements, team updates',
-      type: 'Newsletters',
-    },
+    { id: 'home', label: 'Home', blurb: 'Recipes to share and floor plans of a home.', type: 'Home' },
     {
       id: 'learning',
-      label: 'Learning & Teaching',
-      blurb: 'Explainers, lessons, study notes',
+      label: 'Learning',
+      blurb: 'Lesson plans, class slides and school talks.',
       type: 'Learning',
+    },
+    {
+      id: 'marketing',
+      label: 'Marketing',
+      blurb: 'Social posts, explainers, ads and comparisons.',
+      type: 'Marketing',
+    },
+    {
+      id: 'pitches',
+      label: 'Pitches',
+      blurb: 'Decks and cue cards to pitch or launch an idea.',
+      type: 'Pitches',
+    },
+    { id: 'plans', label: 'Plans', blurb: 'Briefs, proposals, PR/FAQs and design docs.', type: 'Plans' },
+    {
+      id: 'reports',
+      label: 'Reports',
+      blurb: 'Status reports, reviews and stories in numbers.',
+      type: 'Reports',
+    },
+    {
+      id: 'speeches',
+      label: 'Talks',
+      blurb: 'Cue cards for talks, toasts and presentations.',
+      type: 'Speeches',
+    },
+    {
+      id: 'team',
+      label: 'Teams',
+      blurb: 'Meeting notes, workshops and welcomes for a team.',
+      type: 'Team',
     },
     OTHER,
   ],
   'livedesign.app': [
-    { id: 'logos', label: 'Logos & Branding', blurb: 'Logos, marks, brand kits', type: 'Logos' },
     {
-      id: 'wireframes',
-      label: 'Wireframes & Mockups',
-      blurb: 'Screens, flows, app and web layouts',
-      type: 'Wireframes',
+      id: 'branding',
+      label: 'Branding',
+      blurb: 'Logos, wordmarks, emblems and app icons.',
+      type: 'Branding',
+    },
+    {
+      id: 'health',
+      label: 'Health and Fitness',
+      blurb: 'Workouts, heart rate and activity on the wrist.',
+      type: 'Health',
+    },
+    {
+      id: 'media',
+      label: 'Music and Video',
+      blurb: 'Music, podcast and video players, and galleries.',
+      type: 'Media',
     },
     {
       id: 'photos',
-      label: 'Photo Edits',
-      blurb: 'Retouched photos, composites, collages',
+      label: 'Photos',
+      blurb: 'Photo edits, retouches and layered pictures.',
       type: 'Photos',
     },
     {
+      id: 'shopping',
+      label: 'Shopping',
+      blurb: 'Stores, carts, checkouts and order tracking.',
+      type: 'Shopping',
+    },
+    {
+      id: 'onboarding',
+      label: 'Sign Up and Onboarding',
+      blurb: 'First runs: welcome, sign up, verify, permissions.',
+      type: 'Onboarding',
+    },
+    {
       id: 'social',
-      label: 'Social & Marketing',
-      blurb: 'Social posts, banners, ads',
+      label: 'Social and Messaging',
+      blurb: 'Feeds, stories, posts, chat and profiles.',
       type: 'Social',
     },
     {
-      id: 'posters',
-      label: 'Posters & Flyers',
-      blurb: 'Posters, flyers, invitations, cards',
-      type: 'Posters',
+      id: 'travel',
+      label: 'Travel and Transport',
+      blurb: 'Flights, boarding passes, maps and rides.',
+      type: 'Travel',
     },
     {
-      id: 'illustrations',
-      label: 'Icons & Illustrations',
-      blurb: 'Icons, illustrations, patterns',
-      type: 'Illustrations',
+      id: 'websites',
+      label: 'Websites',
+      blurb: 'Landing pages, blogs, stores and help sites.',
+      type: 'Websites',
+    },
+    {
+      id: 'work',
+      label: 'Work and Productivity',
+      blurb: 'Dashboards, boards, tasks, calendars and inboxes.',
+      type: 'Work',
     },
     OTHER,
   ],
   // A product for meeting in Spaces (livehuddle/docs/specs/025-community/community.md "Categories").
   'livehuddle.app': [
     {
-      id: 'offices',
-      label: 'Offices & Spaces',
-      blurb: 'Virtual offices, team pods, coworking floors',
-      type: 'Offices',
+      id: 'campus',
+      label: 'Campus',
+      blurb: 'Whole sites: offices, halls and bars in a garden.',
+      type: 'Campus',
     },
     {
-      id: 'meetings',
-      label: 'Meetings',
-      blurb: 'Stand-ups, one-to-ones, all-hands, town halls',
-      type: 'Meetings',
+      id: 'events',
+      label: 'Events',
+      blurb: 'Halls and rooms for talks, demos and training.',
+      type: 'Events',
     },
     {
-      id: 'socials',
-      label: 'Socials & Events',
-      blurb: 'Meetups, parties, launches, team socials',
-      type: 'Socials',
+      id: 'office',
+      label: 'Office',
+      blurb: 'Desks, pods and meeting rooms for the workday.',
+      type: 'Office',
     },
     {
-      id: 'communities',
-      label: 'Communities & Clubs',
-      blurb: 'Community hangouts, clubs, study groups',
-      type: 'Communities',
+      id: 'outdoor',
+      label: 'Outdoor',
+      blurb: 'Gardens and parks to meet in under an open sky.',
+      type: 'Outdoor',
     },
     {
-      id: 'learning',
-      label: 'Learning & Teaching',
-      blurb: 'Classrooms, training rooms, office hours',
-      type: 'Learning',
+      id: 'recreation',
+      label: 'Recreation',
+      blurb: 'Bars and cafes to unwind in together after work.',
+      type: 'Recreation',
     },
     OTHER,
   ],
@@ -252,92 +341,107 @@ export const COMMUNITY_APP_CATEGORIES = {
 type AppCategories = typeof COMMUNITY_APP_CATEGORIES;
 
 // Every app's category ids, together: what a stored or queried category can be. Spelled out, not derived from the
-// five lists: livediagram's OpenAPI schemas are generated from these types, and the generator can't read an indexed
+// five lists: the products' OpenAPI schemas are generated from these types, and the generator can't read an indexed
 // access over a union of tuples. categories.test.ts checks the two agree.
 export type CommunityCategory =
-  | 'architecture'
-  | 'art'
-  | 'articles'
-  | 'budgets'
-  | 'communities'
-  | 'dashboards'
-  | 'data'
-  | 'decks'
-  | 'design'
+  | 'branding'
+  | 'campus'
+  | 'careers'
+  | 'decisions'
+  | 'education'
   | 'events'
-  | 'flows'
-  | 'forms'
-  | 'guides'
-  | 'illustrations'
-  | 'infographics'
+  | 'finance'
+  | 'games'
+  | 'goals'
+  | 'health'
+  | 'hiring'
+  | 'home'
+  | 'ideas'
   | 'learning'
-  | 'logos'
+  | 'marketing'
+  | 'media'
   | 'meetings'
-  | 'mindmaps'
-  | 'newsletters'
-  | 'offices'
+  | 'office'
+  | 'onboarding'
   | 'other'
+  | 'outdoor'
+  | 'people'
   | 'personal'
   | 'photos'
+  | 'pitches'
   | 'planning'
-  | 'posters'
-  | 'projects'
-  | 'proposals'
-  | 'roadmaps'
+  | 'plans'
+  | 'processes'
+  | 'product'
+  | 'recreation'
+  | 'reports'
+  | 'retros'
+  | 'sales'
+  | 'shopping'
   | 'social'
-  | 'socials'
-  | 'trackers'
-  | 'wireframes'
-  | 'workflows'
-  | 'workshops';
+  | 'software'
+  | 'spaces'
+  | 'speeches'
+  | 'strategy'
+  | 'support'
+  | 'team'
+  | 'travel'
+  | 'websites'
+  | 'work';
 
 /** The ids the five lists hold, for the check that CommunityCategory names exactly them. */
 export type CommunityAppCategoryId = AppCategories[CommunityApp][number]['id'];
+
+/** The category ids an app offers. */
+export type CommunityCategoryOf<A extends CommunityApp> = AppCategories[A][number]['id'];
 
 // One app's categories, in display order.
 export function communityCategories<A extends CommunityApp>(app: A): AppCategories[A] {
   return COMMUNITY_APP_CATEGORIES[app];
 }
 
-// Every category once, by id (a shared id has one label and one type).
-const BY_ID: ReadonlyMap<string, CommunityCategoryDef> = new Map(
+// Every id any app offers.
+const ANY_APP: ReadonlySet<string> = new Set(
   Object.values(COMMUNITY_APP_CATEGORIES).flatMap((list: readonly CommunityCategoryDef[]) =>
-    list.map((c) => [c.id, c] as const),
+    list.map((c) => c.id),
   ),
 );
 
-// Every app's categories together, each id once (a shared id has one label), in the apps' order with Something Else
-// last: the category filter of the Community page's All Apps.
-export function allCommunityCategories(): readonly (CommunityCategoryDef & {
-  id: CommunityCategory;
-})[] {
-  const seen = [...BY_ID.values()].filter((c) => c.id !== OTHER.id);
-  // Every id in BY_ID comes from COMMUNITY_APP_CATEGORIES, so each is a CommunityCategory.
-  return [...seen, OTHER] as (CommunityCategoryDef & { id: CommunityCategory })[];
-}
+// Each app's categories by id.
+const BY_APP = new Map(
+  (Object.keys(COMMUNITY_APP_CATEGORIES) as CommunityApp[]).map((app) => [
+    app,
+    new Map(
+      (COMMUNITY_APP_CATEGORIES[app] as readonly CommunityCategoryDef[]).map((c) => [c.id, c]),
+    ),
+  ]),
+);
 
 // Any app's category: what a query or a stored row may name. A post's own must also be its app's
 // (`isCommunityCategoryOf`).
 export function isCommunityCategory(value: unknown): value is CommunityCategory {
-  return typeof value === 'string' && BY_ID.has(value);
+  return typeof value === 'string' && ANY_APP.has(value);
 }
 
 export function isCommunityCategoryOf(
   app: CommunityApp,
   value: unknown,
 ): value is CommunityCategory {
-  return (
-    typeof value === 'string' &&
-    (COMMUNITY_APP_CATEGORIES[app] as readonly CommunityCategoryDef[]).some((c) => c.id === value)
-  );
+  return typeof value === 'string' && BY_APP.get(app)!.has(value);
 }
 
-export function communityCategoryLabel(id: CommunityCategory): string {
-  return BY_ID.get(id)!.label;
+// An app's category by id. A category the app does not offer (a retired id, another app's) is Something Else, as a
+// stored post with one reads (rows.ts `rowCategory`).
+export function communityCategoryOf(app: CommunityApp, id: string): CommunityCategoryDef {
+  return BY_APP.get(app)!.get(id) ?? OTHER;
 }
 
-export function communityCategoryType(id: CommunityCategory): string {
-  return BY_ID.get(id)!.type;
+export function communityCategoryLabel(app: CommunityApp, id: string): string {
+  return communityCategoryOf(app, id).label;
+}
+
+export function communityCategoryType(app: CommunityApp, id: string): string {
+  return communityCategoryOf(app, id).type;
 }
 
 // One app's telemetry types (`Community·Shared|Changed·<Type>`), as a list.

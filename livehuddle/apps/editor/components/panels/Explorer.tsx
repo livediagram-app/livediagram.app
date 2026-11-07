@@ -75,16 +75,17 @@ function ExplorerImpl({
     !!accountUserId,
     currentDocumentId ?? null,
   );
-  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const communityOn = useCommunityEnabled(API_BASE);
   const shareHost = useMemo(
     () => ({
       ...explorerShareHost(accountUserId ?? null),
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
+        guestId ?? null,
       ),
     }),
-    [accountUserId, accountDisplayName, communityOn],
+    [accountUserId, accountDisplayName, communityOn, guestId],
   );
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;

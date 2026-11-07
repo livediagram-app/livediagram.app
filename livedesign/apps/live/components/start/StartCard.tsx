@@ -4,6 +4,7 @@
 // over its name and line, larger than it draws elsewhere, in the tab's own colours (the palette), and the grid they sit
 // in. Shared by a start's groups and its search results.
 import type { ReactNode } from 'react';
+import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
 import type { StartPalette } from './start-palette';
 
 export type StartPanelCard = {
@@ -11,6 +12,12 @@ export type StartPanelCard = {
   name: string;
   line: string;
   picture: ReactNode;
+  // One badge at most, beside the name (Community, on a Community tile).
+  badge?: string;
+  // What a screen reader hears after the name ("from the Community").
+  ariaKind?: string;
+  // Under the line at every width (a Community tile's credit).
+  note?: ReactNode;
 };
 
 // The accent softened to a strength, as a fill.
@@ -33,7 +40,7 @@ function StartCard({
         type="button"
         data-start-card={card.id}
         onClick={onChoose}
-        aria-label={`${card.name}: ${card.line}`}
+        aria-label={`${card.name}${card.ariaKind ? ` ${card.ariaKind}` : ''}: ${card.line}`}
         // On a phone a row: the picture small at the left, the words beside it, so a screen holds several.
         className="group flex w-full cursor-pointer flex-col rounded-2xl border p-2 text-left max-sm:flex-row max-sm:items-center max-sm:gap-1 max-sm:rounded-xl transition duration-micro ease-out hover:-translate-y-0.5 hover:border-[var(--start-accent)] hover:shadow-lg focus-visible:-translate-y-0.5 focus-visible:border-[var(--start-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
         style={{ borderColor: palette.border, backgroundColor: palette.surface }}
@@ -50,6 +57,15 @@ function StartCard({
             <span className="truncate text-[14px] font-semibold" style={{ color: palette.text }}>
               {card.name}
             </span>
+            {card.badge ? (
+              <span
+                className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
+                // The accent's tint, its ink deepened until it reads at AA (community-ui start-badge.ts).
+                style={communityStartBadgeStyle(palette.focus, palette.surface)}
+              >
+                {card.badge}
+              </span>
+            ) : null}
           </span>
           <span
             // In full, on a phone too: a card's line is short, and cut it misleads.
@@ -58,6 +74,7 @@ function StartCard({
           >
             {card.line}
           </span>
+          {card.note ? <span className="flex">{card.note}</span> : null}
         </span>
       </button>
     </div>

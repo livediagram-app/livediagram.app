@@ -26,6 +26,13 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'owner_id',
     deleteKeeps: { when: '1 = 1', why: "a plan's own store, purged through the index" },
   },
+  // A plan's Community post (docs/specs/025-community/community.md), in its own store: the post's check finds the
+  // plan gone or no longer its author's, and the post leaves the listing (plan-room/community-post.ts).
+  {
+    table: 'community_post',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a plan's own store, withdrawn by the post's check" },
+  },
   // Agent changesets (docs/specs/024-agents/agent-changesets.md, CS27), in each plan's own store: those on
   // someone else's plan stay until its retention ages them out.
   {
@@ -75,6 +82,13 @@ function seed(sql: DatabaseSync, id: string) {
     created_at: T0,
   });
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
+  insert(sql, 'community_post', {
+    share_code: `code-${id}`,
+    author_id: id,
+    post_id: `post-${id}`,
+    title: id,
+    checked_at: T0,
+  });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
     plan_id: `d-${id}`,

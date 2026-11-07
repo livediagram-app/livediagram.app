@@ -73,7 +73,7 @@ export function CommunityPostTile({
             />
           ) : null)}
         <span className="absolute left-3 top-3 rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm ring-1 ring-slate-900/5 backdrop-blur dark:bg-slate-900/85 dark:text-slate-300 dark:ring-white/10">
-          {categoryLabel ?? communityCategoryLabel(post.category)}
+          {categoryLabel ?? communityCategoryLabel(post.app, post.category)}
         </span>
         {badge ? <span className="absolute right-3 top-3">{badge}</span> : null}
       </div>

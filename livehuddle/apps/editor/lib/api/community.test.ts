@@ -50,7 +50,7 @@ afterEach(() => {
 const INPUT = {
   title: 'Cloud map',
   description: 'How our services talk to each other.',
-  category: 'meetings' as const,
+  category: 'office' as const,
   tags: ['aws'],
   anonymous: true,
 };

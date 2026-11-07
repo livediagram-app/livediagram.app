@@ -3,7 +3,11 @@
 // workspace to whoever presents it. So "who gets to see it" is a security
 // rule, and it gets a suite of its own rather than living inside one route's.
 import { describe, expect, it } from 'vitest';
-import { redactProjectForReader, redactProjectForScope } from './redact-project';
+import {
+  redactProjectForCommunity,
+  redactProjectForReader,
+  redactProjectForScope,
+} from './redact-project';
 import type { ProjectDTO } from './types';
 
 // A guest-owned project: the owner id is the UUID that identifies that
@@ -60,9 +64,65 @@ describe('redactProjectForReader', () => {
     expect(redactProjectForReader(blanked, null).ownerId).toBe('');
   });
 
+  // The badge's post state is the owner's alone.
+  it("withholds the Community post's state from everyone but the owner", () => {
+    const listed = { ...liveDoc, communityState: 'listed' } as ProjectDTO;
+    expect(redactProjectForReader(listed, GUEST_OWNER).communityState).toBe('listed');
+    expect(redactProjectForReader(listed, 'some-other-guest').communityState).toBeNull();
+  });
+
   it('blanks a string that is merely similar', () => {
     expect(redactProjectForReader(liveDoc, `${GUEST_OWNER} `).ownerId).toBe('');
     expect(redactProjectForReader(liveDoc, GUEST_OWNER.toUpperCase()).ownerId).toBe('');
+  });
+});
+
+// docs/specs/025-community/community.md "Viewing a post's plan": a stranger is told nobody's name or colour, nothing
+// of the owner's library or where the plan came from, and of no other item a tab is connected to.
+describe('redactProjectForCommunity', () => {
+  const full = {
+    ...liveDoc,
+    ownerName: 'Ada',
+    ownerColor: '#f97316',
+    folderId: 'f1',
+    source: { kind: 'template', id: 'kanban' },
+    tabs: [
+      { id: 't1', projectId: 'd1', name: 'Board', orderIndex: 0, updatedAt: 5 },
+      {
+        id: 't2',
+        projectId: 'd1',
+        name: 'Linked',
+        orderIndex: 1,
+        updatedAt: 6,
+        connection: { itemId: 'other', tabId: 'x' },
+      },
+    ],
+  } as unknown as ProjectDTO;
+
+  it('drops the owner, the folder, the origin and every connection, and keeps the content', () => {
+    const out = redactProjectForCommunity(full);
+    expect(out).toMatchObject({
+      ownerName: null,
+      ownerColor: null,
+      folderId: null,
+      source: null,
+      name: 'Plan',
+    });
+    expect(out.tabs[0]).toBe(full.tabs[0]);
+    expect(out.tabs[1]).toEqual({
+      id: 't2',
+      projectId: 'd1',
+      name: 'Linked',
+      orderIndex: 1,
+      updatedAt: 6,
+    });
+    expect(JSON.stringify(out)).not.toContain('other');
+  });
+
+  it('never mutates the project it was handed', () => {
+    redactProjectForCommunity(full);
+    expect(full.ownerName).toBe('Ada');
+    expect('connection' in full.tabs[1]!).toBe(true);
   });
 });
 

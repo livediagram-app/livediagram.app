@@ -33,6 +33,13 @@ import { FormBoardContext } from '@/components/forms/form-board-context';
 import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import {
+  itemIsPublic,
+  useAutoCopyParam,
+  useCommunityState,
+} from '@liveworkspace/community-ui/editor';
+import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import {
   WorkbenchBackButton,
@@ -83,6 +90,11 @@ import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
+// Only a Community link's view draws it, so it stays off every other open's first load.
+const CommunityBar = dynamic(
+  () => import('@liveworkspace/community-ui/community-bar').then((m) => m.CommunityBar),
+  { ssr: false },
+);
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 const PlanSheetsHost = dynamic(
@@ -184,7 +196,27 @@ export function EditorView() {
     zenMode,
     openCollaborators,
     userPreferences,
+    sessionCommunity,
   } = ctx;
+  // The header badge follows the plan's Community post (docs/specs/025-community/community.md "Publishing").
+  const communityState = useCommunityState(projectId);
+  // The badge goes too while the Community is switched off. Asked only while there is a listed post to badge, and
+  // never in an embed, so other opens make no request.
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
+  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md "The gallery").
+  useAutoCopyParam({
+    hydrated,
+    sessionShareCode,
+    // The author's own post copies nothing: their bar offers Edit Your Plan instead.
+    community: sessionCommunity !== null && !sessionCommunity.ownProjectId,
+    makeCopy,
+  });
+  // Whether the plan shows as public on the Community, for the header's share state.
+  const headerCommunity = itemIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
@@ -270,14 +302,15 @@ export function EditorView() {
             shareable={projectShareable}
             teamProject={!!projectTeamId}
             offline={isOffline}
+            community={headerCommunity}
             // Visitors see "Make a copy" instead of "Share": same slot (a joined
             // team member is no visitor: the team's projects are theirs to share),
             // different action. Hidden during the welcome flow so the
             // first-paint chrome stays minimal, and during hydration so
             // we don't render the button before we know whether the user
-            // is the owner.
+            // is the owner. A Community visitor gets it from the Community bar instead.
             onMakeCopy={
-              !canShareProject && hydrated && !anyWelcomeOpen && projectId
+              !canShareProject && hydrated && !anyWelcomeOpen && projectId && !sessionCommunity
                 ? () => void makeCopy()
                 : undefined
             }
@@ -446,13 +479,28 @@ export function EditorView() {
                                   {(headerInColumn, footerInColumn) => (
                                     <div className="flex h-dvh flex-col">
                                       {headerInColumn}
+                                      {sessionCommunity && appChrome && hydrated ? (
+                                        <CommunityBar
+                                          community={sessionCommunity}
+                                          own={
+                                            sessionCommunity.ownProjectId
+                                              ? {
+                                                  href: `/project/${encodeURIComponent(sessionCommunity.ownProjectId)}`,
+                                                  label: 'Edit Your Plan',
+                                                }
+                                              : null
+                                          }
+                                          onMakeCopy={() => void makeCopy()}
+                                          copying={copying}
+                                        />
+                                      ) : null}
                                       <AreaErrorBoundary area="TabDialogs">
                                         <EditorTabDialogs />
                                       </AreaErrorBoundary>
                                       <AreaErrorBoundary area="Collaborators">
                                         <CollaboratorsHost />
                                       </AreaErrorBoundary>
-                                      {/* At the canvas's top edge, under the header. */}
+                                      {/* At the canvas's top edge, under the header and any Community bar. */}
                                       {landscapeBarsHandle}
                                       <AreaErrorBoundary
                                         area="Canvas"
@@ -467,9 +515,10 @@ export function EditorView() {
                                           <AgentFocusContext.Provider
                                             value={ctx.agentFocusByElement}
                                           >
-                                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                            {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md),
+                                                nor for a Community visitor (docs/specs/025-community/community.md). */}
                                             <CommentBadgesContext.Provider
-                                              value={!(embedMode && isReadOnly)}
+                                              value={!(embedMode && isReadOnly) && !sessionCommunity}
                                             >
                                               {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                               <SuppressElementIndicators when={embedMode}>

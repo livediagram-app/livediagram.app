@@ -299,8 +299,9 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
-// Inside an allowed workspace resource, the door that stays closed: an agent's presence.
+// Inside an allowed workspace resource, the doors that stay closed: Community publishing and an agent's presence.
 const WORKSPACE_CLOSED: readonly RouteShape[] = [
+  shape(ALL_METHODS, 'projects/:p/community/**'),
   shape(ALL_METHODS, 'projects/:p/tabs/:p/presence'),
 ];
 
