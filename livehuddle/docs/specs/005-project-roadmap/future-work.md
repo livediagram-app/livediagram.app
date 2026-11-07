@@ -91,6 +91,10 @@ From [Social pieces](../009-elements/social-pieces.md):
 From [Piece moments](../009-elements/piece-moments.md):
 
 - **Shared moments.** Others in the room seeing the leaves fall from the tree you brushed: one small `piece-moment`
-  presence op (the piece and your side), sent only when a moment plays, so at most one every 4 seconds a walker.
-- **More moments.** A book sliding out of the Bookshelf, the Hammock swaying, the Garden Umbrella's canopy lifting in
-  a breeze; and a press on a piece you stand beside to play its moment on purpose.
+  presence op (the piece and your side), sent only when a moment plays, rate-limited a walker (moments now play on
+  every arrival, so the op needs a rest of its own).
+- **Walk-up answers for the pressed pieces.** The Notice Board, the World Clock, the Calendar Wall, the Suggestion Box
+  and the Window answer a press but nothing when you walk up to them (piece-moments.md "Which pieces have a moment"):
+  a pin wobbling on the board, the clock's hands ticking on, the calendar's page lifting, a note peeking out of the
+  box's slot, the light through the window brightening. And the Hammock swaying as a seat.
+- **A press to replay a moment** on a piece you stand beside.

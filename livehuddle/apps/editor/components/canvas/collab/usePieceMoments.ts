@@ -1,7 +1,7 @@
 'use client';
 
-// Piece moments (docs/specs/009-elements/piece-moments.md): walking right up to a tree, a pond or a fire now and then
-// plays a small moment on it, on your screen alone. The pieces are picked out of the board once per change of the
+// Piece moments (docs/specs/009-elements/piece-moments.md): walking right up to a tree, a pond, a kettle or any other
+// still piece plays a small moment on it, every time, on your screen alone. The pieces are picked out of the board once per change of the
 // elements; each step of your feet then asks the trigger, one box test a piece and nothing built, and a moment
 // re-renders only the piece it plays on.
 
@@ -11,6 +11,7 @@ import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-prefer
 import {
   createMomentTrigger,
   hasMoment,
+  momentPiece,
   playMoment,
   type MomentPiece,
   type MomentTrigger,
@@ -23,7 +24,16 @@ export function momentPiecesOf(elements: readonly Element[]): MomentPiece[] {
   const out: MomentPiece[] = [];
   for (const el of elements) {
     if (el.type !== 'shape' || !hasMoment(el.shape)) continue;
-    out.push({ id: el.id, kind: el.shape, x: el.x, y: el.y, width: el.width, height: el.height });
+    out.push(
+      momentPiece({
+        id: el.id,
+        kind: el.shape,
+        x: el.x,
+        y: el.y,
+        width: el.width,
+        height: el.height,
+      }),
+    );
   }
   return out;
 }
@@ -50,8 +60,9 @@ export function usePieceMoments({
       return;
     }
     if (pieces.length === 0) return;
-    const hit = t.step({ x: fx, y: fy }, pieces);
+    const hits = t.step({ x: fx, y: fy }, pieces);
     // Reduced motion plays nothing, and nothing stands in for it.
-    if (hit && !prefersReducedMotion()) playMoment(hit.id, hit.side);
+    if (hits.length === 0 || prefersReducedMotion()) return;
+    for (const hit of hits) playMoment(hit.id, hit.side);
   }, [active, fx, fy, pieces]);
 }

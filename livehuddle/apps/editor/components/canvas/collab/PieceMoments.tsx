@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import {
   CAMPFIRE_FLAMES,
   FIREPLACE_FLAMES,
@@ -9,60 +9,56 @@ import {
   RECREATION_TONES,
   SOCIAL_TONES,
 } from '@livehuddle/document';
-import {
-  swaysOnMoment,
-  usePieceMoment,
-  type MomentKind,
-  type PieceMomentPlay,
-  type Side,
-} from '@/lib/piece-moments';
+import type { MomentKind, PieceMomentPlay, Side } from '@/lib/piece-moments';
+import { wholeMotionOf } from '@/lib/piece-moment-motions';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { Falling, Splash, Throw, useFreshMoment, vars } from './moment-kit';
+import { hasOfficeMoment, OfficeMomentParts } from './OfficeMoments';
 
 // Piece moments (docs/specs/009-elements/piece-moments.md), drawn in the piece's own grid over its art: leaves falling
 // from a tree, butterflies out of a bush, a stoked fire's sparks, a coin in the fountain, a can dropping, a pebble in
-// the pond. Each is one-shot CSS on transform and opacity (app/piece-moments.css), mounted only once a moment plays
-// and keyed by it, so nothing runs at rest; the finished frames are invisible or the resting pose, so nothing needs a
-// timer to take them down. None plays under reduced motion (usePieceMoments), and the CSS hides any that was mounted.
+// the pond (the office, amenity, venue and team pieces' parts are OfficeMoments). Each is one-shot CSS on transform
+// and opacity (app/piece-moments.css), mounted only once a moment plays and keyed by it, so nothing runs at rest; the
+// finished frames are invisible or the resting pose, so nothing needs a timer to take them down. None plays under
+// reduced motion (usePieceMoments), and the CSS hides any that was mounted.
 
 /** A stoked fire's flare and glow on dark paper: a light, warm amber. */
 export const DARK_FLARE = '#fcd34d';
 
-const vars = (v: Record<string, string | number>) => v as CSSProperties;
-
-// The moment that played since this view mounted, or null: a tab switched back to never replays an old one.
-function useFreshMoment(id: string): PieceMomentPlay | null {
-  const play = usePieceMoment(id);
-  const [mountedAt] = useState(() => play?.seq ?? 0);
-  return play && play.seq > mountedAt ? play : null;
-}
-
-/** Rocks a tree's or a plant's whole drawing away from your side when its moment plays. */
-export function MomentSway({
+/**
+ * The piece's drawing, moved by its moment: the whole drawing's motion (a tree's sway, a turned piece's nudge) on a
+ * group keyed by the moment, so a new one replays, with `--lean` (away from your side) for the parts inside to swing
+ * by. `children` gets the fresh moment, to wrap the parts it moves (FurnitureView, piece-moment-motions.ts).
+ */
+export function MomentDrawing({
   kind,
   id,
+  front,
   children,
 }: {
-  kind: string;
+  kind: MomentKind;
   id: string;
-  children: ReactNode;
+  front: boolean;
+  children: (play: PieceMomentPlay | null) => ReactNode;
 }) {
   const play = useFreshMoment(id);
-  if (!swaysOnMoment(kind) || !play) return <g>{children}</g>;
+  if (!play) return <g>{children(null)}</g>;
+  const whole = wholeMotionOf(kind, front);
   return (
     <g
       key={play.seq}
-      className={`lh-moment ${kind === 'tree' ? 'lh-moment-sway' : 'lh-moment-rustle'}`}
+      className={whole ? `lh-moment lh-moment-${whole}` : undefined}
       style={vars({ '--lean': -play.side })}
-      data-moment={kind}
+      data-moment={whole ? kind : undefined}
     >
-      {children}
+      {children(play)}
     </g>
   );
 }
 
 /** The moment's own parts over a piece's art, for a moment kind drawn in FurnitureView's grid. */
-// The pond draws its own at its own size (PondMoment).
-type GridMomentKind = Exclude<MomentKind, 'pond'>;
+// The pond and the swimming pool draw their own at their own size (PondMoment, PoolMoment).
+export type GridMomentKind = Exclude<MomentKind, 'pond' | 'swimming-pool'>;
 
 export function PieceMoment({ kind, id }: { kind: GridMomentKind; id: string }) {
   const play = useFreshMoment(id);
@@ -75,6 +71,7 @@ export function PieceMoment({ kind, id }: { kind: GridMomentKind; id: string }) 
 }
 
 function MomentParts({ kind, side }: { kind: GridMomentKind; side: Side }) {
+  if (hasOfficeMoment(kind)) return <OfficeMomentParts kind={kind} side={side} />;
   switch (kind) {
     case 'tree':
       return <Leaves side={side} />;
@@ -100,18 +97,15 @@ function MomentParts({ kind, side }: { kind: GridMomentKind; side: Side }) {
       return <Coin side={side} />;
     case 'vending-machine':
       return <CanDrop />;
+    default:
+      return null;
   }
 }
 
-// One leaf: falls `fall` px, drifting `drift` px, fluttering as it goes, then lies a moment and fades.
+// One leaf, falling.
 function Leaf({
-  x,
-  y,
-  fall,
-  drift,
-  delay,
   fill,
-  dur = 2.2,
+  ...fall
 }: {
   x: number;
   y: number;
@@ -122,21 +116,9 @@ function Leaf({
   dur?: number;
 }) {
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <g
-        className="lh-moment lh-moment-fall"
-        style={vars({
-          '--fall': `${fall}px`,
-          '--drift': `${drift}px`,
-          '--delay': `${delay}s`,
-          '--dur': `${dur}s`,
-        })}
-      >
-        <g className="lh-moment lh-moment-flutter">
-          <path d="M0 -6C4.2 -3.6 4.2 3.6 0 6C-4.2 3.6 -4.2 -3.6 0 -6Z" fill={fill} />
-        </g>
-      </g>
-    </g>
+    <Falling {...fall}>
+      <path d="M0 -6C4.2 -3.6 4.2 3.6 0 6C-4.2 3.6 -4.2 -3.6 0 -6Z" fill={fill} />
+    </Falling>
   );
 }
 
@@ -253,102 +235,6 @@ function Stoke({
           })}
         />
       ))}
-    </>
-  );
-}
-
-// A thrown thing's flight: across `dx` px while it rises `peak` px and comes down `drop` px below where it started.
-function Throw({
-  x,
-  y,
-  dx,
-  peak,
-  drop,
-  children,
-}: {
-  x: number;
-  y: number;
-  dx: number;
-  peak: number;
-  drop: number;
-  children: ReactNode;
-}) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <g className="lh-moment lh-moment-across" style={vars({ '--dx': `${dx}px` })}>
-        <g
-          className="lh-moment lh-moment-arc"
-          style={vars({ '--peak': `${-peak}px`, '--drop': `${drop}px` })}
-        >
-          {children}
-        </g>
-      </g>
-    </g>
-  );
-}
-
-// Where a thrown thing lands: a ring spreading on the water, and a few droplets for a pebble, a glint for a coin.
-function Splash({
-  x,
-  y,
-  rx,
-  ry,
-  droplets,
-  glint,
-}: {
-  x: number;
-  y: number;
-  rx: number;
-  ry: number;
-  droplets: boolean;
-  glint: boolean;
-}) {
-  return (
-    <>
-      <ellipse
-        cx={x}
-        cy={y}
-        rx={rx}
-        ry={ry}
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth={1.5}
-        vectorEffect="non-scaling-stroke"
-        className="lh-moment lh-moment-ripple"
-        style={vars({ '--delay': '0.6s' })}
-      />
-      <ellipse
-        cx={x}
-        cy={y}
-        rx={rx}
-        ry={ry}
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth={1.2}
-        vectorEffect="non-scaling-stroke"
-        className="lh-moment lh-moment-ripple"
-        style={vars({ '--delay': '0.95s' })}
-      />
-      {droplets
-        ? [-5, 0, 5].map((dx) => (
-            <circle
-              key={dx}
-              cx={x}
-              cy={y}
-              r={1.4}
-              fill="#ffffff"
-              className="lh-moment lh-moment-droplet"
-              style={vars({ '--dx': `${dx}px`, '--up': `${dx === 0 ? -12 : -8}px` })}
-            />
-          ))
-        : null}
-      {glint ? (
-        <path
-          d={`M${x} ${y - 6}L${x + 1.4} ${y - 1.4}L${x + 6} ${y}L${x + 1.4} ${y + 1.4}L${x} ${y + 6}L${x - 1.4} ${y + 1.4}L${x - 6} ${y}L${x - 1.4} ${y - 1.4}Z`}
-          fill="#ffffff"
-          className="lh-moment lh-moment-glint"
-        />
-      ) : null}
     </>
   );
 }

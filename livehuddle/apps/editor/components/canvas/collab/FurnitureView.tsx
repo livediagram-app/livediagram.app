@@ -1,12 +1,18 @@
 'use client';
 
 import { seatPillBottom, seatRing, type Sitter } from '@liveworkspace/avatar/chair-sitters';
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
-import { hasMoment, swaysOnMoment } from '@/lib/piece-moments';
-import { MomentSway, PieceMoment } from './PieceMoments';
+import { hasMoment, type PieceMomentPlay } from '@/lib/piece-moments';
+import {
+  drawsOverMoment,
+  partMotionsOf,
+  partMotionStyle,
+  type PartMotion,
+} from '@/lib/piece-moment-motions';
+import { MomentDrawing, PieceMoment } from './PieceMoments';
 import { hasSocialArt, SocialArt } from './SocialArt';
 import { hasWorkdayArt, WorkdayArt } from './WorkdayFaces';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
@@ -192,6 +198,40 @@ export function FurnitureView({
       opacity="0.85"
     />
   ));
+  // The drawing in its frame; while a moment plays on its front, the parts it moves are each wrapped in their motion.
+  const width = Number(frame.viewBox.split(' ')[2]);
+  const drawingOf = (moving: MovingParts | null) => (
+    <g transform={frame.transform || undefined}>
+      {parts.map((p, i) => {
+        const view = <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />;
+        const m = moving?.motions.get(i);
+        return [
+          i === ringUnder ? ringView : null,
+          m ? (
+            <g
+              key={i}
+              className={`lh-moment lh-moment-${m.motion}`}
+              style={partMotionStyle(m, moving!.side, width)}
+              data-moment-part={i}
+            >
+              {view}
+            </g>
+          ) : (
+            view
+          ),
+        ];
+      })}
+      {ringUnder >= parts.length ? ringView : null}
+      {kind === 'office-pod' ? (
+        <PodDoor closed={podClosed(sitters.length)} stroke={stroke} door={POD_DOORS[drawing]} />
+      ) : null}
+      {/* Inside the drawing's frame, on the drawing its facing shows: no text, so mirroring is safe. */}
+      {(kind === 'water-cooler' || kind === 'coffee-machine') &&
+      MACHINE_ANSWER_AT[kind][drawing] ? (
+        <MachineAnswer kind={kind} id={element.id} spots={MACHINE_ANSWER_AT[kind][drawing]} />
+      ) : null}
+    </g>
+  );
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -206,29 +246,14 @@ export function FurnitureView({
               : `Empty ${noun.toLowerCase()}`
         }
       >
-        {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. */}
-        {withSway(
-          kind,
-          element.id,
-          <g transform={frame.transform || undefined}>
-            {parts.map((p, i) => [
-              i === ringUnder ? ringView : null,
-              <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
-            ])}
-            {ringUnder >= parts.length ? ringView : null}
-            {kind === 'office-pod' ? (
-              <PodDoor
-                closed={podClosed(sitters.length)}
-                stroke={stroke}
-                door={POD_DOORS[drawing]}
-              />
-            ) : null}
-            {/* Inside the drawing's frame, on the drawing its facing shows: no text, so mirroring is safe. */}
-            {(kind === 'water-cooler' || kind === 'coffee-machine') &&
-            MACHINE_ANSWER_AT[kind][drawing] ? (
-              <MachineAnswer kind={kind} id={element.id} spots={MACHINE_ANSWER_AT[kind][drawing]} />
-            ) : null}
-          </g>,
+        {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. A moment kind's drawing
+            moves in its moment (docs/specs/009-elements/piece-moments.md): the whole of it, and the parts it names. */}
+        {hasMoment(kind) ? (
+          <MomentDrawing kind={kind} id={element.id} front={drawing === 'front'}>
+            {(play) => drawingOf(play && drawing === 'front' ? movingParts(kind, play) : null)}
+          </MomentDrawing>
+        ) : (
+          drawingOf(null)
         )}
         {hasSocialArt(kind) ? (
           <SocialArt
@@ -249,7 +274,7 @@ export function FurnitureView({
           />
         ) : null}
         {/* A moment's parts sit on the front drawing (a stoked fire, a dropped can), so a turned piece keeps quiet. */}
-        {hasMoment(kind) && drawing === 'front' ? (
+        {hasMoment(kind) && drawing === 'front' && drawsOverMoment(kind) ? (
           <PieceMoment kind={kind} id={element.id} />
         ) : null}
       </svg>
@@ -267,15 +292,15 @@ export function FurnitureView({
   );
 }
 
-// A tree's or a plant's drawing rocks in its moment (docs/specs/009-elements/piece-moments.md); only those subscribe.
-function withSway(kind: string, id: string, drawing: ReactNode): ReactNode {
-  return swaysOnMoment(kind) ? (
-    <MomentSway kind={kind} id={id}>
-      {drawing}
-    </MomentSway>
-  ) : (
-    drawing
-  );
+// The parts a moment moves on a piece's front drawing (lib/piece-moment-motions.ts), by index: those for your side
+// only, where a kind moves the nearest of two. Built when a moment plays, never at rest.
+type MovingParts = { side: PieceMomentPlay['side']; motions: Map<number, PartMotion> };
+function movingParts(kind: string, play: PieceMomentPlay): MovingParts | null {
+  const all = partMotionsOf(kind);
+  if (all.length === 0) return null;
+  const motions = new Map<number, PartMotion>();
+  for (const m of all) if (m.side === undefined || m.side === play.side) motions.set(m.part, m);
+  return { side: play.side, motions };
 }
 
 // An Office Pod's sliding glass door (docs/specs/009-elements/office.md "Office Pod"): shut across the doorway while

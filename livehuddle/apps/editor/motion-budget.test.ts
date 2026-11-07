@@ -15,6 +15,8 @@ const CANVAS_STYLESHEETS = [
   'app/workday-motion.css',
   // The pieces' one-shot moments: leaves, a pebble, sparks (docs/specs/009-elements/piece-moments.md).
   'app/piece-moments.css',
+  // The office, amenity, venue and team pieces' moments: a page, steam, a sparrow.
+  'app/piece-moments-office.css',
   // The animation sets (docs/specs/028-animation/element-animations.md).
   'app/motion-shape.css',
   'app/motion-text.css',

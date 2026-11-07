@@ -1,5 +1,6 @@
 'use client';
 
+import { PoolMoment } from './OfficeMoments';
 import { FurniturePartView } from './FurnitureView';
 import { swimmingPoolParts, type ShapeElement } from '@livehuddle/document';
 
@@ -39,6 +40,8 @@ export function SwimmingPoolView({
           className="lh-social-anim lh-ripple"
           aria-hidden
         />
+        {/* A rubber duck each time you walk up (docs/specs/009-elements/piece-moments.md). */}
+        <PoolMoment id={element.id} width={w} height={h} />
       </svg>
     </div>
   );
