@@ -108,6 +108,9 @@ drawing and the controls.
   included. The left seat's `serve` with `seq` 1 at 0 all opens a match; any other moment must carry the next `seq`
   of the match on show, come from `nextSeat` (the server while `serve`, the ball's end while `flight`), and keep the
   score (`serve`, `hit`) or give the point to the other seat (`miss`); anything else returns `current` unchanged.
+  A screen with no match on show, or only a won one, joins a later moment of another match as it stands (a late
+  watcher, "Watching"): a serve from the seat serving at that score after a point, a strike sending the ball away
+  from the striker, or a miss giving the other seat a point.
   `ballShown` holds the ball at the far paddle line until that end's word comes; `silentAfter` is when the waiting
   seat counts as gone.
 - **The inbox**: `useRoomConnection` hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
