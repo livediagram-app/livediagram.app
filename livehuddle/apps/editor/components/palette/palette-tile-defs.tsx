@@ -22,6 +22,7 @@ import {
   RoomIcon,
   RoomBuilderIcon,
   DoorIcon,
+  WindowIcon,
   StageIcon,
   MeetingTableIcon,
   PlantIcon,
@@ -904,6 +905,22 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     variants: DOOR_PRESET_TILES,
     variantsHint: 'Pick a door, then drop it on any wall. Lock it to keep it as it is.',
     icon: <DoorIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Window (docs/specs/009-elements/room-builder.md "Window"): snaps onto a wall as a Door does, lets light in, never
+    // a way through.
+    id: 'tools:window',
+    tileGroup: 'rooms',
+    blurb: 'Light through any wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Window',
+    caption: 'Window',
+    description:
+      'A window for any room or corridor wall: drop it on a wall and it snaps on, turns to face in and casts a patch of light on the floor. The wall still blocks walking. Drag it along the wall to move it.',
+    filled: true,
+    action: { type: 'shape', kind: 'window' },
+    icon: <WindowIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Stage (docs/specs/009-elements/office.md "Stage", docs/specs/012-collaboration/meeting-rooms-and-stage.md).

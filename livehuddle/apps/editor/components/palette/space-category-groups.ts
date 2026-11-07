@@ -14,6 +14,7 @@ const ROOMS_BUILD = [
   'tools:room-builder',
   'tools:corridor',
   'tools:wall-door',
+  'tools:window',
 ] as const;
 
 export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCategoryGroup[]>> = {

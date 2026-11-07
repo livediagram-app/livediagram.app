@@ -60,6 +60,7 @@ const WALK = [
   'grass',
   'garden-path',
   'door',
+  'window',
   'chair',
   'desk',
   'sofa',
