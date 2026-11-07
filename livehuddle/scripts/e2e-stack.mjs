@@ -981,6 +981,9 @@ async function main() {
       `ACCOUNTS_CLIENT_ID:${ACCOUNTS_CLIENT.id}`,
       '--var',
       `ACCOUNTS_CLIENT_SECRET:${ACCOUNTS_CLIENT.secret}`,
+      // The guest handoff comes back to this stack's editor, never the router a developer's .dev.vars names.
+      '--var',
+      `AUTH_ORIGIN:http://localhost:${EDITOR_PORT}`,
       // The stack's index, never one a developer's .dev.vars names.
       '--var',
       `INDEX_ORIGIN:http://127.0.0.1:${INDEX_PORT}`,

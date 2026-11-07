@@ -18,6 +18,12 @@ import {
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
 
+// The strip's Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle").
+const editToggle = (page: Page, side: 'Edit' | 'Walk') =>
+  page
+    .getByRole('group', { name: 'Edit or Walk' })
+    .getByRole('button', { name: side, exact: true });
+
 async function openAs(
   browser: Browser,
   baseURL: string,
@@ -99,6 +105,9 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await peerPage.locator(CANVAS).waitFor();
   await dismissQuickTour(ownerPage);
   await dismissQuickTour(peerPage);
+  // The tab offers the walk, so both open walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"), the strip
+  // the avatar palette: both Editors switch to Edit to build.
+  for (const p of [ownerPage, peerPage]) await editToggle(p, 'Edit').click();
 
   // Presence: the owner sees two people online, the peer among them.
   const online = ownerPage.locator('[role="img"][aria-label$="(Online)"]');
@@ -133,7 +142,7 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   await expect(squares(ownerPage)).toHaveCount(3);
 
   // The peer walks as an avatar; the owner sees the character.
-  await peerPage.getByRole('button', { name: /switch to Avatar mode/ }).click();
+  await editToggle(peerPage, 'Walk').click();
   await peerPage.locator(CANVAS).click({ position: { x: 900, y: 300 } });
   await expect(ownerPage.locator('[data-avatar="peer"]')).toHaveCount(1);
 
