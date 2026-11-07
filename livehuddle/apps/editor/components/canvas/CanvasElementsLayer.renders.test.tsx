@@ -386,7 +386,9 @@ describe('a move riding an offset', () => {
     expect(translateOf(container, a.id)).toEqual(['']);
   });
 
-  it('renders no element view for a whole 1,770-element selection moving', () => {
+  // docs/specs/008-canvas/drag-preview.md "A very large move rides as one layer": the element plane carries it,
+  // and no element node is written.
+  it('renders no element view for a whole 1,770-element selection moving, and its layer carries it', () => {
     const large = buildLargeSelectionBoard();
     const all = new Set(large.map((el) => el.id));
     const { container } = mount(layerProps({ elements: large }));
@@ -395,8 +397,10 @@ describe('a move riding an offset', () => {
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
     expect(slotRenders.count).toBe(0);
     expect(layerRenders.count).toBe(0);
-    expect(translateOf(container, large[0]!.id)).toEqual(['20px 10px']);
-    expect(translateOf(container, large.at(-1)!.id)).toEqual(['20px 10px']);
+    const plane = container.querySelector<HTMLElement>('[data-element-plane]')!;
+    expect(plane.style.transform).toBe('translate(20px, 10px)');
+    expect(translateOf(container, large[0]!.id)).toEqual(['']);
+    expect(translateOf(container, large.at(-1)!.id)).toEqual(['']);
   });
 });
 

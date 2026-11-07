@@ -10,7 +10,7 @@ import type { CallSessionOp, CallStopShareOp } from './call-control';
 import type { AvatarKnockAnswerOp, AvatarKnockOp } from './knock';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
-import type { DragPreviewPatch } from './drag-preview';
+import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 
 // ---------------------------------------------------------------------
@@ -475,9 +475,18 @@ export type RoomOp =
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
   // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
-  // element; `end` says the preview is over, `landed` that it was written (the real change follows as
-  // element ops, after the autosave's wait), so receivers keep drawing it until then.
-  | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // element, or for a very large move one shared offset (`ride`, in place of `patches`, so an editor that
+  // does not know it drops the op and sees the move on release); `end` says the preview is over, `landed`
+  // that it was written (the real change follows as element ops, after the autosave's wait), so receivers
+  // keep drawing it until then.
+  | {
+      kind: 'drag-preview';
+      tabId: string;
+      patches?: DragPreviewPatch[];
+      ride?: DragPreviewRide;
+      end?: true;
+      landed?: true;
+    }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no

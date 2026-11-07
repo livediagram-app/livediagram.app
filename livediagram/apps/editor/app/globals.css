@@ -839,7 +839,9 @@
    replace it. */
 [data-iso] [data-element-id],
 [data-iso] [data-arrow-svg] {
-  translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
+  /* The depth, named so a drag's offset written on the node keeps it (drag-ride-dom.ts). */
+  --ride-z: calc(var(--iso-z, 0) * 0.01px);
+  translate: 0 0 var(--ride-z);
 }
 
 /* The floating chrome gets its OWN compositing layer while isometric is on.
@@ -867,7 +869,8 @@ body:has([data-mode-message]) [data-yields-to-mode] {
    a frame is a backdrop its contents sit on, and it is often added after the
    things inside it, so paint order alone would float it over them. */
 [data-iso] [data-frame] {
-  translate: 0 0 -1px;
+  --ride-z: -1px;
+  translate: 0 0 var(--ride-z);
 }
 
 /* Arrows get the same treatment in the other direction: an arrow's SVG is
@@ -882,7 +885,8 @@ body:has([data-mode-message]) [data-yields-to-mode] {
 [data-iso] [data-arrow-svg] {
   /* Arrows keep their nudge ON TOP of the index stagger: a connector should
      cross above the boxes it joins, whatever order it was added in. */
-  translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
+  --ride-z: calc(1px + var(--iso-z, 0) * 0.01px);
+  translate: 0 0 var(--ride-z);
 }
 
 /* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
