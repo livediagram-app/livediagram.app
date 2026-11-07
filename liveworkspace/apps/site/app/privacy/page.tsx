@@ -80,12 +80,12 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Your Google picture, if you sign in with Google.</strong> We keep the address of
-            the profile picture Google gives us at sign-in (never the image itself), and update it at
-            your next Google sign-in. Your avatar shows it to you, and to other signed-in people you
-            work with, in every app; guests and people signed out never receive it. Turn off{' '}
-            <strong>Show My Google Picture</strong> in Settings, Profile, and everyone else sees your
-            initials instead. Each browser loads the picture straight from Google, without saying
-            which page it is on.
+            the profile picture Google gives us at sign-in (never the image itself), and update it
+            at your next Google sign-in. Your avatar shows it to you, and to other signed-in people
+            you work with, in every app; guests and people signed out never receive it. Turn off{' '}
+            <strong>Show My Google Picture</strong> in Settings, Profile, and everyone else sees
+            your initials instead. Each browser loads the picture straight from Google, without
+            saying which page it is on.
           </li>
           <li>
             <strong>Signing in to an app.</strong> When an app sends you to liveworkspace.app to
@@ -99,9 +99,9 @@ const SECTIONS: LegalSection[] = [
             them the invitation, with up to three reminders (after a day, a week and three weeks)
             while nobody has answered it, each with a link to decline it. It waits on
             liveworkspace.app until they accept or decline it, or until 28 days pass unanswered,
-            when it expires and they are not emailed again. The
-            token an app gets when you sign in also lists the teams you are in, which is how we
-            decide who may open a team&rsquo;s work. The apps keep no copy of your teams.
+            when it expires and they are not emailed again. The token an app gets when you sign in
+            also lists the teams you are in, which is how we decide who may open a team&rsquo;s
+            work. The apps keep no copy of your teams.
           </li>
           <li>
             <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
@@ -170,9 +170,10 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
-          app&rsquo;s MCP server (every app has one but livehuddle), we store the tool&rsquo;s registration (its name and redirect
-          address, for 30 days), short-lived authorisation codes that expire within minutes, and for
-          an hour a count of registrations from your network address, to stop abuse.
+          app&rsquo;s MCP server (every app has one but livehuddle), we store the tool&rsquo;s
+          registration (its name and redirect address, for 30 days), short-lived authorisation codes
+          that expire within minutes, and for an hour a count of registrations from your network
+          address, to stop abuse.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -306,11 +307,11 @@ const SECTIONS: LegalSection[] = [
       <p>
         If you sign in, liveworkspace.app sets a cookie to keep you signed in, and each app you use
         sets its own to remember that you are, with your name, colour and Google picture (if you
-        have one) for its header. If you use an app without an account,
-        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your
-        preferences (also saved to our database so they follow you) and your Community key in local
-        storage, and liveworkspace.app keeps your light or dark choice there. We do not use
-        advertising or tracking cookies.
+        have one) for its header. If you use an app without an account, liveworkspace.app sets a
+        cookie holding your guest id. The apps keep your guest id, your preferences (also saved to
+        our database so they follow you) and your Community key in local storage, and
+        liveworkspace.app keeps your light or dark choice there. We do not use advertising or
+        tracking cookies.
       </p>
     ),
   },
@@ -359,9 +360,9 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          If you have an account and turn on phone notifications, we tell that phone or browser
-          when someone mentions you, assigns you an action, replies in a thread you are in, or
-          comments on something you own.
+          If you have an account and turn on phone notifications, we tell that phone or browser when
+          someone mentions you, assigns you an action, replies in a thread you are in, or comments
+          on something you own.
         </p>
         <ul>
           <li>
@@ -393,11 +394,11 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          If you add a webhook (for your own items, or as a team&rsquo;s admin for the team&rsquo;s),
-          we send what happens to those items to the address you choose: any HTTPS address, a Slack
-          channel or a Microsoft Teams channel. Each message holds the item&rsquo;s name and link,
-          who did it, and a short detail, such as the opening words of a comment. What happens to it
-          there is governed by that service&rsquo;s own terms and privacy policy.
+          If you add a webhook (for your own items, or as a team&rsquo;s admin for the
+          team&rsquo;s), we send what happens to those items to the address you choose: any HTTPS
+          address, a Slack channel or a Microsoft Teams channel. Each message holds the item&rsquo;s
+          name and link, who did it, and a short detail, such as the opening words of a comment.
+          What happens to it there is governed by that service&rsquo;s own terms and privacy policy.
         </p>
         <p>
           We keep each webhook&rsquo;s name, the events it hears, and its address and signing secret
@@ -413,8 +414,8 @@ const SECTIONS: LegalSection[] = [
     title: 'Downloading your data',
     body: (
       <p>
-        If you have an account, you can download everything you own, in every app, as one file:
-        your documents, a picture of each tab, the comments you wrote in them, your profile and the
+        If you have an account, you can download everything you own, in every app, as one file: your
+        documents, a picture of each tab, the comments you wrote in them, your profile and the
         images you uploaded. A team&rsquo;s admins can do the same for the team&rsquo;s documents.
         The file is built on our servers and kept in Cloudflare object storage until its link
         lapses, 3 days after it is ready, when it is deleted. The link only works while you are
@@ -480,9 +481,9 @@ const SECTIONS: LegalSection[] = [
           sign-in records, phone notification devices and your own webhooks are deleted straight
           away. We also disconnect your Google Drive and delete any download of your data at the
           same time; if either fails, the Drive access ends when you remove it in your Google
-          account, and a download is deleted by itself after 3 days. You leave
-          every team (a team you ran alone goes; one you were the only admin of passes to its
-          longest-standing member). Documents that belong to a team stay with the team.
+          account, and a download is deleted by itself after 3 days. You leave every team (a team
+          you ran alone goes; one you were the only admin of passes to its longest-standing member).
+          Documents that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
@@ -653,12 +654,12 @@ const SECTIONS: LegalSection[] = [
             picture, and we do not record, transcribe or keep any of it.
           </li>
           <li>
-            <strong>Who hears and sees you.</strong> The people near your character, or in the
-            same room, hear you, and see your camera and screen. Speaking from a stage, or once
-            someone lets you speak, everyone on the tab hears you; they also see your camera and
-            screen only if the stage is set to show cameras. Everyone on your tab can see when you
-            are talking (a small level meter above your character, never the sound). Someone with
-            view access can listen but never speak or turn on a camera.
+            <strong>Who hears and sees you.</strong> The people near your character, or in the same
+            room, hear you, and see your camera and screen. Speaking from a stage, or once someone
+            lets you speak, everyone on the tab hears you; they also see your camera and screen only
+            if the stage is set to show cameras. Everyone on your tab can see when you are talking
+            (a small level meter above your character, never the sound). Someone with view access
+            can listen but never speak or turn on a camera.
           </li>
           <li>
             <strong>Your character.</strong> Where your character walks, the messages it says, its

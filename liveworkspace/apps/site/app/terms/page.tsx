@@ -150,17 +150,15 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           You can create API tokens on liveworkspace.app to use the apps programmatically. A token
-          acts as your account in every app&rsquo;s API, and in the MCP server of every app that
-          has one (all but livehuddle), or only reads, if you make it read-only, so keep it secret
-          and revoke any that might have been exposed. You are responsible for what is done with
-          your tokens. We may apply rate limits to keep the Service healthy. If you connect a
-          third-party or AI tool, you authorise it to act for you with that access, until you
-          revoke its token.
+          acts as your account in every app&rsquo;s API, and in the MCP server of every app that has
+          one (all but livehuddle), or only reads, if you make it read-only, so keep it secret and
+          revoke any that might have been exposed. You are responsible for what is done with your
+          tokens. We may apply rate limits to keep the Service healthy. If you connect a third-party
+          or AI tool, you authorise it to act for you with that access, until you revoke its token.
         </p>
         <p>
           If you add a webhook, you choose where news of your items (or, as a team&rsquo;s admin,
-          the team&rsquo;s) is sent, and the service at that address handles it under its own
-          terms.
+          the team&rsquo;s) is sent, and the service at that address handles it under its own terms.
         </p>
       </>
     ),
