@@ -22,6 +22,9 @@ export type AvatarSceneShape = {
   // line as 0..1 fractions of its box. A Door's rotation turns it onto its wall.
   readonly roomOutline?: readonly { readonly x: number; readonly y: number }[];
   readonly rotation?: number;
+  // A piece's type within its kind (livehuddle's docs/specs/009-elements/room-builder.md "Door types"): a Corridor's
+  // shape.
+  readonly variant?: string;
   // Which way a piece of furniture faces (facing.ts): its seats and its footprint are its facing's drawing's.
   readonly chairFacing?: SeatFacing;
   // An Office Pod whose door is shut (pod.ts closePods): never stored, set on the walk's copy of the board.

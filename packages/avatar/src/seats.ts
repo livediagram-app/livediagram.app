@@ -163,6 +163,112 @@ export const MEETING_TABLE_SEATS_SIDE: SeatGrid = {
 /** A drawing's grid and its seats, each with the way its sitter faces in it. */
 export type FixedSeatGrid = { width: number; height: number; seats: readonly TableSeat[] };
 
+/** The Meeting Table's long type (livehuddle's office.md "Long Table"): a boardroom table drawn to its length. */
+export const LONG_TABLE_VARIANT = 'long';
+
+// Where its chairs go: the side chairs between this far in from each end, this far apart at least.
+const LONG_TABLE_SIDE_IN = 86;
+const LONG_TABLE_PITCH = 60;
+
+/** The x of each side chair along a long table's grid `width` (at least two, spaced evenly). */
+export function longTableSideXs(width: number): number[] {
+  const run = Math.max(0, width - 2 * LONG_TABLE_SIDE_IN);
+  const n = Math.max(2, Math.floor(run / LONG_TABLE_PITCH) + 1);
+  return Array.from({ length: n }, (_, i) => LONG_TABLE_SIDE_IN + (run * i) / (n - 1));
+}
+
+/**
+ * A long table's length along its grid for a box: the Meeting Table's 168 px deep drawing as long as the box's
+ * proportions allow (so it fills the box), measured across the box when it faces Down or Up and down it on its side
+ * (livehuddle's furniture-facing.md "A turn").
+ */
+export function longTableLength(
+  boxWidth: number,
+  boxHeight: number,
+  facing: SeatFacing = 'n',
+): number {
+  const onSide = facing === 'e' || facing === 'w';
+  const along = onSide ? boxHeight : boxWidth;
+  const across = onSide ? boxWidth : boxHeight;
+  return Math.max(TW, Math.round((along * TH) / Math.max(1, across)));
+}
+
+/**
+ * A long table's front grid for a box: its side chairs along both sides and one at each end, every seat facing the
+ * table.
+ */
+export function longTableGrid(boxWidth: number, boxHeight: number): FixedSeatGrid {
+  return longTableFront(longTableLength(boxWidth, boxHeight));
+}
+
+function longTableFront(width: number): FixedSeatGrid {
+  const xs = longTableSideXs(width);
+  return {
+    width,
+    height: TH,
+    seats: [
+      ...xs.map((x): TableSeat => ({ u: x / width, v: 40 / TH, facing: 'down' })),
+      ...xs.map((x): TableSeat => ({ u: x / width, v: 116 / TH, facing: 'up' })),
+      { u: 21 / width, v: 72 / TH, facing: 'right' },
+      { u: (width - 21) / width, v: 72 / TH, facing: 'left' },
+    ],
+  };
+}
+
+/** Where a long table of `length` puts its side chairs down it on its side (the Meeting Table's 86 and 134 at 232). */
+export function longTableSideYs(length: number): number[] {
+  const k = (length - 184) / Math.max(1, length - 172);
+  return longTableSideXs(length).map((x) => 86 + (x - 86) * k);
+}
+
+/**
+ * A long table's seats in each of its drawings, `length` long (the Meeting Table's turn, stretched): from behind every
+ * chair a half turn round, so the far row is the near one and the ends swap; on its side the far row down its right,
+ * the near row down its left, the left end's chair at its top and the right end's at its foot.
+ */
+export function longTableSeatViews(length: number): SeatViews {
+  const cached = longTableViews.get(length);
+  if (cached) return cached;
+  const views = buildLongTableViews(length);
+  // A sitter's seat is read every walk frame; a table's length changes only on a resize, so keep the last few.
+  if (longTableViews.size >= 16) longTableViews.clear();
+  longTableViews.set(length, views);
+  return views;
+}
+
+const longTableViews = new Map<number, SeatViews>();
+
+function buildLongTableViews(length: number): SeatViews {
+  const front = longTableFront(length);
+  const xs = longTableSideXs(length);
+  const ys = longTableSideYs(length);
+  const L = length;
+  return {
+    facings: front.seats.map((s) => s.facing),
+    front: seatSpots(front),
+    back: {
+      width: L,
+      height: TH,
+      seats: [
+        ...xs.map((x) => ({ u: (L - x) / L, v: 116 / TH })),
+        ...xs.map((x) => ({ u: (L - x) / L, v: 40 / TH })),
+        { u: (L - 21) / L, v: 72 / TH },
+        { u: 21 / L, v: 72 / TH },
+      ],
+    },
+    side: {
+      width: TH,
+      height: L,
+      seats: [
+        ...ys.map((y) => ({ u: 147 / TH, v: y / L })),
+        ...ys.map((y) => ({ u: 21 / TH, v: y / L })),
+        { u: 84 / TH, v: 40 / L },
+        { u: 84 / TH, v: (L - 46) / L },
+      ],
+    },
+  };
+}
+
 // An Office Pod (livehuddle's docs/specs/009-elements/office.md "Office Pod"): two benches facing each other across a
 // table, inside the pod's walls (pod.ts draws the walls on this grid).
 export const POD_SEATS: FixedSeatGrid = {
@@ -603,15 +709,18 @@ export const SEAT_VIEWS: Readonly<Record<SitKind, SeatViews>> = {
 };
 
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */
-export type SeatedBox = Rect & { shape: SitKind; chairFacing?: SeatFacing };
+export type SeatedBox = Rect & { shape: SitKind; chairFacing?: SeatFacing; variant?: unknown };
 
 /** A seat's feet point in canvas coordinates, and which way its sitter faces. */
 export type Seat = { x: number; y: number; facing: AvatarFacing };
 
 /** Every seat's feet point, in canvas coordinates, from the drawing its facing shows. */
 export function seatPoints(el: SeatedBox): Seat[] {
-  const views = SEAT_VIEWS[el.shape];
   const facing = seatingFacing(el);
+  const views =
+    el.shape === 'meeting-table' && el.variant === LONG_TABLE_VARIANT
+      ? longTableSeatViews(longTableLength(el.width, el.height, facing))
+      : SEAT_VIEWS[el.shape];
   const { view: name, mirrored } = facingView(facing);
   const grid = views[name];
   const drawn = drawnRect(el, grid);

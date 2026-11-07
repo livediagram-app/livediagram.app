@@ -125,6 +125,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
   // room is a floor big enough to furnish.
   room: { width: 480, height: 320 },
+  // A Corridor (docs/specs/009-elements/corridor.md): the Straight, one arm wide.
+  corridor: { width: 480, height: 120 },
   // A Door (docs/specs/009-elements/room-builder.md): a Room's doorway wide, a wall and its jambs deep.
   door: { width: 96, height: 24 },
   'meeting-table': { width: 232, height: 168 },
@@ -350,6 +352,8 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // A Door keeps any width along its wall: not aspect locked, no label.
   if (kind === 'door') return base;
+  // A Corridor (docs/specs/009-elements/corridor.md) is any size of passage, with no words on it.
+  if (kind === 'corridor') return { ...base, label: '' };
   // A garden path, grass and a garden fence (docs/specs/009-elements/office.md) are any size, drawn to it, with no
   // words on them.
   if (

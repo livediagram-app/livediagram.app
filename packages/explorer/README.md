@@ -289,6 +289,10 @@ Explorer words (`teamErrorMessage`). One client, `data/teams.ts`; no host writes
   it (`teams/rules.ts`): the only joined admin's row is pinned, and Leave is offered to them only when they are alone
   (it then deletes the team, and says so). Removing words itself by who goes: Remove Member, Withdraw Invite, Remove
   from List, Leave Team. A team the person is not in is a not-found card.
+- **The Audit Log** (`explorer/audit/AuditLog.tsx`), on a team's view under Team Activity, for its admins alone
+  ([team-audit-log.md](../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-view)):
+  closed until opened, then the Person, Event, From and To filters, the rows by day with Show More, and Export CSV,
+  which follows `X-Next-Cursor` and saves one file (`downloadBlob` from `@liveworkspace/ui/download-blob`).
 - **Invite by Link** (`teams/InviteLinkDialog.tsx`): Turn On, then the link with Copy (it says Copied, or selects the
   field when the clipboard refuses), when it ends, New Link (the old stops working) and Turn Off.
 - **Invites** (`explorer/InvitesPane.tsx`): Accept opens the team, Decline takes the card away; each says so in a toast.
@@ -431,6 +435,10 @@ the history entry, and a newer list read cancels the older one.
   no seen mark, the section left out when empty or failed, All with app marks, and See Timeline. Its rules, and
   10,000 events grouped under a budget, are in `timeline/whatHappened.test.ts`.
 - `perf.test.tsx` renders 2,000 items in each layout under a time budget.
+- `explorer/audit/audit-log.test.tsx` covers the Audit Log: admins only, closed until opened, every filter as the
+  read takes it, Show More and its failure, the empty, no-match, refused and failed states, and Export CSV across
+  files, its cap and a failure, with 50,000 rows joined under a CPU budget. `explorer/audit/rows.test.ts` holds
+  what each row says.
 - `timeline.test.tsx` covers the Timeline view: this app's events by default, All with each app's mark, New and
   the seen mark, Show More and stacks, the failed read, the filters, one page however long the history, the card
   and stack menus with Remove from Timeline (and its refusal), rename on a card, `#event=` links and their bounded

@@ -24,6 +24,7 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
   type FurniturePart,
@@ -601,6 +602,13 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${line}"`;
       case 'glint':
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+      // The woven roles (a patterned rug's, shared with livehuddle): unstroked, faint over the fill.
+      case 'tint':
+        return `fill="${line}" opacity="${FURNITURE_WEAVE.tint}"`;
+      case 'sheen':
+        return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
+      case 'dye':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
     }
   })();
   // A face toward the room is the panel, shaded with its stroke colour.

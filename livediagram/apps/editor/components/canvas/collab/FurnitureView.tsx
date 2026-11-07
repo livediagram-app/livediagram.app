@@ -15,6 +15,7 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
   facingView,
@@ -253,6 +254,13 @@ function FurniturePartView({
           opacity: FURNITURE_GLINT.opacity,
           strokeLinecap: 'round' as const,
         };
+      // The woven roles (a patterned rug's, shared with livehuddle): unstroked, faint over the fill.
+      case 'tint':
+        return { fill: stroke, opacity: FURNITURE_WEAVE.tint };
+      case 'sheen':
+        return { fill: FURNITURE_GLINT.stroke, opacity: FURNITURE_WEAVE.sheen };
+      case 'dye':
+        return { fill: part.fill ?? stroke, opacity: FURNITURE_WEAVE.dye };
     }
   })();
   switch (part.tag) {

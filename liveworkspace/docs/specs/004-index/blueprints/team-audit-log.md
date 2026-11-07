@@ -17,9 +17,12 @@ Scope, by file:
 | `liveworkspace/apps/index/src/account-purge.ts`           | `purgePerson` runs `teamAuditPurgeStatements` after the person's own rows                                                                     |
 | `packages/index-client/src/constants.ts`                  | `TEAM_AUDIT_*_TYPES`, `TEAM_AUDIT_EVENT_TYPES`, `TeamAuditEventType`, `TEAM_AUDIT_RETENTION_MS`, the read's limits, `TEAM_AUDIT_EVENT_LABELS` |
 | `liveworkspace/apps/index/src/team-audit-read.ts`         | `GET /team-audit`: `handleTeamAudit`, `pageQuery`, `eventOf`, `csvRow`                                                                        |
-| `liveworkspace/apps/index/src/webhooks/access.ts`         | `accountsAdminTeams` (who runs the team now), `accountsPeopleNames` (names now, `POST /api/account/index/people`)                             |
+| `liveworkspace/apps/index/src/accounts-access.ts`         | `accountsAdminTeams` (who runs the team now), `accountsPeopleNames` (names now, `POST /api/account/index/people`)                             |
 | `packages/index-client/src/{types,client}.ts`             | `TeamAuditEvent`, `TeamAuditQuery`, `TeamAuditPage`, `TeamAuditCsv`; `teamAudit`, `teamAuditCsv`                                              |
 | `packages/api-kit/src/csv.ts`                             | `toCsv`, formula-safe (shared with the data export)                                                                                           |
+| `packages/explorer/src/explorer/audit/AuditLog.tsx`       | the Audit Log section: the disclosure, the filters, the rows by day, Show More, Export CSV and every state                                    |
+| `packages/explorer/src/explorer/audit/useAuditLog.ts`     | the paged read (`teamAudit`), keyed on the filters; `exportAuditCsv` follows `X-Next-Cursor` and joins the files                              |
+| `packages/explorer/src/explorer/audit/rows.ts`            | `auditSentence`, `auditDetail`, `auditGroups`, `dayRange`: what a row says, the Event groups and the range                                    |
 
 ## Domain and naming
 
@@ -112,24 +115,59 @@ plan uses `team_audit_time`, `_actor` or `_type` with no temp B-tree for every f
 bound"). With both `person` and `kind`, one index serves and the other filters within the team's year. A 10,000-row
 CSV with 250 people is five queries and three name calls, under a 1.5 s CPU budget in the test.
 
+The Audit Log reads nothing until opened, then one page (50 rows) per filter change or Show More; rows render in one
+pass (`byDay`), and the Person options in one pass over the loaded rows. Export CSV joins at most 20 files in the
+browser: measured locally, 50,000 rows join and count in about 15 ms of CPU and 200,000 in about 56 ms (a 200 ms
+budget in `audit-log.test.tsx`). The joined text is held
+in memory until saved, so the largest export (200,000 rows, about 40 MB) is a short-lived string of that size.
+
+## Presentation and UX
+
+`AuditLog` is drawn by `TeamPage` (`packages/explorer/src/explorer/TeamPane.tsx`) only when `useTeamDetails` has
+found the team and its `myRole` is `admin`, keyed `audit-<team>`. It reuses the shared primitives: `Select` for
+Person and Event (an `optgroup` per `auditGroups(kind.many)` group, the middle one named in the host's word for
+its items: `useExplorer().kind`, so Designs on livedesign), `DateInput` for From and To, `Button` for Clear Filters,
+Show More, Try again and Export CSV, `EmptyState` (compact) for every empty or failed state, `MoreFailed` for a
+failed Show More, `AppMark` for the app, and `auditIcon` (the Timeline's glyphs, plus `deleted`, `webhook_added`
+and `webhook_removed`'s own). The filters are a two-column grid on a phone (Person and Event full width) and one
+row of four from `sm:`. Day bands use `MEDIUM_DATE`, row times `TIME`, both in the reader's locale; the tooltip is
+UTC. Dark mode follows the Explorer's slate classes. The Help link is the team article's help centre with
+`collaboration/teams/audit-log/`.
+
+`useAuditLog` keys the read on the filters' values: a change aborts the read in flight and any Show More, and a
+page answered for an older filter is never shown. `exportAuditCsv` reads `teamAuditCsv` until `nextCursor` is null
+or `AUDIT_EXPORT_FILES_MAX` files, keeps the first file's header and drops each later one's (its first line),
+counts rows outside quoted cells for the button's progress, and `AuditLog` saves `\uFEFF` + the text as
+`text/csv;charset=utf-8`.
+
+## Accessibility
+
+The section's header is an `h2` button with `aria-expanded` and `aria-controls`; the filters are a labelled
+`group`, each field with a visible `label`; the count line is `aria-live="polite"`; each day is a `section` named
+by its date with an `h3`; names and titles are `bdi`; each time is a `time` with its ISO `dateTime`; the
+placeholder list is `aria-busy`. Export CSV is `busy` while it runs (it keeps focus).
+
 ## Testing
 
-| Test                                                   | Pins                                                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/team-audit.test.ts` (9)  | a team item's shares, trash, restore, delete for good, moves across teams, Take Offline and Empty Trash; nothing for personal items; accounts' team events once, never a token's; the year's sweep; anonymising; the plans                                                                  |
-| `liveworkspace/apps/index/src/webhooks/routes.test.ts` | a team webhook added and removed; never a personal one                                                                                                                                                                                                                                      |
-| `liveworkspace/apps/index/src/timeline.test.ts`        | 100 account events in four statements, all logged                                                                                                                                                                                                                                           |
-| `packages/index-client/src/constants.test.ts`          | no token kind and no `team_deleted` in `TEAM_AUDIT_EVENT_TYPES`                                                                                                                                                                                                                             |
-| `liveworkspace/apps/index/src/team-audit-read.test.ts` | admin allowed; member, outsider, token-claimed admin, guest, app, Drive mirror and export refused; 503 when accounts can't say; names now (left members included), fallbacks, `deleted`; every filter and pages; malformed queries; CSV content, cap, next cursor and CPU budget; the plans |
-| `liveworkspace/apps/accounts/src/account-api.test.ts`  | `POST /api/account/index/people`: the key only, unknown ids left out, at most 100                                                                                                                                                                                                           |
-| `packages/index-client/src/client.test.ts`             | `teamAudit`, `teamAuditCsv` and its refusals                                                                                                                                                                                                                                                |
-| `packages/api-kit/src/csv.test.ts`                     | quoting, formula-safety, CRLF                                                                                                                                                                                                                                                               |
+| Test                                                      | Pins                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/team-audit.test.ts` (9)     | a team item's shares, trash, restore, delete for good, moves across teams, Take Offline and Empty Trash; nothing for personal items; accounts' team events once, never a token's; the year's sweep; anonymising; the plans                                                                  |
+| `liveworkspace/apps/index/src/webhooks/routes.test.ts`    | a team webhook added and removed; never a personal one                                                                                                                                                                                                                                      |
+| `liveworkspace/apps/index/src/timeline.test.ts`           | 100 account events in four statements, all logged                                                                                                                                                                                                                                           |
+| `packages/index-client/src/constants.test.ts`             | no token kind and no `team_deleted` in `TEAM_AUDIT_EVENT_TYPES`                                                                                                                                                                                                                             |
+| `liveworkspace/apps/index/src/team-audit-read.test.ts`    | admin allowed; member, outsider, token-claimed admin, guest, app, Drive mirror and export refused; 503 when accounts can't say; names now (left members included), fallbacks, `deleted`; every filter and pages; malformed queries; CSV content, cap, next cursor and CPU budget; the plans |
+| `liveworkspace/apps/accounts/src/account-api.test.ts`     | `POST /api/account/index/people`: the key only, unknown ids left out, at most 100                                                                                                                                                                                                           |
+| `packages/index-client/src/client.test.ts`                | `teamAudit`, `teamAuditCsv` and its refusals                                                                                                                                                                                                                                                |
+| `packages/api-kit/src/csv.test.ts`                        | quoting, formula-safety, CRLF                                                                                                                                                                                                                                                               |
+| `packages/explorer/src/explorer/audit/audit-log.test.tsx` | admins only (a member sees no section); closed until opened; every filter sent; Show More and its failure; empty, no match, 403 and 503; Export CSV across files, the cap and a failure                                                                                                     |
+| `packages/explorer/src/explorer/audit/rows.test.ts`       | every kind's sentence and detail, deleted and unnamed people, the day range                                                                                                                                                                                                                 |
 
 ## Constants and configuration
 
 `TEAM_AUDIT_RETENTION_MS` 365 days, `TEAM_AUDIT_PAGE` 50, `TEAM_AUDIT_LIMIT_MAX` 100, `TEAM_AUDIT_CSV_MAX` 10,000,
 `TEAM_AUDIT_NEXT_CURSOR_HEADER` (`packages/index-client`); `TEAM_AUDIT_SWEEP_MAX` 5,000 (`team-audit.ts`);
-`CSV_READ_CHUNK` 2,000 (`team-audit-read.ts`); `NAMES_PER_CALL` 100 (`webhooks/access.ts`).
+`CSV_READ_CHUNK` 2,000 (`team-audit-read.ts`); `NAMES_PER_CALL` 100 (`accounts-access.ts`); `AUDIT_EXPORT_FILES_MAX`
+20 (`useAuditLog.ts`, `IDX34`).
 
 ## Defaults ledger
 
@@ -139,10 +177,12 @@ CSV with 250 people is five queries and three name calls, under a 1.5 s CPU budg
 - `IDX31`: a page is 50 rows unless asked, at most 100; a CSV file at most 10,000, read 2,000 a query.
 - `IDX32`: `person` filters on who did it, not whom it is about; `kind` takes one kind.
 - `IDX33`: names accounts can't give fall back to those the event carried; the read never fails for want of names.
+- `IDX34`: Export CSV joins at most 20 files (200,000 rows), the newest first, and says so when there were more.
 
 ## Build order (Work Tracker #160)
 
 1. This table, its write path and its sweep (no reader, nothing visible). Done (#1378).
 2. The admins' read: `GET /team-audit?team=&person=&kind=&from=&to=&limit=&cursor=` and its CSV export, a team admin
-   only, one index range per filter (`team_audit_time`, `_actor`, `_type`). Done.
-3. The Activity section in team settings that shows it, with its filters and Export CSV.
+   only, one index range per filter (`team_audit_time`, `_actor`, `_type`). Done (#1385).
+3. The Audit Log section on a team's view (`packages/explorer/src/explorer/audit/`), with its filters, Show More and
+   Export CSV, and each app's help article. Done.

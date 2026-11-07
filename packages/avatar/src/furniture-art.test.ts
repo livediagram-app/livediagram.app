@@ -4,6 +4,7 @@ import {
   CHAIR_ART,
   ellipse,
   furnitureFrame,
+  longTableArt,
   MACHINE_ANSWER_AT,
   MEETING_TABLE_ART,
   path,
@@ -113,5 +114,31 @@ describe('turnWithArt', () => {
   it('turns a chair in place', () => {
     const chair = { x: 10, y: 20, width: 76, height: 84 };
     expect(turnWithArt(chair, CHAIR_ART, 'n', 'w')).toEqual({ ...chair, chairFacing: 'w' });
+  });
+});
+
+// livehuddle's office.md "Long Table": the Meeting Table drawn to its length, in all three drawings.
+describe('a long table', () => {
+  it('draws its front, back and side at the length its box allows, each on its seats', () => {
+    const art = longTableArt(560, 168);
+    expect(art.front).toMatchObject({ width: 560, height: 168 });
+    expect(art.front.seats).toHaveLength(16);
+    // From behind it is the front's drawing, its seats turned.
+    expect(art.back.parts).toBe(art.front.parts);
+    expect(art.back.seats[0]).not.toEqual(art.front.seats[0]);
+    // On its side, a tall table as long as the front is wide.
+    expect(art.side).toMatchObject({ width: 168, height: 560 });
+    expect(art.side.seats).toHaveLength(16);
+    expect(art.side.ring).toEqual({ cx: 84, cy: 280, rx: 80, ry: 276 });
+    // The same table turned on its side, in its turned box, is the same drawing (cached by length).
+    expect(longTableArt(168, 560, 'e')).toBe(art);
+    expect(longTableArt(168, 560, 'w')).toBe(art);
+  });
+
+  it('keeps only the last few lengths', () => {
+    const first = longTableArt(1000, 168);
+    for (let w = 1010; w < 1200; w += 10) longTableArt(w, 168);
+    expect(longTableArt(1000, 168)).not.toBe(first);
+    expect(longTableArt(1000, 168).front.width).toBe(1000);
   });
 });

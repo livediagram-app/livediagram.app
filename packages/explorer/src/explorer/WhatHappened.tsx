@@ -9,6 +9,7 @@
 import { useEffect, useId, useMemo, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import type { App, IndexClient, TimelineEvent } from '@liveworkspace/index-client';
 import { isNewEvent, timeLabel } from '../timeline/model';
+import { SHARE_LEVEL_WORDS } from '../timeline/share-levels';
 import {
   ACTION_PHRASES,
   groupsByDay,
@@ -39,12 +40,6 @@ const PANEL =
   'rounded-[20px] border border-slate-200 bg-white px-3 py-2 sm:px-5 dark:border-slate-700 dark:bg-slate-800';
 const ROW = 'rounded-lg px-2 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800/70';
 const STRONG = 'font-semibold text-slate-900 dark:text-slate-100';
-
-const LEVEL_WORDS: Record<string, string> = {
-  view: 'Anyone with the link can view',
-  participate: 'Anyone with the link can take part',
-  edit: 'Anyone with the link can edit',
-};
 
 export type WhatHappenedState = {
   events: TimelineEvent[];
@@ -224,7 +219,7 @@ function actionDetail(event: TimelineEvent, teamName: (id: string | null) => str
     case 'moved':
       return `To ${detail.folderName ?? (detail.teamId ? teamName(detail.teamId) : 'My Work')}`;
     case 'shared':
-      return LEVEL_WORDS[detail.level ?? ''] ?? null;
+      return SHARE_LEVEL_WORDS[detail.level ?? ''] ?? null;
     case 'created':
       return detail.source === 'ai'
         ? 'Made by AI'

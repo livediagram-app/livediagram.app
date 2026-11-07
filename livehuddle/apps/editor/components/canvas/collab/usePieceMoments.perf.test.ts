@@ -13,8 +13,10 @@ const PIECES: MomentPiece[] = Array.from({ length: 2000 }, (_, i) => ({
   height: 160,
 }));
 const STEPS = 1000;
-// Measured about 19 µs a step here at 2000 pieces (0.4 µs at a garden's 40); the budget leaves room for slow CI.
-const BUDGET_MS = 60;
+// Measured about 24 ms for the 1000 steps on an M-series Mac, 69 ms under coverage there, and 209 ms on CI's
+// coverage run (2026-11-07): coverage and the slower runner stack, so 60 (180 on CI) sat under CI's timing. 120 (360
+// on CI) keeps room on both and still fails a scan that builds per step or grows past one box test a piece.
+const BUDGET_MS = 120;
 
 describe('the piece moment check', () => {
   it(`walks ${STEPS} steps among 2000 moment pieces inside ${cpuBudgetMs(BUDGET_MS)} ms`, () => {

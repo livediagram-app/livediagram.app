@@ -21,6 +21,7 @@ export const PET_NAP_EVERY = 4;
  */
 export const PET_FLOOR_KINDS: ReadonlySet<string> = new Set([
   'room',
+  'corridor',
   'rug',
   'grass',
   'garden-path',
