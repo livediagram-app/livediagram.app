@@ -28,3 +28,35 @@ Derived from [Room Builder and Door](../room-builder.md).
   bounds grown by `ROOM_WALL / 2`; a custom room is created `aspectLocked` so 45-degree walls stay 45 degrees.
 - A door is "on" a wall when its centre is within 2 px of the wall's centre line and its rotation is parallel to it
   (mod 180, within 1 degree); only then does it cut the wall or ride the room.
+
+## Door types, room and rug presets, the Corridor
+
+Derived from [Door types](../room-builder.md#door-types), [Room presets](../office.md#room-presets),
+[Rug types](../office.md#rug-types) and [Corridor](../corridor.md) (Work Tracker #543, #598, #599).
+
+| File                                                          | Role                                                                                                                  |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `../packages/avatar/src/corridor.ts`                          | `corridorWalls(el)`: a corridor's walls in canvas px, turned by its rotation; `corridorFloor`, `CORRIDOR_ARM`         |
+| `../packages/avatar/src/collision.ts`                         | `fenceSegments` adds a corridor's walls, cut by the doors on them                                                     |
+| `packages/document/src/piece-variants.ts`                     | `DOOR_VARIANTS`, `RUG_VARIANTS`, `CORRIDOR_VARIANTS`, `pieceVariant(el)` (the stored type, or the first), the sizes  |
+| `packages/document/src/shape-variants.ts`                     | `applyShapeVariant` stores a door's, rug's or corridor's `variant` and its size; a room preset's size, name, outline |
+| `packages/document/src/room-presets.ts`                       | `ROOM_PRESETS`, and the Door a shaped preset stands on its wall (`roomPresetDoor`)                                    |
+| `packages/document/src/door-art.ts`                           | `doorArt(width, height, variant)`: each type's parts with their open and shut poses, for the canvas and the export   |
+| `packages/document/src/rug-art.ts`                            | `rugParts(width, height, variant)`: each patterned rug drawn to its size                                             |
+| `packages/document/src/room-builder.ts`                       | `wallsOf` and `doorOnRoom` read a corridor's walls, so doors snap onto it, ride it and follow its resize             |
+| `packages/document/src/validate-shape.ts`, `element-fields.ts` | `variant` validated (`isPieceVariant`) and listed                                                                    |
+| `apps/editor/components/canvas/collab/RoomBuilderViews.tsx`   | `DoorView` draws `doorArt` with the padlock when locked; `CorridorView`                                               |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx`      | A patterned rug draws `rugParts` at its own size                                                                      |
+| `apps/editor/components/palette/palette-floor-presets.tsx`    | The Room, Corridor, Door and Rug preset tiles and their glyphs                                                        |
+| `apps/editor/components/canvas/collab/PlacementPreview.tsx`   | The preview draws the armed or dragged preset (its `variant`)                                                         |
+
+Notes:
+
+- `variant` is written only by `applyShapeVariant` for the kinds in `STORED_VARIANT_KINDS` (door, rug, corridor), and
+  only a value the kind takes; a room preset's variant is never stored (the preset is its size, name and outline).
+- A door's parts carry `open` and `shut` poses (`rotate` about an origin, or a `dx` slide); the canvas sets the pose
+  as a CSS transform under the 180 ms door transition, the export bakes the current one in.
+- A corridor's arm is `min(CORRIDOR_ARM, the box's shorter side)`; its walls are polylines along each arm's sides at
+  `ROOM_WALL / 2` in, stopping at the open ends; the drawing's walls are the same lines, stroked as a room's.
+- The palette drag hands the preview its `variant` (`PaletteDragPreview.variant`), so a dragged preset previews at
+  its own size and shape.

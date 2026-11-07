@@ -13,8 +13,9 @@ and doors that go anywhere on any wall decide how people walk between rooms rath
 
 ## Where they live
 
-Both in the palette's **Rooms** group, beside the Room, the Rug and the Fence: the **Room Builder** tool tile and
-the **Door** tile. Editors only (see [Share roles](#share-roles)).
+Both in the palette's **Rooms** group, beside the Room, the Corridor, the Rug and the Fence: the **Room Builder** tool
+tile and the **Door** tile. The Door tile opens its [door types](#door-types) as presets, the way the Card tile opens
+its ([Card presets](card.md#card-presets)). Editors only (see [Share roles](#share-roles)).
 
 ## The Room Builder tool
 
@@ -66,8 +67,8 @@ A doorway with a door in it, placed on any wall.
 
 - **A shape kind of its own**, `door`, 96 x 24 canvas px (the Room's doorway width), drawn as a gap in the wall
   with a jamb at each end, a door leaf standing open and its swing arc. Its rotation is the wall's angle.
-- **It snaps onto walls.** Dropped from the palette, or moved, a door within 48 canvas px of a wall (a Room's or a
-  custom room's, at any angle) jumps onto it: centred on the wall's centre line, turned to the wall's angle (so on a
+- **It snaps onto walls.** Dropped from the palette, or moved, a door within 48 canvas px of a wall (a Room's, a
+  custom room's or a [Corridor](corridor.md)'s, at any angle) jumps onto it: centred on the wall's centre line, turned to the wall's angle (so on a
   45-degree wall it stands at 45 degrees), and slides along the wall as you drag. Away from every wall it stands free
   and does nothing until it is put on one. Cmd / Ctrl while dragging places it freely, as every snap.
 - **You see where it lands before you place it.** While the Door tile is armed (tapped, waiting for a click on the
@@ -89,6 +90,39 @@ A doorway with a door in it, placed on any wall.
   any other. An older Room's own doorway (`roomDoor`) keeps working, and a Door on its wall is a second way in.
 - A Walk There to a rectangular Room with no built-in doorway heads for its first Door, as a custom room's does.
 - Not a destination: standing in a doorway never rings it.
+
+### Door types
+
+One Door tile, four types. On the Toolbar strip and in the Rooms flyout the tile is an opener (its glyph with a caret)
+whose side panel lists them, one card each; each places, drags and previews exactly as the Door tile did, and every
+type is the same `door` element with the same rules (it snaps onto walls, cuts its wall, rides its room, opens and
+closes, and a closed one blocks walking). Only its drawing and its width differ.
+
+| Type           | `variant`   | Width | Drawn                                                                                 |
+| -------------- | ----------- | ----- | ------------------------------------------------------------------------------------- |
+| Door           | (none)      | 96    | One leaf on a hinge, standing open with its swing arc; shut, it lies across the gap    |
+| Double Door    | `double`    | 144   | Two leaves hinged at the jambs, each with its arc; shut, they meet in the middle      |
+| Sliding Door   | `sliding`   | 120   | Two glass panels on a track; open, they slide into the wall either side of the gap    |
+| Revolving Door | `revolving` | 96    | A glass drum with four wings; open, the wings stand at 45 degrees; shut, they square up and seal the wall line |
+
+- **The field** is `ShapeElement.variant?: string`, the type of a piece within its kind. It is general: a
+  [Rug](office.md#rug-types) and a [Corridor](corridor.md) keep theirs in it too, and so will the windows and glass
+  walls that follow. Absent is a kind's first type (the Door here); a value its kind does not take draws as the first
+  type, so an unknown value never breaks a drawing. It is written once, when the piece is placed from its preset, and
+  travels with copies, templates and exports like any field. Validation: lowercase letters and hyphens, 1 to 32
+  characters.
+- **Its height stays 24** (the wall's band); a Revolving Door's drum is drawn past its box, across the wall, as its
+  swing arc is. The box is what selects it, so a click on the drum's middle selects it.
+- **Opening and closing animate** as the leaf does: a sliding panel slides, a revolving door's wings turn, over 180 ms
+  with the canvas easing, and jump there under reduced motion.
+- **Export** draws each type as the canvas does, shut or open.
+
+### Locked doors
+
+A Door locked with the element's Lock (the element menu's Lock, `locked`) shows it: a small padlock on its jamb, in its
+stroke, on every type, and its leaves or panels drawn a shade darker. Unlocked, no padlock. The rule it shows is the
+one below: a Participant cannot swing a locked door, so a locked shut door is a door only an Editor opens; a locked
+open one stays open.
 
 ### Opening and closing
 
@@ -122,10 +156,12 @@ A Door is open or closed, and anyone taking part can swing it.
 
 ## Telemetry
 
-- A room drawn with the tool: `Element · Added · CustomRoom`. A door placed: `Element · Added · Door`.
+- A room drawn with the tool: `Element · Added · CustomRoom`. A door placed: `Element · Added · Door`, whatever its
+  type (the type is not a new event).
 
 ## Not in scope
 
-- Doors that lock, or open only for some people.
+- Doors that open only for some people (a lock is the element's Lock, an Editor's; see [Locked doors](#locked-doors)).
+- Changing a placed door's type from its element menu (place another type instead; a follow-up).
 - Editing a custom room's corners after it is drawn (redraw it; corner editing is a follow-up).
 - Walls that are not part of a closed room (the Fence draws those).

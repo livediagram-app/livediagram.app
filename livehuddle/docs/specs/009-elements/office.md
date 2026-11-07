@@ -26,7 +26,7 @@ places, so an office is drawn with the same tools as a diagram.
 
 ## Where they live
 
-Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
+Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `corridor`, `stage` and `rug` in **Rooms**
 (with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
 `water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
 [Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
@@ -90,6 +90,31 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
   ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
 
+### Room presets
+
+The Room tile opens six rooms to start from, the way the Card tile opens its presets ([Card presets](card.md#card-presets)):
+on the Toolbar strip and in the Rooms flyout it is an opener whose side panel lists them, one card each, and each places,
+drags and previews as the Room tile did (dropped at its own size, lining up with its neighbours). Every preset is an
+ordinary Room (`shape: 'room'`): nothing about the preset is stored, so a placed one is moved, resized, renamed and
+recoloured like any room.
+
+| Preset    | Variant      | Shape                                          | Size      | Name      | Door                      |
+| --------- | ------------ | ---------------------------------------------- | --------- | --------- | ------------------------- |
+| Room      | (none)       | A rectangle with its back wall standing up     | 480 × 320 | Room      | The front wall's middle   |
+| Office    | `office`     | A small rectangle for one or two desks         | 280 × 220 | Office    | The front wall's middle   |
+| Boardroom | `boardroom`  | A long rectangle round a big table             | 800 × 400 | Boardroom | The front wall's middle   |
+| Open Plan | `open-plan`  | An L: a wide floor with a wing down the left   | 720 × 520 | Open Plan | The wing's front wall     |
+| Kitchen   | `kitchen`    | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall     |
+| Lounge    | `lounge`     | An octagon, every wall the same length         | 440 × 440 | Lounge    | The front wall            |
+
+- The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
+  ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
+  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name at the top left.
+- Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
+  the room's stroke: one change, one undo, the room selected.
+- The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
+- For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
+
 ## Meeting Table
 
 A table with six chairs round it, every seat facing the table.
@@ -140,6 +165,30 @@ A floor rug: an oval with a border, in the element's fill. Decoration that never
 placed **behind everything** like a room, so it lies on the floor under the furniture. Rooms and rugs paint as
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
 room's floor, and a room never covers what stands in it. Default 200 × 120.
+
+### Rug types
+
+The Rug tile opens eight rugs, as the Room tile opens its presets: shapes, sizes and patterns to dress a floor with. A
+rug's type is stored in `variant` (the field the [Door types](room-builder.md#door-types) use), so it keeps its pattern
+when moved, resized or recoloured; absent is the Oval, and a value a rug does not take draws as the Oval.
+
+| Type     | `variant`  | Shape and pattern                                                         | Size      |
+| -------- | ---------- | ------------------------------------------------------------------------- | --------- |
+| Oval     | (none)     | An oval with rings (the rug as it always was)                             | 200 × 120 |
+| Round    | `round`    | A circle with a braided border and rings to the middle                   | 160 × 160 |
+| Bordered | `bordered` | A rectangle with a wide border band and a plain field                    | 240 × 160 |
+| Runner   | `runner`   | A long narrow rug with banded ends and a fringe, for a hall or a corridor | 320 × 88  |
+| Striped  | `striped`  | A rectangle in bold stripes across it                                    | 220 × 150 |
+| Persian  | `persian`  | A rectangle with a medallion, corner spandrels, a double border, a fringe | 260 × 170 |
+| Kilim    | `kilim`    | A rectangle in rows of stepped diamonds                                  | 240 × 150 |
+| Doormat  | `doormat`  | A small mat with a coir weave, for a doorway                             | 120 × 72  |
+
+- **Drawn to its size**, every type but the Oval: its border bands and pattern keep their thickness however big the
+  rug, and stripes, rows and diamonds repeat to fill it rather than stretch (the Oval keeps its drawing, scaled, as
+  before). The pattern is woven in the rug's own fill: tints of its stroke and a light sheen over the fill, so a
+  recoloured rug keeps its pattern, and a rug on dark paper (its deep fill) reads as well as on light.
+- A Round rug is aspect locked (it stays a circle); the others take any box.
+- Export draws each type as the canvas does.
 
 ## Stage
 
