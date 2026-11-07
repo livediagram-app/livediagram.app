@@ -72,7 +72,11 @@ describe('the Virtual Office template', () => {
   it('puts every piece inside a room, clear of its walls', () => {
     const rooms = shapes('room');
     for (const e of els) {
-      if (e.type !== 'shape' || ['room', 'door', 'avatar-pad', 'sticker'].includes(e.shape))
+      // A Door and a Window stand in the wall itself (docs/specs/009-elements/room-builder.md "Window").
+      if (
+        e.type !== 'shape' ||
+        ['room', 'door', 'window', 'avatar-pad', 'sticker'].includes(e.shape)
+      )
         continue;
       const room = rooms.find(
         (r) =>

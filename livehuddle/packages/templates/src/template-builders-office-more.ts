@@ -24,6 +24,13 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
       w: LIBRARY_W,
       h: LIBRARY_H,
       door: 's',
+      // Windows down both side walls (docs/specs/009-elements/room-builder.md "Window").
+      windows: [
+        { side: 'w', at: 200 },
+        { side: 'w', at: 500 },
+        { side: 'e', at: 260 },
+        { side: 'e', at: 520 },
+      ],
       pieces: [
         // The shelves along the back wall, the study desks in front of them as one row, an aisle round it
         // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
@@ -45,6 +52,8 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
         { kind: 'sofa', x: 84, y: 482, facing: 'n' },
         { kind: 'chair', x: 356, y: 482, facing: 'e' },
         { kind: 'plant', x: 444, y: 512 },
+        // A Reading Nook by the cooler: a second quiet seat, away from the desks, an aisle below them.
+        { kind: 'reading-nook', x: 820, y: 536 },
         { kind: 'plant', x: 1010, y: 512 },
       ],
     },

@@ -64,6 +64,8 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
     { kind: 'pond', x: 40, y: 312, w: 200, h: 100 },
     // A bench at the end of the left path; two chairs round a campfire at the end of the right one.
     { kind: 'bench', x: 134, y: 500 },
+    // A dog's bed on the lawn beside the bench (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog").
+    { kind: 'pet-bed', x: 292, y: 516 },
     // The chairs an aisle apart round the fire (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
     { kind: 'chair', x: 776, y: 500, facing: 'w' },
     { kind: 'campfire', x: 884, y: 500 },
@@ -77,6 +79,11 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
       name: 'Summer House',
       ...HOUSE,
       door: 's',
+      // Windows in its side walls, onto the garden (docs/specs/009-elements/room-builder.md "Window").
+      windows: [
+        { side: 'w', at: 170 },
+        { side: 'e', at: 170 },
+      ],
       pieces: [
         { kind: 'meeting-table', x: 44, y: 40 },
         { kind: 'plant', x: 16, y: 224 },
@@ -145,8 +152,10 @@ export function buildCityPark(cx: number, cy: number): Element[] {
     { kind: 'stage', x: 780, y: 420, stageCameras: true },
     // Top left and top right: trees, and a bench facing the plaza (docs/specs/009-elements/social-pieces.md).
     { kind: 'tree', x: 40, y: 40 },
-    { kind: 'tree', x: 200, y: 100 },
-    { kind: 'bench', x: 330, y: 200 },
+    // A Ping-Pong Table on the lawn beside the first tree, as a city park has
+    // (docs/specs/009-elements/social-pieces.md "Ping-Pong Table"), the bench below it moved along towards the path.
+    { kind: 'ping-pong-table', x: 184, y: 60 },
+    { kind: 'bench', x: 376, y: 200 },
     { kind: 'tree', x: 1040, y: 40 },
     { kind: 'tree', x: 900, y: 90 },
     { kind: 'bench', x: 734, y: 200 },

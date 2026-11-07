@@ -27,6 +27,13 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
       w: ROOM_W,
       h: ROOM_H,
       door: 's',
+      // Windows down both side walls (docs/specs/009-elements/room-builder.md "Window").
+      windows: [
+        { side: 'w', at: 330 },
+        { side: 'w', at: 620 },
+        { side: 'e', at: 330 },
+        { side: 'e', at: 620 },
+      ],
       pieces: [
         { kind: 'stage', x: STAGE_X, y: 40, stageCameras: true },
         // The trainer's podium on it (docs/specs/009-elements/venue-pieces.md "In the templates").
