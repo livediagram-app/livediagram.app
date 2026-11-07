@@ -50,6 +50,17 @@ describe('quickBarItems', () => {
       'note',
     ]);
   });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored embed or table takes no new link.
+  it('offers no Link on a stored table or embed', () => {
+    for (const type of ['table', 'video']) {
+      const stored = { ...square(), type } as unknown as BoxedElement;
+      expect(
+        quickBarItems(stored, handlers()).map((i) => i.key),
+        type,
+      ).toEqual(['action', 'comment', 'note']);
+    }
+  });
 });
 
 describe('ElementMenuQuickBar', () => {

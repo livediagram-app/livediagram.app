@@ -93,16 +93,6 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
       solid: sketchAreaPath(box.area!),
     };
   }
-  if (el.type === 'table') {
-    // The grid draws its own cells; the sketch is its frame.
-    return {
-      pen: 'pencil',
-      strokes: outlinePx > 0 ? sketchStrokes(outlineOfBox('square', w, h, 0, inset), seed) : '',
-      details: '',
-      hatch: '',
-      solid: '',
-    };
-  }
   if (el.type !== 'shape') return null;
 
   const hatches = finishHatches(el, o.fill, o.backdrop);
@@ -166,8 +156,7 @@ export function handDrawnOutlines(
   return [{ outline: outlineOfBox(el.shape, w, h, radiusPx, inset), role: 'main', seed }];
 }
 
-/** The width a sketched table's frame and a sticky's edge are drawn at, px. */
-const TABLE_FRAME_PX = 1.5;
+/** The width a sketched sticky's edge is drawn at, px. */
 const STICKY_EDGE_PX = 1;
 
 /** Everything the canvas and the export need to draw an element in a finish: the drawing, and the width and
@@ -194,8 +183,7 @@ export function sketchElementPaint(
       el.height,
       finishCornerFallbackPx(kindDefault, finish),
     );
-  } else if (el.type === 'table') strokePx = TABLE_FRAME_PX;
-  else if (el.type === 'sticky') strokePx = STICKY_EDGE_PX;
+  } else if (el.type === 'sticky') strokePx = STICKY_EDGE_PX;
   const drawing = sketchElement(el, { strokePx, radiusPx, fill, backdrop });
   return drawing ? { drawing, strokePx, dash } : null;
 }

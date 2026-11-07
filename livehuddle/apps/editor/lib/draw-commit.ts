@@ -7,7 +7,6 @@ import {
   applyShapeVariant,
   createShape,
   createSticky,
-  createTable,
   createText,
   defaultIconAnimation,
   snapToArrowPoint,
@@ -151,16 +150,13 @@ export function buildDrawnComponent(
   };
 }
 
-// Boxed branch (shape / text / sticky / image / table / link card / embed).
+// Boxed branch (shape / text / sticky / image / link card).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
 // square); a real drag sizes it to the dragged box (16px floor). Mirrors the
 // arrow branch's stray-click handling.
 export function buildDrawnBoxed(
-  intent: Extract<
-    PendingDraw,
-    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' }
-  >,
+  intent: Extract<PendingDraw, { type: 'shape' | 'text' | 'sticky' | 'image' | 'link-card' }>,
   startX: number,
   startY: number,
   endX: number,
@@ -179,11 +175,9 @@ export function buildDrawnBoxed(
         ? createText(startX, startY)
         : intent.type === 'sticky'
           ? createSticky(startX, startY)
-          : intent.type === 'table'
-            ? createTable(startX, startY)
-            : intent.type === 'link-card'
-              ? createLinkCard(startX, startY)
-              : createImage(startX, startY);
+          : intent.type === 'link-card'
+            ? createLinkCard(startX, startY)
+            : createImage(startX, startY);
   const tapSize = placed ? base : inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/009-elements/mode-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.

@@ -108,7 +108,7 @@ describe('a Charcoal tab', () => {
     expect(out.patternColor).toBe(CHARCOAL.grid);
   });
 
-  it('strips an arrow, a sketch, a text, and a table as the scheme wrote them', () => {
+  it('strips an arrow, a sketch and a text as the scheme wrote them', () => {
     const elements = [
       {
         id: 'a',
@@ -138,24 +138,30 @@ describe('a Charcoal tab', () => {
         text: 'hi',
         textColor: CHARCOAL.text,
       },
-      {
-        id: 'b',
-        type: 'table',
-        x: 0,
-        y: 0,
-        width: 1,
-        height: 1,
-        cells: [['']],
-        fillColor: CHARCOAL.bg,
-        strokeColor: CHARCOAL.stroke,
-        textColor: CHARCOAL.text,
-      },
     ] as unknown as Element[];
     for (const el of migrateRetiredScheme(charcoalTab(elements)).elements) {
       expect(el).not.toHaveProperty('fillColor');
       expect(el).not.toHaveProperty('strokeColor');
       expect(el).not.toHaveProperty('textColor');
     }
+  });
+
+  // A stored table is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"):
+  // nothing rewrites it, the scheme's colours included.
+  it('leaves a stored table as it was', () => {
+    const table = {
+      id: 'b',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+      cells: [['']],
+      fillColor: CHARCOAL.bg,
+      strokeColor: CHARCOAL.stroke,
+      textColor: CHARCOAL.text,
+    } as unknown as Element;
+    expect(migrateRetiredScheme(charcoalTab([table])).elements).toEqual([table]);
   });
 
   it('leaves the kinds a scheme never paints untouched', () => {

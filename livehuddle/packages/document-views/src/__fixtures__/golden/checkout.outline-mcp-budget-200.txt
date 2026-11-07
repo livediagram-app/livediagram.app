@@ -1,4 +1,4 @@
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · threads 1 open/2 · rev 41
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · 1 unknown · threads 1 open/2 · rev 41
 text 98eb "Checkout platform: production"
 boundary 048c "Edge"
 boundary c991 "Services"
@@ -7,6 +7,6 @@ boundary ca76 "Data"
   cylinder 822f "Inventory DB"
 cloud e6d7 "Stripe"
 square cb02 "Order"
-table 480a
+? table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 … notes hidden; attributes hidden; 7 elements in boundary 048c hidden; 13 elements in boundary c991 hidden: read_document {"only":"c991"}

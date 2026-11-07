@@ -23,7 +23,6 @@ function draw(element: BoxedElement, fontFamily?: string) {
       onBeginDrag={vi.fn()}
       onBeginEdit={vi.fn()}
       onCommitLabel={vi.fn()}
-      onCommitTable={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
       onOpenComments={vi.fn()}

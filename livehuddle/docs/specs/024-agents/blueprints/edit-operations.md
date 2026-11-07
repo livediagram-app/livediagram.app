@@ -297,8 +297,8 @@ means `newElementId` ([Ids](#ids)).
 
 - **`add <kind> [id=] key=value… [<placement>]`.** `kind` is a shape kind, an element type, or `shape` (a
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `arrow` is `invalid_value`
-  ("use connect"); `image`, `video`, `freehand` and `path` are `invalid_value` (EO15). The element is the
-  factory's (`createShape`, `createText`, `createSticky`, `createTable`, `createAnnotation`, `createLinkCard`) with
+  ("use connect"); `image`, `video`, `table`, `freehand` and `path` are `invalid_value` (EO15). The element is the
+  factory's (`createShape`, `createText`, `createSticky`, `createAnnotation`, `createLinkCard`) with
   a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a shape measured at
   `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set`
   does; it is painted, placed, and appended to the element order (EO29). The JSON form may carry

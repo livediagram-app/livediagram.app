@@ -15,7 +15,6 @@ import {
   applyBorderStyleToEl,
   applyColorPresetToEl,
   applyLabelFillToEl,
-  applyTablePresetToEl,
   applyFillColorToEl,
   applyHeaderFillToEl,
   applyIconWeightToEl,
@@ -88,84 +87,29 @@ describe('applyLabelFillToEl', () => {
   });
 });
 
-describe('applyTablePresetToEl', () => {
-  const p = {
-    id: 'table-x',
-    name: 'X',
-    fill: '#fill',
-    stroke: '#stroke',
-    text: '#text',
-    headerFill: '#head',
-    headerText: '#headtext',
-    zebra: true,
-  };
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder, so no
+// style control changes what it saved.
+describe('a stored table', () => {
+  const table = () => el('table', { tablePreset: 'table-banded', strokeColor: '#123456' });
 
-  it('stamps all four surfaces and the banding in one go', () => {
-    expect(applyTablePresetToEl(el('table'), p)).toMatchObject({
-      fillColor: '#fill',
-      strokeColor: '#stroke',
-      textColor: '#text',
-      headerFill: '#head',
-      headerTextColor: '#headtext',
-      zebra: true,
-    });
-  });
-
-  it('records the look so a theme change can re-derive it', () => {
-    expect(applyTablePresetToEl(el('table'), p)).toMatchObject({ tablePreset: 'table-x' });
-  });
-
-  it('leaves headerRow / headerColumn alone, which are data not a look', () => {
-    const applied = applyTablePresetToEl(el('table', { headerRow: true, headerColumn: false }), p);
-    expect(applied).toMatchObject({ headerRow: true, headerColumn: false });
-  });
-
-  it('is a no-op on anything that is not a table', () => {
-    const shape = el('shape');
-    expect(applyTablePresetToEl(shape, p)).toBe(shape);
-  });
-});
-
-describe("colour field setters clear a table's preset binding", () => {
-  // Same rule as a shape's colorPreset: past a hand-picked colour, the look is
-  // no longer the preset's, so a theme change must preserve what was chosen
-  // rather than repainting the whole table.
-  const bound = () => el('table', { tablePreset: 'table-banded' });
-
-  it('applyFillColorToEl', () => {
-    expect(applyFillColorToEl(bound(), '#c')).toMatchObject({
-      fillColor: '#c',
-      tablePreset: undefined,
-    });
-  });
-
-  it('applyStrokeColorToEl', () => {
-    expect(applyStrokeColorToEl(bound(), '#c')).toMatchObject({
-      strokeColor: '#c',
-      tablePreset: undefined,
-    });
-  });
-
-  it('applyTextColorToEl', () => {
-    expect(applyTextColorToEl(bound(), '#c')).toMatchObject({
-      textColor: '#c',
-      tablePreset: undefined,
-    });
-  });
-
-  it('applyHeaderFillToEl, and leaves a lane gutter untouched', () => {
-    expect(applyHeaderFillToEl(bound(), '#c')).toMatchObject({
-      headerFill: '#c',
-      tablePreset: undefined,
-    });
-    expect(applyHeaderFillToEl(el('shape', { shape: 'lane' }), '#c')).toMatchObject({
-      headerFill: '#c',
-    });
+  it('keeps every colour, border and finish it stored', () => {
+    for (const apply of [
+      (t: Element) => applyFillColorToEl(t, '#c'),
+      (t: Element) => applyStrokeColorToEl(t, '#c'),
+      (t: Element) => applyTextColorToEl(t, '#c'),
+      (t: Element) => applyHeaderFillToEl(t, '#c'),
+      (t: Element) => applyBorderStrokeToEl(t, 'thick'),
+      (t: Element) => applyBorderStyleToEl(t, 'dotted'),
+      (t: Element) => applyFinishToEl(t, 'sketch'),
+    ]) {
+      const source = table();
+      expect(apply(source)).toBe(source);
+    }
   });
 });
 
 describe('colour field setters clear the colour-preset binding on shapes', () => {
-  it('applyFillColorToEl: shape clears colorPreset; sticky/freehand/table keep theirs; others no-op', () => {
+  it('applyFillColorToEl: shape clears colorPreset; sticky/freehand keep theirs; others no-op', () => {
     expect(applyFillColorToEl(el('shape', { colorPreset: 'x' }), '#c')).toMatchObject({
       fillColor: '#c',
       colorPreset: undefined,
@@ -176,7 +120,7 @@ describe('colour field setters clear the colour-preset binding on shapes', () =>
     expect(applyFillColorToEl(text, '#c')).toBe(text); // text has no fill
   });
 
-  it('applyStrokeColorToEl: applies to shape/sticky/arrow/freehand/table', () => {
+  it('applyStrokeColorToEl: applies to shape/sticky/arrow/freehand', () => {
     expect(applyStrokeColorToEl(el('shape', { colorPreset: 'x' }), '#c')).toMatchObject({
       strokeColor: '#c',
       colorPreset: undefined,
@@ -197,10 +141,9 @@ describe('colour field setters clear the colour-preset binding on shapes', () =>
 });
 
 describe('border field setters', () => {
-  it('stroke/style apply to shapes, freehand, and tables only', () => {
+  it('stroke/style apply to shapes and freehand only', () => {
     expect(applyBorderStrokeToEl(el('shape'), 'thick')).toMatchObject({ strokeWidth: 'thick' });
     expect(applyBorderStrokeToEl(el('freehand'), 'thin')).toMatchObject({ strokeWidth: 'thin' });
-    expect(applyBorderStrokeToEl(el('table'), 'medium')).toMatchObject({ strokeWidth: 'medium' });
     const sticky = el('sticky');
     expect(applyBorderStrokeToEl(sticky, 'thin')).toBe(sticky);
     expect(applyBorderStyleToEl(el('shape'), 'dotted')).toMatchObject({ strokeStyle: 'dotted' });
@@ -419,18 +362,15 @@ describe('Ink by name from the colour rows', () => {
 });
 
 describe('Ink where no name can be stored', () => {
-  it('leaves a table and a note border as they are', () => {
-    const table = el('table', { strokeColor: '#123456', textColor: '#123456' });
-    expect(applyStrokeColorToEl(table, 'ink')).toBe(table);
-    expect(applyTextColorToEl(table, 'ink')).toBe(table);
+  it('leaves a note border as it is', () => {
     const note = el('sticky', { strokeColor: '#123456' });
     expect(applyStrokeColorToEl(note, 'ink')).toBe(note);
   });
 });
 
 describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
-  it('sets a finish on shapes, arrows, text, stickies and tables', () => {
-    for (const type of ['shape', 'arrow', 'text', 'sticky', 'table']) {
+  it('sets a finish on shapes, arrows, text and stickies', () => {
+    for (const type of ['shape', 'arrow', 'text', 'sticky']) {
       const out = applyFinishToEl(el(type), 'sketch') as { finish?: unknown };
       expect(out.finish, type).toBe('sketch');
     }

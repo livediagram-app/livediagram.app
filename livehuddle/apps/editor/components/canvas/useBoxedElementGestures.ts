@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { opensInlineLabelEditor } from '@livehuddle/document';
+import { isRetiredElement, opensInlineLabelEditor } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { pressLedger } from '@liveworkspace/workbench/lib/double-press';
@@ -63,8 +63,7 @@ export function useBoxedElementGestures({
   // The click rules (docs/specs/008-canvas/canvas-and-palette.md "Selection", "Marquee
   // box-select"): the host settles a plain click on a selected element (deselect it, or
   // select a multi-selection member alone), and reselects on a double-click's second press.
-  // A selected table takes a click as a cell pick (TableCellView), never as a click on the table.
-  const settlesClick = !isPaintMode && onPlainClick !== undefined && element.type !== 'table';
+  const settlesClick = !isPaintMode && onPlainClick !== undefined;
   // The touch long-press opened the menu on this press, so its release is not also a tap.
   const heldRef = useRef(false);
   const handleShapeDown = (e: ReactPointerEvent) => {
@@ -157,18 +156,15 @@ export function useBoxedElementGestures({
       imageContext.onOpenPicker(element.id);
       return;
     }
-    // Tables edit per-cell (TableView handles the cell double-click),
-    // so the element-level label editor never applies.
-    if (element.type === 'table') return;
     // A link card has no inline label: double-click opens the link picker to set / change its URL
     // (docs/specs/009-elements/link-cards.md).
     if (element.type === 'link-card') {
       onEditLink?.(element.id);
       return;
     }
-    // A retired embed (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") takes no typed label and
-    // opens nothing.
-    if (element.type === 'video') return;
+    // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") takes no typed label
+    // and opens nothing.
+    if (isRetiredElement(element)) return;
     // An annotation has no inline label either — double-click opens its note
     // editor (docs/specs/009-elements/annotations.md). A single click just selects it now.
     if (isAnnotation) {

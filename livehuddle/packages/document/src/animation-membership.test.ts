@@ -32,7 +32,6 @@ describe('bodyAnimationSetOf', () => {
     [of('freehand'), 'drawing'],
     [of('path'), 'drawing'],
     [of('image'), 'media'],
-    [of('table'), 'table'],
   ] as const)('%s.type takes %s', (el, set) => {
     expect(bodyAnimationSetOf(el)).toBe(set);
   });
@@ -45,8 +44,9 @@ describe('bodyAnimationSetOf', () => {
     expect(bodyAnimationSetOf(createShape('icon', 0, 0))).toBeUndefined();
   });
 
-  it('gives a retired video no body set', () => {
+  it('gives a retired video or table no body set', () => {
     expect(bodyAnimationSetOf(of('video'))).toBeUndefined();
+    expect(bodyAnimationSetOf(of('table'))).toBeUndefined();
   });
 
   it('never gives arrows a body set', () => {
@@ -55,10 +55,9 @@ describe('bodyAnimationSetOf', () => {
 });
 
 describe('carriesWords', () => {
-  it('is true for text, stickies, tables and labelled shapes', () => {
+  it('is true for text, stickies and labelled shapes', () => {
     expect(carriesWords(createText(0, 0))).toBe(true);
     expect(carriesWords(createSticky(0, 0))).toBe(true);
-    expect(carriesWords(of('table'))).toBe(true);
     expect(carriesWords(createShape('square', 0, 0))).toBe(true);
   });
 
@@ -69,7 +68,7 @@ describe('carriesWords', () => {
   });
 
   it('is false for drawings, media and arrows', () => {
-    for (const t of ['freehand', 'path', 'image', 'video', 'arrow']) {
+    for (const t of ['freehand', 'path', 'image', 'video', 'table', 'arrow']) {
       expect(carriesWords(of(t))).toBe(false);
     }
   });
@@ -87,12 +86,13 @@ describe('animationSetsOf', () => {
   it('a mixed selection lists each set once, in menu order', () => {
     const sel = [
       of('table'),
+      of('link-card'),
       createText(0, 0),
       of('image'),
       createSticky(0, 0),
       createSticky(0, 0),
     ];
-    expect(animationSetsOf(sel)).toEqual(['shape', 'sticky', 'media', 'table', 'text']);
+    expect(animationSetsOf(sel)).toEqual(['shape', 'sticky', 'media', 'text']);
   });
 
   it('inAnimationSet matches the membership rules', () => {
@@ -130,7 +130,7 @@ describe('catalogues', () => {
   it('marks reveals per set', () => {
     expect(isRevealAnimation('text', 'typewriter')).toBe(true);
     expect(isRevealAnimation('text', 'wave')).toBe(false);
-    expect(isRevealAnimation('table', 'rows')).toBe(true);
+    expect(isRevealAnimation('media', 'develop')).toBe(true);
     expect(isRevealAnimation('shape', 'pulse')).toBe(false);
   });
 

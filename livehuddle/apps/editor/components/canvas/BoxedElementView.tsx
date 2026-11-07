@@ -96,7 +96,6 @@ function BoxedElementViewImpl({
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
-  onCommitTable,
   onCommitHeaderSize,
   onSnapSeam,
   onDeleteRetired,
@@ -118,14 +117,12 @@ function BoxedElementViewImpl({
   onOpenAction,
   onOpenNote,
   onEditLink,
-  onLinkCell,
   imageContext,
   onContextSelect,
   remoteSelectors,
   tabSummaries,
   readOnly,
   movable = true,
-  writable,
   fontFamily,
 }: BoxedElementViewProps) {
   // Which paper this element sits on, for every colour it doesn't carry
@@ -525,15 +522,12 @@ function BoxedElementViewImpl({
             isEditing={isEditing}
             isSelected={isSelected}
             readOnly={readOnly}
-            writable={writable}
             fontFamily={fontFamily}
             activeMode={activeMode}
             imageContext={imageContext}
             tabSummaries={tabSummaries}
-            onCommitTable={onCommitTable}
             onEnterPortal={onEnterPortal}
             onFollowLink={onFollowLink}
-            onLinkCell={onLinkCell}
             onPressModeButton={onPressModeButton}
             onPressFocusButton={onPressFocusButton}
             onSetPageHeading={onSetPageHeading}

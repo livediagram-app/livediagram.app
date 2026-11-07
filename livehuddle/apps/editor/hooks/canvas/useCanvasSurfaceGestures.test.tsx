@@ -461,7 +461,6 @@ describe('Avatar mode presses', () => {
     ['sticky', undefined],
     ['text', undefined],
     ['image', undefined],
-    ['table', undefined],
     ['shape', 'callout'],
     ['shape', 'hexagon'],
   ])('opens a %s %s in the reader instead of walking', (type, shape) => {
@@ -485,6 +484,16 @@ describe('Avatar mode presses', () => {
       expect(onReadElement).not.toHaveBeenCalled();
     },
   );
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder with
+  // nothing to read, so it is walked onto like the floor.
+  it('walks onto a stored table under the press', () => {
+    const onReadElement = vi.fn();
+    const { press, walkTo } = avatarSetup([], { elements: [pieceAt('table')], onReadElement });
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
+    expect(onReadElement).not.toHaveBeenCalled();
+  });
 
   // docs/specs/009-elements/workday-pieces.md "Reception Desk": a click on the counter walks to its front, never behind.
   it.each(['arcade-machine', 'reception-desk'])(

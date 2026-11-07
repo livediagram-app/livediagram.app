@@ -8,7 +8,7 @@ import { tagColoursOf } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
+import { getTheme, shapeColorPresets } from '@/lib/themes';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -59,8 +59,6 @@ export function EditorContextMenuHost() {
     previewTextColor,
     commitTextColor,
     previewFillColor,
-    commitTablePreset,
-    previewTablePreset,
     setLabelFillSelected,
     commitLabelFill,
     previewLabelFill,
@@ -149,9 +147,6 @@ export function EditorContextMenuHost() {
     previewShapeKind,
     resetAspectRatioSelected,
     setSizeSelected,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
     openNote,
     openComments,
     openAssignAction,
@@ -284,9 +279,6 @@ export function EditorContextMenuHost() {
           track('Element', 'Changed', telemetryType);
         },
       }}
-      tableColorPresets={tableColorPresets(getTheme(activeTab.theme))}
-      onApplyTablePreset={commitTablePreset}
-      onPreviewTablePreset={previewTablePreset}
       onResetArrowStyle={resetArrowStyleSelected}
       onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
@@ -327,9 +319,6 @@ export function EditorContextMenuHost() {
       colourPalette={swatches}
       tagColours={tagColoursOf(activeTab)}
       onSetTagColour={setTagColour}
-      onToggleTableHeaderRow={setTableHeaderRowSelected}
-      onToggleTableHeaderColumn={setTableHeaderColumnSelected}
-      onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}

@@ -50,6 +50,7 @@ import {
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 import { SHAPE_KINDS } from './shape-kinds';
+import { RETIRED_ELEMENT_TYPES } from './retired-kinds';
 
 export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
 
@@ -65,25 +66,21 @@ export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
 const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
-// Exported so an importer building a table (Markdown, docs/specs/020-import-export/markdown-import.md)
-// truncates to exactly what validation accepts.
-export const MAX_TABLE_ROWS = 1_000;
-export const MAX_TABLE_COLS = 1_000;
-export const MAX_TABLE_CELLS = 50_000;
 
 // Exported so the MCP schema resource (livediagram/docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.
 export const ELEMENT_TYPES = new Set([
   'shape',
   'text',
-  'table',
   'sticky',
   'image',
   'freehand',
   'path',
   'annotation',
   'link-card',
-  'video',
+  // The retired element types (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): a stored one
+  // still loads, checked on its box alone.
+  ...RETIRED_ELEMENT_TYPES,
   'arrow',
 ]);
 export const ANCHORS = new Set<string>(ALL_ANCHORS);
@@ -182,22 +179,6 @@ function boxIssue(o: Record<string, unknown>): ElementValidationIssue | null {
   for (const field of ['width', 'height'] as const) {
     const v = o[field];
     if (!isNum(v) || v < 0) return issue(field, 'a finite number, 0 or more');
-  }
-  return null;
-}
-
-const CELLS_RULE =
-  `rows of strings: at most ${MAX_TABLE_ROWS} rows of ${MAX_TABLE_COLS} cells, ` +
-  `${MAX_TABLE_CELLS} cells in all`;
-
-function tableIssue(el: Record<string, unknown>): ElementValidationIssue | null {
-  if (!boundedArray(el.cells, MAX_TABLE_ROWS)) return issue('cells', CELLS_RULE);
-  let total = 0;
-  for (const row of el.cells) {
-    if (!boundedArray(row, MAX_TABLE_COLS)) return issue('cells', CELLS_RULE);
-    total += row.length;
-    if (total > MAX_TABLE_CELLS) return issue('cells', CELLS_RULE);
-    if (!row.every((c) => typeof c === 'string')) return issue('cells', CELLS_RULE);
   }
   return null;
 }
@@ -330,8 +311,6 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   switch (el.type) {
     case 'shape':
       return shapeValidationIssue(el);
-    case 'table':
-      return tableIssue(el);
     case 'image':
       return imageIssue(el);
     case 'freehand':
@@ -340,7 +319,7 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
       return pathIssue(el);
     case 'text':
       return firstFieldIssue(el, TEXT_FIELD_CHECKS);
-    // sticky / annotation / link-card / video carry no extra required fields.
+    // sticky / annotation / link-card and the retired types (video, table) carry no extra required fields.
     default:
       return null;
   }

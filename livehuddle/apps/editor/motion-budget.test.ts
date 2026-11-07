@@ -23,7 +23,6 @@ const CANVAS_STYLESHEETS = [
   'app/motion-sticky.css',
   'app/motion-drawing.css',
   'app/motion-media.css',
-  'app/motion-table.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
   'app/auth-motion.css',
 ];

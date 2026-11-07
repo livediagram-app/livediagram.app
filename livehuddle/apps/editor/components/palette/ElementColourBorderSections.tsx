@@ -84,8 +84,7 @@ export function ElementColourBorderSections({
   const surface = useCanvasSurface();
   const finishSrc = supportsFinish(target) ? target : undefined;
   const borderStrokeVal: BorderStroke =
-    (target as { strokeWidth?: BorderStroke }).strokeWidth ??
-    (target.type === 'table' ? 'thin' : 'medium');
+    (target as { strokeWidth?: BorderStroke }).strokeWidth ?? 'medium';
   const borderStyleVal: BorderStyle =
     (target as { strokeStyle?: BorderStyle }).strokeStyle ?? 'solid';
   return (

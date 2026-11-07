@@ -2,12 +2,11 @@
 
 An element can carry a looping or play-once **animation** to show flow, signal status, reveal content or draw the
 room's eye during a presentation. Each kind of element animates in ways that suit what it is: words type and ripple,
-shapes pulse and bounce, sticky notes flutter, drawings draw themselves on, photos pan and develop, tables cascade
-row by row. The element context menu offers only the animations that fit what is selected.
+shapes pulse and bounce, sticky notes flutter, drawings draw themselves on, photos pan and develop. The element context menu offers only the animations that fit what is selected.
 
 This spec owns the animation **sets** and how the menu offers them. The shared mechanics it builds on (pure CSS,
 reduced motion, export freeze, Speed and Repeat, hover-to-preview) are described here too; arrow flow, icon glyph
-motion and the progress, rating and chart animations keep their own catalogues, listed in
+motion keep their own catalogues, listed in
 [Sets that already exist](#sets-that-already-exist).
 
 ## Animation sets
@@ -22,13 +21,12 @@ belongs to exactly one **body set**, which animates the element itself. An eleme
 | Container | Shape        | boundaries ([The boundary](../009-elements/boundary.md)): the Shape set without its moving motions | `animation`     |
 | Sticky    | Sticky       | sticky notes                                                                                       | `animation`     |
 | Drawing   | Drawing      | freehand strokes, paths                                                                            | `animation`     |
-| Media     | Media        | images, videos                                                                                     | `animation`     |
-| Table     | Table        | tables                                                                                             | `animation`     |
-| Text      | Text         | the words of a text element, a shape's label, a sticky note's text, a table's cells                | `textAnimation` |
+| Media     | Media        | images                                                                                             | `animation`     |
+| Text      | Text         | the words of a text element, a shape's label, a sticky note's text                                 | `textAnimation` |
 
 A standalone **text element** has no body set: its words are the whole element, so it shows only Text Animation.
 
-A shape **carries words** when its kind takes a label. Icons, charts, progress, rating, stickers and chairs keep
+A shape **carries words** when its kind takes a label. Icons, stickers and chairs keep
 their own sets (below) and take no Text set; nor do badges and step numbers, whose few characters are part of their
 body, or the Timeline, which animates its rows with the Concept set. A Shape animation stored on a Timeline
 before it had a set of its own plays only when it is one of the [Shape motions](#shape-motions): its Shape section
@@ -40,7 +38,7 @@ offers no other tile to change or clear it. A step number's
 Nine of the Shape set's values move or fade the element as a whole: **Blink**, **Heartbeat**, **Breathe**,
 **Bounce**, **Wobble**, **Shake**, **Jelly**, **Float** and **Swing**. They are its **motions**, and they suit any
 silhouette, so an element whose own set animates inside it takes them too: sticky notes, drawings, images and
-videos, tables, charts, progress, ratings and the Timeline. Its menu shows a
+the Timeline. Its menu shows a
 **Shape** section beside its own, offering the motions alone; a photo on a slide can bounce. The Shape set's
 other values (Pulse, Glow, Trace, Gradient, Shimmer, Highlight) light or trace a shape's own outline and fill, so
 they stay with the Shape set's members.
@@ -48,32 +46,30 @@ they stay with the Shape set's members.
 Icons and text elements take no Shape section: the Icon set already bounces, floats and swings the glyph, and the
 Text set bounces and floats the words.
 
-A motion is stored in `animation`. On a sticky, drawing, image, video or table that is the field its own set
-writes too, so the element plays one or the other: picking a motion replaces its Sticky, Drawing, Media or Table
+A motion is stored in `animation`. On a sticky, drawing or image that is the field its own set
+writes too, so the element plays one or the other: picking a motion replaces its Sticky, Drawing, Media
 animation, and that section then shows None (picking one of those replaces the motion the same way). A section's
-None clears only its own section's value. A chart, progress bar, rating or Timeline keeps its own animation in a field of its own, so a motion composes with it: a pie can bounce while its
-slices sweep in.
+None clears only its own section's value. The Timeline keeps its own animation in a field of its own, so a motion composes with it: a Timeline can bounce while its
+rows play in.
 
 ### Sets that already exist
 
 These keep their catalogues and fields unchanged; they are listed so the menu rules below cover every element.
 
-| Set              | Menu section                                                         | Members                          | Field                        | Owned by                                                                      |
-| ---------------- | -------------------------------------------------------------------- | -------------------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
-| Icon             | Icon                                                                 | icon shapes                      | `iconAnimation`              | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated icons"    |
-| Chart            | Chart                                                                | pie, bar and line charts         | `pieAnim`                    | [Data charts](../009-elements/pie-chart.md)                                   |
-| Arrow            | Arrow                                                                | arrows                           | `flow`                       | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
-| Progress, Rating | (inside their own Progress / Rating category, not the Animation row) | progress bars and rings, ratings | `progressAnim`, `ratingAnim` | [Progress](../009-elements/progress.md), [Rating](../009-elements/rating.md)  |
-| Concept          | (inside the element's Tools section, like a chart's)                 | the Timeline                     | `conceptAnim`                | [Timeline](../009-elements/timeline.md)                                       |
+| Set     | Menu section                         | Members      | Field           | Owned by                                                                      |
+| ------- | ------------------------------------ | ------------ | --------------- | ----------------------------------------------------------------------------- |
+| Icon    | Icon                                 | icon shapes  | `iconAnimation` | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated icons"    |
+| Arrow   | Arrow                                | arrows       | `flow`          | [Canvas and palette](../008-canvas/canvas-and-palette.md) "Animated elements" |
+| Concept | (inside the element's Tools section) | the Timeline | `conceptAnim`   | [Timeline](../009-elements/timeline.md)                                       |
 
 ## The menu
 
 - The element context menu has one **Animation** row. Its flyout holds **one section per set present in the
-  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Table, Icon, Chart, Progress, Rating, Concept, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
+  selection**, named by its set (Shape, Text, Sticky, Drawing, Media, Icon, Concept, Arrow), and no others. An element's own animation is always one of these sections, never a picker inside
   the element's own section (its Tools section holds only what the element is, not how it moves).
   A single shape with a label shows Shape and Text. When only one set is present (a single text element), there
   is nothing to choose between, so its section shows inline in the menu, titled Animation.
-- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Table, Icon, Chart, Progress, Rating,
+- Sections appear in a fixed order: Shape, Sticky, Drawing, Media, Icon,
   Concept, Text, Arrow. A body set
   comes before the words it carries; arrows come last, as today.
 - A section applies to **every member of its set in the selection** and to nothing else. With a shape and a text
@@ -84,10 +80,10 @@ These keep their catalogues and fields unchanged; they are listed so the menu ru
   element's nine motions, and their overlap in a mixed selection (a boundary and a photo: Blink alone).
 - Every section is a closed `MenuAccordionSection`, as every element-menu section is.
 - Each option is a tile with a **live miniature** of its kind (a small box, a word, a note, a zig-zag line, a
-  photo, a table, an arrow, a star, a progress bar, stars, a pie) running the real animation, frozen on a telling
+  photo, an arrow, a star) running the real animation, frozen on a telling
   frame so the options read apart at a glance, and playing while the tile is hovered. A motion that moves the
   element rests over a faint dashed ghost of where it started. **None** shows the miniature still and clears the
-  animation. Every animation menu uses these tiles, Arrow, Icon, Chart, Progress and Rating included.
+  animation. Every animation menu uses these tiles, Arrow, Icon and Concept included.
 - Once an animation is picked, the section shows the shared **Speed** row (Slowest, Slow, Normal, Fast; Slow is
   the default) and **Repeat** toggle (on by default).
 - **Hover-to-preview** works in every section: hovering a tile with a desktop mouse plays it live on the selected
@@ -204,7 +200,7 @@ measured.
 Words take an accent of their own: the element's stroke colour when it has one, else the app's brand colour (Underline,
 Shine, Glow), and marker yellow for Highlighter. A label's own ink would make a muddy halo or marker.
 
-In a table, each cell's words animate, staggered from the top-left cell to the bottom-right. On a page, the title
+On a page, the title
 and subtitle animate with its body, the subtitle carrying on where the title ends.
 
 ### Sticky
@@ -242,21 +238,12 @@ and subtitle animate with its body, the subtitle carrying on where the title end
 - **Iris** (reveal) – the picture opens from a circle at its centre.
 - **Sheen** – a band of light sweeps across the surface now and then.
 
-Motion inside the frame never shows past the frame's edges or its crop. A video keeps playing under its animation.
+Motion inside the frame never shows past the frame's edges or its crop.
 
 ### Table
 
-- **Rows** (reveal) – rows cascade in from the top, one after another.
-- **Columns** (reveal) – columns cascade in from the left.
-- **Cells** (reveal) – cells pop in along a diagonal from the top-left.
-- **Scan** – a highlight bar sweeps down the rows.
-- **Sweep** – a highlight bar sweeps across the columns.
-- **Header** – the header row glints now and then.
-- **Pulse** – an attention ring expands from the table's edge.
-- **Glow** – a soft halo around the table breathes.
-
-A table of many rows or columns keeps the whole cascade within a fixed time, so a long table does not take minutes
-to appear.
+Gone from livehuddle (Work Tracker #459, part 2): there are no tables, so there is no Table set. A stored table
+draws as a placeholder and keeps the `animation` it saved, unplayed ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)).
 
 ## Data
 
@@ -273,7 +260,8 @@ to appear.
 ## Telemetry
 
 Picking an animation fires `track('Element', 'Changed', <type>)` with the set's type: `Animation` (Shape),
-`StickyAnimation`, `DrawingAnimation`, `MediaAnimation`, `TableAnimation`, `TextAnimation`. Speed and Repeat keep
+`StickyAnimation`, `DrawingAnimation`, `MediaAnimation`, `TextAnimation` (`TableAnimation` is retired with tables, kept so stored rows keep their
+label). Speed and Repeat keep
 their existing types.
 
 ## Non-goals

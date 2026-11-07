@@ -50,6 +50,7 @@ const IN_PLACE = [
 // Walked to only when arriving is the point: floor, seats, drinks, proximity, scenery, areas and marks.
 const WALK = [
   'video',
+  'table',
   'avatar-pad',
   'photo-wall',
   'stage',
@@ -148,7 +149,7 @@ describe('avatarClickIntent', () => {
   it('opens everything else in the reader: content to read', () => {
     for (const kind of ALL_KINDS.filter((k) => !IN_PLACE.includes(k) && !WALK.includes(k)))
       expect(avatarClickIntent(kind), kind).toBe('read');
-    for (const kind of ['sticky', 'text', 'image', 'table', 'callout'])
+    for (const kind of ['sticky', 'text', 'image', 'callout'])
       expect(avatarClickIntent(kind), kind).toBe('read');
   });
 
@@ -190,7 +191,8 @@ describe('avatarPressOutcome', () => {
 
   it('reads a read kind and walks a walk kind, main or not', () => {
     expect(avatarPressOutcome('sticky', false)).toBe('read');
-    expect(avatarPressOutcome('table', true)).toBe('read');
+    expect(avatarPressOutcome('image', true)).toBe('read');
+    expect(avatarPressOutcome('table', true)).toBe('walk');
     expect(avatarPressOutcome('chair', false)).toBe('walk');
     expect(avatarPressOutcome(null, false)).toBe('walk');
   });

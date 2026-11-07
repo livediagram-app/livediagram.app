@@ -7,7 +7,6 @@ import {
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
   defaultFillColor,
-  defaultStrokeColor,
   defaultTextColor,
   unpaintedShapeInk,
   type BoxedElement,
@@ -70,9 +69,6 @@ function expectDefaultScheme(
   expect(artProperty(selector, 'art-text')).toBe(hex(defaultTextColor(element('text'), surface)));
   expect(artProperty(selector, 'art-arrow')).toBe(hex(defaultArrowStrokeColor(surface)));
   expect(artProperty(selector, 'art-arrow-label')).toBe(hex(defaultArrowLabelColor({}, surface)));
-  expect(artProperty(selector, 'art-table-line')).toBe(
-    hex(defaultStrokeColor(element('table'), surface)),
-  );
 }
 
 function expectPick(selector: ':root' | '.dark', id: string) {

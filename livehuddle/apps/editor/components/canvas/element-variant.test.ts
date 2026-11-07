@@ -89,6 +89,8 @@ describe('describeVariant — per-type body styling', () => {
     // A kind livehuddle doesn't have paints its own placeholder card, so it keeps the fixed corner.
     const retired = shape({ shape: 'mind-node', width: 20, height: 20 });
     expect(describeVariant(retired, false, false, null).style.borderRadius).toBe('4px');
+    // So does a stored table (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+    expect(describeVariant(make('table'), false, false, null).style.borderRadius).toBe('4px');
   });
 
   it('circle and stadium use fixed silhouette radii', () => {
@@ -163,7 +165,7 @@ describe('describeVariant — per-type body styling', () => {
     expect(style.boxShadow).toBe('0px 4px 12px rgba(15, 23, 42, 0.25)');
   });
 
-  it('text / freehand / table carry no body border or fill', () => {
+  it('text / freehand / a stored table carry no body border or fill', () => {
     for (const type of ['text', 'freehand', 'table']) {
       const { style } = describeVariant(make(type), false, false, null);
       expect(style.backgroundColor).toBeUndefined();
@@ -174,7 +176,7 @@ describe('describeVariant — per-type body styling', () => {
 
 describe('describeVariant — remote-selector signal', () => {
   it('borderless types render the remote colour as an outline halo', () => {
-    for (const type of ['text', 'freehand', 'table', 'image']) {
+    for (const type of ['text', 'freehand', 'image']) {
       const { style } = describeVariant(make(type), false, false, '#ff0000');
       const hasHalo = style.outline === '3px solid #ff0000' || style.borderColor === '#ff0000';
       expect(hasHalo).toBe(true);

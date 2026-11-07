@@ -4,6 +4,7 @@
 
 import {
   ELEMENT_FIELD_NAMES,
+  isRetiredElementType,
   LIVE_ELEMENT_FIELDS,
   STICKY_PRESETS,
   TEXT_PX_MAX,
@@ -48,8 +49,10 @@ export function elementKindsText(): string {
     ...wrapped(AGENT_SHAPE_KINDS, '    ', ', '),
     '  arrow: connect <a> -> <b>',
     `  ${Object.keys(NOT_ADDED)
-      .filter((k) => k !== 'arrow')
+      .filter((k) => k !== 'arrow' && !isRetiredElementType(k))
       .join(', ')}: made in the editor`,
+    // The retired element types (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+    `  ${Object.keys(NOT_ADDED).filter(isRetiredElementType).join(', ')}: no longer supported in livehuddle`,
   ].join('\n');
 }
 

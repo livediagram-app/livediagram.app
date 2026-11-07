@@ -12,24 +12,16 @@ import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
-import { createSticky, createTable, createText } from './factories';
+import { createSticky, createText } from './factories';
 import { migrateStoredElementsUnsettled } from './stored-elements';
-import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
-import type { Element as DocElement, TableElement } from './index';
+import type { Element as DocElement } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
 
 const str = asText;
-
-function normaliseTable(el: Raw): Raw {
-  const cells = el.cells;
-  if (!Array.isArray(cells) || !cells.every(Array.isArray)) return el;
-  const stringCells = (cells as unknown[][]).map((row) => row.map(str));
-  return normalizeTable({ ...el, cells: stringCells } as unknown as TableElement);
-}
 
 // A sticky given a colour takes the palette's borderless look: its default
 // border is the classic amber, which ringed a blue note in yellow.
@@ -72,11 +64,9 @@ function factoryOf(el: Raw): Raw | undefined {
       ? createText(0, 0)
       : el.type === 'sticky'
         ? createSticky(0, 0)
-        : el.type === 'table'
-          ? createTable(0, 0)
-          : el.type === 'shape'
-            ? createShape(coerceShapeKind(str(el.shape)), 0, 0)
-            : undefined;
+        : el.type === 'shape'
+          ? createShape(coerceShapeKind(str(el.shape)), 0, 0)
+          : undefined;
   if (made) factoryCache.set(kind, made);
   return made;
 }
@@ -96,7 +86,6 @@ function withFactoryDefaults(el: Raw): Raw {
 }
 
 function normaliseContent(el: Raw): unknown {
-  if (el.type === 'table') return normaliseTable(el);
   if (el.type === 'sticky') return normaliseSticky(el);
   if (el.type !== 'shape') return el;
   return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;

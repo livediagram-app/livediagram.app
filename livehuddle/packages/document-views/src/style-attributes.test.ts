@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, createTable, createText, type Element } from '@livehuddle/document';
+import { createSticky, createText, type Element } from '@livehuddle/document';
 import { shapeAt } from './__fixtures__/build';
 import { styleAttributesOf, styleBaselines } from './style-attributes';
 
@@ -12,7 +12,6 @@ describe('styleAttributesOf', () => {
   it('compares each kind with its own factory', () => {
     expect(style(createText(0, 0))).toBe('');
     expect(style(createSticky(0, 0))).toBe('');
-    expect(style(createTable(0, 0))).toBe('');
     expect(style({ ...createText(0, 0), font: 'serif' })).toBe('font=serif');
   });
 

@@ -165,6 +165,27 @@ describe('a retired element in the export', () => {
     expect(svg).toContain(`fill="${RETIRED_PLACEHOLDER_COLOURS.dark.fill}"`);
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 2.
+  it('draws a stored table as the card named Table, never its cells or colours', () => {
+    const table = {
+      id: 'tbl',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 150,
+      cells: [['Owner', 'Blocked']],
+      fillColor: '#ff0000',
+      headerFill: '#00ff00',
+    } as unknown as BoxedElement;
+    const svg = svgBoxed(table);
+    expect(texts(svg)).toEqual(['Table', 'No longer supported in livehuddle']);
+    expect(svg).not.toContain('Blocked');
+    expect(svg).not.toContain('#ff0000');
+    expect(svg).not.toContain('#00ff00');
+    expect(boxedNeedsSvgRaster(table)).toBe(true);
+  });
+
   it('is rasterised from the SVG for the PNG and PDF, which have no drawer for it', () => {
     expect(boxedNeedsSvgRaster(retired('temperature') as BoxedElement)).toBe(true);
   });

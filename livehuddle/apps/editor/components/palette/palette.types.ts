@@ -32,8 +32,6 @@ export type PaletteProps = {
   onAddSticker: (stickerId: string) => void;
   onAddText: () => void;
   onAddSticky: () => void;
-  // Drop a 3x3 editable table at the viewport centre.
-  onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.
   onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See docs/specs/009-elements/link-cards.md.

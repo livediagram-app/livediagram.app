@@ -87,7 +87,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:lane': 'Containers',
   'tools:diagram-key': 'Parts',
   'collab:comment-pin': 'Comments',
-  'tools:table': 'Tables',
   'tools:stack': 'Layout',
   'components:hero': 'Layout',
   'tools:code-block': 'Code and Lists',

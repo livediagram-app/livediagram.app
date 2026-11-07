@@ -1,15 +1,7 @@
 import { svgTags, textTagBefore } from '@liveworkspace/model-core/svg-test-tags';
 import { describe, expect, it } from 'vitest';
-import type {
-  ArrowElement,
-  FreehandElement,
-  ImageElement,
-  ShapeElement,
-  Tab,
-  TableElement,
-} from './index';
+import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
 import { createPinnedArrow, createShape } from './factories';
-import { tableHeaderColours } from './table-header-colours';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
@@ -288,53 +280,6 @@ describe('renderElementsToSvg', () => {
 
     it('leaves an ordinary sticky as written', () => {
       expect(renderElementsToSvg(tab([sticky()]))).toContain('Order placed');
-    });
-  });
-
-  describe('tables (docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    const table = (o: Record<string, unknown> = {}) =>
-      ({
-        id: 'tb',
-        type: 'table',
-        x: 0,
-        y: 0,
-        width: 300,
-        height: 90,
-        cells: [
-          ['Name', 'Role'],
-          ['Ada', 'Engineer'],
-          ['Mary', 'Scientist'],
-        ],
-        ...o,
-      }) as Tab['elements'][number];
-
-    it('renders the real grid: cell text, dividers, and the outer frame', () => {
-      const svg = renderElementsToSvg(tab([table()]));
-      expect(svg).toContain('>Ada</');
-      expect(svg).toContain('>Scientist</');
-      // One vertical divider (x=150) + two horizontal (y=30, 60) + frame.
-      expect(svg).toContain('x1="150"');
-      expect(svg).toContain('y1="30"');
-      expect(svg).toContain('y1="60"');
-    });
-
-    it('breaks a word wider than its cell, as the canvas’s break-words does', () => {
-      const svg = renderElementsToSvg(
-        tab([table({ cells: [['Supercalifragilisticexpialidocious', 'x']], height: 200 })]),
-      );
-      // Drawn whole, the word ran across the next cell.
-      expect(svg).not.toContain('>Supercalifragilisticexpialidocious<');
-      expect(svg).toContain('>Supercal');
-    });
-
-    it('tints the header band and honours pinned column widths', () => {
-      const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
-      // Header band: the opaque tint the canvas paints, over the first row.
-      const band = tableHeaderColours(table({ headerRow: true }) as TableElement).fill;
-      expect(svg).toContain(`fill="${band}"`);
-      expect(svg).not.toContain('opacity="0.18"');
-      // Pinned first column: the divider sits at x=100, not the even 150.
-      expect(svg).toContain('x1="100"');
     });
   });
 

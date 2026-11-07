@@ -7,12 +7,6 @@ import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { LOCAL_MOVE_OFFERED, RETIRED_PARTS_OFFERED, TIDY_UP_OPENED } from './features';
 
-// The Element types that are a table's rows and columns, not elements, and
-// the table's own switches (docs/specs/017-telemetry/telemetry.md).
-const TABLE_PARTS: readonly string[] = ['TableRow', 'TableColumn'];
-const TABLE_TOGGLES: readonly string[] = ['TableHeaderRow', 'TableHeaderColumn', 'TableZebra'];
-const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type ?? '');
-
 // Filling out existing stacks.
 export const JUST_DRAW = chart(
   'UI',
@@ -529,10 +523,9 @@ export const TRAVEL_ADDED = addedFrom(
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)) && !isTablePart(type),
+  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)),
   title: 'Other Elements Added',
-  blurb:
-    'Kinds no palette category offers, such as a pasted diagram shape. Table rows and columns are in Tables.',
+  blurb: 'Kinds no palette category offers, such as a pasted diagram shape.',
 };
 
 export const ELEMENTS_ADDED: MetricStack = {
@@ -577,8 +570,8 @@ export const ELEMENTS_DELETED = chart(
   'Element',
   'Deleted',
   'Elements Deleted',
-  'Elements removed, by a delete or the eraser. One per gesture, however many it took. Table rows and columns are in Tables.',
-  { typeIn: (t) => !isTablePart(t), rising: 'neutral' },
+  'Elements removed, by a delete or the eraser. One per gesture, however many it took.',
+  { rising: 'neutral' },
 );
 
 export const ELEMENTS_DUPLICATED = chart(
@@ -607,16 +600,15 @@ export const ELEMENTS_REORDERED = chart(
   'Element',
   'Reordered',
   'Elements Reordered',
-  'Sent to the back or brought to the front. A table row or column moved is in Tables.',
-  { typeIn: (t) => !isTablePart(t) },
+  'Sent to the back or brought to the front.',
 );
 
 export const ELEMENT_OPTIONS_TOGGLED = chart(
   'Element',
   'Toggled',
   'Element Options Toggled',
-  'Per-element switches: bold, italic and other text styles, and aspect lock. Table header and zebra switches are in Tables.',
-  { typeIn: (t) => !TABLE_TOGGLES.includes(t ?? '') && !TIMER_PIECE_TOGGLES.includes(t ?? '') },
+  'Per-element switches: bold, italic and other text styles, and aspect lock.',
+  { typeIn: (t) => !TIMER_PIECE_TOGGLES.includes(t ?? '') },
 );
 
 export const ELEMENT_ACTIONS_USED = chart(
@@ -674,51 +666,6 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_REMOVED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
-};
-
-// Tables: the row and column edits inside a table element. They are sent as
-// Element events typed TableRow / TableColumn, and the element charts above
-// leave them out, so a table row never counts as an element. The table
-// itself (Element·Added·Table) stays in Tools Added, and cell and preset
-// edits in Elements Changed with the other formatting controls.
-export const TABLE_ROWS_ADDED = chart(
-  'Element',
-  'Added',
-  'Rows & Columns Added',
-  'A row or column inserted into a table.',
-  { types: TABLE_PARTS },
-);
-
-export const TABLE_ROWS_REMOVED = chart(
-  'Element',
-  'Deleted',
-  'Rows & Columns Removed',
-  'A row or column taken out of a table.',
-  { types: TABLE_PARTS, rising: 'neutral' },
-);
-
-export const TABLE_ROWS_MOVED = chart(
-  'Element',
-  'Reordered',
-  'Rows & Columns Moved',
-  'A table row or column dragged to a new position.',
-  { types: TABLE_PARTS },
-);
-
-export const TABLE_STYLE_TOGGLES = chart(
-  'Element',
-  'Toggled',
-  'Header & Zebra Toggles',
-  'A table header row, header column or zebra striping switched on or off.',
-  { types: TABLE_TOGGLES },
-);
-
-export const TABLES: MetricStack = {
-  stack: true,
-  title: 'Tables',
-  blurb:
-    'Editing inside a table: rows and columns added, removed and moved, and its header and zebra switches.',
-  members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
 };
 
 // Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a

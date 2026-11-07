@@ -52,7 +52,7 @@ type BoxedKind = BoxedElement['type'];
 // ergonomics (an image "has" a textColor it never draws), so the
 // painter reads what each kind actually renders rather than what it
 // merely declares.
-const BORDER_KINDS: ReadonlySet<BoxedKind> = new Set(['shape', 'table', 'freehand']);
+const BORDER_KINDS: ReadonlySet<BoxedKind> = new Set(['shape', 'freehand']);
 const RADIUS_KINDS: ReadonlySet<BoxedKind> = new Set(['shape', 'freehand']);
 const SHADOW_KINDS: ReadonlySet<BoxedKind> = new Set([
   'shape',
@@ -84,7 +84,7 @@ function uniformRunValue<K extends keyof TextRun>(
 }
 
 // The boxed kinds that carry a finish (docs/specs/008-canvas/finish.md).
-const FINISH_KINDS: ReadonlySet<string> = new Set(['shape', 'text', 'sticky', 'table']);
+const FINISH_KINDS: ReadonlySet<string> = new Set(['shape', 'text', 'sticky']);
 
 // Boxed (shape / text / sticky / ...) painter projection. Carries every
 // formatting field the source's kind renders: size + aspect lock +
@@ -155,7 +155,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     ...base,
     fillColor: source.fillColor,
     strokeColor: source.strokeColor,
-    // A table's header row / a lane's title gutter (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md).
+    // A lane's title gutter (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md).
     headerFill: ext.headerFill,
     textColor: uniformRunValue(rt, 'color') ?? source.textColor,
     textSize: uniformRunValue(rt, 'size') ?? source.textSize,
@@ -180,7 +180,6 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     out.accentEdge = (source as { accentEdge?: unknown }).accentEdge;
     out.accentEdgeColor = (source as { accentEdgeColor?: unknown }).accentEdgeColor;
   }
-  if (kind === 'table') out.headerTextColor = ext.headerTextColor;
   // The finish (docs/specs/008-canvas/finish.md), on the kinds that carry one; unset copies Follow Tab.
   if (FINISH_KINDS.has(kind)) out.finish = (source as { finish?: Finish }).finish;
   // A text element's quick-swatch binding, beside its colour; not when a

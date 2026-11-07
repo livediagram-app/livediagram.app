@@ -20,6 +20,7 @@ import {
   clampShadow,
   DEFAULT_ANIMATION_SPEED,
   isBoxed,
+  isRetiredElement,
   supportsBorder,
   supportsShadow,
   supportsFinish,
@@ -46,7 +47,6 @@ import {
 } from '@livehuddle/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import type { TablePreset } from '@livehuddle/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete
@@ -77,26 +77,6 @@ export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element 
   };
 }
 
-// A table look (docs/specs/010-palette/style-presets.md): the four surfaces a table paints, plus the banding,
-// in one history step. `headerRow` / `headerColumn` are untouched: which cells
-// ARE headers is data, not a look. A no-op on anything but a table.
-export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
-  if (el.type !== 'table') return el;
-  return {
-    ...el,
-    fillColor: p.fill,
-    strokeColor: p.stroke,
-    textColor: p.text,
-    headerFill: p.headerFill,
-    headerTextColor: p.headerText,
-    zebra: p.zebra,
-    // Records which look this is, so a theme change can re-derive it the way a
-    // shape's `colorPreset` does. Without it the four resolved colours read as
-    // hand-picked ones and the table strands on the old theme.
-    tablePreset: p.id,
-  };
-}
-
 // ── Granular single-field transforms ────────────────────────────────────
 //
 // The individual colour / border / rotation controls in the context menu hover-
@@ -107,16 +87,14 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
 // useElementStyle exactly.
 
 // Hand-editing any colour breaks the element's preset binding (docs/specs/010-palette/style-presets.md), so
-// setting fill / stroke / text clears `colorPreset` on a shape and
-// `tablePreset` on a table: past that point the colours are the user's, and a
+// setting fill / stroke / text clears `colorPreset` on a shape: past that point the colours are the user's, and a
 // theme change must preserve them rather than re-deriving a look they have
-// already edited away from. Fill applies to shapes + sticky / freehand / table.
+// already edited away from. Fill applies to shapes + sticky / freehand.
 export function applyFillColorToEl(el: Element, color: string): Element {
   // Also drops the quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot no longer
   // describes the colour.
   if (el.type === 'shape')
     return { ...el, fillColor: color, colorPreset: undefined, fillSwatch: undefined };
-  if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
   if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
   return el;
 }
@@ -132,7 +110,7 @@ const textColour = (color: string): { textColor?: string; penTextColour?: PenCol
   isPenColourName(color)
     ? { textColor: undefined, penTextColour: color }
     : { textColor: color, penTextColour: undefined };
-// Where an element stores no name (a table, a note's border), a standard colour lands as its
+// Where an element stores no name (a note's border), a standard colour lands as its
 // light-paper hex; Ink, the canvas's own drawing colour, leaves it as it is.
 const asHex = (color: string): string | null =>
   color === INK_PEN_COLOUR ? null : isPenColourName(color) ? penColourHex(color, 'light') : color;
@@ -144,7 +122,6 @@ export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'arrow') return { ...el, ...lineColour(color), strokeSwatch: undefined };
   const hex = asHex(color);
   if (hex === null) return el;
-  if (el.type === 'table') return { ...el, strokeColor: hex, tablePreset: undefined };
   if (el.type === 'sticky') return { ...el, strokeColor: hex };
   return el;
 }
@@ -156,8 +133,8 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'sticky' || el.type === 'arrow') return { ...el, ...textColour(color) };
   const hex = asHex(color);
   if (hex === null) return el;
-  if (el.type === 'table') return { ...el, textColor: hex, tablePreset: undefined };
-  if (isBoxed(el)) return { ...el, textColor: hex };
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") keeps what it stored.
+  if (isBoxed(el) && !isRetiredElement(el)) return { ...el, textColor: hex };
   return el;
 }
 
@@ -174,17 +151,16 @@ export function applyArrowheadColorToEl(el: Element, color: string): Element {
 }
 
 // The heading band's fill, for the elements that HAVE a heading distinct from
-// their body: a table's header row and a lane's title gutter. A no-op on
+// their body: a lane's title gutter. A no-op on
 // anything else, so a multi-selection containing a mix only paints the ones
 // with a heading rather than parking a dead field on the rest.
 export function applyHeaderFillToEl(el: Element, color: string): Element {
-  if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
   if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
   return el;
 }
 
 // Border weight / pattern apply to any border-bearing element (shapes + the
-// freehand pen) plus tables; radius is shape-only.
+// freehand pen); radius is shape-only.
 export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
   // A pen stroke's recorded width (docs/specs/023-draw-mode/draw-mode.md) outranks the preset when
   // drawn, so choosing a preset must drop it or the choice would do nothing.
@@ -199,11 +175,11 @@ export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element
       strokeWidth: value,
     };
   }
-  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;
+  return supportsBorder(el) ? { ...el, strokeWidth: value } : el;
 }
 
 export function applyBorderStyleToEl(el: Element, value: BorderStyle): Element {
-  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeStyle: value } : el;
+  return supportsBorder(el) ? { ...el, strokeStyle: value } : el;
 }
 
 export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element {

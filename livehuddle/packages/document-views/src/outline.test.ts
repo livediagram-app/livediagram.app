@@ -87,7 +87,7 @@ describe('outline budgets (R20, R21)', () => {
   it('says what it dropped in one closing line, naming the largest collapsed container', () => {
     const { text, json } = outlineView(checkout(), { budget: 200 });
     expect(text.split('\n').at(-1)).toBe(
-      '… notes hidden; attributes hidden; 13 elements in boundary c991 hidden: view --only c991',
+      '… notes hidden; attributes hidden; 7 elements in boundary 048c hidden; 13 elements in boundary c991 hidden: view --only c991',
     );
     expect(json.elision).toMatchObject({
       dropped: ['notes', 'attributes'],

@@ -257,18 +257,6 @@ export function describeVariant(
           : {},
       };
     }
-    case 'table': {
-      // TableView draws the grid + cell borders as the child
-      // content; the wrapper only contributes the selection ring
-      // (transparent background so the grid is what shows).
-      const ring = `${singleRing('ring-2 ring-brand-300')} ${multiRing}`.trim();
-      return {
-        className: `${ring}`,
-        style: remoteBorderColor
-          ? { outline: `${remoteBorderWidth}px solid ${remoteBorderColor}`, outlineOffset: 2 }
-          : {},
-      };
-    }
     case 'annotation': {
       // A themed circle marker (docs/specs/009-elements/annotations.md): fill + ring from the element's
       // colours, fully round. The note glyph paints as the child content.
@@ -285,9 +273,10 @@ export function describeVariant(
         },
       };
     }
-    // A retired embed (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") paints its own
+    // A retired embed or table (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") paints its own
     // placeholder card, as a retired shape does: the wrapper carries only the selection ring.
     case 'video':
+    case 'table':
       return {
         className: `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim(),
         style: { borderRadius: '4px' },

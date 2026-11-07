@@ -12,7 +12,6 @@ import {
   createLinkCard,
   createShape,
   createSticky,
-  createTable,
   createText,
   kindWordOf,
   LABEL_FONT_PX,
@@ -40,6 +39,8 @@ export const NOT_ADDED: Readonly<Record<string, string>> = {
   // An embed is retired (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored one still
   // draws as its placeholder, and nothing makes a new one.
   video: 'embeds are no longer supported in livehuddle',
+  // A table is retired too (part 2 of the element engine).
+  table: 'tables are no longer supported in livehuddle',
   freehand: 'strokes are drawn in the editor',
   path: 'paths are drawn in the editor',
 };
@@ -47,7 +48,6 @@ export const NOT_ADDED: Readonly<Record<string, string>> = {
 const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
   text: () => createText(0, 0),
   sticky: () => createSticky(0, 0),
-  table: () => createTable(0, 0),
   annotation: () => createAnnotation(0, 0),
   'link-card': () => createLinkCard(0, 0),
 };

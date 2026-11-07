@@ -1,4 +1,4 @@
-// Factories for every element type EXCEPT shapes: text, tables, stickies,
+// Factories for every element type EXCEPT shapes: text, stickies,
 // annotations, link cards, images, freehand strokes and arrows, plus
 // scaleElements. The shape kind table and createShape moved to
 // './shape-factory' when this file reached 719 lines.
@@ -17,7 +17,6 @@ import {
   type FreehandElement,
   type ImageElement,
   type StickyElement,
-  type TableElement,
   type TextElement,
 } from './index';
 import { packFreehandPoints } from './freehand-points';
@@ -41,24 +40,6 @@ export function createText(x: number, y: number): TextElement {
     // 'md' (22px) read oversized — especially on a phone. Default to 'sm';
     // the user can bump it from the edit toolbar.
     textSize: 'sm',
-  };
-}
-
-// A fresh 3x3 table with an empty header row. Sized so the default
-// cells are comfortably clickable; the grid divides the box evenly.
-export function createTable(x: number, y: number): TableElement {
-  const rows = 3;
-  const cols = 3;
-  return {
-    id: crypto.randomUUID(),
-    type: 'table',
-    x,
-    y,
-    width: 360,
-    height: 150,
-    cells: Array.from({ length: rows }, () => Array.from({ length: cols }, () => '')),
-    headerRow: true,
-    textSize: 'md',
   };
 }
 

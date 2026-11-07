@@ -11,7 +11,6 @@ import {
   LinkMenuIcon,
   RemoveIconGlyph,
   FillColourIcon,
-  TableGlyph,
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
@@ -58,23 +57,11 @@ export function ElementContentSections({
   const surface = useCanvasSurface();
   return (
     <>
-      {/* Caption / Text: whole-element label formatting for a labelled
-            arrow, or every cell of a table (other boxed elements format via
-            the inline rich-text toolbar instead). An arrow's is called
-            Caption, because that is what the words beside a line are, and
-            because "Text" on an arrow reads as the line's own label field
-            rather than how it is painted. */}
-      {(target.type === 'arrow' && target.label) || target.type === 'table' ? (
-        <MenuAccordionSection
-          title={target.type === 'arrow' ? 'Caption' : 'Text'}
-          icon={<TextGlyph />}
-          {...sectionProps('text')}
-        >
-          {target.type === 'table' ? (
-            <p className="px-3 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-              Applies to every cell.
-            </p>
-          ) : null}
+      {/* Caption: whole-element label formatting for a labelled arrow (boxed elements format via the inline
+            rich-text toolbar instead). It is called Caption, because that is what the words beside a line are, and
+            because "Text" on an arrow reads as the line's own label field rather than how it is painted. */}
+      {target.type === 'arrow' && target.label ? (
+        <MenuAccordionSection title="Caption" icon={<TextGlyph />} {...sectionProps('text')}>
           <div className="flex gap-1 px-2 py-1.5">
             <TextToggle active={!!target.textBold} label="Bold" onClick={props.onToggleTextBold}>
               <BoldIcon />
@@ -110,7 +97,7 @@ export function ElementContentSections({
           />
           <ContextMenuDivider />
           <ColourRow
-            label={target.type === 'arrow' ? 'Text' : 'Colour'}
+            label="Text"
             icon={<TextColourIcon />}
             value={shownColour(target, 'text', surface, '#0f172a')}
             ink={inkSwatch(target, 'text', surface)}
@@ -122,17 +109,15 @@ export function ElementContentSections({
               how an arrow's label has always drawn; a colour here is for a
               caption that has to stay readable over its own line or a busy
               backdrop. */}
-          {target.type === 'arrow' ? (
-            <ColourRow
-              label="Background"
-              tone="soft"
-              icon={<FillColourIcon />}
-              value={target.labelFill ?? 'transparent'}
-              {...labelFillHandlers}
-              {...colorProps('caption-bg')}
-              {...props.colourPalette}
-            />
-          ) : null}
+          <ColourRow
+            label="Background"
+            tone="soft"
+            icon={<FillColourIcon />}
+            value={target.labelFill ?? 'transparent'}
+            {...labelFillHandlers}
+            {...colorProps('caption-bg')}
+            {...props.colourPalette}
+          />
         </MenuAccordionSection>
       ) : null}
       {/* Image — pick / change / clear the bitmap (docs/specs/009-elements/images.md). */}
@@ -182,31 +167,6 @@ export function ElementContentSections({
             description="A title and a line of text over the image."
             checked={!!target.heroCaption}
             onToggle={() => props.onSetHeroCaption(!target.heroCaption)}
-          />
-        </MenuAccordionSection>
-      ) : null}
-      {/* Table — header row / column + zebra. */}
-      {target.type === 'table' ? (
-        <MenuAccordionSection title="Table" icon={<TableGlyph />} {...sectionProps('table')}>
-          <MenuToggleRow
-            label="Header Row"
-            description="Style the first row as a header."
-            checked={target.headerRow ?? false}
-            onToggle={props.onToggleTableHeaderRow}
-          />
-          <ContextMenuDivider />
-          <MenuToggleRow
-            label="Header Column"
-            description="Style the first column as a header."
-            checked={target.headerColumn ?? false}
-            onToggle={props.onToggleTableHeaderColumn}
-          />
-          <ContextMenuDivider />
-          <MenuToggleRow
-            label="Zebra Striping"
-            description="Tint alternate body rows."
-            checked={target.zebra ?? false}
-            onToggle={props.onToggleTableZebra}
           />
         </MenuAccordionSection>
       ) : null}

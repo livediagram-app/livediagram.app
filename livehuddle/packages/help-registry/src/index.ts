@@ -1351,7 +1351,7 @@ export const articles: Article[] = [
     title: 'Animating Elements',
     description: 'Animate sticky notes, text, link cards, pictures and icons.',
     keywords:
-      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
+      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -1733,7 +1733,7 @@ export const articles: Article[] = [
   {
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Elements',
-    description: 'Inside a space, jump to any tab or element, including text inside table cells.',
+    description: 'Inside a space, jump to any tab or element by its label.',
     keywords: 'find jump locate text label shape board lookup document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

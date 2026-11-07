@@ -50,13 +50,11 @@ describe('ModifierHintBanner', () => {
 describe('selectedKindOf', () => {
   const els = [
     { id: 'r', type: 'arrow' },
-    { id: 't', type: 'table' },
     { id: 's', type: 'shape' },
   ] as unknown as Parameters<typeof selectedKindOf>[0];
 
   it('names the selected element’s flavour for the no-drag hints, or null', () => {
     expect(selectedKindOf(els, 'r')).toBe('arrow');
-    expect(selectedKindOf(els, 't')).toBe('table');
     expect(selectedKindOf(els, 's')).toBe('other');
     expect(selectedKindOf(els, null)).toBeNull();
     expect(selectedKindOf(els, 'gone')).toBeNull();

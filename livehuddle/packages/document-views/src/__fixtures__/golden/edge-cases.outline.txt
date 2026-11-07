@@ -1,4 +1,4 @@
-tab edge-tab "Edge cases" · 32 elements: 22 boxes, 2 boundaries, 8 arrows · 3 unknown
+tab edge-tab "Edge cases" · 32 elements: 22 boxes, 2 boundaries, 8 arrows · 4 unknown
 square huge "Huge"
 boundary frame-a "A"
   square both "In both"
@@ -13,7 +13,7 @@ square id:"My node" "Unsafe id"
 square Q1 "Short id"
 square abcd "Slug prefix"
 square abcd9 "Longer id"
-table ragged 2x3 Name | Owner | 
+? table ragged
 sticky customer "Customer"
 freehand lone
 square splitter

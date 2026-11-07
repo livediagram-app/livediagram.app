@@ -123,14 +123,12 @@ export function AnimationSetPreview({ set, value }: { set: AnimationSetId; value
       return <DrawingPreview value={value} />;
     case 'media':
       return <MediaPreview value={value} />;
-    case 'table':
-      return <TablePreview value={value} />;
     default:
       return <ShapePreview value={value} />;
   }
 }
 
-// A Shape value on a body (a Shape tile, a kept value, or a sticky / table's shared motions):
+// A Shape value on a body (a Shape tile, a kept value, or a sticky's shared motions):
 // the wrapper class plus, for the ring / halo / light / gradient, the child layer.
 function shapeClass(value: string | null): string {
   return value ? `lvd-anim-${value}` : '';
@@ -248,38 +246,6 @@ function MediaPreview({ value }: { value: string | null }) {
       style={BODY_VARS}
     >
       <img src={PICTURE} alt="" draggable={false} className="block h-full w-full" />
-    </span>
-  );
-}
-
-const TABLE_SHAPE = new Set(['pulse', 'glow']);
-
-function TablePreview({ value }: { value: string | null }) {
-  const cls = !value
-    ? ''
-    : TABLE_SHAPE.has(value)
-      ? shapeClass(value)
-      : `${ANIMATION_CLASS_PREFIX.table}${value}`;
-  return (
-    <span
-      className={`relative grid h-[24px] w-[38px] grid-cols-3 grid-rows-3 overflow-hidden rounded-[3px] border border-slate-400/70 bg-white dark:bg-slate-900 ${cls}`}
-      style={vars({ ...BODY_VARS, '--lvd-rows': 3, '--lvd-cols': 3 })}
-    >
-      {[0, 1, 2].flatMap((r) =>
-        [0, 1, 2].map((c) => (
-          <span
-            key={`${r}${c}`}
-            className={`lvd-tbl-cell relative flex items-center justify-center border-slate-300/70 ${
-              c < 2 ? 'border-r' : ''
-            } ${r < 2 ? 'border-b' : ''} ${r === 0 ? 'bg-slate-200 dark:bg-slate-700' : ''}`}
-            data-first-row={r === 0 ? '' : undefined}
-            style={vars({ '--lvd-r': r, '--lvd-c': c })}
-          >
-            <span className="h-[2px] w-[6px] rounded bg-slate-400" />
-          </span>
-        )),
-      )}
-      {value && TABLE_SHAPE.has(value) ? <span className="lvd-anim-layer" /> : null}
     </span>
   );
 }

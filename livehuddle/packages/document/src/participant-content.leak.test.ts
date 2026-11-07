@@ -7,7 +7,6 @@ import {
   createImage,
   createLinkCard,
   createSticky,
-  createTable,
   createText,
 } from './factories';
 import type { Element, Tab } from './index';
@@ -46,7 +45,6 @@ const SAMPLES: Sample[] = [
     el: theirs({ ...createText(0, 0), sizing: 'fit' }, 'tf'),
     allowed: [],
   },
-  { name: 'table', el: theirs(createTable(0, 0), 'tb'), allowed: [] },
   {
     name: 'sticky',
     el: theirs(createSticky(0, 0), 'st'),
@@ -83,6 +81,23 @@ const SAMPLES: Sample[] = [
   },
   { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: [] },
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: [] },
+  // A table is a retired element type too (part 2 of the element engine), kept as stored with its cells.
+  {
+    name: 'table (retired)',
+    el: theirs(
+      {
+        id: 't',
+        type: 'table',
+        x: 0,
+        y: 0,
+        width: 360,
+        height: 150,
+        cells: [['a', 'b']],
+      } as unknown as Element,
+      'tb',
+    ),
+    allowed: [],
+  },
   // A video is a retired element type now (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"),
   // kept as stored.
   {

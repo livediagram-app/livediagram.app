@@ -37,8 +37,6 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
       return 'drawing';
     case 'image':
       return 'media';
-    case 'table':
-      return 'table';
     case 'shape':
       return hasOwnShapeSet(el) || hasOwnBodySet(el) ? undefined : 'shape';
     case 'annotation':
@@ -60,7 +58,6 @@ export function takesShapeMotions(el: Element): boolean {
     case 'freehand':
     case 'path':
     case 'image':
-    case 'table':
       return true;
     case 'shape':
       return el.shape !== 'icon' && (hasOwnShapeSet(el) || hasOwnBodySet(el));
@@ -191,7 +188,7 @@ const WORDLESS_SHAPES = new Set<string>([
 
 /** Whether the element carries words the Text set can animate. */
 export function carriesWords(el: Element): boolean {
-  if (el.type === 'text' || el.type === 'sticky' || el.type === 'table') return true;
+  if (el.type === 'text' || el.type === 'sticky') return true;
   if (el.type !== 'shape') return false;
   return (
     takesTypedLabel(el) &&
@@ -207,14 +204,7 @@ export function inAnimationSet(set: AnimationSetId, el: Element): boolean {
   return bodyAnimationSetOf(el) === set || (set === 'shape' && takesShapeMotions(el));
 }
 
-const SET_ORDER: readonly AnimationSetId[] = [
-  'shape',
-  'sticky',
-  'drawing',
-  'media',
-  'table',
-  'text',
-];
+const SET_ORDER: readonly AnimationSetId[] = ['shape', 'sticky', 'drawing', 'media', 'text'];
 
 /** The sets present among the elements, in menu order, each once. */
 export function animationSetsOf(elements: readonly Element[]): AnimationSetId[] {

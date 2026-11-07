@@ -366,7 +366,7 @@ export function SearchTeams() {
   );
 }
 
-/** Results showing tabs and elements, including table-cell text. */
+/** Results showing tabs and elements. */
 export function SearchTabsAndElements() {
   return (
     <SearchOverlay

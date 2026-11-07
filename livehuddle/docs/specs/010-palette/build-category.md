@@ -10,8 +10,8 @@ lay a canvas _out_ with, as opposed to the ones you draw _on_ it:
 | **Lane**     | Draw (Tools)                       |
 | **Frame**    | Draw (Tools)                       |
 | **Timeline** | Components (since moved to Layout) |
-| **Table**    | Data                               |
 
+The Table left with Work Tracker #459, part 2 ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine)).
 livediagram's Build also held the Mind Node, the Flowchart and the Sankey; they were cut with Diagram and Draw
 ([Editor modes](../007-editor/editor-modes.md)).
 

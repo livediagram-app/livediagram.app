@@ -66,7 +66,6 @@ export function EditorCanvasHost() {
     addShape,
     addSticky,
     dropBoardFile,
-    addTable,
     addText,
     anyWelcomeOpen,
     beginArrowCurveDrag,
@@ -121,7 +120,6 @@ export function EditorCanvasHost() {
     commitPathEdit,
     styleNewElement,
     commitLabel,
-    commitTable,
     commitHeaderSize,
     deleteCurvePoint,
     deleteMultiSelected,
@@ -167,7 +165,6 @@ export function EditorCanvasHost() {
     openActionPopover,
     completeAction,
     reopenAction,
-    openCellLinkPicker,
     openComments,
     openNote,
     pendingDraw,
@@ -326,7 +323,6 @@ export function EditorCanvasHost() {
           alwaysWalks={can.alwaysWalks}
           canShareScreen={gates.shape}
           canMove={can.move}
-          canWriteText={can.writeText}
           canResize={can.resize}
           documentName={documentName}
           // The floor it draws (docs/specs/011-theme/floors.md): a retired diagram pattern a peer on an older build
@@ -458,8 +454,6 @@ export function EditorCanvasHost() {
           canRedo={canRedo}
           onAddShape={addShape}
           onAddSticker={addSticker}
-          onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
-          onAddTable={addTable}
           onAddAnnotation={addAnnotation}
           onAddLinkCard={addLinkCard}
           onAddHero={addHero}
@@ -670,7 +664,6 @@ export function EditorCanvasHost() {
           onPressArmedAction={pressArmedAction}
           onBeginEdit={beginEdit}
           onCommitLabel={commitLabel}
-          onCommitTable={commitTable}
           onCommitHeaderSize={commitHeaderSize}
           onDeleteRetired={isReadOnly ? undefined : deleteRetired}
           onSetPageHeading={setPageHeading}

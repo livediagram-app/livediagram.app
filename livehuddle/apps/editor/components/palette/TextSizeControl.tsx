@@ -4,12 +4,11 @@
 // whole px from TEXT_PX_MIN to TEXT_PX_MAX with labelled breakpoints, and a Scale icon toggle to
 // its right. Every place a
 // label's size is chosen uses it: an element's Text flyout (single and multi selection), an
-// arrow's caption, a table cell, a chart key and a Legend, a Sankey's labels, and the tab's size
+// arrow's caption, a chart key and a Legend, a Sankey's labels, and the tab's size
 // for new text. The slider previews as it moves and commits once when let go, so a drag is one
 // undo step.
 import {
   arrowLabelFontSize,
-  CELL_FONT_PX,
   clampTextPx,
   labelFontPx,
   TEXT_PX_MAX,
@@ -33,13 +32,12 @@ export const TEXT_SIZE_TICKS: readonly number[] = [6, 12, 24, 36, 48];
 export type PresetPx = (preset: TextSizePreset) => number;
 
 /**
- * The scale an element's label presets draw on, for the control that sizes it: an arrow's caption,
- * a table's cells and a sticky note's writing each run their own; every other label the single-line
+ * The scale an element's label presets draw on, for the control that sizes it: an arrow's caption
+ * and a sticky note's writing each run their own; every other label the single-line
  * scale.
  */
 export function presetPxFor(type: string): PresetPx {
   if (type === 'arrow') return arrowLabelFontSize;
-  if (type === 'table') return (p) => CELL_FONT_PX[p];
   return (p) => labelFontPx(p, type === 'sticky');
 }
 
@@ -73,11 +71,11 @@ export function TextSizeControl({
   // null = mixed (a multi-selection whose sizes differ): the readout says so.
   current: TextSize | null;
   onSet: (size: TextSize) => void;
-  // Optional hover / drag preview: the menus wire it, the table cell and the tab dialog do not.
+  // Optional hover / drag preview: the menus wire it, the tab dialog does not.
   onPreview?: (size: TextSize) => void;
   onPreviewEnd?: () => void;
-  // The px each preset draws at on this surface (a note's label, an arrow's caption, a table
-  // cell and a chart key each have their own scale), for the thumb and readout of a preset.
+  // The px each preset draws at on this surface (a note's label, an arrow's caption and a chart
+  // key each have their own scale), for the thumb and readout of a preset.
   presetPx?: PresetPx;
   // Off where there is nothing to fit text to: a chart key, a Legend, a Sankey's labels.
   withScale?: boolean;

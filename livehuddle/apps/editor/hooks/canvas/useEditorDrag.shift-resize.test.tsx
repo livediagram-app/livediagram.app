@@ -10,7 +10,6 @@ import {
   createPath,
   createShape,
   createSticky,
-  createTable,
   createText,
   isBoxed,
   type Element,
@@ -46,7 +45,6 @@ const KINDS: [string, () => Element][] = [
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
   ['image', () => createImage(0, 0)],
-  ['table', () => createTable(0, 0)],
   ['link card', () => createLinkCard(0, 0)],
   ['annotation', () => createAnnotation(0, 0)],
   [

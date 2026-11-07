@@ -45,12 +45,11 @@ export function defaultPadding(element: BoxedElement): Padding {
     case 'freehand':
     case 'path':
       return 'none';
-    case 'table':
-      return 'sm';
     case 'annotation':
       return 'none';
     case 'link-card':
     case 'video':
+    case 'table':
       return 'none';
   }
 }
@@ -318,12 +317,12 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       case 'image':
       case 'freehand':
       case 'path':
-      case 'table':
       case 'annotation':
         return DARK_INK.text;
       case 'sticky':
       case 'link-card':
       case 'video':
+      case 'table':
         break; // keeps its own ink on any paper
     }
   }
@@ -337,13 +336,12 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
     case 'freehand':
     case 'path':
       return '#1e293b'; // slate-800 (no inline label today, future-proof)
-    case 'table':
-      return '#1e293b'; // slate-800
     case 'annotation':
       return '#075985'; // brand-800 (no inline label; declared for parity)
     case 'link-card':
       return '#1e293b'; // slate-800 — card title text
     case 'video':
+    case 'table':
       return '#e2e8f0'; // slate-200 — caption over the dark player surface
   }
 }
@@ -396,10 +394,10 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
         return DARK_INK.annotationFill;
       case 'text':
       case 'image':
-      case 'table':
       case 'sticky':
       case 'link-card':
       case 'video':
+      case 'table':
       case 'path':
         break; // transparent, or a fill that is the element's identity
     }
@@ -421,13 +419,12 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       // the shape default; open paths render stroke-only so the
       // fill is visually inert there.
       return '#f0f9ff';
-    case 'table':
-      return 'transparent';
     case 'annotation':
       return '#e0f2fe'; // brand-100 — a touch deeper than a shape so the marker reads as a chip
     case 'link-card':
       return '#ffffff'; // white card surface
     case 'video':
+    case 'table':
       return '#0f172a'; // slate-900 — a player letterboxes against black, not white
   }
 }
@@ -446,7 +443,6 @@ export function defaultStrokeColor(
       case 'shape':
       case 'freehand':
       case 'path':
-      case 'table':
       case 'annotation':
         return DARK_INK.stroke;
       case 'text':
@@ -454,6 +450,7 @@ export function defaultStrokeColor(
       case 'sticky':
       case 'link-card':
       case 'video':
+      case 'table':
         break; // transparent, or a border that is the element's identity
     }
   }
@@ -469,13 +466,12 @@ export function defaultStrokeColor(
     case 'freehand':
     case 'path':
       return '#0ea5e9'; // brand-500, same accent as shapes
-    case 'table':
-      return '#94a3b8'; // slate-400 grid lines
     case 'annotation':
       return '#0ea5e9'; // brand-500 — ring + note glyph tint
     case 'link-card':
       return '#e2e8f0'; // slate-200 — card border
     case 'video':
+    case 'table':
       return '#1e293b'; // slate-800 — a hairline barely off the player surface
   }
 }
@@ -500,10 +496,9 @@ export function supportsFillColor(element: Element): boolean {
 }
 
 // Whether an element has a HEADING area distinct from its body, and so
-// exposes a heading-background control: a table's header row and a lane's
-// title gutter (docs/specs/009-elements/lane.md). Everything else is one surface.
+// exposes a heading-background control: a lane's title gutter
+// (docs/specs/009-elements/lane.md). Everything else is one surface.
 export function hasHeadingBand(element: Element): boolean {
-  if (element.type === 'table') return true;
   return element.type === 'shape' && element.shape === 'lane';
 }
 
@@ -521,10 +516,10 @@ export function supportsColours(element: Element): boolean {
     element.type === 'arrow' ||
     element.type === 'freehand' ||
     element.type === 'path' ||
-    element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
-    element.type === 'video'
+    element.type === 'video' ||
+    element.type === 'table'
   );
 }
 
@@ -551,8 +546,7 @@ export function supportsBorder(
 
 // Whether the element exposes the Border CONTROLS (strength / pattern /
 // radius) in the editor UI — distinct from supportsBorder, which also gates
-// stroke-field writes + type narrowing. A boolean visibility gate: it adds
-// tables (which carry borders) and drops the `actor`, a stick figure with no
+// stroke-field writes + type narrowing. A boolean visibility gate: it drops the `actor`, a stick figure with no
 // enclosing outline for which a border is meaningless.
 // Shape kinds that DRAW THEIR OWN BODY, so the wrapper carries no border or
 // background and every border control is dead for them. One list, exported,
@@ -688,7 +682,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
 ]);
 
 export function supportsBorderControls(element: Element): boolean {
-  if (element.type === 'table') return true;
   if (!supportsBorder(element)) return false;
   return !(element.type === 'shape' && SELF_PAINTING_SHAPES.has(element.shape));
 }

@@ -22,12 +22,11 @@ describe('animationCategoriesOf (one category per set present)', () => {
     ]);
   });
 
-  it('a sticky, an image and a table show Shape, their sets and Text, in order', () => {
+  it('a sticky and an image show Shape, their sets and Text, in order; a stored table adds nothing', () => {
     expect(animationCategoriesOf([of('table'), of('image'), createSticky(0, 0)])).toEqual([
       'shape',
       'sticky',
       'media',
-      'table',
       'text',
     ]);
   });

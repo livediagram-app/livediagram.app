@@ -184,23 +184,6 @@ describe('paintableBoxedFields', () => {
     expect(out).not.toHaveProperty('textColor');
   });
 
-  it('carries a table’s header fill and header text colour', () => {
-    const table = {
-      id: 'tb',
-      type: 'table',
-      x: 0,
-      y: 0,
-      width: 200,
-      height: 100,
-      cells: [['a']],
-      headerFill: '#123456',
-      headerTextColor: '#ffffff',
-    } as BoxedElement;
-    const out = paintableBoxedFields(table) as Record<string, unknown>;
-    expect(out.headerFill).toBe('#123456');
-    expect(out.headerTextColor).toBe('#ffffff');
-  });
-
   it('collapses a uniform richText label into whole-label text formatting', () => {
     // Select-all-bold stores the formatting in a single attributed run,
     // not the element-level flag — the painter must still carry it.

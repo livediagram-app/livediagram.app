@@ -31,8 +31,6 @@ export function elementKindLabel(el: Element): string {
     }
     case 'text':
       return 'Text';
-    case 'table':
-      return 'Table';
     case 'sticky':
       return 'Sticky';
     case 'image':
@@ -51,6 +49,7 @@ export function elementKindLabel(el: Element): string {
     case 'link-card':
       return 'Link';
     case 'video':
+    case 'table':
       // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
       return retiredElementName(el);
     case 'arrow':

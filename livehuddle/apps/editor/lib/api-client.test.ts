@@ -691,7 +691,8 @@ describe('apiLoadTab load boundary', () => {
     expect(tab).toMatchObject({ id: 't1', name: 'T' });
   });
 
-  it('coerces a ragged table to a rectangle and leaves other elements untouched', async () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table loads as it was saved.
+  it('leaves a stored table exactly as it was saved, ragged cells included', async () => {
     const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 };
     const ragged = {
       id: 'tbl',
@@ -704,9 +705,7 @@ describe('apiLoadTab load boundary', () => {
     };
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [shape, ragged] } });
     const tab = await apiLoadTab('owner', 'd1', 't-table', null);
-    const table = tab!.elements.find((e) => e.type === 'table') as { cells: string[][] };
-    expect(table.cells.map((r) => r.length)).toEqual([2, 2]); // padded to the widest row
-    expect(table.cells[1]).toEqual(['c', '']);
+    expect(tab!.elements.find((e) => e.id === 'tbl')).toEqual(ragged);
     expect(tab!.elements.find((e) => e.id === 's')).toEqual(shape); // unchanged
   });
 

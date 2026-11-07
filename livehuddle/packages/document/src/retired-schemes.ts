@@ -62,11 +62,6 @@ function stripCharcoalColours(el: Element): { el: Element; stripped: number } {
   for (const { element, theme } of themeColourFields(el)) {
     if (record[element] === CHARCOAL[theme]) drop.add(element);
   }
-  // New tables baked the canvas into their cells and the scheme's ink into their text.
-  if (el.type === 'table') {
-    if (record.fillColor === CHARCOAL.backgroundColor) drop.add('fillColor');
-    if (record.textColor === CHARCOAL.elementText) drop.add('textColor');
-  }
   if (drop.size === 0) return { el, stripped: 0 };
   const next = { ...record };
   for (const field of drop) delete next[field];

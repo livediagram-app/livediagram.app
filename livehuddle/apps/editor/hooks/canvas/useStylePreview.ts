@@ -34,7 +34,6 @@ import type {
   BorderStroke,
   BorderStyle,
   Element,
-  TablePreset,
   IconAnimation,
   IconPosition,
   ElementShadow,
@@ -56,7 +55,6 @@ import {
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
   applyColorPresetToEl,
-  applyTablePresetToEl,
   applyFillColorToEl,
   applyFontToEl,
   applyShadowToEl,
@@ -216,10 +214,6 @@ export function useStylePreview(deps: {
       previewStyle((el) => applyColorPresetToEl(el, p)),
     commitShapeColorPreset: (p: ShapeColorPreset) =>
       commitStyle((el) => applyColorPresetToEl(el, p), 'StylePreset'),
-    // Table look (docs/specs/010-palette/style-presets.md): four surfaces + the banding in one step.
-    previewTablePreset: (p: TablePreset) => previewStyle((el) => applyTablePresetToEl(el, p)),
-    commitTablePreset: (p: TablePreset) =>
-      commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
     // Arrow preset
     previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
     commitArrowPreset: (p: ArrowPreset) =>
@@ -235,7 +229,7 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyStrokeColorToEl(el, c), 'StrokeColor'),
     previewTextColor: (c: string) => previewStyle((el) => applyTextColorToEl(el, c)),
     commitTextColor: (c: string) => commitStyle((el) => applyTextColorToEl(el, c), 'TextColor'),
-    // Heading band (a table's header row, a lane's title gutter): same flow,
+    // Heading band (a lane's title gutter): same flow,
     // and a no-op on elements that have no heading to paint.
     previewLabelFill: (c: string) => previewStyle((el) => applyLabelFillToEl(el, c)),
     commitLabelFill: (c: string) => commitStyle((el) => applyLabelFillToEl(el, c), 'LabelFill'),

@@ -1,6 +1,6 @@
 import type { Element } from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
-import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import { rederiveColorPresetForTheme } from './theme-presets';
 import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import {
   recolourElementForTheme,
@@ -116,16 +116,14 @@ function elementThemeView(
 }
 
 // A preset-bound element, re-derived for `theme`, or null when it carries no
-// binding. Shapes carry `colorPreset`, tables `tablePreset`; both mean the same
-// thing (the user picked a LOOK, not colours), so both theme walks ask this one
-// question rather than growing a branch each.
+// binding. A shape carries `colorPreset` (the user picked a LOOK, not colours), so both theme walks ask this one
+// question.
 function rederivePresetForTheme(el: Element, theme: ThemeDefinition): Element | null {
   // A binding the theme cannot express (a 'branch-3' look under a
   // single-accent theme) still answers: the element keeps the colours it has
   // rather than being walked through the preserve-customs path, which is what
   // the shape side has always done.
   if (el.type === 'shape' && el.colorPreset) return rederiveColorPresetForTheme(el, theme);
-  if (el.type === 'table' && el.tablePreset) return rederiveTablePresetForTheme(el, theme);
   return null;
 }
 

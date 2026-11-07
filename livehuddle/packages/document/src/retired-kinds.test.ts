@@ -15,6 +15,11 @@ import { isKnownElement, kindWordOf } from './element-refs';
 import { createShape } from './factories';
 import { paintOrder } from './paint-order';
 import { containerContents, isContainer } from './containment';
+import { resetThemeElement, switchThemeElement } from './themes';
+import { THEMES } from './themes-data';
+import { normaliseElements } from './element-normalise';
+import { elementBounds } from './geometry';
+import { isBoxed } from './index';
 import type { Element, Tab } from './index';
 
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored element of a kind livehuddle no
@@ -252,8 +257,8 @@ describe('a stored embed', () => {
   const tab = (): Tab =>
     structuredClone({ id: 't2', name: 'Demo', elements: [embed] }) as unknown as Tab;
 
-  it('is the one deleted element type, named Embed', () => {
-    expect([...RETIRED_ELEMENT_TYPES]).toEqual(['video']);
+  it('is a deleted element type, named Embed', () => {
+    expect(RETIRED_ELEMENT_TYPES.has('video')).toBe(true);
     expect(isRetiredElement(embed)).toBe(true);
     expect(retiredElementName(embed)).toBe('Embed');
   });
@@ -262,6 +267,92 @@ describe('a stored embed', () => {
     expect(migrateStoredTab(tab())).toEqual(tab());
     expect(migrateIncomingTab(tab())).toEqual(tab());
     expect(isValidTab(tab())).toBe(true);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 2: a table is a deleted element type,
+// kept exactly as stored with its cells, cell styles and cell links, its sizes and its look.
+describe('a stored table', () => {
+  const table = {
+    id: 'grid',
+    type: 'table',
+    x: 40,
+    y: 60,
+    width: 360,
+    height: 150,
+    cells: [
+      ['Name', 'Role', 'Room'],
+      ['Ada', 'Engineer', 'North'],
+      ['Mary', '', 'South'],
+    ],
+    headerRow: true,
+    headerColumn: false,
+    zebra: true,
+    tablePreset: 'table-banded',
+    cellStyles: [
+      [{ bold: true, bg: '#e0f2fe' }, null, null],
+      [null, { link: { kind: 'url', url: 'https://example.com/ada' } }, null],
+      [null, null, { textColor: '#b91c1c', alignX: 'right' }],
+    ],
+    headerTextColor: '#0f172a',
+    headerFill: '#bae6fd',
+    colWidths: [120, null, null],
+    rowHeights: [null, 60, null],
+    textSize: 'md',
+    fillColor: '#ffffff',
+    strokeColor: '#94a3b8',
+    textColor: '#1e293b',
+    animation: 'rows',
+    commentThread: { id: 'c1', comments: [] },
+  };
+  const tab = (): Tab =>
+    structuredClone({ id: 't3', name: 'Seating', elements: [table] }) as unknown as Tab;
+
+  // A box like any other: the canvas moves, resizes, hit-tests and deletes it by its box (a table read as an arrow
+  // threw on its missing ends).
+  it('is a box, bounded by what it stored', () => {
+    const el = tab().elements[0]!;
+    expect(isBoxed(el)).toBe(true);
+    expect(elementBounds(el, [el])).toEqual({ x: 40, y: 60, width: 360, height: 150 });
+  });
+
+  it('is a deleted element type, named Table', () => {
+    expect([...RETIRED_ELEMENT_TYPES]).toEqual(['video', 'table']);
+    expect(isRetiredElement(table)).toBe(true);
+    expect(retiredElementName(table)).toBe('Table');
+    expect(elementKindLabel(tab().elements[0]!)).toBe('Table');
+  });
+
+  it('loads deep-equal to what was stored, cells, cell styles and links included', () => {
+    expect(migrateStoredTab(tab())).toEqual(tab());
+    expect(migrateIncomingTab(tab())).toEqual(tab());
+    expect(migrateStoredElements(tab().elements)).toEqual(tab().elements);
+    expect(migrateIncomingElements(tab().elements)).toEqual(tab().elements);
+  });
+
+  it('saves unchanged: a load and a save write back exactly what was read', () => {
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(tab())));
+    expect(saved).toEqual(tab());
+    expect(migrateStoredTab(saved)).toEqual(tab());
+  });
+
+  it('is valid on its box alone', () => {
+    expect(isValidTab(tab())).toBe(true);
+    expect(isValidElement(table)).toBe(true);
+    expect(isValidElement({ ...table, cells: 'not a grid' })).toBe(true);
+    expect(isValidElement({ ...table, width: -1 })).toBe(false);
+  });
+
+  it('keeps every colour and field through a theme switch, a theme reset and an agent normalise', () => {
+    const [grid] = tab().elements;
+    expect(switchThemeElement(grid!, THEMES[0]!, THEMES[1]!)).toEqual(table);
+    expect(resetThemeElement(grid!, THEMES[1]!)).toEqual(table);
+    expect(normaliseElements([grid])).toEqual([table]);
+  });
+
+  it('is named to agents by its stored type', () => {
+    const [grid] = tab().elements;
+    expect(isKnownElement(grid!)).toBe(false);
   });
 });
 

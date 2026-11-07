@@ -45,6 +45,8 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   // A stored embed is a retired element (docs/specs/002-project-scope/not-in-livehuddle.md): it walks, as a retired
   // shape kind does.
   video: W,
+  // A stored table walks, as any retired element does (docs/specs/002-project-scope/not-in-livehuddle.md).
+  table: W,
   // Walk: standing on it, or going into it, is the point.
   'avatar-pad': W,
   stage: W,
@@ -171,7 +173,6 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   star: R,
   'speech-bubble': R,
   'timeline-rail': R,
-  table: R,
   annotation: R,
 };
 

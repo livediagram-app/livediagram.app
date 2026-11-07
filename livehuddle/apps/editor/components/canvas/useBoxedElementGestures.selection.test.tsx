@@ -2,13 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import {
-  createFreehand,
-  createSticky,
-  createTable,
-  createText,
-  type BoxedElement,
-} from '@livehuddle/document';
+import { createFreehand, createSticky, createText, type BoxedElement } from '@livehuddle/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection" (click the selected element again) and
@@ -171,12 +165,23 @@ describe.each(KINDS)('a plain press on a %s', (_name, make) => {
   });
 });
 
-describe('a plain click inside the only selected table', () => {
-  it('is a cell pick, so it leaves the table selected', () => {
-    const h = harness(createTable(0, 0), SOLE);
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table is a placeholder, so a
+// click on it settles like a click on any element (there are no cells left to pick).
+describe('a plain click on the only selected stored table', () => {
+  it('settles as any element does', () => {
+    const table = {
+      id: 't',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 150,
+      cells: [['a', 'b']],
+    } as unknown as BoxedElement;
+    const h = harness(table, SOLE);
     h.press();
     h.release();
-    expect(h.onPlainClick).not.toHaveBeenCalled();
+    expect(h.onPlainClick).toHaveBeenCalledTimes(1);
   });
 });
 

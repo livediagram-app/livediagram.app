@@ -60,7 +60,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 6,
+  build: 5,
   write: 4,
   draw: 6,
   stickers: 0,

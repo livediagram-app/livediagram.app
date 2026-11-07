@@ -14,7 +14,7 @@
       "lanes": 0,
       "arrows": 11
     },
-    "unknown": 0,
+    "unknown": 1,
     "threads": {
       "open": 1,
       "total": 2
@@ -431,10 +431,10 @@
     {
       "ref": "480a",
       "id": "480a0000-0000-4000-8000-000000000012",
-      "kind": "table",
-      "unknown": false,
+      "kind": "? table",
+      "unknown": true,
       "label": null,
-      "summary": "4x3 Service | p99 latency | Availability",
+      "summary": null,
       "attributes": [],
       "edges": [],
       "children": [],

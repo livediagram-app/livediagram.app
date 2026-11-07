@@ -6,7 +6,7 @@ import {
   type TabResponse,
   type TabSummary,
 } from '@livehuddle/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livehuddle/document';
+import type { CommentMention, Tab } from '@livehuddle/document';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,
@@ -73,16 +73,6 @@ async function _apiLoadTabRevisioned(
   void _did;
   void _oi;
   void _ua;
-  // Coerce any table to a rectangular grid on load: this is the single
-  // boundary where stored elements enter the editor, so a legacy / hand-
-  // edited row with a ragged `cells` array can't reach the renderer and
-  // break the grid. No-op for the common case (the editor only ever
-  // writes rectangular tables).
-  if (clientTab.elements.some((el) => el.type === 'table')) {
-    clientTab.elements = clientTab.elements.map((el) =>
-      el.type === 'table' ? normalizeTable(el) : el,
-    );
-  }
   // An api older than tab revisions answers none: nothing held, so every changeset is news.
   return { tab: clientTab, rev: typeof rev === 'number' ? rev : 0 };
 }

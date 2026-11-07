@@ -55,9 +55,6 @@ export function inheritedSizeFor(
   // selection's dimensions, so a marker added while a big shape is selected
   // doesn't balloon. It stays its intrinsic 44×44.
   if (base.type === 'annotation') return { width: base.width, height: base.height };
-  // A table drops as its 3 x 3 grid at 360 x 150 (docs/specs/008-canvas/canvas-and-palette.md Table): its size is its
-  // grid's, not the selection's.
-  if (base.type === 'table') return { width: base.width, height: base.height };
   // Same for the kinds whose silhouette IS the element: a portal's ring
   // (docs/specs/009-elements/portal-element.md) and the fixed-size Selection Mode button (docs/specs/009-elements/mode-button.md). Inheriting
   // whatever box happened to be selected — a wide banner, a thin rail — hands
@@ -89,10 +86,8 @@ export function inheritedSizeFor(
   // The same holds for a self-drawing donor: a square added while a rating or a progress bar was selected came out as
   // thin as the bar.
   const donor = selected && isBoxed(selected) ? selected : null;
-  // A table's size is its rows': a mind node tapped while a table was selected came out 360 x 150.
   const keepsOwnSize =
-    donor?.type === 'table' ||
-    (donor?.type === 'shape' && (isContainerKind(donor.shape) || isSelfDrawingShape(donor.shape)));
+    donor?.type === 'shape' && (isContainerKind(donor.shape) || isSelfDrawingShape(donor.shape));
   const inherit = keepsOwnSize ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;

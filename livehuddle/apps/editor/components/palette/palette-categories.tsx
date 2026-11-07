@@ -77,7 +77,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: lanes, frames, stacks, boundaries, a timeline, a diagram key and tables.',
+      'The structural elements: lanes, stacks, boundaries, a timeline and a diagram key.',
     icon: <BuildTabIcon />,
   },
   {

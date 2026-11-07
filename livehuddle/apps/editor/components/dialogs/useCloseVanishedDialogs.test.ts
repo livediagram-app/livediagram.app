@@ -61,8 +61,8 @@ describe('useCloseVanishedDialogs', () => {
     const close = vi.fn();
     const { rerender } = renderHook(
       ({ elements }: { elements: Element[] }) =>
-        useCloseVanishedDialogs(elements, [['a', close, (e) => e.type === 'table']]),
-      { initialProps: { elements: [{ ...el('a'), type: 'table' } as unknown as Element] } },
+        useCloseVanishedDialogs(elements, [['a', close, (e) => e.type === 'image']]),
+      { initialProps: { elements: [{ ...el('a'), type: 'image' } as unknown as Element] } },
     );
     expect(close).not.toHaveBeenCalled();
     rerender({ elements: [el('a')] });

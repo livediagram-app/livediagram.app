@@ -60,3 +60,20 @@ export function arrowBetween(
 ): ArrowElement {
   return { ...createPinnedArrow(from, 'e', to, 'w'), id, ...extra };
 }
+
+// A stored table (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 2): a retired element
+// type, as the editor's table tool stored it, a 3x3 grid with a header row.
+export function storedTableAt(x: number, y: number, extra: Record<string, unknown> = {}): Element {
+  return {
+    id: 'table',
+    type: 'table',
+    x,
+    y,
+    width: 360,
+    height: 150,
+    cells: Array.from({ length: 3 }, () => ['', '', '']),
+    headerRow: true,
+    textSize: 'md',
+    ...extra,
+  } as unknown as Element;
+}

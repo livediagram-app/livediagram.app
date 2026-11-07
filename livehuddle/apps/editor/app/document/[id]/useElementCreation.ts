@@ -99,16 +99,6 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'shape', kind: 'sticker', stickerId });
   };
 
-  // A 3x3 table, drawn to size like a shape. It used to drop at the viewport
-  // centre on the reasoning that "the grid sizes itself" — but the grid
-  // divides whatever box it is given, so the box was always the user's to
-  // choose and they were made to resize it afterwards instead.
-  // Telemetry fires on commit (see useShapeDrawing.commitDraw).
-  const addTable = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'table' });
-  };
-
   // A note marker (docs/specs/009-elements/annotations.md) dropped at the viewport centre (no
   // draw-to-size: it's a fixed-size marker, not a box you drag out). The
   // user clicks it afterwards to add the note text.
@@ -279,7 +269,6 @@ export function useElementCreation(opts: {
   return {
     addShape,
     addSticker,
-    addTable,
     addAnnotation,
     addLinkCard,
     addImage,

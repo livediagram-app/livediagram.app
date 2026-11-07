@@ -38,7 +38,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     case 'arrow':
       return a.ends === 'none' ? 'arrow:none' : 'arrow:';
     case 'text':
-    case 'table':
     case 'image':
     case 'annotation':
     case 'link-card':

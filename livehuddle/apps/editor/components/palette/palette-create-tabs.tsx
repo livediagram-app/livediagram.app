@@ -30,7 +30,7 @@ export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The structural elements (docs/specs/010-palette/build-category.md): Mind node, Lane, Frame, Timeline, Table.
+// The structural elements (docs/specs/010-palette/build-category.md): Lane, Stack, Boundary, Timeline, Diagram key.
 // Rows with a blurb rather than a bare icon grid: these are all "a container
 // that holds other work", so the picture alone doesn't separate them — "Tab
 // adds a child, Enter a sibling" vs "A titled band that carries its steps" is

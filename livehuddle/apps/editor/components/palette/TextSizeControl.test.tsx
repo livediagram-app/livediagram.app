@@ -7,7 +7,6 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   arrowLabelFontSize,
-  CELL_FONT_PX,
   LABEL_FONT_PX,
   NOTE_FONT_PX,
   type TextSize,
@@ -70,7 +69,6 @@ describe('presetPxFor', () => {
   it('reads each surface on its own scale', () => {
     expect(presetPxFor('sticky')('md')).toBe(NOTE_FONT_PX.md);
     expect(presetPxFor('arrow')('lg')).toBe(arrowLabelFontSize('lg'));
-    expect(presetPxFor('table')('sm')).toBe(CELL_FONT_PX.sm);
     expect(presetPxFor('text')('md')).toBe(LABEL_FONT_PX.md);
   });
 });

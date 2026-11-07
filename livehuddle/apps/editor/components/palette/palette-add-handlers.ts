@@ -9,7 +9,6 @@ export const PALETTE_ADD_HANDLER_KEYS = [
   'onAddSticker',
   'onAddText',
   'onAddSticky',
-  'onAddTable',
   'onAddAnnotation',
   'onAddLinkCard',
   'onAddHero',

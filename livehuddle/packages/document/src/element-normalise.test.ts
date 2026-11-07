@@ -13,15 +13,9 @@ const box = { x: 0, y: 0, width: 200, height: 100 };
 const valid = (elements: unknown[]) => isValidTab({ id: 't', name: 'T', elements });
 
 describe('content kinds', () => {
-  it('pads a ragged table', () => {
-    const [t] = normaliseElements([
-      { id: 't', type: 'table', ...box, cells: [['a', 'b', 'c'], ['d'], [1, 2]] },
-    ]) as { cells: string[][] }[];
-    expect(t!.cells).toEqual([
-      ['a', 'b', 'c'],
-      ['d', '', ''],
-      ['1', '2', ''],
-    ]);
+  it('leaves a stored table exactly as it came', () => {
+    const table = { id: 't', type: 'table', ...box, cells: [['a', 'b', 'c'], ['d'], [1, 2]] };
+    expect(normaliseElements([structuredClone(table)])).toEqual([table]);
   });
 
   it('keeps an alignment the model chose', () => {

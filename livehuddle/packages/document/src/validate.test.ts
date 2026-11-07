@@ -60,7 +60,7 @@ describe('isValidElement', () => {
     expect(isValidElement({ ...arrow, labelMaxWidth: Number.NaN })).toBe(false);
   });
 
-  it('accepts table / image / freehand / text', () => {
+  it('accepts a stored table / image / freehand / text', () => {
     expect(isValidElement({ id: 't', type: 'table', cells: [['a', 'b']], ...box })).toBe(true);
     expect(isValidElement({ id: 'i', type: 'image', imageId: null, ...box })).toBe(true);
     expect(
@@ -206,7 +206,7 @@ describe('isValidElement', () => {
     expect(isValidElement(arrowTo('nnn'))).toBe(false);
   });
 
-  it('rejects over-cap arrays (freehand points, table cells)', () => {
+  it('rejects over-cap arrays (freehand points)', () => {
     const bytes = new Uint8Array(2 + (MAX_FREEHAND_POINTS + 1) * 4);
     bytes[0] = 1;
     const packedPoints = Buffer.from(bytes).toString('base64');
@@ -516,9 +516,11 @@ describe('elementValidationIssue', () => {
     });
   });
 
-  it('names a malformed table cell', () => {
-    const issue = elementValidationIssue({ id: 't', type: 'table', cells: [['a', 1]], ...box });
-    expect(issue?.field).toBe('cells');
+  it('checks a stored table on its box alone (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine")', () => {
+    expect(
+      elementValidationIssue({ id: 't', type: 'table', cells: [['a', 1]], ...box }),
+    ).toBeNull();
+    expect(elementValidationIssue({ id: 't', type: 'table', ...box, x: 'left' })?.field).toBe('x');
   });
 
   it('names a freehand stroke that still carries its former points', () => {

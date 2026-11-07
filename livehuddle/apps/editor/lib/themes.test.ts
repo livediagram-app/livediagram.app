@@ -4,7 +4,6 @@ import type {
   FreehandElement,
   ShapeElement,
   StickyElement,
-  TableElement,
   TextElement,
 } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
@@ -24,7 +23,6 @@ import {
   switchThemeBackdrop,
   switchThemeElement,
   switchThemeElements,
-  tableColorPresets,
   type ThemeDefinition,
 } from './themes';
 import { encodeStrokePoints } from '@livehuddle/document';
@@ -233,48 +231,6 @@ describe('colour-preset re-derivation across themes (docs/specs/010-palette/styl
     expect(rederiveColorPresetForTheme(shape, slate)).toBe(shape);
     const arrow = createPinnedArrow('a', 'e', 'b', 'w');
     expect(rederiveColorPresetForTheme(arrow, slate)).toBe(arrow);
-  });
-});
-
-describe('table-preset re-derivation across themes (docs/specs/010-palette/style-presets.md)', () => {
-  // The bug this covers: a table preset writes resolved colours, so before the
-  // binding existed every one of them read as a hand-picked custom and the
-  // table kept the OLD theme's header band while the shapes around it moved.
-  const slate = getTheme('slate');
-  const midnight = getTheme('midnight');
-  const here = tableColorPresets(slate).find((p) => p.id === 'table-banded')!;
-  const there = tableColorPresets(midnight).find((p) => p.id === 'table-banded')!;
-  const painted = () => ({
-    id: 't1',
-    type: 'table' as const,
-    x: 0,
-    y: 0,
-    width: 300,
-    height: 120,
-    cells: [['a']],
-    fillColor: here.fill,
-    strokeColor: here.stroke,
-    textColor: here.text,
-    headerFill: here.headerFill,
-    headerTextColor: here.headerText,
-    zebra: here.zebra,
-    tablePreset: 'table-banded',
-  });
-
-  it('re-derives a bound table to the matching look of the new theme', () => {
-    const [out] = switchThemeElements([painted()], slate, midnight) as Array<
-      ReturnType<typeof painted>
-    >;
-    expect(out!.headerFill).toBe(there.headerFill);
-    expect(out!.headerTextColor).toBe(there.headerText);
-    expect(out!.strokeColor).toBe(there.stroke);
-    expect(out!.tablePreset).toBe('table-banded');
-  });
-
-  it('leaves a hand-coloured table to the normal preserve-customs walk', () => {
-    const custom = { ...painted(), tablePreset: undefined, headerFill: '#abcdef' };
-    const [out] = switchThemeElements([custom], slate, midnight) as Array<typeof custom>;
-    expect(out!.headerFill).toBe('#abcdef');
   });
 });
 
@@ -644,42 +600,20 @@ describe('switchThemeElement', () => {
     expect(out.strokeColor).toBe(next.elementStroke);
   });
 
-  // Tables track the canvas BACKDROP: cells = the canvas colour, text
-  // contrasts with it (deriveNewBoxedColours). Switching to a dark theme
-  // must re-derive both; the generic rule would compare the backdrop-
-  // derived text against the light theme's `elementText` (null), mistake
-  // it for a user override, and strand dark text on the dark theme.
-  const table = (over: Partial<TableElement> = {}): TableElement => ({
-    id: 't',
-    type: 'table',
-    x: 0,
-    y: 0,
-    width: 360,
-    height: 150,
-    cells: [
-      ['', ''],
-      ['', ''],
-    ],
-    ...over,
-  });
-
-  it('re-derives a backdrop-driven table to a dark theme (dark cells, light text)', () => {
-    const brand = getTheme('brand'); // white bg, elementText null
-    const midnight = getTheme('midnight'); // dark bg, light elementText
-    // As deriveNewBoxedColours leaves it on brand: fill = bg, text = contrast.
-    const el = table({ fillColor: brand.backgroundColor, textColor: '#1e293b' });
-    const out = switchThemeElement(el, brand, midnight) as TableElement;
-    expect(out.fillColor).toBe(midnight.backgroundColor); // cells follow the dark canvas
-    expect(out.textColor).toBe(midnight.elementText); // light, readable
-  });
-
-  it('preserves a user-customised table fill + text across the switch', () => {
-    const brand = getTheme('brand');
-    const midnight = getTheme('midnight');
-    const el = table({ fillColor: '#ff0000', textColor: '#ffff00' });
-    const out = switchThemeElement(el, brand, midnight) as TableElement;
-    expect(out.fillColor).toBe('#ff0000');
-    expect(out.textColor).toBe('#ffff00');
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table keeps what it saved.
+  it('leaves a stored table exactly as it was', () => {
+    const table = {
+      id: 't',
+      type: 'table',
+      x: 0,
+      y: 0,
+      width: 360,
+      height: 150,
+      cells: [['a', 'b']],
+      fillColor: '#ffffff',
+      textColor: '#1e293b',
+    } as unknown as Element;
+    expect(switchThemeElement(table, getTheme('brand'), getTheme('midnight'))).toEqual(table);
   });
 });
 
