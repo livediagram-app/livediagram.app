@@ -119,6 +119,9 @@ export type ConnectionOpen = {
   href: string;
   via: 'item' | 'link';
   level: Level | null;
+  // The target's picture on the reader's own origin (`/api/previews/...`): the item's for `via: 'item'` (asked with
+  // the reader's Bearer), the pass's live image for `via: 'link'` (no credential).
+  preview: string;
 };
 
 // Why a connection opens nothing, as `{ error }` on the open door: the target in the Trash or gone (410), the pass

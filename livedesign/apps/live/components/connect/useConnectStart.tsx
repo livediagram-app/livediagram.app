@@ -1,6 +1,6 @@
 'use client';
 
-// Connect liveworkspace File on a start screen (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the
+// Connect File on a start screen (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the
 // shared list, loaded and mounted only once the person chooses the entry, so the start screen's first paint and its
 // one read of Recent wait for that choice. Offered only where connecting can work: signed in, the design on the
 // server, and a session that may change its tabs (not a tab-scoped link's, an embed's, a workbench's or a viewer's).
@@ -38,7 +38,6 @@ export function useConnectStart(): ((palette: StartPalette) => ReactNode) | unde
   return (palette) => (
     <ConnectFilePanel
       hostId={designId}
-      hostApp="livedesign"
       hostKind="design"
       // Its owner or a member of its team opens it without a link: they manage its links, which both ways needs.
       hostManaged={sessionShareCode === null}

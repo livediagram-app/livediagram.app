@@ -416,6 +416,7 @@ describe('opening a connection', () => {
       href: `http://localhost:3200/project/${target.id}`,
       via: 'item',
       level: null,
+      preview: `/api/previews/items/${target.id}?v=${target.updatedAt}`,
     });
     // A Viewer of the host by link, signed in or not, gets the pass at its role.
     const viewCode = (await link(ada.auth, host.id, { level: 'view' })).code;
@@ -427,6 +428,7 @@ describe('opening a connection', () => {
         via: 'link',
         level: 'edit',
         href: `http://localhost:3200/project/shared?s=${code}`,
+        preview: `/api/previews/share/${code}/image.svg`,
       });
     }
   });

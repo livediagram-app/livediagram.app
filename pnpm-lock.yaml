@@ -5912,6 +5912,9 @@ importers:
       '@liveworkspace/index-client':
         specifier: workspace:*
         version: link:../../../packages/index-client
+      '@liveworkspace/media':
+        specifier: workspace:^
+        version: link:../../../packages/media
       '@liveworkspace/migration':
         specifier: workspace:^
         version: link:../../../packages/migration

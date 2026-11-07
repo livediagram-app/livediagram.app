@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// Connect liveworkspace File at the foot of a start panel's rail (connected-tabs.md "Connecting"): one button, marked
-// chosen, the other apps' logos fanned at its end with the host's own left out.
+// Connect File at the foot of a start panel's rail (connected-tabs.md "Connecting"): one button, marked
+// chosen, every app's logo fanned in its icon slot, the host's included.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CONNECT_RAIL_ID, ConnectRailEntry } from './ConnectRailEntry';
@@ -21,23 +21,21 @@ const COLOURS = {
 describe('ConnectRailEntry', () => {
   it('is one rail button that picks the connect view', () => {
     const onPick = vi.fn();
-    const { container } = render(
-      <ConnectRailEntry hostApp="livediagram" on={false} onPick={onPick} colours={COLOURS} />,
-    );
-    const button = screen.getByRole('button', { name: 'Connect liveworkspace File' });
+    const { container } = render(<ConnectRailEntry on={false} onPick={onPick} colours={COLOURS} />);
+    const button = screen.getByRole('button', { name: 'Connect File' });
     expect(button.getAttribute('data-rail')).toBe(CONNECT_RAIL_ID);
     expect(button.getAttribute('aria-current')).toBeNull();
-    // The owner's words, in full, on the row (balanced onto two lines in a 240px rail).
-    expect(button.textContent).toBe('Connect liveworkspace File');
+    // The owner's words, in full, on the row (on one line in a 240px rail).
+    expect(button.textContent).toBe('Connect File');
     fireEvent.click(button);
     expect(onPick).toHaveBeenCalled();
-    // Three logos, never the host's own.
-    expect(container.querySelectorAll('[aria-hidden] > span')).toHaveLength(3);
+    // Every app's logo, the host's included.
+    expect(container.querySelectorAll('[aria-hidden] > span')).toHaveLength(5);
   });
 
   it('wears the chosen tint and ink when chosen', () => {
-    render(<ConnectRailEntry hostApp="liveplanner" on onPick={vi.fn()} colours={COLOURS} />);
-    const button = screen.getByRole('button', { name: 'Connect liveworkspace File' });
+    render(<ConnectRailEntry on onPick={vi.fn()} colours={COLOURS} />);
+    const button = screen.getByRole('button', { name: 'Connect File' });
     expect(button.getAttribute('aria-current')).toBe('true');
     expect(button.style.backgroundColor).toBe('rgb(219, 234, 254)');
     expect(button.style.color).toBe('rgb(29, 78, 216)');

@@ -1,17 +1,16 @@
 'use client';
 
-// Connect liveworkspace File, in a start screen's content area (liveworkspace/docs/specs/004-index/connected-tabs.md
+// Connect File, in a start screen's content area (liveworkspace/docs/specs/004-index/connected-tabs.md
 // "Connecting"): a heading over the shared ConnectPicker, which an editor mounts only once the person chooses the
 // entry (its one read of Recent starts then). Each press runs connectFile with the host's grant and the editor's own
 // tab add; the editor then moves to the new tab. Times read "Opened 2 minutes ago" against one minute's clock, cleared
 // when the list goes.
 import { useEffect, useState } from 'react';
-import type { App, ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
+import type { ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
 import { connectFile } from './connect-file';
 import { ConnectPicker, type ConnectChoice, type ConnectInk } from './ConnectPicker';
-import { appName } from './connect-words';
 
 // How often "Opened 2 minutes ago" is measured again while the list shows. Safe range: 15 s to 5 minutes.
 export const CONNECT_CLOCK_MS = 60_000;
@@ -28,7 +27,6 @@ export function useTickingNow(everyMs: number = CONNECT_CLOCK_MS): number {
 
 export type ConnectFilePanelProps = {
   hostId: string;
-  hostApp: App;
   // The host's kind in words: "diagram", "plan".
   hostKind: string;
   // The person may manage the host's links (its owner, or a member of its team): both ways needs it.
@@ -52,7 +50,6 @@ export type ConnectFilePanelProps = {
 
 export function ConnectFilePanel({
   hostId,
-  hostApp,
   hostKind,
   hostManaged,
   connected,
@@ -87,13 +84,13 @@ export function ConnectFilePanel({
   return (
     <section aria-labelledby="connect-file-title" data-connect-file="">
       <h3 id="connect-file-title" className="text-[16px] font-semibold">
-        Connect liveworkspace File
+        Connect File
       </h3>
       <p
         className="mb-4 mt-0.5 text-[13px] max-sm:mb-3"
         style={ink ? { color: ink.muted } : undefined}
       >
-        Add a tab that opens a file from {appName(hostApp)} or any other liveworkspace app.
+        Add a tab that opens a file from any liveworkspace app.
       </p>
       <ConnectPicker
         client={client}

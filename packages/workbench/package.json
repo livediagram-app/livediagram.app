@@ -98,6 +98,7 @@
     "./components/connect/connect-words": "./src/components/connect/connect-words.ts",
     "./components/connect/connected-tab-view": "./src/components/connect/connected-tab-view.ts",
     "./components/connect/open-connected-tab": "./src/components/connect/open-connected-tab.ts",
+    "./components/connect/useConnectedPreview": "./src/components/connect/useConnectedPreview.ts",
     "./components/connect/useConnectedTabActions": "./src/components/connect/useConnectedTabActions.ts",
     "./components/connect/useRecentFiles": "./src/components/connect/useRecentFiles.ts",
     "./components/dialogs/ApplyToAllTabsRow": "./src/components/dialogs/ApplyToAllTabsRow.tsx",

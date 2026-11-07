@@ -112,4 +112,56 @@ describe('ConnectedTabCard', () => {
     );
     expect(button('Open')).toBeTruthy();
   });
+
+  it("shows the file's picture over a smaller logo, a placeholder while asked for, the logo alone for none", () => {
+    const h = handlers();
+    const { rerender } = render(
+      <ConnectedTabCard
+        view={{ state: 'ready' }}
+        name="Launch plan"
+        app="liveplanner"
+        canEdit
+        preview={{ state: 'loading' }}
+        {...h}
+      />,
+    );
+    const box = () => document.querySelector('[data-connected-preview]');
+    expect(box()?.getAttribute('data-connected-preview')).toBe('loading');
+    expect(box()?.querySelector('img')).toBeNull();
+    rerender(
+      <ConnectedTabCard
+        view={{ state: 'ready' }}
+        name="Launch plan"
+        app="liveplanner"
+        canEdit
+        preview={{ state: 'ready', src: 'blob:picture' }}
+        {...h}
+      />,
+    );
+    expect(box()?.querySelector('img')?.getAttribute('src')).toBe('blob:picture');
+    rerender(
+      <ConnectedTabCard
+        view={{ state: 'gone' }}
+        name="Launch plan"
+        app="liveplanner"
+        canEdit
+        preview={{ state: 'ready', src: 'blob:picture' }}
+        {...h}
+      />,
+    );
+    // Gone: the picture greys with the logo, which keeps its amber dot.
+    expect(box()?.className).toContain('grayscale');
+    expect(document.querySelector('.bg-amber-500')).not.toBeNull();
+    rerender(
+      <ConnectedTabCard
+        view={{ state: 'ready' }}
+        name="Launch plan"
+        app="liveplanner"
+        canEdit
+        preview={{ state: 'none' }}
+        {...h}
+      />,
+    );
+    expect(box()).toBeNull();
+  });
 });

@@ -195,7 +195,7 @@ export function StartPlanning({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  // Connect File at the rail's foot, where connecting can work (useConnectStart).
   const connect = useConnectStart();
   // How the Community's tiles draw here: all in Inspiration, the credit in the panel's muted ink.
   const tiles = communityStartTiles(palette);

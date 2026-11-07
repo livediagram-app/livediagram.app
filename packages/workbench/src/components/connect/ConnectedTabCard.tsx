@@ -14,11 +14,14 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { connectedTabCopy, isBrokenState, type ConnectedTabView } from './connected-tab-view';
 import { appName } from './connect-words';
+import type { ConnectedPreview } from './useConnectedPreview';
 
 const ArrowGlyph = lucideGlyph(lucideArrowUpRight, 14);
 const LinkGlyph = lucideGlyph(lucideLink, 14);
 const RetryGlyph = lucideGlyph(lucideRefreshCw, 14);
 const TrashGlyph = lucideGlyph(lucideTrash2, 14);
+
+const NO_PREVIEW: ConnectedPreview = { state: 'none' };
 
 export function ConnectedTabCard({
   view,
@@ -30,6 +33,7 @@ export function ConnectedTabCard({
   onRemove,
   onConnectAgain,
   onRetry,
+  preview = NO_PREVIEW,
 }: {
   view: ConnectedTabView;
   // The tab's name: the target's title as last seen.
@@ -43,6 +47,8 @@ export function ConnectedTabCard({
   onRemove: () => void;
   onConnectAgain: () => void;
   onRetry: () => void;
+  // The target's picture (useConnectedPreview): over a smaller logo while asked for or drawn, the logo alone for none.
+  preview?: ConnectedPreview;
 }) {
   const { state } = view;
   const copy = connectedTabCopy(state, name, app, canEdit);
@@ -56,22 +62,35 @@ export function ConnectedTabCard({
         data-connected-card={state}
         className="flex w-full max-w-sm animate-dialog-in flex-col items-center rounded-3xl border border-slate-200 bg-white px-8 py-9 text-center shadow-xl motion-reduce:animate-none dark:border-slate-700 dark:bg-slate-900"
       >
-        <span
-          className={`relative flex size-16 items-center justify-center rounded-2xl bg-slate-50 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 ${
-            broken ? 'grayscale-[60%]' : ''
-          }`}
-        >
-          <BrandMark app={app} variant="full" spinning={state === 'opening'} className="size-10" />
-          {broken ? (
-            <span
-              aria-hidden
-              className="absolute -right-1 -top-1 size-3.5 rounded-full bg-amber-500 ring-2 ring-white dark:bg-amber-400 dark:ring-slate-900"
-            />
-          ) : null}
-        </span>
+        {preview.state === 'none' ? (
+          <Logo app={app} broken={broken} spinning={state === 'opening'} size="large" />
+        ) : (
+          // The picture, the logo sitting on its lower edge. A file that is gone or unreachable keeps its picture
+          // greyed, as its logo is.
+          <div className="flex w-full flex-col items-center">
+            <div
+              data-connected-preview={preview.state}
+              className={`aspect-[16/10] w-full overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 ${
+                preview.state === 'loading' ? 'animate-pulse motion-reduce:animate-none' : ''
+              } ${broken ? 'grayscale-[60%]' : ''}`}
+            >
+              {preview.state === 'ready' ? (
+                <img
+                  src={preview.src}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-full object-cover object-top"
+                />
+              ) : null}
+            </div>
+            <div className="-mt-6">
+              <Logo app={app} broken={broken} spinning={state === 'opening'} size="small" />
+            </div>
+          </div>
+        )}
         <h2
           id="connected-tab-title"
-          className="mt-5 text-[17px] font-semibold tracking-tight text-slate-900 [overflow-wrap:anywhere] dark:text-slate-100"
+          className={`${preview.state === 'none' ? 'mt-5' : 'mt-3'} text-[17px] font-semibold tracking-tight text-slate-900 [overflow-wrap:anywhere] dark:text-slate-100`}
         >
           {copy.title}
         </h2>
@@ -120,5 +139,43 @@ export function ConnectedTabCard({
         ) : null}
       </section>
     </div>
+  );
+}
+
+// The target app's logo on its tile: large on its own, smaller on a picture's edge (ringed in the card's paper so it
+// reads over the picture). An amber dot when the tab opens nothing.
+function Logo({
+  app,
+  broken,
+  spinning,
+  size,
+}: {
+  app: App;
+  broken: boolean;
+  spinning: boolean;
+  size: 'large' | 'small';
+}) {
+  const large = size === 'large';
+  return (
+    <span
+      className={`relative flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 ${
+        large
+          ? 'size-16 ring-1 ring-slate-200 dark:ring-slate-700'
+          : 'size-12 shadow-sm ring-4 ring-white dark:ring-slate-900'
+      } ${broken ? 'grayscale-[60%]' : ''}`}
+    >
+      <BrandMark
+        app={app}
+        variant="full"
+        spinning={spinning}
+        className={large ? 'size-10' : 'size-8'}
+      />
+      {broken ? (
+        <span
+          aria-hidden
+          className="absolute -right-1 -top-1 size-3.5 rounded-full bg-amber-500 ring-2 ring-white dark:bg-amber-400 dark:ring-slate-900"
+        />
+      ) : null}
+    </span>
   );
 }

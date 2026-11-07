@@ -13,6 +13,7 @@ import { ConnectedTabCard } from './ConnectedTabCard';
 import { isBrokenState, type ConnectedTabView } from './connected-tab-view';
 import { pickIsFresh, setConnectedTabBroken, useConnectedTabPick } from './connected-tab-store';
 import { openConnectedTab, type Navigator } from './open-connected-tab';
+import { useConnectedPreview } from './useConnectedPreview';
 
 export type ConnectedTabPageProps = {
   tabId: string;
@@ -57,6 +58,8 @@ function Page({
   navigate,
 }: ConnectedTabPageProps) {
   const pick = useConnectedTabPick(tabId);
+  // The target's picture on the card (IDX38): asked once per connection, going nowhere.
+  const preview = useConnectedPreview({ connection, grant, offline, client });
   // A press made just before this page mounted (its code loads on the first connected tab) is still the person's.
   const [first] = useState(() => ({ fresh: pickIsFresh(pick), nonce: pick?.nonce ?? null }));
   const handled = useRef<number | null>(first.fresh ? null : first.nonce);
@@ -121,6 +124,7 @@ function Page({
         app={connection.app}
         canEdit={canEdit}
         away={connection.app !== hostApp}
+        preview={preview}
         onOpen={() => void open()}
         onRetry={() => void open()}
         onRemove={onRemove}

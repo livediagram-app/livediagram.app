@@ -109,7 +109,7 @@ export function StartPanel<C extends string>({
   // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
   // (save-locations.md "On the start screen").
   footer?: ((palette: PlanPalette) => ReactNode) | undefined;
-  // Connect liveworkspace File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the rail's last entry,
+  // Connect File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the rail's last entry,
   // at its very bottom, and what the content area shows once it is chosen. Absent where connecting cannot work.
   connect?: ((palette: PlanPalette) => ReactNode) | undefined;
 }) {
@@ -122,7 +122,7 @@ export function StartPanel<C extends string>({
   const [calm, setCalm] = useState(swapped);
   useEffect(() => () => noteStartPanelLeft(), []);
   const [category, setCategory] = useState<C>(initialCategory);
-  // Connect liveworkspace File chosen in the rail: its list stands in the cards' place until a category is picked.
+  // Connect File chosen in the rail: its list stands in the cards' place until a category is picked.
   const [connecting, setConnecting] = useState(false);
   // A search handed over by /new?q= (start-query.ts), else none.
   const [query, setQuery] = useState(() => takeStartQuery());
@@ -398,7 +398,6 @@ export function StartPanel<C extends string>({
               ) : null}
               {connect ? (
                 <ConnectRailEntry
-                  hostApp="liveplanner"
                   on={!searching && connecting}
                   onPick={() => {
                     setCalm(false);
