@@ -5,6 +5,8 @@ import {
   CALL_SCREEN_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
   type CallTrackLocator,
+  type GameEventOp,
+  type GameInputOp,
   type VoiceLevel,
 } from '@livehuddle/api-schema';
 import type { CallsCaller } from '@/lib/api/calls';
@@ -71,7 +73,10 @@ export type CallSignal =
   | { kind: 'avatar-knock'; roomId: string }
   | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' }
   // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire").
-  | { kind: 'avatar-bell'; deskId: string };
+  | { kind: 'avatar-bell'; deskId: string }
+  // A game at a piece: a player's paddle, or a moment of the game (docs/specs/009-elements/social-pieces.md "The wire").
+  | Omit<GameInputOp, 'tabId'>
+  | Omit<GameEventOp, 'tabId'>;
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the

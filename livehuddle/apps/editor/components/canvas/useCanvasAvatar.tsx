@@ -3,6 +3,7 @@
 import { answerMachine } from '@/lib/machine-answer';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
 import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
+import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
 import { isStandingSeatShape } from '@livehuddle/document';
 import { useSeatStatus } from './useSeatStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
@@ -275,6 +276,18 @@ export function useCanvasAvatar({
   // Each sitter on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a
   // table rings the exact seat, and at their drawn size, so the name pill clears the highest head.
   const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
+  // The game pieces (docs/specs/009-elements/social-pieces.md "A game"): who sits at each and may play, and the room.
+  useTableGameScene({
+    tabId: props.activeTabId ?? '',
+    selfId: props.selfParticipant.id,
+    selfColor: props.selfParticipant.color,
+    seatedOn: avatar.seatedOn,
+    seatClaim: avatar.seatClaim,
+    takePart: !!props.takePart,
+    peers: props.remoteAvatars,
+    seatsOf,
+    send: props.onCallSignal,
+  });
   const selfScale = avatarScale(avatarLook.config.size);
   const chairSitters = useByValue(
     useMemo(() => {

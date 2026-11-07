@@ -24,6 +24,7 @@ import {
   useJukeboxListening,
 } from '@/lib/jukebox-listening';
 import { useNearArcade } from './useSocialPieces';
+import { PingPongGame } from './PingPongGame';
 import { NoticeBoardPopover, NoticeBoardReader } from './NoticeBoardPopover';
 import { WorldClockReader } from './WorldClockReader';
 
@@ -38,7 +39,8 @@ export function hasSocialFace(kind: string): boolean {
     kind === 'notice-board' ||
     kind === 'world-clock' ||
     kind === 'jukebox' ||
-    kind === 'arcade-machine'
+    kind === 'arcade-machine' ||
+    kind === 'ping-pong-table'
   );
 }
 
@@ -60,6 +62,9 @@ export function SocialFace({
       return <JukeboxFace element={element} />;
     case 'arcade-machine':
       return <ArcadeBubble id={element.id} />;
+    // The table's game: ball, paddles and score (PingPongGame.tsx).
+    case 'ping-pong-table':
+      return <PingPongGame element={element} />;
     default:
       return null;
   }
