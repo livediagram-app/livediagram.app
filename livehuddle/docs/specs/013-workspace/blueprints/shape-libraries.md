@@ -1,6 +1,6 @@
 # Shape libraries blueprint
 
-> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/013-workspace/blueprints/shape-libraries.md) is the one to read and change. livehuddle's client, provider, palette category and import landing for it are deleted; the api's routes and table stay. The rest of this page records what livehuddle had.
+> **Gone from livehuddle** (Work Tracker #423, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/013-workspace/blueprints/shape-libraries.md) is the one to read and change. livehuddle's client, provider, palette category and import landing for it are deleted; the api's routes and table stay, read-only (`POST`, `PUT` and `DELETE` answer `403 shape_libraries_read_only` before any store access). The rest of this page records what livehuddle had.
 
 Derived from [Shape libraries](../shape-libraries.md). Modelled like folders: one owner-scoped table, one REST resource, one client context, plus the draw.io import landing, the palette category and the Explorer page.
 
