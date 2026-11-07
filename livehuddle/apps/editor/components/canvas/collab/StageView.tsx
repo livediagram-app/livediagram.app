@@ -3,7 +3,13 @@
 import { memo } from 'react';
 import { stageParts, type ShapeElement } from '@livehuddle/document';
 import { standersLabel, type StageStander } from '@/lib/calls/stage-presence';
+import { lucideMegaphone } from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@livehuddle/ui';
 import { SizedPieceView } from './RoomView';
+import { useSpeakingStage } from './speaking-stage';
+import { useMicOn } from '@/lib/calls/calls-store';
+
+const MegaphoneIcon = lucideGlyph(lucideMegaphone, 12);
 
 const NOBODY: StageStander[] = [];
 
@@ -29,6 +35,10 @@ export const StageView = memo(function StageView({
 }) {
   const { width, height } = element;
   const live = standers.length > 0;
+  // You speak from this stage, unmuted: on your screen alone, the badge says everyone hears you
+  // (meeting-rooms-and-stage.md "You are told you are on it").
+  const micOn = useMicOn();
+  const heardByAll = useSpeakingStage() === element.id && micOn;
   return (
     <>
       <SizedPieceView
@@ -54,27 +64,43 @@ export const StageView = memo(function StageView({
         }}
       />
       {live ? (
+        // The pill shrinks (its names truncate) before the badge beside it does; the pair may run past a narrow stage.
         <div
-          data-stage-live=""
-          role="status"
-          aria-label={`On stage: ${standersLabel(standers)}`}
-          className="pointer-events-none absolute top-full left-1/2 mt-1.5 flex max-w-[max(100%,14rem)] -translate-x-1/2 items-center gap-1.5 rounded-full bg-slate-900/90 py-0.5 pr-2.5 pl-2 text-[11px] font-semibold whitespace-nowrap text-white shadow-md motion-safe:animate-fade-in dark:bg-slate-100/95 dark:text-slate-900"
+          className={`pointer-events-none absolute top-full left-1/2 mt-1.5 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap ${
+            heardByAll ? 'max-w-[max(100%,26rem)]' : 'max-w-[max(100%,14rem)]'
+          }`}
         >
-          <span className="relative flex size-2">
-            <span className="absolute inset-0 rounded-full bg-rose-500 opacity-60 motion-safe:animate-ping" />
-            <span className="relative size-2 rounded-full bg-rose-500" />
-          </span>
-          <span className="tracking-wide uppercase">On Stage</span>
-          <span className="flex -space-x-1">
-            {standers.slice(0, 4).map((s, i) => (
-              <span
-                key={i}
-                className="size-2.5 rounded-full ring-1 ring-slate-900/90 dark:ring-slate-100/95"
-                style={{ background: s.color }}
-              />
-            ))}
-          </span>
-          <span className="truncate font-medium">{standersLabel(standers)}</span>
+          <div
+            data-stage-live=""
+            role="status"
+            aria-label={`On stage: ${standersLabel(standers)}`}
+            className="flex min-w-0 items-center gap-1.5 rounded-full bg-slate-900/90 py-0.5 pr-2.5 pl-2 text-[11px] font-semibold whitespace-nowrap text-white shadow-md motion-safe:animate-fade-in dark:bg-slate-100/95 dark:text-slate-900"
+          >
+            <span className="relative flex size-2">
+              <span className="absolute inset-0 rounded-full bg-rose-500 opacity-60 motion-safe:animate-ping" />
+              <span className="relative size-2 rounded-full bg-rose-500" />
+            </span>
+            <span className="tracking-wide uppercase">On Stage</span>
+            <span className="flex -space-x-1">
+              {standers.slice(0, 4).map((s, i) => (
+                <span
+                  key={i}
+                  className="size-2.5 rounded-full ring-1 ring-slate-900/90 dark:ring-slate-100/95"
+                  style={{ background: s.color }}
+                />
+              ))}
+            </span>
+            <span className="truncate font-medium">{standersLabel(standers)}</span>
+          </div>
+          {heardByAll ? (
+            <span
+              data-stage-heard-by-all=""
+              className="flex shrink-0 items-center gap-1 rounded-full bg-brand-700 py-0.5 pr-2.5 pl-2 text-[11px] font-semibold text-white dark:bg-brand-600 shadow-md motion-safe:animate-fade-in"
+            >
+              <MegaphoneIcon />
+              Everyone Can Hear You
+            </span>
+          ) : null}
         </div>
       ) : null}
     </>

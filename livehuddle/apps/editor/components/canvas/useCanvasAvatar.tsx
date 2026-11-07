@@ -8,6 +8,8 @@ import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
 import { isStandingSeatShape } from '@livehuddle/document';
 import { useSeatStatus } from './useSeatStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
+import type { AccessLevel } from '@livehuddle/api-schema';
+import { speakingStageId } from './collab/speaking-stage';
 import {
   sameSitters,
   seatedPeer,
@@ -279,6 +281,18 @@ export function useCanvasAvatar({
   // who is on it"): merged in under the stage's id. Worked out on every step, but kept by value, so a stage re-renders
   // only when who is on it changes.
   const stages = useMemo(() => callStages(elements, roomZones(elements)), [elements]);
+  // The stage you speak from, if any: its On Stage badge adds Everyone Can Hear You on your screen
+  // (meeting-rooms-and-stage.md "You are told you are on it"). A string, so it changes only on and off a stage.
+  const selfLevel: AccessLevel = props.canShareScreen
+    ? 'edit'
+    : props.takePart
+      ? 'participate'
+      : 'view';
+  const speakingStage = speakingStageId(
+    canvasTool === 'avatar' ? avatar.pos : null,
+    stages,
+    selfLevel,
+  );
   // Each sitter on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a
   // table rings the exact seat, and at their drawn size, so the name pill clears the highest head.
   const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
@@ -426,6 +440,7 @@ export function useCanvasAvatar({
     setAvatarStatus,
     sittersOf,
     sitsDown,
+    speakingStage,
     speech,
     speechBubbles,
   };

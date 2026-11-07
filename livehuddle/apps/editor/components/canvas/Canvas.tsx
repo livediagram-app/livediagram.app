@@ -77,6 +77,8 @@ import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFont
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
 import { TalkingBars } from '@/components/calls/TalkingBars';
+import { HearingRing } from '@/components/calls/HearingRing';
+import { SpeakingStageContext } from '@/components/canvas/collab/speaking-stage';
 import { RaisedHands } from '@/components/calls/RaisedHands';
 import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
@@ -275,6 +277,7 @@ function CanvasView(props: CanvasProps) {
     setAvatarStatus,
     sittersOf,
     sitsDown,
+    speakingStage,
     speech,
     speechBubbles,
   } = useCanvasAvatar({
@@ -548,34 +551,38 @@ function CanvasView(props: CanvasProps) {
                 {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
                 <CanvasZoomProvider zoom={viewportZoom}>
-                  <ElementIndicatorStyleProvider style={readElementIndicatorStyle(props.settings)}>
-                    <CanvasElementsLayer
-                      {...props}
-                      elements={pathTool.elements}
-                      // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
-                      // so the prop from the host is overridden with the local resolver.
-                      onEnterPortal={resolvePortal}
-                      // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
-                      // lives, rather than threaded from the page.
-                      chairSitters={sittersOf}
-                      // Pressing a Selection Mode button that hands out Avatar mode drops
-                      // the character at THAT button (see avatarSpawn), not the viewport
-                      // centre: you pressed a thing on the canvas, so the character should
-                      // appear where you pressed it.
-                      // None for a Participant, who is always walking: its buttons draw inert.
-                      onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
-                      onPressAvatarPad={pressAvatarPad}
-                      onPressFocusButton={props.onPressFocusButton}
-                      hasArrows={hasArrows}
-                      arrowLabels={arrowLabels}
-                      selectionInput={selectionInput}
-                      isPaintMode={isPaintMode}
-                      handleArrowSelect={handleArrowSelect}
-                      handleElementClick={handleElementClick}
-                      handleElementContextSelect={handleElementContextSelect}
-                      drawDrag={drawDrag}
-                    />
-                  </ElementIndicatorStyleProvider>
+                  <SpeakingStageContext value={speakingStage}>
+                    <ElementIndicatorStyleProvider
+                      style={readElementIndicatorStyle(props.settings)}
+                    >
+                      <CanvasElementsLayer
+                        {...props}
+                        elements={pathTool.elements}
+                        // Portal travel is resolved HERE (Canvas owns the viewport + the avatar),
+                        // so the prop from the host is overridden with the local resolver.
+                        onEnterPortal={resolvePortal}
+                        // Chair (docs/specs/009-elements/chair.md): occupancy resolved here, where peer presence
+                        // lives, rather than threaded from the page.
+                        chairSitters={sittersOf}
+                        // Pressing a Selection Mode button that hands out Avatar mode drops
+                        // the character at THAT button (see avatarSpawn), not the viewport
+                        // centre: you pressed a thing on the canvas, so the character should
+                        // appear where you pressed it.
+                        // None for a Participant, who is always walking: its buttons draw inert.
+                        onPressModeButton={props.onPressModeButton ? pressModeButton : undefined}
+                        onPressAvatarPad={pressAvatarPad}
+                        onPressFocusButton={props.onPressFocusButton}
+                        hasArrows={hasArrows}
+                        arrowLabels={arrowLabels}
+                        selectionInput={selectionInput}
+                        isPaintMode={isPaintMode}
+                        handleArrowSelect={handleArrowSelect}
+                        handleElementClick={handleElementClick}
+                        handleElementContextSelect={handleElementContextSelect}
+                        drawDrag={drawDrag}
+                      />
+                    </ElementIndicatorStyleProvider>
+                  </SpeakingStageContext>
                 </CanvasZoomProvider>
               </CanvasArrivalProvider>
             </CanvasStillProvider>
@@ -608,6 +615,9 @@ function CanvasView(props: CanvasProps) {
             the element layer so they stand in front of the content they walk
             over. Peers' characters render whether or not WE are in the mode —
             someone else walking the canvas is worth seeing regardless. */}
+            {/* Where people can hear you while you talk, on the floor under every character, unless Settings
+            turned it off (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). */}
+            {props.settings.hearingRing !== false ? <HearingRing {...call.ring} /> : null}
             {props.remoteAvatars.map((peer) => (
               <AvatarWalker
                 key={peer.id}

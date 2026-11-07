@@ -2,6 +2,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  micOn,
+  useMicOn,
   callHands,
   callLetByMe,
   HANDS_MAX,
@@ -156,6 +158,28 @@ describe('calls store self', () => {
     act(() => resetCallSelf());
     expect(result.current.self.available).toBe(false);
     expect(result.current.actions).toBeNull();
+  });
+
+  // The stage's Everyone Can Hear You (meeting-rooms-and-stage.md "The stage shows who is on it").
+  it('reads your microphone as on only when unmuted, in a call or on the preview', () => {
+    let renders = 0;
+    const { result } = renderHook(() => {
+      renders++;
+      return useMicOn();
+    });
+    expect(result.current).toBe(false);
+    act(() => setCallSelf({ previewMic: 'on' }));
+    expect(result.current).toBe(true);
+    // A level change re-renders nothing.
+    const before = renders;
+    act(() => setCallSelf({ level: 3 }));
+    expect(renders).toBe(before);
+    act(() => setCallSelf({ phase: 'live', mic: 'open', muted: true }));
+    expect(result.current).toBe(false);
+    act(() => setCallSelf({ muted: false }));
+    expect(result.current).toBe(true);
+    expect(micOn({ ...callSelf(), mic: 'closed' })).toBe(false);
+    act(() => resetCallSelf());
   });
 });
 

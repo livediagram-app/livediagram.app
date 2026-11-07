@@ -301,6 +301,22 @@ export function useCallSelf(): CallSelf {
   return useSyncExternalStore(selfListeners.subscribe, callSelf, callSelf);
 }
 
+/**
+ * Whether your microphone is on, unmuted: open in a live call, or the local preview's on with no call (the strip's
+ * Mic and Mic: Only You).
+ */
+export function micOn(self: CallSelf): boolean {
+  if (self.phase === 'live') return self.mic === 'open' && !self.muted;
+  return self.previewMic === 'on';
+}
+
+const micOnNow = () => micOn(callSelf());
+
+/** `micOn`, re-rendering only when it flips, never on a level change. */
+export function useMicOn(): boolean {
+  return useSyncExternalStore(selfListeners.subscribe, micOnNow, micOnNow);
+}
+
 /** Update this browser's call; a no-op when nothing changed, so a hook may call it every render. */
 export function setCallSelf(patch: Partial<CallSelf>): void {
   const next = { ...self, ...patch };

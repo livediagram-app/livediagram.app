@@ -56,7 +56,10 @@ plate), not aspect locked, neither field stored (absent reads as `edit` and off)
 (`../packages/avatar/src/office-geometry.ts`) counts it, so it goes in at the back, paints under the furniture and is
 never a destination. Its label is its plate, as a room's is (`selfLabelled` false, no Text animation set). The export
 draws it with `stageSvg` (`svg-render-faces.ts`); the canvas with `StageView` (`components/canvas/collab/StageView.tsx`),
-both from `stageParts`, the canvas through the room's `SizedPieceView`.
+both from `stageParts`, the canvas through the room's `SizedPieceView`. Beside its On Stage badge, `StageView` draws
+Everyone Can Hear You while `useMicOn()` (calls-store, re-renders only on a flip) and `SpeakingStageContext` (`components/canvas/collab/speaking-stage.ts`) names it: Canvas
+provides `speakingStageId(self, stages, level)` from `useCanvasAvatar`, a string, so only the stages re-render as
+you step on or off one.
 
 **Stages** (`apps/editor/lib/calls/stage.ts`, pure): `callStages(elements, zones)` maps each visible `stage` element
 to its top (`stageTop`) and the room zone its top's centre is in (`zoneAt`), with `stageSpeakers` and `stageCameras`

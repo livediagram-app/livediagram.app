@@ -510,7 +510,7 @@ and the dialog stays as the one complete, browsable index of them.
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
-  sub-categories **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)), one per panel),
+  sub-categories **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md), then **Audio Proximity Ring** (`hearingRing`, missing means shown; [Proximity audio](../012-collaboration/proximity-audio.md#the-talking-equaliser) "Your hearing ring")), one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **Documents** (a **Default Folders** section with one row per

@@ -643,6 +643,19 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'cursors pointers names pills participants collaborators hide show busy session distracting',
         description: HIDE_CURSORS_HINT,
       },
+      {
+        // Your hearing ring (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). Missing means shown.
+        kind: 'toggle',
+        key: 'hearingRing',
+        label: 'Audio Proximity Ring',
+        keywords:
+          'audio proximity ring hearing range call voice microphone talking who can hear me circle zone show hide',
+        description:
+          'While you talk, a ring round your character shows where people can hear you. Off, nothing else about your microphone or the call changes.',
+        read: (p) => p.hearingRing !== false,
+        write: (p, v) => ({ ...p, hearingRing: v }),
+        event: { category: 'UI', on: 'HearingRingOn', off: 'HearingRingOff' },
+      },
     ],
   },
   {

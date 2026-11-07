@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   createShape,
@@ -12,6 +12,8 @@ import {
 import { FurnitureView, isFurnitureViewShape } from './FurnitureView';
 import { RoomView } from './RoomView';
 import { StageView } from './StageView';
+import { SpeakingStageContext } from './speaking-stage';
+import { resetCallSelf, setCallSelf } from '@/lib/calls/calls-store';
 
 afterEach(cleanup);
 
@@ -102,5 +104,31 @@ describe('the office views', () => {
       <StageView element={{ ...stage, label: '' }} stroke="#64748b" floor="#fbf7ef" />,
     );
     expect(unnamed.container.querySelector('svg')!.getAttribute('aria-label')).toBe('Stage');
+  });
+
+  // docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage shows who is on it".
+  it('adds Everyone Can Hear You beside On Stage while you speak from it, unmuted', () => {
+    const stage = shape('stage', { width: 500, height: 150 });
+    const view = (speaking: string | null) => (
+      <SpeakingStageContext value={speaking}>
+        <StageView
+          element={stage}
+          stroke="#64748b"
+          floor="#fbf7ef"
+          standers={[{ name: 'You', color: '#0af' }]}
+        />
+      </SpeakingStageContext>
+    );
+    const { container, rerender, getByText } = render(view('stage'));
+    const badge = () => container.querySelector('[data-stage-heard-by-all]');
+    expect(getByText('On Stage')).toBeTruthy();
+    // Muted: no badge.
+    expect(badge()).toBeNull();
+    act(() => setCallSelf({ previewMic: 'on' }));
+    expect(badge()!.textContent).toBe('Everyone Can Hear You');
+    // Another stage, or none: no badge.
+    rerender(view('other'));
+    expect(badge()).toBeNull();
+    act(() => resetCallSelf());
   });
 });
