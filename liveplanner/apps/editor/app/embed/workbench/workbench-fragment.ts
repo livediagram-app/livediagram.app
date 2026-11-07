@@ -4,6 +4,7 @@
 // read from the fragment and the fragment cleared before any request, so it never outlives the page load in the
 // address bar, the history or a reload. The page the address names is the scope its session must carry.
 import { WORKBENCH_TICKET_PATTERN, type WorkbenchScope } from '@liveplanner/api-schema';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 type Address = Pick<Location, 'hash' | 'pathname' | 'search'>;
 type AddressHistory = Pick<History, 'replaceState'>;
@@ -14,7 +15,7 @@ export type WorkbenchAddress = { scope: WorkbenchScope; projectId: string | null
 const PROJECT_PAGE = '/embed/workbench';
 
 export function addressOf(location: Pick<Location, 'pathname' | 'search'>): WorkbenchAddress {
-  const projectPage = location.pathname.replace(/\/+$/, '') === PROJECT_PAGE;
+  const projectPage = withoutTrailingSlashes(location.pathname) === PROJECT_PAGE;
   return projectPage
     ? { scope: 'project', projectId: new URLSearchParams(location.search).get('d') }
     : { scope: 'workspace', projectId: null };

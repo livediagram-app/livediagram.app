@@ -14,12 +14,16 @@ import {
 } from '@liveworkspace/drive';
 import type { AppName } from '@liveworkspace/sites';
 import { DRIVE_SETTINGS_PARAM } from './client';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // ---------- Where the browser may go back to ---------------------------------------------------------------------
 
 /** liveworkspace.app's Explorer with Settings open on Cloud Sync: where a connect with no usable return page ends. */
 export function defaultReturn(workspaceOrigin: string): string {
-  return withCloudSyncOpen(`${workspaceOrigin.replace(/\/+$/, '')}/explorer`, DRIVE_SETTINGS_PARAM);
+  return withCloudSyncOpen(
+    `${withoutTrailingSlashes(workspaceOrigin)}/explorer`,
+    DRIVE_SETTINGS_PARAM,
+  );
 }
 
 /**

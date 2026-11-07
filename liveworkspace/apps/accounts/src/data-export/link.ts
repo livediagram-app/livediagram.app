@@ -3,6 +3,7 @@
 // export's scope and run, and when it lapses, with a key derived from accounts' own secret for this alone. The
 // download also needs that person's session, so a forwarded link opens nothing.
 import { DATA_EXPORT_DOWNLOAD_PATH, exportLinkMessage } from '@liveworkspace/data-export';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const encoder = new TextEncoder();
 const INFO = 'liveworkspace data export link';
@@ -57,5 +58,5 @@ export async function linkUrl(baseUrl: string, secret: string, facts: LinkFacts)
     exp: String(facts.expiresAt),
     sig: await signLink(secret, facts),
   });
-  return `${baseUrl.replace(/\/+$/, '')}${DATA_EXPORT_DOWNLOAD_PATH}?${query}`;
+  return `${withoutTrailingSlashes(baseUrl)}${DATA_EXPORT_DOWNLOAD_PATH}?${query}`;
 }

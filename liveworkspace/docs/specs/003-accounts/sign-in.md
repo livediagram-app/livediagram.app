@@ -163,6 +163,49 @@ What a deploy never writes, set once per environment and kept across deploys:
 
 3. Wire the app up: [integrating-an-app.md](../002-architecture/integrating-an-app.md).
 
+## Local clients
+
+A fresh checkout (a new clone, or a worktree an agent works in) signs in and makes guests with no manual steps. Each
+app has a fixed local OAuth client, kept in one fixture (`apps/accounts/scripts/local-clients.ts`):
+
+| App           | Client id             | Redirect URIs (its router)                                                    |
+| ------------- | --------------------- | ----------------------------------------------------------------------------- |
+| livediagram   | `local-livediagram`   | `http://localhost:3100/api/auth/callback`, `http://localhost:3100/auth/guest` |
+| liveplanner   | `local-liveplanner`   | the same on 3200                                                              |
+| livedocuments | `local-livedocuments` | the same on 3300                                                              |
+| livedesign    | `local-livedesign`    | the same on 3400                                                              |
+| livehuddle    | `local-livehuddle`    | the same on 3500                                                              |
+
+Each secret is `local-<app>-client-secret`, the resource `http://localhost/api` (development's only one), and each
+client is recorded as its app ([accounts.md](accounts.md#which-app-a-client-is)). They are local values, as
+`ADMIN_TOKEN=local-admin-token` is: the fixture only ever writes a `--local` database, and production and staging take
+no `http://localhost/api` resource, so the ids mean nothing there.
+
+**The accounts Worker's `dev` script** runs three steps before `wrangler dev`:
+
+1. **`.dev.vars`.** When there is none, it is copied from `.dev.vars.example` (`packages/api-kit/scripts/dev-vars.ts`).
+   An existing `.dev.vars` is never changed: the copy is an exclusive create, so it can't overwrite one even in a race.
+   Every liveworkspace service with a `.dev.vars.example` (community, Drive, export, the index, media, telemetry) runs
+   the same step first in its own `dev` script.
+2. **Migrations.** `wrangler d1 migrations apply --local`, as before.
+3. **The local clients** (`scripts/seed-local-clients.ts`, also `corepack pnpm db:seed:local`). One SQL batch upserts
+   the five clients, their resource and their apps. A client that is already there gets the fixture's secret and
+   redirect URIs back, so a hand edit or an older copied database is put right on the next start; clients anyone
+   registered with `register-client.ts` are left as they are. A local database copied in from another checkout picks
+   the clients up the same way when the Worker restarts. It only ever passes `--local`.
+
+`LOCAL_CLIENT_ORIGINS` adds redirect URIs for a stack run on other ports
+(`LOCAL_CLIENT_ORIGINS=livedesign.app=http://localhost:3660`, several comma-separated; anything but an app and a
+loopback `http` origin is skipped with a warning), and `--persist-to <dir>` seeds a database whose state lives
+elsewhere.
+
+**Each app's api** has a `.dev.vars.example` naming its local client (`ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`),
+`ACCOUNTS_URL=http://localhost:3000`, `API_RESOURCE`, `AUTH_ORIGIN` (its router) and the local index (`INDEX_ORIGIN`,
+`INDEX_KEY`). Its `dev` script copies it to `.dev.vars` when there is none, but only once the checkout's accounts
+Worker has a `.dev.vars` (it has run `dev:workspace`), because an api that names an accounts Worker sends every guest
+there: started alone, the editor keeps working with no sign-in, as before. Run `dev:workspace` first, or restart the
+app after it. A test checks each app's example against the fixture, so the two can't drift.
+
 ## Security notes
 
 - **Guessing codes:** each code is 6 digits, lasts 10 minutes, allows 3 tries and is stored

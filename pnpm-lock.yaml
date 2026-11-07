@@ -115,6 +115,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -206,6 +209,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/cli-kit':
         specifier: workspace:*
         version: link:../../../packages/cli-kit
@@ -364,6 +370,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -1244,6 +1253,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -1344,6 +1356,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/cli-kit':
         specifier: workspace:*
         version: link:../../../packages/cli-kit
@@ -1426,6 +1441,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -2423,6 +2441,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -2514,6 +2535,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/cli-kit':
         specifier: workspace:*
         version: link:../../../packages/cli-kit
@@ -2581,6 +2605,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -3537,6 +3564,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -3646,6 +3676,9 @@ importers:
       '@livehuddle/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4471,6 +4504,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4553,6 +4589,9 @@ importers:
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/cli-kit':
         specifier: workspace:*
         version: link:../../../packages/cli-kit
@@ -4629,6 +4668,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5620,6 +5662,9 @@ importers:
       '@better-auth/oauth-provider':
         specifier: 1.7.14
         version: 1.7.14(patch_hash=i2ng5invj2il5cejezonseee5a)(@better-auth/core@1.7.14(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-call@1.4.4(zod@4.6.7))(jose@6.2.15)(kysely@0.29.8)(nanostores@1.5.5))(@better-auth/utils@0.5.1)(@better-fetch/fetch@1.3.3)(better-auth@1.7.14(next@16.4.3(@playwright/test@1.64.1)(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.1.0))(better-call@1.4.4(zod@4.6.7))
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5721,6 +5766,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/app-doors':
         specifier: workspace:*
         version: link:../../../packages/app-doors
@@ -5776,6 +5824,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/app-doors':
         specifier: workspace:*
         version: link:../../../packages/app-doors
@@ -5825,6 +5876,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5871,6 +5925,9 @@ importers:
 
   liveworkspace/apps/media:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
@@ -5923,6 +5980,9 @@ importers:
       '@liveplanner/sheets':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/sheets
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
@@ -6489,6 +6549,9 @@ importers:
 
   packages/auth-client:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
@@ -6870,6 +6933,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -6934,6 +7000,9 @@ importers:
 
   packages/explorer:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
@@ -7031,6 +7100,9 @@ importers:
 
   packages/help-site:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../help-registry
@@ -7129,6 +7201,9 @@ importers:
 
   packages/index-app:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../auth-client
@@ -7160,6 +7235,9 @@ importers:
 
   packages/index-client:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../auth-client
@@ -7478,6 +7556,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:^
         version: link:../account-menu
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/brand':
         specifier: workspace:^
         version: link:../brand
@@ -7529,6 +7610,10 @@ importers:
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   packages/sites:
+    dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
     devDependencies:
       '@liveworkspace/vitest-config':
         specifier: workspace:^
@@ -7788,6 +7873,9 @@ importers:
 
   packages/workbench:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand

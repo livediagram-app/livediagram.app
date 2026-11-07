@@ -125,32 +125,10 @@ Turbo caches results, so re-running with no changes is a no-op.
 
 ## Signing in locally (optional)
 
-The editor always offers sign-in, but signing in (and a guest identity) needs an accounts Worker. To exercise the signed-in code paths, run liveworkspace beside it and register livehuddle with its accounts API:
+The editor always offers sign-in, but signing in (and a guest identity) needs an accounts Worker. To exercise the signed-in code paths, run liveworkspace beside it:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
-2. Register livehuddle once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
-
-   ```sh
-   ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
-     --accounts http://localhost:3000 \
-     --name livehuddle-dev \
-     --app livehuddle.app \
-     --redirect http://localhost:3500/api/auth/callback \
-     --resource http://localhost/api
-   ```
-
-3. Drop the values into the api's env file:
-
-   ```sh
-   # apps/api/.dev.vars (gitignored)
-   ACCOUNTS_URL=http://localhost:3000
-   API_RESOURCE=http://localhost/api
-   ACCOUNTS_CLIENT_ID=...
-   ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3500
-   ```
-
-4. Restart `corepack pnpm dev:huddle` and open the app through the router (`http://localhost:3500`), so the sign-in cookies and the callback share one origin.
+2. Start the app (`corepack pnpm dev:huddle`) and open it through the router (`http://localhost:3500`), so the sign-in cookies and the callback share one origin. Nothing to register: the accounts Worker's `dev` script writes livehuddle's fixed local OAuth client (`local-livehuddle`) into its local database, and the api's `dev` script makes `apps/api/.dev.vars` from `apps/api/.dev.vars.example` (that client, `AUTH_ORIGIN=http://localhost:3500` and the local index) when there is none, once the checkout's accounts Worker has its own `.dev.vars` (liveworkspace/docs/specs/003-accounts/sign-in.md "Local clients"). Started before `dev:workspace`, the app runs without sign-in; restart it after. An existing `.dev.vars` is never changed: to use a client registered by hand (`liveworkspace/apps/accounts/scripts/register-client.ts`), put its id and secret there.
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim. The same accounts Worker mints guests their guest tokens, through `/api/auth/guest`. `--app livehuddle.app` names the app the client is for: the accounts Worker keeps livehuddle's settings, sign-ups and milestone emails under it. With the client registered, every person's preferences, display name and colour live in the accounts Worker's local D1 (`liveworkspace/apps/accounts`), guests' included; without it, the preferences stay in the browser and names are not kept on the server.
 

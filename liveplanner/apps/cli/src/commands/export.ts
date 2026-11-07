@@ -23,6 +23,7 @@ import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const EXPORT_CONCURRENCY = 2;
 export const EXPORT_RATE_RETRY_MS = 60_000;
@@ -85,7 +86,7 @@ function uniqueSlugs(items: readonly { id: string; name: string }[]): Map<string
   );
 }
 
-const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
+const joinPath = (dir: string, name: string) => `${withoutTrailingSlashes(dir)}/${name}`;
 
 const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   svg: 'svg',

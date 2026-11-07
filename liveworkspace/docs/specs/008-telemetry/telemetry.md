@@ -212,10 +212,11 @@ A daily cron (03:17 UTC) deletes events older than 60 days.
 
 ```sh
 cd liveworkspace/apps/telemetry
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8790/api/telemetry
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 Development accepts events from any `localhost` page. Point an app at it with
 `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry` (and `TELEMETRY_URL`, plus the dev key

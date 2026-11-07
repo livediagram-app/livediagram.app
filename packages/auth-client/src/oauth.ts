@@ -1,3 +1,4 @@
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 // The app side of signing in through liveworkspace.app: an authorization-code flow with
 // PKCE. The redirect leaves the app's domain on purpose. livediagram.app, liveplanner.app
 // and liveworkspace.app are separate sites, so the accounts cookie can only be read on a
@@ -11,12 +12,8 @@ const AUTH_PATH = '/api/auth/oauth2';
 
 // A route of the accounts service, kept under any path its URL carries (a stand-in served at /e2e/accounts, say):
 // `new URL('/api/…', base)` would drop that path.
-// Trailing slashes dropped by a scan, not /\/+$/, which is quadratic on a long run of slashes.
-export const accountsRoute = (accountsUrl: string, route: string): URL => {
-  let end = accountsUrl.length;
-  while (end > 0 && accountsUrl[end - 1] === '/') end--;
-  return new URL(`${accountsUrl.slice(0, end)}${route}`);
-};
+export const accountsRoute = (accountsUrl: string, route: string): URL =>
+  new URL(`${withoutTrailingSlashes(accountsUrl)}${route}`);
 
 export interface PkcePair {
   verifier: string;

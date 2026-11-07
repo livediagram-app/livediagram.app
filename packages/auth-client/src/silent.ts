@@ -34,6 +34,7 @@ import {
   type TokenSet,
 } from './oauth';
 import { safeReturnPath } from './return-path';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The once-per-browser-session mark, in each app's own sessionStorage.
 export const SILENT_SESSION_KEY = 'liveworkspace:silent-sign-in';
@@ -313,7 +314,7 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   // The way back is a path on the page's own site, so the API must be on it too (as in production and behind each
   // app's router). An API elsewhere (an app's dev server on its own port) gets no bounce.
   if (!options.apiBase.startsWith('/') || options.apiBase.startsWith('//')) return '';
-  const api = JSON.stringify(options.apiBase.replace(/\/+$/, ''));
+  const api = JSON.stringify(withoutTrailingSlashes(options.apiBase));
   const skip = JSON.stringify(options.skipPaths);
   const key = JSON.stringify(SILENT_SESSION_KEY);
   const back = JSON.stringify(SILENT_RETURN_KEY);

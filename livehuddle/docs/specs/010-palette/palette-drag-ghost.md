@@ -71,6 +71,10 @@ Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **th
   selection's size is not inherited (a placed piece has one size).
 - Over a panel or the strip, or off the canvas, the preview hides. It is `pointer-events-none`, listens to the
   pointer only while a placed piece is being added, and moves at most once a frame.
+- **The preview is inert** (`inert`), the controls its art draws included: a Pet Bed's sleeping dog (its Pat the
+  Dog button lies across the bed's middle, right under the pointer), a Jukebox's or a Notice Board's pill. So the
+  press that places the piece always reaches the canvas, never the preview's own control, and nothing in the
+  preview takes focus.
 - **Space turns a piece that turns** while it is placed, armed or carried, and the preview turns under the pointer;
   **Shift+Space** turns it back ([Turning furniture](../009-elements/furniture-facing.md) "Turning while placing").
   The snap and guides measure the turned piece.

@@ -30,11 +30,26 @@ const memory = new Map<string, { faces: Promise<Uint8Array[]>; since: number; se
 
 export type Fetcher = (url: string) => Promise<Response>;
 
-// The TrueType files a family spec's stylesheet names (one per weight), in order.
+const FACE_ORIGIN = 'https://fonts.gstatic.com/';
+
+// The TrueType files a family spec's stylesheet names (one per weight), in order. Read by a scan, not a regex: a
+// `src: url(` pattern with `[^)]+` rescans to the end from every `url(` that never closes (CodeQL js/polynomial-redos).
 export function faceUrlsOf(css: string): string[] {
-  return [...css.matchAll(/src:\s*url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.ttf)\)/g)].map(
-    (m) => m[1]!,
-  );
+  const urls: string[] = [];
+  let at = css.indexOf('url(');
+  while (at !== -1) {
+    const close = css.indexOf(')', at);
+    if (close === -1) break;
+    const url = css.slice(at + 4, close);
+    if (
+      /src:\s*$/.test(css.slice(Math.max(0, at - 16), at)) &&
+      url.startsWith(FACE_ORIGIN) &&
+      url.endsWith('.ttf')
+    )
+      urls.push(url);
+    at = css.indexOf('url(', close);
+  }
+  return urls;
 }
 
 // A fetch through the Cache API: kept once fetched, so a later preview in any isolate reads it from the edge.

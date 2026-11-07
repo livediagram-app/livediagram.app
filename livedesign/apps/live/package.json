@@ -33,6 +33,7 @@
     "@livedesign/template-previews": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/ui": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",

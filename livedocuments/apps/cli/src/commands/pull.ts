@@ -17,10 +17,11 @@ import {
   type PullFile,
 } from '../sync/pull-file';
 import { readDocumentSnapshot } from './snapshot';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type PullInput = { doc: string; to?: string; svg?: boolean; force?: boolean };
 
-const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
+const joinPath = (dir: string, name: string) => `${withoutTrailingSlashes(dir)}/${name}`;
 
 // `<slug>.livedocuments.json`, or `<slug>-<id8>` when the file there is another document's (CLI27); `there` is this
 // document's pull file already at that path.

@@ -28,6 +28,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",

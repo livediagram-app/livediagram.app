@@ -106,32 +106,10 @@ Turbo caches results, so re-running with no changes is a no-op.
 
 ## Enabling sign-in locally (optional)
 
-The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register livedocuments with its accounts API:
+The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `corepack pnpm dev:workspace` from the monorepo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
-2. Register livedocuments once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts), and `--app livedocuments.app` is the app the client speaks for: the accounts Worker keeps livedocuments' own settings, sign-ups and milestones under it. The secret is printed once:
-
-   ```sh
-   ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
-     --accounts http://localhost:3000 \
-     --name livedocuments-dev \
-     --app livedocuments.app \
-     --redirect http://localhost:3300/api/auth/callback \
-     --resource http://localhost/api
-   ```
-
-3. Drop the values into the two env files:
-
-   ```sh
-   # apps/api/.dev.vars (gitignored)
-   ACCOUNTS_URL=http://localhost:3000
-   API_RESOURCE=http://localhost/api
-   ACCOUNTS_CLIENT_ID=...
-   ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3300
-   ```
-
-4. Restart `corepack pnpm dev:documents` and open the app through the router (`http://localhost:3300`), so the sign-in cookies and the callback share one origin.
+2. Start the app (`corepack pnpm dev:documents`) and open it through the router (`http://localhost:3300`), so the sign-in cookies and the callback share one origin. Nothing to register: the accounts Worker's `dev` script writes livedocuments's fixed local OAuth client (`local-livedocuments`) into its local database, and the api's `dev` script makes `apps/api/.dev.vars` from `apps/api/.dev.vars.example` (that client, `AUTH_ORIGIN=http://localhost:3300` and the local index) when there is none, once the checkout's accounts Worker has its own `.dev.vars` (liveworkspace/docs/specs/003-accounts/sign-in.md "Local clients"). Started before `dev:workspace`, the app runs without sign-in; restart it after. An existing `.dev.vars` is never changed: to use a client registered by hand (`liveworkspace/apps/accounts/scripts/register-client.ts`), put its id and secret there.
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in, and a guest gets a liveworkspace guest token through the same site (`/api/auth/guest`, back to `/auth/guest`). The api worker verifies either token and takes the owner id from its `sub` claim.
 

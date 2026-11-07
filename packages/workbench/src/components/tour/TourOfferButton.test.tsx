@@ -201,5 +201,10 @@ describe('tour offers', () => {
     expect(tourNameOf('Sankey tour')).toBe('Sankey');
     expect(tourNameOf('Hub and spoke tour')).toBe('Hub and Spoke');
     expect(tourNameOf('Diagram key tour')).toBe('Diagram Key');
+    expect(tourNameOf('Swimlanes\t TOUR')).toBe('Swimlanes');
+    // "tour" only goes as its own word.
+    expect(tourNameOf('Detour')).toBe('Detour');
+    expect(tourNameOf('tour')).toBe('Tour');
+    expect(tourNameOf('Sankey')).toBe('Sankey');
   });
 });

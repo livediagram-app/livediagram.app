@@ -1,0 +1,17 @@
+# Local values only, for `corepack pnpm dev`: its dev script copies this to .dev.vars when there is none (never over
+# one), once the checkout's liveworkspace accounts Worker has its own .dev.vars, that is once `corepack pnpm dev:workspace`
+# has run (liveworkspace/docs/specs/003-accounts/sign-in.md "Local clients"). Every value is a local one: the client is
+# the fixed local client the accounts Worker's dev script writes into its local database
+# (liveworkspace/apps/accounts/scripts/local-clients.ts), and the index key is the index's dev key. .env.example lists
+# every other variable this worker reads.
+#
+# Sign-in and guests through the local accounts Worker, behind the liveworkspace site on 3000.
+ACCOUNTS_URL=http://localhost:3000
+API_RESOURCE=http://localhost/api
+ACCOUNTS_CLIENT_ID=local-livediagram
+ACCOUNTS_CLIENT_SECRET=local-livediagram-client-secret
+# The router, where the browser comes back to after signing in.
+AUTH_ORIGIN=http://localhost:3100
+# The local index (liveworkspace/apps/index, its dev key for livediagram).
+INDEX_ORIGIN=http://127.0.0.1:8793
+INDEX_KEY=dev-livediagram-index-key
