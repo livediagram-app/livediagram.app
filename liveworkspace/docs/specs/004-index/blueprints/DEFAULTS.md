@@ -32,3 +32,6 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX25 | connected-tabs  | Connect Again on a tab that still has a connection replaces it, deleting the old pass.                                                       |
 | IDX26 | connected-tabs  | a connected tab's name follows the target's title on open; it is not renamed by hand.                                                        |
 | IDX27 | connected-tabs  | a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.                                     |
+| IDX28 | team-audit-log  | the daily run deletes at most 5,000 audit rows past the year, the oldest first.                                                              |
+| IDX29 | team-audit-log  | a team item deleted for good by the Trash's own 30-day purge writes no audit row; its `trashed` row says who sent it there.                  |
+| IDX30 | team-audit-log  | a deleted team's audit rows stay until the year takes them; nobody can read them, as the team has no admins.                                 |

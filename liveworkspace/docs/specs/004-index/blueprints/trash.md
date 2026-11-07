@@ -60,11 +60,13 @@ app `DELETE <app>/api/internal/items/:id`, 6 at a time; a `404` counts as done; 
 
 1. `sweepEmpty`: one `UPDATE … RETURNING` moves up to 1,000 live items whose summary is `'{}'` or `hasContent = 0`,
    unchanged for 30 days, and not already swept for this `updated_at`, oldest change first (`items_empty`).
-2. Up to 500 items trashed more than 30 days ago, oldest first, purged.
+2. Up to 500 items trashed more than 30 days ago, oldest first, purged (no audit row: no person did it).
 3. Drive signals for the owners of personal items moved or purged.
 4. Up to 200 tombstones, longest waiting first, drained.
 5. Up to 1,000 events about no item that no scope sees, deleted.
-6. Logged `[index] sweep: <n> empty items to the Trash, purged <n> items, apps confirmed <n>`.
+6. Up to 5,000 team audit rows older than a year, oldest first, deleted (`sweepTeamAudit`,
+   [team-audit-log.md](team-audit-log.md)).
+7. Logged `[index] sweep: <n> empty items to the Trash, purged <n> items, apps confirmed <n>`.
 
 ### Closing an account (`POST /internal/purge-person`)
 
@@ -81,7 +83,10 @@ first 25 purged items are drained at once, and person notices sent.
 4. Everything else theirs: folders (defaults cascade), favourites, opens, use days, Shared with me, placement defaults,
    form reads, thread people; their id in threads' participants and mentions becomes `deleted`; actions assigned to
    or by them name `deleted`; Timeline rows only they saw, then their events no one else sees, then `actor_id
-'deleted'` and `actor_name NULL` on the rest; their `drive_people` row.
+'deleted'` and `actor_name NULL` on the rest; their `drive_people` row. Then the team audit log
+   (`teamAuditPurgeStatements`): the rows of teams closed with them go; `actor_id 'deleted'`, `actor_name NULL` where
+   they acted; `subject_id 'deleted'` and the detail's `personId 'deleted'`, `memberName NULL` where a team event is
+   about them.
 5. `settleRequest`: a finished request older than 2 hours is forgotten; else `finished_at` and `runs + 1`.
 
 The frequent cron (`continuePurges`): up to 20 recorded purges oldest first within 30 s and 300 calls; then up to 300

@@ -39,6 +39,12 @@ team takes effect when the person's token is next minted.
 | Rename it, change its organisation, delete it                  | ✓                                          |        |
 | Leave                                                          | ✓ (not the last admin while others remain) | ✓      |
 
+**The team audit log.** A team's admins can look back on who joined, left or changed role, who shared a team document or
+made or revoked its links, which documents came in, went out or were deleted, and who added or removed its webhooks:
+an append-only log the index keeps for a year beside the Timeline, written in the same batch as each event
+([../004-index/team-audit-log.md](../004-index/team-audit-log.md)). The team events below reach it through the same
+`POST /internal/timeline`; API token events never do (a token is its owner's, not the team's).
+
 A team always keeps a joined admin: demoting or removing the last one answers `409 last_admin`. The check is part of
 the write itself, so two admins demoting or removing each other at once can't both pass it.
 

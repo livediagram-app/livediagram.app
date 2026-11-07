@@ -7,7 +7,8 @@
 //
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared,
 // unshared, favourited, synced, taken_offline) in the same batch as the change, each statement reading the
-// item's app, name and scope from its row. From an item's collab push it writes commented,
+// item's app, name and scope from its row. The team-level ones also go in the team's audit log, in the same batch
+// (team-audit.ts). From an item's collab push it writes commented,
 // comment_resolved, action_assigned and action_done (collab-push.ts). An app reports `edited` from its
 // server (PUT /app/items/:id/events): one event per person, item and UTC day, whose time moves on with each
 // report, which also counts the day towards the person's Most Used; and image_uploaded (PUT
@@ -53,6 +54,7 @@ import { badRequest, forbidden, json, noContent, notFound, readObject, unauthori
 import { useDayOf, useDayStatements } from './items';
 import { ITEM_COLUMNS, directAccess, toItem, type Access, type ItemRow } from './rows';
 import { isListened, webhookOutboxStatement } from './webhooks/outbox';
+import { accountAuditStatement, isAuditedItemEvent, itemAuditStatement } from './team-audit';
 
 type Db = D1Database;
 
@@ -76,6 +78,9 @@ export type EventInput = {
   // Only when the item matches this SQL on `items` (with its own binds): a favourite records only on an
   // item the person reaches.
   when?: { sql: string; args: unknown[] };
+  // The teams whose audit log it goes in (team-audit.ts), for a kind the log keeps: a move's, the team it left and
+  // the one it went to (none: no team involved). Unset, the item's team.
+  auditTeams?: readonly (string | null)[];
 };
 
 /** The statements that record one event; they go in the batch that makes the change. */
@@ -112,6 +117,11 @@ export function eventStatements(db: Db, event: EventInput): D1PreparedStatement[
   ];
   // Handed to the item scope's webhooks that listen for it (webhooks/outbox.ts), in the same batch.
   if (isListened(event.type)) statements.push(webhookOutboxStatement(db, [id]));
+  // Copied into its team's audit log, in the same batch (team-audit.ts).
+  const audit = isAuditedItemEvent(event.type)
+    ? itemAuditStatement(db, id, event.auditTeams)
+    : null;
+  if (audit) statements.push(audit);
   // An event that moved on keeps every scope row's time with it.
   if (event.id) {
     statements.push(
@@ -185,6 +195,8 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
   }));
   const pairs = events.flatMap((e) => [...new Set(e.scopes)].map((scope) => [scope, e.id]));
   const listened = events.filter((e) => e.itemId !== null && isListened(e.type)).map((e) => e.id);
+  // A team's own events go in its audit log too (team-audit.ts), in the same batch.
+  const audit = accountAuditStatement(db, events);
   return [
     db
       .prepare(
@@ -216,6 +228,7 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
       .bind(JSON.stringify(events.map((e) => e.id))),
     // Handed to their item scopes' webhooks that listen (webhooks/outbox.ts), in the same batch.
     ...(listened.length > 0 ? [webhookOutboxStatement(db, listened)] : []),
+    ...(audit ? [audit] : []),
   ];
 }
 

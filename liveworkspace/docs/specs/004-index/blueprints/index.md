@@ -14,6 +14,7 @@ the tables, configuration, logs and tests. Each feature has its own file:
 | Share links and passwords    | [sharing.md](sharing.md)                 |
 | What items push; the Inbox   | [inbox.md](inbox.md)                     |
 | The Timeline                 | [timeline.md](timeline.md)               |
+| The team audit log           | [team-audit-log.md](team-audit-log.md)   |
 | The Trash, purges, closing   | [trash.md](trash.md)                     |
 | Webhooks                     | [webhooks.md](webhooks.md)               |
 | Default folders              | [default-folders.md](default-folders.md) |
@@ -107,7 +108,7 @@ Each step runs in `step()`: a throw is logged `[index] cron step failed: <name>`
 | Cron           | Steps, in order                                                                                                                                                                                                                                                               |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `*/15 * * * *` | 1. `purges` (`continuePurges`): up to 20 recorded person purges oldest first within 30 s / 300 D1 calls; then up to 300 tombstones never tried or not tried for an hour; then `drainPersonNotices`. 2. `person merges` (`drainPersonMerges`). 3. `webhooks` (`kickWebhooks`). |
-| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).                                                       |
+| `23 4 * * *`   | 1. `sweep`: the empty clean-up (≤ 1000), items 30 days in the Trash purged (≤ 500), Drive signals, up to 200 tombstones drained, loose events swept (≤ 1000), team audit rows past the year swept (≤ 5000). 2. `expiring links` (`sweepExpiringLinks`, ≤ 2000 items).         |
 
 Details are in [trash.md](trash.md), [guest-merge.md](guest-merge.md) and [timeline.md](timeline.md).
 
