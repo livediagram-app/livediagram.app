@@ -9,7 +9,6 @@ import {
   createSticky,
   createTable,
   createText,
-  createVideo,
 } from './factories';
 import type { Element, Tab } from './index';
 import { createPath } from './path-element';
@@ -84,7 +83,24 @@ const SAMPLES: Sample[] = [
   },
   { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: [] },
   { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: [] },
-  { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: [] },
+  // A video is a retired element type now (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"),
+  // kept as stored.
+  {
+    name: 'video (retired)',
+    el: theirs(
+      {
+        id: 'v',
+        type: 'video',
+        x: 0,
+        y: 0,
+        width: 320,
+        height: 180,
+        embedProvider: 'youtube',
+      } as Element,
+      'vi',
+    ),
+    allowed: [],
+  },
   { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: [] },
   { name: 'its own earlier sticky', el: mine(createSticky(0, 0), 'ms'), allowed: [] },
   { name: 'its own earlier text', el: mine(createText(0, 0), 'mt'), allowed: [] },

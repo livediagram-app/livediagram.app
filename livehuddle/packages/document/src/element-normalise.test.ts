@@ -24,23 +24,6 @@ describe('content kinds', () => {
     ]);
   });
 
-  it('turns an unknown code language plain and drops an unknown theme, so the tab validates', () => {
-    const els = normaliseElements([
-      {
-        id: 'c',
-        type: 'shape',
-        shape: 'code-block',
-        ...box,
-        code: 'x',
-        codeLanguage: 'rust',
-        codeTheme: 'dracula',
-      },
-    ]);
-    expect(els[0]).toMatchObject({ codeLanguage: 'plain' });
-    expect(els[0]).not.toHaveProperty('codeTheme');
-    expect(valid(els)).toBe(true);
-  });
-
   it('keeps an alignment the model chose', () => {
     const lane = normaliseElement({
       id: 'l',
@@ -50,64 +33,6 @@ describe('content kinds', () => {
       textAlignX: 'right',
     });
     expect(lane).toMatchObject({ textAlignX: 'right', padding: 'lg' });
-  });
-
-  it('coerces chart data and fits each series to the categories', () => {
-    const [pie, line] = normaliseElements([
-      {
-        id: 'p',
-        type: 'shape',
-        shape: 'pie-chart',
-        ...box,
-        pieSlices: [{ label: 'A', value: '3' }, { label: 2, value: -1 }, 'junk'],
-      },
-      {
-        id: 'l',
-        type: 'shape',
-        shape: 'line-chart',
-        ...box,
-        lineCategories: ['Q1', 'Q2', 'Q3'],
-        lineSeries: [
-          { name: 'Rev', values: [1, 'x'] },
-          { name: 'Cost', values: [1, 2, 3, 4] },
-        ],
-      },
-    ]);
-    expect(pie).toMatchObject({
-      pieSlices: [
-        { label: 'A', value: 3 },
-        { label: '2', value: 0 },
-      ],
-    });
-    expect(line).toMatchObject({
-      lineSeries: [
-        { name: 'Rev', values: [1, 0, 0] },
-        { name: 'Cost', values: [1, 2, 3] },
-      ],
-    });
-  });
-
-  it('reads a label that is no text and no number as empty, never as [object Object]', () => {
-    const [pie] = normaliseElements([
-      {
-        id: 'p',
-        type: 'shape',
-        shape: 'pie-chart',
-        ...box,
-        pieSlices: [
-          { label: { text: 'A' }, value: 1 },
-          { label: ['B'], value: 2 },
-          { label: true, value: 3 },
-        ],
-      },
-    ]);
-    expect(pie).toMatchObject({
-      pieSlices: [
-        { label: '', value: 1 },
-        { label: '', value: 2 },
-        { label: 'true', value: 3 },
-      ],
-    });
   });
 
   it('gives a coloured sticky the borderless palette look', () => {

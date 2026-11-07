@@ -60,7 +60,7 @@ describe('handDrawnElementPaint', () => {
 
   it('leaves a self-painting face as it is', () => {
     expect(
-      handDrawnElementPaint({ ...createShape('pie-chart', 0, 0), id: 'p' }, 'marker', '#fff'),
+      handDrawnElementPaint({ ...createShape('plant', 0, 0), id: 'p' }, 'marker', '#fff'),
     ).toBeNull();
   });
 });

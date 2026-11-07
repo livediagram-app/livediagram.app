@@ -1,5 +1,5 @@
 // Factories for every element type EXCEPT shapes: text, tables, stickies,
-// annotations, link cards, videos, images, freehand strokes and arrows, plus
+// annotations, link cards, images, freehand strokes and arrows, plus
 // scaleElements. The shape kind table and createShape moved to
 // './shape-factory' when this file reached 719 lines.
 //
@@ -11,8 +11,6 @@ import {
   type Anchor,
   type AnnotationElement,
   type LinkCardElement,
-  type EmbedProvider,
-  type VideoElement,
   type ArrowElement,
   type Element,
   type ElementId,
@@ -107,25 +105,6 @@ export function createLinkCard(x: number, y: number): LinkCardElement {
     y,
     width: 280,
     height: 120,
-  };
-}
-
-// A YouTube video (docs/specs/009-elements/youtube-video.md) at (x, y). No link yet — the user sets the URL
-// via the same link picker a link card uses, and the id is parsed from it on
-// render. 480x270 is a true 16:9, and `aspectLocked` keeps it that way: a
-// stretched video frame is never what anyone wants.
-export function createVideo(x: number, y: number, provider?: EmbedProvider): VideoElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'video',
-    x,
-    y,
-    width: 480,
-    height: 270,
-    aspectLocked: true,
-    // Which tile it came from (docs/specs/009-elements/embed-providers.md), so the empty state can name the
-    // service rather than listing all five.
-    ...(provider ? { embedProvider: provider } : {}),
   };
 }
 

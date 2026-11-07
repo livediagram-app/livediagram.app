@@ -10,7 +10,6 @@ import {
   type ShapeKind,
 } from './index';
 import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
-import { isAccentBarShape } from './web-components';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
@@ -259,13 +258,6 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
 export function themeColourFields(el: Element): ThemeColourField[] {
-  // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) paints its bar in the stroke
-  // (unless a fill is picked) under white text, so only the stroke follows
-  // the theme: the theme's element fill and ink are the pale-card pair, and
-  // writing them into a bar would put pale text on a pale bar.
-  if (el.type === 'shape' && isAccentBarShape(el.shape)) {
-    return [{ element: 'strokeColor', theme: 'elementStroke' }];
-  }
   // Unknown kinds (a malformed stored element) expose nothing to theming.
   const fields = THEME_COLOUR_FIELDS[el.type] ?? [];
   if ((el as { themeLockFill?: boolean }).themeLockFill) {

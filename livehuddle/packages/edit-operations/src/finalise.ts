@@ -35,25 +35,6 @@ type Raw = Record<string, unknown>;
 
 const GEOMETRY: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'from', 'to']);
 
-// The coercions normalising may make that change what the caller asked for.
-function noteCoercions(state: EditState, before: Raw, after: Raw, log: EditLog, op: number) {
-  const id = String(after.id);
-  const coerced = (field: string, message: string) => {
-    state.warnings.push({ code: 'value_coerced', ref: id, message });
-    log('[edit-ops] coerced', { operation: op, field });
-  };
-  if (before.codeLanguage !== after.codeLanguage)
-    coerced(
-      'codeLanguage',
-      `${id} codeLanguage ${JSON.stringify(before.codeLanguage)} drawn as plain`,
-    );
-  if (before.codeTheme !== after.codeTheme)
-    coerced(
-      'codeTheme',
-      `${id} codeTheme ${JSON.stringify(before.codeTheme)} is not a theme; removed`,
-    );
-}
-
 function normaliseTouched(state: EditState, log: EditLog): void {
   for (const [id, { operation, written }] of state.touched) {
     const el = state.byId.get(id);
@@ -71,7 +52,6 @@ function normaliseTouched(state: EditState, log: EditLog): void {
       !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
     )
       delete normalised.strokeColor;
-    noteCoercions(state, el, normalised, log, operation);
     if (normalised.type === 'shape') {
       const shape = coerceShapeKind(normalised.shape);
       if (shape !== normalised.shape) {

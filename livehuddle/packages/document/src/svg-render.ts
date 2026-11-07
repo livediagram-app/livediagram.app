@@ -11,10 +11,7 @@
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
-  svgChecklistShape,
   svgLaneGutter,
-  svgLegendShape,
-  svgCodeBlockShape,
   svgFreehandShape,
   svgPathElementShape,
   svgShapeSilhouette,
@@ -37,7 +34,6 @@ import { svgTableShape } from './svg-render-table';
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { isRetiredElement } from './retired-kinds';
 import { svgRetiredElement } from './svg-render-retired';
-import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
@@ -121,8 +117,6 @@ import {
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from '@liveworkspace/model-core/fonts';
 import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
-import { getBuiltInTheme } from './themes';
-import { themeChartPalette } from './theme-presets';
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
@@ -237,8 +231,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const cx = el.x + el.width / 2;
   const cy = el.y + el.height / 2;
   let shapeStr = '';
-  if (el.type === 'shape' && isRetiredElement(el)) {
-    // A kind livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
+  if (isRetiredElement(el)) {
+    // A kind or type livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
     // placeholder card, in place of its body, border and label.
     return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
   }
@@ -257,32 +251,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // The path's own curve (docs/specs/023-draw-mode/path-tool.md "Export"), or drawn by hand in its finish
     // (finish.md "Polygons and paths").
     return `<g${opAttr}${rotAttr}>${sketch ?? svgPathElementShape(el, shape.stroke, shape.fill, finish)}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'code-block') {
-    // The dark editor card + plain mono lines (docs/specs/009-elements/code-block.md); no label.
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgCodeBlockShape(el)}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'legend' && shape.kind === 'rect') {
-    // The key card with its swatch + label rows (docs/specs/009-elements/pie-chart.md).
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgLegendShape(
-      el,
-      shape.fill,
-      shape.stroke,
-      // Its rows in the element's ink for this page, as the canvas writes them (a fixed slate-800 vanished on dark).
-      el.textColor ?? defaultTextColor(el, surface),
-      opts.chartPalette,
-      fontFamily,
-    )}</g>`;
-  }
-  if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {
-    // The themed to-do card with its rows + done-count footer (docs/specs/009-elements/checklist.md).
-    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgChecklistShape(
-      el,
-      shape.fill,
-      shape.stroke,
-      el.textColor ?? defaultTextColor(el, surface),
-      fontFamily,
-    )}</g>`;
   }
   if (shape.kind === 'image') {
     shapeStr =
@@ -336,7 +304,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       fontFamily,
       stroke: shape.stroke,
       fill: shape.fill,
-      chartPalette: opts.chartPalette,
       label: label?.text ?? el.label ?? '',
       surface,
       resolveIconArt: opts.resolveIconArt,
@@ -371,13 +338,8 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               finish,
             )
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a page's fold.
-    const onBox =
-      el.type === 'shape' && el.shape === 'lane'
-        ? svgLaneGutter(el, shape.stroke)
-        : el.type === 'shape' && el.shape === 'page'
-          ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
-          : '';
+    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md).
+    const onBox = el.type === 'shape' && el.shape === 'lane' ? svgLaneGutter(el, shape.stroke) : '';
     // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
     const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
     const edge =
@@ -586,12 +548,6 @@ export function renderElementsToSvg(
     `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bg)}"/>`,
   ];
   // Webfont declarations for the faces this tab uses (docs/specs/004-interface-design/fonts.md).
-  // The categorical ramp the tab's theme gives its charts (docs/specs/009-elements/pie-chart.md), which is
-  // what the canvas hands them. Without it every exported chart fell back to
-  // the built-in ramp and came out in different colours to the canvas.
-  const chartPalette = themeChartPalette(
-    getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
-  );
   const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
@@ -617,7 +573,6 @@ export function renderElementsToSvg(
             sketchBackdrop: backdrops.has(el.id),
             surface,
             paper: bg,
-            chartPalette,
             tagColours,
           }),
     ),

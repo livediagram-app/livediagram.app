@@ -10,17 +10,14 @@ import { actorFigureRect } from './actor-figure';
 import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
-import { graphemes, r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from './svg-render-primitives';
 import { boxFit, fitShapePart } from './svg-shape-fit';
 import { catmullRomToBezierPath } from './polyline';
 import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { isFilledPenLoop, penLoopFillPath } from './stroke-loop-fill';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
-import { codeTheme } from '@liveworkspace/model-core/code-themes';
-import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
-import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   SHAPE_DETAIL_STROKE_PX,
   shapeGeometry,
@@ -32,8 +29,7 @@ import {
 // diamond, which svgBoxed draws as a native polygon at element coordinates
 // (from the same table points, see scaledPolygonPoints). square / circle /
 // stadium / browser render natively too (plain rects / ellipses); the
-// self-drawing data shapes (progress / rail / rating / charts) and icons are
-// handled elsewhere.
+// self-drawing shapes and icons are handled elsewhere.
 export function hasShapeSilhouette(kind: string): boolean {
   return kind !== 'diamond' && shapeGeometry(kind as ShapeKind) !== null;
 }
@@ -221,202 +217,6 @@ export function svgPathElementShape(
     `<path d="${d}" fill="${fillAttr}"${rule} stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
   );
-}
-
-// Code block (docs/specs/009-elements/code-block.md): the editor card + plain monospace lines, in whichever
-// colour scheme the element carries (see code-themes.ts). No syntax
-// highlighting here: the tokenizer is deliberately a live-editor chunk, and
-// un-highlighted mono is a faithful degrade for a thumbnail.
-const CODE_FONT = 'ui-monospace, SFMono-Regular, Menlo, monospace';
-const CODE_FONT_SIZE = 12;
-const CODE_LINE_HEIGHT = 16;
-const CODE_PAD = 12;
-
-// Break one source line to `width` columns, on spaces where there is one and
-// mid-token where there is not (a URL or a minified line has no spaces, and
-// leaving it long would just run off the card again).
-// Columns are as a monospace face draws them: a character (grapheme) takes one, a wide one (an emoji, a CJK
-// character) two, so a line of emoji wraps at the card's edge, as on the canvas, and is never cut in half.
-const ASCII_LINE = /^[\x20-\x7e]*$/;
-const WIDE_CHAR =
-  /\p{Extended_Pictographic}|\p{Regional_Indicator}|[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]|[\u{20000}-\u{3fffd}]/u;
-const columnsOf = (g: string): number => (WIDE_CHAR.test(g) ? 2 : 1);
-
-function wrapLine(line: string, width: number): string[] {
-  if (line.length <= width && ASCII_LINE.test(line)) return [line];
-  const out: string[] = [];
-  let cur: string[] = [];
-  let used = 0;
-  for (const g of graphemes(line)) {
-    const w = columnsOf(g);
-    if (used + w > width && cur.length > 0) {
-      // Back to the last space past half the line, as a word wrap; else cut here, mid-token.
-      const at = cur.lastIndexOf(' ');
-      if (g !== ' ' && at > 0 && at >= cur.length * 0.5) {
-        out.push(cur.slice(0, at).join(''));
-        cur = cur.slice(at + 1);
-      } else {
-        out.push(cur.join(''));
-        cur = [];
-      }
-      used = cur.reduce((n, c) => n + columnsOf(c), 0);
-      // A space at the break is the break itself.
-      if (g === ' ' && cur.length === 0) continue;
-    }
-    cur.push(g);
-    used += w;
-  }
-  out.push(cur.join(''));
-  return out;
-}
-
-// The characters of a line that fit in `n` columns, never half an emoji.
-function firstColumns(line: string, n: number): string {
-  if (line.length <= n && ASCII_LINE.test(line)) return line;
-  let out = '';
-  let used = 0;
-  for (const g of graphemes(line)) {
-    used += columnsOf(g);
-    if (used > n) break;
-    out += g;
-  }
-  return out;
-}
-
-export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string {
-  const scheme = codeTheme(el.codeTheme);
-  const card =
-    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` rx="8" fill="${xmlEscape(scheme.surface)}" stroke="${xmlEscape(scheme.border)}" stroke-width="1.5"/>`;
-  const code = (el.code ?? '').replace(/\r\n/g, '\n');
-  const empty = code.trim().length === 0;
-  // Clip to the card: whole lines vertically, a crude char cap horizontally
-  // (12px mono is ~7.2px per char).
-  const maxLines = Math.max(1, Math.floor((el.height - CODE_PAD * 2) / CODE_LINE_HEIGHT));
-  const maxChars = Math.max(4, Math.floor((el.width - CODE_PAD * 2) / 7.2));
-  const source = empty ? ['// double-click to add code'] : code.split('\n');
-  // Wrapping is the element's default (docs/specs/009-elements/code-block.md), so the still render wraps
-  // too: clipping a wrapped block at the card edge would show a different
-  // amount of code in an export than on the canvas.
-  const lines = (
-    el.codeWrap === false ? source : source.flatMap((l) => wrapLine(l, maxChars))
-  ).slice(0, maxLines);
-  const textColor = xmlEscape(empty ? scheme.muted : scheme.text);
-  const lineStr = lines
-    .map(
-      (line, i) =>
-        `<text x="${r2(el.x + CODE_PAD)}" y="${r2(el.y + CODE_PAD + CODE_LINE_HEIGHT * i + CODE_FONT_SIZE * 0.85)}"` +
-        ` font-family="${CODE_FONT}" font-size="${CODE_FONT_SIZE}" fill="${textColor}"` +
-        ` xml:space="preserve">${xmlEscape(firstColumns(line, maxChars))}</text>`,
-    )
-    .join('');
-  // Language badge, top-right, hidden for 'plain' (docs/specs/009-elements/code-block.md).
-  const lang = el.codeLanguage && el.codeLanguage !== 'plain' ? el.codeLanguage : null;
-  const badge = lang
-    ? `<text x="${r2(el.x + el.width - CODE_PAD)}" y="${r2(el.y + CODE_PAD + 2)}" font-family="${CODE_FONT}"` +
-      ` font-size="10" fill="${xmlEscape(scheme.muted)}" text-anchor="end">${xmlEscape(lang)}</text>`
-    : '';
-  return card + lineStr + badge;
-}
-
-// The face an element's words take in an export when nothing picks one.
-const UI_SANS = 'system-ui, sans-serif';
-
-// Checklist (docs/specs/009-elements/checklist.md): the themed card + one square-and-text row per item,
-// done rows ticked, struck through, and muted, plus the done-count footer.
-const CHECK_ROW_HEIGHT = 26;
-const CHECK_BOX_SIZE = 14;
-const CHECK_PAD = 12;
-
-export function svgChecklistShape(
-  el: BoxedElement & { type: 'shape' },
-  fill: string,
-  stroke: string,
-  textColor: string,
-  // The element's resolved face (its own, the tab's, its finish's), as on the canvas; else the UI sans.
-  fontFamily = UI_SANS,
-): string {
-  const face = xmlEscape(fontFamily);
-  const card =
-    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
-  const items = el.checklistItems ?? [];
-  const maxRows = Math.max(1, Math.floor((el.height - CHECK_PAD * 2) / CHECK_ROW_HEIGHT));
-  const maxChars = Math.max(4, Math.floor((el.width - CHECK_PAD * 3 - CHECK_BOX_SIZE) / 7));
-  const rows = items
-    .slice(0, maxRows)
-    .map((item, i) => {
-      const rowY = el.y + CHECK_PAD + CHECK_ROW_HEIGHT * i;
-      const boxY = rowY + (CHECK_ROW_HEIGHT - CHECK_BOX_SIZE) / 2 - 2;
-      const box = item.done
-        ? `<rect x="${r2(el.x + CHECK_PAD)}" y="${r2(boxY)}" width="${CHECK_BOX_SIZE}" height="${CHECK_BOX_SIZE}"` +
-          ` rx="3" fill="${xmlEscape(stroke)}"/>` +
-          `<path d="M ${r2(el.x + CHECK_PAD + 3.2)} ${r2(boxY + 7.4)} l 2.6 2.6 l 5 -5.4"` +
-          ` fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
-        : `<rect x="${r2(el.x + CHECK_PAD)}" y="${r2(boxY)}" width="${CHECK_BOX_SIZE}" height="${CHECK_BOX_SIZE}"` +
-          ` rx="3" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
-      const text =
-        `<text x="${r2(el.x + CHECK_PAD * 2 + CHECK_BOX_SIZE)}" y="${r2(boxY + CHECK_BOX_SIZE - 3)}"` +
-        ` font-family="${face}" font-size="13" fill="${xmlEscape(textColor)}"` +
-        `${item.done ? ' text-decoration="line-through" opacity="0.55"' : ''}>` +
-        `${xmlEscape(item.text.slice(0, maxChars))}</text>`;
-      return box + text;
-    })
-    .join('');
-  const doneCount = items.filter((i) => i.done).length;
-  const footer =
-    doneCount > 0
-      ? `<text x="${r2(el.x + el.width - CHECK_PAD)}" y="${r2(el.y + el.height - 8)}"` +
-        ` font-family="${face}" font-size="10" fill="${xmlEscape(textColor)}"` +
-        ` opacity="0.6" text-anchor="end">${doneCount}/${items.length}</text>`
-      : '';
-  return card + rows + footer;
-}
-
-// Legend (docs/specs/009-elements/pie-chart.md): the themed card + one swatch-and-label row per item. The
-// swatch falls back to the chart ramp by index, the same rule the canvas view
-// uses, so a legend beside a chart matches it in an export too.
-const LEGEND_PAD = 12;
-
-export function svgLegendShape(
-  el: BoxedElement & { type: 'shape' },
-  fill: string,
-  stroke: string,
-  textColor: string,
-  // The tab theme's chart ramp, the rung a chart beside it uses (chartRamp).
-  themeRamp?: readonly string[],
-  // The element's resolved face, as on the canvas; else the UI sans.
-  fontFamily = UI_SANS,
-): string {
-  const face = xmlEscape(fontFamily);
-  const card =
-    `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}"` +
-    ` rx="8" fill="${xmlEscape(fill)}" stroke="${xmlEscape(stroke)}" stroke-width="1.5"/>`;
-  const items = el.legendItems ?? [];
-  const colors = chartRamp(el.chartPalette, themeRamp);
-  // Text Size (docs/specs/009-elements/pie-chart.md): the row pitch and the dot scale with the words, the
-  // way LegendView's do.
-  const fontPx = legendFontPx(el.textSize);
-  const dotPx = Math.round(fontPx * 0.75);
-  const rowHeight = Math.max(20, Math.round(fontPx * 1.7));
-  const maxRows = Math.max(1, Math.floor((el.height - LEGEND_PAD * 2) / rowHeight));
-  const maxChars = Math.max(4, Math.floor((el.width - LEGEND_PAD * 3 - dotPx) / (fontPx * 0.54)));
-  const rows = items
-    .slice(0, maxRows)
-    .map((item, i) => {
-      const rowY = el.y + LEGEND_PAD + rowHeight * i;
-      const midY = rowY + rowHeight / 2;
-      const dot =
-        `<circle cx="${r2(el.x + LEGEND_PAD + dotPx / 2)}" cy="${r2(midY)}"` +
-        ` r="${dotPx / 2}" fill="${xmlEscape(item.color ?? colors[i % colors.length]!)}"/>`;
-      const text =
-        `<text x="${r2(el.x + LEGEND_PAD * 2 + dotPx)}" y="${r2(midY + fontPx * 0.35)}"` +
-        ` font-family="${face}" font-size="${fontPx}" fill="${xmlEscape(textColor)}">` +
-        `${xmlEscape(item.label.slice(0, maxChars))}</text>`;
-      return dot + text;
-    })
-    .join('');
-  return card + rows;
 }
 
 // A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind the title, on

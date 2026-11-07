@@ -1,8 +1,9 @@
-// Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored shape whose
-// kind livehuddle no longer has. Work Tracker #423 part 4 deleted the Collaborate elements' code; a Space that
-// already holds one keeps it exactly as stored and draws a plain labelled placeholder in its box. Nothing here
-// reads the element's own fields beyond its kind (and a session button's tool, for its name), so whatever it
-// carries rides through a save, a sync, a copy and an undo untouched.
+// Retired elements (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): a stored element whose
+// kind livehuddle no longer has, a shape kind or a whole element type. Work Tracker #423 part 4 deleted the
+// Collaborate elements' code and #459 deletes the diagram tools' ("The element engine"); a Space that already holds
+// one keeps it exactly as stored and draws a plain labelled placeholder in its box. Nothing here reads the
+// element's own fields beyond its type and kind (and a session button's tool, for its name), so whatever it carries
+// rides through a save, a sync, a copy and an undo untouched.
 
 import { SHAPE_KINDS } from './shape-kinds';
 
@@ -28,7 +29,37 @@ export const RETIRED_SHAPE_NAMES: Readonly<Record<string, string>> = {
   'reaction-pad': 'Reaction Pad',
   // The Frame left on its own (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame").
   frame: 'Frame',
+  // The element engine, part 1 (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"): the
+  // content widgets.
+  'pie-chart': 'Pie Chart',
+  'bar-chart': 'Bar Chart',
+  'line-chart': 'Line Chart',
+  legend: 'Legend',
+  'progress-bar': 'Progress Bar',
+  'progress-ring': 'Progress Ring',
+  rating: 'Rating',
+  'code-block': 'Code Block',
+  checklist: 'Checklist',
+  page: 'Page',
+  banner: 'Banner',
+  'stat-row': 'Stat Row',
+  process: 'Process',
+  'site-header': 'Site Header',
 };
+
+// The element TYPES the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine"), by the name a person knew them by. Validation still accepts a stored one on its box, so it loads.
+export const RETIRED_TYPE_NAMES: Readonly<Record<string, string>> = {
+  // The video and website embeds (part 1), named Embed since they carried Figma files and Google Docs too.
+  video: 'Embed',
+};
+
+export const RETIRED_ELEMENT_TYPES: ReadonlySet<string> = new Set(Object.keys(RETIRED_TYPE_NAMES));
+
+// Is this an element type the element engine deleted?
+export function isRetiredElementType(type: unknown): boolean {
+  return typeof type === 'string' && RETIRED_ELEMENT_TYPES.has(type);
+}
 
 // A session button was named after the tool it started.
 const SESSION_TOOL_NAMES: Readonly<Record<string, string>> = {
@@ -40,8 +71,8 @@ const SESSION_TOOL_NAMES: Readonly<Record<string, string>> = {
 
 export const UNKNOWN_ELEMENT_NAME = 'Unknown Element';
 
-// The line under the name on every placeholder.
-export const RETIRED_ELEMENT_NOTE = 'Not in livehuddle';
+// The line under the name on every placeholder: with the name above it, it reads as one sentence about the element.
+export const RETIRED_ELEMENT_NOTE = 'No longer supported in livehuddle';
 
 type MaybeShape = { type: string; shape?: unknown };
 
@@ -51,13 +82,21 @@ export function isRetiredBackdrop(el: MaybeShape): boolean {
   return el.type === 'shape' && el.shape === 'frame';
 }
 
-// Is this a shape whose kind livehuddle cannot draw: one part 4 deleted, or one it never had?
+// Is this an element livehuddle cannot draw: a shape of a kind it deleted or never had, or an element of a type it
+// deleted?
 export function isRetiredElement(el: MaybeShape): boolean {
+  if (isRetiredElementType(el.type)) return true;
   return el.type === 'shape' && !(typeof el.shape === 'string' && SHAPE_KINDS.has(el.shape));
 }
 
 // What the placeholder calls it.
-export function retiredElementName(el: { shape?: unknown; session?: unknown }): string {
+export function retiredElementName(el: {
+  type?: unknown;
+  shape?: unknown;
+  session?: unknown;
+}): string {
+  if (typeof el.type === 'string' && Object.hasOwn(RETIRED_TYPE_NAMES, el.type))
+    return RETIRED_TYPE_NAMES[el.type]!;
   const kind = typeof el.shape === 'string' ? el.shape : '';
   if (kind === 'session-button') {
     const tool = (el.session as { tool?: unknown } | undefined)?.tool;

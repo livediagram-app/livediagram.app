@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Comment, ElementDelta, ShapeElement } from './index';
-import {
-  applyElementDelta,
-  checklistDeltaFor,
-  elementChangeIsDeltaOnly,
-  mergeIncomingElement,
-} from './index';
+import { applyElementDelta, elementChangeIsDeltaOnly, mergeIncomingElement } from './index';
 
 const card = (over: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'card',
@@ -30,33 +25,6 @@ const comment = (id: string, text = id): Comment => ({
 });
 
 describe('applyElementDelta (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-  it('ticks different checklist rows from two people without losing either', () => {
-    const list = card({
-      shape: 'checklist',
-      checklistItems: [
-        { text: 'one', done: false },
-        { text: 'two', done: false },
-      ],
-    });
-    const el = apply(list, checklistDeltaFor(list, 0)!, checklistDeltaFor(list, 1)!);
-    expect(el.checklistItems?.map((i) => i.done)).toEqual([true, true]);
-  });
-
-  it('finds a checklist row by its text when the rows moved meanwhile', () => {
-    const list = card({
-      shape: 'checklist',
-      checklistItems: [
-        { text: 'two', done: false },
-        { text: 'one', done: false },
-      ],
-    });
-    const el = apply(list, { kind: 'check', index: 0, text: 'one', done: true });
-    expect(el.checklistItems).toEqual([
-      { text: 'two', done: false },
-      { text: 'one', done: true },
-    ]);
-  });
-
   it('two replies at once both land; a replay does not duplicate', () => {
     const el = apply(
       card(),
@@ -114,35 +82,23 @@ describe('mergeIncomingElement (docs/specs/012-collaboration/collab-race-hardeni
     expect(mergeIncomingElement(local, incoming)).toBe(incoming);
   });
 
-  it('keeps our ticks and our comments, takes their row edits', () => {
+  it('keeps our comments, takes their other edits', () => {
     const local = card({
-      shape: 'checklist',
-      checklistItems: [{ text: 'one', done: true }],
       commentThread: { comments: [comment('c1'), comment('c2')], resolved: false },
     });
     const incoming = card({
-      shape: 'checklist',
-      checklistItems: [
-        { text: 'one', done: false },
-        { text: 'new row', done: false },
-      ],
+      x: 40,
       commentThread: { comments: [comment('c1')], resolved: false },
     });
     const merged = mergeIncomingElement(local, incoming) as ShapeElement;
-    expect(merged.checklistItems).toEqual([
-      { text: 'one', done: true },
-      { text: 'new row', done: false },
-    ]);
+    expect(merged.x).toBe(40);
     expect(merged.commentThread).toBe(local.commentThread);
   });
 });
 
 describe('elementChangeIsDeltaOnly (docs/specs/012-collaboration/collab-race-hardening.md)', () => {
-  it('is true for a tick or a comment alone', () => {
-    const before = card({ checklistItems: [{ text: 'one', done: false }] });
-    expect(elementChangeIsDeltaOnly(before, apply(before, checklistDeltaFor(before, 0)!))).toBe(
-      true,
-    );
+  it('is true for a comment alone', () => {
+    const before = card();
     expect(
       elementChangeIsDeltaOnly(
         before,
@@ -151,15 +107,10 @@ describe('elementChangeIsDeltaOnly (docs/specs/012-collaboration/collab-race-har
     ).toBe(true);
   });
 
-  it('is false for a move or a retitled row', () => {
-    const before = card({ checklistItems: [{ text: 'one', done: false }] });
+  it('is false for a move or a relabel', () => {
+    const before = card({ label: 'one' });
     expect(elementChangeIsDeltaOnly(before, { ...before, x: 9 })).toBe(false);
-    expect(
-      elementChangeIsDeltaOnly(before, {
-        ...before,
-        checklistItems: [{ text: 'uno', done: false }],
-      }),
-    ).toBe(false);
+    expect(elementChangeIsDeltaOnly(before, { ...before, label: 'uno' })).toBe(false);
   });
 });
 

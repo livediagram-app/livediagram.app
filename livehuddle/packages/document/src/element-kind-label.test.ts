@@ -51,11 +51,10 @@ describe('elementKindLabel: stickies', () => {
 });
 
 // docs/specs/009-elements/pie-chart.md "Chart types": a chart is named as the palette names it.
-describe('a chart', () => {
-  it('is named by its chart type, not its stored kind', () => {
-    expect(elementKindLabel(shape('bar-chart'))).toBe('Column Chart');
-    const area = { type: 'shape', shape: 'line-chart', chartVariant: 'area' } as unknown as Element;
-    expect(elementKindLabel(area)).toBe('Area Chart');
+describe('a retired chart', () => {
+  it("goes by its placeholder's name, from its stored kind", () => {
+    expect(elementKindLabel(shape('bar-chart'))).toBe('Bar Chart');
+    expect(elementKindLabel(shape('line-chart'))).toBe('Line Chart');
     expect(elementKindLabel(shape('pie-chart'))).toBe('Pie Chart');
   });
 });

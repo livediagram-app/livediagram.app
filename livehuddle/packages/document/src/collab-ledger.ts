@@ -8,7 +8,6 @@
 // so the result is exactly what a peer receiving those deltas would hold.
 //
 // What is kept is the minimum that reproduces the state, not a log:
-//   - ticks: each checklist row's latest state, by index and text;
 //   - comments: each one posted (as the room stamped it, see
 //     `stampCommentAuthor`), each one removed, the thread's latest
 //     resolve, and each person's latest reaction per comment and emoji
@@ -19,15 +18,16 @@
 //   - arcade: an Arcade Machine's latest clear and the ten best scores posted after it (docs/specs/009-elements/
 //     social-pieces.md "High Scores"): a score cut from them would be cut from the machine too.
 //
-// Each tick carries the room seq that last set them, and a
+// Each entry carries the room seq that last set it, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
 // cursor it sent). Anything it had seen is already in its snapshot, or it
-// changed it since: an untick made while its socket was down never reached
-// the room, and re-applying the older tick would bring it back.
+// changed it since: a removal made while its socket was down never reached
+// the room, and re-applying the older entry would bring it back.
 //
 // A room may still hold entries from the retired answer and idea cards (`round`, `retired`, `responses`, `ideas`,
 // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): nothing reads them, so a merge never writes
-// them onto the element, which keeps its stored fields exactly as they were. Nor do the dots of the retired Vote
+// them onto the element, which keeps its stored fields exactly as they were. Nor do a retired checklist's `ticks`
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), nor the dots of the retired Vote
 // (a `ledger:<tab>:vote` entry, docs/specs/002-project-scope/not-in-livehuddle.md "The Vote"): the room no longer
 // records them and a merge skips the entry.
 //
@@ -37,7 +37,6 @@
 import type { ShapeElement, Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
-import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import { isPieceTimer, type PieceTimer } from './timer-pieces';
 import {
@@ -52,7 +51,7 @@ import {
 } from '@liveworkspace/model-core/comment-reactions';
 
 export type ElementLedger = {
-  // Keyed `${index}\u0000${text}`, the row name a `check` delta carries.
+  // A retired checklist's ticks (keyed `${index}\u0000${text}`): a stored ledger may still hold them; never replayed.
   ticks?: Record<string, { done: boolean; seq: number }>;
   // The thread's changes.
   comments?: {
@@ -80,7 +79,6 @@ export type TabLedger = { elements: Record<string, ElementLedger> };
 // Bounds on what one ledger entry may hold, so a flood of hand-crafted ops
 // can't grow a room's storage without end. Past a bound, new keys are dropped
 // and the merge falls back to what the save carried.
-const TICKS_MAX = 200;
 const COMMENT_EVENTS_MAX = 500;
 const ID_MAX = 200;
 // A board holds NOTES_MAX notes; room for them to turn over a few times before new pins stop being recorded.
@@ -129,14 +127,6 @@ function recordElement(
   if (!delta || typeof delta !== 'object') return null;
   const d = delta as Record<string, unknown>;
   switch (d.kind) {
-    case 'check': {
-      if (typeof d.index !== 'number' || !Number.isInteger(d.index) || d.index < 0) return null;
-      if (!isStr(d.text, CHECKLIST_MAX_TEXT) || typeof d.done !== 'boolean') return null;
-      const key = `${d.index}\u0000${d.text}`;
-      const ticks = prev?.ticks ?? {};
-      if (!(key in ticks) && Object.keys(ticks).length >= TICKS_MAX) return null;
-      return { ...(prev ?? {}), ticks: { ...ticks, [key]: { done: d.done, seq } } };
-    }
     case 'comment-add':
     case 'comment-remove':
     case 'comment-resolve':
@@ -265,7 +255,7 @@ export function tabLedgerFrom(tabId: string, entries: Iterable<[string, unknown]
 
 // Fold the ledger into a tab a client is saving, given the room seq that
 // client had caught up to (`since`). Everything the save carries stays, except
-// where the room knows something the saver didn't: ticks and thread changes set
+// where the room knows something the saver didn't: thread and piece changes set
 // after `since` are re-applied.
 export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): Tab {
   let changed = false;
@@ -277,17 +267,6 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
     if (el.type !== 'shape') {
       if (next !== el) changed = true;
       return next;
-    }
-    for (const [key, tick] of Object.entries(entry.ticks ?? {})) {
-      if (tick.seq <= since) continue;
-      const done = tick.done;
-      const cut = key.indexOf('\u0000');
-      next = applyElementDelta(next, {
-        kind: 'check',
-        index: Number(key.slice(0, cut)),
-        text: key.slice(cut + 1),
-        done,
-      }) as typeof el;
     }
     next = applyNoteEvents(next, entry, since);
     next = applyArcadeEvents(next, entry, since);
@@ -308,7 +287,7 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 // writes a Participant's comment reactions, notice board notes, Timer presses and arcade scores itself, since a Participant never
 // saves a whole tab (a clock is the latest press, so re-applying it is a no-op). Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
 // per person, a pin whose id the board holds is a no-op, and an unpin follows its pin in the room's order, checked
-// against the stored note's signer); ticks and the rest of a thread stay with an Editor's save.
+// against the stored note's signer); the rest of a thread stays with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {

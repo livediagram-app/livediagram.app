@@ -138,7 +138,9 @@ describe('applyEditOperations', () => {
       expect(lines(outcome)).toContain('! shape_coerced  r shape "rectangle" drawn as square');
     });
 
-    it('coerces a code language and drops an unknown code theme, each with a warning', () => {
+    // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is an unknown kind to an
+    // agent: it lands as a square, said in a warning, and its old fields are not read.
+    it('adds a retired kind as a square, with a warning', () => {
       const { calls, log } = recording();
       const outcome = run(
         [
@@ -156,12 +158,10 @@ describe('applyEditOperations', () => {
         log,
       );
       expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
-        'c codeLanguage "cobol" drawn as plain',
-        'c codeTheme "neon" is not a theme; removed',
+        'c shape "code-block" drawn as square',
       ]);
       expect(calls.filter(([fingerprint]) => fingerprint === '[edit-ops] coerced')).toEqual([
-        ['[edit-ops] coerced', { operation: 1, field: 'codeLanguage' }],
-        ['[edit-ops] coerced', { operation: 1, field: 'codeTheme' }],
+        ['[edit-ops] coerced', { operation: 1, field: 'shape' }],
       ]);
     });
 

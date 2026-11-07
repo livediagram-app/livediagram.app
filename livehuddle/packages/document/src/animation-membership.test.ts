@@ -32,7 +32,6 @@ describe('bodyAnimationSetOf', () => {
     [of('freehand'), 'drawing'],
     [of('path'), 'drawing'],
     [of('image'), 'media'],
-    [of('video'), 'media'],
     [of('table'), 'table'],
   ] as const)('%s.type takes %s', (el, set) => {
     expect(bodyAnimationSetOf(el)).toBe(set);
@@ -42,10 +41,12 @@ describe('bodyAnimationSetOf', () => {
     expect(bodyAnimationSetOf(createText(0, 0))).toBeUndefined();
   });
 
-  it('leaves icons, charts, progress and rating to their own sets', () => {
-    for (const kind of ['icon', 'pie-chart', 'progress-bar', 'rating'] as const) {
-      expect(bodyAnimationSetOf(createShape(kind, 0, 0))).toBeUndefined();
-    }
+  it('leaves icons to their own set', () => {
+    expect(bodyAnimationSetOf(createShape('icon', 0, 0))).toBeUndefined();
+  });
+
+  it('gives a retired video no body set', () => {
+    expect(bodyAnimationSetOf(of('video'))).toBeUndefined();
   });
 
   it('never gives arrows a body set', () => {
@@ -62,7 +63,7 @@ describe('carriesWords', () => {
   });
 
   it('is false for shapes whose words are art or drawn by the shape', () => {
-    for (const kind of ['icon', 'sticker', 'chair', 'pie-chart', 'progress-bar'] as const) {
+    for (const kind of ['icon', 'sticker', 'chair'] as const) {
       expect(carriesWords(createShape(kind, 0, 0))).toBe(false);
     }
   });
@@ -97,7 +98,7 @@ describe('animationSetsOf', () => {
   it('inAnimationSet matches the membership rules', () => {
     expect(inAnimationSet('text', createShape('square', 0, 0))).toBe(true);
     expect(inAnimationSet('shape', createText(0, 0))).toBe(false);
-    expect(inAnimationSet('media', of('video'))).toBe(true);
+    expect(inAnimationSet('media', of('image'))).toBe(true);
   });
 });
 

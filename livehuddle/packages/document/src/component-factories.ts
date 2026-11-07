@@ -1,15 +1,14 @@
-// The palette's ready-made components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): Banner, Callout,
-// Stat row, Process steps, Header, Hero and Avatar, plus the createComponent
-// dispatcher and their natural sizes.
+// The palette's ready-made components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md)
+// livehuddle still carries: Callout, Hero and Avatar, plus the createComponent dispatcher and their natural sizes.
+// The Banner, Stat row, Process steps and Header left its element engine
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
 //
-// Each is ONE element. They used to be bundles of primitives sharing a
-// groupId; now the five that are shapes are their own shape kinds (laid out by
-// web-components.ts), the Hero is an image carrying a caption card, and the
+// Each is ONE element: the Callout is a Card preset, the Hero is an image carrying a caption card, and the
 // Avatar is a circular image. What this module adds over createShape /
 // createImage is the THEME: the caller maps the tab theme to colours (keeping
 // this package theme-agnostic) and each component takes the ones it wears.
 
-import type { Element, ImageElement, ShapeElement, ShapeKind } from './index';
+import type { Element, ImageElement, ShapeElement } from './index';
 import { createImage } from './factories';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { applyShapeVariant } from './shape-variants';
@@ -26,26 +25,14 @@ type ComponentColors = { accent: string; surface: string; ink: string };
 // and telemetry types all key off them), so they stay as they were even
 // where the shape kind behind one is spelled differently.
 export type ComponentKind =
-  | 'banner'
   | 'hero'
-  | 'header'
   // The Callout is a Card preset (docs/specs/009-elements/card.md); the Card itself is a plain shape tile.
   | 'callout'
-  | 'stat'
-  | 'process'
   | 'avatar';
 
-const COMPONENT_SHAPE: Partial<Record<ComponentKind, ShapeKind>> = {
-  banner: 'banner',
-  header: 'site-header',
-  callout: 'card',
-  stat: 'stat-row',
-  process: 'process',
-};
-
 /** The shape kind a single-shape component is placed as; undefined for the composites (hero, avatar). */
-export function componentShapeKind(kind: ComponentKind): ShapeKind | undefined {
-  return COMPONENT_SHAPE[kind];
+export function componentShapeKind(kind: ComponentKind): 'card' | undefined {
+  return kind === 'callout' ? 'card' : undefined;
 }
 
 const AVATAR_SIZE = 96;
@@ -55,11 +42,7 @@ const HERO_HEIGHT = 300;
 // Natural bounds: the tap-to-drop size, and the aspect a drag-to-draw keeps
 // when Shift is held.
 export const COMPONENT_SIZE: Record<ComponentKind, { width: number; height: number }> = {
-  banner: SHAPE_DEFAULT_SIZE.banner,
-  header: SHAPE_DEFAULT_SIZE['site-header'],
   callout: SHAPE_DEFAULT_SIZE.callout,
-  stat: SHAPE_DEFAULT_SIZE['stat-row'],
-  process: SHAPE_DEFAULT_SIZE.process,
   hero: { width: HERO_WIDTH, height: HERO_HEIGHT },
   avatar: { width: AVATAR_SIZE, height: AVATAR_SIZE },
 };
@@ -94,16 +77,10 @@ export function createHero(cx: number, cy: number, accent: string): ImageElement
   };
 }
 
-// One web component shape (docs/specs/009-elements/web-components-and-no-groups.md), centred on (cx, cy) and dressed in the
-// theme. The accent-bar kinds (banner, header) take the accent as their
-// stroke, which the bar paints in, and keep white text; the cards take the
-// surface + ink with the accent as their border and emphasis.
-function createWebShape(kind: ShapeKind, cx: number, cy: number, c: ComponentColors): ShapeElement {
-  const { width, height } = SHAPE_DEFAULT_SIZE[kind];
-  const base = createShape(kind, cx - width / 2, cy - height / 2);
-  if (kind === 'banner' || kind === 'site-header') {
-    return { ...base, strokeColor: c.accent, textColor: ACCENT_BAR_TEXT };
-  }
+// A card centred on (cx, cy) and dressed in the theme: the surface + ink with the accent as its border and emphasis.
+function createWebShape(cx: number, cy: number, c: ComponentColors): ShapeElement {
+  const { width, height } = SHAPE_DEFAULT_SIZE.card;
+  const base = createShape('card', cx - width / 2, cy - height / 2);
   return { ...base, fillColor: c.surface, strokeColor: c.accent, textColor: c.ink };
 }
 
@@ -123,14 +100,10 @@ export function createComponent(
   if (kind === 'hero') return createHero(cx, cy, colors.accent);
   // The Callout is a Card preset (docs/specs/009-elements/card.md): the callout's own size and copy, as a card with
   // badge media.
-  if (kind === 'callout') {
-    const card = createWebShape('card', cx, cy, colors);
-    const callout = applyShapeVariant(card, 'callout');
-    return {
-      ...callout,
-      x: cx - callout.width / 2,
-      y: cy - callout.height / 2,
-    };
-  }
-  return createWebShape(COMPONENT_SHAPE[kind]!, cx, cy, colors);
+  const callout = applyShapeVariant(createWebShape(cx, cy, colors), 'callout');
+  return {
+    ...callout,
+    x: cx - callout.width / 2,
+    y: cy - callout.height / 2,
+  };
 }

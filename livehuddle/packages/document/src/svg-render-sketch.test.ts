@@ -59,25 +59,25 @@ describe('svgSketchFace', () => {
 });
 
 describe('renderElementsToSvg under Sketch', () => {
-  const chart = { ...createShape('bar-chart', 0, 0), id: 'c' } as Element;
+  const card = { ...createShape('card', 0, 0), id: 'c' } as Element;
 
-  it("draws a chart's bars by hand and its words crisp, and defines the wobble", () => {
-    const svg = renderElementsToSvg(tabOf([chart], 'sketch'));
+  it("draws a card's face by hand and its words crisp, and defines the wobble", () => {
+    const svg = renderElementsToSvg(tabOf([card], 'sketch'));
     expect(svg).toContain(`<filter id="${SKETCH_FACE_FILTER.id}"`);
     const ink = inkLayer(svg);
-    expect(ink).toContain('<rect');
+    expect(ink).toMatch(/<(rect|path)\b/);
     expect(ink).not.toContain('<text');
     expect(svg.slice(svg.indexOf(ink) + ink.length)).toContain('<text');
   });
 
-  it('leaves a chart as drawn on a Flexible tab', () => {
-    const svg = renderElementsToSvg(tabOf([chart]));
+  it('leaves a card as drawn on a Flexible tab', () => {
+    const svg = renderElementsToSvg(tabOf([card]));
     expect(svg).not.toContain(SKETCH_FACE_FILTER.id);
     expect(svg).not.toContain('visibility="hidden"');
   });
 
-  it('leaves a chart with its own Flexible finish as drawn on a Sketch tab', () => {
-    const own = { ...chart, finish: 'flexible' } as Element;
+  it('leaves a card with its own Flexible finish as drawn on a Sketch tab', () => {
+    const own = { ...card, finish: 'flexible' } as Element;
     expect(renderElementsToSvg(tabOf([own], 'sketch'))).not.toContain(FILTERED);
   });
 
@@ -103,13 +103,11 @@ describe('svgSketchArtDefs', () => {
     expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'icon' }), undefined)).toContain(
       'lvd-sketch-art',
     );
-    const faces = svgSketchArtDefs(sketch({ type: 'shape', shape: 'bar-chart' }), undefined);
+    const faces = svgSketchArtDefs(sketch({ type: 'shape', shape: 'card' }), undefined);
     expect(faces).toContain('lvd-sketch-face');
     expect(faces).not.toContain('lvd-sketch-art');
     expect(svgSketchArtDefs(sketch({ type: 'shape', shape: 'square' }), undefined)).toBe('');
-    expect(svgSketchArtDefs([{ type: 'shape', shape: 'bar-chart' }] as Element[], 'flexible')).toBe(
-      '',
-    );
+    expect(svgSketchArtDefs([{ type: 'shape', shape: 'card' }] as Element[], 'flexible')).toBe('');
   });
 
   it("draws a face's ink in one pass of one octave, the budget's filter", () => {
@@ -123,8 +121,8 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
   const words = (kind: string) =>
     renderElementsToSvg(tabOf([{ ...createShape(kind as never, 0, 0), id: 'x' }], 'sketch'));
 
-  it('writes a checklist and a legend by hand', () => {
-    for (const kind of ['checklist', 'legend']) {
+  it('writes a card by hand', () => {
+    for (const kind of ['card']) {
       const svg = words(kind);
       expect(svg, kind).not.toContain('font-family="system-ui');
       expect(svg, kind).toMatch(/<text[^>]*font-family="[^"]*Caveat/);

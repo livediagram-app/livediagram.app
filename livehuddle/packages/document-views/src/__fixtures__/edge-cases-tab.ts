@@ -11,15 +11,8 @@ import {
 import { arrowBetween, shapeAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
-  ['stat-row', {}],
-  ['process', {}],
-  ['site-header', {}],
-  ['legend', {}],
-  ['rating', { rating: 4 }],
-  ['progress-bar', { progress: 40 }],
-  ['progress-ring', {}],
   ['timeline-rail', {}],
-  ['page', { pageTitle: 'Quarterly review' }],
+  ['card', { pageTitle: 'Quarterly review' }],
 ];
 
 // Grid cells below the frames, 8 to a row.

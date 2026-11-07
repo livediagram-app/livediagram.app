@@ -26,35 +26,23 @@ import type { BoundaryStyle } from './boundary';
 import type { ConceptAnim, ConceptRow } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
-import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
-import type { ChartPaletteId } from './chart-palettes';
-import type { ChartVariant } from './chart-types';
 import type { SelectionMode } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
-import type { EmbedProvider } from './youtube';
-import type { HeroCaption, StatItem } from './web-components';
+import type { HeroCaption } from './web-components';
 import type { ImageCredit } from './image-credit';
 import type { ChairFacing } from './collab-shapes';
 import { SHAPE_KINDS } from './shape-kinds';
 import type {
   AnimationSpeed,
-  ChecklistItem,
-  LegendItem,
   Reaction,
-  CodeLanguage,
   ElementAnimation,
   TextAnimation,
   ElementId,
   ElementLink,
   IconAnimation,
   IconPosition,
-  LineSeries,
   Padding,
-  PieAnim,
-  PieSlice,
-  ProgressAnim,
-  RatingAnim,
   ShapeKind,
   TextAlignX,
   TextAlignY,
@@ -63,10 +51,6 @@ import type {
 } from './index';
 import type { KeyRow } from './diagram-key';
 import type { StackAlign, StackDirection } from './stack';
-
-// Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
-// separately by `chartLegend: false`, so this only covers the four placements.
-export type ChartLegendPosition = 'top' | 'right' | 'bottom' | 'left';
 
 export type ShapeElement = {
   id: ElementId;
@@ -118,20 +102,6 @@ export type ShapeElement = {
   // 'left' when unset. Chosen by which side of the shape the icon was
   // dropped on.
   iconPosition?: IconPosition;
-  // Progress elements (docs/specs/009-elements/progress.md), only meaningful when `shape` is
-  // 'progress-bar' / 'progress-ring'. `progress` is the filled percentage
-  // (0–100, defaults to 50); `progressAnim` animates how the fill behaves.
-  // Edited from the element's context menu.
-  progress?: number;
-  progressAnim?: ProgressAnim;
-  // Loop speed for `progressAnim` (slow / normal / fast), same multiplier as
-  // boxed-element animations. Undefined = normal.
-  progressAnimSpeed?: AnimationSpeed;
-  // Whether the animation repeats. `fill` defaults to playing ONCE and holding
-  // the filled state (so a dropped progress bar fills in and stays done, not a
-  // perpetual loop); `pulse` / `stripes` are continuous and default to looping.
-  // The context-menu toggle overrides this per element.
-  progressAnimRepeat?: boolean;
   x: number;
   y: number;
   width: number;
@@ -277,55 +247,6 @@ export type ShapeElement = {
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
   railLabels?: string[];
-  // Rating (docs/specs/009-elements/rating.md): the score in filled stars (0..RATING_MAX) + its optional
-  // animation. Only meaningful on the 'rating' kind.
-  rating?: number;
-  ratingAnim?: RatingAnim;
-  ratingAnimSpeed?: AnimationSpeed;
-  ratingAnimRepeat?: boolean;
-  // Data charts (docs/specs/009-elements/pie-chart.md): the labelled data + its optional animation, shared
-  // by the pie + bar chart kinds (the `pie*` names are kept for data
-  // round-trip). `chartLegend` toggles the legend (default on).
-  pieSlices?: PieSlice[];
-  pieAnim?: PieAnim;
-  pieAnimSpeed?: AnimationSpeed;
-  pieAnimRepeat?: boolean;
-  chartLegend?: boolean;
-  // Show Values (docs/specs/009-elements/pie-chart.md): each mark's number printed on the chart. Absent = off.
-  chartValues?: boolean;
-  // Show Axis (docs/specs/009-elements/pie-chart.md): the value axis, its tick labels and gridlines. Absent = off.
-  chartAxis?: boolean;
-  // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
-  // undefined === 'right', the historical default.
-  chartLegendPosition?: ChartLegendPosition;
-  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): which of its kind's types a chart draws as
-  // (bar-chart `horizontal`, line-chart `area` / `scatter`, pie-chart `doughnut`); absent, or one its kind does not
-  // take, is the kind's first (Column, Line, Pie).
-  chartVariant?: ChartVariant;
-  // Line chart (docs/specs/009-elements/pie-chart.md): the shared x-axis categories + one or more named
-  // series (CSV-importable). Only meaningful on the 'line-chart' kind.
-  lineCategories?: string[];
-  lineSeries?: LineSeries[];
-  // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
-  // kind; bounded in validate.ts.
-  legendItems?: LegendItem[];
-  // Chart palette (docs/specs/009-elements/pie-chart.md): which categorical ramp the slices / series take
-  // when they carry no colour of their own. Only meaningful on the chart
-  // kinds; absent = the tab theme's palette, as before.
-  chartPalette?: ChartPaletteId;
-  // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
-  // meaningful on the 'code-block' kind; bounded in validate.ts.
-  code?: string;
-  codeLanguage?: CodeLanguage;
-  // Which colour scheme the card paints in (see code-themes.ts). Absent =
-  // 'midnight', the single look the block shipped with, so older documents are
-  // untouched.
-  codeTheme?: CodeThemeId;
-  // Whether a line longer than the card wraps instead of running off it.
-  // Absent = true: a snippet you cannot read the end of is not a snippet, and
-  // the card is usually narrower than the code someone pastes into it. Set
-  // false to keep long lines on one line (and off the card).
-  codeWrap?: boolean;
   // A retired Reaction Pad's burst (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kept as
   // stored so a save carries it through, never read.
   reaction?: Reaction;
@@ -374,15 +295,6 @@ export type ShapeElement = {
   conceptAnim?: ConceptAnim;
   conceptAnimSpeed?: AnimationSpeed;
   conceptAnimRepeat?: boolean;
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
-  // cards, a process's step captions (one circle each, numbered by position)
-  // and a header's nav links. Each only meaningful on its own kind.
-  stats?: StatItem[];
-  processSteps?: string[];
-  navLinks?: string[];
-  // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the
-  // 'checklist' kind; bounded in validate.ts.
-  checklistItems?: ChecklistItem[];
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
@@ -1219,38 +1131,20 @@ export type LinkCardElement = {
   font?: string;
 };
 
-// --- Video -----------------------------------------------------------------
+// --- Retired element types --------------------------------------------------
 
-// See docs/specs/009-elements/youtube-video.md. A 16:9 card showing a YouTube video's poster
-// frame, which plays inline when pressed. Added through the same new-type
-// surface as the link card above, and shares its URL-editing flow: the user
-// sets the link with the normal element-link UI.
-//
-// Aspect-locked to 16:9 on resize (`aspectLocked` defaults true from
-// createVideo) — a stretched video frame is never what anyone wants.
-export type VideoElement = {
+// A stored element of a TYPE the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine", "Retired elements"; part 1: `video`, the video and website embeds). Kept exactly as stored
+// and drawn as the placeholder in its box: nothing reads its own fields, so whatever else it carries (a video's
+// `embedProvider`) rides through a save untouched. Only the box and the shared boxed fields the generic code paths
+// read (selection, layout, comments, format painter) are typed.
+export type RetiredTypeElement = {
   id: ElementId;
   type: 'video';
   x: number;
   y: number;
   width: number;
   height: number;
-  // Which provider this embed was created FOR (docs/specs/009-elements/embed-providers.md). A creation-time
-  // hint only: it names the empty state and the link dialog, so a Figma embed
-  // says "Add a Figma link" rather than something generic. The link itself
-  // stays authoritative — paste a Vimeo URL into one made from the Figma tile
-  // and it renders Vimeo, because refusing a link that plainly works would be
-  // pedantry.
-  embedProvider?: EmbedProvider;
-  // NOTE there is no `videoId` field, deliberately. The YouTube URL lives in
-  // `link` (a url-kind ElementLink) and the id is parsed from it on demand by
-  // `youtubeVideoId` (youtube.ts). A link card caches its preview in `meta`
-  // because unfurling costs a network round trip; parsing an id costs
-  // nothing, so storing it would only be a second copy of the truth that can
-  // drift from the link.
-  //
-  // fillColor = card background; strokeColor = card border; textColor = the
-  // caption text.
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;

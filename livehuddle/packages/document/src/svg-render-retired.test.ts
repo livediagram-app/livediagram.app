@@ -27,7 +27,7 @@ describe('retiredPlaceholderLayout', () => {
     const card = retiredPlaceholderLayout(retired('qa-board', { label: 'Sprint questions' }));
     expect(card.lines.map((l) => [l.role, l.text])).toEqual([
       ['name', 'Q&A Board'],
-      ['note', 'Not in livehuddle'],
+      ['note', 'No longer supported in livehuddle'],
       ['label', 'Sprint questions'],
     ]);
     const [name, note, label] = card.lines;
@@ -78,7 +78,11 @@ describe('svgRetiredElement', () => {
     expect(svg).toContain(`fill="${RETIRED_PLACEHOLDER_COLOURS.light.fill}"`);
     expect(svg).toContain('stroke-width="1.5"');
     expect(svg).toContain('stroke-dasharray="6 4"');
-    expect(texts(svg)).toEqual(['Q&amp;A Board', 'Not in livehuddle', 'Ask &lt;us&gt;']);
+    expect(texts(svg)).toEqual([
+      'Q&amp;A Board',
+      'No longer supported in livehuddle',
+      'Ask &lt;us&gt;',
+    ]);
     // In the element's box: the outline inset by half its stroke.
     expect(svg).toContain('<rect x="100.75" y="50.75" width="318.5" height="218.5"');
   });
@@ -105,7 +109,7 @@ describe('a retired element in the export', () => {
       strokeColor: '#00ff00',
     });
     const svg = svgBoxed(el);
-    expect(texts(svg)).toEqual(['Poll', 'Not in livehuddle', 'Lunch?']);
+    expect(texts(svg)).toEqual(['Poll', 'No longer supported in livehuddle', 'Lunch?']);
     expect(svg).not.toContain('#ff0000');
     expect(svg).not.toContain('#00ff00');
     expect(svg).not.toContain('Where?');
@@ -117,7 +121,10 @@ describe('a retired element in the export', () => {
   });
 
   it('names a kind livehuddle never had an Unknown Element', () => {
-    expect(texts(svgBoxed(retired('hologram')))).toEqual(['Unknown Element', 'Not in livehuddle']);
+    expect(texts(svgBoxed(retired('hologram')))).toEqual([
+      'Unknown Element',
+      'No longer supported in livehuddle',
+    ]);
   });
 
   it('draws the same card in a whole-tab render, on dark paper too', () => {

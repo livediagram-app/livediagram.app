@@ -64,7 +64,7 @@ describe('hasOwnFace', () => {
 describe('opensInlineLabelEditor', () => {
   it('opens on a labelled kind, never on a self-drawing kind or a retired element', () => {
     expect(opensInlineLabelEditor('square')).toBe(true);
-    expect(opensInlineLabelEditor('progress-bar')).toBe(false);
+    expect(opensInlineLabelEditor('sticker')).toBe(false);
     expect(opensInlineLabelEditor(retired('quiz'))).toBe(false);
   });
 });
@@ -78,7 +78,7 @@ describe('supportsTextAlign', () => {
       'focus-button',
       'portal',
       'mode-button',
-      'stat-row',
+      'plant',
       'sticker',
       retired('qa-board'),
     ];
@@ -89,7 +89,7 @@ describe('supportsTextAlign', () => {
 
   it('is on for plain shapes and for kinds that render the aligned label', () => {
     // An icon's alignment places its caption around the glyph (docs/specs/010-palette/technology-icons.md).
-    for (const kind of ['square', 'circle', 'banner', 'callout', 'page', 'icon'] as const) {
+    for (const kind of ['square', 'circle', 'callout', 'icon'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
   });
@@ -98,14 +98,14 @@ describe('supportsTextAlign', () => {
 // Markers decorate a label, so they share the text-align gate's reasoning.
 describe('supportsMarkers', () => {
   it('is off for kinds with their own face and for self-drawing kinds', () => {
-    const kinds: ShapeKind[] = ['mode-button', 'progress-bar', 'stat-row', retired('temperature')];
+    const kinds: ShapeKind[] = ['mode-button', 'sticker', 'plant', retired('temperature')];
     for (const kind of kinds) {
       expect(supportsMarkers(kind), kind).toBe(false);
     }
   });
 
   it('is on for plain shapes', () => {
-    for (const kind of ['square', 'circle', 'banner'] as const) {
+    for (const kind of ['square', 'circle', 'callout'] as const) {
       expect(supportsMarkers(kind), kind).toBe(true);
     }
   });

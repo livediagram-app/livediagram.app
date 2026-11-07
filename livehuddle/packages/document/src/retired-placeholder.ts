@@ -1,7 +1,7 @@
 // A retired element's placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), laid out
 // once for every surface that draws it: the export and the thumbnail (svg-render-retired.ts) and the editor's canvas
-// face. A plain card in the element's own box: a dashed outline, a muted fill, the kind's name centred, "Not in
-// livehuddle" smaller beneath it, and the stored label beneath that when there is one. Pure: the caller places the
+// face. A plain card in the element's own box: a dashed outline, a muted fill, the kind's name centred, "No longer
+// supported in livehuddle" smaller beneath it, and the stored label beneath that when there is one. Pure: the caller places the
 // card at the element's position and draws it in its own medium.
 
 import type { CanvasSurface } from './colors';
@@ -60,6 +60,7 @@ const LINE_STYLES: Record<
 };
 
 type RetiredSource = {
+  type?: unknown;
   shape?: unknown;
   session?: unknown;
   label?: unknown;

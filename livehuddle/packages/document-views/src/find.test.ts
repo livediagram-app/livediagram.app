@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
-import { arrowBetween, shapeAt } from './__fixtures__/build';
+import { arrowBetween, retiredShapeAt, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
 import { findView } from './find';
@@ -68,10 +68,10 @@ describe('find on odd shapes', () => {
     const elements = [
       shapeAt('boundary', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
       shapeAt('boundary', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
-      shapeAt('checklist', 'list', 300, 10, 100, 50, {
+      retiredShapeAt('checklist', 'list', 300, 10, 100, 50, {
         checklistItems: [{ text: 'thread the needle', done: false }],
       }),
-      shapeAt('code-block', 'code', 1000, 1000, 100, 50, { code: 'const needle = 1;' }),
+      retiredShapeAt('code-block', 'code', 1000, 1000, 100, 50, { code: 'const needle = 1;' }),
       shapeAt('square', 'talk', 3000, 0, 100, 50, {
         commentThread: {
           comments: [
@@ -90,8 +90,8 @@ describe('find on odd shapes', () => {
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
       'boundary outer',
       '  boundary inner',
-      '    checklist list',
-      '  code-block code',
+      '    ? checklist',
+      '  ? code-block',
       'square talk',
       'arrow free',
       '4 matches:',

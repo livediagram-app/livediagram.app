@@ -237,7 +237,7 @@ const SKETCHED_BY_BODY = new Set<string>([
 
 /** The element kinds Sketch draws a face of by hand (docs/specs/008-canvas/finish.md "Every other face is drawn by
  *  hand too"): its ink through the wobble, its words crisp above it. Everything that draws more than a label, a
- *  table's grid, a link card, a video's frame, an annotation marker, and a plain box carrying an inline icon. */
+ *  table's grid, a link card, a stored embed's placeholder, an annotation marker, and a plain box carrying an inline icon. */
 export function finishSplitsFace(el: { type: string; shape?: string; iconId?: string }): boolean {
   switch (el.type) {
     case 'table':

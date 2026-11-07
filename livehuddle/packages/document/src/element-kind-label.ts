@@ -1,5 +1,4 @@
 import type { Element, ShapeKind } from './index';
-import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
 import { isRetiredElement, retiredElementName } from './retired-kinds';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
@@ -8,8 +7,6 @@ import { isRetiredElement, retiredElementName } from './retired-kinds';
 const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   'speech-bubble': 'Speech Bubble',
   icon: 'Icon',
-  'progress-bar': 'Progress Bar',
-  'progress-ring': 'Progress Ring',
   // Named for what it does, not its internal kind — titleCase would say
   // 'Mode Button' (docs/specs/009-elements/mode-button.md).
   'mode-button': 'Selection Mode',
@@ -28,10 +25,6 @@ function titleCase(s: string): string {
 export function elementKindLabel(el: Element): string {
   switch (el.type) {
     case 'shape': {
-      // A chart IS its chart type (docs/specs/009-elements/pie-chart.md "Chart types"): the palette's "Column Chart"
-      // was "Selected Bar Chart", from its stored kind, and an area chart read as a line chart.
-      const chart = chartTypeOf(el);
-      if (chart) return `${CHART_TYPE_LABELS[chart]} Chart`;
       // A retired element goes by its placeholder's name (docs/specs/002-project-scope/not-in-livehuddle.md).
       if (isRetiredElement(el)) return retiredElementName(el);
       return SHAPE_LABELS[el.shape] ?? titleCase(el.shape);
@@ -58,9 +51,8 @@ export function elementKindLabel(el: Element): string {
     case 'link-card':
       return 'Link';
     case 'video':
-      // The kind stays 'video' (it is persisted); the NAME is Embed, since it
-      // carries Figma files and Google Docs as well now (docs/specs/009-elements/embed-providers.md).
-      return 'Embed';
+      // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+      return retiredElementName(el);
     case 'arrow':
       return 'Arrow';
   }

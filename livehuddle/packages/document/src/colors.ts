@@ -13,7 +13,6 @@ import {
   type TextAlignY,
 } from './index';
 import type { BorderRadius } from '@liveworkspace/model-core/border-style';
-import { ACCENT_BAR_TEXT, isAccentBarShape } from './web-components';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
@@ -313,9 +312,6 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
   // Text with no colour of its own is written in Ink, on every theme and in either editor mode
   // (docs/specs/007-editor/editor-modes.md "One look").
   if (element.type === 'text') return PEN_INK[surface];
-  // An accent-bar web component (docs/specs/009-elements/web-components-and-no-groups.md) writes white on its bar, on any
-  // paper: the bar is the accent, not the surface.
-  if (element.type === 'shape' && isAccentBarShape(element.shape)) return ACCENT_BAR_TEXT;
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
@@ -516,11 +512,6 @@ export function supportsColours(element: Element): boolean {
   // could be recoloured violet would be a worse APPROVED, and there is no
   // fill or stroke on a die-cut plate to expose anyway.
   if (element.type === 'shape' && element.shape === 'sticker') return false;
-  // A code block is an editor window (docs/specs/009-elements/code-block.md): it paints its card from its
-  // own colour scheme and ignores fill / stroke / theme entirely, so every
-  // swatch in the Colours category was inert on one. Picking a scheme is the
-  // control it actually has (Presets, see code-themes.ts).
-  if (element.type === 'shape' && element.shape === 'code-block') return false;
   return (
     element.type === 'shape' ||
     // A text element is its words (docs/specs/008-canvas/canvas-and-palette.md "Text element"):
@@ -583,24 +574,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
-  // Progress bar / ring: ProgressView draws the track and the fill itself with
-  // its own hardcoded arc stroke, and never reads the element's strokeWidth or
-  // strokeStyle. They were the drift this list was created to stop, recurring:
-  // added to isSelfDrawingShape and not here, so the Border accordion kept
-  // offering Strength and Pattern on them. Not merely inert — the pick was
-  // committed, so it wrote to the element, autosaved and broadcast an op to every peer in the room, for no visual change
-  // at any zoom.
-  'progress-bar',
-  'progress-ring',
+  // The Timeline draws its own rail and never reads the element's strokeWidth or strokeStyle, so the Border
+  // accordion offers no Strength or Pattern on it (a pick would write, autosave and broadcast for no visual change).
   'timeline-rail',
-  'rating',
-  'pie-chart',
-  'bar-chart',
-  'line-chart',
-  'code-block',
-  'checklist',
-  // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
-  'legend',
   // Behaviour elements (docs/specs/009-elements/portal-element.md): the ring IS the element.
   'portal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
@@ -769,10 +745,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
-    element.shape !== 'stack' &&
-    element.shape !== 'banner' &&
-    element.shape !== 'stat-row' &&
-    element.shape !== 'process'
+    element.shape !== 'stack'
   );
 }
 

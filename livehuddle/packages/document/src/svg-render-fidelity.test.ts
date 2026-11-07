@@ -55,16 +55,6 @@ describe('Behaviour face export', () => {
   it('prints a chair label under the seat', () => {
     expect(svgOf(shape('chair', { label: 'Scribe' }))).toContain('>Scribe<');
   });
-
-  it('starts a page label under the masthead, and turns back its corner', () => {
-    const el = shape('page', { label: 'Body', pageTitle: 'Doc', pageSubtitle: 'Sub' });
-    const svg = svgOf(el, '#0d121a');
-    const bodyY = Number(/<text x="[\d.]+" y="([\d.]+)"[^<>]*font-size="14"/.exec(svg)?.[1]);
-    const ruleY = Number(/<path d="M 26 ([\d.]+) L/.exec(svg)?.[1]);
-    expect(bodyY).toBeGreaterThan(ruleY);
-    // The cut corner shows the paper under the page.
-    expect(svg).toContain('fill="#0d121a"/><path');
-  });
 });
 
 describe('wrapLabel', () => {
