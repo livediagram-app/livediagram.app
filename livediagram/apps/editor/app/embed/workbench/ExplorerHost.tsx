@@ -114,7 +114,7 @@ export function ExplorerHost({
         guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   const library = useMemo(() => explorerLibraryHosts(), []);

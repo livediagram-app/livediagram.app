@@ -220,7 +220,7 @@ function worker(): Env {
   return new Proxy(env, {
     has: (target, key) => key !== 'PLAN_DB' && key in target,
     get: (target, key) => (key === 'PLAN_DB' ? undefined : (Reflect.get(target, key) as unknown)),
-  }) as unknown as Env;
+  });
 }
 const viaWorker = (ctx: ReturnType<typeof makeTestRouteContext>) =>
   ({ ...ctx, env: worker(), grant: undefined }) as unknown as ReturnType<

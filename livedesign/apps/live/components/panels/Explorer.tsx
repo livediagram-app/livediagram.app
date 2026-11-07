@@ -83,7 +83,7 @@ function ExplorerImpl({
         guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The pane's verbs: this app's threads, and an action on the open design's active tab.

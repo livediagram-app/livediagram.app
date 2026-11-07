@@ -63,7 +63,7 @@ const card = (over: Partial<Item> = {}): Item => ({
       ],
       running: [{ by: 'p-ada', since: 4 }],
     },
-  } as unknown as Item['fields'],
+  },
   rev: 1,
   createdAt: 1,
   updatedAt: 2,

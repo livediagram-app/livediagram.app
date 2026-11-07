@@ -108,7 +108,7 @@ export function ExplorerHost({
         guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's

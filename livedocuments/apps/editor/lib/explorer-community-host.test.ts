@@ -72,9 +72,7 @@ describe('explorerCommunity', () => {
     expect(
       explorerCommunity(null, false, 'guest_g')!(item({ ownerId: 'guest_g' })),
     ).toBeUndefined();
-    expect(
-      explorerCommunity(account, true, null)!(item({ app: 'livediagram' } as Partial<Item>)),
-    ).toBeUndefined();
+    expect(explorerCommunity(account, true, null)!(item({ app: 'livediagram' }))).toBeUndefined();
   });
 
   it('names an account without a name You', () => {

@@ -70,7 +70,7 @@ function anonymiseTime(value: TimeValueLike): ItemFieldValue {
     people: {},
     entries: value.entries.map((e) => ({ ...e, by: neutral(e.by) })),
     running: [],
-  } as unknown as ItemFieldValue;
+  };
 }
 
 // A form's response card (forms/respond.ts): made by the form, or carrying the response it came from.
@@ -99,6 +99,10 @@ function fieldsForCommunity(item: Item, type: ItemTypeDef): ItemFields {
 }
 
 // One card as a stranger sees it, against the plan's card types.
+// A D1 text column read off an untyped row, or the fallback when it is null or not text.
+const textOr = (value: unknown, fallback: string): string =>
+  typeof value === 'string' ? value : fallback;
+
 export function redactItemForCommunity(item: Item, types: readonly ItemTypeDef[]): Item {
   const { openComments: _count, ...rest } = item;
   return {
@@ -126,15 +130,15 @@ export function redactItemRowForCommunity(
   let fields: ItemFields = {};
   let createdBy: ItemPerson = COMMUNITY_PERSON;
   try {
-    const parsed: unknown = JSON.parse(String(row['fields'] ?? '{}'));
+    const parsed: unknown = JSON.parse(textOr(row['fields'], '{}'));
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
       fields = parsed as ItemFields;
-    const by: unknown = JSON.parse(String(row['created_by'] ?? 'null'));
+    const by: unknown = JSON.parse(textOr(row['created_by'], 'null'));
     if (isItemPerson(by)) createdBy = by;
   } catch {
     fields = {};
   }
-  const item = { type: String(row['type'] ?? ''), fields, createdBy } as Item;
+  const item = { type: textOr(row['type'], ''), fields, createdBy } as Item;
   const person = JSON.stringify(COMMUNITY_PERSON);
   return {
     ...row,
@@ -181,12 +185,11 @@ export function responseSheetIds(tabs: readonly { data?: string; form?: unknown 
   const ids = new Set<string>();
   for (const tab of tabs) {
     let form: Partial<FormDefinition> | null = null;
-    if (tab.form && typeof tab.form === 'object') form = tab.form as Partial<FormDefinition>;
+    if (tab.form && typeof tab.form === 'object') form = tab.form;
     else if (typeof tab.data === 'string' && tab.data.includes('"form"')) {
       try {
         const parsed = JSON.parse(tab.data) as { form?: unknown };
-        if (parsed.form && typeof parsed.form === 'object')
-          form = parsed.form as Partial<FormDefinition>;
+        if (parsed.form && typeof parsed.form === 'object') form = parsed.form;
       } catch {
         form = null;
       }
@@ -221,7 +224,7 @@ export function redactSheetCellRowsForCommunity(
     const id = String(s['id']);
     if (!responseSheets.has(id)) continue;
     try {
-      const layout = JSON.parse(String(s['layout'] ?? '{}')) as { rows?: string[] };
+      const layout = JSON.parse(textOr(s['layout'], '{}')) as { rows?: string[] };
       heading.set(id, layout.rows?.[0]);
     } catch {
       heading.set(id, undefined);

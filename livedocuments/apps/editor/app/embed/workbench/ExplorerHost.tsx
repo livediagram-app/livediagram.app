@@ -129,7 +129,7 @@ export function ExplorerHost({
         guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // This Browser: the documents kept only in this browser, which the index never sees, as a view of the Explorer.

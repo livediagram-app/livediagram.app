@@ -55,7 +55,7 @@ export function redactProjectForCommunity(liveDoc: ProjectDTO): ProjectDTO {
     tabs: liveDoc.tabs.map((tab) => {
       if (!('connection' in tab)) return tab;
       const { connection: _connection, ...rest } = tab as typeof tab & { connection?: unknown };
-      return rest as typeof tab;
+      return rest;
     }),
   };
 }
