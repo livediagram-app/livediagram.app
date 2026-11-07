@@ -37,7 +37,7 @@
     "@liveworkspace/api-kit": "workspace:^",
     "@liveworkspace/vitest-config": "workspace:^",
     "@types/node": "^26.6.6",
-    "oxlint": "^1.91.0",
+    "oxlint": "^1.90.0",
     "tsx": "^4.20.6",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0",
