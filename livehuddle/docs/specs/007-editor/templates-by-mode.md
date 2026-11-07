@@ -31,20 +31,29 @@ untitled.
 
 ## The catalogue
 
-- Eighteen Spaces in five categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
-  [Virtual Office template](../012-collaboration/virtual-office-template.md)):
+- Twenty-five Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+  [Virtual Office template](../012-collaboration/virtual-office-template.md), its "The catalogue plan" lists the
+  element types each one uses):
   - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
     (`team-pod`) and **Focus Library** (`focus-library`).
   - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`) and **Expo Hall**
-    (`expo-hall`).
-  - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`).
+    (`expo-hall`, also in Venues).
+  - **Recreation**: **Rooftop Bar** (`rooftop-bar`) and **Cafe** (`cafe`), and the Sports Bar cross-listed.
   - **Outdoor**: **Garden Retreat** (`garden-retreat`), **City Park** (`city-park`) and **Beach Offsite**
     (`beach-offsite`, also in Campus).
-  - **Campus**: **Company Campus** (`company-campus`), **Conference Venue** (`conference-venue`), **Startup HQ**
-    (`startup-hq`), **School Quad** (`school-quad`), **Hotel and Suites** (`hotel-and-suites`, three floors) and
-    **Co-working Tower** (`coworking-tower`, three floors): whole sites of rooms joined by a garden or a building's floors
-    ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)).
-- Start a Space shows Recommended first, then each category as a group: Campus, Events, Office, Outdoor and Recreation
+  - **Campus**: **Company Campus** (`company-campus`), **Startup HQ** (`startup-hq`), **School Quad** (`school-quad`)
+    and **Co-working Tower** (`coworking-tower`, three floors): the company and education sites, rooms joined by a
+    garden or a building's floors ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)).
+  - **Games Rooms**: **Arcade Lounge** (`arcade-lounge`), **Games Night Den** (`games-night-den`) and **Sports Bar**
+    (`sports-bar`, also in Recreation) ([Games Rooms](../012-collaboration/virtual-office-template.md#games-rooms)).
+  - **Homes**: **Family House** (`family-house`, two floors), **City Townhouse** (`city-townhouse`, three floors) and
+    **Country Cottage** (`country-cottage`, two floors), Downstairs and Upstairs joined by Stairs
+    ([Homes](../012-collaboration/virtual-office-template.md#homes)).
+  - **Venues**: **Conference Venue** (`conference-venue`), **Hotel and Suites** (`hotel-and-suites`, three floors) and
+    **Music Hall** (`music-hall`), and the Expo Hall cross-listed
+    ([Venues](../012-collaboration/virtual-office-template.md#venues)).
+- Start a Space shows Recommended first, then each category as a group: Campus, Events, Games Rooms, Homes, Office,
+  Outdoor, Recreation and Venues
   ([Start diagramming](start-diagramming.md) "Recommended leads").
 - **Gone** (part 3): the Retrospectives family (`retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`,
   `sailboat`), `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, the
@@ -61,7 +70,7 @@ untitled.
 - Every template opens on a meeting board (`templates.test.ts`).
 - Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the eighteen Spaces and the blank, nineteen templates (`templates.test.ts`'s kind list, the `TemplateKind`
+- The catalogue is the twenty-five Spaces and the blank, twenty-six templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
 - Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
   lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
@@ -80,19 +89,23 @@ untitled.
   reads it, the Directory waits inside the gate above the Avatar Pad, the aisles are roomy and the hall's centre aisle is
   at least 160 px. A template's floors are held to the same rules, floor by floor (`template-floors.test.ts`): rooms
   closed with a signed Door, pieces inside their walls or clear of them, roomy aisles, no furniture on furniture, and
-  named Elevators, the same number on every floor of the Co-working Tower.
+  named Elevators, the same number on every floor of the Co-working Tower. The Games Rooms and the Venues are held to
+  the Campus rules; the Homes to the same rules without the Room Signs, and `template-homes.test.ts` checks that each
+  floor is named, has one flight of Stairs in the same place as every other floor's, its pad beside them upstairs,
+  windows only on walls, glass on the rooms the plan names, and no Directory or Elevator.
 
 ## A template with floors
 
 - A template may have **floors**: more tabs after its first (`templateFloors`, in `@livehuddle/templates`), each with
-  its own name, floor pattern and builder. The Hotel and Suites and the Co-working Tower have three
-  ([Spaces with floors](../012-collaboration/virtual-office-template.md#spaces-with-floors)); every other template has
-  none.
+  its own name, floor pattern and builder. The Hotel and Suites, the Co-working Tower and the City Townhouse have
+  three, the Family House and the Country Cottage two
+  ([Spaces with floors](../012-collaboration/virtual-office-template.md#spaces-with-floors),
+  [Homes](../012-collaboration/virtual-office-template.md#homes)); every other template has none.
 - **Made together.** `/new?template=` and the workspace frame's New document make the document with every floor as a
   tab, in order ([New document route](new-document-route.md)). Picked on Start a Space, the template lands on the empty
   tab as always, and its other floors are added as new tabs straight after it, each loaded at once (it has no server
   row to fetch yet), in the tab's theme. Undo takes the pick back as one step.
-- **Names.** The first tab is named after the template's first floor ("Lobby", "Ground Floor"), the others after
+- **Names.** The first tab is named after the template's first floor ("Lobby", "Ground Floor", "Downstairs"), the others after
   theirs, so the [Elevator](../009-elements/elevator.md) panel reads as the building's floors. The document is still
   named after the template ("Untitled Hotel and Suites").
 - **Agents** (`buildTemplateTab`, the MCP's create and add tab) get the first floor only, for now; the floors are a

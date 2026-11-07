@@ -15,19 +15,31 @@ import { templateMatchesQuery } from './template-search';
 import { TEMPLATES } from './templates';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
-// catalogue": the eighteen Spaces in five categories by the kind of place they are, the blank in none.
+// catalogue": the twenty-five Spaces in eight categories by the kind of place they are, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('is Campus, Events, Office, Outdoor and Recreation, alphabetical, Title Case, with even descriptions', () => {
+  it('is Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues, alphabetical, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Campus',
       'Events',
+      'Games Rooms',
+      'Homes',
       'Office',
       'Outdoor',
       'Recreation',
+      'Venues',
     ]);
-    expect(ids).toEqual(['campus', 'events', 'office', 'outdoor', 'recreation']);
+    expect(ids).toEqual([
+      'campus',
+      'events',
+      'games',
+      'homes',
+      'office',
+      'outdoor',
+      'recreation',
+      'venues',
+    ]);
     for (const c of TEMPLATE_CATEGORIES) {
       expect(c.description.length, c.id).toBeGreaterThanOrEqual(40);
       expect(c.description.length, c.id).toBeLessThanOrEqual(50);
@@ -50,7 +62,7 @@ describe('template categories', () => {
     }
   });
 
-  it('files two to seven Spaces in each category, the Beach Offsite cross-listed in Campus', () => {
+  it('files two to seven Spaces in each category, three of them cross-listed', () => {
     const inCategory = (id: (typeof ids)[number]) =>
       TEMPLATES.filter((t) => templateCategory(t.kind) === id).map((t) => t.kind);
     expect(inCategory('office')).toEqual([
@@ -64,17 +76,22 @@ describe('template categories', () => {
     expect(inCategory('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
     expect(inCategory('campus')).toEqual([
       'company-campus',
-      'conference-venue',
       'startup-hq',
       'school-quad',
-      'hotel-and-suites',
       'coworking-tower',
     ]);
+    expect(inCategory('games')).toEqual(['arcade-lounge', 'games-night-den', 'sports-bar']);
+    expect(inCategory('homes')).toEqual(['family-house', 'city-townhouse', 'country-cottage']);
+    expect(inCategory('venues')).toEqual(['conference-venue', 'hotel-and-suites', 'music-hall']);
     for (const id of ids) {
       expect(inCategory(id).length, id).toBeGreaterThanOrEqual(2);
       expect(inCategory(id).length, id).toBeLessThanOrEqual(7);
     }
-    expect(TEMPLATE_ALSO_IN).toEqual({ 'beach-offsite': ['campus'] });
+    expect(TEMPLATE_ALSO_IN).toEqual({
+      'beach-offsite': ['campus'],
+      'sports-bar': ['recreation'],
+      'expo-hall': ['venues'],
+    });
     expect(isInTemplateCategory('team-pod', 'office')).toBe(true);
     expect(isInTemplateCategory('blank-session', 'office')).toBe(false);
   });
@@ -108,6 +125,22 @@ describe('template search words', () => {
     expect(find('drinks')).toEqual(expect.arrayContaining(['rooftop-bar', 'cafe']));
     expect(find('garden')).toEqual(expect.arrayContaining(['garden-retreat', 'city-park']));
     expect(find('pub')).toContain('rooftop-bar');
+    // The Games Rooms, the Homes and the Venues by the words people use for them.
+    expect(find('moon mail')).toEqual(['arcade-lounge']);
+    expect(find('ping pong')).toContain('sports-bar');
+    expect(find('play')).toEqual(
+      expect.arrayContaining(['arcade-lounge', 'games-night-den', 'sports-bar']),
+    );
+    expect(find('house')).toEqual(
+      expect.arrayContaining(['family-house', 'city-townhouse', 'country-cottage']),
+    );
+    expect(find('upstairs')).toEqual(
+      expect.arrayContaining(['family-house', 'city-townhouse', 'country-cottage']),
+    );
+    expect(find('live music')).toEqual(['music-hall']);
+    expect(find('venue')).toEqual(
+      expect.arrayContaining(['conference-venue', 'hotel-and-suites', 'music-hall', 'expo-hall']),
+    );
     // A category's search words find its templates: every Space by "avatar", and the Blank Space by its own Avatar
     // Pad.
     expect(find('avatar')).toEqual(TEMPLATES.map((t) => t.kind));

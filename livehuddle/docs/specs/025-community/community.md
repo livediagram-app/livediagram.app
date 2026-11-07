@@ -111,14 +111,17 @@ palette](../008-canvas/canvas-and-palette.md#template-categories), `TEMPLATE_CAT
 order and one-line descriptions, then Something Else (owner, 2026-11-07). The id is stored; the label is shown. The
 publish dialog offers these alone, and `packages/templates/src/community-categories.test.ts` keeps the two lists equal.
 
-| id           | Label          | For                                              |
-| ------------ | -------------- | ------------------------------------------------ |
-| `campus`     | Campus         | Whole sites: offices, halls and bars in a garden |
-| `events`     | Events         | Halls and rooms for talks, demos and training    |
-| `office`     | Office         | Desks, pods and meeting rooms for the workday    |
-| `outdoor`    | Outdoor        | Gardens and parks to meet in under an open sky   |
-| `recreation` | Recreation     | Bars and cafes to unwind in together after work  |
-| `other`      | Something Else | Anything that fits nowhere above                 |
+| id           | Label          | For                                               |
+| ------------ | -------------- | ------------------------------------------------- |
+| `campus`     | Campus         | Whole sites: offices, halls and bars in a garden  |
+| `events`     | Events         | Halls and rooms for talks, demos and training     |
+| `games`      | Games Rooms    | Arcades, dens and bars for playing games together |
+| `homes`      | Homes          | Houses to meet in, with Stairs between the floors |
+| `office`     | Office         | Desks, pods and meeting rooms for the workday     |
+| `outdoor`    | Outdoor        | Gardens and parks to meet in under an open sky    |
+| `recreation` | Recreation     | Bars and cafes to unwind in together after work   |
+| `venues`     | Venues         | Halls, hotels and stages to host a big day at     |
+| `other`      | Something Else | Anything that fits nowhere above                  |
 
 They are livehuddle's own set on the shared service
 ([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#categories)), for
@@ -127,7 +130,8 @@ meeting in Spaces; livediagram's categories are not offered.
 Posts filed under the old set were moved by the service's migration (the platform spec's [Moving to the template
 categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)):
 `offices` and `meetings` to Office, `socials` and `communities` to Recreation, `learning` to Events, and anything else
-(the retired `workshops`, `retrospectives`, `decisions`, `games`) to Something Else.
+(the retired `workshops`, `retrospectives`, `decisions`, `games`) to Something Else. Games Rooms, Homes and Venues came with the template catalogue's three new categories (Work
+Tracker #641); a new category needs no migration, as no stored post holds its id yet.
 
 The month's most liked posts in each category also show in Start a Space, after that category's templates ([Start a
 Space "From the Community"](../007-editor/start-diagramming.md#from-the-community)).

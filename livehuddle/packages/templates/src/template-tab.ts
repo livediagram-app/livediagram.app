@@ -8,7 +8,7 @@ import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';
 import { isBlankTemplate } from './template-modes';
-import { templateFirstFloorName } from './template-floors';
+import { templateFirstFloorName } from './template-floor-names';
 
 // The templates an agent may build: the catalogue's (templateCatalogue), never a hidden one.
 const AGENT_TEMPLATES = TEMPLATES.filter((t) => !t.hidden);

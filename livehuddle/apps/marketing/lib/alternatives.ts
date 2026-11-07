@@ -59,7 +59,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Free for everyone and MIT-licensed, with no per-seat pricing, no team-size limit on a plan, and nothing to upgrade to.',
       'Open a link and you are in, with no sign-up, even to create a Space, and nothing to install.',
-      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round, each ready to walk into.',
+      '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round, each ready to walk into.',
       'Your own character with outfits, a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks, comments and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
@@ -160,7 +160,7 @@ const LIST: Alternative[] = [
       'Free for everyone and MIT-licensed, with no per-seat pricing and nothing to upgrade to.',
       'Open a link and walk in from any modern browser, with nothing to install and no sign-up, even to create a Space.',
       'A place you can see: everyone is a character in their own colour and outfit, with a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves.',
-      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round, and office pieces to build more rooms.',
+      '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round, and office pieces to build more rooms.',
       'The walls hold the meeting: sticky notes, text and stickers, and a Timer or a Stopwatch in any room.',
       'Bring Focus and follow-me to walk the room through something, and a burst of confetti, sparkles, hearts, applause or fireworks round your character when it goes well.',
       'Comments with mentions and reactions, and actions assigned to a teammate, so the follow-ups leave with an owner.',
@@ -254,7 +254,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
       'Open a link and walk in, with no sign-up, even to create a Space, and nothing to install.',
-      '19 templates: a blank Space, and offices, halls, bars, gardens and whole campuses to walk round.',
+      '26 templates: a blank Space, and offices, halls, bars, gardens, games rooms, houses and whole campuses to walk round.',
       'Everyone is a character with outfits, a status (Available, Focusing, Out to Lunch, Angry and seven more, each worn on the character), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk, comment and react without moving the furniture.',

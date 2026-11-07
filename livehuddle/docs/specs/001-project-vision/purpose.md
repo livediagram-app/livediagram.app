@@ -69,7 +69,7 @@ place they meet.
 The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 
 - **Being together in a Space**: Avatar mode first-class, live cursors, presence, follow-me, Bring Focus.
-- **Spaces to meet in**: the eighteen Spaces templates, every Space element to build more.
+- **Spaces to meet in**: the twenty-five Spaces templates, every Space element to build more.
 - **Talking**: proximity audio and calls ([Future work](../005-project-roadmap/future-work.md) and the calls specs in
   `012-collaboration/`), speech bubbles, comments with mentions and reactions.
 - **Keeping a meeting moving**: the Timer and Stopwatch pieces, and Bring Focus.

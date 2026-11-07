@@ -26,6 +26,13 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamilyOrNone> = {
   'coworking-tower': null,
   'expo-hall': null,
   'beach-offsite': null,
+  'arcade-lounge': null,
+  'games-night-den': null,
+  'sports-bar': null,
+  'family-house': null,
+  'city-townhouse': null,
+  'country-cottage': null,
+  'music-hall': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

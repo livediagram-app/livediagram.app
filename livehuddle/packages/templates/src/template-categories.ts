@@ -1,5 +1,6 @@
 // The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the kind of
-// place a Space is, Campus, Office, Events, Outdoor and Recreation, each holding two to seven of the eighteen Spaces
+// place a Space is, Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues, each holding two to seven
+// of the twenty-five Spaces
 // (docs/specs/007-editor/templates-by-mode.md "The catalogue"). Every template but the blank has exactly one primary category and may be cross-listed in others where
 // people would genuinely look for it. Read by Start a Space, the marketing gallery and the agents' catalogue. Pure
 // data plus three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
@@ -8,8 +9,10 @@ import type { TemplateKind } from './templates';
 // The Meetings & Workshops, Retrospectives, Brainstorming, Decisions, Goals & Metrics, People & Teams, Planning,
 // Product & UX, Quizzes & Games, Strategy and Teaching & Learning categories left with their templates
 // (docs/specs/002-project-scope/not-in-livehuddle.md). The one Virtual Spaces category the first four Spaces shared
-// split into four, and Campus (whole sites joined by gardens) came after.
-export type TemplateCategory = 'campus' | 'office' | 'events' | 'outdoor' | 'recreation';
+// split into four, Campus (whole sites joined by gardens) came after, and Games Rooms, Homes and Venues (Work Tracker
+// #641) after that, Venues taking the Conference Venue and the Hotel and Suites from Campus.
+export type TemplateCategory =
+  'campus' | 'office' | 'events' | 'outdoor' | 'recreation' | 'games' | 'homes' | 'venues';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
@@ -53,6 +56,24 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     searchWords: 'social fun drinks bar cafe lounge avatar walk',
     description: 'Bars and cafes to unwind in together after work.',
   },
+  {
+    id: 'games',
+    label: 'Games Rooms',
+    searchWords: 'game games play arcade gaming fun ping pong pool darts foosball avatar walk room',
+    description: 'Arcades, dens and bars for playing games together.',
+  },
+  {
+    id: 'homes',
+    label: 'Homes',
+    searchWords: 'home house houses stairs upstairs downstairs floors family avatar walk room',
+    description: 'Houses to meet in, with Stairs between the floors.',
+  },
+  {
+    id: 'venues',
+    label: 'Venues',
+    searchWords: 'venue venues gig concert host hotel event events stage avatar walk room',
+    description: 'Halls, hotels and stages to host a big day at.',
+  },
 ];
 
 // The categories in the order every picker shows them (every start, /new and the marketing gallery): alphabetical
@@ -79,13 +100,20 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
   'garden-retreat': 'outdoor',
   'city-park': 'outdoor',
   'company-campus': 'campus',
-  'conference-venue': 'campus',
+  'conference-venue': 'venues',
   'startup-hq': 'campus',
   'school-quad': 'campus',
-  'hotel-and-suites': 'campus',
+  'hotel-and-suites': 'venues',
   'coworking-tower': 'campus',
   'expo-hall': 'events',
   'beach-offsite': 'outdoor',
+  'arcade-lounge': 'games',
+  'games-night-den': 'games',
+  'sports-bar': 'games',
+  'family-house': 'homes',
+  'city-townhouse': 'homes',
+  'country-cottage': 'homes',
+  'music-hall': 'venues',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -95,6 +123,10 @@ export const TEMPLATE_ALSO_IN: Readonly<
 > = {
   // A beach offsite is a whole site for a team's day away, so it is looked for among the Campus sites too.
   'beach-offsite': ['campus'],
+  // A sports bar is a bar to unwind in after work as much as a place to play.
+  'sports-bar': ['recreation'],
+  // An expo is a show a venue hosts.
+  'expo-hall': ['venues'],
 };
 
 /** A template's primary category; null for the blank, which is in none. */

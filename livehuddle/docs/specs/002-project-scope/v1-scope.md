@@ -60,8 +60,8 @@ With them comes the Avatar [Selection Mode button](../009-elements/mode-button.m
 
 ### 3. The Spaces templates
 
-[Eighteen Spaces in five categories](../012-collaboration/virtual-office-template.md) (Campus, Office, Events,
-Outdoor and Recreation), with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode](../007-editor/templates-by-mode.md)).
+[Twenty-five Spaces in eight categories](../012-collaboration/virtual-office-template.md) (Campus, Events, Games
+Rooms, Homes, Office, Outdoor, Recreation and Venues), with Blank Space, are the whole catalogue (Work Tracker #423; [Templates by mode](../007-editor/templates-by-mode.md)).
 
 ### 4. The meeting board: light content and light meeting tools
 

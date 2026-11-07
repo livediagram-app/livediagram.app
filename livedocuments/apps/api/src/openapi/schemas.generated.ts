@@ -1843,6 +1843,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "health",
       "hiring",
       "home",
+      "homes",
       "ideas",
       "learning",
       "marketing",
@@ -1873,6 +1874,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "support",
       "team",
       "travel",
+      "venues",
       "websites",
       "work"
     ],

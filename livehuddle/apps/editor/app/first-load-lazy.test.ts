@@ -18,4 +18,22 @@ describe('every route’s first load', () => {
     expect(staticImports(src).some((p) => p.includes('editor-page'))).toBe(false);
     expect(src).toContain("import('./document/[id]/editor-page')");
   });
+
+  // The template builders (every Space's rooms and furniture) load when a template is picked, not with the editor.
+  it('loads the template builders only on a template pick', () => {
+    for (const path of [
+      'components/start/useTemplatePickMove.ts',
+      'app/document/[id]/useTemplateFlow.ts',
+    ]) {
+      const src = read(path);
+      expect(staticImports(src), path).not.toContain('@/lib/template-builders');
+      expect(src, path).toContain("import('@/lib/template-builders')");
+    }
+    // What the editor reads statically from the templates package stays clear of the builders.
+    const pkg = (file: string) =>
+      readFileSync(join(root, '../../packages/templates/src', file), 'utf8');
+    expect(staticImports(pkg('template-tab.ts'))).not.toContain('./template-floors');
+    expect(staticImports(pkg('template-floor-names.ts'))).toEqual([]);
+    expect(staticImports(pkg('blank-pad-drop.ts'))).toEqual([]);
+  });
 });

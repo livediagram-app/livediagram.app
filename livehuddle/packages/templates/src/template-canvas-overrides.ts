@@ -27,6 +27,13 @@ const TEMPLATE_FLOORS: Partial<Record<TemplateKind, FloorPattern>> = {
   'coworking-tower': 'wood',
   'expo-hall': 'concrete',
   'beach-offsite': 'sand',
+  'arcade-lounge': 'carpet',
+  'games-night-den': 'wood',
+  'sports-bar': 'wood',
+  'family-house': 'wood',
+  'city-townhouse': 'parquet',
+  'country-cottage': 'wood',
+  'music-hall': 'parquet',
 };
 
 // Tab-level overrides a specific template ships with, applied on top of whatever theme is selected: its floor (see

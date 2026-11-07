@@ -1,7 +1,7 @@
 import { headlineCase, isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
-// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the eighteen Spaces, every
+// The catalogue (docs/specs/007-editor/templates-by-mode.md "The catalogue"): Blank Space and the twenty-five Spaces, every
 // one opening on a meeting board. livehuddle is for meeting in Spaces; the retrospectives, workshops, planning and
 // strategy boards and the quizzes and games are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
 export type TemplateKind =
@@ -28,7 +28,16 @@ export type TemplateKind =
   | 'coworking-tower'
   // More Spaces (virtual-office-template.md "More Spaces").
   | 'expo-hall'
-  | 'beach-offsite';
+  | 'beach-offsite'
+  // The Games Rooms, the Homes (houses with floors joined by Stairs) and the Music Hall, a Venue
+  // (virtual-office-template.md "Games Rooms", "Homes", "Venues").
+  | 'arcade-lounge'
+  | 'games-night-den'
+  | 'sports-bar'
+  | 'family-house'
+  | 'city-townhouse'
+  | 'country-cottage'
+  | 'music-hall';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -183,6 +192,55 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Beach Offsite',
     description:
       'A team offsite on the sand in Avatar mode: a beach hut to meet in, a tiki bar, a campfire circle, hammocks and a lagoon.',
+    extra: true,
+  },
+  {
+    kind: 'arcade-lounge',
+    title: 'Arcade Lounge',
+    description:
+      'An arcade to play in together in Avatar mode: twenty Arcade Machines, a snack bar, a glass party room and a chill lounge.',
+    extra: true,
+  },
+  {
+    kind: 'games-night-den',
+    title: 'Games Night Den',
+    description:
+      'A cosy den for games night in Avatar mode: a fire with the dog beside it, games tables, pool, foosball and darts.',
+    extra: true,
+  },
+  {
+    kind: 'sports-bar',
+    title: 'Sports Bar',
+    description:
+      'A bar for the big game in Avatar mode: a long bar, a glass screen lounge, two ping-pong tables, pool and foosball.',
+    extra: true,
+  },
+  {
+    kind: 'family-house',
+    title: 'Family House',
+    description:
+      'A family home on two floors in Avatar mode: a living room by the fire, a kitchen and a playroom, a study upstairs.',
+    extra: true,
+  },
+  {
+    kind: 'city-townhouse',
+    title: 'City Townhouse',
+    description:
+      'A townhouse on three floors in Avatar mode: a kitchen-diner, a glass home office upstairs and a roof terrace.',
+    extra: true,
+  },
+  {
+    kind: 'country-cottage',
+    title: 'Country Cottage',
+    description:
+      'A cottage on two floors in Avatar mode: a farmhouse kitchen, a snug, a garden with a pond and an attic studio.',
+    extra: true,
+  },
+  {
+    kind: 'music-hall',
+    title: 'Music Hall',
+    description:
+      'A venue for a gig in Avatar mode: a main hall with a stage and a standing floor, a foyer bar, a green room and a cloakroom.',
     extra: true,
   },
 ];

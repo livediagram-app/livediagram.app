@@ -90,7 +90,9 @@ Adding one emits `Element·Added·Stairs`. Taking them is navigation and is not 
 ## In the templates
 
 The **Co-working Tower** has Stairs beside its North Lift, in the same place on every floor, so the flight you take
-lands you in the same spot a floor up. The **Hotel and Suites** keeps its Elevators only: its lifts stand in a
+lands you in the same spot a floor up. The **Homes** (the Family House, the City Townhouse and the Country Cottage,
+Work Tracker #641) have Stairs and nothing else between their floors: one flight in the hall, in the same place on
+every floor, the landing's Avatar Pad beside it ([Homes](../012-collaboration/virtual-office-template.md#homes)). The **Hotel and Suites** keeps its Elevators only: its lifts stand in a
 different place on each floor, and a hotel's guests ride.
 
 ## Implementation shape

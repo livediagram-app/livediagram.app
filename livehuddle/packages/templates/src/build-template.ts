@@ -5,6 +5,7 @@
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (livediagram/docs/specs/015-api/mcp-server.md §4.5).
 
+import { BLANK_PAD_DROP } from './blank-pad-drop';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { buildFocusLibrary } from './template-builders-office-more';
@@ -18,6 +19,13 @@ import { buildHotelLobby } from './template-builders-hotel';
 import { buildExpoHall } from './template-builders-expo';
 import { buildBeachOffsite } from './template-builders-beach';
 import { buildSchoolQuad } from './template-builders-school';
+import { buildArcadeLounge, buildGamesNightDen, buildSportsBar } from './template-builders-games';
+import {
+  buildCityTownhouse,
+  buildCountryCottage,
+  buildFamilyHouse,
+} from './template-builders-homes';
+import { buildMusicHall } from './template-builders-venues';
 import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
@@ -47,10 +55,7 @@ export function floorsFirst(elements: Element[]): Element[] {
   return [...elements.filter(isFloor), ...elements.filter((el) => !isFloor(el))];
 }
 
-// How far below the middle of the view a blank tab's Avatar Pad stands, centre to centre
-// (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one", D216): the middle stays free to build in,
-// and the pad is in view at 100% on a phone.
-export const BLANK_PAD_DROP = 160;
+export { BLANK_PAD_DROP };
 
 /** Blank Space's one element: an Avatar Pad, centred across `cx` and BLANK_PAD_DROP below `cy`. */
 function blankPad(cx: number, cy: number): Element[] {
@@ -96,6 +101,20 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildHotelLobby(cx, cy);
     case 'coworking-tower':
       return buildTowerGround(cx, cy);
+    case 'arcade-lounge':
+      return buildArcadeLounge(cx, cy);
+    case 'games-night-den':
+      return buildGamesNightDen(cx, cy);
+    case 'sports-bar':
+      return buildSportsBar(cx, cy);
+    case 'family-house':
+      return buildFamilyHouse(cx, cy);
+    case 'city-townhouse':
+      return buildCityTownhouse(cx, cy);
+    case 'country-cottage':
+      return buildCountryCottage(cx, cy);
+    case 'music-hall':
+      return buildMusicHall(cx, cy);
     // The blank holds only its entrance (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): an
     // Avatar Pad a little below the middle, where people arrive; the user adds the rest from the palette.
     case 'blank-session':

@@ -13,15 +13,23 @@ import { templateFloors } from './template-floors';
 import { templateCategories, templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
 
-// docs/specs/012-collaboration/virtual-office-template.md "Campus Spaces" and "Spaces with floors": whole sites of rooms,
-// in a fenced garden or a building's floors. Every room is closed and has one Door on its walls with a way out in front
-// of it (a Garden Path outdoors, open floor indoors) and a Room Sign beside it, a Directory waits at the arrival point
-// (above the Avatar Pad, or by a floor's Elevator), and every aisle is roomy.
+// docs/specs/012-collaboration/virtual-office-template.md "Campus Spaces", "Spaces with floors", "Games Rooms", "Homes"
+// and "Venues": whole sites of rooms, in a fenced garden or a building's floors. Every room is closed and has one Door on
+// its walls with a way out in front of it (a Garden Path outdoors, open floor indoors) and, but in a home, a Room Sign
+// beside it, a Directory waits at the arrival point (above the Avatar Pad, or by a floor's Elevator), and every aisle is
+// roomy.
 
 type Shape = Extract<Element, { type: 'shape' }>;
 type Box = { x: number; y: number; width: number; height: number };
 
-const CAMPUS = TEMPLATES.map((t) => t.kind).filter((k) => templateCategory(k) === 'campus');
+// The whole sites: the Campus Spaces and the Venues built the same way.
+const CAMPUS = TEMPLATES.map((t) => t.kind).filter((k) =>
+  ['campus', 'venues'].includes(templateCategory(k) ?? ''),
+);
+// Every Space built as rooms with a Door each: the sites, the Games Rooms and the Homes.
+const BUILT = TEMPLATES.map((t) => t.kind).filter((k) =>
+  ['campus', 'venues', 'games', 'homes'].includes(templateCategory(k) ?? ''),
+);
 // Two Regular characters side by side; a seat catches a character only when its feet step onto it.
 const AISLE = 2 * AVATAR_WIDTH * avatarScale('regular');
 const ROW_GAP = 16;
@@ -68,16 +76,21 @@ const SITES: Record<string, { stage: boolean; lawn: boolean }> = {
   'school-quad': { stage: true, lawn: true },
   'hotel-and-suites': { stage: true, lawn: false },
   'coworking-tower': { stage: false, lawn: false },
+  'music-hall': { stage: true, lawn: false },
 };
 
-it('files six Spaces under Campus, and cross-lists the Beach Offsite there', () => {
+it('files four Spaces under Campus and three under Venues, and cross-lists the Beach Offsite and the Expo Hall', () => {
   expect(CAMPUS).toEqual(Object.keys(SITES));
+  expect(TEMPLATES.filter((t) => templateCategory(t.kind) === 'campus').map((t) => t.kind)).toEqual(
+    ['company-campus', 'startup-hq', 'school-quad', 'coworking-tower'],
+  );
   expect(templateCategories('beach-offsite')).toEqual(['outdoor', 'campus']);
+  expect(templateCategories('expo-hall')).toEqual(['events', 'venues']);
 });
 
-// Every tab of every campus, and of the Beach Offsite: a site's floors are held to the same rules.
+// Every tab of every site, Games Room and Home, and of the Beach Offsite: a site's floors are held to the same rules.
 const TABS: [string, TemplateKind, Element[], boolean][] = [
-  ...CAMPUS,
+  ...BUILT,
   'beach-offsite' as TemplateKind,
 ].flatMap((kind) => [
   [kind, kind, buildTemplate(kind, 0, 0), true] as [string, TemplateKind, Element[], boolean],
@@ -119,8 +132,10 @@ describe.each(CAMPUS)('the %s campus', (kind: TemplateKind) => {
   });
 });
 
-describe.each(TABS)('the %s site', (_name, _kind, els, first) => {
+describe.each(TABS)('the %s site', (_name, kind, els, first) => {
   const all = shapes(els);
+  // A home's rooms carry no Room Sign (docs/specs/012-collaboration/virtual-office-template.md "Homes").
+  const home = templateCategory(kind) === 'homes';
   const rooms = all.filter((e) => e.shape === 'room');
   const doors = all.filter((e) => e.shape === 'door');
   const paths = all.filter((e) => e.shape === 'garden-path');
@@ -193,6 +208,10 @@ describe.each(TABS)('the %s site', (_name, _kind, els, first) => {
   it('signs every room by its door, the sign reading that room', () => {
     const zones = roomZones(els);
     const signs = all.filter((e) => e.shape === 'room-sign');
+    if (home) {
+      expect(signs).toEqual([]);
+      return;
+    }
     expect(signs).toHaveLength(rooms.length);
     const read = signs.map((s) => meetingPieceRoom(s, zones));
     expect(new Set(read).size).toBe(rooms.length);
@@ -203,6 +222,14 @@ describe.each(TABS)('the %s site', (_name, _kind, els, first) => {
     const lifts = all.filter((e) => e.shape === 'elevator');
     for (const lift of lifts) expect(lift.label?.trim(), `${lift.x}`).toBeTruthy();
     if (first) return;
+    // A home's upper floor is arrived at by its Stairs: its pad stands on the landing beside them, and it has no lift.
+    if (home) {
+      const pad = all.find((e) => e.shape === 'avatar-pad')!;
+      const stairs = all.filter((e) => e.shape === 'stairs');
+      expect(lifts).toEqual([]);
+      expect(stairs.some((s) => Math.hypot(s.x - pad.x, s.y - pad.y) < 300)).toBe(true);
+      return;
+    }
     expect(lifts.length).toBeGreaterThan(0);
     const directory = all.find((e) => e.shape === 'directory')!;
     expect(directory).toBeDefined();

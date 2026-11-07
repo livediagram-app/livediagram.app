@@ -72,14 +72,17 @@ describe.each(MODES)('the %s start’s groups', (mode) => {
 
 describe('Start a Space', () => {
   // docs/specs/007-editor/templates-by-mode.md "The catalogue": the Spaces and Recommended, nothing else.
-  it('offers Recommended, then Campus, Events, Office, Outdoor and Recreation', () => {
+  it('offers Recommended, then Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation and Venues', () => {
     expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
       'recommended',
       'campus',
       'events',
+      'games',
+      'homes',
       'office',
       'outdoor',
       'recreation',
+      'venues',
     ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     expect(group('office')).toEqual([
@@ -90,16 +93,23 @@ describe('Start a Space', () => {
     ]);
     expect(group('events')).toEqual(['all-hands-hall', 'training-room', 'expo-hall']);
     expect(group('outdoor')).toEqual(['garden-retreat', 'city-park', 'beach-offsite']);
-    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe']);
-    // The Beach Offsite is cross-listed in Campus, after the Campus Spaces.
+    // A cross-listed Space is in catalogue order among the category's own: the Sports Bar in Recreation, the Beach
+    // Offsite in Campus and the Expo Hall in Venues.
+    expect(group('recreation')).toEqual(['rooftop-bar', 'cafe', 'sports-bar']);
     expect(group('campus')).toEqual([
       'company-campus',
-      'conference-venue',
       'startup-hq',
       'school-quad',
-      'hotel-and-suites',
       'coworking-tower',
       'beach-offsite',
+    ]);
+    expect(group('games')).toEqual(['arcade-lounge', 'games-night-den', 'sports-bar']);
+    expect(group('homes')).toEqual(['family-house', 'city-townhouse', 'country-cottage']);
+    expect(group('venues')).toEqual([
+      'conference-venue',
+      'hotel-and-suites',
+      'expo-hall',
+      'music-hall',
     ]);
     expect(group('recommended')[0]).toBe('blank-session');
   });
@@ -108,7 +118,9 @@ describe('Start a Space', () => {
     expect(TEMPLATE_STARTS.workshop.search('standup')).toEqual([
       { group: 'office', kinds: ['team-pod'] },
     ]);
+    // The Sports Bar, cross-listed in Recreation, is found by its words but listed once, under Games Rooms.
     expect(TEMPLATE_STARTS.workshop.search('drinks')).toEqual([
+      { group: 'games', kinds: ['sports-bar'] },
       { group: 'recreation', kinds: ['rooftop-bar', 'cafe'] },
     ]);
     // A template that left (Work Tracker #423) is found nowhere.
