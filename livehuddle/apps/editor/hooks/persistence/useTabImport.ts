@@ -38,7 +38,6 @@ export type ImportFormat = 'json';
 type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 type TabImportDeps = {
-  tabs: Tab[];
   activeId: string;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   setSelectedId: (id: string | null) => void;
@@ -51,7 +50,6 @@ type TabImportDeps = {
 };
 
 export function useTabImport({
-  tabs,
   activeId,
   commitTabs,
   setSelectedId,
@@ -91,11 +89,6 @@ export function useTabImport({
     text: string,
     _onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
-    }
-
     const { parseImportedTab } = await import('@/lib/import-tab');
     const result = parseImportedTab(text);
     if (!result.ok) return { status: 'error', error: result.error };
@@ -112,10 +105,6 @@ export function useTabImport({
     format: ImportFormat,
     _onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
-    }
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile('.json,application/json');
     if (!picked) return { status: 'cancelled' };

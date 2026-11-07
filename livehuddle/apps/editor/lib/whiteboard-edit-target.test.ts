@@ -36,11 +36,11 @@ describe('shapeToEditAt', () => {
     expect(shapeToEditAt([turned], { x: 20, y: 10 })).toBeNull();
   });
 
-  it('passes over a shape that is locked, or has no label to edit', () => {
+  it('edits a shape saved locked, and passes over one with no label to edit', () => {
     const locked = shape('square', 0, 0, { locked: true });
     const chart = shape('pie-chart', 0, 0);
     const p = { x: 100, y: 50 };
-    expect(shapeToEditAt([locked], p)).toBeNull();
+    expect(shapeToEditAt([locked], p)).not.toBeNull();
     expect(shapeToEditAt([chart], p)).toBeNull();
   });
 

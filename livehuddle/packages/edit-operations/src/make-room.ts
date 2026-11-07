@@ -3,12 +3,11 @@
 // top-level units of b's connected group along pinned arrows. Whatever lies past the midline on the
 // flow axis shifts by the room needed, a container with what it carries. The container grows on its
 // far side, and room is made beyond it in its own scope in turn, so a grown container never takes in
-// what sat past it. Locked elements stay put, a locked container with everything it holds. Membership is read once, before anything moves.
+// what sat past it. Membership is read once, before anything moves.
 
 import {
   containerContents,
   deriveContainers,
-  isContainer,
   type BoxedElement,
   type Element,
   type ElementId,
@@ -85,18 +84,9 @@ function shiftScope(
     return axis.sign > 0 ? along > midline : along < midline;
   });
   const [dx, dy] = axis.horizontal ? [shift * axis.sign, 0] : [0, shift * axis.sign];
-  // A locked unit stays together (EO47): a locked container, beyond or carried, keeps what it holds where it is.
-  const carried = containerContents(
-    before,
-    new Set(beyond.filter((id) => !state.locked.has(id))),
-    holders,
-  );
-  const lockedHolders = beyond.concat([...carried]).filter((id) => state.locked.has(id));
-  const held = lockedHolders.length
-    ? containerContents(before, new Set(lockedHolders), holders)
-    : new Set<ElementId>();
+  const carried = containerContents(before, new Set(beyond), holders);
+  // Scopes are disjoint (each walked scope is excluded from the next), so nothing is carried twice.
   for (const id of carried) {
-    if (state.locked.has(id) || held.has(id) || moved.has(id)) continue;
     moveElement(state, shifted(state.byId.get(id)!, dx, dy), operation, 'make room', {
       shift: [dx, dy],
     });
@@ -105,9 +95,8 @@ function shiftScope(
   if (scope === null) return;
   const holder = state.byId.get(scope)!;
   const farEdge = farEdgeOf(boxOf(holder)!, axis);
-  // A locked container stays as it is.
-  if (holder.type !== 'arrow' && isContainer(holder) && !state.locked.has(scope))
-    grow(pass, holder);
+  // A scope is a holder (deriveContainers): a boundary or a lane, never an arrow.
+  grow(pass, holder as BoxedElement);
   shiftScope(pass, holders.get(scope) ?? null, farEdge, new Set([...exclude, scope]));
 }
 

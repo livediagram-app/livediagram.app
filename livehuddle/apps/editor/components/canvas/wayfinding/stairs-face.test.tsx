@@ -139,7 +139,6 @@ function face(readOnly: boolean, wayfinding: Wayfinding) {
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       onEnterPortal={() => ({ targetName: null, wayfinding })}
-      tabLocked={false}
       tabSummaries={[]}
       readOnly={readOnly}
       remoteSelectors={[]}

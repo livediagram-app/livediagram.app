@@ -76,15 +76,8 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
           ? new Set([selectedId])
           : null;
     if (!picked || picked.size === 0) return;
-    // A locked element stays where it is (docs/specs/008-canvas/canvas-and-palette.md "Locking"): selectable, never moved,
-    // whether it is selected alone or swept up by Select All.
-    const locked = new Set(
-      deps.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
-    );
     // A host carries its badges and step numbers (docs/specs/009-elements/badge.md).
-    const carried = withAttached(deps.activeTab.elements, picked);
-    const ids = locked.size > 0 ? new Set([...carried].filter((id) => !locked.has(id))) : carried;
-    if (ids.size === 0) return;
+    const ids = withAttached(deps.activeTab.elements, picked);
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {

@@ -225,7 +225,7 @@ The tools tune **rules**, never the document model: strokes are `freehand` eleme
   though a single click there passes through: on the bare board, a
   double-click inside the topmost outline-picked shape there (by its drawn
   outline, following its rotation) opens that shape's label editor, unless
-  the shape is locked or has no label to edit.
+  the shape has no label to edit.
   Beside every shape, a double-click makes a text box as on any canvas (a finger's
   double-tap zooms instead, [Double-tap to zoom](../008-canvas/canvas-and-palette.md#double-tap-to-zoom)). (A
   selected shape's first click puts it down, so its second reaches the board:
@@ -364,7 +364,6 @@ The eraser offers **both** modes (Stroke and Partial, not editor modes), switche
   it.
 - The brush stays under the pointer through a pan or zoom mid-sweep (a wheel
   or a pinch while erasing).
-- Locked elements stay protected, as everywhere.
 
 ## Shape recognition
 
@@ -504,7 +503,7 @@ light and dark boards like everything drawn with the stock colours.
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
   has no stock fills), text on a fill (a filled shape's label, a sticky
   note's text: the fill does not adapt, so the text keeps its exact colour to
-  stay readable on it), an arrow's separate head colour, images and locked elements.
+  stay readable on it), an arrow's separate head colour and images.
 - **One undo step**; collaborators receive it as any edit. Snapping is
   unavailable (the button disabled) while the board cannot be edited.
 - **Confirmation:** the section then says "3 custom colours snapped to stock

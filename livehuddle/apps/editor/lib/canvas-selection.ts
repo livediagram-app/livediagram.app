@@ -25,7 +25,6 @@ type CanvasSelection = {
   selectionScope: 'single' | 'multi';
   selectedIsBoxed: boolean;
   selectionBounds: Rect | null;
-  selectedLocked: boolean;
   // Single-selection popover visibility.
   showPopover: boolean;
   // Per-element resize-handle / arrow-anchor visibility (same predicate
@@ -47,7 +46,6 @@ type CanvasSelection = {
 type GripContext = {
   editingId: string | null;
   isPaintMode: boolean;
-  tabLocked: boolean;
   readOnly: boolean;
   // A read-only session that may still resize this element (a Participant): handles, never edge anchors, since a
   // connector is not its to draw.
@@ -66,10 +64,8 @@ export function elementGrips(
   const handles =
     single &&
     isBoxed(el) &&
-    el.locked !== true &&
     ctx.editingId !== el.id &&
     !ctx.isPaintMode &&
-    !ctx.tabLocked &&
     (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
   // A badge or step number takes no connectors (docs/specs/009-elements/badge.md "Connectors").
@@ -83,7 +79,6 @@ export function deriveCanvasSelection(input: {
   multiSelectedIds: ReadonlySet<string>;
   editingId: string | null;
   isPaintMode: boolean;
-  tabLocked: boolean;
   readOnly: boolean;
   // An element context menu is open. One question, one answer: a left click
   // asks "what is this" (popover), a right click "what can I do with it"
@@ -102,7 +97,6 @@ export function deriveCanvasSelection(input: {
     multiSelectedIds,
     editingId,
     isPaintMode,
-    tabLocked,
     readOnly,
     elementMenuOpen,
     labelRectOf,
@@ -128,37 +122,32 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Rect | null = selected ? selectionExtent(selected) : null;
 
-  const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&
     !elementMenuOpen &&
     editingId !== selected.id &&
     !isPaintMode &&
-    multiSelectedIds.size === 0 &&
-    !tabLocked
+    multiSelectedIds.size === 0
   );
   // Resize handles and edge anchors: the per-element rule each element view also applies.
   const gripsOf = (id: string) => {
     const el = elements.find((e) => e.id === id);
     const single = id === selectedId && multiSelectedIds.size === 0;
     return el && single
-      ? elementGrips(el, true, { editingId, isPaintMode, tabLocked, readOnly })
+      ? elementGrips(el, true, { editingId, isPaintMode, readOnly })
       : { handles: false, anchors: false };
   };
   const resizeVisible = (id: string) => gripsOf(id).handles;
   const anchorVisible = (id: string) => gripsOf(id).anchors;
 
-  // The union resize box spans the members a resize moves: boxed and unlocked (the drag leaves
-  // locked members and arrows where they are), each as drawn, so a rotated member's turned
-  // corners sit inside it. Those members also pick the primary the handles press, so a locked
-  // box or an arrow first in z-order neither hides the handles nor takes a press it refuses
+  // The union resize box spans the members a resize moves: boxed (the drag leaves arrows where
+  // they are), each as drawn, so a rotated member's turned corners sit inside it. Those members
+  // also pick the primary the handles press, so an arrow first in z-order neither hides the
+  // handles nor takes a press it refuses
   // (docs/specs/008-canvas/blueprints/resize.md).
   const unionMembers =
     multiSelectedIds.size > 1
-      ? elements.filter(
-          (el): el is BoxedElement =>
-            multiSelectedIds.has(el.id) && isBoxed(el) && el.locked !== true,
-        )
+      ? elements.filter((el): el is BoxedElement => multiSelectedIds.has(el.id) && isBoxed(el))
       : [];
   const unionResizeIds: ReadonlySet<string> | null =
     multiSelectedIds.size > 1 ? multiSelectedIds : null;
@@ -169,10 +158,9 @@ export function deriveCanvasSelection(input: {
     !!unionResizePrimaryId &&
     editingId !== unionResizePrimaryId &&
     !isPaintMode &&
-    !tabLocked &&
     !readOnly;
 
-  // The floating multi-selection toolbar (Duplicate / Lock / Export /
+  // The floating multi-selection toolbar (Duplicate / Export /
   // Delete + the "More" entry into the type-aware formatting menu) is anchored
   // separately from the resize box: it floats over the union of EVERY selected
   // element including arrows, so an arrow-only or mixed marquee still gets the
@@ -183,7 +171,7 @@ export function deriveCanvasSelection(input: {
       ? unionRects(elements.filter((el) => multiSelectedIds.has(el.id)).map(selectionExtent))
       : null;
   const showMultiToolbar =
-    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !tabLocked && !readOnly;
+    !!multiToolbarBounds && multiSelectedIds.size > 1 && !isPaintMode && !readOnly;
 
   return {
     multiPrimaryId,
@@ -191,7 +179,6 @@ export function deriveCanvasSelection(input: {
     selectionScope,
     selectedIsBoxed,
     selectionBounds,
-    selectedLocked,
     showPopover,
     showHandlesFor: resizeVisible,
     showAnchorsFor: anchorVisible,

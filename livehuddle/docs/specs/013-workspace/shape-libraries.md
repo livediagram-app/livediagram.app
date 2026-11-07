@@ -85,7 +85,7 @@ Named constants, checked by the api and before any upload by the client:
   where it is dropped.
 - Tiles are buttons in a list per section: reachable by Tab, activated by Enter or Space (placing at
   the view's centre), named "Insert <title> from <library>" for screen readers.
-- The palette, and with it My shapes, is not offered on a read-only tab (a view-role share); a locked tab places nothing.
+- The palette, and with it My shapes, is not offered on a read-only tab (a view-role share).
 - The list loads once per owner when the editor opens; an import or a change
   in the Explorer shows on the next open. Offline Mode documents place items too, from the list the
   owner last loaded.

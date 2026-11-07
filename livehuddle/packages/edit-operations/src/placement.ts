@@ -10,6 +10,7 @@ import {
   FRAME_PAD,
   FRAME_TOP,
   isContainer,
+  type BoxedElement,
   type Element,
   type Endpoint,
   type ElementId,
@@ -28,7 +29,7 @@ export type Placed = {
   // The element placed against.
   ref?: Element;
   // A container `inside:` had to grow to hold the element (EO27).
-  grow?: { container: Element; height: number };
+  grow?: { container: BoxedElement; height: number };
 };
 
 const shiftEnd = (end: Endpoint, dx: number, dy: number): Endpoint =>
@@ -59,8 +60,7 @@ function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
 
 // The boxes a new box beside a framed one makes way for: the frame's own contents, at any depth. What lies outside
 // the frame is moved on when the frame grows to hold it (make room), so the new box sits beside its neighbour
-// rather than being pushed past the frame's surroundings. Null when the box is in no frame, or a locked one, which
-// cannot grow.
+// rather than being pushed past the frame's surroundings. Null when the box is in no frame.
 function frameOccupiers(
   state: EditState,
   ref: Element,
@@ -68,7 +68,7 @@ function frameOccupiers(
 ): Box[] | null {
   const holders = holdersOf(state);
   const frame = holders.get(ref.id);
-  if (!frame || state.locked.has(frame)) return null;
+  if (!frame) return null;
   const within = (id: ElementId): boolean => {
     const holder = holders.get(id);
     return holder === frame || (!!holder && within(holder));
@@ -314,7 +314,8 @@ export function resolvePlacement(
         y: Math.round(slot.box.y),
         ref,
         ...(slot.height !== undefined
-          ? { grow: { container: ref, height: Math.round(slot.height) } }
+          ? // isContainer above: a boundary or a lane, never an arrow.
+            { grow: { container: ref as BoxedElement, height: Math.round(slot.height) } }
           : {}),
       };
     }

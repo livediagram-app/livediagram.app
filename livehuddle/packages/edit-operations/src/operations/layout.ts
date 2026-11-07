@@ -15,14 +15,7 @@ import {
 } from '@livehuddle/document';
 import { shifted } from '../placement';
 import { resolveMembers } from '../selectors';
-import {
-  currentElements,
-  moveElement,
-  putElement,
-  refuseLocked,
-  type EditState,
-  type LaidOut,
-} from '../state';
+import { currentElements, moveElement, putElement, type EditState, type LaidOut } from '../state';
 import type { LayoutOperation } from '../types';
 
 const DIRECTIONS = { down: 'TB', right: 'LR' } as const;
@@ -49,8 +42,7 @@ export function laidOut(
   return arrows.length > 0 ? swept : swept.map((el) => shifted(el, originX, originY));
 }
 
-// Lays out `boxes` and the arrows between them in place, reporting each box as laid out. The
-// caller has refused locked boxes; locked arrows keep their ends.
+// Lays out `boxes` and the arrows between them in place, reporting each box as laid out.
 export function layOut(
   state: EditState,
   boxes: readonly BoxedElement[],
@@ -62,7 +54,6 @@ export function layOut(
   const arrows = currentElements(state).filter(
     (el) =>
       el.type === 'arrow' &&
-      !state.locked.has(el.id) &&
       el.from.kind === 'pinned' &&
       el.to.kind === 'pinned' &&
       ids.has(el.from.elementId) &&
@@ -84,20 +75,6 @@ export function layOut(
   });
 }
 
-// The first locked box, refused.
-export function lockedAmong(
-  state: EditState,
-  boxes: readonly BoxedElement[],
-  op: 'layout' | 'wrap',
-  operation: number,
-): EditRejection | null {
-  for (const el of boxes) {
-    const lock = state.locked.get(el.id);
-    if (lock) return refuseLocked(state, op, operation, el, lock);
-  }
-  return null;
-}
-
 export function applyLayout(
   state: EditState,
   { target, style = 'flow', direction }: LayoutOperation,
@@ -106,8 +83,6 @@ export function applyLayout(
   const resolved = resolveMembers(state, [target], operation);
   if ('rejection' in resolved) return resolved.rejection;
   const boxes = resolved.els.filter((el): el is BoxedElement => el.type !== 'arrow');
-  const locked = lockedAmong(state, boxes, 'layout', operation);
-  if (locked) return locked;
   if (boxes.length > 0) layOut(state, boxes, style, direction, operation);
   return null;
 }

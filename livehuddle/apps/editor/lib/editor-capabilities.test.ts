@@ -39,7 +39,7 @@ describe('resolveEditorCapabilities', () => {
   });
 
   // docs/specs/013-workspace/share-roles.md "A Participant walks": takes part, changes no content (its own earlier
-  // stickies included), swings unlocked doors and always walks.
+  // stickies included), swings every door and always walks.
   it('gives a Participant no content gesture, with or without its key', () => {
     for (const adderKey of [ME, null]) {
       const can = resolveEditorCapabilities({ level: 'participate', adderKey });
@@ -73,11 +73,12 @@ describe('swingDoor', () => {
     expect(can.swingDoor(door()) && can.swingDoor(door({ locked: true }))).toBe(true);
   });
 
-  it('lets a Participant swing any door that is not locked, with or without a key', () => {
+  // not-in-livehuddle.md "Element and Tab Locking": a door saved locked swings like any other.
+  it('lets a Participant swing any door, one saved locked too, with or without a key', () => {
     for (const adderKey of [ME, null]) {
       const can = resolveEditorCapabilities({ level: 'participate', adderKey });
       expect(can.swingDoor(door())).toBe(true);
-      expect(can.swingDoor(door({ locked: true }))).toBe(false);
+      expect(can.swingDoor(door({ locked: true }))).toBe(true);
     }
   });
 
@@ -97,7 +98,7 @@ describe('contentAddBlocked', () => {
   it('opens to a Participant that may add content', () => {
     expect(contentAddBlocked({ ...base, participating: true, canAddContent: true })).toBe(false);
   });
-  it('keeps a Participant shut until it holds an adder key, and on a locked tab', () => {
+  it('keeps a Participant shut until it holds an adder key, and while the session guard holds', () => {
     expect(contentAddBlocked({ ...base, participating: true, canAddContent: false })).toBe(true);
     expect(
       contentAddBlocked({ ...base, participating: true, canAddContent: true, blocked: true }),

@@ -14,7 +14,7 @@ import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livehuddle/u
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { RemoteSelector } from '@/lib/presence-rows';
 
-// Below this canvas zoom the on-element adornments (badge pill, lock
+// Below this canvas zoom the on-element adornments (badge pill,
 // badge, remote-selector avatars) disappear entirely.
 export const ADORNMENT_MIN_ZOOM = 0.4;
 

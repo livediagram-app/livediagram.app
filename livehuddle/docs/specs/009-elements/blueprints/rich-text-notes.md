@@ -232,7 +232,7 @@ response.
 | E7  | Heading on an empty line                         | `applyHeadingToLines` returns the runs unchanged            |
 | E8  | Commit straight after a format click             | Report runs in the same tick, so the new value commits      |
 | E9  | Anchor element missing from the DOM              | Position not updated; popover stays hidden until it appears |
-| E10 | Edits blocked (locked tab, loading)              | Popover `readOnly` [QD4]                                    |
+| E10 | Edits blocked (read-only, loading)               | Popover `readOnly` [QD4]                                    |
 | E11 | Malformed `noteRich` in a tab                    | Rejected by `isValidElement` [QD2]                          |
 | E12 | `note` and `noteRich` disagree                   | Rejected by `isValidElement` [QD2]                          |
 | E13 | Editor resized to 24rem near the viewport bottom | Popover re-flips from its measured height [QD3]             |

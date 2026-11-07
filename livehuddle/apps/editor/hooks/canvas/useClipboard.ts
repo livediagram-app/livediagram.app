@@ -112,9 +112,8 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  // A Cut copies what its delete takes, so the paste puts it all back. A plain Copy takes only what is selected.
-  // `opts` may be a click event: only a literal `cut: true` counts.
-  const copySelection = (opts?: { cut?: boolean }) => {
+  // A Copy, and a Cut's copy before its delete, take what is selected.
+  const copySelection = () => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
     const idSet =
@@ -124,17 +123,8 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
-    // What a Cut's delete leaves (useElementSelectionActions): a locked element. A Cut copies none of it, so a
-    // paste never doubles what stayed.
-    const isProtected = (el: Element) => el.locked === true;
-    const cutIds = () => {
-      const taken = new Set(idSet);
-      for (const el of activeTab.elements)
-        if (taken.has(el.id) && isProtected(el)) taken.delete(el.id);
-      return taken;
-    };
     // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
-    const copied = withAttached(activeTab.elements, opts?.cut === true ? cutIds() : idSet);
+    const copied = withAttached(activeTab.elements, idSet);
     const snapshot = activeTab.elements
       .filter((el) => copied.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed

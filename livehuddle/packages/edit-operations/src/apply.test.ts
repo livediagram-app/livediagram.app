@@ -48,18 +48,20 @@ describe('applyEditOperations', () => {
     expect(refused(run(operations)).code).toBe('too_large');
   });
 
-  it('refuses any operation on a locked tab, before the first', () => {
-    const { calls, log } = recording();
-    const rejection = refused(run([set('nope', {})], { ...checkoutFlow(), locked: true }, log));
-    expect(rejection).toEqual({
-      code: 'element_locked',
-      details: ['the tab is locked'],
-      hint: 'unlock it in the editor, or leave it out of the changeset',
-    });
-    expect(calls).toEqual([
-      ['[edit-ops] locked', { operation: 0, op: 'none', scope: 'tab' }],
-      ['[edit-ops] rejected', { code: 'element_locked', operation: 0, op: 'none' }],
-    ]);
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking": a lock saved before locking left
+  // refuses nothing.
+  it('applies to a tab and an element saved locked as to any other', () => {
+    const flow = checkoutFlow();
+    const tab = {
+      ...flow,
+      locked: true,
+      elements: flow.elements.map((el) => (el.id === 'n4' ? { ...el, locked: true } : el)),
+    } as Tab;
+    const { tab: next } = applied(
+      run([set('n4', { label: 'x' }), { op: 'rm', target: 'n3' }], tab),
+    );
+    expect(next.elements.find((el) => el.id === 'n4')).toMatchObject({ label: 'x' });
+    expect(next.elements.some((el) => el.id === 'n3')).toBe(false);
   });
 
   describe('invariants', () => {
@@ -102,19 +104,6 @@ describe('applyEditOperations', () => {
     it('mints ids with crypto.randomUUID when no makeId is given', () => {
       const outcome = applyEditOperations(checkoutFlow(), [add({ type: 'sticky', ...box })]);
       expect(applied(outcome).createdIds[0]).toMatch(/^[0-9a-f-]{36}$/);
-    });
-
-    it('I7 leaves locked elements exactly as they were', () => {
-      const tab: Tab = {
-        ...checkoutFlow(),
-        elements: checkoutFlow().elements.map((el) =>
-          el.id === 'n4' ? { ...el, locked: true } : el,
-        ),
-      };
-      const locked = tab.elements.find((el) => el.id === 'n4');
-      const { tab: next } = applied(run([{ op: 'rm', target: 'n3', keepArrows: true }], tab));
-      expect(next.elements.find((el) => el.id === 'n4')).toBe(locked);
-      expect(refused(run([set('n4', { label: 'x' })], tab)).code).toBe('element_locked');
     });
   });
 
@@ -292,20 +281,6 @@ describe('applyEditOperations', () => {
       expect(calls).toEqual([
         ['[edit-ops] unmatched', { count: 1, stopped: 'none' }],
         ['[edit-ops] rejected', { code: 'target_not_found', operation: 2, op: 'rm' }],
-      ]);
-    });
-
-    it('logs a locked element with its scope', () => {
-      const { calls, log } = recording();
-      const flow = checkoutFlow();
-      const tab: Tab = {
-        ...flow,
-        elements: flow.elements.map((el) => (el.id === 'n3' ? { ...el, locked: true } : el)),
-      };
-      run([set('n3', { label: 'x' })], tab, log);
-      expect(calls[0]).toEqual([
-        '[edit-ops] locked',
-        { operation: 1, op: 'set', scope: 'element' },
       ]);
     });
   });

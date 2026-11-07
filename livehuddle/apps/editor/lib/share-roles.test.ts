@@ -272,15 +272,15 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     );
   });
 
-  // The pieces a Participant keeps (share-roles.md "A Participant walks"): a Door's swing where it is unlocked.
+  // The pieces a Participant keeps (share-roles.md "A Participant walks"): a Door's swing, one saved locked too.
   // Pinning its own notes on a Notice Board goes through the board's popover (NoticeBoardPopover, its adder key).
   expectPerLevel(
-    'Swing an unlocked door, not a locked one',
+    'Swing a door, one saved locked too',
     (level) => {
       const can = canFor(level);
       return [can.swingDoor(shape('door')), can.swingDoor(shape('door', { locked: true }))];
     },
-    { edit: [true, true], participate: [true, false], view: [false, false] },
+    { edit: [true, true], participate: [true, true], view: [false, false] },
   );
 
   // The comment popover's `canComment` and the Comment panel's actions read `can.takePart` (EditorAnchoredPopovers,

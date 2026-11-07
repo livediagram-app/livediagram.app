@@ -53,11 +53,12 @@ describe('toggleDoor', () => {
     expect(shut.tab()[0]).not.toHaveProperty('doorClosed');
   });
 
-  it('lets a Participant swing an unlocked door, not a locked one', () => {
+  // not-in-livehuddle.md "Element and Tab Locking": what was saved locked behaves as unlocked.
+  it('lets a Participant swing any door, one saved locked too', () => {
     expect(setup('participate', [door()]).toggleDoor('d')).toBe(true);
     const locked = setup('participate', [door({ locked: true })]);
-    expect(locked.toggleDoor('d')).toBe(false);
-    expect(locked.commit).not.toHaveBeenCalled();
+    expect(locked.toggleDoor('d')).toBe(true);
+    expect(locked.commit).toHaveBeenCalled();
   });
 
   it('lets a Viewer swing nothing, and swings nothing that is not a door or on a blocked tab', () => {

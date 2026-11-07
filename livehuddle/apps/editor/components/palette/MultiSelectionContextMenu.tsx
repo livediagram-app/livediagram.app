@@ -88,7 +88,7 @@ export function MultiSelectionContextMenu({
   const scaffold = useContextMenuScaffold(props);
   const { sectionProps, flyoutProps, colorProps, textColorHandlers } = scaffold;
   const surface = useCanvasSurface();
-  // The selection toolbar carries Duplicate / Group / Lock / Export /
+  // The selection toolbar carries Duplicate / Group / Export /
   // Delete, so this menu is purely the type-aware formatting categories
   // its ellipsis opens. It always renders: the placement band (Layer /
   // opacity / Rotation) applies to every element kind — an image-only

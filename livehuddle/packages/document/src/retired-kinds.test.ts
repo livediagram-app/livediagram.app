@@ -113,7 +113,6 @@ const RETIRED: Record<string, unknown>[] = [
     decisionDrivers: ['Cost', 'Familiarity'],
     // The fields any element carries ride along too.
     rotation: 10,
-    locked: true,
     opacity: 0.8,
     shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
     fillColor: '#fef3c7',

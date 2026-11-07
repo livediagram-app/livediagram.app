@@ -235,8 +235,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const stripShown = paletteShown && !chromeHidden && !(strip === 'avatar' && startOpen);
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
   // the left of the strip's row, the strip beside it (no room for a corner card
-  // above a strip that needs the whole top row). A session with no strip (an
-  // Editor on a locked tab, not walking) keeps the corner there.
+  // above a strip that needs the whole top row). A session with no strip (a
+  // read-only Editor, not walking) keeps the corner there.
   const menuInStrip = isMobile && paletteShown && !(strip === 'avatar' && startOpen);
   // The Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): an Editor's one switch
   // between building and walking, first on whichever strip shows. Not in an embed, and not for a session held walking
@@ -426,7 +426,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           tabElements={elements}
         />
       ) : null}
-      {/* An Editor on a locked tab has no building strip, so the toggle stands alone where the strip would be: walking
+      {/* A read-only Editor has no building strip, so the toggle stands alone where the strip would be: walking
           is still one press away (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"). */}
       {strip === null && editWalk && !chromeHidden ? (
         <EditWalkStrip>{editWalk}</EditWalkStrip>

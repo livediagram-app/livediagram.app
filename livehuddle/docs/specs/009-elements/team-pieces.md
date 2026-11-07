@@ -54,8 +54,7 @@ A large wall planner: a red header band hung from two binder rings, a white shee
   size; otherwise as a popover by the button.
 - **It changes as a Notice Board does**: a pin and an unpin are each one delta (`notice-pin`, `notice-unpin`), the
   note carrying its day; the room relays a Participant's only when signed with its own adder key, and the participant
-  content rule merges a calendar's notes exactly as a board's. Not undoable, like a comment. A locked calendar takes no
-  pins or unpins.
+  content rule merges a calendar's notes exactly as a board's. Not undoable, like a comment.
 - **Export** draws the sheet ruled and blank: the month shown is the viewer's, so a still image has none.
 
 ## Suggestion Box
@@ -80,8 +79,8 @@ centred and never mirrored, at every facing.
 - **Editors read them**: an Editor's box opens on the notes, newest day first (and newest first within a day), each
   with its day ("5 Nov") and **Remove**, the add box below theirs too. A **Refresh** fetches again: a drop is not sent
   live. The box reads **No Notes Yet** when empty.
-- **Up to 200 notes a box.** A full box refuses a drop (**The box is full. An Editor can empty it.**). A **locked**
-  box is closed: it takes no notes (**This box is closed.**), and an Editor still reads it.
+- **Up to 200 notes a box.** A full box refuses a drop (**The box is full. An Editor can empty it.**). A box never
+  closes otherwise: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)).
 - **Where notes go**: deleting the box leaves its notes unread (undo brings the box back with them); they go with
   the tab or the Space. Removing a note removes it for good.
 - **A Space saved in This Browser** has nobody else to collect from: the box says **Share this Space to collect
@@ -130,7 +129,7 @@ A long wooden panel with a brass plate, holding eight picture frames in two rows
 - **Suggestion Box**: three routes on the Space ([API](../015-api/api.md)):
   - `POST /api/documents/:id/tabs/:tabId/suggestions` `{ elementId, text }`: drop a note. Participants and Editors
     (`gateParticipate`); 201 with an empty body (no id, so a dropper cannot later point at their note). 400 for no
-    text or text over 500 characters, 404 for no such box on the tab, 409 `box_closed` for a locked box, 409
+    text or text over 500 characters, 404 for no such box on the tab, 409
     `box_full` at 200.
   - `GET /api/documents/:id/tabs/:tabId/suggestions?elementId=`: the box's notes, `{ suggestions: [{ id, text, day
 }] }`, newest first. Editors only (`gateEdit`).

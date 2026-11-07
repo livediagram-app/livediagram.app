@@ -11,7 +11,7 @@ import {
 } from '@livehuddle/document';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { applied } from './fixtures/outcomes';
-import { flowWith, run } from './fixtures/run';
+import { run } from './fixtures/run';
 import { EDIT_OPERATION_NAMES } from './vocabulary';
 
 const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> = {
@@ -95,19 +95,6 @@ describe('invariants', () => {
     for (const [id, holder] of deriveContainers(next.elements)) {
       if (holder && isContainer(byId.get(holder)!))
         expect(order.indexOf(holder)).toBeLessThan(order.indexOf(id));
-    }
-  });
-
-  it.each(samples)('%s: no locked element changes (I7)', (_, text) => {
-    for (const id of checkoutFlow().elements.map((el) => el.id)) {
-      const tab = flowWith((el) => (el.id === id ? { ...el, locked: true } : el));
-      const outcome = run(text, tab);
-      if ('errors' in outcome) {
-        expect(outcome.errors[0]!.code).toBe('element_locked');
-        continue;
-      }
-      const lockedBefore = tab.elements.find((el) => el.id === id);
-      expect(outcome.tab.elements.find((el) => el.id === id)).toEqual(lockedBefore);
     }
   });
 });

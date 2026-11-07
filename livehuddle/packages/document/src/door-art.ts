@@ -1,4 +1,4 @@
-// A Door's drawing by type (docs/specs/009-elements/room-builder.md "Door types", "Locked doors"): the parts the
+// A Door's drawing by type (docs/specs/009-elements/room-builder.md "Door types"): the parts the
 // canvas (DoorView) and the export (svg-render-faces) both draw, in the door's own px with the wall's centre line along
 // y = height / 2. A moving part carries its open and shut poses, so the canvas eases between them and the export draws
 // the one it is in. Pure: no React, no DOM.
@@ -13,11 +13,10 @@ export type DoorPose = { rotate: number; dx: number };
 /**
  * How a part is painted. `floor` the gap it cuts, in the floor; `jamb` and `leaf` the floor's fill outlined in the
  * stroke; `glass` the stroke as a faint pane, outlined; `pane` the same wash unoutlined (a drum's floor); `wing` a revolving door's wings, the stroke's line; `swing` the
- * dashed swing arc; `track` a thin rail; `ink` the stroke itself (a filled hub or padlock body, a stroked
- * shackle); `plate` the floor ringed in the stroke (the disc a padlock sits on).
+ * dashed swing arc; `track` a thin rail; `ink` the stroke itself (a filled hub).
  */
 export type DoorPaint =
-  'floor' | 'jamb' | 'leaf' | 'glass' | 'pane' | 'wing' | 'swing' | 'track' | 'ink' | 'plate';
+  'floor' | 'jamb' | 'leaf' | 'glass' | 'pane' | 'wing' | 'swing' | 'track' | 'ink';
 
 export type DoorArtPart = (
   | { tag: 'rect'; x: number; y: number; w: number; h: number; rx: number }
@@ -29,34 +28,13 @@ export type DoorArtPart = (
   motion?: { origin: { x: number; y: number }; open: DoorPose; shut: DoorPose };
   // A part drawn only while the door is open (a swing arc).
   openOnly?: true;
-  // A part a locked door shades a stroke darker (room-builder.md "Locked doors").
-  shades?: true;
-  // The padlock's parts: drawn last, kept upright (turned back by the door's rotation about `doorLockCentre`).
-  lock?: true;
 };
-
-/** How dark a locked door's shaded parts are: the stroke at this opacity over them (DEFAULTS.md D222). */
-export const LOCKED_DOOR_SHADE = 0.45;
-
-/** Where a locked door's padlock sits, in the door's px: the middle of its doorway. */
-export function doorLockCentre(width: number, height: number): { x: number; y: number } {
-  return { x: Math.round((width / 2) * 100) / 100, y: Math.round((height / 2) * 100) / 100 };
-}
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const STILL: DoorPose = { rotate: 0, dx: 0 };
-// The padlock's size and its disc's radius (DEFAULTS.md D222).
-const LOCK_W = 9;
-const LOCK_BODY_H = 7;
-const LOCK_PLATE_R = 10;
 
 /** A door's parts for its type (an absent or unknown `variant` is the swing Door). */
-export function doorArt(
-  width: number,
-  height: number,
-  variant: string | undefined,
-  locked = false,
-): DoorArtPart[] {
+export function doorArt(width: number, height: number, variant: string | undefined): DoorArtPart[] {
   const type = pieceVariant({ shape: 'door', variant });
   const { gap, jambs, leaf, swing } = doorParts(width, height);
   const mid = height / 2;
@@ -76,7 +54,6 @@ export function doorArt(
       h: r2(half),
       rx: 1,
       paint: 'leaf',
-      shades: true,
       motion: { origin: { x: r2(hinge), y: r2(mid) }, open: STILL, shut: { rotate: shut, dx: 0 } },
     });
     parts.push(
@@ -115,7 +92,6 @@ export function doorArt(
         h: 4,
         rx: 1,
         paint: 'glass',
-        shades: true,
         motion: { origin: { x: 0, y: 0 }, open: { rotate: 0, dx: -away }, shut: STILL },
       },
       {
@@ -126,7 +102,6 @@ export function doorArt(
         h: 4,
         rx: 1,
         paint: 'glass',
-        shades: true,
         motion: { origin: { x: 0, y: 0 }, open: { rotate: 0, dx: away }, shut: STILL },
       },
     );
@@ -163,39 +138,12 @@ export function doorArt(
         ...leaf,
         rx: 1,
         paint: 'leaf',
-        shades: true,
         motion: {
           origin: { x: r2(leaf.x + leaf.w / 2), y: leaf.y },
           open: STILL,
           shut: { rotate: -90, dx: 0 },
         },
       },
-    );
-  }
-  if (locked) {
-    // The padlock (room-builder.md "Locked doors"): mid-doorway on a floor disc ringed in the stroke, clear of the
-    // canvas's top-left adornments, its body and shackle in the stroke and a keyhole in the floor.
-    const c = doorLockCentre(width, height);
-    const top = r2(c.y - 1.5);
-    parts.push(
-      { tag: 'circle', cx: c.x, cy: c.y, r: LOCK_PLATE_R, paint: 'plate', lock: true },
-      {
-        tag: 'path',
-        d: `M${r2(c.x - 2.75)} ${top}V${r2(top - 2)}A2.75 2.75 0 0 1 ${r2(c.x + 2.75)} ${r2(top - 2)}V${top}`,
-        paint: 'ink',
-        lock: true,
-      },
-      {
-        tag: 'rect',
-        x: r2(c.x - LOCK_W / 2),
-        y: top,
-        w: LOCK_W,
-        h: LOCK_BODY_H,
-        rx: 1.5,
-        paint: 'ink',
-        lock: true,
-      },
-      { tag: 'circle', cx: c.x, cy: r2(top + 3.25), r: 1.25, paint: 'floor', lock: true },
     );
   }
   return parts;

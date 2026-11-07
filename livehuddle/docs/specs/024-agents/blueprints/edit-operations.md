@@ -33,7 +33,6 @@ Scope, by file:
 | `packages/edit-operations/src/placement.ts`                                       | `resolvePlacement`, `defaultSpot`, `nudgeUntilFree`, `firstOverlapIn`, `boxOf`, `shifted`                                                                                                                                                               |
 | `packages/edit-operations/src/make-room.ts`                                       | `makeRoom`: the insert shift, its scope, container growth outward                                                                                                                                                                                       |
 | `packages/edit-operations/src/state.ts`                                           | `EditState` and its writers (`putElement`, `moveElement`, `insertElement`, `removeElement`, `reorder`), memoised refs, holders and element list                                                                                                         |
-| `packages/edit-operations/src/locks.ts`                                           | `lockedIds(tab)`: locked elements                                                                                                                                                                                                                       |
 | `packages/edit-operations/src/ids.ts`                                             | `newElementId` (`id=` checks), `mintId` (`slugIdFor` over `state.taken`)                                                                                                                                                                                |
 | `packages/edit-operations/src/operations/*.ts`                                    | One file per operation: `add` (an element), `add-kind`, `set`, `rm`, `move`, `connect` (and `rewire`), `insert`, `wrap`, `unwrap`, `order`, `layout`, `test-fields`                                                                                     |
 | `packages/edit-operations/src/finalise.ts`                                        | Normalise touched, landing, arrow rebind, lanes first, `containersBehindMembers`, diagram keys settled, validation with reasons                                                                                                                         |
@@ -86,7 +85,6 @@ Scope, by file:
 | Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                                                              |
 | Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                                                                 |
 | Carried            | `containerContents(elements, ids)`                  | What a moved container takes with it, in the editor's drag and in `move` alike                                               |
-| Lock               | `lockedIds(state)`, `element_locked`                | A locked tab or a locked element                                                                                             |
 | Make room          | `makeRoom`                                          | The insert's shift of what lies beyond the new node                                                                          |
 | Capture            | `frame_captures`, `bystanders`                      | A non-member a new frame or lane would hold                                                                                  |
 | Working state      | `EditState`                                         | The tab as the operations have left it so far                                                                                |
@@ -117,21 +115,19 @@ raw element's `id`) says so (`"<id>" was to be made by operation <n>, which was 
 logs the count and the code that stopped the read (`none` when none did):
 
 1. **Count.** More than `CHANGESET_MAX_OPERATIONS` operations: `too_large`.
-2. **Tab lock.** `tab.locked`: `element_locked` naming the tab, before any operation.
-3. **Prepare.** `createState(tab, options, log)`: elements by id, their order, `origin = contentOrigin(tab)`,
-   `theme = options.theme ?? getBuiltInTheme(tab.theme)`, `taken` (the tab's ids and the reserved words),
-   `locked = lockedIds(tab)`; refs, holders and the element list are memoised and cleared by every write.
-4. **Apply each operation in order** against the working state. Every selector resolves against the state as the
+2. **Prepare.** `createState(tab, options, log)`: elements by id, their order, `origin = contentOrigin(tab)`,
+   `theme = options.theme ?? getBuiltInTheme(tab.theme)`, `taken` (the tab's ids and the reserved words);
+   refs, holders and the element list are memoised and cleared by every write.
+3. **Apply each operation in order** against the working state. Every selector resolves against the state as the
    operations before it left it, so an `id=` given earlier is addressable later. Each operation adds the
    pre-existing ids it resolved to `state.targets`, records its named, touched and created ids, its moves and its
-   annotations (widened, make room, style of, warnings). An operation that would change an id in `locked` is
-   `element_locked`.
-5. **Finalise** ([Finalise](#finalise)).
-6. **Validate** every touched element with `elementValidationIssue`, then the whole tab with `isValidTab`; the
+   annotations (widened, make room, style of, warnings).
+4. **Finalise** ([Finalise](#finalise)).
+5. **Validate** every touched element with `elementValidationIssue`, then the whole tab with `isValidTab`; the
    first issue is `invalid_result`.
-7. **Diff.** `elementOps = diffToElementOps(tab.elements, next.elements)`;
+6. **Diff.** `elementOps = diffToElementOps(tab.elements, next.elements)`;
    `inverse = diffToElementOps(next.elements, tab.elements)`.
-8. **Results.** `buildResultLines(before, after, state)`; `targets` and `createdIds` in first-resolution and
+7. **Results.** `buildResultLines(before, after, state)`; `targets` and `createdIds` in first-resolution and
    creation order, each id once (EO46, EO48).
 
 Invariants:
@@ -152,7 +148,7 @@ Invariants:
   ids not derived from text come from `options.makeId` (EO8).
 - **I6 Containers behind members.** After finalising, every lane precedes every non-lane (`lanesToFront`) and every
   container precedes each of its members in the element order.
-- **I7 Locks hold.** No element in `locked` differs between `tab` and `next`.
+- **I7** (retired: livehuddle has no element or tab lock, ../../002-project-scope/not-in-livehuddle.md#element-and-tab-locking).
 
 ### Selectors
 
@@ -278,15 +274,15 @@ within }` (`combinePlacements`):
 - **Nudge.** For the four sides, `after` and the default, while the box overlaps an occupying element, it moves
   along the placement axis (outward; the default moves right) to the occupier's far edge plus the gap. Occupying
   elements are boxed, not containers, not the moving set itself. For an `add` on the four sides
-  against an element in an unlocked container, the occupiers are only what that container holds at any depth
+  against an element in a container, the occupiers are only what that container holds at any depth
   (`frameOccupiers`): what lies outside is moved on by the container's growth. A `move` grows nothing, so it keeps
   clear of every occupier on the tab. The loop ends: each step passes one occupier.
 - **Growing to hold.** A box placed beside a container's member, or `inside:` it, grows the container to hold it with
   `HOLD_PAD` (`growContainer`, `grow-container.ts`). On each side it grows, the units of the container's own scope
   that lay past its old edge (within `PAST_EDGE_TOLERANCE`, 2 px) and within its span on the other axis move on by
-  the growth, carrying what they hold; a locked one stays. The new box itself never moves, and nothing inside the
+  the growth, carrying what they hold. The new box itself never moves, and nothing inside the
   container moves (EO27). When the grown container, or a unit it moved on, now reaches within `HOLD_PAD` of its own
-  holder's edge or past it, that holder (an unlocked frame or lane) grows the same way to hold them, up the nesting;
+  holder's edge or past it, that holder (a frame or lane) grows the same way to hold them, up the nesting;
   what one level moved on is never moved again by the next (`growScope`).
 - **Move.** `move <selector> <placement>` places the moving set's bounding box as one box and translates every
   member by the same delta; `by=dx,dy` translates by exactly that. A placement relative to an element in the
@@ -312,8 +308,7 @@ means `newElementId` ([Ids](#ids)).
   geometry and fit to label. A target the fields leave as it was is not touched, so it is never normalised (E1, I2).
 - **`rm <selector> [all] [keep-arrows]`.** Removes the targets. Arrows with an end pinned to (or `on-arrow` to) a
   removed element (`arrowReferencesAny`, repeated until no more are found) are removed too; with `keep-arrows`
-  those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`. A locked arrow in
-  that cascade is `element_locked` (EO47).
+  those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`.
 - **`move <selector> <placement> | by=dx,dy [all]`.** As [Placement](#placement). Pinned arrows follow by
   construction; `rebindArrowAnchorsAfterMove` runs in finalise, and an arrow it re-anchors with exactly one end's
   box moved is `rerouted` (EO31: route fields dropped, `orthogonalBends` for an angled one). A target whose container (`holdersOf`, the
@@ -321,7 +316,7 @@ means `newElementId` ([Ids](#ids)).
   right and bottom, where the target's old box reached past the bounds of what the container still holds, that edge
   comes in to those bounds plus `HOLD_PAD` (32, shared with growing to hold), never past where it was, through
   `growContainer`, so what lay past the edge moves back; reported as `narrower` / `shorter`. A container left
-  empty, or a locked one, is left as it is.
+  empty is left as it is.
 - **`connect <a> -> <b> [id=] [label=…] [line=…] [again]`.** `a` and `b` are words resolving to boxed elements.
   An existing arrow from a to b (pinned `from` a, pinned `to` b) without `again` is `arrow_exists`, naming it; an
   arrow from b to a does not count; `a` equal to `b` is `invalid_value`. Otherwise a new arrow
@@ -360,7 +355,7 @@ means `newElementId` ([Ids](#ids)).
   3. **Bystanders** are the boxed non-members, other than containers whose box holds the whole new box, whose
      `smallestHolder` the new container would become. Any: `frame_captures`, unless `absorb` (they become members:
      the box is recomputed over them, once) or `make-room` (each moves perpendicular to the nearest edge of the
-     box until it sits `PLACEMENT_GAP` outside, EO35). A locked bystander under `make-room` is `element_locked`.
+     box until it sits `PLACEMENT_GAP` outside, EO35).
   4. The container is `createShape('frame' | 'lane')` with the box, a new id, fields as `set` (a frame's default
      label `Frame`, a lane's `Lane` unless `label=` is given), painted, inserted in
      the order directly before its earliest member.
@@ -376,13 +371,11 @@ means `newElementId` ([Ids](#ids)).
 originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every selected box keeping its size;
   edgeless selected boxes are swept below with `sweepEdgelessNodes` (EO38). `direction` maps `down`→`TB`,
   `right`→`LR` for `flow` and `tree`; omitted, flow detects it
-  (`flowDirectionOf`) and a tree runs down. Nothing outside the selection moves; a locked arrow
-  between selected boxes keeps its ends. A locked element in the selection
-  is `element_locked`.
+  (`flowDirectionOf`) and a tree runs down. Nothing outside the selection moves.
 - **`test <selector> key=value…`.** For each field, the value `set` would write (aliases resolved, no label cap,
   no coercion warning) is compared with the stored value by deep equality; strings exactly; `key=` holds when the
   field is absent; a colour alias compares the swatch slot, or the hex case-insensitively (EO39). Any difference:
-  `test_failed`. It changes nothing, so a locked element may be tested.
+  `test_failed`. It changes nothing.
 
 ### Carry
 
@@ -412,12 +405,10 @@ before the node, and every step uses it:
 2. **Beyond.** A unit is beyond when its centre on the axis lies past the midline (the node's near edge minus
    half the gap), in the axis' direction.
 3. **Shift.** Each unit beyond, a container unit with its `containerContents` ([Carry](#carry)), moves by `shift` along the axis.
-   Locked units stay where they are (EO47): a locked container, a unit itself or carried inside one, stays with
-   everything it holds, so its members never leave it.
 4. **Grow and go outward.** The scope container grows along the axis by `shift` on its far side, so every
    shifted element keeps its membership; then room is made in the scope's own holder, with the midline at the
    container's old far edge and the container itself left out, so an outer container grows in turn and what lay
-   past it shifts. A locked container does not grow; room is still made beyond it (EO47, EO52).
+   past it shifts (EO52).
 5. Annotation `make room`: each shifted element is marked moved with its summed shift (`moveElement`), never a
    target.
 
@@ -456,7 +447,7 @@ On the working state, in order:
   and diagram keys settled.
 - `template`: `buildTemplateTab(...).elements`; on a new tab the whole `buildTemplateTab` result.
 - Existing tab: every tab field kept, `elements` replaced.
-  A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab`
+  New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab`
   with `options.tabId`, `options.name` and the theme, as `add_tab` does.
 - Validation, `elementOps` and `inverse` as for operations; the results are one line per added and removed element
   and no `»` lines; `targets` is empty; `createdIds` lists every element of the new tab not in the old one.
@@ -664,22 +655,21 @@ Rejections, in the spec's table; the engine raises all but `changeset_conflict` 
 changeset pipeline raises with the same shape and formatter. `too_large` is raised here for the operation count
 and by the api for the tab byte cap.
 
-| Code                | Detail lines                                                                                | Hint                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `parse_error`       | `line <n>, column <c>: expected <what>`, the line with a caret under the column             | `quote values with spaces: label="Sign in"`, or the expected word      |
-| `unknown_operation` | `"<word>" is not an operation`; `operations: add set rm move …`                             | `did you mean <nearest>?` when one is within distance 2                |
-| `target_not_found`  | `"<selector>" matches nothing`; up to 5 nearest as `ref  kind "label" in f2`                | `use a ref from the outline, or label~<word> for part of a label`      |
-| `target_ambiguous`  | `"<selector>" matches <n> elements:` and each as `ref  kind "label" in f2`                  | `use a ref, narrow with type:<kind of the first>, or add all`          |
-| `unknown_field`     | `<kind> has no field "<key>"`; `fields: <aliases>, then <stored names>`                     | `did you mean <nearest>?`                                              |
-| `invalid_value`     | `<key>=<value>: <rule>`; `allowed: <values>` or the range                                   | The nearest allowed value                                              |
-| `id_taken`          | `id "<id>" is taken by <kind> "<label>"`                                                    | `use id=<free>`                                                        |
-| `arrow_exists`      | `<a>→<b> already has an arrow:` and it as `ref  from→to "label"`                            | `add again for a second arrow, or set the existing one`                |
-| `element_locked`    | `the tab is locked`, or `locked:` and each element as `ref  kind "label"` and why (element) | `unlock it in the editor, or leave it out of the changeset`            |
-| `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`                   | `connect <a> -> <b> first, or insert between the ends of one of these` |
-| `frame_captures`    | `the <frame> @x,y w×h would hold non-members:` and each bystander                           | `add them to the members, or add absorb or make-room`                  |
-| `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                             | `re-read <ref>: it changed since you read it`                          |
-| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                       | `see the format: livehuddle schema <kind>`                             |
-| `too_large`         | `<n> operations; the cap is <CHANGESET_MAX_OPERATIONS>`                                     | `split it into several changesets, or send a replace`                  |
+| Code                | Detail lines                                                                    | Hint                                                                   |
+| ------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `parse_error`       | `line <n>, column <c>: expected <what>`, the line with a caret under the column | `quote values with spaces: label="Sign in"`, or the expected word      |
+| `unknown_operation` | `"<word>" is not an operation`; `operations: add set rm move …`                 | `did you mean <nearest>?` when one is within distance 2                |
+| `target_not_found`  | `"<selector>" matches nothing`; up to 5 nearest as `ref  kind "label" in f2`    | `use a ref from the outline, or label~<word> for part of a label`      |
+| `target_ambiguous`  | `"<selector>" matches <n> elements:` and each as `ref  kind "label" in f2`      | `use a ref, narrow with type:<kind of the first>, or add all`          |
+| `unknown_field`     | `<kind> has no field "<key>"`; `fields: <aliases>, then <stored names>`         | `did you mean <nearest>?`                                              |
+| `invalid_value`     | `<key>=<value>: <rule>`; `allowed: <values>` or the range                       | The nearest allowed value                                              |
+| `id_taken`          | `id "<id>" is taken by <kind> "<label>"`                                        | `use id=<free>`                                                        |
+| `arrow_exists`      | `<a>→<b> already has an arrow:` and it as `ref  from→to "label"`                | `add again for a second arrow, or set the existing one`                |
+| `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`       | `connect <a> -> <b> first, or insert between the ends of one of these` |
+| `frame_captures`    | `the <frame> @x,y w×h would hold non-members:` and each bystander               | `add them to the members, or add absorb or make-room`                  |
+| `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                 | `re-read <ref>: it changed since you read it`                          |
+| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                           | `see the format: livehuddle schema <kind>`                             |
+| `too_large`         | `<n> operations; the cap is <CHANGESET_MAX_OPERATIONS>`                         | `split it into several changesets, or send a replace`                  |
 
 Every rejection prints `error <code> · op <n> · <formatOperation(op)>` (parse errors: `· line <n>`), its detail
 and hint lines indented, and the block ends with `nothing was applied`. Parsing reports up to `EDIT_MAX_ERRORS`
@@ -702,10 +692,6 @@ Edge cases:
 - **E9** `layout` of a selection without arrows: every box is edgeless, swept into rows from the top-left.
 - **E10** An element whose id is a reserved word: reached by label or a longer prefix (EO10).
 - **E11** A theme id the caller did not resolve (no catalogue entry names it): the default scheme's slots; `log('[edit-ops] theme-fallback')`.
-- **E12** Locked elements: they
-  resolve (as placement references, `test` targets, ends of a new arrow) but never change (I7).
-- **E17** Make room meeting a locked unit: the unit stays where it is and the rest shift; any overlap is the
-  lint's to report (EO47).
 - **E13** A tab at `MAX_ELEMENTS_PER_TAB`: an `add` makes it invalid; `invalid_result` names the cap.
 - **E14** `keep-arrows` where both ends were removed: the arrow has two free ends and stays.
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
@@ -723,7 +709,6 @@ Edge cases:
   distance; no loop without a bound (the nudge passes one occupier per step).
 - `selected` reads only `options.selected`, which the api fills with the token owner's selection, never another
   person's.
-- Locks set by people hold against agents: nothing in `lockedIds` changes (I7).
 - Logs carry counts, codes and operation names, never labels, notes or ids (an agent's id is a slug of its label).
 
 ## Performance and limits
@@ -773,7 +758,6 @@ and changeset ids. Fields are counts, codes and names only.
 | `[edit-ops] label-capped`     | A label moved into the note                  | `operation`                                                          |
 | `[edit-ops] frame-captures`   | `wrap` met bystanders                        | `operation`, `bystanders`, `resolution` (refused, absorb, make-room) |
 | `[edit-ops] selection-unread` | `selected` with `selected: null`             | `operation`                                                          |
-| `[edit-ops] locked`           | An operation refused for a lock              | `operation`, `op`, `scope` (tab, element)                            |
 | `[edit-ops] theme-fallback`   | No theme passed and `tab.theme` not built in | (none)                                                               |
 | `[edit-ops] replace`          | `applyReplace` ran                           | `source` (graph, mermaid, template, elements), `elements`            |
 | `[edit-ops] laid-out`         | `layout` or `wrap tidy` laid boxes out       | `operation`, `boxes`, `arrows`, `style`                              |
@@ -801,7 +785,6 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                     |
 | A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/editor/hooks/canvas/useEditorDrag.frames.test.tsx`                                                                              |
 | `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`; `rewire` moves one end               | `packages/edit-operations/src/operations/connect.test.ts`                                                                             |
-| Locks: a locked tab or element refuses with `element_locked`; make room passes locked units by                           | `locks.test.ts`, `invariants.test.ts` › "no locked element changes", `make-room.test.ts` › "passes a locked unit by"                  |
 | Live fields are never written by `set`                                                                                   | `fields.test.ts` › "refuses identity, live and prototype fields"                                                                      |
 | One value a term; `wrap` and `layout` members: each ref or quoted label one element, the rest together                   | `selectors.test.ts` › "reads what does not parse", `packages/edit-operations/src/operations/wrap.test.ts` › "takes members from refs" |
 | `targets` and `createdIds` list what the changeset resolved and created                                                  | `apply.test.ts` › "lists the existing elements it resolved", "lists the elements it created"                                          |

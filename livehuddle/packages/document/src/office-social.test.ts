@@ -195,7 +195,7 @@ describe('a participant on a notice board', () => {
     if (r.result === 'applied') expect(notesOf(r.tab)).toEqual(['t1']);
   });
 
-  it('cannot move or restyle the board, nor pin on a locked one', () => {
+  it('cannot move or restyle the board, and pins on one saved locked', () => {
     const r = applyParticipantOp(
       tab(board([])),
       { kind: 'update', element: board([note('m1', ME)], { x: 500, fillColor: '#ff0000' }) },
@@ -205,11 +205,12 @@ describe('a participant on a notice board', () => {
       expect(r.tab.elements[0]).toMatchObject({ x: 0 });
       expect(notesOf(r.tab)).toEqual(['m1']);
     }
+    // not-in-livehuddle.md "Element and Tab Locking": a board saved locked takes notes like any other.
     const locked = applyParticipantOp(
       tab(board([], { locked: true })),
       { kind: 'update', element: board([note('m1', ME)], { locked: true }) },
       ME,
     );
-    expect(locked.result).toBe('refused');
+    expect(locked.result).toBe('applied');
   });
 });

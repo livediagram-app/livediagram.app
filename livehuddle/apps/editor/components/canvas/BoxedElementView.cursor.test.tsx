@@ -33,7 +33,6 @@ function wrapperFor(props: {
       onOpenNote={vi.fn()}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
-      tabLocked={false}
       tabSummaries={[]}
       readOnly={props.readOnly}
       movable={props.movable}
@@ -58,8 +57,9 @@ describe('the move cursor', () => {
     expect(cls).toContain('cursor-default');
   });
 
-  it('is the plain arrow on a locked element', () => {
-    expect(wrapperFor({ readOnly: false, locked: true }).className).toContain('cursor-default');
+  // not-in-livehuddle.md "Element and Tab Locking": what was saved locked behaves as unlocked.
+  it('is the move cursor on an element saved locked', () => {
+    expect(wrapperFor({ readOnly: false, locked: true }).className).toContain('cursor-move');
   });
 });
 

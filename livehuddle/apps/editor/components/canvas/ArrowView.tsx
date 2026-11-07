@@ -57,15 +57,9 @@ type ArrowViewProps = {
   // Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): caret at end instead of select-all when the
   // label was seeded by the first typed character.
   editCursorAtEnd?: boolean;
-  // True when the whole tab is locked (toggled from the tab ellipsis
-  // menu). Treated the same as a per-arrow `arrow.locked === true`
-  // — endpoint handles disabled, body drag suppressed, double-click
-  // edit suppressed. Mirrors how BoxedElementView handles it.
-  tabLocked: boolean;
   // View-only session. Suppresses every editing affordance the
   // popover doesn't already hide: the endpoint drag handles + the
-  // curve handle. Body double-click for label edit is also blocked
-  // by isLocked (which the caller sets when readOnly is on).
+  // curve handle.
   readOnly?: boolean;
   // Arrow-id-bearing callbacks so the parent can pass a single
   // stable function per kind (rather than recreating per-element
@@ -120,7 +114,6 @@ function ArrowViewImpl({
   isPaintMode,
   isEditing,
   editCursorAtEnd = false,
-  tabLocked,
   readOnly = false,
   onSelect,
   onContextSelect,
@@ -137,7 +130,6 @@ function ArrowViewImpl({
 }: ArrowViewProps) {
   // An arrow with no stroke of its own takes the canvas's ink (docs/specs/007-editor/editor-app.md).
   const surface = useCanvasSurface();
-  const isLocked = arrow.locked === true || tabLocked;
   // Open the context menu beside the arrow rather than under the cursor /
   // finger, mirroring boxed elements: `elementMenuAnchor` owns the top-right
   // corner + flip-to-left + gap rule, applied to the arrow's on-screen
@@ -198,7 +190,7 @@ function ArrowViewImpl({
     useArrowFlow(arrow);
   // The label box is draggable (and shows its dashed selection box)
   // when the arrow is selected and editable.
-  const labelDraggable = isSelected && !isPaintMode && !readOnly && !isLocked && !isEditing;
+  const labelDraggable = isSelected && !isPaintMode && !readOnly && !isEditing;
 
   // Per-arrow stroke colour overrides the default; selection ring sits
   // on top in brand-600 regardless so the user can still tell what's
@@ -234,7 +226,7 @@ function ArrowViewImpl({
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
-  const bendCursor = isPaintMode || isLocked || readOnly ? hitCursor : 'grab';
+  const bendCursor = isPaintMode || readOnly ? hitCursor : 'grab';
   // Every press on this arrow (line, label, handles, move frame) passes the
   // double-press rule (docs/specs/008-canvas/arrow-bending.md): a press that pairs with the one
   // before never drags, and opens the label editor instead.
@@ -250,7 +242,7 @@ function ArrowViewImpl({
   // browser moves focus as that press's default action, which would blur (and
   // so commit) an editor opened a moment earlier.
   const openEditor = () => {
-    if (isLocked || isPaintMode) return;
+    if (isPaintMode) return;
     const done = () => {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', done);
@@ -464,7 +456,7 @@ function ArrowViewImpl({
           // Pressing the line bends it once the pointer travels
           // (docs/specs/008-canvas/arrow-bending.md); a plain click only selects, and the second
           // press of a double-click never drags.
-          if (!doubled && !isLocked && !isPaintMode && onBeginArrowBend) {
+          if (!doubled && !isPaintMode && onBeginArrowBend) {
             onBeginArrowBend(arrow.id, e);
           }
         }}
@@ -518,7 +510,6 @@ function ArrowViewImpl({
             curveControl={curveControl}
             curveAnchors={curveAnchors}
             elbowPoint={elbowPoint}
-            isLocked={isLocked}
             guardPress={guardPress}
             onBeginEndpointDrag={onBeginEndpointDrag}
             onBeginCurveDrag={onBeginCurveDrag}

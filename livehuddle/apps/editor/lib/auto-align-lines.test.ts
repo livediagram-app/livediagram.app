@@ -65,13 +65,6 @@ describe('alignBoxes via autoAlignElements', () => {
     expect(find(out, 'step').x).toBeGreaterThanOrEqual(find(out, 'lane').x);
   });
 
-  it('leaves a locked box exactly where it is and lines others up to it', () => {
-    const els = [box('fixed', 103, 0, 200, 60), box('free', 106, 200, 200, 60)];
-    const out = autoAlignElements(els, new Set(['fixed']));
-    expect(find(out, 'fixed')).toBe(els[0]);
-    expect(find(out, 'free').x).toBe(103);
-  });
-
   it('is idempotent', () => {
     const els = [
       box('a', 141.5, 100, 223, 64),

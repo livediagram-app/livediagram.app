@@ -25,7 +25,7 @@ export type ShapeBounds = Rect;
 // `move` translates the shape uniformly. Each `resize-*` mode pulls
 // the matching corner or edge, flooring each side at `MIN_SIZE` so a
 // shape can't be dragged down to a pinprick. `aspectLocked` (the
-// element's lock, a locked member of a selection, or Shift) hands the
+// element's aspect lock, an aspect-locked member of a selection, or Shift) hands the
 // gesture to `constrainedBounds`, which keeps the width:height ratio
 // from every handle.
 export function nextBounds(

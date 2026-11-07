@@ -31,12 +31,11 @@ import {
   insertElement,
   moveElement,
   namingOf,
-  refuseLocked,
   type EditState,
 } from '../state';
 import type { WrapOperation } from '../types';
 import { PLACEMENT_GAP } from '../vocabulary';
-import { layOut, lockedAmong } from './layout';
+import { layOut } from './layout';
 
 // The boxed members, in element order, or why not.
 function membersOf(
@@ -110,21 +109,16 @@ function moveOut(
   box: Box,
   members: ReadonlySet<ElementId>,
   operation: number,
-): EditRejection | null {
-  for (const el of bystanders) {
-    const lock = state.locked.get(el.id);
-    if (lock) return refuseLocked(state, 'wrap', operation, el, lock);
-  }
+): void {
   const before = currentElements(state);
   for (const bystander of bystanders) {
     const [dx, dy] = clearOf(bystander, box);
     for (const id of containerContents(before, new Set([bystander.id]))) {
-      if (members.has(id) || state.locked.has(id)) continue;
+      if (members.has(id)) continue;
       const moved = shifted(state.byId.get(id)!, dx, dy);
       moveElement(state, moved, operation, 'make room', { shift: [dx, dy] });
     }
   }
-  return null;
 }
 
 export function applyWrap(
@@ -136,8 +130,6 @@ export function applyWrap(
   if ('rejection' in found) return found.rejection;
   let members = found.members;
   if (operation.tidy) {
-    const locked = lockedAmong(state, members, 'wrap', index);
-    if (locked) return locked;
     layOut(state, members, 'flow', undefined, index);
     members = members.map((el) => boxedOf(state, el.id)!);
   }
@@ -197,8 +189,7 @@ export function applyWrap(
       memberIds = new Set(members.map((el) => el.id));
       container = sized(members);
     } else {
-      const refused = moveOut(state, bystanders, container, memberIds, index);
-      if (refused) return refused;
+      moveOut(state, bystanders, container, memberIds, index);
     }
   }
   const earliest = members[0]!;

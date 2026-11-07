@@ -6,12 +6,7 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
-import {
-  ClearIcon,
-  FolderMenuIcon,
-  MoveIcon,
-  TabLockIcon,
-} from '@/components/chrome/tab-bar-icons';
+import { ClearIcon, FolderMenuIcon, MoveIcon } from '@/components/chrome/tab-bar-icons';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -49,8 +44,6 @@ export function PortalMenu({
   onImport,
   onExport,
   onCopyTo,
-  onToggleLock,
-  locked,
   selfId,
   otherDocuments,
   folderNames,
@@ -76,8 +69,6 @@ export function PortalMenu({
   onImport: () => void;
   onExport: () => void;
   onCopyTo: (targetDocumentId: string) => void;
-  onToggleLock: () => void;
-  locked: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -261,28 +252,17 @@ export function PortalMenu({
                 active={sideBySide.closing}
               />
             ) : null}
-            {/* Lock and Delete sit together at the right edge, apart from
-              the everyday verbs: both change what the tab will let you
-              do next rather than doing something to it. */}
+            {/* Delete sits at the right edge, apart from the everyday verbs. */}
             <div className="ml-auto flex items-center gap-0.5">
-              <MenuToolButton
-                icon={<TabLockIcon />}
-                label={locked ? 'Unlock Tab' : 'Lock Tab'}
-                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
-                onClick={onToggleLock}
-                active={locked}
-              />
               <MenuToolButton
                 icon={<TrashIcon />}
                 label="Delete"
-                description={
-                  locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
-                }
+                description="Delete this tab."
                 onClick={() => {
                   onDelete();
                   onClose();
                 }}
-                disabled={!canDelete || locked}
+                disabled={!canDelete}
               />
             </div>
           </MenuToolbar>
@@ -325,13 +305,7 @@ export function PortalMenu({
             disabled={otherDocuments.length === 0}
           />
           <MenuGroupSeparator />
-          <MenuActionRow
-            plain
-            icon={<FileImportIcon />}
-            label="Import"
-            onClick={onImport}
-            disabled={locked}
-          />
+          <MenuActionRow plain icon={<FileImportIcon />} label="Import" onClick={onImport} />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow
             plain

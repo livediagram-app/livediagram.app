@@ -22,7 +22,7 @@ each tab and every floor is one press away, with nothing to link.
   steel, the display and its lamp keep their colours.
 - **Its name is its label** ([Names](#names)), under the piece. No settings `…`. Proportions locked.
 - **It never blocks**: walking into it is how you call it.
-- Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
+- Otherwise an ordinary element: move, resize, rotate, copy, delete, export.
 
 ## Floors and pairing
 

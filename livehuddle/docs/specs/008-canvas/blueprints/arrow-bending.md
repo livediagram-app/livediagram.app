@@ -73,7 +73,7 @@ curve, elbow, label, translate) except the endpoint of an arrow being drawn.
   `dblclick` then reaches the element wrapper, which opens its editor as before.
 - Dot votes are cast before the ledger is consulted, so two quick presses during a vote cast two.
 
-**Move frame.** Shown when a single free arrow is selected, editable, not locked and not being
+**Move frame.** Shown when a single free arrow is selected, editable and not being
 edited. Rect = route bounding box inflated by `MOVE_FRAME_PAD_PX`, drawn as HTML with the shape
 selection ring (`ring-2 ring-brand-200`). Four transparent bands of `MOVE_FRAME_HIT_PX` screen px
 centred on its sides take the press (cursor `move`) and begin `arrow-translate`. The corner handles
@@ -92,7 +92,7 @@ nothing, like a box's handles.
 
 - Zero-length chord: `bow` falls back to `insert` of a single point (D29).
 - A bend that would put `t(1-t)` below `1e-6`: impossible after the clamp.
-- Locked arrow, locked tab, read-only: no plan, no frame (existing guards).
+- Read-only: no plan, no frame (existing guards).
 - Arrow deleted mid-drag: the tick maps nothing.
 
 ## Observability
@@ -125,7 +125,7 @@ scales a free arrow.
 
 ## Presentation and UX
 
-- An editable arrow line shows the `grab` cursor; locked, read-only and format-painter lines keep
+- An editable arrow line shows the `grab` cursor; read-only and format-painter lines keep
   their existing cursor.
 - A selected free arrow shows the shape selection ring and handles; its ring edge shows `move`.
 - There are no "+" add-point handles; the curve, bend-point and elbow handles are as above.

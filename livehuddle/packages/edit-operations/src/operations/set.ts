@@ -9,14 +9,7 @@ import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { resolveSome } from '../selectors';
-import {
-  currentElements,
-  type EditState,
-  refsOf,
-  refuseLocked,
-  touch,
-  writeFields,
-} from '../state';
+import { currentElements, type EditState, refsOf, touch, writeFields } from '../state';
 import type { SetOperation } from '../types';
 import { ROUTE_KEYS, rerouted } from './connect';
 
@@ -46,8 +39,6 @@ function setOne(
   fields: SetOperation['fields'],
   operation: number,
 ): EditRejection | null {
-  const lock = state.locked.get(el.id);
-  if (lock) return refuseLocked(state, 'set', operation, el, lock);
   const written = writeFieldsOnto(el, fields, state.theme, refsOf(state).refOf(el.id), operation);
   if ('code' in written) return written;
   const fitted = Object.keys(fields).some((key) => FIT_KEYS.has(key))

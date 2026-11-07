@@ -8,4 +8,4 @@ export type Suggestion = { id: string; text: string; day: string };
 export type SuggestionsResponse = { suggestions: Suggestion[] };
 
 /** Why a drop was refused, beyond the usual 400, 403 and 404. */
-export type SuggestionRefusal = 'box_closed' | 'box_full';
+export type SuggestionRefusal = 'box_full';

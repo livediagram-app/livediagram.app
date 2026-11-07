@@ -49,7 +49,7 @@ function sourceFiles(dir: string): string[] {
 
 // `track('Category', <action expr>` — the action expression runs to the next
 // comma at depth zero or the closing paren, which covers the ternary form
-// (`track('Element', anyUnlocked ? 'Locked' : 'Unlocked')`) as well as a
+// (`track('Tab', collapsed ? 'Hidden' : 'Shown')`) as well as a
 // plain literal. Every quoted string inside it is a possible action.
 function pairsIn(source: string): string[] {
   const pairs: string[] = [];

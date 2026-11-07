@@ -14,7 +14,6 @@ export function EllipsisMenuButton({
   canvas,
   canDelete,
   canClearContent,
-  locked,
   otherDocuments,
   folderNames,
   currentFolder,
@@ -26,7 +25,6 @@ export function EllipsisMenuButton({
   onImport,
   onExport,
   onCopyTo,
-  onToggleLock,
   onDelete,
   selfId,
 }: {
@@ -39,7 +37,6 @@ export function EllipsisMenuButton({
   canvas?: CanvasMenuActions;
   canDelete: boolean;
   canClearContent: boolean;
-  locked: boolean;
   // Viewer identity, forwarded to the menu's Add to Document thumbnails.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -53,7 +50,6 @@ export function EllipsisMenuButton({
   onImport: () => void;
   onExport: () => void;
   onCopyTo: (targetDocumentId: string) => void;
-  onToggleLock: () => void;
   onDelete: () => void;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
@@ -84,8 +80,6 @@ export function EllipsisMenuButton({
             onImport={onImport}
             onExport={onExport}
             onCopyTo={onCopyTo}
-            onToggleLock={onToggleLock}
-            locked={locked}
             selfId={selfId}
             otherDocuments={otherDocuments}
             folderNames={folderNames}

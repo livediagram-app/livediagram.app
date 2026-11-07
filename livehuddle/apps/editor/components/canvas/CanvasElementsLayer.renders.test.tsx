@@ -102,7 +102,6 @@ const STABLE = {
     elements: BOARD,
     editingId: null,
     isPaintMode: false,
-    tabLocked: false,
     readOnly: false,
   },
 };
@@ -119,7 +118,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     editingId: null,
     hasArrows: true,
     readOnly: false,
-    tabLocked: false,
     isPaintMode: false,
     canvasTool: 'select',
     drawDrag: null,

@@ -194,7 +194,7 @@ the same shape of problem: four articles about arrows, next to an `arrows` famil
 glyph that is already an arrow, so they draw the three shapes, the handle you
 drag, the obstacle, and the other arrow. The Sharing guides ran into it a third
 way: the obvious drawing for each was already spoken for somewhere else in the
-set: a padlock is `locking`, a chain is `links`, a picture is `images`, so they
+set: a chain is `links`, a picture is `images`, so they
 draw the password field, the deadline, the page the diagram sits inside, and the
 refresh. Avatar Mode and Walking Together met it a fourth way: the set already
 had five person glyphs and every one was a head-and-shoulders bust, so these two

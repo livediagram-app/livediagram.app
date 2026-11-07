@@ -88,14 +88,7 @@ describe('move', () => {
     ]);
   });
 
-  it('refuses a lock anywhere in the moving set, and a reference that moves with it', () => {
-    const lockedN5 = {
-      ...checkoutFlow(),
-      elements: checkoutFlow().elements.map((el) =>
-        el.id === 'n5' ? { ...el, locked: true } : el,
-      ),
-    };
-    expect(refused(run('move f2 by=10,0', lockedN5))).toMatchObject({ code: 'element_locked' });
+  it('refuses a reference that moves with it', () => {
     expect(refused(run('move f2 below:n4'))).toMatchObject({
       code: 'invalid_value',
       details: ['below:n4: n4 moves with it'],

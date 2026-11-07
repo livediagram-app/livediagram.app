@@ -47,7 +47,7 @@ The highlighter's settings live in the [Quick style panel](quick-style-panel.md)
 
 What the rows style, in the order the panel looks:
 
-1. **Selected highlights.** With one or more unlocked highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection the rows sit above the rows for everything else and touch only the highlights; the caption counts what is styled. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
+1. **Selected highlights.** With one or more highlight strokes selected, the rows restyle them (`strokeColor`, `penWidth`; Medium clears `penWidth`), one undo step per choice. A choice is marked only when every selected highlight shares it. In a mixed selection the rows sit above the rows for everything else and touch only the highlights; the caption counts what is styled. A stroke whose colour or width matches no option (recoloured from the context menu, imported) marks none.
 2. **The armed tile, nothing selected.** Picking the tile clears the selection, so the panel shows the rows for the **next stroke**, captioned **Highlighter**: the highlighter's current colour and width, which every stroke then lands in. This is the only way to set them before drawing.
 
 The current colour and width are **session-local editor state**, not a persisted preference: the highlighter resets to Yellow / Medium on a fresh load, like a real pen cup. Restyling a selected highlight does not change them; only choosing with the tile armed does. Nothing here is stored except on the strokes themselves.
@@ -66,7 +66,7 @@ The tile is not in Popular ([Editor modes](../007-editor/editor-modes.md#the-pal
 
 ## Everything else is inherited
 
-Selection, move/resize (non-scaling stroke keeps the marker width), rotation, lock, duplicate, copy/paste, undo, realtime sync, and the eraser's bbox hit-testing all treat it as the freehand it is (the Eraser Panel's "Drawings only" filter covers marker strokes too). The element display name (`element-names.ts`) reads "Highlight" instead of "Sketch" when the pen field is present.
+Selection, move/resize (non-scaling stroke keeps the marker width), rotation, duplicate, copy/paste, undo, realtime sync, and the eraser's bbox hit-testing all treat it as the freehand it is (the Eraser Panel's "Drawings only" filter covers marker strokes too). The element display name (`element-names.ts`) reads "Highlight" instead of "Sketch" when the pen field is present.
 
 ## Telemetry
 
