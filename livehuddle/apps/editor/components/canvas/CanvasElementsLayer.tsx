@@ -125,7 +125,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     shiftDupGhostIds,
     tabFont,
     tabFinish,
-    tabLocked,
     tabSummaries,
   } = props;
   // Identity-stable wrappers for every function prop the memoized
@@ -231,7 +230,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => ({
       onPlainClick: h.handleElementClick,
       isPaintMode,
-      tabLocked,
       tabSummaries,
       readOnly,
       onBeginDrag: h.onBeginDrag,
@@ -269,17 +267,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
-    [
-      h,
-      isPaintMode,
-      tabLocked,
-      tabSummaries,
-      readOnly,
-      stablePalette,
-      chairSitters,
-      canvasTool,
-      imageContext,
-    ],
+    [h, isPaintMode, tabSummaries, readOnly, stablePalette, chairSitters, canvasTool, imageContext],
   );
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
@@ -362,7 +350,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           editCursorAtEnd={editCursorAtEnd}
           reshapingArrowId={props.reshapingArrowId}
           isPaintMode={isPaintMode}
-          tabLocked={tabLocked}
           readOnly={readOnly}
           shiftDupGhostIds={shiftDupGhostIds}
           remoteSelectionsByElement={remoteSelectionsByElement}

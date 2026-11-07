@@ -5,7 +5,7 @@ import { ContextualToolbar, MultiSelectToolbar } from '@/components/illustration
 export const metadata = helpMetadata({
   title: 'The Toolbar',
   description:
-    'Use the selection toolbar for quick actions on selected elements: edit text, duplicate, change stacking order, lock, delete, or open the full More menu.',
+    'Use the selection toolbar for quick actions on selected elements: edit text, duplicate, change stacking order, delete, or open the full More menu.',
   path: '/help/user-interface/toolbar/',
 });
 
@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match. A small caption above it names the selection, for example "Selected Square".
 
-<Figure caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order, Lock and Delete.">
+<Figure caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order and Delete.">
   <ContextualToolbar />
 </Figure>
 
@@ -31,9 +31,9 @@ From left to right:
 - **Duplicate**.
 - **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
 - **Bring to Front** and **Send to Back**.
-- **Lock** (or **Unlock**) and **Delete**.
+- **Delete**.
 
-Which buttons show depends on the element: an image has no text to add, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and press **Add Comment** in the row of buttons along the top of its menu. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
+Which buttons show depends on the element: an image has no text to add. To comment on an element, open **More** and press **Add Comment** in the row of buttons along the top of its menu. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
 
 ## Several elements selected
 
@@ -43,11 +43,11 @@ Drag a marquee or Shift-click to select several, and the toolbar switches to the
 - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
 - **Duplicate**, with the arrows between the selected elements included.
 - **Export**: export just these elements.
-- **Lock** (**Unlock** when every selected element is locked) and **Delete**.
+- **Delete**.
 
 The caption reads "Selected Elements" with a count.
 
-<Figure caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete.">
+<Figure caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export and Delete.">
   <MultiSelectToolbar />
 </Figure>
 

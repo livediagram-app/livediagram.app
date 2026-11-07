@@ -210,8 +210,7 @@ export function settleChips(
           !!hostBefore && isBoxedEl(hostBefore) && sameBox(hostBefore, host as Boxed);
         if (moved && hostStill && dist(centreOf(chip), target) > ATTACH_SNAP_PX)
           chip = detached(chip);
-        // A locked chip already placed is not moved, its host's move included, as a drag leaves it where it is.
-        else if (!(chip.locked === true && before)) chip = centredOn(chip, target);
+        else chip = centredOn(chip, target);
       }
     }
     // 4. A new or moved chip that lands on a point takes it.

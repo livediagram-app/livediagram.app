@@ -99,14 +99,6 @@ export const TABS_LINKED = chart(
   'A tab linked into another document, so both documents share it and edits in either show in both.',
 );
 
-export const TABS_LOCKED = chart(
-  'Tab',
-  'Locked',
-  'Tabs Locked & Unlocked',
-  'A tab locked against edits, or unlocked.',
-  { actionIn: ['Unlocked'] },
-);
-
 // Document lifecycle.
 export const DOCUMENTS_LOADED: Metric = {
   category: 'Document',
@@ -367,7 +359,6 @@ const TAB_CHANGES = [
   TABS_ARRANGED,
   TABS_REORDERED,
   TABS_LINKED,
-  TABS_LOCKED,
   TABS_CLEARED,
 ];
 
@@ -375,7 +366,7 @@ export const TAB_ACTIONS: MetricStack = {
   stack: true,
   title: 'Tab Actions',
   blurb:
-    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another document, locked and cleared.',
+    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another document and cleared.',
   headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
@@ -390,7 +381,6 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_ARRANGED,
     TABS_REORDERED,
     TABS_LINKED,
-    TABS_LOCKED,
     TABS_CLEARED,
   ],
 };
@@ -581,14 +571,6 @@ export const ELEMENT_OPTIONS_TOGGLED = chart(
   { typeIn: (t) => !TABLE_TOGGLES.includes(t ?? '') && !TIMER_PIECE_TOGGLES.includes(t ?? '') },
 );
 
-export const ELEMENTS_LOCKED = chart(
-  'Element',
-  'Locked',
-  'Locked & Unlocked',
-  'Elements locked in place or unlocked.',
-  { actionIn: ['Unlocked'] },
-);
-
 export const ELEMENT_ACTIONS_USED = chart(
   'Element',
   'Used',
@@ -636,7 +618,6 @@ export const ELEMENT_EDITING: MetricStack = {
     ARROW_ENDS_ATTACHED,
     ELEMENTS_REORDERED,
     ELEMENT_OPTIONS_TOGGLED,
-    ELEMENTS_LOCKED,
     ELEMENT_ACTIONS_USED,
     IMAGE_SEARCHES,
     IMAGE_SEARCH_PICKS,

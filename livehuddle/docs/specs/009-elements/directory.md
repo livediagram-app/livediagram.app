@@ -25,7 +25,7 @@ go.
 - **No label and no settings `…`.** Its hover card names it. Its proportions are locked like the office pieces'.
 - **It never blocks.** A character walks in front of it or behind it, and walking onto it does nothing: the
   Directory is pressed, not walked into.
-- Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
+- Otherwise an ordinary element: move, resize, rotate, copy, delete, export.
 
 ## Pressing it
 

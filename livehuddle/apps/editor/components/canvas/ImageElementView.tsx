@@ -152,7 +152,7 @@ function ImageElementViewImpl({
 
   return (
     // `overflow-hidden rounded` lives here (not on the BoxedElement
-    // wrapper) so the parent can let lock / comment / note badges
+    // wrapper) so the parent can let comment / note badges
     // overflow outside the box without being clipped, while the
     // bitmap still gets its rounded-corner clip.
     //

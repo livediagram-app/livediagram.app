@@ -118,8 +118,9 @@ describe('rowToTab', () => {
 
   it('carries any per-tab settings serialised in the data blob through to the DTO', () => {
     // The data blob is the round-trip channel for things like theme,
-    // background, locked, etc. that don't have their own row columns.
-    // The spread MUST land them on the result unchanged.
+    // background, etc. that don't have their own row columns.
+    // The spread MUST land them on the result unchanged. A retired lock is dropped on read
+    // (not-in-livehuddle.md "Element and Tab Locking").
     const dto = rowToTab(
       baseRow({
         data: bodyJson({
@@ -132,7 +133,7 @@ describe('rowToTab', () => {
       }),
     );
     expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
-    expect((dto as unknown as { locked: boolean }).locked).toBe(true);
+    expect(dto).not.toHaveProperty('locked');
     expect((dto as unknown as { kind: string }).kind).toBe('diagram');
   });
 

@@ -14,12 +14,7 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 // docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": a label is saved without
 // whitespace at either end, so neither the display nor the editor shows a dangling line.
 
-function setup(
-  el: Element,
-  tabLocked = false,
-  editingId: string | null = null,
-  documentName = 'My document',
-) {
+function setup(el: Element, editingId: string | null = null, documentName = 'My document') {
   const setDocumentName = vi.fn();
   let elements: Element[] = [el];
   const setEditingId = vi.fn();
@@ -29,7 +24,6 @@ function setup(
     useSelectionEditing({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set() }) as never,
       isReadOnly: false,
-      tabLocked,
       formatSourceId: null,
       formatToolActive: false,
       documentName,
@@ -71,7 +65,7 @@ describe('commitLabel', () => {
   it.each(['Untitled Whiteboard', 'Untitled Illustration', 'Untitled Plan', 'Untitled Session'])(
     'names a document still called %s after its first element',
     (name) => {
-      const s = setup(cylinder, false, null, name);
+      const s = setup(cylinder, null, name);
       s.editing.commitLabel(cylinder.id, 'Launch plan');
       expect(s.setDocumentName).toHaveBeenCalledWith('Launch plan');
     },
@@ -114,14 +108,11 @@ describe('commitLabel', () => {
   });
 });
 
-// A locked tab refuses every save: no label editor opens to take typing it would throw away.
-describe('on a locked tab', () => {
-  it('opens no label editor, by double-click, Space or typing', () => {
-    const square = createShape('square', 0, 0);
-    const s = setup(square, true);
-    s.editing.beginEdit(square.id);
-    expect(s.editing.typeIntoSelected(square.id, 'a')).toBe(false);
-    expect(s.setEditingId).not.toHaveBeenCalled();
+// A tab or element saved locked before locking left (not-in-livehuddle.md "Element and Tab Locking") opens its label
+// editor like any other.
+describe('an element saved locked', () => {
+  it('opens its label editor', () => {
+    const square = { ...createShape('square', 0, 0), locked: true } as Element;
     const open = setup(square);
     open.editing.beginEdit(square.id);
     expect(open.setEditingId).toHaveBeenCalledWith(square.id);
@@ -134,7 +125,7 @@ describe('Escape on a text box', () => {
   const hugging = { ...createText(0, 0), id: 'hug', label: '', sizing: 'fit' } as Element;
 
   it('removes an empty text box that hugs its text', () => {
-    const s = setup(hugging, false, 'hug');
+    const s = setup(hugging, 'hug');
     s.editing.cancelEdit();
     expect(s.all()).toEqual([]);
     expect(s.setEditingId).toHaveBeenCalledWith(null);
@@ -143,14 +134,14 @@ describe('Escape on a text box', () => {
 
   it('keeps a hugging text box that has words', () => {
     const worded = { ...hugging, label: 'Keep me' } as Element;
-    const s = setup(worded, false, 'hug');
+    const s = setup(worded, 'hug');
     s.editing.cancelEdit();
     expect(s.all()).toEqual([worded]);
   });
 
   it('keeps an empty fixed text box', () => {
     const fixed = { ...createText(0, 0), id: 'fixed', label: '' } as Element;
-    const s = setup(fixed, false, 'fixed');
+    const s = setup(fixed, 'fixed');
     s.editing.cancelEdit();
     expect(s.all()).toEqual([fixed]);
   });

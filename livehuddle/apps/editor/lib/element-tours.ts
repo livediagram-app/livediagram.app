@@ -27,13 +27,14 @@ export function elementTourKindOf(el: Element | null | undefined): ElementTourKi
 // gate decides (docs/specs/007-editor/element-tours.md "Share roles"), never isReadOnly alone.
 export function canTourElement(
   can: Pick<EditorCapabilities, 'level'>,
-  el: Element,
+  // Kept for the next toured kind whose gate reads the element.
+  _el: Element,
   kind: ElementTourKind,
 ): boolean {
   switch (kind) {
-    // A portal's link is an Editor's, on an unlocked element (docs/specs/007-editor/element-tours.md "Share roles").
+    // A portal's link is an Editor's (docs/specs/007-editor/element-tours.md "Share roles").
     case 'portal':
-      return can.level === 'edit' && (el as { locked?: boolean }).locked !== true;
+      return can.level === 'edit';
   }
 }
 

@@ -19,7 +19,6 @@ Scope, by file:
 | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `apps/editor/lib/tab-cleanup.ts`                                                                   | `cleanupElements`: the one transform the preview and the press both run; settles a layout |
 | `apps/editor/lib/tidy-engine.ts`                                                                   | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand            |
-| `apps/editor/lib/locked-element-ids.ts`                                                            | `lockedElementIds`: the lock rule, light enough for callers that do not tidy              |
 | `apps/editor/lib/tidy-verdict.ts`                                                                  | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its tile line and notice  |
 | `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`                                             | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard |
 | `packages/document/src/auto-layout-tidy.ts`                                                        | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit    |
@@ -30,7 +29,7 @@ Scope, by file:
 | `../packages/model-core/src/auto-layout-route-grid.ts`                                             | Bucket grid of the boxes a route must clear                                               |
 | `apps/editor/hooks/canvas/useCleanupPreview.ts`                                                    | `previewCleanup()` / `endCleanupPreview()` : snapshot, present-only ticks, revert         |
 | `apps/editor/components/canvas/tidy-up-actions.ts`                                                 | `TidyUpActions` and the pure gate `tidyUpOffered`                                         |
-| `apps/editor/components/canvas/TidyUpPopover.tsx`                                                  | The popover: the Auto-align row, the empty and locked notes, Escape                       |
+| `apps/editor/components/canvas/TidyUpPopover.tsx`                                                  | The popover: the Auto-align row, the empty note, Escape                                   |
 | `apps/editor/components/canvas/tidy-up-drawings.tsx`                                               | `AutoAlignDrawing`, the row's drawing                                                     |
 | `../packages/ui/src/icons/editor-chrome.tsx`                                                       | `TidyUpIcon`: Lucide `brush-cleaning` at the cluster's 20 px                              |
 | `apps/editor/components/canvas/ThemeStrip.tsx`                                                     | The Tidy Up segment, first in the strip                                                   |
@@ -66,8 +65,6 @@ surface.
   for an Editor's non-embed session; `tidyUpOffered` is the same gate.
 - **Open state** is the dock slot: `activeDockPanel === 'tidy-up'`. The button
   disappearing closes it (an effect in `useCanvasChromePanels`).
-- **Blocked**: `tidyUp.blocked = activeTabLocked`. The popover renders every tile `disabled` under the locked
-  note.
 - **Empty**: no element on the active tab. Every tile `disabled` under the empty note. (A tab with elements but no
   arrows still offers Auto Layout: the transform passes unwired elements through unchanged, D81.)
 - **Preview** (desktop mouse only, `onMouseHover`): `pointerenter` on a tile → `preview(kind)`; `pointerleave` →
@@ -168,7 +165,7 @@ open would still have its element moves refused by `applyParticipantOp`.
   line (`text-xs` muted). Hover: brand border and ground; focus: the brand `focus-visible` ring. Smart spans both
   columns with its drawing beside its words (D85).
 - Group 2: hairline, then the Auto-align row: glyph, name, line, full width.
-- Notes: the empty note and the locked note replace the caption, in muted text.
+- Notes: the empty note replaces the caption, in muted text.
 - Button glyph: Lucide `brush-cleaning` at 20 px, the cluster step.
 
 ## Accessibility
@@ -200,7 +197,7 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 | Press ends preview, runs, closes, in order                                                                  | `TidyUpPopover.test.tsx`                                                                     |
 | Mouse hover previews, touch does not                                                                        | `TidyUpPopover.test.tsx`                                                                     |
 | Unmount reverts                                                                                             | `TidyUpPopover.test.tsx`                                                                     |
-| Empty and locked notes, tiles disabled                                                                      | `TidyUpPopover.test.tsx`                                                                     |
+| Empty note, tiles disabled                                                                                  | `TidyUpPopover.test.tsx`                                                                     |
 | Snapshot, no stacking, tab-scoped revert                                                                    | `useCleanupPreview.test.ts`                                                                  |
 | Telemetry on open                                                                                           | `useDockPopovers.test.tsx`                                                                   |
 | Hover budget at the worst case                                                                              | `tab-cleanup.perf.test.ts`                                                                   |

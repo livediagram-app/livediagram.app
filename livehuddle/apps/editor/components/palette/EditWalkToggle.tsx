@@ -2,8 +2,8 @@
 
 // The Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): an Editor's one switch
 // between building the board and walking it as a character, first on whichever strip shows (the building strip with
-// Edit on, the avatar palette with Walk on, or alone on a locked tab). Two segments on the segmented track, the brand
-// pill sliding to the side that is on; named beside their glyphs on a desktop, glyphs alone on a phone.
+// Edit on, the avatar palette with Walk on, or alone for a read-only Editor). Two segments on the segmented track,
+// the brand pill sliding to the side that is on; named beside their glyphs on a desktop, glyphs alone on a phone.
 // `walkBlockedReason` greys Walk while something in front of the canvas holds the walk ("Not over a start"): it stays
 // put, says why in its tooltip, and a press does nothing. Edit is never greyed, so leaving the walk always works.
 import type { ReactNode } from 'react';
@@ -95,8 +95,8 @@ export function EditWalkToggle({
   );
 }
 
-// The toggle alone in the strip's card, where an Editor has no strip (a locked tab): same place, same card, so walking
-// is one press away there too. Measured as the strip by what clears it (`data-toolbar-palette`).
+// The toggle alone in the strip's card, where an Editor has no strip (a read-only session): same place, same card,
+// so walking is one press away there too. Measured as the strip by what clears it (`data-toolbar-palette`).
 export function EditWalkStrip({ children }: { children: ReactNode }) {
   const scale = useUiScale('toolbar');
   return (

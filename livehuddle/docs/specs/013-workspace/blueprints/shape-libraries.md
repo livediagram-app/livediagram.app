@@ -134,7 +134,7 @@ CREATE TABLE shape_libraries (
 | An empty library after deleting every shape    | Kept, "0 shapes", hidden from My shapes (no items)                                                     |
 | A rename to the same name                      | Saved as is (no clash with itself)                                                                     |
 | A library deleted in another window            | The next list load drops it; a change against it gets 404 and reloads                                  |
-| Inserting on a read-only or locked tab         | The palette is absent read-only; a locked tab refuses, logged                                          |
+| Inserting on a read-only tab                   | The palette is absent read-only                                                                        |
 | An item that would pass `MAX_ELEMENTS_PER_TAB` | Refused, logged `[shape-libraries] insert refused` `{ reason: 'tab full' }`                            |
 | A drag carrying an unknown library or item     | Ignored, logged                                                                                        |
 | Thumbnail rendering throws                     | The tile shows its title; logged once per item                                                         |

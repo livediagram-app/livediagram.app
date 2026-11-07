@@ -181,7 +181,7 @@ export function useElementHelpers(opts: {
 
   // First element in `activeTab.elements` (DOM/z-order) that's in
   // the current selection. Used as the "primary" for toggle setters
-  // (lock, bold, etc.) — read its current value, apply the inverse
+  // (bold, italic, etc.): read its current value, apply the inverse
   // to every selected element. Returns null when nothing is selected.
   const selectionPrimary = (): Element | null => {
     const ids = currentSelectionIds();
@@ -212,10 +212,6 @@ export function useElementHelpers(opts: {
     const boxedPair = !!target && isBoxed(source) && isBoxed(target);
     const arrowPair = source.type === 'arrow' && target?.type === 'arrow';
     if (!target || source.id === target.id || !(boxedPair || arrowPair)) return;
-    // A lock holds an element's look as well as its place (docs/specs/008-canvas/format-panel.md "Locks"): a
-    // locked element and everything on a locked tab refuse the paint, and the brush stays
-    // loaded. A locked source still lends its look: copying it changes nothing.
-    if (target.locked === true || activeTab.locked === true) return;
     track('Element', 'Changed', 'FormatPainter');
     // Field projections live in lib/format-painter.ts so the list
     // of painted fields (and the rule that future additions to

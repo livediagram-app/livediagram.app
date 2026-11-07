@@ -156,7 +156,7 @@ export function useCanvasChromePanels({
   );
   // The tool-config panel (format), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Tidy Up popover belongs to its button: an embed or a locked-out session closes it.
+  // The Tidy Up popover belongs to its button: an embed or a session without it closes it.
   const tidyUp = props.tidyUp;
   const tidyUpShown = tidyUpOffered({
     actions: tidyUp,

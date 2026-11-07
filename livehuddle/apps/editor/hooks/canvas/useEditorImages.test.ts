@@ -50,54 +50,33 @@ describe('useEditorImages', () => {
   });
 });
 
-// docs/specs/009-elements/images.md "Locked images": a locked tab holds an image's place, not its picture, so the
-// picker still opens and the pick lands through the picture commit, which skips the tab lock.
-describe('an image on a locked tab', () => {
-  function mountLocked(picture?: { blocked: boolean }) {
+// docs/specs/009-elements/images.md "Placeholder rendering": the pick and its removal land through the page's commit.
+describe('a picture swap', () => {
+  it('opens the picker, and the pick and its removal land through commit', () => {
     const commit = vi.fn();
-    const commitPicture = vi.fn();
     const hook = renderHook(() =>
       useEditorImages({
-        editsBlocked: true,
+        editsBlocked: false,
         isReadOnly: false,
         embedMode: false,
         commit,
         documentId: 'doc-1',
         ownerId: 'user_1',
         sessionShareCode: null,
-        ...(picture ? { pictureBlocked: picture.blocked, commitPicture } : {}),
       }),
     );
-    return { hook, commit, commitPicture };
-  }
-
-  it('keeps the picker, and the pick and its removal land through the picture commit', () => {
-    const { hook, commit, commitPicture } = mountLocked({ blocked: false });
-    const open = hook.result.current.imageContext?.onOpenPicker;
-    expect(open).toBeTypeOf('function');
-    act(() => open!('img-1'));
+    act(() => hook.result.current.imageContext!.onOpenPicker!('img-1'));
     expect(hook.result.current.imagePickerOpenFor).toEqual({ forElementId: 'img-1' });
     act(() =>
       hook.result.current.applyImageToElement('img-1', { id: 'pic', width: 10, height: 10 }),
     );
     act(() => hook.result.current.removeImageFromElement('img-1'));
-    expect(commitPicture).toHaveBeenCalledTimes(2);
-    expect(commit).not.toHaveBeenCalled();
+    expect(commit).toHaveBeenCalledTimes(2);
   });
 
-  it('offers no picker to a session that may not swap pictures at all', () => {
-    const { hook } = mountLocked({ blocked: true });
-    expect(hook.result.current.imageContext?.onOpenPicker).toBeUndefined();
+  it('opens no picker while edits cannot land', () => {
+    const hook = mount('user_1', true);
     act(() => hook.result.current.openImagePickerFor('img-1'));
     expect(hook.result.current.imagePickerOpenFor).toBeNull();
-  });
-
-  it('falls back to the page guard and commit when the host passes neither', () => {
-    const { hook, commit } = mountLocked();
-    expect(hook.result.current.imageContext?.onOpenPicker).toBeUndefined();
-    act(() =>
-      hook.result.current.applyImageToElement('img-1', { id: 'pic', width: 10, height: 10 }),
-    );
-    expect(commit).toHaveBeenCalledOnce();
   });
 });

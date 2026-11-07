@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Tab } from '@livehuddle/document';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
-import { boxIn, lockedFlow, run } from '../fixtures/run';
+import { boxIn, run } from '../fixtures/run';
 
 describe('layout', () => {
   it('lays out only the selection from its top-left, sizes kept, the rest untouched', () => {
@@ -59,15 +59,8 @@ describe('layout', () => {
     expect(lines(run('layout t1'))).toEqual([]);
   });
 
-  it('refuses a locked box, and lays out nothing for arrows alone', () => {
-    expect(refused(run('layout n5 n6', lockedFlow('n6'))).code).toBe('element_locked');
+  it('lays out nothing for arrows alone', () => {
     expect(lines(run('layout a1'))).toEqual([]);
     expect(refused(run('layout nowhere')).code).toBe('target_not_found');
-  });
-
-  it('keeps a locked arrow as it was', () => {
-    expect(lines(run('layout n5 n6 n7 direction=right', lockedFlow('a6')))).not.toContain(
-      '~ a6  arrowStyle →straight',
-    );
   });
 });

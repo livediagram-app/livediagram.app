@@ -63,7 +63,7 @@ export function useTableCellInput({
   // on the element. Re-registered per render on purpose: the handler closes
   // over the live element / selection.
   useEffect(() => {
-    if (!selectedCell || editing || readOnly || element.locked || suspended) return;
+    if (!selectedCell || editing || readOnly || suspended) return;
     const { r, c } = selectedCell;
     const onKey = (e: KeyboardEvent) => {
       const ae = document.activeElement as HTMLElement | null;
@@ -135,7 +135,7 @@ export function useTableCellInput({
   // editor's document-level paste (which would drop copied elements /
   // images on the canvas instead).
   useEffect(() => {
-    if (!selectedCell || editing || readOnly || element.locked) return;
+    if (!selectedCell || editing || readOnly) return;
     const { r, c } = selectedCell;
     const onPaste = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement | null;

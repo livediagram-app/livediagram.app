@@ -24,8 +24,7 @@ export function ScreenReaderBody({ element }: { element: ShapeElement }) {
   // The call control's own rule for showing its Share button (CallStripGroup).
   const mayShare =
     !!actions && ((live && self.canShare) || self.canPreviewScreen || screen !== 'off');
-  const maySetLink =
-    editor?.can.level === 'edit' && element.locked !== true && !!editor.setScreenUrlOf;
+  const maySetLink = editor?.can.level === 'edit' && !!editor.setScreenUrlOf;
   const sharing = screen === 'on' || screen === 'starting';
   return (
     <div className="flex flex-col items-center gap-4 py-4 text-center">

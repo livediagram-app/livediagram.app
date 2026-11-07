@@ -1,5 +1,5 @@
 // `applyEditOperations` (docs/specs/024-agents/blueprints/edit-operations.md "The pipeline"): the
-// count, the tab lock, each operation in order against the working state, finalise and validate,
+// count, each operation in order against the working state, finalise and validate,
 // then the element ops, their inverse and the result lines. It stops at the first refusal and then
 // returns no tab: a changeset applies whole or not at all (I1). Pure and deterministic (I5): no
 // clock, no randomness beyond `options.makeId`.
@@ -20,7 +20,7 @@ import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
-import { tabLocked, tooLarge } from './rejections';
+import { tooLarge } from './rejections';
 import { EDIT_MAX_ERRORS } from './vocabulary';
 import { createState, type EditState } from './state';
 import type { ApplyOptions, ApplyOutcome, ApplyRejection, EditLog, EditOperation } from './types';
@@ -100,10 +100,6 @@ export function applyEditOperations(
   const log = options.log ?? silent;
   if (operations.length > CHANGESET_MAX_OPERATIONS)
     return rejected(log, tooLarge(operations.length), operations);
-  if (tab.locked) {
-    log('[edit-ops] locked', { operation: 0, op: 'none', scope: 'tab' });
-    return rejected(log, tabLocked(), operations);
-  }
   const state = createState(tab, options, log);
   // A target that matches nothing is skipped and the rest read on, so one answer names every such target and a long
   // changeset is fixed in one retry, not one per wrong ref; any other rejection stops at once, and is answered too.

@@ -120,10 +120,10 @@ describe('useStylePreview hover snapshot integrity', () => {
   });
 });
 
-// docs/specs/008-canvas/canvas-and-palette.md "Locking": a rotation leaves a locked element unchanged, whichever
-// control turns it.
+// docs/specs/008-canvas/canvas-and-palette.md "Rotation": a rotation tile turns every member of a selection, one saved
+// locked before locking left included.
 describe('useStylePreview rotation tiles', () => {
-  it('turn the unlocked members of a selection and leave a locked one', () => {
+  it('turn every member of a selection', () => {
     const free = createShape('square', 0, 0);
     const locked = { ...createShape('square', 200, 0), locked: true };
     let committed: Tab[] = [{ id: 'tab1', name: 'Tab', elements: [free, locked] }];
@@ -145,6 +145,6 @@ describe('useStylePreview rotation tiles', () => {
     preview.commitRotation(90);
     const [a, b] = committed[0]!.elements as (Element & { rotation?: number })[];
     expect(a!.rotation).toBe(90);
-    expect(b!.rotation).toBeUndefined();
+    expect(b!.rotation).toBe(90);
   });
 });

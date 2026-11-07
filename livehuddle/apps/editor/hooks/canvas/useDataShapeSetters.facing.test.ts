@@ -62,12 +62,11 @@ describe('a quarter turn', () => {
     expect(h.state.els[0]).toHaveProperty('chairFacing', 'n');
   });
 
-  it('leaves a locked piece, and changes nothing when nothing turns', () => {
-    const sofa = { ...createShape('sofa', 0, 0), id: 'sofa', locked: true } as Element;
+  it('changes nothing when nothing turns', () => {
     const plant = { ...createShape('plant', 0, 0), id: 'plant' } as Element;
-    const h = useTurnSetup([sofa, plant], ['sofa', 'plant']);
+    const h = useTurnSetup([plant], ['plant']);
     h.turnSelected(1);
     expect(h.state.commits).toBe(0);
-    expect(h.state.els[0]).toBe(sofa);
+    expect(h.state.els[0]).toBe(plant);
   });
 });

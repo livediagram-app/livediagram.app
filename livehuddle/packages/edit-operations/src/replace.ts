@@ -29,7 +29,7 @@ import {
 } from '@livehuddle/templates';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
-import { invalidResult, tabLocked } from './rejections';
+import { invalidResult } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
@@ -146,10 +146,6 @@ export function applyReplace(
     log('[edit-ops] rejected', { code: rejection.code, operation: 0, op: 'replace' });
     return { errors: [rejection] };
   };
-  if (tab?.locked) {
-    log('[edit-ops] locked', { operation: 0, op: 'replace', scope: 'tab' });
-    return refuse(tabLocked());
-  }
   const source = sourceOf(body);
   if (typeof source !== 'string') return refuse(source);
   const themeId = options.themeId ?? options.theme?.id ?? tab?.theme;

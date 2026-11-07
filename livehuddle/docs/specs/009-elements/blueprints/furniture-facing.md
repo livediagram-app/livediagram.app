@@ -14,9 +14,9 @@ Scope, by file:
 | `packages/document/src/rotation.ts`                                               | `supportsRotation` is false for every piece of furniture (`isFurnitureShape`)                 |
 | `packages/document/src/svg-render-faces.ts`                                       | The export draws `furnitureFrame(art, pieceFacing(el))`                                       |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx`                          | The canvas draws the same frame                                                               |
-| `../packages/workbench/src/components/canvas/TurnButtons.tsx`                     | Rotate Left / Right, disabled when locked                                                     |
+| `../packages/workbench/src/components/canvas/TurnButtons.tsx`                     | Rotate Left / Right                                                                           |
 | `apps/editor/components/canvas/SelectionPopover.tsx`, `MultiSelectionToolbar.tsx` | The pair after More and Edit Text, before Duplicate                                           |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                 | `turnSelection`: one commit, locked and non-turning pieces skipped, one telemetry event       |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                                 | `turnSelection`: one commit, non-turning pieces skipped, one telemetry event                  |
 | `apps/editor/lib/editor-commands-selection.ts`                                    | `rotate-left` / `rotate-right` when `selectionTurns`                                          |
 | `apps/editor/lib/placing-facing.ts`                                               | The facing of the piece being placed; `withPlacingFacing`, `placingSize`                      |
 | `apps/editor/hooks/canvas/usePlacingTurnKeys.ts`                                  | Space / Shift+Space, window capture phase, ahead of the pan and the label key                 |

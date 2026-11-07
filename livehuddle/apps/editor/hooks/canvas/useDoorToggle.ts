@@ -3,7 +3,7 @@ import { track } from '@/lib/telemetry';
 
 // Opening and closing a Door (docs/specs/009-elements/room-builder.md "Opening and closing"): the one function the
 // Avatar-mode click policy calls once `isNextToDoor` says the character can reach it. A swing is an ordinary edit
-// (one undo step, shared with the room like any field); an Editor swings any door, a Participant any unlocked one
+// (one undo step, shared with the room like any field); an Editor swings any door, a Participant any one
 // (its commit passes the participant rule, which lets `doorClosed` through and nothing else), a Viewer none.
 export function useDoorToggle({
   elements,
@@ -14,7 +14,7 @@ export function useDoorToggle({
   elements: readonly Element[];
   // `can.swingDoor` (lib/editor-capabilities.ts).
   canSwing: (el: Element) => boolean;
-  // The session's edit guard (a locked or loading tab, a Viewer).
+  // The session's edit guard (a loading tab, a Viewer).
   blocked: boolean;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
 }) {

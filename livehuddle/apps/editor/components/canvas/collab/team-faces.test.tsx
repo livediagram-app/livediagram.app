@@ -289,7 +289,6 @@ describe('the Suggestion Box', () => {
 
   it.each([
     ['box_full', 'The box is full. An Editor can empty it.'],
-    ['box_closed', 'This box is closed.'],
     ['other', "Couldn't drop it. Try again."],
   ])('says why a drop was refused: %s', async (code, words) => {
     api.apiDropSuggestion.mockRejectedValue(Object.assign(new Error('no'), { code }));
@@ -317,12 +316,18 @@ describe('the Suggestion Box', () => {
     expect(screen.getByText('Share this Space to collect suggestions.')).toBeTruthy();
   });
 
-  it('shows a locked box closed, and still lets an Editor read it', async () => {
+  // not-in-livehuddle.md "Element and Tab Locking": a box saved locked is never closed.
+  it('lets an Editor drop into and read a box saved locked', async () => {
     state.ctx = editor('edit');
     api.apiListSuggestions.mockResolvedValue([]);
-    render(<SuggestionBoxPanel element={box({ locked: true })} size="popover" />);
-    expect(screen.getByText('This box is closed.')).toBeTruthy();
-    expect(screen.queryByLabelText('Suggestion')).toBeNull();
+    render(
+      <SuggestionBoxPanel
+        element={box({ locked: true } as Partial<ShapeElement>)}
+        size="popover"
+      />,
+    );
+    expect(screen.queryByText('This box is closed.')).toBeNull();
+    expect(screen.getByLabelText('Suggestion')).toBeTruthy();
     await screen.findByText('No Notes Yet');
   });
 

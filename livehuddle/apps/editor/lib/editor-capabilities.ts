@@ -32,8 +32,6 @@ export type EditorCapabilities = {
 const never = () => false;
 const always = () => true;
 
-const isLocked = (el: Element) => (el as { locked?: boolean }).locked === true;
-
 export function resolveEditorCapabilities(input: {
   // The effective level: a preview reads as view.
   level: AccessLevel;
@@ -79,7 +77,7 @@ export function resolveEditorCapabilities(input: {
     resize: never,
     recolour: never,
     remove: never,
-    swingDoor: (el) => !isLocked(el),
+    swingDoor: always,
     alwaysWalks: true,
   };
 }
@@ -87,7 +85,7 @@ export function resolveEditorCapabilities(input: {
 /**
  * The guard a content-adding hook takes (images, the placement helpers a dragged palette
  * tile lands through): a Participant that may add content is held only by the session's own guard (`blocked`: a
- * locked tab or layer, a tab still loading); every other read-only session stays shut (`structureBlocked`).
+ * locked layer, a tab still loading); every other read-only session stays shut (`structureBlocked`).
  */
 export function contentAddBlocked(input: {
   participating: boolean;

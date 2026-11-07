@@ -1,14 +1,8 @@
 // The export's Doors and Corridors (docs/specs/009-elements/room-builder.md "Door types", corridor.md "Export and
-// agents"), drawn as the canvas draws them: a door's type shut or open (and its padlock when locked), a corridor's floor
-// and walls. Its own module beside svg-render-faces.ts, which routes to it.
+// agents"), drawn as the canvas draws them: a door's type shut or open, a corridor's floor and walls. Its own module
+// beside svg-render-faces.ts, which routes to it.
 
-import {
-  LOCKED_DOOR_SHADE,
-  doorArt,
-  doorLockCentre,
-  doorPoseTransform,
-  type DoorArtPart,
-} from './door-art';
+import { doorArt, doorPoseTransform, type DoorArtPart } from './door-art';
 import { corridorPaths } from './piece-variants';
 import { FURNITURE_PANEL_STROKE, FURNITURE_RAIL_OPACITY, FURNITURE_RAIL_STROKE } from './seating';
 import { ROOM_WALL } from './office';
@@ -51,45 +45,26 @@ export function doorPaintAttrs(p: DoorArtPart, floor: string, line: string): str
     case 'track':
       return `fill="none" stroke="${line}" stroke-width="1" opacity="${FURNITURE_RAIL_OPACITY}"`;
     case 'ink':
-      return p.tag === 'path'
-        ? `fill="none" stroke="${line}" stroke-width="1.5" stroke-linecap="round"`
-        : `fill="${line}"`;
-    case 'plate':
-      return `fill="${floor}" stroke="${line}" stroke-width="1.5"`;
+      return `fill="${line}"`;
   }
 }
 
 /** A Door as the canvas draws it, in the pose it is in. */
 export function doorSvg(el: Face, floor: string, stroke: string): string {
   const closed = el.doorClosed === true;
-  const locked = el.locked === true;
   const f = xmlEscape(floor);
   const l = xmlEscape(stroke);
-  const parts = doorArt(el.width, el.height, el.variant, locked).filter(
-    (p) => !(closed && p.openOnly),
-  );
-  const body = parts
-    .filter((p) => !p.lock)
+  const body = doorArt(el.width, el.height, el.variant)
+    .filter((p) => !(closed && p.openOnly))
     .map((p) => {
       const pose = p.motion
         ? doorPoseTransform(closed ? p.motion.shut : p.motion.open, p.motion.origin)
         : '';
       const at = pose ? ` transform="${pose}"` : '';
-      const shade =
-        locked && p.shades
-          ? `${geometry(p)}${at} fill="${l}" opacity="${LOCKED_DOOR_SHADE}"/>`
-          : '';
-      return `${geometry(p)}${at} ${doorPaintAttrs(p, f, l)}/>${shade}`;
+      return `${geometry(p)}${at} ${doorPaintAttrs(p, f, l)}/>`;
     })
     .join('');
-  // The padlock stands upright: turned back by the rotation the whole door is drawn at.
-  const lock = parts.filter((p) => p.lock);
-  const c = doorLockCentre(el.width, el.height);
-  const upright = el.rotation ? ` transform="rotate(${r2(-el.rotation)} ${c.x} ${c.y})"` : '';
-  const padlock = lock.length
-    ? `<g${upright}>${lock.map((p) => `${geometry(p)} ${doorPaintAttrs(p, f, l)}/>`).join('')}</g>`
-    : '';
-  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${body}${padlock}</g>`;
+  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${body}</g>`;
 }
 
 /** A Corridor: its floor in the fill and its walls stroked as a room's, butt at the open ends. */

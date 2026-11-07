@@ -15,8 +15,6 @@ export type TidyUpActions = {
   // Whether Auto-align is worth offering on the tab as the author has it (lib/tidy-verdict.ts): the
   // popover greys it out if it would change nothing or damage the drawing, with the reason.
   assess: () => CleanupVerdict;
-  // The active tab is locked: the popover shows Auto-align inert.
-  blocked: boolean;
 };
 
 // Whether the cluster shows the button: outside an embed, and only for a session the editor handed

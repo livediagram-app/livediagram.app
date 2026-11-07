@@ -43,12 +43,12 @@ Derived from [Door types](../room-builder.md#door-types), [Room presets](../offi
 | `packages/document/src/room-preset-shapes.ts`                     | `ROOM_PRESETS`, `roomAsPreset`, the point a shaped preset's Door snaps to (`roomPresetDoorAt`), `outlineNameAlign`                   |
 | `packages/document/src/room-presets.ts`                           | `ROOM_PRESET_LAYOUTS`: each furnished preset's pieces; `roomPresetCompanions` places them, spread with the room                      |
 | `packages/document/src/door-art.ts`                               | `doorArt(width, height, variant)`: each type's parts with their open and shut poses, for the canvas and the export                   |
-| `packages/document/src/svg-render-doors.ts`                       | The export's `doorSvg` (over `doorArt`, padlock and shading) and `corridorSvg` (over `corridorPaths`)                                |
+| `packages/document/src/svg-render-doors.ts`                       | The export's `doorSvg` (over `doorArt`) and `corridorSvg` (over `corridorPaths`)                                                     |
 | `packages/document/src/rug-art.ts`                                | `rugParts(width, height, variant)`: each patterned rug drawn to its size, in `tint`, `sheen` and `dye` parts                         |
 | `../packages/avatar/src/furniture-art.ts`                         | The `tint`, `sheen` and `dye` part roles and their opacities (`FURNITURE_WEAVE`), re-exported by `seating.ts`                        |
 | `packages/document/src/room-builder.ts`                           | `wallsOf` and `doorOnRoom` read a corridor's walls, so doors snap onto it, ride it and follow its resize                             |
 | `packages/document/src/validate-shape.ts`, `element-fields.ts`    | `variant` validated (`isPieceVariant`) and listed                                                                                    |
-| `apps/editor/components/canvas/collab/RoomBuilderViews.tsx`       | `DoorView` draws `doorArt` with the padlock when locked; `CorridorView`                                                              |
+| `apps/editor/components/canvas/collab/RoomBuilderViews.tsx`       | `DoorView` draws `doorArt`; `CorridorView`                                                                                           |
 | `apps/editor/components/canvas/PieceArt.tsx`, `FurnitureView.tsx` | A patterned rug draws `rugParts` at its own size; the weave roles paint unstroked                                                    |
 | `apps/editor/components/palette/palette-floor-presets.tsx`        | The Room, Corridor, Door and Rug preset tiles and their glyphs                                                                       |
 | `apps/editor/components/canvas/collab/PlacementPreview.tsx`       | The preview draws the armed or dragged preset (its `variant`)                                                                        |
@@ -60,8 +60,6 @@ Notes:
 - A door's parts carry `open` and `shut` poses (`rotate` about an origin, or a `dx` slide); the canvas sets the pose
   as a CSS transform under the 180 ms door transition (`.lh-door-leaf`, `.lh-door-swing`), the export bakes the current
   one in. Paints are data too: a revolving drum's floor is `pane` (the glass wash, unoutlined).
-- A locked door's padlock parts carry `lock` and come last; both renderers draw them in a group turned back by the
-  door's rotation about `doorLockCentre`, so it stands upright. `BoxedElementView` skips the canvas lock badge on a Door.
 - `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.

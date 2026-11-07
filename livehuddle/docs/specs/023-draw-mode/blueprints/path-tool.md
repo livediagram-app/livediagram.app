@@ -163,7 +163,7 @@ and Alt first (see [Editing while drawing](#editing-while-drawing-usepathdrawges
 3. Within that radius of the **last** node (later than a double press): a drag moves it; a release
    without one makes it a **cusp**: its `handleOut` is removed (mode `corner`).
 4. Within that radius of any other placed node: a drag moves it; a click does nothing (P18).
-5. No draft and within that radius of an **end node of an open path** on the tab (unlocked, not being edited): **continue**. Its anchors, in world px (rotation baked in, P4), are
+5. No draft and within that radius of an **end node of an open path** on the tab (not being edited): **continue**. Its anchors, in world px (rotation baked in, P4), are
    the draft, reversed when the start node was pressed; `continuing = { id, reversed }`; `placed = 0`.
 6. Otherwise **place** a node at `p` (Shift: `constrain45(last, p)`), mode `corner`, no handles; the
    drag that follows shapes it. The first node of a new draft clears the selection.
@@ -215,11 +215,11 @@ closed"; a finish "Path finished".
 - **In**: `beginEdit(id)` on a path sets `editingId`: a double-click (or double-tap: the element's
   press ledger pairs two presses, `useBoxedElementGestures`) with Select, a Space-tap, **Edit
   points** in the selection toolbar (`SelectionPopover.onEditPoints`, a path only), and `Enter`
-  with exactly one unlocked path selected and nothing editing (the gesture's own keydown
+  with exactly one path selected and nothing editing (the gesture's own keydown
   listener). A path that lands from the Path tool is selected (the tool stays in hand), so the
   same ways reach it at once; `openPathEdit(id)` (editor side) puts a held Path tool down first.
   **Out**: `Escape` with no nodes selected, `Enter`, **Done**, a click (no drag) on empty space
-  (which also deselects, P15), the dock's Select, a tool picked, the path deleted or locked, the tab
+  (which also deselects, P15), the dock's Select, a tool picked, the path deleted, the tab
   switched: `onCancelEdit()`. Undo and redo keep edit mode open (the path's reopens once the
   editor's undo has run, P16).
 - `PathEditState = { selected: ReadonlySet<number>, drag, draft, toolbarAt }` where `draft` is the
@@ -339,7 +339,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 - Created in Ink by name, unfilled: `boardShape(createPath(...))` writes `penColour: 'ink'` and
   `fillColor: 'transparent'` (the Path tool is a whiteboard tool), then the remembered whiteboard style; it
   looks the same wherever it is opened ([Editor modes](../../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
-- Quick style: `isQuickStyleTarget` includes an unlocked path. Sections: stroke, width, style (solid,
+- Quick style: `isQuickStyleTarget` includes a path. Sections: stroke, width, style (solid,
   dashed, dotted) always; background when `closed`. Apply and clear as for a shape.
 - Style memory kind `path` (`board:path` on a whiteboard), fields `strokeColor`, `strokeSwatch`,
   `fillColor`, `fillSwatch`, `strokeWidth`, `strokeStyle`.
@@ -429,13 +429,13 @@ paths ship with the validator, the OpenAPI schema and the MCP's type list in one
 - A place press within the hit radius of the last node never adds a node.
 - Draft of 1 node, then Enter / Escape / tool change: dropped, nothing committed.
 - A close press with 2 nodes and no handle, released without a drag: ignored (P3).
-- The continued element deleted or locked by a peer mid-draft: committed as a new path.
-- The edited element deleted or locked by a peer: edit mode leaves.
+- The continued element deleted by a peer mid-draft: committed as a new path.
+- The edited element deleted by a peer: edit mode leaves.
 - A rotated path: edited in its own frame; continuing bakes the rotation in (P4).
 - A horizontal or vertical straight path: a 1 px box dimension, nodes normalise against it.
 - Zoom or pan mid-draft: every point converts with its event's rect and zoom.
 - `pointercancel` mid-drag: the drag ends without a commit (edit) or keeps the placed node (draw).
-- Read-only, locked tab, tab loading: the dock hides the tool; commits refuse (`editsBlocked`).
+- Read-only, tab loading: the dock hides the tool; commits refuse (`editsBlocked`).
 - A path pasted onto a board without the tool: renders, selects, styles and edits; the tool is not offered.
 
 ## Security and trust

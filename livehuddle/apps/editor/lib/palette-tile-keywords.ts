@@ -56,7 +56,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office boardroom open plan l-shaped octagon preset',
   corridor:
     'corridor hallway hall passage walkway junction corner crossroads tee walls open ends join rooms',
-  door: 'door doorway entrance exit way in opening wall gap room builder double sliding revolving glass locked padlock',
+  door: 'door doorway entrance exit way in opening wall gap room builder double sliding revolving glass',
   'meeting-table': 'meeting table conference boardroom seats chairs sit together team office',
   plant: 'plant pot potted green leaves foliage decoration office scenery',
   bookshelf: 'bookshelf books shelves library bookcase office scenery',

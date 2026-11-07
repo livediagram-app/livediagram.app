@@ -51,11 +51,6 @@ describe('piece-timer', () => {
     ).toEqual(watch);
   });
 
-  it('runs on a locked piece: a lock fixes it in place, not its clock', () => {
-    const locked = piece('timer', { locked: true });
-    expect((applyElementDelta(locked, press(running)) as ShapeElement).pieceTimer).toEqual(running);
-  });
-
   it('keeps identity when nothing changes, and stores only the four fields', () => {
     const started = applyElementDelta(piece('timer'), press(running));
     expect(applyElementDelta(started, press({ ...running }))).toBe(started);

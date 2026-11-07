@@ -6,7 +6,7 @@ import type { CommandContext, CommandHandlers, EditorCommand } from './editor-co
 // Split out of buildEditorCommands, which was one 250-line function assembling
 // every command in the editor. This is the block that depends on the
 // SELECTION rather than on the document, the tab or the history: duplicate,
-// delete, lock, reorder, rotate, note, comment, animation, and the status
+// delete, reorder, rotate, note, comment, animation, and the status
 // markers.
 //
 // It needs nothing from the rest of that function beyond the context and the
@@ -28,7 +28,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
   const hasSelection = ctx.selectionCount > 0;
   const isSingle = ctx.selectionCount === 1;
   // --- Selection commands. Ranked first so they stay in context with what's
-  // selected. Delete / Duplicate / Lock / reorder work for single + multi.
+  // selected. Delete / Duplicate / reorder work for single + multi.
   if (hasSelection) {
     out.push({
       id: 'delete',
@@ -41,12 +41,6 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
       name: 'Duplicate Selection',
       keywords: 'duplicate copy clone',
       run: h.duplicateSelection,
-    });
-    out.push({
-      id: 'lock',
-      name: 'Lock / Unlock Selection',
-      keywords: 'lock unlock freeze protect',
-      run: h.toggleLockSelection,
     });
     out.push({
       id: 'bring-to-front',

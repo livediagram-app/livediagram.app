@@ -61,7 +61,6 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   it.
 - **On its own.** Copying, duplicating or deleting a badge on its own does just that; a pasted lone badge is
   detached. A badge whose host no longer exists (a peer deleted it, an import dropped it) is detached where it is.
-- **Locking.** A locked host still carries its badges; a locked badge stays attached and is not detached by a drag.
 
 Attachment is settled in one place, as every change to the board is committed, so every way a host moves, resizes,
 turns or is deleted (a drag, a nudge, a layout, an undo, an agent's edit) carries its badges with no gesture of its

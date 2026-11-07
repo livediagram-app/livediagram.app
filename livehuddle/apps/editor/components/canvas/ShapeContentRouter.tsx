@@ -58,7 +58,6 @@ type ShapeContentRouterProps = Pick<
   accent: string;
   textColor: string;
   remoteBorderColor: string | null;
-  isLocked: boolean;
   svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
   // Filter-based animation class for silhouette content (a sticker's art).
   artAnimClass: string | undefined;
@@ -96,7 +95,6 @@ export function ShapeContentRouter({
   accent,
   textColor,
   remoteBorderColor,
-  isLocked,
   readOnly,
   onToggleChecklistItem,
   chartPalette,
@@ -227,7 +225,7 @@ export function ShapeContentRouter({
       fill={element.fillColor ?? defaultFillColor(element, surface)}
       textColor={textColor}
       fontFamily={fontFamily}
-      editable={!readOnly && !isLocked}
+      editable={!readOnly}
       onToggle={onToggleChecklistItem}
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (

@@ -2,7 +2,7 @@
 // pipeline"): the tab as the operations have left it so far, and what they touched, created,
 // resolved and removed. Operations write on this copy; the input tab is never mutated (I1).
 
-import type { EditRejection, EditWarning } from '@livehuddle/api-schema';
+import type { EditWarning } from '@livehuddle/api-schema';
 import {
   computeRefs,
   isSlugId,
@@ -18,11 +18,9 @@ import {
   type RefTable,
   type Tab,
 } from '@livehuddle/document';
-import { lockedIds } from './locks';
 import type { Naming } from './element-text';
 import type { Fit } from './labels';
-import { elementLocked, type LockReason } from './rejections';
-import type { ApplyOptions, EditLog, EditOperation } from './types';
+import type { ApplyOptions, EditLog } from './types';
 import { RESERVED_WORDS } from './vocabulary';
 
 // The first operation that touched an element, and the fields operations wrote on it in the order
@@ -67,7 +65,6 @@ export type EditState = {
   readonly targetSet: Set<ElementId>;
   readonly removed: Map<ElementId, Removal>;
   readonly warnings: EditWarning[];
-  readonly locked: ReadonlyMap<ElementId, LockReason>;
   readonly makeId: () => string;
   readonly log: EditLog;
   // The owner's selection; null when the room was not read.
@@ -111,7 +108,6 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     targetSet: new Set(),
     removed: new Map(),
     warnings: [],
-    locked: lockedIds(tab),
     makeId: options.makeId ?? (() => crypto.randomUUID()),
     log,
     selected: options.selected === undefined ? [] : options.selected,
@@ -278,16 +274,4 @@ export function noteTarget(state: EditState, id: ElementId): void {
   if (!state.before.has(id) || state.targetSet.has(id)) return;
   state.targetSet.add(id);
   state.targets.push(id);
-}
-
-// The refusal of an operation that would change a locked element, logged with its scope.
-export function refuseLocked(
-  state: EditState,
-  op: EditOperation['op'],
-  operation: number,
-  el: Element,
-  lock: LockReason,
-): EditRejection {
-  state.log('[edit-ops] locked', { operation, op, scope: lock.scope });
-  return elementLocked(operation, el, lock);
 }
