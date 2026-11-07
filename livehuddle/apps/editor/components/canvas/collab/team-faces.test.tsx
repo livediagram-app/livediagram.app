@@ -182,6 +182,12 @@ describe('the Calendar Wall month', () => {
     expect(track).toHaveBeenCalledWith('Element', 'Changed', 'Calendar-wall');
   });
 
+  it('dates a note card day then month, as the calendar does', () => {
+    open(piece('calendar-wall', { noticeNotes: [note('a', '2026-11-20', ADDER, NOW)] }));
+    fireEvent.click(screen.getByRole('button', { name: '20 November, 1 note' }));
+    expect(screen.getByText('Sam · 7 Nov')).toBeTruthy();
+  });
+
   it('pins a titled, coloured note', () => {
     open(piece('calendar-wall'));
     fireEvent.change(screen.getByLabelText('Note title'), { target: { value: 'Offsite' } });

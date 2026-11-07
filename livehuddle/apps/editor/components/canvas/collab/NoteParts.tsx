@@ -12,12 +12,11 @@ import {
   type NoticeNote,
 } from '@livehuddle/document';
 import { Tooltip } from '@livehuddle/ui';
+import { shortDayAt } from '@/lib/calendar-month';
 
 // The parts every piece that holds notes shares (the Notice Board, docs/specs/009-elements/social-pieces.md; the
 // Calendar Wall, team-pieces.md): the type for the two ways they open, the add box and a note's card, so both read the
 // same and a change to one is a change to both.
-
-const DATE = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' });
 
 // The small popover by a piece's button, and the reader while walking (docs/specs/008-canvas/avatar-mode.md
 // "The reader"), at a size that reads on any screen.
@@ -159,7 +158,7 @@ export function NoteCard({
       <p className={`whitespace-pre-wrap break-words ${z.body}`}>{note.text}</p>
       <div className={`mt-1 flex items-center gap-2 ${z.meta} text-slate-600`}>
         <span className="truncate">
-          {note.author} · {DATE.format(note.at)}
+          {note.author} · {shortDayAt(note.at)}
         </span>
         {onUnpin ? (
           <button

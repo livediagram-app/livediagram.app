@@ -7,6 +7,7 @@ import {
   longDay,
   monthTitle,
   shortDay,
+  shortDayAt,
   stepMonth,
 } from './calendar-month';
 
@@ -66,5 +67,13 @@ describe('stepping and naming months', () => {
     expect(monthTitle({ year: 2026, month: 10 })).toBe('November 2026');
     expect(shortDay('2026-11-05')).toBe('5 Nov');
     expect(longDay('2026-11-05')).toBe('5 November');
+  });
+});
+
+describe('one short date for every team piece', () => {
+  it('reads a pin time as day then month, whatever the browser locale', () => {
+    // Under LANG=en_US the browser default would read "Nov 7"; every piece shows "7 Nov".
+    expect(shortDayAt(new Date(2026, 10, 7, 23, 30).getTime())).toBe('7 Nov');
+    expect(shortDayAt(new Date(2026, 0, 1, 0, 5).getTime())).toBe('1 Jan');
   });
 });

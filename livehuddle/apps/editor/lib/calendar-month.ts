@@ -1,3 +1,5 @@
+import { localDay } from '@livehuddle/document';
+
 // The Calendar Wall's month (docs/specs/009-elements/team-pieces.md "Calendar Wall"): six weeks of days, Monday first,
 // so any month fits the same ruled grid on every screen, each day named `YYYY-MM-DD` as a note's day is. Pure.
 
@@ -69,7 +71,7 @@ export function monthTitle({ year, month }: MonthCursor): string {
   return MONTH.format(Date.UTC(year, month, 1));
 }
 
-/** "5 Nov", for a button and a note's day. */
+/** "5 Nov", for a button, a note's day and a suggestion's: the one short date every team piece shows. */
 export function shortDay(day: string): string {
   return SHORT.format(utcOf(day));
 }
@@ -77,4 +79,9 @@ export function shortDay(day: string): string {
 /** "5 November", for a screen reader. */
 export function longDay(day: string): string {
   return LONG.format(utcOf(day));
+}
+
+/** "5 Nov" for a moment on this screen's clock: when a note was pinned, read as the day it fell on here. */
+export function shortDayAt(ms: number): string {
+  return shortDay(localDay(ms));
 }
