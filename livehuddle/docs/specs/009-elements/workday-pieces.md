@@ -18,27 +18,27 @@ and like being in.
 
 ## Where they live
 
-| Category       | Tiles, in palette order                                                         |
-| -------------- | ------------------------------------------------------------------------------- |
-| **Rooms**      | Phone Booth, Nap Pod and Reception Desk after the Office Pod (the Floor group)  |
-| **Seating**    | Hot Desk and Standing Desk after the Reading Nook                               |
-| **Recreation** | Treadmill, Weight Bench and Pet Bed after the Fireplace                         |
+| Category       | Tiles, in palette order                                                        |
+| -------------- | ------------------------------------------------------------------------------ |
+| **Rooms**      | Phone Booth, Nap Pod and Reception Desk after the Office Pod (the Floor group) |
+| **Seating**    | Hot Desk and Standing Desk after the Reading Nook                              |
+| **Recreation** | Treadmill, Weight Bench and Pet Bed after the Fireplace                        |
 
 Shape kinds: `nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-desk`, `hot-desk`, `pet-bed`,
 `reception-desk`.
 
 ## How each one walks
 
-| Piece          | Default size | Walking                                                                                  |
-| -------------- | ------------ | ---------------------------------------------------------------------------------------- |
-| Nap Pod        | 120 × 112    | One seat, reclined in the pod, the sitter facing down the canvas; sets **Focusing**      |
+| Piece          | Default size | Walking                                                                                    |
+| -------------- | ------------ | ------------------------------------------------------------------------------------------ |
+| Nap Pod        | 120 × 112    | One seat, reclined in the pod, the sitter facing down the canvas; sets **Focusing**        |
 | Treadmill      | 72 × 112     | One spot on its belt, standing, facing up the canvas (at the console); sets **On a Break** |
-| Weight Bench   | 136 × 88     | One seat on the bench, facing down the canvas; sets **On a Break**                       |
-| Phone Booth    | 80 × 136     | One seat, facing down the canvas through the glass; a call of its own; sets **Busy**     |
-| Standing Desk  | 112 × 104    | One spot in front of the desk, standing, facing up the canvas (at the monitor)          |
-| Hot Desk       | 120 × 112    | One seat in front of the desk, facing up the canvas; shows its sitter's name             |
-| Pet Bed        | 72 × 48      | Never blocks, never a destination: you walk over it; its dog wanders the room            |
-| Reception Desk | 200 × 112    | Scenery: its counter blocks; standing in front of it shows **Welcome**                   |
+| Weight Bench   | 136 × 88     | One seat on the bench, facing down the canvas; sets **On a Break**                         |
+| Phone Booth    | 80 × 136     | One seat, facing down the canvas through the glass; a call of its own; sets **Busy**       |
+| Standing Desk  | 112 × 104    | One spot in front of the desk, standing, facing up the canvas (at the monitor)             |
+| Hot Desk       | 120 × 112    | One seat in front of the desk, facing up the canvas; shows its sitter's name               |
+| Pet Bed        | 72 × 48      | Never blocks, never a destination: you walk over it; its dog wanders the room              |
+| Reception Desk | 200 × 112    | Scenery: its counter blocks; standing in front of it shows **Welcome**                     |
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to take its seat, one person a seat, a
   taken one stops you beside it; who sits is presence, never stored; two people who sat at once are settled by the
@@ -52,11 +52,11 @@ Shape kinds: `nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-de
 
 Your [status](../008-canvas/avatar-mode.md#status) can come from where you are, not only from the panel:
 
-| Where you sit           | Status shows    | Token   |
-| ----------------------- | --------------- | ------- |
-| A Nap Pod               | **Focusing**    | `focus` |
+| Where you sit               | Status shows   | Token   |
+| --------------------------- | -------------- | ------- |
+| A Nap Pod                   | **Focusing**   | `focus` |
 | A Treadmill, a Weight Bench | **On a Break** | `break` |
-| A Phone Booth           | **Busy**        | `busy`  |
+| A Phone Booth               | **Busy**       | `busy`  |
 
 - **It shows while you sit there.** Standing up, being stood up by an earlier claim, the piece being deleted or
   hidden, and leaving Avatar mode all show your own status again, the one you had before you sat. The piece's status
@@ -148,9 +148,9 @@ plant behind the counter, and a brass service bell on the counter.
   above it for you, for as long as you stand there, as the [Arcade Machine](social-pieces.md#arcade-machine)'s
   Insert Coin does. Nobody else sees your bubble.
 - **The bubble holds a Ring Bell button.** Pressing it rings the bell: you hear a bright ding, the bell on the desk
-  jumps, and so does it for everyone who hears it.
+  rings out (two waves spread from it and fade), and so does it for everyone who hears it.
 - **Who hears it**: everyone walking whose character stands in the desk's room (the room it stands in, or beside, as a
-  Screen belongs to one), or, for a desk in no room, within 480 px of it. They hear the ding, see the bell jump, and see
+  Screen belongs to one), or, for a desk in no room, within 480 px of it. They hear the ding, see the bell ring out, and see
   a toast, **"Sam rang the bell at Reception"**, unless they are on Do Not Disturb, who are not rung. You do not get the
   toast for your own ring.
 - **One ring per 5 seconds per person**: the button reads **Rang** for five seconds, and the room drops a second ring
@@ -167,10 +167,10 @@ statuses ride presence, sitting is the seat claim, the dog is the clock.
 
 ## Share roles
 
-| Who             | May                                                                                                   |
-| --------------- | ----------------------------------------------------------------------------------------------------- |
-| **Editor**      | Places, moves and deletes every piece; sits, stands, uses, rings and pats like everyone                |
-| **Participant** | Has no palette, so places none; sits in every piece (and gets its status), rings the bell, pats the dog |
+| Who             | May                                                                                                                                            |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Places, moves and deletes every piece; sits, stands, uses, rings and pats like everyone                                                        |
+| **Participant** | Has no palette, so places none; sits in every piece (and gets its status), rings the bell, pats the dog                                        |
 | **Viewer**      | Walks, so sits in every piece and gets its status (presence), rings the bell (a visitor arriving is who a reception bell is for), pats the dog |
 
 A Viewer rings the bell for the same reason a Viewer knocks: it is presence, not content, and a visitor at the front
@@ -187,17 +187,19 @@ desk is exactly who it is for. The room's throttle keeps anyone from ringing it 
 
 - **Virtual Office**: a Reception Desk in the Reception, and a Nap Pod in the Focus Room.
 - **Coworking Space**: each of its two booths (a small room of its own) holds a Phone Booth in place of its chair.
-- **Hotel and Suites**: the Lobby's reception is a Reception Desk in place of its two desks; the Spa Room gains a gym
-  corner (a Treadmill and a Weight Bench) beside its two pods.
-- **Co-working Tower**: the Quiet Room gains a Nap Pod; the Hot Desks room's near row of each island are Hot Desks.
-- **Startup HQ**: the Studio's second island becomes two Standing Desks at its near row, and a Pet Bed in the aisle
-  between the islands, where the office dog lives.
+- **Hotel and Suites**: the Lobby's reception is a Reception Desk in place of its two desks; the Spa Room gains a
+  Treadmill in its corner beside its two pods (a Weight Bench is too wide for the corner, so it is only in the palette).
+- **Co-working Tower**: the Quiet Room gains a Nap Pod beside its desks; the Hot Desks room's third island is four Hot
+  Desks, two rows back to back that face the same way.
+- **Startup HQ**: the back row of the Studio's second island stands, at two Standing Desks, and a Pet Bed lies in the
+  aisle between the islands, where the office dog lives.
 - The Tower's Phone Booths room keeps its six Office Pods (a call for two each): the Phone Booth piece is for one.
 
 ## Export
 
 An export draws each piece's art as the canvas does, in the paper's ink: the Treadmill's belt still, the booth's lamp
-unlit, the Hot Desk's card blank, the dog asleep in its bed, the Reception Desk without its bubble.
+unlit, the Hot Desk's card blank, the Pet Bed with its bone and no dog (the dog is live, so it is the canvas's alone), the
+Reception Desk without its bubble.
 
 ## Not in scope
 

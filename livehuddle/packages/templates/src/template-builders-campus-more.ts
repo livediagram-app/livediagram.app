@@ -233,7 +233,13 @@ const HQ_ROOMS: CampusRoom[] = [
     pieces: [
       // Two islands of desks, 120 px apart, and the studio's shelf, coffee and team board along the front.
       ...island(30, 60),
-      ...island(406, 60),
+      // The second island's back row stands, at two Standing Desks level with the desks they back onto, and the
+      // office dog's bed lies in the aisle between the islands (docs/specs/009-elements/workday-pieces.md).
+      { kind: 'standing-desk', x: 406, y: 68 },
+      { kind: 'standing-desk', x: 534, y: 68 },
+      { kind: 'desk', x: 406, y: 172, facing: 's' },
+      { kind: 'desk', x: 542, y: 172, facing: 's' },
+      { kind: 'pet-bed', x: 306, y: 260 },
       { kind: 'bookshelf', x: 30, y: 330 },
       { kind: 'coffee-machine', x: 180, y: 360 },
       { kind: 'notice-board', x: 470, y: 330 },

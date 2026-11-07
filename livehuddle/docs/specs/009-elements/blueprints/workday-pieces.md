@@ -4,36 +4,36 @@ Derived from [Workday pieces](../workday-pieces.md).
 
 ## Files
 
-| File                                                            | Role                                                                                                   |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/office-workday.ts`                       | The drawings (`OFFICE_WORKDAY_ART`), `WORKDAY_TONES`, `PIECE_STATUS`, `isStandingSeatShape`, the bed's sleeping dog |
-| `packages/document/src/pet-wander.ts`                           | The dog's legs: `petLeg`, `petSpotAt`, `petArea`, the seeded generator; pure                            |
-| `packages/document/src/call-geometry.ts`                        | `roomZones` adds each Phone Booth's floor (`boothInterior`) as a zone                                   |
-| `packages/document/src/office.ts`                               | The eight kinds join `OfficeKind` and `OFFICE_ART`                                                      |
-| `../packages/avatar/src/office-geometry.ts`                     | The six seats join `FixedSeatKind`; the reception desk's footprint; `boothInterior`                    |
-| `../packages/avatar/src/seats.ts`                               | `NAP_POD_SEATS`, `TREADMILL_SEATS`, `WEIGHT_BENCH_SEATS`, `PHONE_BOOTH_SEATS`, `STANDING_DESK_SEATS`, `HOT_DESK_SEATS` |
-| `../packages/avatar/src/status.ts`                              | `AVATAR_BREAK_STATUS`, `AVATAR_BUSY_STATUS`; `AVATAR_CALL_STATUSES` offers seven                       |
-| `../packages/avatar/src/seat-status.ts`                         | `shownStatus`: the status that shows from yours, the piece's and when you picked                       |
-| `../packages/api-schema/src/avatar.ts`                          | `break` and `busy` join `AVATAR_STATUS_IDS`                                                             |
-| `packages/api-schema/src/bell.ts`                               | `AvatarBellOp`, `parseAvatarBell`, `BELL_THROTTLE_MS`                                                   |
-| `apps/api/src/room-op-gate.ts`, `document-room/document-room.ts` | The bell is presence from any level; throttled per sender (`createKnockThrottle(BELL_THROTTLE_MS)`)   |
-| `apps/editor/components/canvas/useSeatStatus.ts`                | Wraps `useAvatarStatus`: the shown status, and the pick that records the seat it was made on            |
-| `apps/editor/components/canvas/collab/WorkdayFaces.tsx`         | The Hot Desk's name card, the Reception Desk's Welcome bubble and bell, the dog                         |
-| `apps/editor/components/canvas/collab/WorkdayArt.tsx`           | The live parts over the art: the treadmill's running belt, the booth's lamp                            |
-| `apps/editor/lib/office/reception-bell.ts`                      | The ringer store, the bell inbox, earshot, `useReceptionBell`; the ding                                 |
-| `apps/editor/lib/office/useWorkdayPieces.ts`                    | Which reception desk your feet stand at (`useAtReception`)                                              |
-| `apps/editor/app/workday-motion.css`                            | The belt, the trot, the wag, the heart and the bell's jump; none under reduced motion                  |
+| File                                                             | Role                                                                                                                                                                                          |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/office-workday.ts`                        | The drawings (`OFFICE_WORKDAY_ART`), `WORKDAY_TONES`, and where the live parts go (`TREADMILL_BELT`, `PHONE_BOOTH_LAMP`, `HOT_DESK_CARD`, `RECEPTION_BELL`)                                   |
+| `packages/document/src/pet-wander.ts`                            | The dog's legs: `petLeg`, `petLegAt`, `msToNextLeg`, `petArea`, `hashId`, `seeded`; pure                                                                                                      |
+| `packages/document/src/call-geometry.ts`                         | `roomZones` adds each Phone Booth's floor (`boothInterior`) as a zone                                                                                                                         |
+| `packages/document/src/office.ts`                                | The eight kinds join `OfficeKind` and `OFFICE_ART`                                                                                                                                            |
+| `../packages/avatar/src/office-geometry.ts`                      | The six seats join `FixedSeatKind`; `isStandingSeatShape`; the reception desk's footprint                                                                                                     |
+| `../packages/avatar/src/booth.ts`                                | `boothInterior`: the booth's floor, its call zone                                                                                                                                             |
+| `../packages/avatar/src/seats.ts`                                | `NAP_POD_SEATS`, `TREADMILL_SEATS`, `WEIGHT_BENCH_SEATS`, `PHONE_BOOTH_SEATS`, `STANDING_DESK_SEATS`, `HOT_DESK_SEATS`                                                                        |
+| `../packages/avatar/src/status.ts`                               | `AVATAR_BREAK_STATUS`, `AVATAR_BUSY_STATUS`; `AVATAR_CALL_STATUSES` offers seven                                                                                                              |
+| `../packages/avatar/src/seat-status.ts`                          | `pieceStatusOf`, `shownStatus`: the status that shows from yours, the piece's and when you picked                                                                                             |
+| `../packages/api-schema/src/avatar.ts`                           | `break` and `busy` join `AVATAR_STATUS_IDS`                                                                                                                                                   |
+| `packages/api-schema/src/bell.ts`                                | `AvatarBellOp`, `parseAvatarBell`, `BELL_THROTTLE_MS`                                                                                                                                         |
+| `apps/api/src/room-op-gate.ts`, `document-room/document-room.ts` | The bell is presence from any level; throttled per sender (`createKnockThrottle(BELL_THROTTLE_MS)`)                                                                                           |
+| `apps/editor/components/canvas/useSeatStatus.ts`                 | Wraps `useAvatarStatus`: the shown status, and the pick that records the seat it was made on                                                                                                  |
+| `apps/editor/components/canvas/collab/WorkdayFaces.tsx`          | `WorkdayArt` in the piece's grid (the running belt, the booth's lamp, the Hot Desk's name card, the bell's waves) and `WorkdayFace` over its box (the Welcome bubble with Ring Bell, the dog) |
+| `apps/editor/lib/office/reception-bell.ts`                       | The ringer store, the bell inbox, earshot, `useReceptionBell`; the ding                                                                                                                       |
+| `apps/editor/lib/office/useWorkdayPieces.ts`                     | Which reception desk your feet stand at (`useAtReception`), and each bed's area (`usePetArea`)                                                                                                |
+| `apps/editor/app/workday-motion.css`                             | The belt, the trot, the wag, the heart and the bell's waves; none under reduced motion                                                                                                        |
 
 ## Domain and naming
 
-| Term            | Identifier                             | Meaning                                                                  |
-| --------------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| Piece status    | `PIECE_STATUS`, `pieceStatusOf(kind)`  | The status a seat piece shows while you sit: `focus`, `break`, `busy`    |
-| Shown status    | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                               |
-| Standing seat   | `isStandingSeatShape`                  | Treadmill, standing desk: held like a seat, drawn standing               |
-| Leg             | `petLeg(id, n)`                        | One 9 s step of the dog: a spot, or the bed (every fourth)               |
-| Pet area        | `petArea(bed, rooms)`                  | The innermost room's interior holding the bed's middle, else the circle  |
-| Earshot         | `bellEarshot`                          | Your zone and each desk's room, for whether a ring reaches you           |
+| Term          | Identifier                                    | Meaning                                                                 |
+| ------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
+| Piece status  | `pieceStatusOf(kind)`                         | The status a seat piece shows while you sit: `focus`, `break`, `busy`   |
+| Shown status  | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                                      |
+| Standing seat | `isStandingSeatShape`                         | Treadmill, standing desk: held like a seat, drawn standing              |
+| Leg           | `petLeg(id, n, area)`                         | One 9 s step of the dog: a spot, or the bed (every fourth)              |
+| Pet area      | `petArea(bed, rooms)`                         | The innermost room's interior holding the bed's middle, else the circle |
+| Earshot       | `hearsBell(desk, self, zones)`                | Your zone and the desk's room, for whether a ring reaches you           |
 
 ## Behaviour and state
 
@@ -45,21 +45,22 @@ Derived from [Workday pieces](../workday-pieces.md).
   Because `useAvatarWalk` returns `seatedOn` and takes `status`, `useCanvasAvatar` keeps the seat it read last render
   in state (one render's lag, adjusted during render, not an effect).
 - **Standing pose**: the canvas draws a sitter `seated` only when the piece it holds is not a standing seat
-  (`standingSeatIds`, a set of ids rebuilt per board change).
+  (`sitsDown`, over a set of standing-seat ids rebuilt per board change).
 - **The booth's call**: `roomZones` pushes a Phone Booth's `boothInterior` (the drawn rect inset 6 px of 80 on each
   side and from 40 px of 136 down to 6 px from its foot); the api's hearing check reads the same function.
-- **The dog**: `petSpotAt(bed, area, now)` = leg `n = floor(now / PET_LEG_MS)`; `n % 4 === 3` is the bed, otherwise a
-  point from `mulberry32(hash(id) ^ n)` inside the area inset by `PET_INSET`. `PetDog` sets its spot with a timeout to
-  the next leg boundary (one per dog), translating from the bed with a `PET_TROT_MS` CSS transition. Reduced motion:
-  the spot is always the bed and the dog sleeps.
+- **The dog**: leg `n = petLegAt(now)`; `petLeg(id, n, area)` is null (the bed) when `n % 4 === 3`, otherwise a
+  point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`); `dogOffset` makes it
+  relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
+  the next leg boundary (one per dog), translating from the bed with a `PET_TROT_MS` CSS transition. Reduced motion, or no area
+  yet: the spot is always the bed and the dog sleeps.
 - **Welcome**: `receptionAt(feet, desks)`: the desk whose front strip (`x - 0 .. x + width`, `y + 0.62 h .. y + h +
-  RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
+RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
   changes.
 - **Ringing**: the face calls `ringBell(deskId)`, which the canvas hook points at `send({ kind: 'avatar-bell', deskId
-  })` while walking; `noteRung` starts the 5 s Rang; the ringer plays its own ding and jump. A received op
+})` while walking; `ringBell` starts the 5 s Rang itself; the ringer plays its own ding and waves (no toast). A received op
   (`receiveBellOp`) reaches `useReceptionBell`, which checks the desk is a Reception Desk on the board, you walk, you
   are not on Do Not Disturb, and `hearsBell`: the desk's room (`meetingPieceRoom`) equals your zone, or the desk has
-  no room and your feet are within `BELL_RADIUS`. Then the ding, the jump (`bumpBell(deskId)`) and the toast.
+  no room and your feet are within `BELL_RADIUS`. Then the ding, the waves (`bumpBell(deskId)`) and the toast.
 
 ## Interfaces and contracts
 
@@ -76,7 +77,7 @@ dog are presence, the clock or local.
 
 - A piece deleted while sat on: `pieceStatusOf` finds no element, so the own status shows.
 - A ring for a desk not on the receiver's board, or not a Reception Desk: dropped.
-- A dog whose room is too small for its inset: it stays on its bed.
+- A dog whose room is too small for its inset: it wanders the circle round its bed instead.
 - Two sitters at once on a Hot Desk: the seat claim settles it; the card names the holder.
 
 ## Security and trust
@@ -88,7 +89,7 @@ dog are presence, the clock or local.
 
 - The shown status is a constant-time lookup per render. The standing set is built once per board change.
 - `receptionAt` runs on a change of your feet over the few desks (picked once per board change), like `arcadeAt`.
-- The dog: one timeout per dog per 9 s; `petSpotAt` is a hash and three PRNG draws. A test holds 100000 legs inside a
+- The dog: one timeout per dog per 9 s; `petLeg` is a hash and two PRNG draws. A test holds 100000 legs inside a
   CPU budget.
 - The booth adds one zone per booth to `roomZones`, which already loops every element once.
 
@@ -103,7 +104,7 @@ dog are presence, the clock or local.
 
 - The bubble is `role="status"`; Ring Bell and the dog are buttons with labels; the name card is text in the piece's
   label for screen readers ("Hot desk, Sam sitting").
-- Reduced motion: no belt, no trot or wag, no heart rise, no bell jump.
+- Reduced motion: no belt, no trot or wag, no heart rise, no bell waves; the dog sleeps in its bed.
 
 ## Observability
 
@@ -111,28 +112,28 @@ dog are presence, the clock or local.
 
 ## Testing
 
-| Rule                                         | Test                                                           |
-| -------------------------------------------- | -------------------------------------------------------------- |
-| Seats, standing seats, footprints, booth zone | `packages/avatar/src/workday-pieces.test.ts`, `call-geometry.test.ts` |
-| Shown status                                  | `packages/avatar/src/seat-status.test.ts`, `useSeatStatus.test.tsx` |
-| Drawings and kinds                            | `packages/document/src/office-workday.test.ts`                 |
-| The dog's legs and CPU budget                 | `packages/document/src/pet-wander.test.ts`                     |
+| Rule                                          | Test                                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| Seats, standing seats, footprints, booth zone | `../packages/avatar/src/workday-pieces.test.ts`, `call-geometry.test.ts`    |
+| Shown status                                  | `../packages/avatar/src/workday-pieces.test.ts`, `useSeatStatus.test.tsx`   |
+| Drawings and kinds                            | `packages/document/src/office-workday.test.ts`                              |
+| The dog's legs and CPU budget                 | `packages/document/src/pet-wander.test.ts`                                  |
 | Bell parse, gate (every level), throttle      | `packages/api-schema/src/bell.test.ts`, `apps/api/src/room-op-gate.test.ts` |
 | Earshot, Welcome, ringing                     | `apps/editor/lib/office/reception-bell.test.ts`, `useWorkdayPieces.test.ts` |
-| Faces                                         | `apps/editor/components/canvas/collab/workday-views.test.tsx`  |
-| Templates                                     | `packages/templates/src/template-workday.test.ts`              |
+| Faces                                         | `apps/editor/components/canvas/collab/workday-views.test.tsx`               |
+| Templates                                     | `packages/templates/src/template-workday.test.ts`                           |
 
 ## Constants and configuration
 
-| Constant           | Value  | Why                                                  |
-| ------------------ | ------ | ---------------------------------------------------- |
-| `PET_LEG_MS`       | 9000   | Long enough to read as a dog settling, not a sprite  |
-| `PET_TROT_MS`      | 3000   | A third of a leg spent moving                        |
-| `PET_RADIUS`       | 240    | A bed in no room keeps its dog close                 |
-| `PET_INSET`        | 28     | The dog stays off the walls                          |
-| `RECEPTION_REACH`  | 32     | As the arcade's reach, a step more for a wide desk   |
-| `BELL_RADIUS`      | 480    | Across an open lobby                                 |
-| `BELL_THROTTLE_MS` | 5000   | A ring, not a rattle                                 |
+| Constant           | Value | Why                                                 |
+| ------------------ | ----- | --------------------------------------------------- |
+| `PET_LEG_MS`       | 9000  | Long enough to read as a dog settling, not a sprite |
+| `PET_TROT_MS`      | 3000  | A third of a leg spent moving                       |
+| `PET_RADIUS`       | 240   | A bed in no room keeps its dog close                |
+| `PET_INSET`        | 28    | The dog stays off the walls                         |
+| `RECEPTION_REACH`  | 32    | As the arcade's reach, a step more for a wide desk  |
+| `BELL_RADIUS`      | 480   | Across an open lobby                                |
+| `BELL_THROTTLE_MS` | 5000  | A ring, not a rattle                                |
 
 ## Defaults ledger
 

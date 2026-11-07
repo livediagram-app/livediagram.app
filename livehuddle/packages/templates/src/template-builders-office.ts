@@ -42,6 +42,8 @@ const ROOMS: RoomSpec[] = [
       // A coat rack and an umbrella stand by the door (docs/specs/009-elements/office-amenities.md), clear of its way in.
       { kind: 'coat-rack', x: 300, y: 176 },
       { kind: 'umbrella-stand', x: 362, y: 240 },
+      // The front desk, its bell for whoever walks in (docs/specs/009-elements/workday-pieces.md "In the templates").
+      { kind: 'reception-desk', x: 20, y: 160 },
     ],
   },
   {
@@ -128,6 +130,8 @@ const ROOMS: RoomSpec[] = [
     pieces: [
       // Off the doorway's column, so walking in reaches the room before the desk.
       { kind: 'desk', x: 40, y: 120, facing: 's' },
+      // A nap pod for a rest, which shows you as Focusing (docs/specs/009-elements/workday-pieces.md).
+      { kind: 'nap-pod', x: 168, y: 190 },
       { kind: 'plant', x: 340, y: 230 },
       { kind: 'bookshelf', x: 280, y: 40 },
     ],

@@ -34,6 +34,15 @@ const stools = (xs: readonly number[], y: number): OfficePiece[] =>
 const seats = (xs: readonly number[], ys: readonly number[]): OfficePiece[] =>
   ys.flatMap((y) => xs.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })));
 
+// An island of four hot desks, two rows back to back that face the same way, like a classroom's
+// (docs/specs/009-elements/workday-pieces.md).
+const hotDesks = (x: number, y: number): OfficePiece[] => [
+  { kind: 'hot-desk', x, y },
+  { kind: 'hot-desk', x: x + 136, y },
+  { kind: 'hot-desk', x, y: y + 112 },
+  { kind: 'hot-desk', x: x + 136, y: y + 112 },
+];
+
 // An island of four desks, two facing two.
 const island = (x: number, y: number): OfficePiece[] => [
   { kind: 'desk', x, y, facing: 'n' },
@@ -79,7 +88,7 @@ const GROUND_ROOMS: IndoorRoom[] = [
       // Three islands of four, 120 px apart, and a notice board, coffee and water along the front.
       ...island(40, 80),
       ...island(416, 80),
-      ...island(792, 80),
+      ...hotDesks(792, 80),
       { kind: 'notice-board', x: 40, y: 380 },
       // A print corner and a bank of lockers for the hot-deskers (docs/specs/009-elements/office-amenities.md), both
       // clear of the door's way in.
@@ -175,6 +184,8 @@ const L2_ROOMS: IndoorRoom[] = [
     pieces: [
       ...[30, 160].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       ...[20, 140].map((x) => ({ kind: 'desk' as const, x, y: 180, facing: 's' as const })),
+      // A nap pod for a rest away from the desks.
+      { kind: 'nap-pod', x: 268, y: 176 },
       { kind: 'plant', x: 380, y: 50 },
     ],
   },
