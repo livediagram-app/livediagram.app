@@ -24,16 +24,15 @@ const MACHINE = 'arcade';
 async function personIn(browser: Browser, baseURL: string, owner: string | null): Promise<Page> {
   const ctx = await browser.newContext({ baseURL, viewport: { width: 1280, height: 800 } });
   if (owner) await adoptGuest(ctx, owner);
-  await ctx.addInitScript(
-    ({ o }) => {
-      if (o) localStorage.setItem('livehuddle:v2:name-confirmed', '1');
-      localStorage.setItem(
-        'livehuddle:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
-    },
-    { o: owner },
-  );
+  // Everyone's name already confirmed: the Welcome name prompt opens on a link a moment after the character draws,
+  // so a test waiting on either could miss it and have it swallow every walk click after (CI's slower runners did).
+  await ctx.addInitScript(() => {
+    localStorage.setItem('livehuddle:v2:name-confirmed', '1');
+    localStorage.setItem(
+      'livehuddle:user-preferences:v1',
+      JSON.stringify({ workshopTourSeen: true }),
+    );
+  });
   return ctx.newPage();
 }
 
@@ -63,8 +62,9 @@ async function walkUp(page: Page, at = 0.5): Promise<void> {
   }).toPass({ timeout: 30_000 });
 }
 
-// Start a run and hop between the orbits until a letter scores (or the run ends), then close the panel, which ends
-// the run and posts its score.
+// Start a run and hop between the orbits until a letter scores (or the run ends), then pause it, read its score and
+// close the panel, which ends the run and posts that score. Paused first: a run left playing can deliver another
+// letter between the read and the Close (CI's slower runners did, posting 20 over a read 10).
 async function playUntilScored(page: Page): Promise<string> {
   await panel(page).getByRole('button', { name: 'Start' }).click();
   const score = panel(page).locator('[data-moon-mail-score]');
@@ -77,6 +77,11 @@ async function playUntilScored(page: Page): Promise<string> {
     await page.keyboard.press(keys[i % keys.length]!);
     await page.waitForTimeout(450);
   }
+  // P pauses a run still playing; one already over stays over (its score is final either way).
+  await page.keyboard.press('p');
+  await expect(
+    panel(page).getByText('Paused', { exact: true }).or(panel(page).getByText('Game Over')),
+  ).toBeVisible();
   const posted = (await score.textContent())!.trim();
   expect(posted, 'a run that scored').not.toBe('0');
   await panel(page).getByRole('button', { name: 'Close' }).click();
