@@ -27,7 +27,7 @@
     "@liveworkspace/telemetry": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@resvg/resvg-wasm": "^2.6.2",
-    "hono": "^4.13.14",
+    "hono": "^4.13.16",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -36,7 +36,7 @@
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "^5.1.0",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.91.0",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0",
     "wrangler": "^4.157.0"
