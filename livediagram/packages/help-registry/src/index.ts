@@ -1485,6 +1485,16 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
+    slug: 'connected-files',
+    title: 'Connected Files',
+    description:
+      'Add a tab that opens a file from any liveworkspace app: a plan, a document, a design or another canvas.',
+    keywords:
+      'connect connected file tab liveplanner livedocuments livedesign livehuddle other app project link share both ways role editor viewer participant remove connect again',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
     slug: 'side-by-side',
     title: 'Side by Side Tabs',
     description:
