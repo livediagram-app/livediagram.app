@@ -1,6 +1,7 @@
 import { driveKeyBytes, type GoogleConfig } from '@liveworkspace/drive/server';
 import type { AppName, DriveEnvironment } from '@liveworkspace/drive';
 import type { DriveMirror } from './mirror/durable-object';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export interface Env {
   // 'production', 'staging' or 'development': names the Drive root folder and which app origins a return page may
@@ -62,15 +63,13 @@ const ORIGIN_OF: Record<AppName, keyof Env> = {
 export const setting = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined;
 
-const withoutTrailingSlash = (value: string) => value.replace(/\/+$/, '');
-
 export function appKey(env: Env, app: AppName): string | undefined {
   return setting(env[KEY_OF[app]]);
 }
 
 export function appOrigin(env: Env, app: AppName): string | undefined {
   const origin = setting(env[ORIGIN_OF[app]]);
-  return origin ? withoutTrailingSlash(origin) : undefined;
+  return origin ? withoutTrailingSlashes(origin) : undefined;
 }
 
 export function environmentOf(env: Pick<Env, 'ENVIRONMENT'>): DriveEnvironment {
@@ -82,11 +81,11 @@ const DEFAULT_PUBLIC_URL = 'https://liveworkspace.app';
 
 /** liveworkspace's origin in this environment. */
 export function publicOrigin(env: Pick<Env, 'DRIVE_PUBLIC_URL'>): string {
-  return withoutTrailingSlash(setting(env.DRIVE_PUBLIC_URL) ?? DEFAULT_PUBLIC_URL);
+  return withoutTrailingSlashes(setting(env.DRIVE_PUBLIC_URL) ?? DEFAULT_PUBLIC_URL);
 }
 
 export function accountsUrl(env: Env): string {
-  return withoutTrailingSlash(setting(env.ACCOUNTS_URL) ?? DEFAULT_PUBLIC_URL);
+  return withoutTrailingSlashes(setting(env.ACCOUNTS_URL) ?? DEFAULT_PUBLIC_URL);
 }
 
 export function audiences(env: Env): string[] {

@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "jose": "^6.2.14"
   },

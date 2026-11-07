@@ -27,6 +27,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/email": "workspace:*",

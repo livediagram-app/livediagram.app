@@ -35,6 +35,7 @@
     "@livediagram/template-previews": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/avatar": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",

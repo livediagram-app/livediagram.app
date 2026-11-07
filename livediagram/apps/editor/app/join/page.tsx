@@ -3,13 +3,14 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { siteUrl } from '@liveworkspace/sites';
 import { ManagedOnLiveworkspace } from '@liveworkspace/workbench/components/panels/ManagedOnLiveworkspace';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // /join?token=… — where a team's join link used to land (docs/specs/013-workspace/teams.md). Teams
 // are run on liveworkspace.app now (liveworkspace/docs/specs/003-accounts/accounts.md "The join link"), so an old link
 // forwards there with its token: siteUrl keeps a dev server on the local liveworkspace port, and
 // NEXT_PUBLIC_ACCOUNTS_SITE_URL points a staging build at staging. The card is the fallback if the
 // forward doesn't run. `index: false` is inherited from the root layout.
-const JOIN_URL = `${(process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || siteUrl('liveworkspace.app', 'https://www.liveworkspace.app')).replace(/\/+$/, '')}/join`;
+const JOIN_URL = `${withoutTrailingSlashes(process.env.NEXT_PUBLIC_ACCOUNTS_SITE_URL || siteUrl('liveworkspace.app', 'https://www.liveworkspace.app'))}/join`;
 
 const noSubscribe = () => () => {};
 const readSearch = () => window.location.search;

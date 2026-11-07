@@ -5,6 +5,7 @@
 // app's address and in an editor through the app's router (`/api/workspace/account`) by the app's access token.
 
 import type { TeamRef } from '../types';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type TeamRole = 'admin' | 'member';
 
@@ -142,7 +143,7 @@ export function createTeamsHost({
   token,
   onTeamsChanged,
 }: TeamsHostOptions = {}): TeamsHost {
-  const base = baseUrl.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl);
 
   async function send(
     path: string,

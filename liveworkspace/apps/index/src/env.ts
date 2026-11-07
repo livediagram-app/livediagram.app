@@ -1,4 +1,5 @@
 import type { App } from '@liveworkspace/index-client';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The webhook dispatcher's binding (webhooks/durable-object.ts), as the index calls it.
 export type WebhookNamespace = {
@@ -84,13 +85,14 @@ export function appKey(env: Env, app: App): string | undefined {
 }
 
 export function appOrigin(env: Env, app: App): string | undefined {
-  return setting(env[ORIGIN_OF[app]])?.replace(/\/+$/, '');
+  const origin = setting(env[ORIGIN_OF[app]]);
+  return origin === undefined ? undefined : withoutTrailingSlashes(origin);
 }
 
 const DEFAULT_ACCOUNTS_URL = 'https://www.liveworkspace.app';
 
 export function accountsUrl(env: Env): string {
-  return (setting(env.ACCOUNTS_URL) ?? DEFAULT_ACCOUNTS_URL).replace(/\/+$/, '');
+  return withoutTrailingSlashes(setting(env.ACCOUNTS_URL) ?? DEFAULT_ACCOUNTS_URL);
 }
 
 export function audiences(env: Env): string[] {

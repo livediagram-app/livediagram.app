@@ -24,7 +24,7 @@ export function mentionHandle(name: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/^-|-$/g, '')
     .slice(0, MENTION_FIELD_MAX);
 }
 

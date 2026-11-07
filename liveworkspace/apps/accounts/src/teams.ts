@@ -55,6 +55,7 @@ import {
   type TimelineEvent,
   type TimelineType,
 } from './index-timeline.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // One team event for the Timeline (index-timeline.ts), queued in the batch that makes its change. `guard`
 // holds only when that change was made.
@@ -1173,7 +1174,7 @@ export async function inviteLinkToken(secret: string, teamId: string, nonce: str
 }
 
 export const joinLinkUrl = (baseUrl: string, token: string) =>
-  `${baseUrl.replace(/\/+$/, '')}/join?token=${encodeURIComponent(token)}`;
+  `${withoutTrailingSlashes(baseUrl)}/join?token=${encodeURIComponent(token)}`;
 
 export interface InviteLink {
   url: string;

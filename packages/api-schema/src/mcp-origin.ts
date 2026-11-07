@@ -1,3 +1,4 @@
+import { withoutTrailingSlashes } from './url-slashes';
 // Origin of a product's MCP worker (docs/specs/015-api/mcp-server.md), shared by every app that names it: the live
 // editor's OAuth consent pages and the marketing site's Build with AI page. Other deployments override it at build
 // time with NEXT_PUBLIC_MCP_ORIGIN, so both read it through the product's resolveMcpOrigin rather than writing the
@@ -16,11 +17,8 @@ export function createMcpOriginResolver(
   return (raw) => {
     const trimmed = raw?.trim();
     if (!trimmed) return defaultOrigin;
-    // Trailing slashes off by a scan, not a regex: `/\/+$/` backtracks on a long run of slashes.
-    let end = trimmed.length;
-    while (end > 0 && trimmed[end - 1] === '/') end--;
     // Nothing but slashes is no origin: the hosted one, as for a blank value.
-    return trimmed.slice(0, end) || defaultOrigin;
+    return withoutTrailingSlashes(trimmed) || defaultOrigin;
   };
 }
 

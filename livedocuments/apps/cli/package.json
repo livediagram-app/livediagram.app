@@ -20,6 +20,7 @@
     "@livedocuments/document": "workspace:*",
     "@livedocuments/document-views": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
     "zod": "^4.6.7"

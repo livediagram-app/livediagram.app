@@ -1,4 +1,5 @@
 import type { Env } from './types';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // WHOSE model reads the sticky-note crops, and where does it live
 // (docs/specs/021-event-storming/note-reader.md)?
@@ -38,18 +39,6 @@ export const GOOGLE_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta
 // `AI_VISION_MODEL` overrides it.
 export const GOOGLE_DEFAULT_VISION_MODEL = 'gemini-2.5-flash-lite';
 
-// Trailing slashes off a base URL, WITHOUT a regex.
-//
-// `/\/+$/` looks harmless and is not: on a string of slashes the engine
-// backtracks polynomially, and a base URL is operator-supplied configuration
-// that reaches this on every AI request (CodeQL js/polynomial-redos). A loop
-// says the same thing in linear time and cannot be made to misbehave.
-export function trimTrailingSlashes(url: string): string {
-  let end = url.length;
-  while (end > 0 && url[end - 1] === '/') end -= 1;
-  return url.slice(0, end);
-}
-
 const present = (value: string | undefined): value is string =>
   typeof value === 'string' && value.length > 0;
 
@@ -75,7 +64,7 @@ export function resolveAiProvider(env: Env): ResolvedAiProvider | null {
   }
 
   if (!present(env.AI_API_KEY)) return null;
-  const baseUrl = env.AI_BASE_URL ? trimTrailingSlashes(env.AI_BASE_URL) : '';
+  const baseUrl = env.AI_BASE_URL ? withoutTrailingSlashes(env.AI_BASE_URL) : '';
   if (!baseUrl || !present(env.AI_VISION_MODEL)) {
     // A key with nowhere to send it, or somewhere to send it with nothing to
     // ask for, is not a configuration — it is half of one. There is no default

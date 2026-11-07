@@ -1,3 +1,4 @@
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 // The Explorer's views and their addresses. The host app owns routing (Next.js in each app): it reads the
 // view from its URL with `viewFromLocation`, renders <Explorer view=…>, and the Explorer asks it to go
 // elsewhere through `onNavigate`. `explorerPath` gives each view's address for links, so a view can open
@@ -85,7 +86,7 @@ const enc = encodeURIComponent;
 
 /** The address of a view under `base` (default `/explorer`), its lens as `q` last. */
 export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): string {
-  const b = base.replace(/\/+$/, '');
+  const b = withoutTrailingSlashes(base);
   const q = viewLens(view);
   const lens = (joiner: string) => (q ? `${joiner}q=${enc(q)}` : '');
   switch (view.kind) {
@@ -112,8 +113,8 @@ export function viewFromLocation(
   base = DEFAULT_BASE_PATH,
 ): ExplorerView {
   const params = typeof search === 'string' ? new URLSearchParams(search) : search;
-  const b = base.replace(/\/+$/, '');
-  const path = pathname.replace(/\/+$/, '');
+  const b = withoutTrailingSlashes(base);
+  const path = withoutTrailingSlashes(pathname);
   const section = path.startsWith(`${b}/`) ? path.slice(b.length + 1) : '';
   const id = params.get('id');
   const q = params.get('q') ?? '';

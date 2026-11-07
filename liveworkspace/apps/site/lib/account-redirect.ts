@@ -3,6 +3,7 @@
 // Explorer with the Settings panel open on the same section (`?settings=`, lib/explorer/host.ts settingsOpening).
 // Kept light: the page that runs it is a one-line hop, so it imports the sites registry alone, not the panel.
 import { APP_SITES } from '@liveworkspace/sites';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The Account section's categories an old address named by its anchor (`#notifications`, every email's unsubscribe).
 const ANCHORS = new Set(['profile', 'notifications', 'privacy', 'accessibility', 'tokens']);
@@ -10,7 +11,7 @@ const ANCHORS = new Set(['profile', 'notifications', 'privacy', 'accessibility',
 /** Where an old account address goes: `/explorer?settings=<section>`. */
 export function accountRedirect(pathname: string, search: string, hash: string): string {
   const to = (section: string) => `/explorer?settings=${encodeURIComponent(section)}`;
-  if (pathname.replace(/\/+$/, '') === '/account/tokens') return to('tokens');
+  if (withoutTrailingSlashes(pathname) === '/account/tokens') return to('tokens');
   const anchor = hash.replace(/^#/, '');
   if (ANCHORS.has(anchor)) return to(anchor);
   // `?app=` named an app by its site (`livedesign.app`) or its name (`livedesign`).

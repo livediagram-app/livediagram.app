@@ -4,12 +4,7 @@
 // a rate-limited read waits a minute and tries again, up to three times. A design that fails is reported and the
 // rest still go (CLI84).
 
-import {
-  EXPORT_FORMATS,
-  listAllDesigns,
-  tabPath,
-  type VerbContext,
-} from '@livedesign/agent-verbs';
+import { EXPORT_FORMATS, listAllDesigns, tabPath, type VerbContext } from '@livedesign/agent-verbs';
 import { ApiError } from '@liveworkspace/api-client';
 import type { DesignResponse } from '@livedesign/api-schema';
 import { designToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/design';
@@ -18,6 +13,7 @@ import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { fileSlug, idSlug, PULL_FILE_SUFFIX } from '../sync/pull-file';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const EXPORT_CONCURRENCY = 2;
 export const EXPORT_RATE_RETRY_MS = 60_000;
@@ -80,7 +76,7 @@ function uniqueSlugs(items: readonly { id: string; name: string }[]): Map<string
   );
 }
 
-const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
+const joinPath = (dir: string, name: string) => `${withoutTrailingSlashes(dir)}/${name}`;
 
 const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   svg: 'svg',
@@ -163,14 +159,7 @@ export async function exportAll(
       const index = next++;
       const doc = designs[index]!;
       try {
-        results[index] = await exportDesign(
-          io,
-          ctx,
-          doc.id,
-          slugs.get(doc.id)!,
-          input.to,
-          formats,
-        );
+        results[index] = await exportDesign(io, ctx, doc.id, slugs.get(doc.id)!, input.to, formats);
       } catch (err) {
         const failure = failureOf(err, host);
         io.stderr(

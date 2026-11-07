@@ -30,6 +30,7 @@ import {
   TARGET_TOKEN_VAR,
   type Env,
 } from './targets.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 /** One wrangler run. `env` is the whole environment it gets (nothing is inherited beyond PATH and HOME). */
 export type Command = { argv: string[]; env: Record<string, string>; cwd: string };
@@ -231,7 +232,7 @@ export function roomRequest(o: {
 }): HttpRequest {
   return {
     method: 'PUT',
-    url: `${o.origin.replace(/\/+$/, '')}/api/internal/${o.door ?? 'items'}/${encodeURIComponent(o.id)}/migration`,
+    url: `${withoutTrailingSlashes(o.origin)}/api/internal/${o.door ?? 'items'}/${encodeURIComponent(o.id)}/migration`,
     headers: { authorization: `Bearer ${o.key}`, 'content-type': 'application/json' },
     body: o.body,
   };

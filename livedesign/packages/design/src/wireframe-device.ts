@@ -428,7 +428,7 @@ export function wireframeAddress(name: string | undefined): string {
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/^-|-$/g, '')
     .slice(0, 40);
   return slug ? `example.com/${slug}` : 'example.com';
 }
