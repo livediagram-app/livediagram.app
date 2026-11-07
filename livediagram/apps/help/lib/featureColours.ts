@@ -88,6 +88,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   fences: '#b45309',
   'avatar-pads': '#0ea5e9',
   'virtual-office': '#0f766e',
+  'turning-furniture': '#0d9488',
   lanes: '#3b82f6',
   entities: '#0284c7',
   'embed-elements': '#e11d48',

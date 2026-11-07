@@ -6,7 +6,14 @@
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
-import { BEAN_BAG_SEATS, READING_NOOK_SEATS } from '@liveworkspace/avatar/seats';
+import {
+  BEAN_BAG_SEATS,
+  BEAN_BAG_SEATS_BACK,
+  BEAN_BAG_SEATS_SIDE,
+  READING_NOOK_SEATS,
+  READING_NOOK_SEATS_BACK,
+  READING_NOOK_SEATS_SIDE,
+} from '@liveworkspace/avatar/seats';
 
 // Fixed colours, as SOCIAL_TONES: wood, cloth, balls, the board's rings, the machine's paint and its lit glass.
 export const RECREATION_TONES = {
@@ -119,6 +126,73 @@ const POOL_TABLE_VIEW: FurnitureDrawing = {
   ring: { cx: 100, cy: 52, rx: 96, ry: 40 },
 };
 
+// The cloth's contents laid out by `at`, which takes a spot on the front drawing to where a turned drawing shows it:
+// the pockets, the rack with its apex toward the cue ball, the cue ball and the cue across the cloth, each ball's
+// glint up and left (the light is the room's, not the table's). The pockets are a set a half turn leaves as it is.
+type At = (x: number, y: number) => readonly [number, number];
+function poolCloth(at: At): FurniturePart[] {
+  const pt = (x: number, y: number) => at(x, y).map(r2).join(' ');
+  const ball = (x: number, y: number, fill: string) => {
+    const [cx, cy] = at(x, y);
+    return ellipse('mark', r2(cx), r2(cy), 3.4, 3.4, fill);
+  };
+  const glint = (x: number, y: number) => {
+    const [cx, cy] = at(x, y);
+    return `M${r2(cx - 1)} ${r2(cy - 1.6)}h1.2`;
+  };
+  return [
+    path('mark', POCKETS.map(([x, y]) => circleD(...at(x, y), 4)).join(''), T.pocket),
+    ...RACK.map(([x, y, fill]) => ball(x, y, fill)),
+    ball(62, 52, T.ballWhite),
+    path('glint', glint(132, 52) + glint(138.4, 48.6) + glint(62, 52)),
+    path('mark', `M${pt(26, 70)}L${pt(112, 41)}L${pt(113, 43.4)}L${pt(27, 72.6)}Z`, T.cue),
+    path('mark', `M${pt(26, 70)}L${pt(44, 63.9)}L${pt(45, 66.4)}L${pt(27, 72.6)}Z`, T.woodDeep),
+    ellipse('mark', ...(at(112.6, 42.2).map(r2) as [number, number]), 1.3, 1.3, T.chalk),
+  ];
+}
+
+// From behind: the same table, its cloth turned half way round, so the rack is on the left and the cue ball on the
+// right; the sights stay on the far rail.
+const POOL_TABLE_BACK: FurnitureDrawing = {
+  ...POOL_TABLE_VIEW,
+  parts: [
+    ...POOL_TABLE_VIEW.parts.slice(0, 9),
+    path('rail', 'M142 33V71'),
+    ...poolCloth((x, y) => [200 - x, 104 - y]),
+    rect('face', 6, 80, 188, 10, 4, T.wood),
+  ],
+};
+
+// Facing left: long and narrow, its length down the canvas, the head string and the cue ball at the far end, the
+// rack nearest you; the sights along the far rail on the right, a strip of the near rail's face down the left, and
+// the pedestal under its near end.
+const POOL_SIDE_X = 46;
+const POOL_TABLE_SIDE: FurnitureDrawing = {
+  width: 88,
+  height: 240,
+  parts: [
+    ellipse('shadow', 44, 236, 40, 4),
+    rect('panel', 26, 200, 36, 30, 4, T.woodDeep),
+    rect('panel', 20, 226, 48, 6, 2, T.woodDeep),
+    rect('face', 3, 14, 12, 186, 4, T.wood),
+    rect('panel', 8, 8, 76, 192, 10, T.wood),
+    path(
+      'mark',
+      [52.13, 78.06, 129.94, 155.88]
+        .map((y) => `M79 ${r2(y - 1.6)}l1.6 1.6l-1.6 1.6l-1.6-1.6z`)
+        .join(''),
+      T.sight,
+    ),
+    rect('panel', 18, 18, 56, 172, 4, T.cushion),
+    rect('mark', 21, 21, 50, 166, 2, T.cloth),
+    path('rail', 'M23 60.43H69'),
+    ...poolCloth((x, y) => [POOL_SIDE_X + ((52 - y) * 50) / 42, 104 + ((x - 100) * 166) / 160]),
+    rect('face', 8, 196, 76, 10, 4, T.wood),
+  ],
+  seats: [],
+  ring: { cx: 46, cy: 104, rx: 42, ry: 100 },
+};
+
 // The rods, left to right, and where their players stand: a red goalie, three blue, three red, a blue goalie.
 const FOOS_RODS = [40, 66, 102, 128] as const;
 const FOOS_PLAYERS: readonly (readonly number[])[] = [[47], [35, 47, 59], [35, 47, 59], [47]];
@@ -154,6 +228,58 @@ const FOOSBALL_TABLE_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 84, cy: 47, rx: 80, ry: 34 },
+};
+
+// Players stood upright at each spot, as foosPlayers draws them.
+const playersAt = (spots: readonly (readonly [number, number])[]) =>
+  spots
+    .map(
+      ([x, y]) =>
+        `M${x - 3} ${y - 3}h6v8h-6zM${x - 1.8} ${y - 4.6}a1.8 1.8 0 1 0 3.6 0a1.8 1.8 0 1 0 -3.6 0Z`,
+    )
+    .join('');
+
+// From behind: the same cabinet turned half way round, so each team's rods are at the other end; the handles are
+// the other side's, on the near side again.
+const FOOSBALL_TABLE_BACK: FurnitureDrawing = {
+  ...FOOSBALL_TABLE_VIEW,
+  parts: [
+    ...FOOSBALL_TABLE_VIEW.parts.slice(0, 11),
+    path('mark', foosPlayers([1, 3]), T.teamRed),
+    path('mark', foosPlayers([0, 2]), T.teamBlue),
+    FOOSBALL_TABLE_VIEW.parts[13]!,
+  ],
+};
+
+// Facing left: the pitch down the canvas, a goal at its top and its foot, the rods across it with their handles out
+// to the left (the players' side), a strip of the cabinet's near face down the left, two legs under the near end.
+const FOOS_SIDE_RODS = FOOS_RODS.map((x) => x - 2);
+const foosSidePlayers = (rods: readonly number[]) =>
+  playersAt(
+    rods.flatMap((i) => FOOS_PLAYERS[i]!.map((y) => [49 - (y - 47), FOOS_SIDE_RODS[i]!] as const)),
+  );
+const FOOSBALL_TABLE_SIDE: FurnitureDrawing = {
+  width: 84,
+  height: 190,
+  parts: [
+    ellipse('shadow', 47, 184, 34, 3),
+    rect('panel', 28, 156, 10, 26, 3, T.woodDeep),
+    rect('panel', 60, 156, 10, 26, 3, T.woodDeep),
+    rect('face', 20, 12, 10, 144, 3, T.wood),
+    rect('panel', 24, 8, 50, 148, 5, T.wood),
+    rect('mark', 30, 16, 38, 132, 2, T.pitch),
+    rect('mark', 30, 81.3, 38, 1.4, 0, T.ballWhite),
+    path('glint', 'M42 82a7 7 0 1 0 14 0a7 7 0 1 0 -14 0M41 16v8h16v-8M41 148v-8h16v8'),
+    path('mark', 'M43 11h12v5h-12zM43 148h12v5h-12z', T.pocket),
+    ellipse('mark', 49, 82, 2.2, 2.2, T.ballWhite),
+    rect('face', 24, 154, 50, 8, 3, T.wood),
+    path('line', FOOS_SIDE_RODS.map((y) => `M12 ${y}H80`).join('')),
+    path('mark', foosSidePlayers([0, 2]), T.teamRed),
+    path('mark', foosSidePlayers([1, 3]), T.teamBlue),
+    path('panel', FOOS_SIDE_RODS.map((y) => `M5 ${y - 2.5}h9v5h-9z`).join(''), T.handle),
+  ],
+  seats: [],
+  ring: { cx: 49, cy: 82, rx: 40, ry: 80 },
 };
 
 /** The dartboard's centre on its grid. */
@@ -255,6 +381,48 @@ const VENDING_MACHINE_VIEW: FurnitureDrawing = {
   ring: { cx: 36, cy: 116, rx: 34, ry: 8 },
 };
 
+// Its back to you: the cabinet's plain back with a vented panel and its power cord, the sign's lit edge along the top.
+const VENDING_MACHINE_BACK: FurnitureDrawing = {
+  width: 72,
+  height: 128,
+  parts: [
+    ellipse('shadow', 36, 125, 33, 3),
+    rect('panel', 4, 4, 64, 118, 5, T.vending),
+    rect('panel', 10, 4, 52, 3, 1.5, T.sign),
+    rect('face', 12, 16, 48, 92, 3, T.vendingDeep),
+    path('rail', 'M20 26h32M20 31h32M20 36h32M20 41h32'),
+    ellipse('panel', 48, 96, 3, 3, T.keypad),
+    path('line', 'M48 99c0 10 6 14 14 18'),
+    rect('panel', 2, 116, 68, 8, 3, T.vendingDeep),
+  ],
+  seats: [],
+  ring: { cx: 36, cy: 116, rx: 34, ry: 8 },
+};
+
+// Facing left: the cabinet's tall side toward you with a stripe down it, its front a narrow strip down the left: the
+// lit sign's edge, the glass with a column of cans behind it, the pickup flap.
+const VENDING_MACHINE_SIDE: FurnitureDrawing = {
+  width: 60,
+  height: 128,
+  parts: [
+    ellipse('shadow', 30, 125, 28, 3),
+    rect('panel', 14, 4, 42, 118, 5, T.vending),
+    rect('face', 22, 14, 8, 98, 3, T.vendingDeep),
+    rect('panel', 4, 6, 12, 116, 3, T.vending),
+    rect('panel', 6, 8, 8, 11, 2, T.sign),
+    rect('panel', 6, 23, 8, 74, 2, T.glass),
+    ...SHELVES.map((bottom, row) =>
+      path('mark', `M8 ${bottom - 10}h4v10h-4z`, T.cans[(row * 2) % T.cans.length]),
+    ),
+    path('rail', SHELVES.map((y) => `M7 ${y}h6`).join('')),
+    path('glint', 'M9 90L12 30'),
+    rect('face', 6, 102, 8, 13, 2, T.vendingDeep),
+    rect('panel', 2, 116, 56, 8, 3, T.vendingDeep),
+  ],
+  seats: [],
+  ring: { cx: 30, cy: 116, rx: 28, ry: 8 },
+};
+
 // --- Breakout seating -----------------------------------------------------------------------------------------
 
 // A slouchy bean bag, the hollow a sitter sinks into, its seams.
@@ -275,6 +443,43 @@ const BEAN_BAG_VIEW: FurnitureDrawing = {
   seats: BEAN_BAG_SEATS.seats.map(({ u, v }) => ({ u, v })),
   // Round the rim of the hollow, wider than a sitter, so it shows either side of them.
   ring: { cx: 32, cy: 40, rx: 27, ry: 9 },
+  ringUnder: 2,
+};
+
+// From behind: its raised back nearest you, the hollow a sitter sinks into beyond it.
+const BEAN_BAG_BACK: FurnitureDrawing = {
+  ...BEAN_BAG_SEATS_BACK,
+  parts: [
+    ellipse('shadow', 32, 52, 28, 3),
+    path(
+      'panel',
+      'M5 47C2 39 6 28 14 23C20 17 27 15 32 15C38 15 45 17 50 23C58 28 62 39 59 47C55 54 9 54 5 47Z',
+      T.bag,
+    ),
+    ellipse('mark', 32, 25, 14, 5.5, T.bagDeep),
+    path('face', 'M7 46C6 36 17 29 32 29C47 29 58 36 57 46C53 53 11 53 7 46Z', T.bag),
+    path('rail', 'M18 31C21 37 21 44 19 50M46 31C43 37 43 44 45 50M32 29V51'),
+    path('glint', 'M12 40C14 35 18 32 23 31'),
+  ],
+  ring: { cx: 32, cy: 25, rx: 21, ry: 7 },
+  ringUnder: 3,
+};
+
+// Facing left: the hollow toward the left, its back rising on the right.
+const BEAN_BAG_SIDE: FurnitureDrawing = {
+  ...BEAN_BAG_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 32, 52, 28, 3),
+    path(
+      'panel',
+      'M5 47C1 40 4 30 12 26C17 21 23 19 29 21C33 13 42 9 50 13C58 18 63 34 59 47C55 54 9 54 5 47Z',
+      T.bag,
+    ),
+    ellipse('mark', 25, 36, 13, 6.5, T.bagDeep),
+    path('rail', 'M42 15C46 25 45 39 43 51M13 27C16 34 16 42 14 50'),
+    path('glint', 'M36 18C40 14 45 13 49 15'),
+  ],
+  ring: { cx: 27, cy: 40, rx: 23, ry: 8 },
   ringUnder: 2,
 };
 
@@ -309,14 +514,81 @@ const READING_NOOK_VIEW: FurnitureDrawing = {
   ringUnder: 12,
 };
 
+// Its back to you: the set mirrored (the lamp on the left, the side table on the right), the armchair's wingback back
+// nearest you over its cushion and arms.
+const READING_NOOK_BACK: FurnitureDrawing = {
+  ...READING_NOOK_SEATS_BACK,
+  parts: [
+    ellipse('panel', 80, 92, 76, 16, T.rug),
+    ellipse('rail', 80, 92, 66, 11),
+    ellipse('panel', 24, 96, 9, 3, T.iron),
+    path('line', 'M24 95V32'),
+    path('panel', 'M12 34L16 14H32L36 34Z', T.shade),
+    path('rail', 'M13.5 28H34.5'),
+    path('line', 'M142 72V92'),
+    ellipse('panel', 142, 93, 8, 2.5, T.woodDeep),
+    ellipse('panel', 142, 68, 14, 4.5, T.wood),
+    rect('panel', 133, 58, 18, 5, 1.5, T.bookRed),
+    rect('panel', 134, 53, 15, 5, 1.5, T.bookBlue),
+    rect('panel', 134, 48, 16, 5, 1.5, T.bookYellow),
+    rect('panel', 44, 30, 15, 42, 6, T.armchair),
+    rect('panel', 109, 30, 15, 42, 6, T.armchair),
+    rect('panel', 56, 28, 56, 16, 5, T.cushionLight),
+    path('line', 'M54 84v6M114 84v6'),
+    path('face', 'M50 86V50C50 40 58 34 68 34H100C110 34 118 40 118 50V86Z', T.armchair),
+    path('rail', 'M68 44v34M84 42v36M100 44v34'),
+  ],
+  ring: { cx: 84, cy: 38, rx: 34, ry: 8 },
+  ringUnder: 16,
+};
+
+// Facing left: the armchair in the middle of the rug, its cushion seen from above between its two arms, its wingback
+// a tall bar along its right and its seat's front a strip down its left; the side table with its books beyond it and
+// the lit lamp nearer you.
+const READING_NOOK_SIDE: FurnitureDrawing = {
+  ...READING_NOOK_SEATS_SIDE,
+  parts: [
+    ellipse('panel', 56, 96, 46, 54, T.rug),
+    ellipse('rail', 56, 96, 39, 46),
+    path('line', 'M30 44V62'),
+    ellipse('panel', 30, 63, 8, 2.5, T.woodDeep),
+    ellipse('panel', 30, 40, 14, 4.5, T.wood),
+    rect('panel', 21, 30, 18, 5, 1.5, T.bookRed),
+    rect('panel', 23, 25, 15, 5, 1.5, T.bookBlue),
+    rect('panel', 22, 20, 16, 5, 1.5, T.bookYellow),
+    path('line', 'M38 118v8M86 118v8'),
+    rect('panel', 80, 52, 18, 68, 7, T.armchair),
+    path('rail', 'M89 62v48'),
+    rect('panel', 36, 62, 50, 14, 6, T.armchair),
+    rect('face', 32, 74, 8, 32, 3, T.armchair),
+    rect('panel', 38, 74, 44, 32, 5, T.cushionLight),
+    rect('panel', 36, 102, 50, 14, 6, T.armchair),
+    rect('face', 36, 112, 50, 7, 3, T.armchair),
+    ellipse('panel', 18, 140, 9, 3, T.iron),
+    path('line', 'M18 139V96'),
+    path('panel', 'M6 98L10 78H26L30 98Z', T.shade),
+    path('rail', 'M7.5 92H28.5'),
+  ],
+  ring: { cx: 60, cy: 92, rx: 24, ry: 14 },
+  ringUnder: 14,
+};
+
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_RECREATION_ART = {
-  'pool-table': allSides(POOL_TABLE_VIEW),
-  'foosball-table': allSides(FOOSBALL_TABLE_VIEW),
+  'pool-table': { front: POOL_TABLE_VIEW, back: POOL_TABLE_BACK, side: POOL_TABLE_SIDE },
+  'foosball-table': {
+    front: FOOSBALL_TABLE_VIEW,
+    back: FOOSBALL_TABLE_BACK,
+    side: FOOSBALL_TABLE_SIDE,
+  },
   dartboard: allSides(DARTBOARD_VIEW),
-  'vending-machine': allSides(VENDING_MACHINE_VIEW),
-  'bean-bag': allSides(BEAN_BAG_VIEW),
-  'reading-nook': allSides(READING_NOOK_VIEW),
+  'vending-machine': {
+    front: VENDING_MACHINE_VIEW,
+    back: VENDING_MACHINE_BACK,
+    side: VENDING_MACHINE_SIDE,
+  },
+  'bean-bag': { front: BEAN_BAG_VIEW, back: BEAN_BAG_BACK, side: BEAN_BAG_SIDE },
+  'reading-nook': { front: READING_NOOK_VIEW, back: READING_NOOK_BACK, side: READING_NOOK_SIDE },
 } as const;
 
 type GlowEllipse = { cx: number; cy: number; rx: number; ry: number };
@@ -342,6 +614,43 @@ export const NIGHT_GLOW: Readonly<
     halo: { cx: 136, cy: 25, rx: 22, ry: 17 },
   },
 };
+
+type NightGlow = (typeof NIGHT_GLOW)[keyof typeof NIGHT_GLOW];
+
+// The same lights on the turned drawings: the vending machine's window shows only on its side (a strip down its
+// left, its light spilling left), never from behind; the reading nook's lamp is lit from every side.
+const NIGHT_GLOW_TURNED: Readonly<
+  Record<keyof typeof NIGHT_GLOW, { back: NightGlow | null; side: NightGlow }>
+> = {
+  'vending-machine': {
+    back: null,
+    side: {
+      color: '#a5f3fc',
+      pool: { cx: 6, cy: 124, rx: 26, ry: 8 },
+      halo: { cx: 10, cy: 60, rx: 14, ry: 44 },
+    },
+  },
+  'reading-nook': {
+    back: {
+      color: '#fde68a',
+      pool: { cx: 28, cy: 96, rx: 36, ry: 11 },
+      halo: { cx: 24, cy: 25, rx: 22, ry: 17 },
+    },
+    side: {
+      color: '#fde68a',
+      pool: { cx: 22, cy: 140, rx: 30, ry: 10 },
+      halo: { cx: 18, cy: 88, rx: 22, ry: 17 },
+    },
+  },
+};
+
+/** A lit piece's glow on the drawing a facing shows, on that drawing's grid, or null where its light is out of sight. */
+export function nightGlowIn(
+  kind: keyof typeof NIGHT_GLOW,
+  view: 'front' | 'back' | 'side',
+): NightGlow | null {
+  return view === 'front' ? NIGHT_GLOW[kind] : NIGHT_GLOW_TURNED[kind][view];
+}
 
 /** Whether a kind glows on dark paper. */
 export function glowsAtNight(kind: string): kind is keyof typeof NIGHT_GLOW {

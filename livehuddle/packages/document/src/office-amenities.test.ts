@@ -3,12 +3,16 @@ import { createShape } from './shape-factory';
 import { isGridOfficeShape, OFFICE_ART, ROOM_DOOR_WIDTH } from './office';
 import { OFFICE_WORKPLACE_ART, WORKPLACE_TONES } from './office-workplace';
 import {
+  COUNTER_SIDE_WORKTOP,
   COUNTER_WORKTOP_Y,
+  counterSideX,
   counterTopY,
   KITCHEN_TONES,
   KITCHEN_UNIT,
+  KITCHEN_UNIT_SIDE,
   OFFICE_KITCHEN_ART,
 } from './office-kitchen';
+import { pieceFacing, turnPiece, turnsWithFacing } from './furniture-facing';
 import { OFFICE_RESTROOM_ART, RESTROOM_TONES } from './office-restroom';
 import { RESTROOM_LAYOUT, RESTROOM_SIGN, roomPresetCompanions } from './room-presets';
 import { applyShapeVariant, RESTROOM_VARIANT } from './shape-variants';
@@ -29,7 +33,7 @@ function partBounds(p: (typeof OFFICE_ART)['printer']['front']['parts'][number])
 }
 
 describe('the office amenities', () => {
-  it('draws all thirteen as grid pieces at their own size, wordless, aspect locked, the same from every side', () => {
+  it('draws all thirteen as grid pieces at their own size, wordless and aspect locked', () => {
     expect(KINDS).toEqual([
       'printer',
       'copier',
@@ -49,9 +53,8 @@ describe('the office amenities', () => {
       expect(isGridOfficeShape(kind), kind).toBe(true);
       const art = OFFICE_ART[kind].front;
       expect(art).toBe(ART[kind].front);
-      expect(OFFICE_ART[kind].back).toBe(art);
-      expect(OFFICE_ART[kind].side).toBe(art);
-      expect(art.seats, kind).toEqual([]);
+      for (const view of ['front', 'back', 'side'] as const)
+        expect(OFFICE_ART[kind][view].seats, kind).toEqual([]);
       const el = createShape(kind, 0, 0);
       expect(isValidElement(el), kind).toBe(true);
       expect([el.width, el.height], kind).toEqual([art.width, art.height]);
@@ -60,18 +63,19 @@ describe('the office amenities', () => {
     }
   });
 
-  it('keeps every rect and ellipse inside its grid', () => {
-    for (const kind of KINDS) {
-      const { width, height, parts } = OFFICE_ART[kind].front;
-      for (const p of parts) {
-        const b = partBounds(p);
-        if (!b) continue;
-        expect(b.x0, kind).toBeGreaterThanOrEqual(0);
-        expect(b.y0, kind).toBeGreaterThanOrEqual(0);
-        expect(b.x1, kind).toBeLessThanOrEqual(width);
-        expect(b.y1, kind).toBeLessThanOrEqual(height);
+  it('keeps every rect and ellipse inside its grid, in every drawing', () => {
+    for (const kind of KINDS)
+      for (const view of ['front', 'back', 'side'] as const) {
+        const { width, height, parts } = OFFICE_ART[kind][view];
+        for (const p of parts) {
+          const b = partBounds(p);
+          if (!b) continue;
+          expect(b.x0, kind).toBeGreaterThanOrEqual(0);
+          expect(b.y0, kind).toBeGreaterThanOrEqual(0);
+          expect(b.x1, kind).toBeLessThanOrEqual(width);
+          expect(b.y1, kind).toBeLessThanOrEqual(height);
+        }
       }
-    }
   });
 
   it('builds the counter and the sink as one run: the same grid, the same worktop', () => {
@@ -107,6 +111,136 @@ describe('the office amenities', () => {
         OFFICE_ART[kind].front.parts.some((p) => p.role === 'panel' && !p.fill),
         kind,
       ).toBe(true);
+  });
+});
+
+// docs/specs/009-elements/furniture-facing.md, office-amenities.md "Turned".
+describe('the office amenities turned', () => {
+  type Rect = Extract<(typeof OFFICE_ART)['printer']['front']['parts'][number], { tag: 'rect' }>;
+  const rects = (kind: keyof typeof ART, view: 'front' | 'back' | 'side') =>
+    OFFICE_ART[kind][view].parts.filter((p): p is Rect => p.tag === 'rect');
+  const TURNING = KINDS.filter((k) => !['coat-rack', 'umbrella-stand', 'hand-dryer'].includes(k));
+
+  it('turns all but the coat rack, the umbrella stand and the hand dryer, each with a back and a side of its own', () => {
+    expect(TURNING).toHaveLength(10);
+    for (const kind of KINDS) {
+      const art = OFFICE_ART[kind];
+      expect(turnsWithFacing(kind), kind).toBe(TURNING.includes(kind));
+      if (!TURNING.includes(kind)) {
+        expect([art.back, art.side], kind).toEqual([art.front, art.front]);
+        continue;
+      }
+      expect(art.back, kind).not.toBe(art.front);
+      expect(art.side, kind).not.toBe(art.front);
+      // From behind it keeps its box; a quarter turn takes the side drawing's proportions about the same centre.
+      expect([art.back.width, art.back.height], kind).toEqual([art.front.width, art.front.height]);
+      const placed = createShape(kind, 100, 100);
+      const left = turnPiece(placed, 'e');
+      expect(pieceFacing(left), kind).toBe('e');
+      expect(left.width / left.height, kind).toBeCloseTo(art.side.width / art.side.height);
+      expect(left.x + left.width / 2, kind).toBeCloseTo(placed.x + placed.width / 2);
+      expect(left.y + left.height / 2, kind).toBeCloseTo(placed.y + placed.height / 2);
+    }
+  });
+
+  it('turns a bank of lockers narrow and long, its four doors one above the other down the left, on a plinth', () => {
+    const { front, side } = OFFICE_ART.lockers;
+    expect(side.width).toBeLessThan(front.width / 2);
+    expect(side.height).toBeGreaterThan(front.height);
+    const doors = rects('lockers', 'side').filter(
+      (p) => p.fill === WORKPLACE_TONES.lockerA || p.fill === WORKPLACE_TONES.lockerB,
+    );
+    expect(doors).toHaveLength(4);
+    expect(doors.map((d) => d.fill)).toEqual([
+      WORKPLACE_TONES.lockerA,
+      WORKPLACE_TONES.lockerB,
+      WORKPLACE_TONES.lockerA,
+      WORKPLACE_TONES.lockerB,
+    ]);
+    for (const [i, d] of doors.entries()) {
+      expect(d.x + d.w).toBeLessThan(side.width / 2);
+      if (i) expect(d.y).toBeGreaterThan(doors[i - 1]!.y + doors[i - 1]!.h);
+    }
+    // The plinth is the lowest thing standing.
+    const plinth = rects('lockers', 'side').at(-1)!;
+    expect(plinth.role).toBe('face');
+    expect(plinth.y + plinth.h).toBeGreaterThan(Math.max(...doors.map((d) => d.y + d.h)));
+    // Its back shows no doors.
+    expect(OFFICE_ART.lockers.back.parts.some((p) => p.fill === WORKPLACE_TONES.lockerA)).toBe(
+      false,
+    );
+  });
+
+  it('builds turned counters and sinks into one run down a wall: one grid, one worktop the whole length', () => {
+    for (const kind of ['kitchen-counter', 'kitchen-sink'] as const) {
+      const { width, height } = OFFICE_ART[kind].side;
+      expect({ width, height }, kind).toEqual(KITCHEN_UNIT_SIDE);
+      // As long down the wall as the unit is across it.
+      expect(height, kind).toBe(KITCHEN_UNIT.width);
+      const worktop = rects(kind, 'side').find((p) => p.fill === KITCHEN_TONES.oak);
+      expect(worktop, kind).toMatchObject({
+        x: COUNTER_SIDE_WORKTOP.x,
+        w: COUNTER_SIDE_WORKTOP.width,
+        y: 0,
+        h: KITCHEN_UNIT_SIDE.height,
+      });
+      // From behind the worktop stays at its front's line, so a microwave stands on it the same way.
+      const back = rects(kind, 'back').find((p) => p.fill === KITCHEN_TONES.oak);
+      expect(back, kind).toMatchObject({ y: COUNTER_WORKTOP_Y, x: 0, w: KITCHEN_UNIT.width });
+    }
+  });
+
+  it('stands a turned microwave and kettle on the middle of a turned worktop, and on the same line from behind', () => {
+    const baseOf = (kind: 'microwave' | 'kettle', view: 'front' | 'back') =>
+      Math.max(
+        ...rects(kind, view)
+          .filter((p) => p.role === 'panel')
+          .map((p) => p.y + p.h),
+      );
+    const sideBase = (kind: 'microwave' | 'kettle') => {
+      const r = rects(kind, 'side').filter((p) => p.role !== 'shadow');
+      return (Math.min(...r.map((p) => p.x)) + Math.max(...r.map((p) => p.x + p.w))) / 2;
+    };
+    const middle = COUNTER_SIDE_WORKTOP.x + COUNTER_SIDE_WORKTOP.width / 2;
+    for (const kind of ['microwave', 'kettle'] as const) {
+      expect(baseOf(kind, 'back'), kind).toBe(baseOf(kind, 'front'));
+      const { width } = OFFICE_ART[kind].side;
+      // Facing left, at twice the grid's size, on a counter at x 300.
+      expect(counterSideX(kind, 300, 2) + sideBase(kind) * 2, kind).toBe(300 + middle * 2);
+      // Facing right, both mirrored.
+      expect(counterSideX(kind, 300, 2, true) + (width - sideBase(kind)) * 2, kind).toBe(
+        300 + (KITCHEN_UNIT_SIDE.width - middle) * 2,
+      );
+      expect(counterSideX(kind, 300), kind).toBe(300 + middle - sideBase(kind));
+      // Its base fits on the worktop.
+      const r = rects(kind, 'side').filter((p) => p.role !== 'shadow');
+      expect(
+        Math.max(...r.map((p) => p.x + p.w)) - Math.min(...r.map((p) => p.x)),
+        kind,
+      ).toBeLessThanOrEqual(COUNTER_SIDE_WORKTOP.width);
+    }
+  });
+
+  it('puts a turned washbasin’s mirror on the side wall behind it, and turned cubicles end to end', () => {
+    const mirror = OFFICE_ART.washbasin.side.parts.find((p) => p.fill === RESTROOM_TONES.mirror)!;
+    expect(mirror.tag).toBe('path');
+    const xs = (mirror as { d: string }).d
+      .match(/[\d.]+/g)!
+      .map(Number)
+      .filter((_, i) => i % 2 === 0);
+    expect(Math.min(...xs)).toBeGreaterThan(OFFICE_ART.washbasin.side.width / 2);
+    // From behind the glass is out of sight.
+    expect(OFFICE_ART.washbasin.back.parts.some((p) => p.fill === RESTROOM_TONES.mirror)).toBe(
+      false,
+    );
+    // A cubicle on its side: its partitions run its whole depth, the far one at the top and the near one at the foot.
+    const side = OFFICE_ART['toilet-cubicle'].side;
+    const partitions = rects('toilet-cubicle', 'side').filter(
+      (p) => p.fill === RESTROOM_TONES.laminate && p.w > side.width * 0.9,
+    );
+    expect(Math.min(...partitions.map((p) => p.y))).toBeLessThan(side.height * 0.1);
+    expect(Math.max(...partitions.map((p) => p.y + p.h))).toBeGreaterThan(side.height * 0.9);
+    expect(side.parts.some((p) => p.fill === RESTROOM_TONES.vacant)).toBe(true);
   });
 });
 

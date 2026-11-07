@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import { CountBadge, Glyph, Tooltip } from '@livehuddle/ui';
 import { drawnRect } from '@liveworkspace/avatar/seats';
+import { facingView } from '@liveworkspace/avatar/facing';
 import {
   CLOCK_DIALS_ON_FACE,
   CLOCK_FACE,
@@ -12,6 +13,7 @@ import {
   NOTICE_CORK,
   OFFICE_ART,
   notesNewestFirst,
+  pieceFacing,
   type ClockZone,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -70,11 +72,23 @@ export function SocialFace({
   }
 }
 
-// The piece's drawn rectangle inside its box, as percentages, with the grid's viewBox for an SVG over it. Shared with
-// the workday pieces' faces (WorkdayFaces.tsx).
-export function Overlay({ element, children }: { element: ShapeElement; children: ReactNode }) {
+/**
+ * The grid of the drawing a piece shows at its facing (docs/specs/009-elements/furniture-facing.md "Live faces"): its
+ * front's for a piece facing down or one that never turns, its back's or its side's once turned. A face drawn over
+ * the piece lies on this grid.
+ */
+export function overlayGrid(element: ShapeElement): { width: number; height: number } {
   const art = OFFICE_ART[element.shape as keyof typeof OFFICE_ART];
-  const grid = art?.front ?? { width: element.width, height: element.height };
+  return (
+    art?.[facingView(pieceFacing(element)).view] ?? { width: element.width, height: element.height }
+  );
+}
+
+// The piece's drawn rectangle inside its box, as percentages, with the grid's viewBox for an SVG over it: the drawing
+// its facing shows (overlayGrid), so a turned piece's face lies on its turned drawing. Shared with the workday and
+// team pieces' faces (WorkdayFaces.tsx, TeamFaces.tsx).
+export function Overlay({ element, children }: { element: ShapeElement; children: ReactNode }) {
+  const grid = overlayGrid(element);
   const r = drawnRect({ x: 0, y: 0, width: element.width, height: element.height }, grid);
   const pct = (v: number, of: number) => `${(v / of) * 100}%`;
   return (

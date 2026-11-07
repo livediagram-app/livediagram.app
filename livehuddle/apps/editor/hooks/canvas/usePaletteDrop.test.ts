@@ -2,6 +2,9 @@
 import { renderHook } from '@testing-library/react';
 import type { DragEvent as ReactDragEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import type React from 'react';
+import { startCarry } from '@/lib/palette-carry';
+import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { usePaletteDrop } from './usePaletteDrop';
 
 // A file dropped on the canvas: handed over with the canvas point it was released at (what it does with it is
@@ -129,5 +132,59 @@ describe('a drag a panel inside the canvas already took', () => {
     const h = setup();
     h.onDrop(panelDrag());
     expect(h.onDropFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('a tile carried by the pointer (lib/palette-carry.ts)', () => {
+  function carryOnto(target: HTMLElement) {
+    startCarry(
+      {
+        pointerType: 'mouse',
+        button: 0,
+        pointerId: 1,
+        clientX: 0,
+        clientY: 0,
+      } as React.PointerEvent,
+      'sofa',
+      'cosy',
+    );
+    for (const type of ['pointermove', 'pointerup']) {
+      const e = new MouseEvent(type, { bubbles: true, clientX: 300, clientY: 250 });
+      Object.defineProperty(e, 'pointerId', { value: 1 });
+      target.dispatchEvent(e);
+    }
+  }
+
+  function mounted() {
+    const main = document.createElement('main');
+    const wrapper = document.createElement('div');
+    wrapper.getBoundingClientRect = () => ({ left: 100, top: 50 }) as DOMRect;
+    main.appendChild(wrapper);
+    document.body.appendChild(main);
+    const onDropPalette = vi.fn();
+    const view = renderHook(() =>
+      usePaletteDrop({ viewportZoom: 2, wrapperRef: { current: wrapper }, onDropPalette }),
+    );
+    return { wrapper, onDropPalette, view };
+  }
+
+  it('lands where the drop would, snapped as the drag latched', () => {
+    const { wrapper, onDropPalette, view } = mounted();
+    setPaletteDragSnap({ dx: 5, dy: -5 });
+    carryOnto(wrapper);
+    expect(onDropPalette).toHaveBeenCalledWith('sofa', 105, 95, { choice: 'cosy' });
+    expect(getPaletteDragSnap()).toBeNull();
+    view.unmount();
+    document.body.innerHTML = '';
+  });
+
+  it('lands only on the canvas it was released over', () => {
+    const { onDropPalette, view } = mounted();
+    const other = document.createElement('main');
+    document.body.appendChild(other);
+    carryOnto(other);
+    expect(onDropPalette).not.toHaveBeenCalled();
+    view.unmount();
+    document.body.innerHTML = '';
   });
 });

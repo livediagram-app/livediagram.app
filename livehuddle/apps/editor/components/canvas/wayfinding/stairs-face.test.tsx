@@ -54,6 +54,21 @@ describe('the Stairs panel', () => {
     expect(climb).toHaveBeenCalledTimes(2);
   });
 
+  it('climbs a turned flight the way it faces (furniture-facing.md "A turn")', () => {
+    const { w, climb } = makeWayfinding(TABS, 'l2');
+    const turned = { ...stairs, chairFacing: 'e' as const, width: 136, height: 128 };
+    render(<StairsPanel element={turned} wayfinding={w} onDone={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Down to Ground' }));
+    expect((climb.mock.calls[0]![0] as { from: unknown }).from).toEqual({
+      id: 'stairs-1',
+      x: 0,
+      y: 0,
+      width: 136,
+      height: 128,
+      chairFacing: 'e',
+    });
+  });
+
   it('says there is nothing past the top and ground floors', () => {
     const top = makeWayfinding(TABS, 'l3');
     panel(top.w);

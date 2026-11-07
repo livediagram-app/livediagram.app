@@ -390,6 +390,7 @@ export * from '@liveworkspace/avatar/pad-art';
 export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
+export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
 export * from './room-snap';

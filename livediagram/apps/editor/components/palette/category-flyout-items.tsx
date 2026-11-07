@@ -6,7 +6,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { tileActive, type PaletteTileActions } from './PaletteTileGrid';
-import { tileDragStart } from './palette-tile-drag';
+import { tileCarryStart, tileDragStart } from './palette-tile-drag';
 import { useTileGlyph } from './PaletteIconButton';
 import { tileEnterAnimation } from './palette-tile-finish';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
@@ -63,6 +63,8 @@ function useFlyoutItem({ def, pendingDraw, onPress, onHover, sideOpenId }: ItemP
       : (e: React.MouseEvent<HTMLButtonElement>) => onPress(def, e.currentTarget),
     draggable: drag !== undefined || undefined,
     onDragStart: drag,
+    // A piece that turns is carried by the pointer, so Space turns it on its way.
+    onPointerDown: drag ? tileCarryStart(a) : undefined,
     // The drag's canvas preview goes with the drag, dropped or not.
     onDragEnd: () => setPaletteDragPreview(null),
     onPointerEnter: (e: React.PointerEvent<HTMLButtonElement>) => onHover(def, e.currentTarget),

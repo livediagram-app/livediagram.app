@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation } from '@livediagram/document';
+import { isBoxed, renumberSteps, supportsRotation, turnsWithFacing } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -36,6 +36,7 @@ const INERT_HANDLERS: CommandHandlers = {
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
+  turn: noop,
   clearAnimation: noop,
   renumberSteps: noop,
   setMarker: noop,
@@ -91,6 +92,7 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
+    turnSelected,
     clearAnimationsSelected,
     commitElements,
     setArrowFlowSelected,
@@ -141,6 +143,15 @@ export function useEditorCommands(open: boolean): {
   const singleIsBoxed = single ? isBoxed(single) : false;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
+  // Rotate Left / Right (docs/specs/009-elements/furniture-facing.md): any selected piece that turns.
+  const selectionTurns =
+    selectionCount > 0 &&
+    activeTab.elements.some(
+      (el) =>
+        (isMulti ? multiSelectedIds.has(el.id) : el.id === selectedId) &&
+        el.type === 'shape' &&
+        turnsWithFacing(el.shape),
+    );
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
@@ -163,6 +174,7 @@ export function useEditorCommands(open: boolean): {
       selectionCount,
       singleIsBoxed,
       singleRotates,
+      selectionTurns,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -189,6 +201,7 @@ export function useEditorCommands(open: boolean): {
       selectionCount,
       singleIsBoxed,
       singleRotates,
+      selectionTurns,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -216,6 +229,7 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
+    turn: turnSelected,
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,

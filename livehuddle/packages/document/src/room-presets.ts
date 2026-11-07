@@ -9,7 +9,7 @@ import type { ChairFacing, ShapeElement, ShapeKind } from './index';
 import { createShape } from './shape-factory';
 import { RESTROOM_VARIANT, applyShapeVariant } from './shape-variants';
 import { roomPreset } from './room-preset-shapes';
-import { turnedSeatingBox } from './seating';
+import { turnPiece, turnsWithFacing } from './furniture-facing';
 
 /** A piece a preset furnishes its room with: its kind, its top-left room-relative (px, for the room at the preset's
  *  own size), and, for seating, which way it faces; for a rug, its type. */
@@ -101,10 +101,10 @@ function presetPiece({ kind, x, y, facing, variant, width }: PresetPiece): Shape
   const made = width
     ? { ...base, width, height: Math.round((base.height * width) / base.width) }
     : base;
-  if (!facing || made.shape === 'meeting-table') return made;
-  if (made.shape !== 'chair' && made.shape !== 'desk' && made.shape !== 'sofa') return made;
-  const turned = turnedSeatingBox({ ...made, shape: made.shape }, made.chairFacing ?? 'n', facing);
-  return { ...made, width: turned.width, height: turned.height, chairFacing: facing };
+  if (!facing || !turnsWithFacing(made.shape)) return made;
+  // Turned in place (furniture-facing.md "A turn"), then put back at its place: its corner, not its centre.
+  const turned = turnPiece(made, facing);
+  return { ...turned, x: made.x, y: made.y };
 }
 
 /**

@@ -67,6 +67,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   screen: '#334155',
   'room-sign': '#16a34a',
   stage: '#d97706',
+  'turning-furniture': '#0d9488',
   behaviour: '#7c3aed',
   stickers: '#f43f5e',
   tools: '#14b8a6',

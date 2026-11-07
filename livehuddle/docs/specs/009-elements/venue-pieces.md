@@ -67,6 +67,12 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
   the middle bay empty with its wheel stop. Placed side by side, car parks make a longer row.
 - **Bike Rack**: a concrete pad with two steel hoop stands, a red bike and a teal bike each locked to one, side on
   (two wheels with spokes, a frame, a saddle and handlebars).
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Car Park's kerb runs along its near edge and
+  its cars are backed up to it, their tails toward you (rear window, red tail lights, a number plate), the blue car now
+  on the left; the Bike Rack's stands are nearest you with the bikes beyond them, facing left. Turned to face left, the
+  Car Park's tarmac runs down the canvas with the kerb down its right and its bays one above the other, each car side
+  on with its nose to the left, and its bays block full length; the Bike Rack's pad runs down the canvas, its two
+  stands one above the other seen from their end, each bike beside its stand coming toward you nose on.
 - Their colours are their own (tarmac, paint, steel), so they read the same on light and dark paper.
 
 ### Swimming Pool
@@ -86,6 +92,9 @@ Shape kinds: `pillar`, `column`, `car-park`, `bike-rack`, `swimming-pool`, `stag
   pairs with the Stage's default (360 wide).
 - **Podium**: a wooden lectern: a sloping top with a page of notes on it, a gooseneck microphone with a red light, and
   a front panel with a brass emblem, on a foot.
+  **Turned**: from behind, the speaker's side, its sloping top tipped toward you with the page of notes, the
+  microphone beyond, and a plain back panel with a shelf; to face left, its side with the top sloping down to the
+  right, a strip of the front panel and the edge of its emblem down the left, the microphone curving back over it.
 - Their colours are their own (velvet, gold, wood, brass).
 
 ### The stronger Stage

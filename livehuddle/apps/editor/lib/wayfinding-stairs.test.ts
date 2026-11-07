@@ -31,6 +31,32 @@ describe('the Stairs', () => {
     );
   });
 
+  // docs/specs/009-elements/stairs.md "Turned": the flight climbs the way its facing shows.
+  it('climbs toward the landing and steps off at the foot whichever way the flight is turned', () => {
+    // Facing up: the landing is nearest you, so the climb ends low on the piece and the walk off ends above it.
+    const up = { ...flight, chairFacing: 's' as const };
+    expect(stairsTopPoint(up).y).toBeGreaterThan(flight.y + flight.height / 2);
+    expect(stairsFootPoint(up)).toEqual({ x: 148, y: flight.y - 12 });
+    // On its side the flight climbs to the right (facing left) and to the left (facing right); its foot is on the
+    // other side, where the walk off ends, clear of the piece and level with the flight.
+    const left = { x: 100, y: 100, width: 136, height: 128, chairFacing: 'e' as const };
+    const right = { ...left, chairFacing: 'w' as const };
+    expect(stairsTopPoint(left).x).toBeGreaterThan(left.x + left.width / 2);
+    expect(stairsTopPoint(right).x).toBeLessThan(left.x + left.width / 2);
+    expect(stairsTopPoint(right).x - left.x).toBeCloseTo(
+      left.x + left.width - stairsTopPoint(left).x,
+    );
+    const offLeft = stairsFootPoint(left);
+    const offRight = stairsFootPoint(right);
+    expect(offLeft.x).toBeLessThan(left.x - 12);
+    expect(offRight.x).toBeGreaterThan(left.x + left.width + 12);
+    expect(offLeft.y).toBe(offRight.y);
+    expect(offLeft.y).toBeGreaterThan(left.y + left.height / 2);
+    expect(offLeft.y).toBeLessThan(left.y + left.height);
+    // Unset is facing down, as before.
+    expect(stairsFootPoint({ ...flight, chairFacing: 'n' })).toEqual(stairsFootPoint(flight));
+  });
+
   it('goes up to the next tab and down to the one before, nothing past the ends', () => {
     const tabs = [
       { id: 'g', name: 'Ground', elements: [] },

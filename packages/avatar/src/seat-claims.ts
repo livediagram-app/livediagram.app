@@ -6,7 +6,7 @@
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { seatsACharacter } from './office-geometry';
 import { isSceneShape, type AvatarSceneElement } from './scene';
-import { SEAT_SITTER_FACING, seatingFacing, seatPoints, type Seat, type SeatedBox } from './seats';
+import { seatPoints, type Seat, type SeatedBox } from './seats';
 import type { AvatarFacing, AvatarPoint } from './walk';
 
 /** Which seat a sitter holds (its `seatPoints` index), when they sat (their epoch ms) and their random tiebreak. */
@@ -112,7 +112,7 @@ export function seatOnArrival(
     sit: {
       x: seat.x,
       y: seat.y,
-      facing: seat.facing ?? SEAT_SITTER_FACING[seatingFacing(el)],
+      facing: seat.facing,
       index,
     },
   };

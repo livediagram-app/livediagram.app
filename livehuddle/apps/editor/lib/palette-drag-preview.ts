@@ -20,6 +20,9 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
+  // Carried by the pointer rather than dragged by the browser (palette-carry.ts): its moves are pointermoves, not
+  // dragovers.
+  carried?: boolean;
 };
 
 let current: PaletteDragPreview | null = null;

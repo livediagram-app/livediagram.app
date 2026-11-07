@@ -30,6 +30,9 @@ sound, and the piece is back exactly as it was when the moment ends.
 The side a moment plays from is yours: a tree rocks away from where you stand, and a pebble or a coin comes from your
 side of the water.
 
+A Fireplace or a Vending Machine plays its moment only facing down, on the front drawing its flames and shelves are
+in; turned to show its back or its side ([furniture-facing.md](furniture-facing.md)) it stays still.
+
 ## When one plays
 
 - **Walking right next to the piece**: your character's feet come within **24 px** of the piece's base (the strip

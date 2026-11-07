@@ -4,6 +4,7 @@
 // product's model package beside its element union, which re-exports this module. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { facingView, mirrorFraction, type GridFraction, type SeatFacing } from './facing';
 import { outlineWalls } from './room-outline';
 
 // The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
@@ -134,9 +135,9 @@ export const DRINK_HOLD_MS = 60_000;
 export const DRINK_SIP_EVERY_MS = 8_000;
 
 // The part of a piece that blocks walking, as fractions of its box: the pot, the shelf's base.
-const OFFICE_FOOTPRINT: Partial<
-  Record<string, { x0: number; x1: number; y0: number; y1: number }>
-> = {
+// These are each piece's front drawing ('n'); a piece that turns has its back and side drawings' footprints in
+// OFFICE_FOOTPRINT_TURNED below.
+const OFFICE_FOOTPRINT: Partial<Record<string, GridFraction>> = {
   plant: { x0: 15 / 56, x1: 41 / 56, y0: 63 / 88, y1: 84 / 88 },
   bookshelf: { x0: 0.03, x1: 0.97, y0: 0.75, y1: 0.96 },
   // livehuddle's bar and garden (its docs/specs/009-elements/office.md): the counter, the planter, the trunk's base.
@@ -182,6 +183,70 @@ const OFFICE_FOOTPRINT: Partial<
   signpost: { x0: 50 / 120, x1: 70 / 120, y0: 126 / 144, y1: 138 / 144 },
 };
 
+/**
+ * The footprint of a piece that turns, in its back and side drawings, as fractions of that drawing's grid
+ * (livehuddle's docs/specs/009-elements/furniture-facing.md "A turn": what blocks turns with it). Facing right is the
+ * side drawing mirrored, so its footprint is the side's mirrored. A back drawing left out blocks where the front does
+ * (its base stands on the same ground under the same camera).
+ */
+export const OFFICE_FOOTPRINT_TURNED: Partial<
+  Record<string, { back?: GridFraction; side: GridFraction }>
+> = {
+  // The office, the pod and the bar (livehuddle's office.md). The bookshelf on its side: its base, the length of its
+  // top from its far end's foot to its near end's. The bar from behind: its counter beyond the back shelf, from just
+  // below its top to its foot; on its side, the counter and its foot rail down its whole length.
+  bookshelf: { side: { x0: 4 / 52, x1: 48 / 52, y0: 120 / 196, y1: 190 / 196 } },
+  bar: {
+    back: { x0: 0.02, x1: 0.98, y0: 14 / 120, y1: 54 / 120 },
+    side: { x0: 2 / 104, x1: 46 / 104, y0: 56 / 232, y1: 222 / 232 },
+  },
+  // The social pieces (social-pieces.md). From behind each stands on the same base as its front; on its side, the
+  // base under its side and its front's strip.
+  jukebox: { side: { x0: 3 / 56, x1: 53 / 56, y0: 84 / 112, y1: 108 / 112 } },
+  'arcade-machine': { side: { x0: 10 / 60, x1: 56 / 60, y0: 88 / 112, y1: 108 / 112 } },
+  fireplace: { side: { x0: 2 / 48, x1: 46 / 48, y0: 96 / 120, y1: 116 / 120 } },
+  'vending-machine': { side: { x0: 2 / 60, x1: 58 / 60, y0: 96 / 128, y1: 124 / 128 } },
+  // The games, the garden seats, the venue, the stairs and the team pieces.
+  // A table from the middle of its top to its feet, down its length; the car park's bays full length (a column of
+  // them is one barrier); the rack's pad; the podium's and the suggestion box's foot.
+  'pool-table': { side: { x0: 8 / 88, x1: 84 / 88, y0: 44 / 240, y1: 232 / 240 } },
+  'foosball-table': { side: { x0: 22 / 84, x1: 76 / 84, y0: 30 / 190, y1: 184 / 190 } },
+  'car-park': {
+    back: { x0: 0, x1: 1, y0: 8 / 128, y1: 104 / 128 },
+    side: { x0: 4 / 128, x1: 108 / 128, y0: 0, y1: 1 },
+  },
+  'bike-rack': { side: { x0: 4 / 56, x1: 52 / 56, y0: 24 / 152, y1: 144 / 152 } },
+  podium: { side: { x0: 4 / 44, x1: 40 / 44, y0: 74 / 88, y1: 86 / 88 } },
+  'suggestion-box': { side: { x0: 10 / 48, x1: 38 / 48, y0: 104 / 120, y1: 114 / 120 } },
+  // The amenities: the print corner, the lockers, the kitchenette and the restroom (office-amenities.md).
+  printer: { side: { x0: 8 / 60, x1: 52 / 60, y0: 64 / 100, y1: 96 / 100 } },
+  copier: { side: { x0: 8 / 80, x1: 74 / 80, y0: 90 / 156, y1: 150 / 156 } },
+  lockers: { side: { x0: 4 / 56, x1: 52 / 56, y0: 106 / 204, y1: 198 / 204 } },
+  'kitchen-counter': { side: { x0: 2 / 64, x1: 54 / 64, y0: 0, y1: 1 } },
+  'kitchen-sink': { side: { x0: 2 / 64, x1: 54 / 64, y0: 0, y1: 1 } },
+  fridge: { side: { x0: 4 / 64, x1: 58 / 64, y0: 104 / 156, y1: 150 / 156 } },
+  'toilet-cubicle': { side: { x0: 0, x1: 1, y0: 0, y1: 1 } },
+  washbasin: { side: { x0: 28 / 64, x1: 44 / 64, y0: 98 / 116, y1: 112 / 116 } },
+  // The workday pieces (workday-pieces.md). The reception desk on its side: its counter and the work top behind it,
+  // from the foot of its far end to the foot of its near one; from behind it stands on the same ground as from the front.
+  'reception-desk': { side: { x0: 4 / 112, x1: 84 / 112, y0: 44 / 200, y1: 194 / 200 } },
+};
+
+/** A piece's footprint as fractions of the drawing its facing shows, or undefined for a piece that does not block. */
+export function footprintFraction(
+  shape: string,
+  facing: SeatFacing = 'n',
+): GridFraction | undefined {
+  const front = OFFICE_FOOTPRINT[shape];
+  if (!front) return undefined;
+  const turned = OFFICE_FOOTPRINT_TURNED[shape];
+  if (!turned) return front;
+  const { view, mirrored } = facingView(facing);
+  if (view === 'front') return front;
+  if (view === 'back') return turned.back ?? front;
+  return mirrored ? mirrorFraction(turned.side) : turned.side;
+}
+
 // livehuddle's Swimming Pool (its venue-pieces.md "How each one walks"): drawn to its size, its deck a fixed band, so
 // its footprint is the water: the pool less its deck, in px rather than fractions, matching the drawing at any size.
 export const POOL_DECK = 14;
@@ -196,8 +261,10 @@ export function isSceneryShape(kind: string): boolean {
   return kind in OFFICE_FOOTPRINT || INSET_FOOTPRINT_KINDS.includes(kind);
 }
 
-/** The footprint of a piece that blocks, in canvas coordinates, or null for one that does not. */
-export function officeFootprint(el: Rect & { shape: string }): Rect | null {
+/** The footprint of a piece that blocks, in canvas coordinates, at its facing, or null for one that does not. */
+export function officeFootprint(
+  el: Rect & { shape: string; chairFacing?: SeatFacing },
+): Rect | null {
   if (INSET_FOOTPRINT_KINDS.includes(el.shape)) {
     const d = poolDeck(el.width, el.height);
     return {
@@ -207,7 +274,7 @@ export function officeFootprint(el: Rect & { shape: string }): Rect | null {
       height: Math.max(0, el.height - 2 * d),
     };
   }
-  const f = OFFICE_FOOTPRINT[el.shape];
+  const f = footprintFraction(el.shape, el.chairFacing);
   if (!f) return null;
   return {
     x: el.x + el.width * f.x0,

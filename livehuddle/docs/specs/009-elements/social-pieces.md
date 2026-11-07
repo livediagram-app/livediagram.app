@@ -60,7 +60,7 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to sit on the free seat nearest where you
   arrived, one sitter a seat, a full piece stops you beside it; who sits is presence, never stored, a piece with more than
-  one seat rings each taken seat in its sitter's colour, and the piece names its sitters in a pill above their heads. None of them turns.
+  one seat rings each taken seat in its sitter's colour, and the piece names its sitters in a pill above their heads. Each turns four ways, its seats with it ([Turning furniture](furniture-facing.md)).
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it.
@@ -152,6 +152,10 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 - **A stream that fails** (an address that does not load, or refuses to play) shows **Can't Play** on the face for
   you; the music never retries in a loop.
 - Calls are unaffected: the music plays under call audio at its low volume.
+- **Turned** ([Turning furniture](furniture-facing.md)): to face left, its rounded side is toward you with a lit tube
+  round it, its front a narrow strip down its left (the arch's lit edge, the record window, the grille), and playing
+  lights the tube and the arch's edge; from behind, its plain back with a vented service door, the lights out of
+  sight. The **Play** button sits under it at every facing.
 
 ## Ping-Pong Table
 
@@ -160,6 +164,12 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   Table).
 - **It is playable** (Work Tracker #528): the two people sitting at it play a game of table tennis, seen from above,
   each moving the paddle at their own end. Everyone else sees the same rally and the same score.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind it is the same table with its two seats at swapped
+  ends (the left seat at the right end, its red paddle with it). Turned to face left, its length runs down the canvas:
+  the left seat at the far end (the top), the right seat at the near end (the bottom), the net across the middle, the
+  near end's edge and legs at the foot and its long side a narrow strip down the left. The game plays on the turned
+  table, its ends at the top and the bottom, and the score sits beside the table at the net, each player's points
+  nearest their own end (above the table, as before, facing down or up).
 
 ### A game
 
@@ -203,6 +213,11 @@ Only while you sit at the table, and only for your own paddle:
 - **Keyboard**: **W** and **S**, or **Arrow Up** and **Arrow Down**, move the paddle while a game runs at your table.
   They are the paddle's then, an exception to the Chair rule that any arrow key stands you up and to `W` waving:
   **Arrow Left**, **Arrow Right**, a click elsewhere or any other walk still stands you up, ending your side.
+- **At a table turned onto its side** (facing left or right), whose ends are its top and bottom, the paddles move
+  across the canvas: the pointer's or your finger's position across the table moves yours (the pointer there is a
+  left-and-right arrow), and **A** and **D**, or **Arrow Left** and **Arrow Right**, move it. They are the paddle's
+  then and stand nobody up; **Arrow Up**, **Arrow Down** and any other walk still stand you up. A table seen from
+  behind plays as one facing down: **W** and **S**, **Arrow Up** and **Arrow Down**, and the pointer's height.
 - Your paddle moves on your screen at once, never waiting for the room.
 
 ### Reduced motion
@@ -254,7 +269,14 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   for as long as you stand there; nobody else sees your bubble. With a score on the machine's table the bubble adds
   its best below: **Best 1,240 · Ann**.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
-  `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen; a turned cabinet's click is the walk.
+  `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
+  way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on
+  that side (beside its base when it faces left or right), and standing there shows the bubble.
+- **Turned**: to face left, the cabinet's tall side is toward you in its arcade profile (the marquee jutting, the
+  screen set back, the control panel jutting again) with a stripe of art on it, and its front is a narrow strip down
+  its left: the lit marquee, a slice of the shimmering screen, the joystick and the coin door. From behind, its back
+  with a vented service door, the control panel's ends either side and the marquee's lit edge; the screen is out of
+  sight. The **Insert Coin** bubble shows above it at every facing.
 - **It is playable** (Work Tracker #529): a press on the cabinet while you stand at it (its Insert Coin bubble showing)
   opens its game, **Moon Mail**, in a panel over the canvas, for you alone. Everyone in the Space shares the
   machine's **High Scores**.
@@ -356,6 +378,11 @@ Gathering spots with a fire that flickers.
   with flames, for the Garden.
 - **The flames flicker** (a CSS scale and opacity loop on two flame layers, out of step) and a soft glow breathes on
   the ground. Under reduced motion they hold still, lit.
+- **A turned Fireplace** ([Turning furniture](furniture-facing.md)): to face left, its chimney breast's brick side is
+  toward you, the mantel's end and the hearth jutting left past it, and its front a narrow strip down the left: the
+  firebox's arched edge with a sliver of fire flickering in it. From behind, the breast's plain brick back under the
+  chimney, the mantel's top beyond it, the fire out of sight. The Campfire reads the same from every side and does not
+  turn.
 
 ## Pool Table, Foosball Table, Dartboard
 
@@ -367,6 +394,12 @@ is a follow-up, built on the Ping-Pong Table's [wire](#the-wire)).
 - **Foosball Table**: a wooden cabinet round a green pitch with a white halfway line and centre circle, a goal at each
   end, four rods across it, each with its little players (red and blue, rod by rod) and a handle at the front, and the
   ball on the centre spot.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Pool Table is the same table with its cloth
+  turned round (the rack on the left, the cue ball on the right), and the Foosball Table the same cabinet with each
+  team's rods at the other end. Turned to face left, each is long and narrow, its length down the canvas: the pool
+  cloth with the cue ball and head string at the far end and the rack nearest you, the sights along the far rail on
+  the right and a pedestal under the near end; the foosball pitch with a goal at its top and foot, the rods across it
+  with their handles out to the left, and two legs under the near end. Each blocks along its length.
 - **Dartboard**: a round board on a wooden backboard, hung from a nail: twenty black and cream segments, the red and
   green double and treble rings, the bull, and three darts stuck in it. A wall piece: a click on it while walking walks
   to the floor in front, and standing there rings nothing.
@@ -382,22 +415,39 @@ A social spot like the Water Cooler, for a break room or the games corner.
   loop, so reduced motion changes nothing). An export draws the art, without the glow.
 - Scenery, like the Jukebox: its base blocks and walking up to it rings nothing. It does not give a drink (the Drinks
   Fridge and the Water Cooler do); a snack in the hand is a follow-up.
+- **Turned** ([Turning furniture](furniture-facing.md)): to face left, the cabinet's tall side is toward you with a
+  stripe down it, and its front a narrow strip down its left: the sign's lit edge, the glass with a column of cans
+  behind it and the pickup flap; on dark paper its light spills to the left. From behind, its plain back with a vented
+  panel and its power cord, the sign's lit edge along the top, and no glow.
 
 ## Bean Bag, Reading Nook
 
 Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) rules, as every seat here does.
 
 - **Bean Bag**: a slouchy coral bean bag, one seat, the sitter facing down the canvas. Place several for a corner.
+  **Turned**: from behind, its raised back nearest you and the hollow beyond it, its sitter facing up; to face left,
+  the hollow toward the left and its back rising on the right, its sitter facing left.
 - **Reading Nook**: a set in one piece: a mustard wingback armchair on a round rug, a side table with a stack of books,
   and a floor lamp whose shade is lit. One seat, in the armchair, facing down the canvas. **On dark paper** the lamp
   throws a warm pool of light on the rug and a halo round its shade (drawn as the Vending Machine's glow is).
-- Neither turns; their seat colours are their own (no fill from the theme).
+  **Turned** ([Turning furniture](furniture-facing.md)): from behind, the set mirrored (the lamp on the left, the side
+  table on the right) and the armchair's wingback back nearest you, its sitter facing up; to face left, the armchair in
+  the middle of the rug seen from its side (the cushion between its arms, the wingback a tall bar along its right),
+  the side table with its books beyond it and the lamp nearer you, its sitter facing left. The lamp glows on dark
+  paper at every facing.
+- Their seat colours are their own (no fill from the theme).
 
 ## Bench, Picnic Table, Hammock
 
 - **Bench**: a wooden garden bench with a back, two seats.
 - **Picnic Table**: a wooden table with a bench along each side, six seats facing the table, three each side.
 - **Hammock**: a striped hammock slung between two posts, one seat.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Bench's slatted back is nearest you over its
+  seat, its two sitters facing up, the left seat now on the right; the Picnic Table looks as it does from the front,
+  each seat now the one across the table. Turned to face left, each is long: the Bench's seat down the canvas with its
+  two seats one above the other, its back a bar along its right and an iron arm across each end; the Picnic Table's
+  top down the middle with a bench down each side, its diners facing it; the Hammock's sling down the canvas between
+  its far post and its near one. The Hammock reads the same from behind.
 
 ## Garden Umbrella, Fountain, Pond
 

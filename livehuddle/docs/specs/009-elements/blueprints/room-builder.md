@@ -45,7 +45,7 @@ Derived from [Door types](../room-builder.md#door-types), [Room presets](../offi
 | `packages/document/src/door-art.ts`                               | `doorArt(width, height, variant)`: each type's parts with their open and shut poses, for the canvas and the export                   |
 | `packages/document/src/svg-render-doors.ts`                       | The export's `doorSvg` (over `doorArt`, padlock and shading) and `corridorSvg` (over `corridorPaths`)                                |
 | `packages/document/src/rug-art.ts`                                | `rugParts(width, height, variant)`: each patterned rug drawn to its size, in `tint`, `sheen` and `dye` parts                         |
-| `packages/document/src/seating.ts`                                | The `tint`, `sheen` and `dye` part roles and their opacities (`FURNITURE_WEAVE`)                                                     |
+| `../packages/avatar/src/furniture-art.ts`                         | The `tint`, `sheen` and `dye` part roles and their opacities (`FURNITURE_WEAVE`), re-exported by `seating.ts`                        |
 | `packages/document/src/room-builder.ts`                           | `wallsOf` and `doorOnRoom` read a corridor's walls, so doors snap onto it, ride it and follow its resize                             |
 | `packages/document/src/validate-shape.ts`, `element-fields.ts`    | `variant` validated (`isPieceVariant`) and listed                                                                                    |
 | `apps/editor/components/canvas/collab/RoomBuilderViews.tsx`       | `DoorView` draws `doorArt` with the padlock when locked; `CorridorView`                                                              |
@@ -66,8 +66,10 @@ Notes:
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.
 - The Long Table (office.md "Long Table") is the Meeting Table's `long` variant: `@liveworkspace/avatar/seats`
-  `longTableGrid(width, height)` lays its seats (`seatPoints` reads `variant`), and `office.ts` `longTableArt` draws the
-  chairs on that same grid (cached by grid width), for `FurnitureView` and the export's `furnitureArt`.
+  `longTableLength(width, height, facing)` gives its length (across the box, or down it on its side) and
+  `longTableSeatViews(length)` its seats in each drawing (`seatPoints` reads `variant`); `@liveworkspace/avatar/
+furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`) draws its front, back and side on
+  those grids, both cached by length, for `FurnitureView`, the export's `furnitureArt` and `turnPiece`.
 - A corridor's arm is `min(CORRIDOR_ARM, the box's shorter side)`; its walls are polylines along each arm's sides at
   `ROOM_WALL / 2` in, stopping at the open ends; the drawing's walls are the same lines, stroked as a room's.
 - The palette drag hands the preview its `variant` (`PaletteDragPreview.variant`), so a dragged preset previews at

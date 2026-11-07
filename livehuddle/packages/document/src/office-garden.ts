@@ -6,9 +6,15 @@
 
 import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
-import { BAR_STOOL_SEATS, POD_SEATS } from '@liveworkspace/avatar/seats';
+import {
+  BAR_STOOL_SEATS,
+  POD_SEATS,
+  POD_SEATS_BACK,
+  POD_SEATS_SIDE,
+  type SeatView,
+} from '@liveworkspace/avatar/seats';
 import { fenceRun } from '@liveworkspace/avatar/fence';
-import { POD_DOOR_SPAN } from '@liveworkspace/avatar/pod';
+import { POD_DOOR_SPAN, POD_SIDE_DOOR_SPAN } from '@liveworkspace/avatar/pod';
 
 // Fixed colours for what keeps its colour whatever the theme, as OFFICE_TONES: leaves, bark, stone, wood, glass,
 // bottles and cans. Outlines stay the theme's stroke.
@@ -47,9 +53,46 @@ const T = GARDEN_TONES;
 // --- The Office Pod -------------------------------------------------------------------------------------------
 
 const [DOOR_FROM, DOOR_TO] = POD_DOOR_SPAN;
+const [SIDE_DOOR_FROM, SIDE_DOOR_TO] = POD_SIDE_DOOR_SPAN;
 
-/** The pod's sliding door on its grid, shut: a glass panel across the doorway. The views slide it open. */
-export const POD_DOOR = { x: DOOR_FROM, y: 134, w: DOOR_TO - DOOR_FROM, h: 9 } as const;
+/**
+ * The pod's sliding door on a drawing's grid, shut: a glass panel across the doorway, and the way it slides open
+ * (`open`, in grid units) to sit behind the wall. The views slide it open. In the front drawing it is the front
+ * wall's top seen from above and slides right; from behind it stands in the far wall's face, seen face on, and slides
+ * to your left (the front's right, turned round); on its side it runs down the left wall and slides toward you.
+ */
+export type PodDoorView = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  open: { x: number; y: number };
+};
+export const POD_DOORS: Readonly<Record<SeatView, PodDoorView>> = {
+  front: {
+    x: DOOR_FROM,
+    y: 134,
+    w: DOOR_TO - DOOR_FROM,
+    h: 9,
+    open: { x: DOOR_TO - DOOR_FROM, y: 0 },
+  },
+  back: {
+    x: DOOR_FROM,
+    y: 7,
+    w: DOOR_TO - DOOR_FROM,
+    h: 30,
+    open: { x: DOOR_FROM - DOOR_TO, y: 0 },
+  },
+  side: {
+    x: 0,
+    y: SIDE_DOOR_FROM,
+    w: 9,
+    h: SIDE_DOOR_TO - SIDE_DOOR_FROM,
+    open: { x: 0, y: SIDE_DOOR_TO - SIDE_DOOR_FROM },
+  },
+};
+/** The front drawing's door. */
+export const POD_DOOR = POD_DOORS.front;
 
 // A booth for two: a back wall with a window in its face, side walls, a front wall with a doorway, two padded
 // benches facing each other across a little table. The door is not a part: it moves with who sits in it.
@@ -86,6 +129,78 @@ export const OFFICE_POD_VIEW: FurnitureDrawing = {
   ],
   seats: POD_SEATS.seats.map(({ u, v }) => ({ u, v })),
   ring: { cx: 88, cy: 84, rx: 80, ry: 52 },
+};
+
+// Its back to you: the doorway now in the far wall, its face broken by it and the ground outside showing through;
+// the benches have swapped sides; the window wall nearest you, seen from above, its glass along its top.
+const OFFICE_POD_BACK: FurnitureDrawing = {
+  ...POD_SEATS_BACK,
+  parts: [
+    ellipse('shadow', 88, 141, 86, 4),
+    rect('floor', 6, 30, 164, 108, 2),
+    rect('floor', DOOR_FROM, 4, DOOR_TO - DOOR_FROM, 30, 0),
+    // The far wall either side of the doorway: its top, its face, and the doorway's posts.
+    rect('panel', 0, 0, DOOR_FROM, 8, 2),
+    rect('panel', DOOR_TO, 0, 176 - DOOR_TO, 8, 2),
+    rect('face', 0, 7, DOOR_FROM, 30, 1),
+    rect('face', DOOR_TO, 7, 176 - DOOR_TO, 30, 1),
+    // The benches.
+    rect('panel', 9, 54, 9, 56, 3, T.cushionDeep),
+    rect('panel', 16, 60, 30, 48, 5, T.cushion),
+    path('rail', 'M20 84H42'),
+    rect('panel', 158, 54, 9, 56, 3, T.cushionDeep),
+    rect('panel', 130, 60, 30, 48, 5, T.cushion),
+    path('rail', 'M134 84H156'),
+    // The table, its mug at the other end.
+    path('line', 'M74 100v14M102 100v14'),
+    rect('panel', 64, 66, 48, 30, 4),
+    rect('face', 64, 94, 48, 8, 3),
+    rect('panel', 86, 72, 8, 9, 2, T.glass),
+    // The side walls, the near wall with its window, the doorway's posts.
+    rect('panel', 0, 0, 8, 144, 2),
+    rect('panel', 168, 0, 8, 144, 2),
+    rect('panel', 0, 136, 176, 8, 2),
+    rect('panel', 58, 138, 60, 4, 1.5, T.glass),
+    rect('panel', DOOR_FROM - 4, 0, 6, 38, 2),
+    rect('panel', DOOR_TO - 2, 0, 6, 38, 2),
+  ],
+  ring: { cx: 88, cy: 84, rx: 80, ry: 52 },
+};
+
+// Facing left: the doorway down its left wall, the window wall down its right, the far wall's face along its top;
+// the benches run across it, one under the far wall facing you, one against the near wall with its back to you, the
+// table between them.
+const OFFICE_POD_SIDE: FurnitureDrawing = {
+  ...POD_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 72, 173, 70, 4),
+    rect('floor', 6, 30, 132, 140, 2),
+    // The far wall: its top, its face.
+    rect('panel', 0, 0, 144, 8, 2),
+    rect('face', 0, 7, 144, 30, 1),
+    // The far bench: its backrest standing against the wall, its cushion.
+    rect('panel', 44, 26, 56, 22, 4, T.cushionDeep),
+    rect('panel', 46, 42, 52, 28, 5, T.cushion),
+    path('rail', 'M72 46V66'),
+    // The table, a mug on it.
+    path('line', 'M56 118v12M88 118v12'),
+    rect('panel', 50, 84, 44, 30, 4),
+    rect('face', 50, 112, 44, 8, 3),
+    rect('panel', 58, 90, 8, 9, 2, T.glass),
+    // The near bench: its cushion beyond, its backrest's back nearest you.
+    rect('panel', 46, 132, 52, 22, 5, T.cushion),
+    path('rail', 'M72 136V150'),
+    rect('face', 44, 148, 56, 18, 4, T.cushionDeep),
+    // The window wall, the near wall, the doorway's wall either side of it and its posts.
+    rect('panel', 136, 0, 8, 176, 2),
+    rect('panel', 138, 62, 4, 72, 1.5, T.glass),
+    rect('panel', 0, 168, 144, 8, 2),
+    rect('panel', 0, 0, 8, SIDE_DOOR_FROM, 2),
+    rect('panel', 0, SIDE_DOOR_TO, 8, 176 - SIDE_DOOR_TO, 2),
+    rect('panel', 0, SIDE_DOOR_FROM - 4, 16, 6, 2),
+    rect('panel', 0, SIDE_DOOR_TO - 2, 16, 6, 2),
+  ],
+  ring: { cx: 72, cy: 102, rx: 66, ry: 66 },
 };
 
 // --- The bar --------------------------------------------------------------------------------------------------
@@ -128,6 +243,83 @@ const BAR_VIEW: FurnitureDrawing = {
   ring: { cx: 120, cy: 96, rx: 116, ry: 14 },
 };
 
+// Bottle necks over a shelf's top, seen from behind it.
+function bottleNecks(y: number, from: number, to: number, offset: number): FurniturePart[] {
+  const out: FurniturePart[] = [];
+  for (let x = from, i = 0; x + 3 <= to; x += i % 3 === 2 ? 16 : 11, i += 1)
+    out.push(
+      rect(
+        'panel',
+        x,
+        y - 2 * ((i + offset) % 3),
+        3,
+        8,
+        1,
+        T.bottles[(i + offset) % T.bottles.length],
+      ),
+    );
+  return out;
+}
+
+// Bottles standing in a column down a strip: the shelf's front cheated toward you on the turned bar.
+function bottleColumn(x: number, from: number, to: number, offset: number): FurniturePart[] {
+  const out: FurniturePart[] = [];
+  for (let y = from, i = 0; y + 5 <= to; y += i % 3 === 2 ? 11 : 8, i += 1)
+    out.push(rect('panel', x, y, 7, 6, 2, T.bottles[(i + offset) % T.bottles.length]));
+  return out;
+}
+
+// From the bartender's side: the counter beyond, its dark top with the glasses and a shelf of glasses under it; the
+// back shelf nearest you, its back to you, the bottles' necks over its top.
+const BAR_BACK: FurnitureDrawing = {
+  width: 240,
+  height: 120,
+  parts: [
+    ellipse('shadow', 120, 116, 118, 4),
+    rect('face', 6, 18, 228, 34, 3, T.wood),
+    path('rail', 'M10 36H230'),
+    rect('panel', 30, 38, 7, 8, 2, T.glass),
+    rect('panel', 42, 38, 7, 8, 2, T.glass),
+    rect('panel', 190, 38, 7, 8, 2, T.glass),
+    rect('panel', 0, 10, 240, 12, 4, T.counter),
+    rect('panel', 186, 2, 8, 11, 2, T.glass),
+    rect('panel', 83, 4, 7, 9, 2, T.glass),
+    rect('panel', 48, 2, 8, 11, 2, T.glass),
+    ...bottleNecks(52, 18, 224, 0),
+    rect('face', 8, 56, 224, 48, 3),
+    path('rail', 'M64 62V98M120 62V98M176 62V98'),
+    rect('panel', 4, 102, 232, 6, 2, T.wood),
+  ],
+  seats: [],
+  ring: { cx: 120, cy: 96, rx: 116, ry: 14 },
+};
+
+// Facing left: long and narrow, the counter down its left with its wooden front cheated toward you and its foot rail
+// along it, the glasses on its dark top; the back shelf down its right, its bottles toward the counter.
+const BAR_SIDE: FurnitureDrawing = {
+  width: 104,
+  height: 232,
+  parts: [
+    ellipse('shadow', 52, 228, 50, 4),
+    // The back shelf: its top, its near end, its bottles cheated toward the counter.
+    rect('panel', 70, 12, 28, 160, 3),
+    rect('face', 70, 170, 28, 52, 3),
+    rect('face', 62, 14, 10, 206, 2),
+    ...bottleColumn(63, 18, 214, 0),
+    // The counter: its front, its dark top with the glasses, its near end.
+    rect('panel', 8, 12, 12, 210, 3, T.wood),
+    path('rail', 'M10 64h8M10 118h8M10 172h8'),
+    rect('panel', 18, 12, 28, 162, 4, T.counter),
+    rect('panel', 28, 32, 8, 11, 2, T.glass),
+    rect('panel', 28, 102, 7, 9, 2, T.glass),
+    rect('panel', 28, 124, 8, 11, 2, T.glass),
+    rect('face', 18, 172, 28, 50, 3, T.wood),
+    path('line', 'M4 24V220'),
+  ],
+  seats: [],
+  ring: { cx: 52, cy: 200, rx: 48, ry: 14 },
+};
+
 // A round padded seat on a tall stem with a foot ring: its sitter faces the bar.
 export const BAR_STOOL_VIEW: FurnitureDrawing = {
   width: BAR_STOOL_SEATS.width,
@@ -168,6 +360,44 @@ const DRINKS_CABINET_VIEW: FurnitureDrawing = {
   ring: { cx: 44, cy: 108, rx: 40, ry: 7 },
 };
 
+// Its back to you: the top seen from above, the back's boards, its legs.
+const DRINKS_CABINET_BACK: FurnitureDrawing = {
+  width: 88,
+  height: 120,
+  parts: [
+    ellipse('shadow', 44, 117, 40, 3),
+    path('line', 'M12 108v8M76 108v8'),
+    rect('panel', 4, 4, 80, 10, 3, T.wood),
+    rect('face', 4, 12, 80, 98, 4, T.wood),
+    path('rail', 'M24 18V104M44 18V104M64 18V104'),
+  ],
+  seats: [],
+  ring: { cx: 44, cy: 108, rx: 40, ry: 7 },
+};
+
+// Facing left: its top running away to its near end, its front cheated down its left: the glass doors with their
+// bottles, and the drawers below.
+const DRINKS_CABINET_SIDE: FurnitureDrawing = {
+  width: 48,
+  height: 176,
+  parts: [
+    ellipse('shadow', 26, 172, 22, 3),
+    path('line', 'M20 160v10M42 160v10'),
+    rect('panel', 14, 4, 32, 56, 3, T.wood),
+    rect('face', 14, 58, 32, 104, 4, T.wood),
+    rect('panel', 4, 6, 12, 156, 3, T.wood),
+    rect('panel', 6, 10, 8, 102, 2, T.glass),
+    ...bottleColumn(6.5, 14, 58, 1),
+    path('rail', 'M6 61h8'),
+    ...bottleColumn(6.5, 64, 108, 4),
+    path('glint', 'M8 104L12 20'),
+    rect('panel', 6, 116, 8, 42, 2, T.woodDeep),
+    path('rail', 'M10 130v12'),
+  ],
+  seats: [],
+  ring: { cx: 26, cy: 162, rx: 22, ry: 7 },
+};
+
 function canRow(y: number, offset: number): FurniturePart[] {
   const out: FurniturePart[] = [];
   for (let i = 0; i < 5; i += 1)
@@ -195,6 +425,53 @@ const DRINKS_FRIDGE_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 36, cy: 116, rx: 32, ry: 7 },
+};
+
+// Its back to you: the top seen from above, its back, and the cooling coil's grille low down.
+const DRINKS_FRIDGE_BACK: FurnitureDrawing = {
+  width: 72,
+  height: 128,
+  parts: [
+    ellipse('shadow', 36, 125, 33, 3),
+    rect('panel', 4, 4, 64, 10, 4),
+    rect('face', 4, 12, 64, 110, 6),
+    rect('rail', 12, 78, 48, 34, 2),
+    path('rail', 'M16 86h40M16 94h40M16 102h40'),
+  ],
+  seats: [],
+  ring: { cx: 36, cy: 116, rx: 32, ry: 7 },
+};
+
+// Cans standing in a column down the turned fridge's glass.
+function canColumn(from: number, to: number, offset: number): FurniturePart[] {
+  const out: FurniturePart[] = [];
+  for (let y = from, i = 0; y + 7 <= to; y += 9, i += 1)
+    out.push(rect('panel', 8, y, 6, 7, 1.5, T.cans[(i + offset) % T.cans.length]));
+  return out;
+}
+
+// Facing left: tall and narrow, its top running away to its near side, its glass front cheated down its left with
+// the lit header, the cans on their shelves and the handle at its near end.
+const DRINKS_FRIDGE_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 168,
+  parts: [
+    ellipse('shadow', 32, 164, 26, 3),
+    rect('panel', 16, 4, 36, 42, 4),
+    rect('face', 16, 44, 36, 118, 6),
+    rect('panel', 4, 6, 14, 156, 4),
+    rect('screen', 7, 10, 8, 7, 2),
+    rect('panel', 7, 20, 8, 136, 3, T.glassDeep),
+    ...canColumn(22, 64, 0),
+    path('rail', 'M8 65h6'),
+    ...canColumn(67, 109, 1),
+    path('rail', 'M8 110h6'),
+    ...canColumn(112, 154, 2),
+    path('glint', 'M9 150L13 30'),
+    path('line', 'M4 116V146'),
+  ],
+  seats: [],
+  ring: { cx: 32, cy: 156, rx: 26, ry: 7 },
 };
 
 // --- The garden -----------------------------------------------------------------------------------------------
@@ -243,11 +520,20 @@ const TREE_VIEW: FurnitureDrawing = {
 
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_EXTRA_ART = {
-  'office-pod': allSides(OFFICE_POD_VIEW),
-  bar: allSides(BAR_VIEW),
+  'office-pod': { front: OFFICE_POD_VIEW, back: OFFICE_POD_BACK, side: OFFICE_POD_SIDE },
+  bar: { front: BAR_VIEW, back: BAR_BACK, side: BAR_SIDE },
+  // Round: it reads the same from every side, and only its sitter turns (seats.ts SEAT_VIEWS).
   'bar-stool': allSides(BAR_STOOL_VIEW),
-  'drinks-cabinet': allSides(DRINKS_CABINET_VIEW),
-  'drinks-fridge': allSides(DRINKS_FRIDGE_VIEW),
+  'drinks-cabinet': {
+    front: DRINKS_CABINET_VIEW,
+    back: DRINKS_CABINET_BACK,
+    side: DRINKS_CABINET_SIDE,
+  },
+  'drinks-fridge': {
+    front: DRINKS_FRIDGE_VIEW,
+    back: DRINKS_FRIDGE_BACK,
+    side: DRINKS_FRIDGE_SIDE,
+  },
   'outdoor-plant': allSides(OUTDOOR_PLANT_VIEW),
   tree: allSides(TREE_VIEW),
 } as const;

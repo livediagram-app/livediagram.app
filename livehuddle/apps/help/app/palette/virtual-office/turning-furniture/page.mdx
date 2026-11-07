@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TurnASofa } from '@/components/illustrations/turning-furniture';
+
+export const metadata = helpMetadata({
+  title: 'Turning Furniture',
+  description:
+    'Turn a sofa, a desk or lockers to face down, left, up or right in a livehuddle Space. Its seats and what blocks walking turn with it.',
+  path: '/help/palette/virtual-office/turning-furniture/',
+});
+
+<ArticleLayout
+  title="Turning Furniture"
+  description="Face a sofa into the room or a bank of lockers along a wall: every piece with a front turns four ways."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Virtual Office', slug: 'virtual-office' }}
+  subArticles={getSubArticles('virtual-office').filter((a) => a.slug !== 'turning-furniture')}
+>
+
+A Space is built along walls. A sofa against the left wall should face right, into the room, and lockers on a side wall should face across the room rather than at the wall. Every piece of furniture with a front turns to face **down**, **left**, **up** or **right**.
+
+<Figure caption="Rotate Right on a selected sofa: it now faces left, seen from the side, its two cushions one above the other.">
+  <TurnASofa />
+</Figure>
+
+## Turning a piece
+
+- **Rotate Left and Rotate Right.** Select a piece and press **Rotate Left** (↺) or **Rotate Right** (↻) on its toolbar, after More and Edit Text. Each turns it a quarter. Select several pieces and the same pair turns each one where it stands.
+- **The element menu.** Right-click a piece and open its section (**Sofa**, **Lockers**) to pick **Down**, **Left**, **Up** or **Right** outright.
+- **Search.** Type "rotate" in search for **Rotate Left** and **Rotate Right**.
+- **While placing it.** With a piece's tile pressed, or while you drag the tile onto the canvas, press **Space** to turn it a quarter clockwise, or **Shift+Space** to turn it back. The piece under your pointer turns, and it lands the way it shows. Place several in a row and each faces the same way. On a touch screen, place the piece and turn it with its toolbar.
+
+A locked piece doesn't turn: its Rotate buttons show greyed out until you unlock it.
+
+## What turns with it
+
+Furniture is always drawn upright, from the room's point of view. Turning a piece shows it from another side rather than tipping it over: facing you, you see its front; facing away, its back; facing left or right, its side.
+
+- **Its seats.** Somebody sitting on a turned sofa faces the way the sofa now faces, on the same cushion. If someone is sitting in it while you turn it, they stay seated and turn with it.
+- **What blocks walking.** Lockers turned onto a side wall block along that wall, not across the room.
+- **Its live parts.** A turned Ping-Pong Table plays its game on the turned table: with the table on its side, move your paddle with **A** and **D** or **Left** and **Right**. A Jukebox's lights, a Fireplace's flames and an Arcade Machine's screen show where its front shows.
+- **Its size.** A piece keeps its centre and its scale. A sofa or a bank of lockers changes shape as it turns side on; a chair turns in place.
+
+## What doesn't turn
+
+Pieces that look the same from every side (a plant, a tree, a campfire, a fountain, a pillar, a coat rack), pieces that hang on the back wall (the Notice Board, the World Clock, the Dartboard), and signs you read face on (the Directory, the Signpost). Rooms, doors, fences and the Stage keep their own controls.
+
+Furniture has no free rotation: a piece always stands square to the room.
+
+</ArticleLayout>

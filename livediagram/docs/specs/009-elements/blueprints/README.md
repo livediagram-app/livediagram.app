@@ -3,6 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
+- ./furniture-facing.md - when implementing or changing turning furniture: the facing arithmetic, the drawings per view, seats and footprints per facing, the Rotate buttons, Space while placing and the palette carry
 - ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
 - ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam

@@ -25,6 +25,7 @@ import {
   createOutlinedRoom,
   isLongTable,
   longTableArt,
+  turnPiece,
   doorLockCentre,
   outlineNameAlign,
   pointInPolygon,
@@ -131,7 +132,10 @@ describe('room presets', () => {
     ) as ShapeElement[];
     expect(lounge[2]).toMatchObject({ shape: 'rug', variant: 'bordered' });
     expect(
-      lounge.filter((p) => p.shape === 'sofa').map((p) => [p.chairFacing, p.width, p.height]),
+      lounge
+        .filter((p) => p.shape === 'sofa')
+        // Turned to the side drawing's proportions (furniture-facing.md "A turn"), so to the pixel.
+        .map((p) => [p.chairFacing, Math.round(p.width), Math.round(p.height)]),
     ).toEqual([
       ['w', 85, 152],
       ['e', 85, 152],
@@ -156,6 +160,21 @@ describe('room presets', () => {
     expect(longTableArt(900, 168).front.seats).toHaveLength(28);
     expect(longTableArt(560, 168)).toBe(longTableArt(560, 168));
     expect(face(table)).toContain('viewBox="0 0 560 168"');
+  });
+
+  it('turns a Long Table like the Meeting Table: a tall table on its side, drawn and seated to its length', () => {
+    const table = applyShapeVariant(createShape('meeting-table', 0, 0), 'long');
+    const turned = turnPiece(table, 'e');
+    expect(turned.chairFacing).toBe('e');
+    expect([Math.round(turned.width), Math.round(turned.height)]).toEqual([168, 560]);
+    const art = longTableArt(turned.width, turned.height, 'e');
+    expect(art.side).toMatchObject({ width: 168, height: 560 });
+    expect(art.side.seats).toHaveLength(16);
+    expect(art.back.seats).toHaveLength(16);
+    expect(face(turned)).toContain('viewBox="0 0 168 560"');
+    // Turned back, it is the table it was.
+    const back = turnPiece(turned, 'n');
+    expect([Math.round(back.width), Math.round(back.height)]).toEqual([560, 168]);
   });
 
   it("spreads a preset's pieces with a room placed bigger, each keeping its size", () => {

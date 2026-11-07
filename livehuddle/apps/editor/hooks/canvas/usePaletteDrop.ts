@@ -7,11 +7,13 @@
 // onDragOver / onDrop handlers to spread onto the
 // canvas <main>.
 
-import type { DragEvent as ReactDragEvent, RefObject } from 'react';
+import { useEffect, type DragEvent as ReactDragEvent, type RefObject } from 'react';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { ShapeKind } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { PALETTE_DND_MIME, STICKER_DND_MIME } from '@/lib/icons';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
+import { lastCarryDrop, subscribeCarryDrop } from '@/lib/palette-carry';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 
 type PaletteDropDeps = {
@@ -92,27 +94,54 @@ export function usePaletteDrop({
     const stickerId = e.dataTransfer.getData(STICKER_DND_MIME);
     if (!shapeKind && !stickerId) return;
     e.preventDefault();
-    // Invert via the transformed wrapper rect (like the double-click add):
-    // measuring the untransformed <main> instead misses the origin-center
-    // pivot term, landing drops off-cursor at any zoom other than 100%.
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const raw = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    // Land where the ghost + guides promised (docs/specs/010-palette/palette-drag-ghost.md): the alignment snap
-    // the drag latched onto, not the raw cursor. Cleared immediately so a
-    // later drag can't inherit a stale offset.
-    const snap = getPaletteDragSnap();
-    setPaletteDragSnap(null);
-    const cx = raw.x + (snap?.dx ?? 0);
-    const cy = raw.y + (snap?.dy ?? 0);
-    if (stickerId) onDropPalette?.('sticker', cx, cy, { stickerId });
+    const at = snappedDropPoint(e.clientX, e.clientY, rect, viewportZoom);
+    if (stickerId) onDropPalette?.('sticker', at.x, at.y, { stickerId });
     else
       onDropPalette?.(
         shapeKind as ShapeKind,
-        cx,
-        cy,
+        at.x,
+        at.y,
         dragChoice ? { choice: dragChoice } : undefined,
       );
   };
+
+  // A tile carried by the pointer (lib/palette-carry.ts, the tiles of pieces that turn) and released over the
+  // canvas lands exactly as a dropped one: same point, same snap, same drop. The carry already ruled out a release
+  // over a floating panel. Read through the latest-value ref, so the subscription is made once.
+  const carried = useLatest({ onDropPalette, viewportZoom, wrapperRef });
+  useEffect(
+    () =>
+      subscribeCarryDrop(() => {
+        const drop = lastCarryDrop();
+        const { onDropPalette: land, viewportZoom: zoom, wrapperRef: wrapper } = carried.current;
+        const rect = wrapper.current?.getBoundingClientRect();
+        if (!drop || !rect || !land) return;
+        // Released over this canvas, not another one (a split view shows two).
+        const main = wrapper.current?.closest('main');
+        if (main && !main.contains(drop.target)) return;
+        const at = snappedDropPoint(drop.clientX, drop.clientY, rect, zoom);
+        land(drop.kind, at.x, at.y, drop.choice ? { choice: drop.choice } : undefined);
+      }),
+    [carried],
+  );
   return { onDragOver, onDrop };
+}
+
+// The canvas point a drop at a client point lands at. Inverted through the transformed wrapper rect (like the
+// double-click add): measuring the untransformed <main> instead misses the origin-center pivot term, landing drops
+// off-cursor at any zoom other than 100%. Then where the ghost and guides promised
+// (docs/specs/010-palette/palette-drag-ghost.md): the alignment snap the drag latched onto, not the raw cursor,
+// cleared at once so a later drag can't inherit a stale offset.
+function snappedDropPoint(
+  clientX: number,
+  clientY: number,
+  rect: DOMRect,
+  zoom: number,
+): { x: number; y: number } {
+  const raw = pointerToCanvas(clientX, clientY, rect, zoom);
+  const snap = getPaletteDragSnap();
+  setPaletteDragSnap(null);
+  return { x: raw.x + (snap?.dx ?? 0), y: raw.y + (snap?.dy ?? 0) };
 }

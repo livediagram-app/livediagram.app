@@ -66,8 +66,8 @@ Derived from [Office](../office.md).
 - **Destinations**: `elementUnderFeet` skips `isFloorShape`, `plant` and `bookshelf`. A meeting table and the
   machines remain destinations.
 - **Sitting at the table**: `seatPoints` (`@liveworkspace/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
-  their `facing` (`MEETING_TABLE_VIEW.tableSeats` spreads them); `Canvas.onWalkIntoChair` sits with `seatFor`, which
-  takes `seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(el)]`. `turnedSeatingBox` never turns a table.
+  their `facing` turned to the table's (`SEAT_VIEWS['meeting-table']`, [Turning furniture](furniture-facing.md));
+  `Canvas.onWalkIntoChair` sits with `seatFor`, which takes `seat.facing`.
 - **Drinks**: `arriveOn` calls `onWalkIntoDrink(el)` when `drinkFrom(el.shape)`. `Canvas` then calls
   `avatar.giveDrink(kind)`, calls `answerMachine` (`lib/machine-answer.ts`) for that element, and tracks the use. `giveDrink` sets
   `holdingRef`, sets `drink = { kind, seq + 1 }` and publishes an idle snapshot; an effect keyed on `drink` puts

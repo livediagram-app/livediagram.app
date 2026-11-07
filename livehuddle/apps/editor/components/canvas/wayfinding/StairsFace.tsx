@@ -104,7 +104,10 @@ export function StairsPanel({
   const waited = useFloorsOnOpen(Boolean(floors.up?.loading || floors.down?.loading), wayfinding);
   const take = (flight: StairsFlight) => {
     onDone();
-    wayfinding.actions.climb({ from: { id, x, y, width, height }, flight });
+    wayfinding.actions.climb({
+      from: { id, x, y, width, height, chairFacing: element.chairFacing },
+      flight,
+    });
   };
   const { here } = floors;
   return (

@@ -24,9 +24,9 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
-  seatingFacing,
   type FurniturePart,
 } from './seating';
 import {
@@ -63,6 +63,7 @@ import {
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
+import { pieceFacing } from './furniture-facing';
 
 // The canvas draws a mode glyph at the palette's 14px weight and scales the
 // SVG to 22px on the button face, with non-scaling strokes, so its lines stay
@@ -552,7 +553,7 @@ function avatarPadArt(el: Face): string {
   );
 }
 
-// A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
+// A piece of furniture (docs/specs/009-elements/furniture-facing.md "The camera"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
   const art = isSeatingShape(el.shape)
@@ -561,10 +562,8 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
       ? OFFICE_ART[el.shape]
       : null;
   if (!art) return '';
-  const facing = isSeatingShape(el.shape)
-    ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
-    : 'n';
-  const frame = furnitureFrame(art, facing);
+  // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
+  const frame = furnitureFrame(art, pieceFacing(el));
   const parts = frame.view.parts
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
     .join('');
@@ -593,6 +592,8 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${p.fill ? xmlEscape(p.fill) : seat}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
       case 'floor':
         return `fill="${seat}"`;
+      case 'mark':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}"`;
       case 'line':
         return `fill="none" stroke="${line}" stroke-width="${FURNITURE_LINE_STROKE}" stroke-linecap="round"`;
       case 'rail':
@@ -601,6 +602,13 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${line}"`;
       case 'glint':
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+      // The woven roles (a patterned rug's, shared with livehuddle): unstroked, faint over the fill.
+      case 'tint':
+        return `fill="${line}" opacity="${FURNITURE_WEAVE.tint}"`;
+      case 'sheen':
+        return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
+      case 'dye':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
     }
   })();
   // A face toward the room is the panel, shaded with its stroke colour.

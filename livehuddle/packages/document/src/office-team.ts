@@ -103,6 +103,50 @@ const SUGGESTION_BOX_VIEW: FurnitureDrawing = {
   ring: { cx: 32, cy: 104, rx: 22, ry: 6 },
 };
 
+// From behind: the box's plain back with the door it is emptied by and its brass lock, the note still half posted
+// through the slot in the lid.
+const SUGGESTION_BOX_BACK: FurnitureDrawing = {
+  width: 64,
+  height: 112,
+  parts: [
+    ellipse('shadow', 32, 108, 22, 3),
+    rect('face', 14, 100, 36, 8, 2, T.woodDeep),
+    rect('face', 28, 62, 8, 40, 2, T.wood),
+    rect('panel', 6, 24, 52, 42, 4, T.wood),
+    rect('rail', 13, 31, 38, 28, 2),
+    ellipse('mark', 44, 45, 2.6, 2.6, T.brass),
+    rect('mark', 43.4, 45, 1.2, 3, 0.6, T.slot),
+    path('panel', 'M26 22L28 6H40L38 22Z', T.paper),
+    path('rail', 'M30.5 10.5h7M30 14.5h6'),
+    rect('panel', 2, 16, 60, 10, 3, T.woodDeep),
+    rect('mark', 18, 19.5, 28, 3, 1.5, T.slot),
+  ],
+  seats: [],
+  ring: { cx: 32, cy: 104, rx: 22, ry: 6 },
+};
+
+// Facing left: the lid's top down the canvas with its slot along it and the note standing in it, the box's end
+// toward you, a strip of its front with the lightbulb plate down the left, on its post and foot.
+const SUGGESTION_BOX_SIDE: FurnitureDrawing = {
+  width: 48,
+  height: 120,
+  parts: [
+    ellipse('shadow', 24, 116, 18, 3),
+    rect('face', 10, 106, 28, 8, 2, T.woodDeep),
+    rect('face', 20, 70, 8, 38, 2, T.wood),
+    rect('panel', 10, 40, 30, 34, 4, T.wood),
+    rect('panel', 4, 42, 9, 32, 2, T.wood),
+    rect('panel', 5.5, 48, 6, 20, 1.5, T.cream),
+    ellipse('mark', 8.5, 56, 2, 4, T.bulb),
+    path('panel', 'M20 30L21 4H28L29 30Z', T.paper),
+    path('rail', 'M22.5 9v6M25.5 9v9'),
+    rect('panel', 3, 14, 40, 30, 3, T.woodDeep),
+    rect('mark', 23, 18, 3, 22, 1.5, T.slot),
+  ],
+  seats: [],
+  ring: { cx: 24, cy: 112, rx: 18, ry: 5 },
+};
+
 // --- Signpost -----------------------------------------------------------------------------------------------------
 
 /** How many arrow boards a signpost carries (team-pieces.md "Signpost"). */
@@ -206,7 +250,11 @@ const PHOTO_WALL_VIEW: FurnitureDrawing = {
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_TEAM_ART = {
   'calendar-wall': allSides(CALENDAR_WALL_VIEW),
-  'suggestion-box': allSides(SUGGESTION_BOX_VIEW),
+  'suggestion-box': {
+    front: SUGGESTION_BOX_VIEW,
+    back: SUGGESTION_BOX_BACK,
+    side: SUGGESTION_BOX_SIDE,
+  },
   signpost: allSides(SIGNPOST_VIEW),
   'photo-wall': allSides(PHOTO_WALL_VIEW),
 } as const;

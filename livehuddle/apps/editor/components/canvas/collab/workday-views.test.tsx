@@ -4,7 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createShape,
   HOT_DESK_CARD,
+  HOT_DESK_CARDS,
   OFFICE_ART,
+  TREADMILL_BELTS,
+  turnPiece,
   PET_LEG_MS,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -112,7 +115,8 @@ describe('the workday pieces on the canvas', () => {
 
   it('raises a held hot desk’s card clear of its sitter’s head, a tall one’s higher still', () => {
     const desk = piece('hot-desk');
-    const grid = OFFICE_ART['hot-desk'].front;
+    // An unturned hot desk shows its back drawing: its sitter faces up at the monitor.
+    const grid = OFFICE_ART['hot-desk'].back;
     expect(hotDeskCardY(desk, grid, [])).toBe(HOT_DESK_CARD.y);
     const drawn = drawnRect(desk, grid);
     const perGrid = drawn.height / grid.height;
@@ -149,6 +153,81 @@ function AtDesk({ feet }: { feet: { x: number; y: number } | null }) {
     </CanvasSurfaceProvider>
   );
 }
+
+// docs/specs/009-elements/furniture-facing.md "Live faces": each live part on the drawing the facing shows.
+describe('the workday pieces turned', () => {
+  const turned = (kind: Kind, facing: 'n' | 'e' | 's' | 'w', sitters: ChairSitter[] = []) =>
+    render(
+      <CanvasSurfaceProvider surface="light">
+        <FurnitureView
+          element={turnPiece(piece(kind), facing)}
+          stroke="#334155"
+          sitters={sitters}
+        />
+      </CanvasSurfaceProvider>,
+    );
+  // Whether a node is drawn inside the drawing's mirror (its words would read backwards).
+  const mirroredAt = (node: Element | null) => node?.closest('g[transform*="scale(-1 1)"]') ?? null;
+
+  it('runs the treadmill belt the way it goes at every facing, on the belt in view', () => {
+    const cases = [
+      ['s', 'toward', TREADMILL_BELTS.back.x],
+      ['n', 'away', TREADMILL_BELTS.front.x],
+      ['e', 'along', TREADMILL_BELTS.side.x],
+      [
+        'w',
+        'along',
+        OFFICE_ART.treadmill.side.width - TREADMILL_BELTS.side.x - TREADMILL_BELTS.side.w,
+      ],
+    ] as const;
+    for (const [facing, way, x] of cases) {
+      const { container, unmount } = turned('treadmill', facing, [sam]);
+      const belt = container.querySelector('[data-belt-running]');
+      expect(belt?.getAttribute('data-belt-running'), facing).toBe(way);
+      expect(Number(belt?.querySelector('clipPath rect')?.getAttribute('x')), facing).toBe(x);
+      expect(belt?.querySelector('.lh-belt-run-along') !== null, facing).toBe(way === 'along');
+      unmount();
+    }
+  });
+
+  it('stands the hot desk card on the turned desk, its words never mirrored', () => {
+    const W = OFFICE_ART['hot-desk'].side.width;
+    const cases = [
+      ['n', HOT_DESK_CARDS.front.x + HOT_DESK_CARDS.front.w / 2],
+      ['e', HOT_DESK_CARDS.side.x + HOT_DESK_CARDS.side.w / 2],
+      ['w', W - HOT_DESK_CARDS.side.x - HOT_DESK_CARDS.side.w / 2],
+    ] as const;
+    for (const [facing, middle] of cases) {
+      const { container, unmount } = turned('hot-desk', facing);
+      const text = container.querySelector('[data-hot-desk-card="free"]');
+      expect(text?.textContent, facing).toBe('Hot Desk');
+      expect(Number(text?.getAttribute('x')), facing).toBe(middle);
+      expect(mirroredAt(text), facing).toBeNull();
+      unmount();
+    }
+    // Held, the raised card centres on the sitter's seat: right of the desk on its side, left of it mirrored.
+    const seatX = OFFICE_ART['hot-desk'].side.seats[0]!.u * W;
+    for (const [facing, x] of [
+      ['e', seatX],
+      ['w', W - seatX],
+    ] as const) {
+      const { container, unmount } = turned('hot-desk', facing, [sam]);
+      const text = container.querySelector('[data-hot-desk-card="held"]');
+      expect(text?.textContent, facing).toBe('Sam');
+      expect(Number(text?.getAttribute('x')), facing).toBeCloseTo(x);
+      expect(mirroredAt(text), facing).toBeNull();
+      unmount();
+    }
+  });
+
+  it('lights the booth lamp on the roof at every facing', () => {
+    for (const facing of ['n', 'e', 's', 'w'] as const) {
+      const { container, unmount } = turned('phone-booth', facing, [sam]);
+      expect(container.querySelector('[data-booth-lamp="on"]'), facing).not.toBeNull();
+      unmount();
+    }
+  });
+});
 
 describe('the Reception Desk', () => {
   it('says Welcome to you at its counter, and its Ring Bell keeps its press, then reads Rang', () => {

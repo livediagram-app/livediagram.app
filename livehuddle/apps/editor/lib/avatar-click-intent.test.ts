@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createShape,
+  turnPiece,
   ELEMENT_TYPES,
   SHAPE_KINDS,
   type Element as CanvasElement,
@@ -274,6 +275,45 @@ describe('walkPointFor', () => {
       expect(walkPointFor(el, { x: el.x + el.width / 2, y: el.y }).x).toBe(el.x + el.width / 2);
       // A turned one has no front below it: the click is the walk.
       expect(walkPointFor(piece(shape, 90), { x: 150, y: 150 })).toEqual({ x: 150, y: 150 });
+    }
+  });
+
+  it('walks a click on a turned Arcade Machine to its turned front, where its bubble shows', () => {
+    for (const chairFacing of ['e', 's', 'w'] as const) {
+      const el = turnPiece(
+        { ...createShape('arcade-machine', 100, 100), id: 'arc', chairFacing: 'n' as const },
+        chairFacing,
+      ) as CanvasElement & { x: number; y: number; width: number; height: number };
+      const foot = officeFootprint({ ...el, shape: 'arcade-machine', chairFacing })!;
+      const to = walkPointFor(el, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
+      // Never onto its base, and at its front: left of it, right of it, or behind it.
+      const onBase =
+        to.x > foot.x && to.x < foot.x + foot.width && to.y > foot.y && to.y < foot.y + foot.height;
+      expect(onBase, chairFacing).toBe(false);
+      if (chairFacing === 'e') expect(to.x).toBeLessThan(foot.x);
+      if (chairFacing === 'w') expect(to.x).toBeGreaterThan(foot.x + foot.width);
+      if (chairFacing === 's') expect(to.y).toBeLessThan(foot.y);
+      expect(arcadeAt(to, [{ ...el, chairFacing }]), chairFacing).toBe('arc');
+      // Standing below it, where the front was, shows nothing on its side.
+      if (chairFacing !== 's')
+        expect(
+          arcadeAt({ x: el.x + el.width / 2, y: el.y + el.height + 16 }, [{ ...el, chairFacing }]),
+        ).toBeNull();
+    }
+  });
+
+  it('walks a click on a turned Reception Desk to its turned front, where its Welcome shows', () => {
+    for (const chairFacing of ['e', 's', 'w'] as const) {
+      const el = turnPiece(
+        { ...createShape('reception-desk', 100, 100), id: 'rec', chairFacing: 'n' as const },
+        chairFacing,
+      ) as CanvasElement & { x: number; y: number; width: number; height: number };
+      const foot = officeFootprint({ ...el, shape: 'reception-desk', chairFacing })!;
+      const to = walkPointFor(el, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
+      const onCounter =
+        to.x > foot.x && to.x < foot.x + foot.width && to.y > foot.y && to.y < foot.y + foot.height;
+      expect(onCounter, chairFacing).toBe(false);
+      expect(receptionAt(to, [{ ...el, chairFacing }]), chairFacing).toBe('rec');
     }
   });
 

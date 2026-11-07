@@ -3,7 +3,7 @@
 // The element-menu sections for the collaboration elements that carry
 // settings: the estimate card's scale (docs/specs/012-collaboration/estimate-card.md), the agenda's segments
 // (docs/specs/012-collaboration/agenda.md), the decision record's status / date / drivers (docs/specs/012-collaboration/decision-record.md), and
-// the chair's facing (docs/specs/009-elements/chair.md).
+// a piece of furniture's facing (docs/specs/009-elements/furniture-facing.md).
 //
 // Their own file for the same reason BehaviourMenuSections has one: each is a
 // small form, and none of it belongs in the data-shape sections beside charts
@@ -35,9 +35,9 @@ import {
   type DecisionStatus,
   type EstimateScale,
   type ShapeElement,
-  isSeatingShape,
-  seatingFacing,
-  type SeatingKind,
+  elementKindLabel,
+  pieceFacing,
+  seatsACharacter,
   DEFAULT_ROOM_DOOR,
   ROOM_DOOR_LABELS,
   ROOM_DOORS,
@@ -330,18 +330,12 @@ export function DecisionMenuSection({
   );
 }
 
-// --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
+// --- Facing (docs/specs/009-elements/furniture-facing.md "Turning a placed piece") ------------------------------
 
 const FACING_ARROW: Record<ChairFacing, string> = { n: '↓', e: '←', s: '↑', w: '→' };
 
 // The section's title and hint name the furniture it is on (docs/specs/009-elements/chair.md).
-const SEATING_NOUN: Record<SeatingKind, string> = {
-  chair: 'Chair',
-  desk: 'Desk',
-  sofa: 'Sofa',
-  'meeting-table': 'Meeting Table',
-};
-
+// Every piece that turns has this section, titled for the piece (Sofa, Bookshelf), its four facings as tiles.
 export function ChairMenuSection({
   target,
   sectionProps,
@@ -351,9 +345,9 @@ export function ChairMenuSection({
   sectionProps: (id: string) => { open: boolean; onToggle: () => void };
   onSetFacing: (facing: ChairFacing) => void;
 }) {
-  const kind = target && isSeatingShape(target.shape) ? target.shape : 'chair';
-  const facing = seatingFacing({ shape: kind, chairFacing: target?.chairFacing });
-  const noun = SEATING_NOUN[kind];
+  const facing = target ? pieceFacing(target) : 'n';
+  const noun = target ? elementKindLabel(target) : 'Chair';
+  const seats = !!target && seatsACharacter(target.shape);
   return (
     <MenuAccordionSection title={noun} icon={<ToolsMenuGlyph />} {...sectionProps('chair')}>
       {/* Tiles rather than a list: the arrow IS the answer here, which is the
@@ -374,8 +368,14 @@ export function ChairMenuSection({
         ))}
       </MenuTileGrid>
       <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-        Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
-        {noun.toLowerCase()} to sit down.
+        {seats ? (
+          <>
+            Which way somebody sitting here faces. Walk an Avatar-mode character into the{' '}
+            {noun.toLowerCase()} to sit down.
+          </>
+        ) : (
+          'Which way its front faces. Rotate Left and Rotate Right on the toolbar turn it a quarter.'
+        )}
       </p>
     </MenuAccordionSection>
   );

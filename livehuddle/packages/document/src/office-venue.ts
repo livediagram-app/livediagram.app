@@ -149,6 +149,103 @@ const CAR_PARK_VIEW: FurnitureDrawing = {
   ring: { cx: 120, cy: 84, rx: 118, ry: 40 },
 };
 
+// A car seen from behind in the bay centred on `cx`, its tail toward the kerb: wheels, the roof and rear window, the
+// boot and its lid line, mirrors, tail lights, a number plate and the bumper.
+function carRear(cx: number, body: string, deep: string): FurniturePart[] {
+  const at = (d: number) => cx + d;
+  return [
+    ellipse('shadow', cx, 101, 33, 4),
+    rect('mark', at(-28), 86, 10, 15, 3, T.tyre),
+    rect('mark', at(18), 86, 10, 15, 3, T.tyre),
+    path(
+      'panel',
+      `M${at(-22)} 55L${at(-17)} 36Q${at(-16)} 32 ${at(-12)} 32H${at(12)}Q${at(16)} 32 ${at(17)} 36L${at(22)} 55Z`,
+      body,
+    ),
+    path('mark', `M${at(-18)} 53L${at(-14)} 40H${at(14)}L${at(18)} 53Z`, T.glass),
+    path('glint', `M${at(6)} 50L${at(10)} 43`),
+    path(
+      'panel',
+      `M${at(-29)} 65Q${at(-30)} 55 ${at(-23)} 54H${at(23)}Q${at(30)} 55 ${at(29)} 65V91Q${at(29)} 95 ${at(25)} 95H${at(-25)}Q${at(-29)} 95 ${at(-29)} 91Z`,
+      body,
+    ),
+    rect('mark', at(-31), 48, 7, 5, 2, deep),
+    rect('mark', at(24), 48, 7, 5, 2, deep),
+    path('rail', `M${at(-22)} 64Q${cx} 60 ${at(22)} 64`),
+    rect('panel', at(-26), 70, 11, 6, 2, T.live),
+    rect('panel', at(15), 70, 11, 6, 2, T.live),
+    rect('mark', at(-9), 76, 18, 5, 1, T.paint),
+    path('rail', `M${at(-26)} 87H${at(26)}`),
+  ];
+}
+
+// From behind: the kerb along the near edge, the bays open at the far edge, the cars backed up to the kerb so their
+// tails face you, the blue one now on the left and the red on the right, the wheel stop by the kerb.
+const CAR_PARK_BACK: FurnitureDrawing = {
+  width: 240,
+  height: 128,
+  parts: [
+    rect('panel', 0, 4, 240, 108, 3, T.tarmac),
+    path('mark', BAY_LINES.map((x) => `M${x} 8h4v94h-4z`).join(''), T.paint),
+    rect('panel', 98, 92, 44, 6, 3, T.kerb),
+    ...carRear(44, T.carBlue, T.carBlueDeep),
+    ...carRear(196, T.carRed, T.carRedDeep),
+    rect('panel', 0, 106, 240, 12, 2, T.kerb),
+    rect('face', 0, 116, 240, 6, 1, T.kerb),
+  ],
+  seats: [],
+  ring: { cx: 120, cy: 60, rx: 118, ry: 40 },
+};
+
+// A car side on in the bay centred on `cy`, its nose to the left: the body and cabin, two windows, the door seam, a
+// headlight and a tail light, and its two wheels.
+function carSide(cy: number, body: string, deep: string): FurniturePart[] {
+  const y = (d: number) => cy + d;
+  return [
+    ellipse('shadow', 54, y(24), 42, 4),
+    path(
+      'panel',
+      `M30 ${y(-8)}L38 ${y(-24)}Q39 ${y(-26)} 42 ${y(-26)}H68Q71 ${y(-26)} 72 ${y(-24)}L82 ${y(-8)}Z`,
+      body,
+    ),
+    path(
+      'mark',
+      `M35 ${y(-9)}L41 ${y(-22)}H54V${y(-9)}ZM57 ${y(-9)}V${y(-22)}H69L76 ${y(-9)}Z`,
+      T.glass,
+    ),
+    path('glint', `M43 ${y(-12)}L47 ${y(-19)}`),
+    rect('panel', 12, y(-10), 82, 24, 8, body),
+    path('rail', `M55 ${y(-8)}V${y(12)}M16 ${y(6)}H90`),
+    ellipse('mark', 15.5, y(-2), 2.5, 4, T.lamp),
+    rect('mark', 89, y(-5), 4, 7, 1.5, T.live),
+    rect('mark', 60, y(-6), 6, 2.5, 1, deep),
+    ellipse('panel', 31, y(15), 8, 8, T.tyre),
+    ellipse('panel', 76, y(15), 8, 8, T.tyre),
+    ellipse('mark', 31, y(15), 4, 4, T.rim),
+    ellipse('mark', 76, y(15), 4, 4, T.rim),
+  ];
+}
+
+// Facing left: the strip of tarmac runs down the canvas, the kerb down its right, the three bays one above the other,
+// the red car side on in the top bay and the blue in the bottom one, both nose out to the left, the wheel stop in the
+// middle bay by the kerb.
+const CAR_PARK_SIDE_LINES = [4, 80, 156, 232] as const;
+const CAR_PARK_SIDE: FurnitureDrawing = {
+  width: 128,
+  height: 240,
+  parts: [
+    rect('panel', 0, 0, 114, 240, 3, T.tarmac),
+    path('mark', CAR_PARK_SIDE_LINES.map((y) => `M4 ${y}h100v4h-100z`).join(''), T.paint),
+    rect('face', 108, 0, 8, 240, 1, T.kerb),
+    rect('panel', 112, 0, 14, 240, 2, T.kerb),
+    rect('panel', 96, 98, 6, 44, 3, T.kerb),
+    ...carSide(46, T.carRed, T.carRedDeep),
+    ...carSide(198, T.carBlue, T.carBlueDeep),
+  ],
+  seats: [],
+  ring: { cx: 60, cy: 120, rx: 58, ry: 118 },
+};
+
 // A tube of a bike's frame, `w` thick, from one point to another, as a closed quad for a 'mark' path.
 function tube(x1: number, y1: number, x2: number, y2: number, w: number): string {
   const len = Math.hypot(x2 - x1, y2 - y1);
@@ -158,13 +255,13 @@ function tube(x1: number, y1: number, x2: number, y2: number, w: number): string
   return `M${r(x1 + nx)} ${r(y1 + ny)}L${r(x2 + nx)} ${r(y2 + ny)}L${r(x2 - nx)} ${r(y2 - ny)}L${r(x1 - nx)} ${r(y1 - ny)}Z`;
 }
 
-// A bike side on, its back wheel at `ox`: two wheels with spokes, a frame of tubes in its colour, a saddle, handlebars.
-function bike(ox: number, colour: string): FurniturePart[] {
-  const back = { x: ox + 11, y: 60 };
-  const front = { x: ox + 45, y: 60 };
-  const crank = { x: ox + 26, y: 60 };
-  const seat = { x: ox + 21, y: 41 };
-  const head = { x: ox + 40, y: 43 };
+// A bike side on, its back wheel at `ox`, facing right (or left when `dir` is -1): two wheels with spokes, a frame of tubes in its colour, a saddle, handlebars.
+function bike(ox: number, colour: string, dir: 1 | -1 = 1): FurniturePart[] {
+  const back = { x: ox + 11 * dir, y: 60 };
+  const front = { x: ox + 45 * dir, y: 60 };
+  const crank = { x: ox + 26 * dir, y: 60 };
+  const seat = { x: ox + 21 * dir, y: 41 };
+  const head = { x: ox + 40 * dir, y: 43 };
   const wheel = (c: { x: number; y: number }): FurniturePart[] => [
     ellipse('panel', c.x, c.y, 11, 11, T.tyre),
     ellipse('mark', c.x, c.y, 8.5, 8.5, T.rim),
@@ -188,7 +285,7 @@ function bike(ox: number, colour: string): FurniturePart[] {
     path('mark', tube(head.x, head.y - 3, front.x, front.y, 2.4), T.steel),
     ellipse('mark', crank.x, crank.y, 3, 3, T.tyre),
     rect('mark', seat.x - 6, seat.y - 5, 12, 3.5, 1.75, T.tyre),
-    path('line', `M${head.x} ${head.y - 2}L${head.x + 1} ${head.y - 8}H${head.x + 6}`),
+    path('line', `M${head.x} ${head.y - 2}L${head.x + dir} ${head.y - 8}H${head.x + 6 * dir}`),
   ];
 }
 
@@ -211,6 +308,63 @@ const BIKE_RACK_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 68, cy: 66, rx: 64, ry: 10 },
+};
+
+// From behind: the stands nearest you, the bikes beyond them facing left, the teal one now on the left.
+const BIKE_RACK_BACK: FurnitureDrawing = {
+  width: 136,
+  height: 80,
+  parts: [
+    ellipse('shadow', 68, 77, 65, 3),
+    rect('panel', 2, 62, 132, 14, 3, T.concrete),
+    rect('face', 2, 72, 132, 4, 1, T.concrete),
+    ...bike(130, T.bikeRed, -1),
+    ...bike(64, T.bikeTeal, -1),
+    path('panel', hoop(10, 62) + hoop(74, 126), T.steel),
+    path('glint', 'M13 64V45M77 64V45'),
+  ],
+  seats: [],
+  ring: { cx: 68, cy: 66, rx: 64, ry: 10 },
+};
+
+// A bike seen nose on, coming toward you down the canvas, its front wheel on the ground at (x, y): its back wheel
+// beyond, the frame in its colour, the saddle, the fork, and the handlebars across with their grips. Seen nose on
+// its wheels are nearly edge on, cheated a little wider so they read as wheels.
+function bikeNoseOn(x: number, y: number, colour: string): FurniturePart[] {
+  return [
+    ellipse('panel', x, y - 34, 3.5, 11, T.tyre),
+    ellipse('mark', x, y - 34, 1.4, 8, T.rim),
+    path('mark', `M${x - 2} ${y - 40}h4v22h-4z`, colour),
+    rect('mark', x - 4.5, y - 44, 9, 5, 2.5, T.tyre),
+    ellipse('panel', x, y - 11, 3.5, 11, T.tyre),
+    ellipse('mark', x, y - 11, 1.4, 8, T.rim),
+    path('mark', `M${x - 1.2} ${y - 30}h2.4v18h-2.4z`, T.steel),
+    path('line', `M${x - 10} ${y - 29}H${x + 10}`),
+    rect('mark', x - 13, y - 30.5, 4, 3, 1.5, T.tyre),
+    rect('mark', x + 9, y - 30.5, 4, 3, 1.5, T.tyre),
+  ];
+}
+
+// A Sheffield stand seen from its end, cheated a little toward you so it reads: a narrow loop of tube, its far leg
+// standing at y0 and its near leg at y1.
+const hoopEndOn = (x: number, y0: number, y1: number): string =>
+  `M${x - 6} ${y1}V${y0 - 20}Q${x - 6} ${y0 - 28} ${x} ${y0 - 28}Q${x + 6} ${y0 - 28} ${x + 6} ${y0 - 20}V${y0}H${x + 2}V${y0 - 20}Q${x + 2} ${y0 - 24} ${x} ${y0 - 24}Q${x - 2} ${y0 - 24} ${x - 2} ${y0 - 20}V${y1}Z`;
+
+// Facing left: the pad runs down the canvas, the two stands one above the other along it, each bike beside its stand
+// on the near (left) side, nose on to you.
+const BIKE_RACK_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 152,
+  parts: [
+    ellipse('shadow', 28, 148, 25, 3),
+    rect('panel', 4, 20, 48, 124, 3, T.concrete),
+    rect('face', 4, 140, 48, 4, 1, T.concrete),
+    path('panel', hoopEndOn(40, 56, 84) + hoopEndOn(40, 112, 138), T.steel),
+    ...bikeNoseOn(22, 84, T.bikeRed),
+    ...bikeNoseOn(22, 140, T.bikeTeal),
+  ],
+  seats: [],
+  ring: { cx: 28, cy: 80, rx: 26, ry: 66 },
 };
 
 // --- The stage's pieces ---------------------------------------------------------------------------------------------
@@ -292,14 +446,58 @@ const PODIUM_VIEW: FurnitureDrawing = {
   ring: { cx: 28, cy: 80, rx: 24, ry: 6 },
 };
 
+// From behind, where the speaker stands: the sloping top tipped toward you with its page of notes, the microphone
+// beyond it, the plain back panel with a shelf for papers, on its foot.
+const PODIUM_BACK: FurnitureDrawing = {
+  width: 56,
+  height: 88,
+  parts: [
+    ellipse('shadow', 28, 85, 25, 3),
+    rect('panel', 6, 76, 44, 9, 2, T.woodDeep),
+    path('line', 'M14 14C14 9 10 6 9 3'),
+    ellipse('mark', 8.5, 3, 2.6, 3.2, T.mic),
+    path('panel', 'M3 16H53L50 30H6Z', T.wood),
+    path('panel', 'M13 18L15 13H41L43 18L41 27H15Z', T.paper),
+    path('rail', 'M18 18H38M18 21.5H35M18 25H37'),
+    path('panel', 'M10 30H46L44 78H12Z', T.wood),
+    path('mark', 'M11 30.6H18.6L17 77H12.5Z', T.woodDeep),
+    rect('face', 14, 42, 28, 6, 1.5, T.woodDeep),
+    path('rail', 'M16 60H40'),
+  ],
+  seats: [],
+  ring: { cx: 28, cy: 80, rx: 24, ry: 6 },
+};
+
+// Facing left: the lectern's side, its top sloping down toward the speaker on the right, a strip of the front panel
+// with the edge of its brass emblem down the left, the microphone curving back over the top, on its foot.
+const PODIUM_SIDE: FurnitureDrawing = {
+  width: 44,
+  height: 88,
+  parts: [
+    ellipse('shadow', 22, 85, 20, 3),
+    rect('panel', 4, 76, 36, 9, 2, T.woodDeep),
+    path('panel', 'M14 28L36 34L35 78H15Z', T.wood),
+    path('glint', 'M31 40V72'),
+    path('panel', 'M7 28H15V78H10Z', T.wood),
+    ellipse('mark', 11.5, 52, 2, 6.5, T.brass),
+    path('panel', 'M5 20L40 29V35L5 26Z', T.wood),
+    path('panel', 'M12 20.5L32 25.6L31 27.2L12 22.4Z', T.paper),
+    path('line', 'M10 22C10 13 14 10 19 7'),
+    ellipse('mark', 20, 6.4, 3.2, 2.6, T.mic),
+    ellipse('mark', 10, 24.5, 1.4, 1.4, T.live),
+  ],
+  seats: [],
+  ring: { cx: 22, cy: 80, rx: 20, ry: 6 },
+};
+
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_VENUE_ART = {
   pillar: allSides(PILLAR_VIEW),
   column: allSides(COLUMN_VIEW),
-  'car-park': allSides(CAR_PARK_VIEW),
-  'bike-rack': allSides(BIKE_RACK_VIEW),
+  'car-park': { front: CAR_PARK_VIEW, back: CAR_PARK_BACK, side: CAR_PARK_SIDE },
+  'bike-rack': { front: BIKE_RACK_VIEW, back: BIKE_RACK_BACK, side: BIKE_RACK_SIDE },
   'stage-curtains': allSides(STAGE_CURTAINS_VIEW),
-  podium: allSides(PODIUM_VIEW),
+  podium: { front: PODIUM_VIEW, back: PODIUM_BACK, side: PODIUM_SIDE },
 } as const;
 
 // --- The swimming pool ----------------------------------------------------------------------------------------------
