@@ -19,8 +19,13 @@ import {
   DEFAULT_ROOM_DOOR,
   ROOM_DOOR_LABELS,
   ROOM_DOORS,
+  ROOM_WALLS,
+  ROOM_WALLS_LABELS,
+  roomWallsOf,
+  type RoomWalls,
   type RoomDoor,
 } from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
@@ -114,6 +119,55 @@ export function RoomMenuSection({
       <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
         Which wall the doorway is in. Avatar-mode characters walk through the doorway and nowhere
         else; with None, only a portal gets you in.
+      </p>
+    </MenuAccordionSection>
+  );
+}
+
+// --- A room's walls (docs/specs/009-elements/office.md "Glass walls") ---------------------------------
+
+// Solid: a filled wall; Glass: a pane you see through.
+function WallsGlyph({ walls }: { walls: RoomWalls }) {
+  return (
+    <Glyph size={14} units={16}>
+      {walls === 'solid' ? (
+        <rect x="2" y="3" width="12" height="10" rx="1" fill="currentColor" fillOpacity={0.35} />
+      ) : (
+        <>
+          <rect x="2" y="3" width="12" height="10" rx="1" />
+          <path d="M8 3v10M5 10l2.5-4M9.5 10.5 11 8" strokeWidth={1} />
+        </>
+      )}
+    </Glyph>
+  );
+}
+
+export function RoomWallsMenuSection({
+  target,
+  sectionProps,
+  onSetWalls,
+}: {
+  target: ShapeElement | undefined;
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
+  onSetWalls: (walls: RoomWalls) => void;
+}) {
+  const walls = target ? roomWallsOf(target) : 'solid';
+  return (
+    <MenuAccordionSection title="Walls" icon={<ToolsMenuGlyph />} {...sectionProps('room-walls')}>
+      <MenuTileGrid cols={2}>
+        {ROOM_WALLS.map((w) => (
+          <MenuTile
+            key={w}
+            icon={<WallsGlyph walls={w} />}
+            label={ROOM_WALLS_LABELS[w]}
+            active={walls === w}
+            onClick={() => onSetWalls(w)}
+          />
+        ))}
+      </MenuTileGrid>
+      <p className="px-2 pb-1.5 pt-1 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+        Glass walls let everyone see who is inside. They still block walking, and nobody outside
+        hears the room.
       </p>
     </MenuAccordionSection>
   );

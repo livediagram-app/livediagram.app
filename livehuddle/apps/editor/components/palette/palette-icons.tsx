@@ -246,6 +246,18 @@ export function DoorIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// A Window (docs/specs/009-elements/room-builder.md "Window"): a wall with a framed pane in it and light falling below.
+export function WindowIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M2 7h3M19 7h3" />
+      <rect x="5" y="5" width="14" height="4" rx="0.5" />
+      <path d="M12 5v4" />
+      <path d="M7 12.5 5 20M12 12.5V21M17 12.5l2 7.5" strokeDasharray="2 2" />
+    </Glyph>
+  );
+}
+
 export function MeetingTableIcon({ size = 14 }: IconSizeProps = {}) {
   return (
     <Glyph size={size} units={24}>

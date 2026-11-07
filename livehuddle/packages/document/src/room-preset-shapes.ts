@@ -1,7 +1,8 @@
 // The Room tile's presets (docs/specs/009-elements/office.md "Room presets"): six rooms to start from, each an ordinary
 // Room placed at a size and a name, the shaped ones with their walls (a custom room's `roomOutline`) and the point their
-// Door stands at; the pieces each is furnished with are room-presets.ts's. Nothing about a preset is stored. A LEAF
-// module: types and the avatar's outline geometry only.
+// Door stands at; the pieces each is furnished with are room-presets.ts's. Nothing about a preset is stored but the
+// Meeting Booth's glass walls, which are the room's own wall style. A LEAF module: types and the avatar's outline
+// geometry only.
 
 import { pointInPolygon, type OutlinePoint } from '@liveworkspace/avatar/room-outline';
 import type { ShapeElement } from './index';
@@ -14,6 +15,8 @@ type RoomPreset = {
   // its Door stands at. A rectangle has neither: its Door is the new Room's own, in the front wall.
   outline?: readonly OutlinePoint[];
   door?: OutlinePoint;
+  // A wall style the room keeps (office.md "Glass walls"): the one thing a preset stores.
+  variant?: 'glass';
 };
 
 // The Lounge's octagon: a 430 px square of centre line with its corners cut so every wall is the same length.
@@ -69,6 +72,8 @@ export const ROOM_PRESETS: Readonly<Record<string, RoomPreset>> = {
     ],
     door: { x: 220, y: 435 },
   },
+  // A meeting room in glass (office.md "Glass walls", DEFAULTS.md D230): seen into from outside, a call of its own.
+  'meeting-booth': { label: 'Meeting Booth', width: 360, height: 300, variant: 'glass' },
 };
 
 /** The room preset `variant` names, or null when it is none (the Restroom is a preset of its own, office-amenities). */
@@ -106,6 +111,7 @@ export function roomAsPreset(room: ShapeElement, preset: RoomPreset): ShapeEleme
     width: preset.width,
     height: preset.height,
     label: preset.label,
+    ...(preset.variant ? { variant: preset.variant } : {}),
   };
   if (!preset.outline) return sized;
   const roomOutline = preset.outline.map((p) => ({

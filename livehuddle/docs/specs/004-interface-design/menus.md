@@ -194,6 +194,9 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Session tool settings | ⋯ on a timer, stopwatch or poll element                                  | The session pane for that tool                                          |
 | Live image copy menu  | Live image on a share pass, with more than one tab                       | A tab select, copy rows                                                 |
 
+The Tab menu's tool buttons (Rename, Duplicate, Paste, Side by Side when it shows, Delete) spread evenly across the
+menu's top row, Delete last, so the row has no gap where a missing button would sit.
+
 Before this spec every one of them was `role="menu"`, so their sliders, fields and toggles sat inside
 a menu that may not own them, and opening one from the keyboard left focus behind.
 

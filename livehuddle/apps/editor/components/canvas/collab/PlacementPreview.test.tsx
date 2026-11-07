@@ -142,6 +142,31 @@ describe('DoorPlacementPreview', () => {
     expect(preview()?.hasAttribute('data-on-wall')).toBe(false);
   });
 
+  it('previews a Window on the wall it would snap to, facing in (room-builder.md "Window")', () => {
+    const win = { type: 'shape', kind: 'window' } as PendingDraw;
+    expect(placingKind(win, null)).toBe('window');
+    const landing = placementLanding('window', { x: 200, y: 120 }, [room]);
+    expect(landing.onWall).toBe(true);
+    // The top wall: the room is below, the window's own +y, so it keeps the wall's angle.
+    expect(landing.piece.rotation).toBe(0);
+    render(
+      <PlacementPreview
+        pendingDraw={win}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 200, 120);
+    expect(preview()?.getAttribute('data-kind')).toBe('window');
+    expect(preview()?.hasAttribute('data-on-wall')).toBe(true);
+    expect(preview()?.hasAttribute('inert')).toBe(true);
+    expect(preview()?.querySelector('[aria-label="Window"]')).not.toBeNull();
+    move('pointermove', 900, 900);
+    expect(preview()?.hasAttribute('data-on-wall')).toBe(false);
+  });
+
   it('hides off the canvas', () => {
     render(
       <PlacementPreview

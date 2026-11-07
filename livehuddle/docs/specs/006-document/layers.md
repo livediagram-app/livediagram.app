@@ -21,6 +21,8 @@ a room, a fence or a portal to vanish from view without anyone meaning it to.
   **Grass** paints first, then every **Garden Path** in array order, then the other floors (rooms, rugs, stages,
   ponds, doors), larger first. A path laid later lies on one laid earlier whatever their sizes, so a path that ends on
   another, or a round plaza where paths meet, covers what it should ([Garden Path](../009-elements/office.md#garden-path)).
+  **Windows** paint last among the backdrops, in array order: over the room and rugs they sit on, under every piece of
+  furniture, so a window's light lies on the floor ([Window](../009-elements/room-builder.md#window)).
 - **Bring to Front / Send to Back** move the selection to the end / start of the array (`bringManyToFront` /
   `sendManyToBack`), in the element menu and the selection popover alike.
 

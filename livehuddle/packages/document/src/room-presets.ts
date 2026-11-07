@@ -89,6 +89,12 @@ export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]
     { kind: 'plant', x: 110, y: 324 },
     { kind: 'plant', x: 274, y: 324 },
   ],
+  // A glass booth (office.md "Glass walls"): a Screen on the back wall, a Meeting Table for six, a plant in a corner.
+  'meeting-booth': [
+    { kind: 'screen', x: 164, y: 26, width: 112 },
+    { kind: 'meeting-table', x: 44, y: 100 },
+    { kind: 'plant', x: 290, y: 40 },
+  ],
 };
 
 /** The Restroom's door sign: a Room Sign this wide (aspect locked), beside the Door, this far below the front wall. */

@@ -8,6 +8,7 @@ import {
   defaultFillColor,
   defaultStrokeColor,
   isPlacedShape,
+  isWallPiece,
   snapDoorToWall,
   turnPiece,
   turnsWithFacing,
@@ -27,8 +28,8 @@ import { usePlacingFacing } from '@/lib/placing-facing';
 import { usePlacingTurnKeys } from '@/hooks/canvas/usePlacingTurnKeys';
 
 // Where a placed piece would land with the pointer at canvas point `at`: at its own size (its preset's, `variant`),
-// centred on the point (as a click or a drop places one). A Door then snaps onto the nearest wall, as its click and
-// drop do (docs/specs/009-elements/room-builder.md "Door").
+// centred on the point (as a click or a drop places one). A Door or a Window then snaps onto the nearest wall, as its
+// click and drop do (docs/specs/009-elements/room-builder.md "Door", "Window").
 // A piece that turns lands at the facing Space gave it (docs/specs/009-elements/furniture-facing.md "Turning while
 // placing"), its box the turned drawing's.
 export function placementLanding(
@@ -40,9 +41,9 @@ export function placementLanding(
 ): { piece: ShapeElement; onWall: boolean } {
   const base = placedPiece(kind, variant, facing);
   const free = { ...base, x: at.x - base.width / 2, y: at.y - base.height / 2 };
-  if (kind !== 'door') return { piece: free, onWall: false };
-  const door = snapDoorToWall(free, elements);
-  return { piece: door, onWall: door !== free };
+  if (!isWallPiece(free)) return { piece: free, onWall: false };
+  const snapped = snapDoorToWall(free, elements);
+  return { piece: snapped, onWall: snapped !== free };
 }
 
 // A new piece of a kind at the origin, turned to `facing` when it turns.
@@ -139,9 +140,10 @@ export function PlacementPreview({
   }, [kind, wrapperRef, zoom]);
 
   // The art is drawn once per kind, at the origin, and only its box moves: a pointer move re-renders a div, not the
-  // piece (the Door is the exception, as its wall turns it).
+  // piece (a Door and a Window are the exceptions, as their wall turns them).
+  const onWalls = kind === 'door' || kind === 'window';
   const art = useMemo(() => {
-    if (!kind || kind === 'door' || !hasPieceArt(kind)) return null;
+    if (!kind || onWalls || !hasPieceArt(kind)) return null;
     const piece = placedPiece(kind, variant, facing);
     return (
       <PieceArt
@@ -150,7 +152,7 @@ export function PlacementPreview({
         fill={defaultFillColor(piece, surface)}
       />
     );
-  }, [kind, variant, surface, facing]);
+  }, [kind, onWalls, variant, surface, facing]);
 
   if (!kind || !at) return null;
   // An armed Room snaps to its neighbours as a dragged one does, wall to wall included (docs/specs/009-elements/
@@ -162,8 +164,7 @@ export function PlacementPreview({
       ? { x: at.x + snap.dx, y: at.y + snap.dy }
       : at;
   const { piece, onWall } = placementLanding(kind, point, elements, variant, facing);
-  const door = kind === 'door';
-  const drawn = door ? (
+  const drawn = onWalls ? (
     <PieceArt
       element={piece}
       stroke={defaultStrokeColor(piece, surface)}
@@ -196,10 +197,10 @@ export function PlacementPreview({
       data-kind={kind}
       data-on-wall={onWall ? '' : undefined}
       className={`pointer-events-none absolute rounded-sm outline-2 outline-offset-2 ${
-        door && onWall
+        onWalls && onWall
           ? 'opacity-80 outline outline-brand-500 dark:outline-brand-400'
           : drawn
-            ? `opacity-60 ${door ? 'outline-dashed outline-brand-500/60 dark:outline-brand-400/60' : ''}`
+            ? `opacity-60 ${onWalls ? 'outline-dashed outline-brand-500/60 dark:outline-brand-400/60' : ''}`
             : 'flex items-center justify-center rounded-lg border-2 border-dashed border-brand-500/70 bg-brand-500/5 text-brand-500/80 dark:border-brand-400/70 dark:bg-brand-400/10 dark:text-brand-300/90'
       }`}
       style={{

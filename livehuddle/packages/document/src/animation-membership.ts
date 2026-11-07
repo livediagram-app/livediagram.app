@@ -187,6 +187,7 @@ const WORDLESS_SHAPES = new Set<string>([
   'signpost',
   'photo-wall',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',

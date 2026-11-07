@@ -196,6 +196,8 @@ export type EditorContextMenuProps = {
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
   onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
+  // And its walls (docs/specs/009-elements/office.md "Glass walls"): Solid or Glass.
+  onSetRoomWalls: (walls: import('@livehuddle/document').RoomWalls) => void;
   // Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md): Who Can Speak and Show Cameras.
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
   // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.

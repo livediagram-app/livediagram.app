@@ -204,56 +204,59 @@ export function PortalMenu({
             icon row so they're one glance away. The rest of the menu
             groups the verbose / destructive actions into sections. */}
           <MenuToolbar>
-            <MenuToolButton
-              icon={<PencilIcon />}
-              label="Rename"
-              description="Rename this tab."
-              onClick={onRename}
-            />
-            <MenuToolButton
-              icon={<DuplicateIcon />}
-              label="Duplicate"
-              description="Create a copy of this tab in this space."
-              onClick={onDuplicate}
-            />
-            {/* Paste in the tab ⋯ menu: one tab verb among several, so an
+            {/* The buttons spread evenly across the row, Delete last (docs/specs/004-interface-design/menus.md
+              "Control menus"), so the row has no gap. */}
+            <div className="flex w-full items-center justify-between">
+              <MenuToolButton
+                icon={<PencilIcon />}
+                label="Rename"
+                description="Rename this tab."
+                onClick={onRename}
+              />
+              <MenuToolButton
+                icon={<DuplicateIcon />}
+                label="Duplicate"
+                description="Create a copy of this tab in this space."
+                onClick={onDuplicate}
+              />
+              {/* Paste in the tab ⋯ menu: one tab verb among several, so an
               icon. Opened from an empty-canvas right-click (`point`) it
               is a labelled row below instead (docs/specs/008-canvas/canvas-and-palette.md). Greyed, not
               hidden, when the buffer is empty. */}
-            {canvas && !point ? (
-              <MenuToolButton
-                icon={<PasteMenuIcon />}
-                label="Paste"
-                description={
-                  canvas.canPaste ? 'Paste what you copied onto this tab.' : 'Nothing to paste yet.'
-                }
-                onClick={() => {
-                  canvas.onPaste();
-                  onClose();
-                }}
-                disabled={!canvas.canPaste}
-              />
-            ) : null}
-            {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
+              {canvas && !point ? (
+                <MenuToolButton
+                  icon={<PasteMenuIcon />}
+                  label="Paste"
+                  description={
+                    canvas.canPaste
+                      ? 'Paste what you copied onto this tab.'
+                      : 'Nothing to paste yet.'
+                  }
+                  onClick={() => {
+                    canvas.onPaste();
+                    onClose();
+                  }}
+                  disabled={!canvas.canPaste}
+                />
+              ) : null}
+              {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
               pill to the right does, for a keyboard or a trackpad that would rather not drag. */}
-            {sideBySide ? (
-              <MenuToolButton
-                icon={<SideBySideIcon />}
-                label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
-                description={
-                  sideBySide.closing
-                    ? 'Go back to one tab: this one, across the whole window.'
-                    : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
-                }
-                onClick={() => {
-                  sideBySide.run();
-                  onClose();
-                }}
-                active={sideBySide.closing}
-              />
-            ) : null}
-            {/* Delete sits at the right edge, apart from the everyday verbs. */}
-            <div className="ml-auto flex items-center gap-0.5">
+              {sideBySide ? (
+                <MenuToolButton
+                  icon={<SideBySideIcon />}
+                  label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
+                  description={
+                    sideBySide.closing
+                      ? 'Go back to one tab: this one, across the whole window.'
+                      : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
+                  }
+                  onClick={() => {
+                    sideBySide.run();
+                    onClose();
+                  }}
+                  active={sideBySide.closing}
+                />
+              ) : null}
               <MenuToolButton
                 icon={<TrashIcon />}
                 label="Delete"

@@ -342,6 +342,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     // The Corridor (docs/specs/009-elements/corridor.md), beside the rooms.
     'Corridor',
     'Door',
+    // The Window (docs/specs/009-elements/room-builder.md "Window").
+    'Window',
     'Fence',
     'Stage',
     'Stage-curtains',

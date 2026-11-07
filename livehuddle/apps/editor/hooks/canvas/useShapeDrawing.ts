@@ -22,6 +22,7 @@ import { useRef, useState } from 'react';
 import {
   createFreehand,
   createOutlinedRoom,
+  isWallPiece,
   snapDoorToWall,
   withDoorPiece,
   type Element,
@@ -216,13 +217,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // Containers don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every container painted
     // behind its contents regardless of array position.
-    // A door tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door"), against the
-    // live walls.
+    // A door or window tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door",
+    // "Window"), against the live walls.
     // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), and a room preset's
     // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo.
     commit((els) => [
       ...els,
-      ...(sized.type === 'shape' && sized.shape === 'door'
+      ...(isWallPiece(sized)
         ? [snapDoorToWall(sized, els)]
         : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined)),
     ]);
