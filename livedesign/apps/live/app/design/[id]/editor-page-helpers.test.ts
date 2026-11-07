@@ -63,6 +63,18 @@ describe('placeholdersFromSummaries', () => {
     ]);
     expect(out.map((t) => t.folder)).toEqual(['Org', undefined]);
   });
+
+  it('carries a connected tab connection (liveworkspace/docs/specs/004-index/connected-tabs.md)', () => {
+    const connection = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'liveplanner', itemId: 'plan1' };
+    const out = placeholdersFromSummaries([
+      { id: 'a', name: 'Plan', connection },
+      { id: 'b', name: 'Backend' },
+    ]);
+    expect(out.map((t) => (t as { connection?: unknown }).connection)).toEqual([
+      connection,
+      undefined,
+    ]);
+  });
 });
 
 describe('patchTab', () => {

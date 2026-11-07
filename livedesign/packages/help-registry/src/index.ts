@@ -153,7 +153,7 @@ export const categories: Category[] = [
     title: 'Tabs',
     description:
       'Keep a whole project in one design: organise, link, and move between tabs of pages.',
-    articleCount: 9,
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -1223,6 +1223,16 @@ export const articles: Article[] = [
     description:
       'Turn an element into a jump point to another tab, another design, or a web address.',
     keywords: 'jump navigation cross reference hyperlink go to connect boards',
+    category: 'Tabs',
+    categorySlug: 'tabs',
+  },
+  {
+    slug: 'connected-files',
+    title: 'Connected Files',
+    description:
+      'Add a tab that opens a file from any liveworkspace app: a diagram, a plan, a document or another design.',
+    keywords:
+      'connect connected file tab livediagram liveplanner livedocuments livehuddle other app project link share both ways role editor viewer participant remove connect again',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
