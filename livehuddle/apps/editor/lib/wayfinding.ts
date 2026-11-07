@@ -12,18 +12,20 @@ import {
   roomDoorSpan,
   roomInterior,
   roomZones,
-  STAIRS_TOP_SHARE,
+  pieceFacing,
+  STAIRS_ENDS,
   stageAt,
   stageTop,
   zoneAt,
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { podInterior } from '@liveworkspace/avatar/pod';
+import { podDoorway } from '@liveworkspace/avatar/pod';
 import { doorLine, pointInPolygon } from '@liveworkspace/avatar/room-outline';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
 import { avatarScale, type AvatarConfig } from '@liveworkspace/avatar/config';
-import { avatarSpawnBelow } from '@liveworkspace/avatar/walk';
+import { AVATAR_SPAWN_GAP, avatarPortraitBox, avatarSpawnBelow } from '@liveworkspace/avatar/walk';
+import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
 
 export type WayPoint = { x: number; y: number };
 export type WayBox = { x: number; y: number; width: number; height: number };
@@ -137,11 +139,13 @@ export function placePoints(
       arrival: centre(top),
     };
   }
+  // Through its doorway, wherever the pod faces (docs/specs/009-elements/furniture-facing.md "A turn").
   if (el.shape === 'office-pod') {
-    const inner = podInterior(el);
-    const front = inner.y + inner.height;
-    const x = inner.x + inner.width / 2;
-    return { approach: { x, y: front + POD_OUT }, arrival: { x, y: front - POD_IN } };
+    const { at, out } = podDoorway(el);
+    return {
+      approach: { x: at.x + out.x * POD_OUT, y: at.y + out.y * POD_OUT },
+      arrival: { x: at.x - out.x * POD_IN, y: at.y - out.y * POD_IN },
+    };
   }
   if (isRoomOutline(el.roomOutline)) {
     const outline = el.roomOutline.map((p) => ({
@@ -448,14 +452,38 @@ export function signpostBoards(
 
 // --- The Stairs ----------------------------------------------------------------------------------------------
 
-/** Where a climb ends (docs/specs/009-elements/stairs.md "Taking them"): the feet on the flight's top step. */
-export function stairsTopPoint(el: WayBox): WayPoint {
-  return { x: el.x + el.width / 2, y: el.y + el.height * STAIRS_TOP_SHARE };
+/** A Stairs as its ends read it: its box and its facing (furniture-facing.md), the flight climbing away from its foot. */
+export type StairsBox = WayBox & { chairFacing?: SeatFacing };
+
+// The drawing a Stairs shows at its facing (Down when unset), and whether it is the side mirrored.
+const stairsView = (el: StairsBox) =>
+  facingView(pieceFacing({ shape: 'stairs', chairFacing: el.chairFacing }));
+
+/**
+ * Where a climb ends (docs/specs/009-elements/stairs.md "Taking them", "Turned"): the feet on the flight's top step,
+ * wherever the flight climbs to on the drawing its facing shows.
+ */
+export function stairsTopPoint(el: StairsBox): WayPoint {
+  const { view, mirrored } = stairsView(el);
+  const { u, v } = STAIRS_ENDS[view].top;
+  return { x: el.x + el.width * (mirrored ? 1 - u : u), y: el.y + el.height * v };
 }
 
-/** Where the walk off the Stairs ends: centred in front of their foot, the whole figure below the piece. */
-export function stairsFootPoint(el: WayBox): WayPoint {
-  return avatarSpawnBelow(el, avatarScale('regular'));
+/**
+ * Where the walk off the Stairs ends: in front of their foot, clear of the piece. Facing down the foot is below it,
+ * facing up above it, on its side beside it (left, or right when mirrored), level with the flight's middle.
+ */
+export function stairsFootPoint(el: StairsBox): WayPoint {
+  const scale = avatarScale('regular');
+  const { view, mirrored } = stairsView(el);
+  const ends = STAIRS_ENDS[view];
+  if (ends.foot === 'below') return avatarSpawnBelow(el, scale);
+  if (ends.foot === 'above') return { x: el.x + el.width / 2, y: el.y - AVATAR_SPAWN_GAP };
+  const clear = AVATAR_SPAWN_GAP + avatarPortraitBox(scale).width / 2;
+  return {
+    x: mirrored ? el.x + el.width + clear : el.x - clear,
+    y: el.y + el.height * ends.v,
+  };
 }
 
 /** Where a flight lands on its floor: the Stairs there (their top step and foot), else the floor's arrival. */

@@ -122,6 +122,19 @@ describe('placePoints', () => {
     const p = placePoints(pod, []);
     expect(p.approach!.y).toBeGreaterThan(p.arrival.y);
   });
+
+  // docs/specs/009-elements/furniture-facing.md "A turn": a turned pod's doorway is in the wall its front faces.
+  it('arrives in a turned pod through its door, wherever it faces', () => {
+    const turned = (chairFacing: 'e' | 's' | 'w') =>
+      placePoints(at('office-pod', 0, 0, { chairFacing }) as never, []);
+    const left = turned('e');
+    expect(left.approach!.x).toBeLessThan(left.arrival.x);
+    expect(left.approach!.y).toBe(left.arrival.y);
+    const up = turned('s');
+    expect(up.approach!.y).toBeLessThan(up.arrival.y);
+    const right = turned('w');
+    expect(right.approach!.x).toBeGreaterThan(right.arrival.x);
+  });
 });
 
 describe('who is where', () => {

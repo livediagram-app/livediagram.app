@@ -35,8 +35,11 @@ describe('the second set of social pieces', () => {
       expect(isGridOfficeShape(kind), kind).toBe(true);
       const art = OFFICE_ART[kind].front;
       expect(art).toBe(OFFICE_RECREATION_ART[kind].front);
-      expect(OFFICE_ART[kind].back).toBe(art);
-      expect(OFFICE_ART[kind].side).toBe(art);
+      // The dartboard hangs on the back wall, one drawing; the rest turn (furniture-facing.md).
+      if (kind === 'dartboard') {
+        expect(OFFICE_ART[kind].back).toBe(art);
+        expect(OFFICE_ART[kind].side).toBe(art);
+      }
       const el = createShape(kind, 0, 0);
       expect(isValidElement(el), kind).toBe(true);
       expect(el.width, kind).toBe(art.width);

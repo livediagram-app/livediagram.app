@@ -10,6 +10,7 @@ const PURE = [
   'chair-sitters',
   'collision',
   'config',
+  'facing',
   'fence',
   'key-claims',
   'office-geometry',

@@ -21,6 +21,7 @@
     "./components/avatar-sprite-palette": "./src/components/avatar-sprite-palette.ts",
     "./components/avatar-status-effects": "./src/components/avatar-status-effects.tsx",
     "./config": "./src/config.ts",
+    "./facing": "./src/facing.ts",
     "./fence": "./src/fence.ts",
     "./hooks/useAvatarActionKeys": "./src/hooks/useAvatarActionKeys.ts",
     "./hooks/useAvatarConfig": "./src/hooks/useAvatarConfig.ts",

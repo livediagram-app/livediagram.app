@@ -1512,6 +1512,16 @@ export const articles: Article[] = [
     categorySlug: 'palette/virtual-office',
     parentSlug: 'virtual-office',
   },
+  {
+    slug: 'turning-furniture',
+    title: 'Turning Furniture',
+    description: 'Face a sofa, a desk or lockers down, left, up or right; its seats turn with it.',
+    keywords:
+      'turn turning rotate rotation rotating face facing direction orientation orient spin flip left right up down sideways side wall sofa desk chair lockers furniture piece quarter space bar spacebar shift place placing drop seats sit',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
+  },
 
   // ---- Sub-articles: Selecting and Grouping ----
   {

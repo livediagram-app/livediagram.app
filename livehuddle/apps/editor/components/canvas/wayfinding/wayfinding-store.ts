@@ -1,5 +1,12 @@
 import { useSyncExternalStore } from 'react';
-import type { StairsFlight, WayBox, WayPerson, WayPoint, WayTab } from '@/lib/wayfinding';
+import type {
+  StairsBox,
+  StairsFlight,
+  WayBox,
+  WayPerson,
+  WayPoint,
+  WayTab,
+} from '@/lib/wayfinding';
 
 // The Directory's, the Elevator's and the Stairs' view of the space (docs/specs/009-elements/blueprints/wayfinding.md "Store"):
 // one store per canvas, filled by useWayfinding and read by the faces through selectors, so a face re-renders only
@@ -76,7 +83,7 @@ export type WayfindingActions = {
    */
   go: (to: { tabId: string; point: WayPoint; ignoreId?: string; then?: WayPoint }) => void;
   /** Take a flight of Stairs (docs/specs/009-elements/stairs.md "Taking them"): climb `from`, travel, walk off. */
-  climb: (to: { from: WayBox & { id: string }; flight: StairsFlight }) => void;
+  climb: (to: { from: StairsBox & { id: string }; flight: StairsFlight }) => void;
   /** Fetch the floors (tabs) not loaded yet, so the Elevator panel knows their Elevators (elevator.md "The panel"). */
   loadFloors: () => void;
   /** Close a panel a walk-in opened. */

@@ -8,6 +8,9 @@ import {
   defaultStrokeColor,
   isPlacedShape,
   snapDoorToWall,
+  turnPiece,
+  turnsWithFacing,
+  type ChairFacing,
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -19,20 +22,31 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
+import { usePlacingFacing } from '@/lib/placing-facing';
+import { usePlacingTurnKeys } from '@/hooks/canvas/usePlacingTurnKeys';
 
 // Where a placed piece would land with the pointer at canvas point `at`: at its own size, centred on the point (as a
 // click or a drop places one). A Door then snaps onto the nearest wall, as its click and drop do
 // (docs/specs/009-elements/room-builder.md "Door").
+// A piece that turns lands at the facing Space gave it (docs/specs/009-elements/furniture-facing.md "Turning while
+// placing"), its box the turned drawing's.
 export function placementLanding(
   kind: string,
   at: { x: number; y: number },
   elements: readonly Element[],
+  facing?: ChairFacing,
 ): { piece: ShapeElement; onWall: boolean } {
-  const base = createShape(kind as ShapeElement['shape'], 0, 0);
+  const base = placedPiece(kind, facing);
   const free = { ...base, x: at.x - base.width / 2, y: at.y - base.height / 2 };
   if (kind !== 'door') return { piece: free, onWall: false };
   const door = snapDoorToWall(free, elements);
   return { piece: door, onWall: door !== free };
+}
+
+// A new piece of a kind at the origin, turned to `facing` when it turns.
+function placedPiece(kind: string, facing?: ChairFacing): ShapeElement {
+  const piece = createShape(kind as ShapeElement['shape'], 0, 0);
+  return facing && turnsWithFacing(kind) ? turnPiece(piece, facing) : piece;
 }
 
 // Whether adding a kind previews the piece itself (docs/specs/010-palette/palette-drag-ghost.md "Placed pieces preview
@@ -84,6 +98,9 @@ export function PlacementPreview({
   const snap = usePaletteDragSnap();
   const dragging = !!dragged && dragged.kind === kind;
   const surface = useCanvasSurface();
+  // Space turns the piece while it is placed (usePlacingTurnKeys), and the preview draws it turned.
+  usePlacingTurnKeys(kind);
+  const facing = usePlacingFacing(kind);
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   if (!kind && at) setAt(null);
 
@@ -116,7 +133,7 @@ export function PlacementPreview({
   // piece (the Door is the exception, as its wall turns it).
   const art = useMemo(() => {
     if (!kind || kind === 'door' || !hasPieceArt(kind)) return null;
-    const piece = createShape(kind as ShapeElement['shape'], 0, 0);
+    const piece = placedPiece(kind, facing);
     return (
       <PieceArt
         element={piece}
@@ -124,7 +141,7 @@ export function PlacementPreview({
         fill={defaultFillColor(piece, surface)}
       />
     );
-  }, [kind, surface]);
+  }, [kind, surface, facing]);
 
   if (!kind || !at) return null;
   // An armed Room snaps to its neighbours as a dragged one does, wall to wall included (docs/specs/009-elements/
@@ -135,7 +152,7 @@ export function PlacementPreview({
     : dragging && snap
       ? { x: at.x + snap.dx, y: at.y + snap.dy }
       : at;
-  const { piece, onWall } = placementLanding(kind, point, elements);
+  const { piece, onWall } = placementLanding(kind, point, elements, facing);
   const door = kind === 'door';
   const drawn = door ? (
     <PieceArt

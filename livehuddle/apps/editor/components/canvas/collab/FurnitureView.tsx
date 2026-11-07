@@ -24,10 +24,14 @@ import {
   isSeatingShape,
   OFFICE_ART,
   OFFICE_TONES,
-  POD_DOOR,
+  MACHINE_ANSWER_AT,
+  POD_DOORS,
   RUG_FILL,
+  facingView,
+  type MachineAnswerSpot,
+  type PodDoorView,
   seatsACharacter,
-  seatingFacing,
+  pieceFacing,
   type FurniturePart,
   type GridOfficeKind,
   type SeatingKind,
@@ -149,8 +153,9 @@ export function FurnitureView({
   if (!isFurnitureViewShape(kind)) return null;
   const seating = isSeatingShape(kind);
   const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as GridOfficeKind];
-  const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
-  const frame = furnitureFrame(art, facing);
+  // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
+  const frame = furnitureFrame(art, pieceFacing(element));
+  const drawing = facingView(pieceFacing(element)).view;
   const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);
   // Seating and the fixed seats (an Office Pod, a Bar Stool: docs/specs/009-elements/office.md) take sitters.
   const sits = seatsACharacter(kind);
@@ -204,12 +209,26 @@ export function FurnitureView({
             ])}
             {ringUnder >= parts.length ? ringView : null}
             {kind === 'office-pod' ? (
-              <PodDoor closed={podClosed(sitters.length)} stroke={stroke} />
+              <PodDoor
+                closed={podClosed(sitters.length)}
+                stroke={stroke}
+                door={POD_DOORS[drawing]}
+              />
+            ) : null}
+            {/* Inside the drawing's frame, on the drawing its facing shows: no text, so mirroring is safe. */}
+            {(kind === 'water-cooler' || kind === 'coffee-machine') &&
+            MACHINE_ANSWER_AT[kind][drawing] ? (
+              <MachineAnswer kind={kind} id={element.id} spots={MACHINE_ANSWER_AT[kind][drawing]} />
             ) : null}
           </g>,
         )}
         {hasSocialArt(kind) ? (
-          <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
+          <SocialArt
+            kind={kind}
+            id={element.id}
+            sitters={sitters.length}
+            facing={pieceFacing(element)}
+          />
         ) : null}
         {hasWorkdayArt(kind) ? (
           <WorkdayArt
@@ -218,12 +237,13 @@ export function FurnitureView({
             sitters={sitters}
             box={element}
             grid={frame.view}
+            facing={pieceFacing(element)}
           />
         ) : null}
-        {kind === 'water-cooler' || kind === 'coffee-machine' ? (
-          <MachineAnswer kind={kind} id={element.id} />
+        {/* A moment's parts sit on the front drawing (a stoked fire, a dropped can), so a turned piece keeps quiet. */}
+        {hasMoment(kind) && drawing === 'front' ? (
+          <PieceMoment kind={kind} id={element.id} />
         ) : null}
-        {hasMoment(kind) ? <PieceMoment kind={kind} id={element.id} /> : null}
       </svg>
       {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
       {occupied && kind !== 'hot-desk' ? (
@@ -251,11 +271,20 @@ function withSway(kind: string, id: string, drawing: ReactNode): ReactNode {
 }
 
 // An Office Pod's sliding glass door (docs/specs/009-elements/office.md "Office Pod"): shut across the doorway while
-// both seats are held, slid away behind the front wall otherwise. Clipped to the doorway, so sliding open it goes
-// out of sight; the slide is a CSS transition, none under reduced motion.
-function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
+// both seats are held, slid away behind the wall otherwise, on the drawing the pod's facing shows (POD_DOORS: along
+// the front wall, standing in the far wall from behind, down the left wall on its side). Clipped to the doorway, so
+// sliding open it goes out of sight; the slide is a CSS transition, none under reduced motion.
+function PodDoor({ closed, stroke, door }: { closed: boolean; stroke: string; door: PodDoorView }) {
   const clip = useId();
-  const { x, y, w, h } = POD_DOOR;
+  const { x, y, w, h, open } = door;
+  // The glints run across the panel's short side and the handle sits near its leading edge, whichever way it lies.
+  const across = w >= h;
+  const glints = across
+    ? `M${x + 8} ${y + h - 2}L${x + 16} ${y + 2}M${x + 18} ${y + h - 2}L${x + 26} ${y + 2}`
+    : `M${x + 2} ${y + 16}L${x + w - 2} ${y + 8}M${x + 2} ${y + 26}L${x + w - 2} ${y + 18}`;
+  const handle = across
+    ? { x: x + 6, y: y + h / 2 - 1, width: 6, height: 2 }
+    : { x: x + w / 2 - 1, y: y + 6, width: 2, height: 6 };
   return (
     <g aria-hidden data-pod-door={closed ? 'closed' : 'open'}>
       <clipPath id={clip}>
@@ -264,7 +293,9 @@ function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
       <g clipPath={`url(#${clip})`}>
         <g
           className="lh-pod-door motion-reduce:transition-none"
-          style={{ transform: `translateX(${closed ? 0 : w}px)` }}
+          style={{
+            transform: closed ? 'translate(0px, 0px)' : `translate(${open.x}px, ${open.y}px)`,
+          }}
         >
           <rect
             x={x}
@@ -278,13 +309,13 @@ function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
             strokeWidth={FURNITURE_PANEL_STROKE}
           />
           <path
-            d={`M${x + 8} ${y + h - 2}L${x + 16} ${y + 2}M${x + 18} ${y + h - 2}L${x + 26} ${y + 2}`}
+            d={glints}
             stroke={FURNITURE_GLINT.stroke}
             strokeWidth={FURNITURE_RAIL_STROKE}
             opacity={FURNITURE_GLINT.opacity}
             strokeLinecap="round"
           />
-          <rect x={x + 6} y={y + h / 2 - 1} width={6} height={2} rx={1} fill={stroke} />
+          <rect {...handle} rx={1} fill={stroke} />
         </g>
       </g>
     </g>
@@ -295,7 +326,15 @@ function PodDoor({ closed, stroke }: { closed: boolean; stroke: string }) {
 // bottle, or coffee dripping into the carafe, for a moment. Played with the Web Animations API on each bump of
 // its count (lib/machine-answer.ts), so it costs nothing until somebody gets a drink, and not at all under reduced
 // motion. A count it already had when it mounted (a tab switched back to) does not play again.
-function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; id: string }) {
+function MachineAnswer({
+  kind,
+  id,
+  spots,
+}: {
+  kind: 'water-cooler' | 'coffee-machine';
+  id: string;
+  spots: readonly MachineAnswerSpot[];
+}) {
   const answered = useMachineAnswered(id);
   const ref = useRef<SVGGElement>(null);
   const seen = useRef(answered);
@@ -323,14 +362,14 @@ function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; 
   }, [answered, kind]);
   return kind === 'water-cooler' ? (
     <g ref={ref} aria-hidden>
-      {[20, 28, 35].map((x, i) => (
-        <circle key={x} cx={x} cy={30 - i * 2} r={2 + (i % 2)} fill="#ffffff" opacity={0} />
+      {spots.map(({ x, y }, i) => (
+        <circle key={i} cx={x} cy={y} r={2 + (i % 2)} fill="#ffffff" opacity={0} />
       ))}
     </g>
   ) : (
     <g ref={ref} aria-hidden>
-      {[0, 1, 2].map((i) => (
-        <ellipse key={i} cx={36} cy={38} rx={1.4} ry={2.2} fill={OFFICE_TONES.coffee} opacity={0} />
+      {spots.map(({ x, y }, i) => (
+        <ellipse key={i} cx={x} cy={y} rx={1.4} ry={2.2} fill={OFFICE_TONES.coffee} opacity={0} />
       ))}
     </g>
   );

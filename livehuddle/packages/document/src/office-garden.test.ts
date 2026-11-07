@@ -12,7 +12,9 @@ import {
   GRASS_TILES,
   OFFICE_POD_VIEW,
   POD_DOOR,
+  POD_DOORS,
 } from './office-garden';
+import { SEAT_VIEWS } from '@liveworkspace/avatar/seats';
 import { roomZones, zoneAt } from './call-geometry';
 import { defaultFillColor } from './colors';
 
@@ -162,5 +164,64 @@ describe('the pod, the bar and the garden', () => {
     expect(zones.map((z) => z.id)).toEqual(['r', 'p']);
     expect(zoneAt({ x: 130, y: 204 }, zones)).toBe('p');
     expect(zoneAt({ x: 400, y: 300 }, zones)).toBe('r');
+  });
+});
+
+// docs/specs/009-elements/furniture-facing.md "The camera": the pod and the bar's pieces turned.
+describe('the pod and the bar turned', () => {
+  it('draws a back and a side of their own, each on its grid', () => {
+    for (const kind of ['office-pod', 'bar', 'drinks-cabinet', 'drinks-fridge'] as const) {
+      const art = OFFICE_ART[kind];
+      expect(art.back.parts).not.toEqual(art.front.parts);
+      expect(art.side.parts).not.toEqual(art.front.parts);
+      for (const view of [art.back, art.side])
+        for (const p of view.parts)
+          if (p.tag === 'rect') {
+            expect(p.x + p.w).toBeLessThanOrEqual(view.width + 1);
+            expect(p.y + p.h).toBeLessThanOrEqual(view.height + 1);
+          }
+    }
+    // Tall pieces turned are narrow and long.
+    for (const kind of ['bar', 'drinks-cabinet', 'drinks-fridge'] as const)
+      expect(OFFICE_ART[kind].side.height).toBeGreaterThan(OFFICE_ART[kind].side.width * 2);
+  });
+
+  it('keeps the bar stool’s one drawing at every facing: it is round', () => {
+    const art = OFFICE_ART['bar-stool'];
+    expect(art.back).toBe(art.front);
+    expect(art.side).toBe(art.front);
+  });
+
+  it('seats the pod on its turned benches, from @liveworkspace/avatar/seats', () => {
+    const art = OFFICE_ART['office-pod'];
+    expect(art.back.seats).toEqual(SEAT_VIEWS['office-pod'].back.seats);
+    expect(art.side.seats).toEqual(SEAT_VIEWS['office-pod'].side.seats);
+    expect([art.side.width, art.side.height]).toEqual([144, 176]);
+  });
+
+  it('puts the pod’s door in the doorway each drawing shows, sliding behind its wall', () => {
+    const { front, back, side } = POD_DOORS;
+    expect(front).toMatchObject(POD_DOOR);
+    expect(front.open).toEqual({ x: front.w, y: 0 });
+    // From behind it stands in the far wall's face and slides the other way.
+    expect(back.y).toBeLessThan(10);
+    expect(back.open).toEqual({ x: -back.w, y: 0 });
+    // On its side it runs down the left wall and slides toward you.
+    expect(side.x).toBe(0);
+    expect(side.h).toBeGreaterThan(side.w);
+    expect(side.open).toEqual({ x: 0, y: side.h });
+    expect(side.y + side.h).toBeLessThan(OFFICE_ART['office-pod'].side.height);
+  });
+
+  it('is a call of its own inside its turned walls', () => {
+    const pod = {
+      ...createShape('office-pod', 0, 0),
+      id: 'pod',
+      width: 144,
+      height: 176,
+      chairFacing: 'e' as const,
+    };
+    const [zone] = roomZones([pod]);
+    expect(zone).toMatchObject({ x0: 4, y0: 36, x1: 140, y1: 172 });
   });
 });

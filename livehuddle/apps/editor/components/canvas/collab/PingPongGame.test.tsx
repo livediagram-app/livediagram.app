@@ -19,7 +19,7 @@ import { PONG, serverAt, type Score } from '@/lib/table-games/ping-pong';
 import { isPieceControlPress } from '@/lib/piece-control';
 import { SocialArt } from './SocialArt';
 import { PingPongGame, scoreboardText } from './PingPongGame';
-import { pointerAxis } from './usePingPong';
+import { framePointerAxis, pongFrame } from '@/lib/table-games/pong-frame';
 
 // docs/specs/009-elements/social-pieces.md "A game", "Controls", "Reduced motion": the table as one screen draws it.
 
@@ -270,7 +270,7 @@ describe('PingPongGame', () => {
   });
 });
 
-describe('scoreboardText and pointerAxis', () => {
+describe('scoreboardText and the pointer', () => {
   const players = [
     { id: 'me', name: 'You', color: '#000', self: true },
     { id: 'ann', name: 'Ann', color: '#000', self: false },
@@ -286,7 +286,113 @@ describe('scoreboardText and pointerAxis', () => {
     );
   });
   it('reads the pointer’s height over the table top', () => {
-    expect(pointerAxis({ clientY: 150 }, { top: 100, height: 100 })).toBe(0.5);
-    expect(pointerAxis({ clientY: 150 }, { top: 100, height: 0 })).toBe(0.5);
+    // The drawing at its grid's own size: the table top runs from 30 to 74 down it.
+    const box = { left: 0, top: 0, width: 184, height: 112 };
+    const front = pongFrame('n');
+    expect(framePointerAxis(front, { clientX: 0, clientY: 52 }, box)).toBeCloseTo(0.5);
+    expect(framePointerAxis(front, { clientX: 0, clientY: 30 }, box)).toBeCloseTo(0);
+    expect(framePointerAxis(front, { clientX: 0, clientY: 52 }, { ...box, height: 0 })).toBe(0.5);
+  });
+});
+
+describe('PingPongGame at a turned table', () => {
+  const turned = (chairFacing: 'e' | 's' | 'w'): ShapeElement => ({ ...table(), chairFacing });
+  const paddle = (seat: 0 | 1) =>
+    document.querySelector(`[data-pong-paddle="${seat}"]`)!.getAttribute('transform')!;
+  const xy = (t: string) => t.match(/-?[\d.]+/g)!.map(Number) as [number, number];
+
+  it('on its side: takes A/D and Left/Right for your paddle, which moves across the canvas, and leaves W/S and Up/Down to the walk', () => {
+    seat([me(0), ann]);
+    const view = render(<PingPongGame element={turned('e')} />);
+    frames(50);
+    act(() => receiveGameOp('ann', annInput()));
+    expect(document.querySelector('[data-pong]')!.getAttribute('data-pong-across')).toBe('x');
+    for (const key of ['a', 'D', 'ArrowLeft', 'ArrowRight'])
+      expect(avatarKeyClaimed({ key }), key).toBe(true);
+    for (const key of ['w', 's', 'ArrowUp', 'ArrowDown'])
+      expect(avatarKeyClaimed({ key }), key).toBe(false);
+    // Your paddle (the left seat's) is at the far end, the top; the other at the bottom.
+    const [, y0] = xy(paddle(0));
+    const [, y1] = xy(paddle(1));
+    expect(y0).toBeLessThan(y1);
+    const [x, y] = xy(paddle(0));
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    frames(200);
+    fireEvent.keyUp(window, { key: 'ArrowRight' });
+    const [x2, y2] = xy(paddle(0));
+    expect(x2).toBeGreaterThan(x);
+    expect(y2).toBe(y);
+    fireEvent.keyDown(window, { key: 'a' });
+    frames(200);
+    fireEvent.keyUp(window, { key: 'a' });
+    expect(xy(paddle(0))[0]).toBeLessThan(x2);
+    // W is not the paddle's here.
+    const still = paddle(0);
+    fireEvent.keyDown(window, { key: 'w' });
+    frames(200);
+    fireEvent.keyUp(window, { key: 'w' });
+    expect(paddle(0)).toBe(still);
+    view.unmount();
+    expect(avatarKeyClaimed({ key: 'ArrowLeft' })).toBe(false);
+  });
+
+  it('on its side: the pointer’s position across the table moves your paddle, and the score sits beside it, top seat first', () => {
+    seat([me(0), ann]);
+    render(<PingPongGame element={turned('w')} />);
+    frames(50);
+    act(() => receiveGameOp('ann', annInput()));
+    frames(PONG.servePauseMs + 100);
+    const control = document.querySelector('[data-pong-control]')!;
+    expect(control.className).toContain('cursor-ew-resize');
+    const svg = document.querySelector('[data-pong]')!;
+    svg.getBoundingClientRect = () => ({ top: 0, height: 184, left: 0, width: 112 }) as DOMRect;
+    fireEvent.pointerDown(control, { clientX: 30, clientY: 10, pointerId: 1 });
+    frames(20);
+    const left = xy(paddle(0))[0];
+    fireEvent.pointerMove(control, { clientX: 80, clientY: 10 });
+    frames(20);
+    expect(xy(paddle(0))[0]).toBeGreaterThan(left);
+    const points = [...document.querySelectorAll('[data-pong-points]')].map((p) =>
+      p.getAttribute('data-pong-points'),
+    );
+    expect(points).toEqual(['0', '1']);
+    expect(screen.getByRole('status').className).toContain('flex-col');
+  });
+
+  it('from behind: plays as the front, W/S and Up/Down, the left seat at the right end and its points on the right', () => {
+    seat([me(0), ann]);
+    render(<PingPongGame element={turned('s')} />);
+    frames(50);
+    act(() => receiveGameOp('ann', annInput()));
+    frames(PONG.servePauseMs + 100);
+    expect(avatarKeyClaimed({ key: 'ArrowUp' })).toBe(true);
+    expect(avatarKeyClaimed({ key: 'ArrowLeft' })).toBe(false);
+    expect(xy(paddle(0))[0]).toBeGreaterThan(xy(paddle(1))[0]);
+    const [x, y] = xy(paddle(0));
+    fireEvent.keyDown(window, { key: 's' });
+    frames(200);
+    fireEvent.keyUp(window, { key: 's' });
+    expect(xy(paddle(0))).toEqual([x, expect.any(Number)]);
+    expect(xy(paddle(0))[1]).toBeGreaterThan(y);
+    const points = [...document.querySelectorAll('[data-pong-points]')].map((p) =>
+      p.getAttribute('data-pong-points'),
+    );
+    expect(points).toEqual(['1', '0']);
+  });
+
+  it('rallies down the turned table while it rests, across it facing down or up', () => {
+    seat([me(0)]);
+    const side = render(
+      <svg>
+        <SocialArt kind="ping-pong-table" id="table" sitters={2} facing="e" />
+      </svg>,
+    );
+    expect(side.container.querySelector('[data-rally]')!.getAttribute('data-rally')).toBe('down');
+    const back = render(
+      <svg>
+        <SocialArt kind="ping-pong-table" id="table" sitters={2} facing="s" />
+      </svg>,
+    );
+    expect(back.container.querySelector('[data-rally]')!.getAttribute('data-rally')).toBe('across');
   });
 });

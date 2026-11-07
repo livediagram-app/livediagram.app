@@ -3,7 +3,7 @@
 // rest of the office, which both renderers paint (the editor's views and svg-render-faces). They join OFFICE_ART
 // (office.ts). The footprints are @liveworkspace/avatar's. Pure: no React, no DOM.
 
-import type { FurnitureDrawing, FurniturePart } from './seating';
+import type { FurnitureArt, FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
 
 // Fixed colours, as SOCIAL_TONES: paper, the lit screens, the lockers' paint, wood, cloth and the umbrellas' canopies.
@@ -58,6 +58,52 @@ const PRINTER_VIEW: FurnitureDrawing = {
   ring: { cx: 36, cy: 70, rx: 30, ry: 7 },
 };
 
+// Its back to you: the sheet rising beyond, the printer's plain back with its vents and power socket, and the cabinet's
+// back panel.
+const PRINTER_BACK: FurnitureDrawing = {
+  width: 72,
+  height: 80,
+  parts: [
+    ellipse('shadow', 36, 77, 31, 3),
+    rect('face', 10, 44, 52, 31, 3),
+    path('rail', 'M14 59.5h44'),
+    path('panel', 'M21 4H49L52 22H18Z', T.paper),
+    rect('panel', 6, 20, 60, 26, 5),
+    rect('face', 6, 34, 60, 12, 4),
+    path('rail', 'M14 26h20M14 29.5h20'),
+    rect('mark', 50, 37, 7, 5, 1, T.handle),
+    path('glint', 'M62 26V40'),
+  ],
+  seats: [],
+  ring: { cx: 36, cy: 70, rx: 30, ry: 7 },
+};
+
+// Facing left: the printer's top from above with the printed sheet in its tray, its front a strip down the left with
+// the status screen and the light, its near end below, and the cabinet under it, its two drawers on the left.
+const PRINTER_SIDE: FurnitureDrawing = {
+  width: 60,
+  height: 100,
+  parts: [
+    ellipse('shadow', 32, 97, 26, 3),
+    rect('face', 16, 64, 36, 31, 3),
+    rect('face', 8, 66, 12, 29, 3),
+    rect('mark', 12.5, 72, 2.5, 8, 1.25, T.handle),
+    rect('mark', 12.5, 84, 2.5, 8, 1.25, T.handle),
+    rect('panel', 10, 14, 46, 56, 5),
+    rect('face', 10, 56, 46, 14, 4),
+    rect('face', 18, 18, 8, 34, 2),
+    path('panel', 'M15 10H29L30 40H16Z', T.paper),
+    path('rail', 'M19.5 15V32M22.5 15V35M25.5 15V27'),
+    rect('panel', 4, 18, 9, 50, 3),
+    rect('mark', 6, 46, 5, 13, 1.5, T.screen),
+    rect('mark', 7, 48, 3, 6, 0.75, T.lit),
+    ellipse('mark', 8.5, 63, 1.6, 1.6, T.ready),
+    path('glint', 'M36 18V30'),
+  ],
+  seats: [],
+  ring: { cx: 32, cy: 88, rx: 26, ry: 8 },
+};
+
 // A floor-standing copier: originals on the lid, a control panel with a lit touch screen, a stack of copies in the
 // output bay and three paper trays on small feet.
 const COPIER_VIEW: FurnitureDrawing = {
@@ -89,6 +135,62 @@ const COPIER_VIEW: FurnitureDrawing = {
   ring: { cx: 52, cy: 112, rx: 46, ry: 9 },
 };
 
+// Its back to you: the lid and the document feeder beyond, the copier's plain back with a vent grille and a socket, and
+// the paper trays' backs on their feet.
+const COPIER_BACK: FurnitureDrawing = {
+  width: 104,
+  height: 128,
+  parts: [
+    ellipse('shadow', 52, 124, 46, 3.5),
+    path('line', 'M18 118v4M86 118v4'),
+    rect('panel', 42, 8, 46, 11, 2, T.paper),
+    rect('panel', 22, 18, 76, 14, 4),
+    rect('panel', 4, 20, 26, 20, 3),
+    rect('face', 8, 30, 88, 88, 5),
+    path('rail', 'M14 64H90M14 100H90'),
+    path('rail', 'M58 42h26M58 46.5h26M58 51h26M58 55.5h26'),
+    rect('mark', 20, 44, 9, 7, 1.5, T.handle),
+    path('glint', 'M90 38V58'),
+  ],
+  seats: [],
+  ring: { cx: 52, cy: 112, rx: 46, ry: 9 },
+};
+
+// Facing left: the lid from above with the originals on it, the control panel cheated toward you at its front, the
+// output bay and the three paper trays a strip down the left, the near end of the body below, on its feet.
+const COPIER_SIDE: FurnitureDrawing = {
+  width: 80,
+  height: 156,
+  parts: [
+    ellipse('shadow', 42, 152, 36, 3.5),
+    path('line', 'M14 146v4M68 146v4'),
+    rect('panel', 16, 80, 58, 66, 4),
+    rect('face', 16, 82, 58, 64, 4),
+    path('rail', 'M24 112H66'),
+    rect('panel', 8, 80, 14, 66, 3),
+    ...[86, 106, 126].flatMap((y) => [
+      rect('face', 10, y, 10, 17, 2),
+      rect('mark', 13.75, y + 4, 2.5, 9, 1.25, T.handle),
+    ]),
+    rect('panel', 12, 40, 64, 44, 5),
+    rect('face', 12, 58, 64, 26, 4),
+    rect('panel', 4, 44, 14, 36, 3),
+    rect('face', 6, 52, 9, 22, 2),
+    rect('mark', 7, 55, 7, 16, 1, T.paper),
+    rect('panel', 16, 6, 58, 38, 4),
+    rect('panel', 28, 10, 26, 28, 2, T.paper),
+    path('rail', 'M33 14V34M37 14V30'),
+    path('glint', 'M20 10V36'),
+    path('panel', 'M4 22H20V44H4Z'),
+    rect('mark', 6, 24, 11, 14, 2, T.screen),
+    rect('mark', 8, 26, 3, 7, 1, T.lit),
+    rect('mark', 12.5, 26, 2.5, 5, 1, T.lit),
+    ellipse('mark', 11.5, 41, 1.6, 1.6, T.ready),
+  ],
+  seats: [],
+  ring: { cx: 42, cy: 140, rx: 36, ry: 10 },
+};
+
 // --- By the door --------------------------------------------------------------------------------------------------
 
 // The four lockers' left edges, each 28 wide.
@@ -110,6 +212,54 @@ const LOCKERS_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 68, cy: 118, rx: 64, ry: 8 },
+};
+
+// Its back to you: the bank's plain back panel, the seams between the four lockers, two stiffening rails and the plinth.
+const LOCKERS_BACK: FurnitureDrawing = {
+  width: 136,
+  height: 132,
+  parts: [
+    ellipse('shadow', 68, 128, 64, 4),
+    rect('panel', 4, 4, 128, 118, 3),
+    rect('face', 4, 4, 128, 6, 2),
+    path('rail', 'M38 12V111M68 12V111M98 12V111'),
+    path('glint', 'M12 104V20'),
+    rect('face', 4, 113, 128, 9, 2),
+  ],
+  seats: [],
+  ring: { cx: 68, cy: 118, rx: 64, ry: 8 },
+};
+
+// The side drawing's four doors, down its length: each door's top, its height, and the strip they stand in.
+const SIDE_DOORS = [8, 54, 100, 146] as const;
+const SIDE_DOOR_H = 44;
+
+// Facing left: narrow and long. The bank's top seen from above, its four lockers one above the other; its near end, a
+// tall plain panel; its plinth at the foot; and its doors, cheated toward you, one above the other down the left.
+const LOCKERS_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 204,
+  parts: [
+    ellipse('shadow', 30, 200, 25, 3.5),
+    rect('panel', 22, 4, 30, 92, 3),
+    path('rail', 'M26 26.5h22M26 49h22M26 71.5h22'),
+    rect('face', 22, 92, 30, 98, 3),
+    path('glint', 'M46 100V182'),
+    rect('panel', 4, 4, 22, 186, 3),
+    ...SIDE_DOORS.map((y, i) =>
+      rect('panel', 7, y, 16, SIDE_DOOR_H, 2, i % 2 ? T.lockerB : T.lockerA),
+    ),
+    path(
+      'rail',
+      SIDE_DOORS.map((y) => `M10 ${y + 5}h10M10 ${y + 8.5}h10M10 ${y + 12}h10`).join(''),
+    ),
+    path('mark', SIDE_DOORS.map((y) => `M11 ${y + 17}h8v5h-8z`).join(''), T.plate),
+    path('mark', SIDE_DOORS.map((y) => `M10 ${y + 32}h10v2.5h-10z`).join(''), T.handle),
+    path('glint', SIDE_DOORS.map((y) => `M20 ${y + 26}V${y + 40}`).join('')),
+    rect('face', 4, 188, 48, 9, 2),
+  ],
+  seats: [],
+  ring: { cx: 30, cy: 192, rx: 26, ry: 8 },
 };
 
 // A wooden coat stand on a cross foot: a navy coat and a camel coat on its hooks, a striped scarf over the pole and a
@@ -173,9 +323,10 @@ const UMBRELLA_STAND_VIEW: FurnitureDrawing = {
 
 /** The grid pieces this module draws, for OFFICE_ART. */
 export const OFFICE_WORKPLACE_ART = {
-  printer: allSides(PRINTER_VIEW),
-  copier: allSides(COPIER_VIEW),
-  lockers: allSides(LOCKERS_VIEW),
+  printer: { front: PRINTER_VIEW, back: PRINTER_BACK, side: PRINTER_SIDE } satisfies FurnitureArt,
+  copier: { front: COPIER_VIEW, back: COPIER_BACK, side: COPIER_SIDE } satisfies FurnitureArt,
+  lockers: { front: LOCKERS_VIEW, back: LOCKERS_BACK, side: LOCKERS_SIDE } satisfies FurnitureArt,
+  // Coat Rack and Umbrella Stand read the same from every side (furniture-facing.md "What does not turn").
   'coat-rack': allSides(COAT_RACK_VIEW),
   'umbrella-stand': allSides(UMBRELLA_STAND_VIEW),
 } as const;

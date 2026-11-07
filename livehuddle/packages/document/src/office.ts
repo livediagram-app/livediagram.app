@@ -15,7 +15,13 @@ import {
   ROOM_WALL,
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
-import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
+import {
+  MEETING_TABLE_SEATS,
+  MEETING_TABLE_SEATS_BACK,
+  MEETING_TABLE_SEATS_SIDE,
+  type SeatView,
+  type TableSeat,
+} from '@liveworkspace/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
@@ -293,6 +299,60 @@ const BOOKSHELF_VIEW: FurnitureDrawing = {
   ring: { cx: 60, cy: 120, rx: 56, ry: 8 },
 };
 
+// Its back to you: the top seen from above, then the back's boards from the top to the floor.
+const BOOKSHELF_BACK: FurnitureDrawing = {
+  width: 120,
+  height: 132,
+  parts: [
+    ellipse('shadow', 60, 128, 58, 4),
+    rect('panel', 4, 4, 112, 12, 3),
+    rect('face', 4, 14, 112, 112, 3),
+    path('rail', 'M32 20V118M60 20V118M88 20V118'),
+    path('rail', 'M8 118H112'),
+  ],
+  seats: [],
+  ring: { cx: 60, cy: 120, rx: 56, ry: 8 },
+};
+
+// Books end on in a strip, as the front's cheated toward you: a column of spines in three shelves.
+function bookColumn(from: number, to: number, offset: number): Part[] {
+  const heights = [6, 5, 7, 4, 6, 5, 7];
+  const out: Part[] = [];
+  let y = from;
+  for (let i = 0; y + heights[(i + offset) % heights.length]! <= to; i += 1) {
+    const h = heights[(i + offset) % heights.length]!;
+    // A gap on each shelf, as the front's.
+    if (i === 3) {
+      y += 6;
+      continue;
+    }
+    out.push(rect('panel', 8, y, 6, h, 1, T.books[(i + offset) % T.books.length]));
+    y += h + 1;
+  }
+  return out;
+}
+
+// Facing left: narrow and long, its top running away from you down to its near end, and its front cheated toward
+// you down its left, the books end on in three shelves.
+const BOOKSHELF_SIDE: FurnitureDrawing = {
+  width: 52,
+  height: 196,
+  parts: [
+    ellipse('shadow', 28, 192, 25, 4),
+    rect('panel', 16, 4, 32, 70, 3),
+    rect('face', 16, 72, 32, 118, 3),
+    rect('panel', 4, 6, 14, 184, 3),
+    rect('face', 7, 12, 8, 172, 1.5),
+    ...bookColumn(14, 66, 0),
+    rect('panel', 6, 67, 10, 4, 1.5),
+    ...bookColumn(73, 124, 1),
+    rect('panel', 6, 125, 10, 4, 1.5),
+    ...bookColumn(131, 182, 2),
+  ],
+  seats: [],
+  ring: { cx: 28, cy: 182, rx: 24, ry: 8 },
+};
+
 // A water cooler: a blue bottle upside down on a cooler with hot and cold taps.
 const WATER_COOLER_VIEW: FurnitureDrawing = {
   width: 56,
@@ -311,6 +371,46 @@ const WATER_COOLER_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 28, cy: 100, rx: 22, ry: 7 },
+};
+
+// Its back to you: the same bottle on top, the cooler's back with a vent and no taps.
+const WATER_COOLER_BACK: FurnitureDrawing = {
+  width: 56,
+  height: 112,
+  parts: [
+    ellipse('shadow', 28, 108, 20, 3.5),
+    rect('face', 10, 44, 36, 60, 4),
+    rect('panel', 8, 40, 40, 8, 3),
+    rect('rail', 17, 58, 22, 18, 2),
+    path('rail', 'M21 63h14M21 67h14M21 71h14'),
+    rect('panel', 23, 33, 10, 9, 2, T.waterDeep),
+    rect('panel', 12, 4, 32, 32, 10, T.water),
+    path('rail', 'M15 13h26'),
+    path('glint', 'M18 30V14'),
+  ],
+  seats: [],
+  ring: { cx: 28, cy: 100, rx: 22, ry: 7 },
+};
+
+// Facing left: the cooler's side toward you, its front cheated down its left with the two taps and the drip tray.
+const WATER_COOLER_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 112,
+  parts: [
+    ellipse('shadow', 29, 108, 21, 3.5),
+    rect('face', 14, 44, 32, 60, 4),
+    rect('panel', 12, 40, 36, 8, 3),
+    rect('face', 8, 46, 8, 56, 2),
+    rect('panel', 3, 54, 9, 6, 1.5, T.cold),
+    rect('panel', 5, 61, 9, 6, 1.5, T.hot),
+    rect('rail', 4, 74, 9, 4, 1.5),
+    rect('panel', 25, 33, 10, 9, 2, T.waterDeep),
+    rect('panel', 14, 4, 32, 32, 10, T.water),
+    path('rail', 'M17 13h26'),
+    path('glint', 'M20 30V14'),
+  ],
+  seats: [],
+  ring: { cx: 29, cy: 100, rx: 22, ry: 7 },
 };
 
 // A coffee machine with a carafe, on a little counter, a mug beside it.
@@ -334,6 +434,46 @@ const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
   ring: { cx: 36, cy: 86, rx: 32, ry: 7 },
 };
 
+// Its back to you: the counter's plain back, the machine's back with its vents, the mug now at its left.
+const COFFEE_MACHINE_BACK: FurnitureDrawing = {
+  width: 72,
+  height: 96,
+  parts: [
+    ellipse('shadow', 36, 92, 32, 3.5),
+    rect('face', 2, 64, 68, 24, 2),
+    rect('panel', 2, 58, 68, 8, 2),
+    rect('panel', 4, 49, 10, 10, 2),
+    rect('face', 14, 14, 44, 44, 5),
+    rect('panel', 14, 8, 44, 9, 3),
+    path('rail', 'M24 26h24M24 32h24M24 38h24'),
+  ],
+  seats: [],
+  ring: { cx: 36, cy: 86, rx: 32, ry: 7 },
+};
+
+// Facing left: the counter running away from you, the machine's side on it, its front cheated down its left with
+// the screen and the carafe under the spout, the mug at the near end.
+const COFFEE_MACHINE_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 104,
+  parts: [
+    ellipse('shadow', 29, 100, 26, 3.5),
+    rect('face', 6, 74, 46, 22, 2),
+    path('rail', 'M12 84h34'),
+    rect('panel', 6, 44, 46, 32, 2),
+    rect('face', 12, 22, 32, 46, 5),
+    rect('panel', 12, 6, 32, 18, 4),
+    rect('face', 7, 12, 8, 52, 2),
+    rect('screen', 8, 17, 5, 13, 1.5),
+    rect('panel', 6, 33, 5, 5, 1.5),
+    rect('panel', 2, 40, 12, 20, 4, T.glass),
+    rect('panel', 3, 50, 10, 8, 2, T.coffee),
+    rect('panel', 26, 64, 9, 10, 2),
+  ],
+  seats: [],
+  ring: { cx: 29, cy: 92, rx: 26, ry: 7 },
+};
+
 // A rug: an oval in the element's fill with a border, lying on the floor (no shadow: it is the floor).
 const RUG_VIEW: FurnitureDrawing = {
   width: 200,
@@ -348,17 +488,41 @@ const RUG_VIEW: FurnitureDrawing = {
   ring: { cx: 100, cy: 60, rx: 96, ry: 56 },
 };
 
+// Turned on its side: the same oval on a grid with its sides swapped, its pattern running down it.
+const RUG_SIDE: FurnitureDrawing = {
+  width: 120,
+  height: 200,
+  parts: [
+    ellipse('panel', 60, 100, 56, 96),
+    ellipse('rail', 60, 100, 46, 84),
+    ellipse('rail', 60, 100, 30, 60),
+    ellipse('rail', 60, 100, 14, 34),
+  ],
+  seats: [],
+  ring: { cx: 60, cy: 100, rx: 56, ry: 96 },
+};
+
 const far = (cx: number): Part[] => [
   rect('panel', cx - 17, 8, 34, 30, 4),
   path('rail', `M${cx} 13v20`),
   rect('panel', cx - 22, 34, 44, 12, 3),
 ];
-const near = (cx: number): Part[] => [
-  path('line', `M${cx - 17} 136v22M${cx + 17} 136v22`),
-  rect('panel', cx - 22, 110, 44, 12, 3),
-  rect('face', cx - 17, 102, 34, 36, 4),
-  path('rail', `M${cx} 107v26`),
+const near = (cx: number, dy = 0): Part[] => [
+  path('line', `M${cx - 17} ${136 + dy}v22M${cx + 17} ${136 + dy}v22`),
+  rect('panel', cx - 22, 110 + dy, 44, 12, 3),
+  rect('face', cx - 17, 102 + dy, 34, 36, 4),
+  path('rail', `M${cx} ${107 + dy}v26`),
 ];
+// A chair in profile at a side of the table, its seat's middle at `cy`: its backrest on the outside, at the left for
+// a sitter facing right, at the right for one facing left.
+const profile = (cy: number, facingRight: boolean): Part[] => {
+  const x = (gx: number, w = 0) => (facingRight ? gx : MEETING_TABLE_SEATS.height - gx - w);
+  return [
+    path('line', `M${x(10)} ${cy + 8}v18M${x(32)} ${cy + 8}v18`),
+    rect('panel', x(6, 30), cy - 6, 30, 12, 3),
+    rect('panel', x(2, 8), cy - 28, 8, 36, 3),
+  ];
+};
 
 // Six chairs round a table, every seat facing it: two beyond (their sitters face you), two in front (their
 // backs to you), one at each end in profile. Its grid and its seats (each with the way its sitter faces) are
@@ -389,19 +553,95 @@ export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly Table
   ring: { cx: 116, cy: 82, rx: 112, ry: 70 },
 };
 
-export const MEETING_TABLE_ART: FurnitureArt = allSides({
-  ...MEETING_TABLE_VIEW,
-  seats: MEETING_TABLE_VIEW.tableSeats.map(({ u, v }) => ({ u, v })),
-});
+// Turned on its side: a tall table, the left end's chair beyond it, two chairs in profile down each side and the right
+// end's chair nearest you, its back to you.
+const MEETING_TABLE_SIDE: FurnitureDrawing = {
+  ...MEETING_TABLE_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 84, 228, 78, 4),
+    ...far(84),
+    ...profile(86, true),
+    ...profile(134, true),
+    ...profile(86, false),
+    ...profile(134, false),
+    path('line', 'M56 178v20M112 178v20'),
+    rect('panel', 46, 50, 76, 120, 6),
+    rect('face', 46, 166, 76, 12, 4),
+    ...near(84, 70),
+  ],
+  ring: { cx: 84, cy: 116, rx: 80, ry: 112 },
+};
+
+// From behind, a table with six chairs reads the same, so its back is its front's drawing; only its seats have turned.
+export const MEETING_TABLE_ART: FurnitureArt = {
+  front: {
+    ...MEETING_TABLE_VIEW,
+    seats: MEETING_TABLE_VIEW.tableSeats.map(({ u, v }) => ({ u, v })),
+  },
+  back: { ...MEETING_TABLE_VIEW, ...MEETING_TABLE_SEATS_BACK },
+  side: MEETING_TABLE_SIDE,
+};
+
+/** Where a machine's answer plays on one drawing: each bubble or drip's spot, on that drawing's grid. */
+export type MachineAnswerSpot = { x: number; y: number };
+
+/**
+ * Where a machine answers a drink on each of its drawings (office.md "Using it", furniture-facing.md "Live faces"):
+ * the cooler's bubbles rise in its bottle, which stands on top and shows from every side; the coffee drips from the
+ * spout into the carafe, at the front, so on its side it drips at the carafe cheated down its left and from behind,
+ * where the machine hides its carafe, it plays nowhere (null).
+ */
+export const MACHINE_ANSWER_AT: Readonly<
+  Record<
+    'water-cooler' | 'coffee-machine',
+    Readonly<Record<SeatView, readonly MachineAnswerSpot[] | null>>
+  >
+> = {
+  'water-cooler': {
+    front: [
+      { x: 20, y: 30 },
+      { x: 28, y: 28 },
+      { x: 35, y: 26 },
+    ],
+    back: [
+      { x: 20, y: 30 },
+      { x: 28, y: 28 },
+      { x: 35, y: 26 },
+    ],
+    side: [
+      { x: 22, y: 30 },
+      { x: 30, y: 28 },
+      { x: 37, y: 26 },
+    ],
+  },
+  'coffee-machine': {
+    front: [
+      { x: 36, y: 38 },
+      { x: 36, y: 38 },
+      { x: 36, y: 38 },
+    ],
+    back: null,
+    side: [
+      { x: 8.5, y: 39 },
+      { x: 8.5, y: 39 },
+      { x: 8.5, y: 39 },
+    ],
+  },
+};
 
 // Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
 export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   'meeting-table': MEETING_TABLE_ART,
   plant: allSides(PLANT_VIEW),
-  bookshelf: allSides(BOOKSHELF_VIEW),
-  'water-cooler': allSides(WATER_COOLER_VIEW),
-  'coffee-machine': allSides(COFFEE_MACHINE_VIEW),
-  rug: allSides(RUG_VIEW),
+  bookshelf: { front: BOOKSHELF_VIEW, back: BOOKSHELF_BACK, side: BOOKSHELF_SIDE },
+  'water-cooler': { front: WATER_COOLER_VIEW, back: WATER_COOLER_BACK, side: WATER_COOLER_SIDE },
+  'coffee-machine': {
+    front: COFFEE_MACHINE_VIEW,
+    back: COFFEE_MACHINE_BACK,
+    side: COFFEE_MACHINE_SIDE,
+  },
+  // A rug is flat: from behind it is the same pattern.
+  rug: { front: RUG_VIEW, back: RUG_VIEW, side: RUG_SIDE },
   ...OFFICE_EXTRA_ART,
   ...OFFICE_SOCIAL_ART,
   ...OFFICE_RECREATION_ART,

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element } from '@livehuddle/document';
+import { SHAPE_DEFAULT_SIZE, type Element } from '@livehuddle/document';
+import { placingSize, resetPlacingFacing, turnPlacing } from '@/lib/placing-facing';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,
@@ -41,6 +42,7 @@ function render(elements: Element[] = [neighbour]) {
 }
 
 afterEach(() => {
+  resetPlacingFacing();
   setPaletteDragPreview(null);
   setPaletteDragSnap(null);
   document.body.innerHTML = '';
@@ -72,5 +74,47 @@ describe('usePaletteDragGuides', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(getPaletteDragSnap()).toBeNull();
+  });
+});
+
+describe('a piece turned while placed (docs/specs/009-elements/furniture-facing.md "Turning while placing")', () => {
+  function carried() {
+    const wrapperRef = wrapper();
+    setPaletteDragPreview({ kind: 'sofa', ...SHAPE_DEFAULT_SIZE.sofa, carried: true });
+    renderHook(() =>
+      usePaletteDragGuides({ elements: [neighbour], readZoom: () => 1, wrapperRef }),
+    );
+    return wrapperRef;
+  }
+
+  function pointerMove(target: HTMLElement, clientX: number, clientY: number) {
+    const event = new MouseEvent('pointermove', { bubbles: true, clientX, clientY });
+    act(() => {
+      target.dispatchEvent(event);
+    });
+  }
+
+  it('snaps a carried tile on its pointer moves, at the turned box', () => {
+    const wrapperRef = carried();
+    turnPlacing('sofa', 1);
+    const { width } = placingSize('sofa', SHAPE_DEFAULT_SIZE.sofa);
+    // The turned footprint's left edge four px right of the neighbour's.
+    pointerMove(wrapperRef.current, 104 + width / 2, 600);
+    expect(getPaletteDragSnap()?.dx).toBe(-4);
+  });
+
+  it('re-measures when the piece turns under a still pointer', () => {
+    const wrapperRef = carried();
+    const { width: turnedWidth } = (() => {
+      turnPlacing('sofa', 1);
+      const size = placingSize('sofa', SHAPE_DEFAULT_SIZE.sofa);
+      resetPlacingFacing();
+      return size;
+    })();
+    pointerMove(wrapperRef.current, 104 + turnedWidth / 2, 600);
+    const before = getPaletteDragSnap()?.dx;
+    act(() => void turnPlacing('sofa', 1));
+    expect(getPaletteDragSnap()?.dx).toBe(-4);
+    expect(before).not.toBe(-4);
   });
 });

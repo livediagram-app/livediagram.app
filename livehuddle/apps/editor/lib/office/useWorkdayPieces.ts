@@ -10,6 +10,8 @@
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { PET_FLOOR_KINDS, petArea, type Element, type PetArea } from '@livehuddle/document';
+import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
+import type { SeatFacing } from '@liveworkspace/avatar/facing';
 
 /** How far in front of a reception desk's counter your feet may be for its Welcome. */
 export const RECEPTION_REACH = 32;
@@ -17,6 +19,9 @@ export const RECEPTION_REACH = 32;
 const RECEPTION_FRONT = 0.62;
 
 type Box = { id: string; x: number; y: number; width: number; height: number };
+type Desk = Box & { chairFacing?: SeatFacing };
+/** How far a turned desk's front strip reaches back over its counter, as a share of the counter's depth. */
+const TURNED_FRONT_DEPTH = 0.3;
 type Point = { x: number; y: number };
 
 let atDesk: string | null = null;
@@ -37,19 +42,45 @@ export function useAtReception(id: string): boolean {
   );
 }
 
-/** The reception desk whose front `feet` stand at (across its width, up to RECEPTION_REACH below it), or null. */
-export function receptionAt(feet: Point, desks: readonly Box[]): string | null {
-  for (const d of desks) {
+/**
+ * The reception desk whose front `feet` stand at, or null: across its width, up to RECEPTION_REACH below it; a turned
+ * desk's front is the side its counter faces (docs/specs/009-elements/furniture-facing.md), so the strip is along
+ * that side of its counter, up to RECEPTION_REACH out from it.
+ */
+export function receptionAt(feet: Point, desks: readonly Desk[]): string | null {
+  for (const d of desks) if (atFront(feet, d)) return d.id;
+  return null;
+}
+
+function atFront(feet: Point, d: Desk): boolean {
+  const facing = d.chairFacing ?? 'n';
+  if (facing === 'n') {
     const top = d.y + d.height * RECEPTION_FRONT;
-    if (
+    return (
       feet.x >= d.x &&
       feet.x <= d.x + d.width &&
       feet.y >= top &&
       feet.y <= d.y + d.height + RECEPTION_REACH
-    )
-      return d.id;
+    );
   }
-  return null;
+  const c = officeFootprint({ ...d, shape: 'reception-desk', chairFacing: facing });
+  if (!c) return false;
+  const inX = feet.x >= c.x && feet.x <= c.x + c.width;
+  const inY = feet.y >= c.y && feet.y <= c.y + c.height;
+  switch (facing) {
+    case 's':
+      return (
+        inX && feet.y >= c.y - RECEPTION_REACH && feet.y <= c.y + c.height * TURNED_FRONT_DEPTH
+      );
+    case 'e':
+      return inY && feet.x >= c.x - RECEPTION_REACH && feet.x <= c.x + c.width * TURNED_FRONT_DEPTH;
+    default:
+      return (
+        inY &&
+        feet.x >= c.x + c.width * (1 - TURNED_FRONT_DEPTH) &&
+        feet.x <= c.x + c.width + RECEPTION_REACH
+      );
+  }
 }
 
 let petAreas = new Map<string, PetArea>();
@@ -111,7 +142,7 @@ export function useWorkdayPieces({
   elements: readonly Element[];
 }): void {
   const desks = useMemo(() => {
-    const found: Box[] = [];
+    const found: Desk[] = [];
     for (const el of elements)
       if (el.type === 'shape' && el.shape === 'reception-desk') found.push(el);
     return found;

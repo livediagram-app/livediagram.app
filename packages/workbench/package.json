@@ -12,6 +12,7 @@
     "./components/canvas/CanvasLiveRegion": "./src/components/canvas/CanvasLiveRegion.tsx",
     "./components/canvas/CanvasZoomContext": "./src/components/canvas/CanvasZoomContext.tsx",
     "./components/canvas/ClusterPopoverButton": "./src/components/canvas/ClusterPopoverButton.tsx",
+    "./components/canvas/TurnButtons": "./src/components/canvas/TurnButtons.tsx",
     "./components/canvas/CollaborateClusterButton": "./src/components/canvas/CollaborateClusterButton.tsx",
     "./components/canvas/CommentBadgesContext": "./src/components/canvas/CommentBadgesContext.tsx",
     "./components/canvas/ContentsClusterSegment": "./src/components/canvas/ContentsClusterSegment.tsx",

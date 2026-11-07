@@ -3,16 +3,19 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import {
   HOT_DESK_CARD,
+  HOT_DESK_CARDS,
   PHONE_BOOTH_LAMP,
-  RECEPTION_BELL,
-  TREADMILL_BELT,
+  RECEPTION_BELLS,
+  TREADMILL_BELTS,
   WORKDAY_TONES,
+  facingView,
   msToNextLeg,
   petLeg,
   petLegAt,
   type PetArea,
   type ShapeElement,
 } from '@livehuddle/document';
+import type { SeatFacing } from '@liveworkspace/avatar/facing';
 import { Glyph } from '@livehuddle/ui';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
@@ -28,6 +31,9 @@ import type { ChairSitter } from './FurnitureView';
 // grid, over its art (FurnitureView): the treadmill's belt running while someone is on it, the booth's lamp lit while
 // it is in use, the hot desk's name card, and the reception bell ringing out. `WorkdayFace` lies over the piece's box
 // (PieceArt): the Reception Desk's Welcome bubble with its Ring Bell, and the office dog that wanders from its bed.
+// A turned piece (docs/specs/009-elements/furniture-facing.md "Live faces") lays each part on the drawing its facing
+// shows, at that drawing's spot. These are drawn outside the drawing's mirrored group, so facing right places each
+// part at its mirrored spot and its words still read the right way round.
 
 const T = WORKDAY_TONES;
 
@@ -63,14 +69,20 @@ type Box = { x: number; y: number; width: number; height: number };
 /**
  * Where a hot desk's name card stands, on its grid: on the desk's front edge while free; while held, raised clear of
  * the sitter's head and what rides over it, where any other seat's name pill would be (seatPillBottom), so the head
- * never hides the name. It stands in for that pill (FurnitureView draws none on a hot desk).
+ * never hides the name. It stands in for that pill (FurnitureView draws none on a hot desk). `card` is the card on the
+ * drawing shown (HOT_DESK_CARDS), the unturned desk's by default.
  */
-export function hotDeskCardY(box: Box, grid: SeatGrid, sitters: readonly ChairSitter[]): number {
-  if (sitters.length === 0) return HOT_DESK_CARD.y;
+export function hotDeskCardY(
+  box: Box,
+  grid: SeatGrid,
+  sitters: readonly ChairSitter[],
+  card: { y: number; h: number } = HOT_DESK_CARD,
+): number {
+  if (sitters.length === 0) return card.y;
   const drawn = drawnRect(box, grid);
   const perGrid = drawn.height / grid.height;
   const bottom = (seatPillBottom(box, grid, sitters) - (drawn.y - box.y)) / perGrid;
-  return Math.min(HOT_DESK_CARD.y, bottom - HOT_DESK_CARD.h);
+  return Math.min(card.y, bottom - card.h);
 }
 
 export function WorkdayArt({
@@ -79,51 +91,111 @@ export function WorkdayArt({
   sitters,
   box,
   grid,
+  facing = 'n',
 }: {
   kind: string;
   id: string;
   sitters: readonly ChairSitter[];
-  // The piece's box and drawing, for what is placed round its sitters (the hot desk's raised card).
+  // The piece's box and the drawing its facing shows, for what is placed round its sitters (the hot desk's raised
+  // card), and the facing, for which drawing's spots and whether they are mirrored.
   box: Box;
   grid: SeatGrid;
+  facing?: SeatFacing;
 }) {
   const used = sitters.length > 0;
+  const { view, mirrored } = facingView(facing);
+  // A spot's left edge on the drawing as shown: the side's, mirrored for facing right.
+  const left = (x: number, w: number) => (mirrored ? grid.width - x - w : x);
   switch (kind) {
-    case 'treadmill':
-      return used ? <RunningBelt id={id} /> : null;
+    case 'treadmill': {
+      if (!used) return null;
+      const belt = TREADMILL_BELTS[view];
+      return (
+        <RunningBelt
+          id={id}
+          belt={{ ...belt, x: left(belt.x, belt.w) }}
+          along={view === 'side'}
+          reverse={view === 'front' || mirrored}
+        />
+      );
+    }
     case 'phone-booth':
+      // On the roof, centred: the same spot on every drawing, mirrored or not.
       return used ? <BoothLamp /> : null;
-    case 'hot-desk':
+    case 'hot-desk': {
+      const card = HOT_DESK_CARDS[view];
+      // Raised over the sitter, so centred on their seat (the middle of the desk, or right of it on its side).
+      const seat = grid.seats[0];
+      const middle = seat ? left(seat.u * grid.width, 0) : grid.width / 2;
       return (
         <DeskCard
           text={hotDeskCard(sitters)}
           held={used}
-          y={hotDeskCardY(box, grid, sitters)}
-          middle={grid.width / 2}
+          x={left(card.x, card.w)}
+          w={card.w}
+          h={card.h}
+          y={hotDeskCardY(box, grid, sitters, card)}
+          middle={middle}
         />
       );
-    case 'reception-desk':
-      return <BellRing id={id} />;
+    }
+    case 'reception-desk': {
+      const bell = RECEPTION_BELLS[view];
+      return <BellRing id={id} cx={left(bell.cx, 0)} cy={bell.cy} />;
+    }
     default:
       return null;
   }
 }
 
-// The belt's stripes running toward you, clipped to the belt; a CSS loop, still under reduced motion.
-function RunningBelt({ id }: { id: string }) {
-  const { x, y, w, h } = TREADMILL_BELT;
+// The belt's stripes running from the console toward the rear roller, clipped to the part of the belt in view; a CSS
+// loop, still under reduced motion. From behind (the unturned treadmill) they run toward you, from the front away from
+// you (drawn the same and flipped), and on its side along it, to the right (mirrored: to the left).
+function RunningBelt({
+  id,
+  belt,
+  along,
+  reverse,
+}: {
+  id: string;
+  // The belt in view, on the drawing as shown (mirrored already when facing right).
+  belt: { x: number; y: number; w: number; h: number };
+  // On its side: the stripes cross the belt and run along it.
+  along: boolean;
+  // Running up the canvas (the front) or to the left (the mirrored side).
+  reverse: boolean;
+}) {
+  const { x, y, w, h } = belt;
   const clip = `lh-belt-${id}`;
-  const stripes = Array.from(
-    { length: Math.ceil(h / 12) + 1 },
-    (_, i) => `M${x + 2} ${y - 12 + i * 12}H${x + w - 2}`,
-  ).join('');
+  const stripes = along
+    ? Array.from(
+        { length: Math.ceil(w / 12) + 1 },
+        (_, i) => `M${x - 12 + i * 12} ${y + 2}V${y + h - 2}`,
+      ).join('')
+    : Array.from(
+        { length: Math.ceil(h / 12) + 1 },
+        (_, i) => `M${x + 2} ${y - 12 + i * 12}H${x + w - 2}`,
+      ).join('');
+  const flip = !reverse
+    ? undefined
+    : along
+      ? `translate(${2 * x + w} 0) scale(-1 1)`
+      : `translate(0 ${2 * y + h}) scale(1 -1)`;
   return (
-    <g aria-hidden data-belt-running="">
+    <g aria-hidden data-belt-running={along ? 'along' : reverse ? 'away' : 'toward'}>
       <clipPath id={clip}>
         <rect x={x} y={y} width={w} height={h} rx={3} />
       </clipPath>
       <g clipPath={`url(#${clip})`}>
-        <path className="lh-belt-run" d={stripes} stroke="#475569" strokeWidth={1.6} fill="none" />
+        <g transform={flip}>
+          <path
+            className={along ? 'lh-belt-run-along' : 'lh-belt-run'}
+            d={stripes}
+            stroke="#475569"
+            strokeWidth={1.6}
+            fill="none"
+          />
+        </g>
       </g>
     </g>
   );
@@ -160,15 +232,21 @@ function BoothLamp() {
 function DeskCard({
   text,
   held,
+  x,
+  w,
+  h,
   y,
   middle,
 }: {
   text: string;
   held: boolean;
+  // The desk's own card on the drawing as shown.
+  x: number;
+  w: number;
+  h: number;
   y: number;
   middle: number;
 }) {
-  const { x, w, h } = HOT_DESK_CARD;
   if (!held)
     return (
       <text
@@ -183,7 +261,7 @@ function DeskCard({
         {text}
       </text>
     );
-  // Raised over the sitter, centred on the desk: wide enough for a twelve-character name.
+  // Raised over the sitter, centred on their seat: wide enough for a twelve-character name.
   const raised = RAISED_CARD_W;
   return (
     <g data-hot-desk-card-at={y}>
@@ -215,7 +293,7 @@ function DeskCard({
 const RAISED_CARD_W = 60;
 
 // The bell ringing out: two waves from it, played again on each ring this screen hears (keyed on the count).
-function BellRing({ id }: { id: string }) {
+function BellRing({ id, cx, cy }: { id: string; cx: number; cy: number }) {
   const rings = useBellRings(id);
   // The last ring whose waves have played out: a newer one shows until its own timeout.
   const [done, setDone] = useState(0);
@@ -226,7 +304,6 @@ function BellRing({ id }: { id: string }) {
   }, [rings]);
   const shown = rings !== done ? rings : 0;
   if (shown === 0) return null;
-  const { cx, cy } = RECEPTION_BELL;
   return (
     <g
       key={shown}

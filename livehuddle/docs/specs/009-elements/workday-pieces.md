@@ -42,7 +42,8 @@ Shape kinds: `nap-pod`, `treadmill`, `weight-bench`, `phone-booth`, `standing-de
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to take its seat, one person a seat, a
   taken one stops you beside it; who sits is presence, never stored; two people who sat at once are settled by the
-  seat claim (the earlier claim keeps it, the later stands up beside it). None of them turns.
+  seat claim (the earlier claim keeps it, the later stands up beside it). Every one but the Pet Bed turns
+  ([Turning furniture](furniture-facing.md)), its seat and its sitter's facing with it.
 - **Standing seats** (the Treadmill and the Standing Desk) are seats in every way but the pose: the character there
   stands rather than sits, on every screen, because the pose is worked out from the piece it holds.
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: the Reception Desk's counter, from the middle of
@@ -83,6 +84,9 @@ small reading lamp in the hood. One seat, the sitter facing down the canvas. Sit
 headphones on your character ([Status](../008-canvas/avatar-mode.md#status)). A quiet room is a Room with Nap Pods in
 it; there is no separate quiet room piece.
 
+Turned, from behind it shows the hood's smooth back with the open foot end and its blanket beyond, and facing left
+its long tub reclines along the canvas, the blanket at the open end on the left and the hood arching over the right.
+
 ### Treadmill, Weight Bench
 
 The gym corner.
@@ -93,6 +97,10 @@ The gym corner.
 - **Weight Bench**: a padded flat bench with a barbell resting on a rack at its head, plates on each end, and a pair of
   dumbbells on the floor beside it. One seat, on the bench, facing down the canvas.
 - Using either sets **On a Break**.
+- **Turned**, the Treadmill faces its runner down the canvas with the console's back nearest you and the belt beyond
+  running away from you; facing left its deck runs along the canvas, the console side on at the left and the belt
+  running to the right. The Weight Bench from behind is the same bench end for end, the dumbbells beyond it; facing
+  left its pad runs down the canvas under the rack and barbell at its head.
 
 ### Phone Booth
 
@@ -111,6 +119,9 @@ nothing).
   it (the seat in their presence), not feet on its floor.
 - **Sitting sets Busy.**
 - It has no door and no walls that block: a full booth stops a second person beside it, by the seat rules.
+- **Turned**, from behind it shows its solid oak back in three raised panels; facing left you see through its glass
+  side, the back wall edge on at the right with the shelf standing out from it and the stool by the glass front. It
+  stands on the same square floor at every facing, so its call stays where it stands.
 
 ### Standing Desk, Hot Desk
 
@@ -122,6 +133,11 @@ nothing).
   your own, on your screen), on every screen. The claim is the seat claim: whoever presence says holds the seat is
   named, and two people who sat at once are settled by the [seat rules](chair.md), so the card never shows two
   names. Nothing is stored: the desk is free again the moment its sitter stands, leaves or drops off.
+- **Turned** to face down the canvas, each desk is seen from the front: the sitter beyond it, the monitor's back
+  toward you (the Hot Desk's chair beyond the desk, its card on the near edge). Facing left the desk is a long top
+  down the left, the monitor side on with its screen toward the sitter on the right; the Hot Desk's card lies across
+  the near end of the top, its words always reading the right way round. The card and the raised card follow the
+  turned desk.
 - **While held, the card rises** off the desk to stand over the sitter, clear of their head and the chip over it,
   where any other seat's name pill would be (a Tall character's higher), so the head never hides the name. It is the
   desk's name pill: a held Hot Desk shows no second one. The desk's own card stays, blank, under it.
@@ -158,7 +174,7 @@ plant behind the counter, and a brass service bell on the counter.
   above it for you, for as long as you stand there, as the [Arcade Machine](social-pieces.md#arcade-machine)'s
   Insert Coin does. Nobody else sees your bubble.
 - **A click anywhere on the desk walks you to its front**, 16 px below it under the click (kept off its ends), never to
-  the floor behind the counter, where there is no Welcome. A turned desk has no front below it, so the click is the walk.
+  the floor behind the counter, where there is no Welcome. A turned desk walks you to its turned front, beside it or behind it.
   The [Arcade Machine](social-pieces.md#arcade-machine) walks the same way.
 - **The bubble holds a Ring Bell button.** Pressing it rings the bell: you hear a bright ding, the bell on the desk
   rings out (two waves spread from it and fade), and so does it for everyone who hears it.
@@ -169,6 +185,11 @@ plant behind the counter, and a brass service bell on the counter.
 - **One ring per 5 seconds per person**: the button reads **Rang** for five seconds, and the room drops a second ring
   from the same person inside that window.
 - A ring is a moment, like a knock: presence, never stored, never logged, never replayed.
+- **Turned**, from behind it shows the receptionist's side: the ledge and the bell beyond, the monitor's screen and
+  keyboard on the work top, and two drawer pedestals either side of the knee space nearest you. Facing left it runs
+  long down the canvas, its curved front and band down the left under the counter's ledge and the bell, the work top
+  with the plant and the monitor to the right. Its counter blocks down its whole length. Its front, where the Welcome
+  shows and where a click walks you, is the side its counter faces.
 
 ## The wire
 

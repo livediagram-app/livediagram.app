@@ -23,7 +23,8 @@ const shape = createShape('square', 100, 100);
 const other = createShape('square', 300, 100);
 
 function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
-  const elements = [shape, other];
+  const elements = over.elements ?? [shape, other];
+  const [first, second] = elements;
   const readOnly = over.readOnly ?? false;
   const props = {
     elements,
@@ -37,8 +38,8 @@ function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
     ...over,
   } as unknown as CanvasProps;
   const store = createSelectionStore();
-  if (multi) store.setMultiSelectedIds(new Set([shape.id, other.id]));
-  else store.setSelectedId(shape.id);
+  if (multi) store.setMultiSelectedIds(new Set([first!.id, second!.id]));
+  else store.setSelectedId(first!.id);
   const selectionInput = {
     elements,
     editingId: null,
@@ -105,5 +106,47 @@ describe('the Format Painter button', () => {
   it('is not offered read-only', () => {
     renderToolbars(false, { readOnly: true, onStartFormatPainter: vi.fn() });
     expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/furniture-facing.md "Turning a placed piece".
+describe('the Rotate buttons', () => {
+  const sofa = createShape('sofa', 100, 100);
+  const plant = createShape('plant', 400, 100);
+
+  it('turn a selected piece of furniture a quarter either way', () => {
+    const onTurnSelected = vi.fn();
+    renderToolbars(false, { elements: [sofa, plant], onTurnSelected });
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate Left' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
+    expect(onTurnSelected.mock.calls).toEqual([[-1], [1]]);
+  });
+
+  it('show disabled on a locked piece', () => {
+    renderToolbars(false, {
+      elements: [{ ...sofa, locked: true }, plant],
+      onTurnSelected: vi.fn(),
+    });
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled,
+    ).toBe(true);
+  });
+
+  it('are not offered for a piece that does not turn, or read-only', () => {
+    renderToolbars(false, { elements: [plant, sofa], onTurnSelected: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
+    cleanup();
+    renderToolbars(false, { elements: [sofa, plant], onTurnSelected: vi.fn(), readOnly: true });
+    expect(screen.queryByRole('button', { name: 'Rotate Left' })).toBeNull();
+  });
+
+  it('turn a multi-selection holding a piece that turns', () => {
+    const onTurnSelected = vi.fn();
+    renderToolbars(true, { elements: [plant, sofa], onTurnSelected });
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate Right' }));
+    expect(onTurnSelected).toHaveBeenCalledWith(1);
+    cleanup();
+    renderToolbars(true, { elements: [shape, plant], onTurnSelected });
+    expect(screen.queryByRole('button', { name: 'Rotate Right' })).toBeNull();
   });
 });

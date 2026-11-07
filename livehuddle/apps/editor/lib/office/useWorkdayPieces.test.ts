@@ -41,6 +41,26 @@ describe('standing at a reception desk', () => {
     expect(receptionAt({ x: 99, y: 220 }, [desk])).toBeNull();
   });
 
+  it('counts a turned desk’s front on the side its counter faces, never below it', () => {
+    // On its side (facing left): a tall desk, its counter's front down its left.
+    const side = { id: 'side', x: 100, y: 100, width: 112, height: 200, chairFacing: 'e' as const };
+    const footLeft = 100 + 112 * (4 / 112);
+    expect(receptionAt({ x: footLeft - 10, y: 200 }, [side])).toBe('side');
+    expect(receptionAt({ x: footLeft - RECEPTION_REACH - 1, y: 200 }, [side])).toBeNull();
+    expect(receptionAt({ x: 150, y: 300 + 16 }, [side])).toBeNull();
+    // Facing right, the mirror: its front down its right.
+    const right = { ...side, id: 'right', chairFacing: 'w' as const };
+    const footRight = 100 + 112 * (1 - 4 / 112);
+    expect(receptionAt({ x: footRight + 10, y: 200 }, [right])).toBe('right');
+    expect(receptionAt({ x: footLeft - 10, y: 200 }, [right])).toBeNull();
+    // From behind (facing up): its front along the top of its counter.
+    const back = { ...desk, id: 'back', chairFacing: 's' as const };
+    const top = 100 + 112 * (52 / 112);
+    expect(receptionAt({ x: 200, y: top - 10 }, [back])).toBe('back');
+    expect(receptionAt({ x: 200, y: top - RECEPTION_REACH - 1 }, [back])).toBeNull();
+    expect(receptionAt({ x: 200, y: 212 + 10 }, [back])).toBeNull();
+  });
+
   it('shows the Welcome only while walking at the desk, and takes it away on leaving', () => {
     const elements = [at('reception-desk', 'desk', 100, 100)];
     const welcome = renderHook(() => useAtReception('desk'));

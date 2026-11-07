@@ -9,8 +9,7 @@
 
 import type { ChairFacing } from './collab-shapes';
 import { MEETING_TABLE_ART } from './office';
-import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { isSeatingShape, type SeatingKind } from '@liveworkspace/avatar/office-geometry';
+import type { SeatingKind } from '@liveworkspace/avatar/office-geometry';
 import { facingView, SEAT_GRIDS, type SeatGrid } from '@liveworkspace/avatar/seats';
 
 // Which kinds seat a character, and where in each one, are the walk's questions too, so they are
@@ -24,25 +23,8 @@ export {
   seatPoints,
 } from '@liveworkspace/avatar/seats';
 
-/** Whether a seating kind takes a facing: a chair, desk or sofa; a meeting table seats six all round and never
- *  turns (docs/specs/009-elements/office.md). */
-export function turnsWithFacing(kind: string): kind is Exclude<SeatingKind, 'meeting-table'> {
-  return isSeatingShape(kind) && kind !== 'meeting-table';
-}
-
-// The turn, in clockwise degrees, from one facing to another.
-const FACING_DEGREES: Record<ChairFacing, number> = { n: 0, e: 90, s: 180, w: 270 };
-
-export function facingTurn(from: ChairFacing, to: ChairFacing): 0 | 90 | 180 | 270 {
-  return ((FACING_DEGREES[to] - FACING_DEGREES[from] + 360) % 360) as 0 | 90 | 180 | 270;
-}
-
-// Whether a facing lays the furniture on its side relative to another (a quarter turn), which is
-// when its box swaps width for height.
-export function facingSwapsBox(from: ChairFacing, to: ChairFacing): boolean {
-  const turn = facingTurn(from, to);
-  return turn === 90 || turn === 270;
-}
+// The arithmetic of a turn is every piece's (furniture-facing.ts, over @liveworkspace/avatar's facing.ts).
+export { facingSwapsBox, facingTurn } from '@liveworkspace/avatar/facing';
 
 // How a part is painted, the same in both renderers:
 //   shadow: the contact shadow (fixed slate, low opacity)
@@ -304,21 +286,4 @@ export function furnitureFrame(
     transform: mirrored ? `translate(${view.width} 0) scale(-1 1)` : '',
     view,
   };
-}
-
-/**
- * The box a desk or sofa takes when turned from one facing to another: the same centre, its sides
- * swapped on a quarter turn so the drawing keeps its proportions. A chair is square enough to turn
- * in place.
- */
-export function turnedSeatingBox(
-  el: Rect & { shape: SeatingKind },
-  from: ChairFacing,
-  to: ChairFacing,
-): Rect {
-  if (el.shape === 'chair' || el.shape === 'meeting-table' || !facingSwapsBox(from, to))
-    return { ...el };
-  const cx = el.x + el.width / 2;
-  const cy = el.y + el.height / 2;
-  return { x: cx - el.height / 2, y: cy - el.width / 2, width: el.height, height: el.width };
 }

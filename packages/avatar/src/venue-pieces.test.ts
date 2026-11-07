@@ -120,4 +120,49 @@ describe('the venue pieces', () => {
       expect(seatsACharacter(shape), shape).toBe(false);
     }
   });
+
+  // livehuddle's furniture-facing.md "A turn": what blocks turns with the piece.
+  it('turns what blocks with the car park, the bike rack, the podium and the suggestion box', () => {
+    // The car park on its side: its bays down the canvas, the kerb on the right left clear.
+    const side = officeFootprint({
+      x: 0,
+      y: 0,
+      width: 128,
+      height: 240,
+      shape: 'car-park',
+      chairFacing: 'e',
+    })!;
+    expect([side.y, side.height]).toEqual([0, 240]);
+    expect(side.x + side.width).toBeLessThan(112);
+    // From behind the kerb is nearest, at the bottom, and is not in the way.
+    const back = officeFootprint({
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 128,
+      shape: 'car-park',
+      chairFacing: 's',
+    })!;
+    expect(back.y + back.height).toBeLessThanOrEqual(106);
+    expect(back.y).toBeLessThan(20);
+    // The bike rack's pad runs down the canvas on its side.
+    const rack = officeFootprint({
+      x: 0,
+      y: 0,
+      width: 56,
+      height: 152,
+      shape: 'bike-rack',
+      chairFacing: 'w',
+    })!;
+    expect(rack.height).toBeGreaterThan(rack.width);
+    // The podium and the suggestion box block at their foot, at the bottom of every drawing.
+    for (const [shape, width, height] of [
+      ['podium', 44, 88],
+      ['suggestion-box', 48, 120],
+    ] as const) {
+      const f = officeFootprint({ x: 0, y: 0, width, height, shape, chairFacing: 'e' })!;
+      expect(f.y, shape).toBeGreaterThan(height * 0.8);
+      expect(f.y + f.height, shape).toBeLessThanOrEqual(height);
+    }
+  });
 });

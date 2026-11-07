@@ -20,7 +20,7 @@ const rectBounds = (p: FurniturePart) =>
 const pathNumbers = (d: string) => (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
 
 describe('the venue pieces', () => {
-  it('draws the six grid pieces at their own size, wordless, aspect locked, the same from every side', () => {
+  it('draws the six grid pieces at their own size, wordless, aspect locked', () => {
     expect(KINDS).toEqual([
       'pillar',
       'column',
@@ -33,8 +33,11 @@ describe('the venue pieces', () => {
       expect(isGridOfficeShape(kind), kind).toBe(true);
       const art = OFFICE_ART[kind].front;
       expect(art).toBe(OFFICE_VENUE_ART[kind].front);
-      expect(OFFICE_ART[kind].back).toBe(art);
-      expect(OFFICE_ART[kind].side).toBe(art);
+      // The pillar, the column and the curtains read the same from every side; the rest turn (furniture-facing.md).
+      if (kind === 'pillar' || kind === 'column' || kind === 'stage-curtains') {
+        expect(OFFICE_ART[kind].back).toBe(art);
+        expect(OFFICE_ART[kind].side).toBe(art);
+      }
       expect(art.seats, kind).toEqual([]);
       const el = createShape(kind, 0, 0);
       expect(isValidElement(el), kind).toBe(true);
