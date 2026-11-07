@@ -180,7 +180,7 @@ describe('avatarPressOutcome', () => {
 
   it('does nothing on a control piece with no press of yours, never the reader', () => {
     expect([...NO_READER_KINDS].sort()).toEqual(
-      ['focus-button', 'mode-button', 'stopwatch', 'timer'].sort(),
+      ['focus-button', 'mode-button', 'signpost', 'stopwatch', 'timer'].sort(),
     );
     for (const kind of NO_READER_KINDS) {
       expect(avatarClickIntent(kind), kind).toBe('use');

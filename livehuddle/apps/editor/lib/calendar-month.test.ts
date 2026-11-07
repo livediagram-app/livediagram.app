@@ -38,7 +38,7 @@ describe('calendarMonth', () => {
   });
 
   it('costs next to nothing to lay out, a year of months at a time', () => {
-    // A month is 42 cells; a re-render lays one. ~0.4ms measured for 1200; best of three, on CPU time.
+    // A month is 42 cells; a re-render lays one. ~9ms measured for 1200 (~7µs a month); best of three, on CPU time.
     const best = Math.min(
       ...[0, 1, 2].map(() =>
         cpuMsOf(() => {

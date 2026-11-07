@@ -189,7 +189,7 @@ function CalendarNotes({
                         ? 'bg-sky-600 font-semibold text-white dark:bg-sky-500 dark:text-slate-950'
                         : cell.inMonth
                           ? 'text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800'
-                          : 'text-slate-400 hover:bg-slate-50 dark:text-slate-500 dark:hover:bg-slate-800/60'
+                          : 'text-slate-400 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60'
                     } ${cell.isToday && !isSelected ? 'ring-2 ring-inset ring-red-500' : ''}`}
                   >
                     <span className="leading-none">{cell.date}</span>

@@ -182,6 +182,17 @@ describe('the Calendar Wall month', () => {
     expect(track).toHaveBeenCalledWith('Element', 'Changed', 'Calendar-wall');
   });
 
+  it('pins a titled, coloured note', () => {
+    open(piece('calendar-wall'));
+    fireEvent.change(screen.getByLabelText('Note title'), { target: { value: 'Offsite' } });
+    fireEvent.change(screen.getByLabelText('Note'), { target: { value: 'Bring a coat' } });
+    fireEvent.click(screen.getByRole('radio', { name: 'Blue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Pin to 7 Nov' }));
+    const ctx = state.ctx!;
+    const [, delta] = (ctx.applyElementDelta as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    expect(delta).toMatchObject({ note: { title: 'Offsite', color: 'blue', day: '2026-11-07' } });
+  });
+
   it('steps months either way and comes back with Today', () => {
     open(piece('calendar-wall'));
     fireEvent.click(screen.getByRole('button', { name: 'Next month' }));
@@ -229,7 +240,10 @@ describe('the Suggestion Box', () => {
     expect(screen.getByLabelText('Suggestion')).toBeTruthy();
     unmount();
     render(<TeamFace element={box()} walking />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Open the Suggestion Box' })[0]!);
+    // The pill, while walking, opens the reader too.
+    const [hit, pill] = screen.getAllByRole('button', { name: 'Open the Suggestion Box' });
+    expect(hit!.hasAttribute('data-piece-main')).toBe(true);
+    fireEvent.click(pill!);
     expect(document.querySelector('[data-suggestion-reader]')).not.toBeNull();
   });
 

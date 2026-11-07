@@ -203,6 +203,8 @@ export const NO_READER_KINDS: ReadonlySet<AvatarClickKind> = new Set<AvatarClick
   'mode-button',
   'timer',
   'stopwatch',
+  // A Signpost with no places yet has no arrow to press (team-pieces.md "Signpost").
+  'signpost',
 ]);
 
 /** What a walking click on a piece does, once its intent and whether it has a main action right now are known. */

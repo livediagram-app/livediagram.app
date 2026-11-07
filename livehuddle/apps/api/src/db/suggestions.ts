@@ -1,4 +1,4 @@
-// suggestions — a Suggestion Box's notes, one row each, in the document's own SQLite (docs/specs/009-elements/
+// suggestions: a Suggestion Box's notes, one row each, in the document's own SQLite (docs/specs/009-elements/
 // team-pieces.md "Suggestion Box"): kept beside the content, so no tab read, export, copy or version carries them.
 // A row is the note's text and its UTC day; nothing about who dropped it is ever written.
 
