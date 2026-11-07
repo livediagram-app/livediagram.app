@@ -163,6 +163,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|PatPet': 'Someone patted the office dog that wanders round a Pet Bed.',
   'Canvas|Used|PingPong':
     "Two people sitting at a Ping-Pong Table played a game to its end; the left player's screen counts it.",
+  'Canvas|Used|Arcade':
+    "Someone played a run of Moon Mail on an Arcade Machine, to Game Over or closing its panel mid-run; the player's screen counts it.",
   'Canvas|Used|Door': 'Someone swung a Door in a Space open or shut.',
   'Canvas|Used|ScreenOpen':
     'Someone opened a Screen in a meeting room large, to read what it shows.',

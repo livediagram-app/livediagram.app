@@ -309,18 +309,28 @@ Our own game, made for this machine: a mail run round a small moon.
 - **Opening**: a press on the cabinet while you stand at it, or **Enter** or **Space** while your Insert Coin bubble
   shows. It loads the game the first time it opens (the game's code is never part of the Space's first load) and
   shows **Loading…** in the panel until it is ready.
-- **Its place**: centred over the canvas, 360 px wide (on a phone, the screen's width less 16 px each side), never
-  over the bottom-right controls. Its header reads **Moon Mail** with a **Close** button (an X, with its tooltip).
+- **Its place**: centred over the dimmed canvas, as every [reader](../008-canvas/avatar-mode.md) is, 360 px wide (on a
+  phone, the screen's width less 12 px each side), never over the bottom-right controls. Its header reads **Moon
+  Mail** with a **Close** button (an X, with its tooltip). The square screen fills the panel's width; under it the
+  strip, then the High Scores, which scroll with the panel on a short screen.
 - **Before a run**: the screen shows the moon and orbits at rest with **Press Space or Tap to Start**, and below it
   the machine's [High Scores](#high-scores). **Start**, Space, Enter or a tap on the screen starts a run.
 - **Playing**: the panel holds the keys, so walking stops while it is open (see Controls). The ship, letters and
   rocks move on the screen; the strip counts.
 - **Pausing**: **P**, Space, or the **Pause** button pauses a run and shows **Paused** with **Resume**. A run pauses
   by itself when the tab or the window is hidden or loses focus, and never resumes by itself.
-- **Closing**: **Escape**, the **Close** button, or the panel's tab being left. Closing during a run ends it, and its
-  score counts as at Game Over (posted if it makes the table). Your character stays where it stood.
+- **Closing**: **Escape**, the **Close** button, a press on the dimmed canvas outside the panel (except during a run,
+  when that press pauses it instead, so a stray tap never ends a run), or the panel's tab being left. Closing during a
+  run ends it, and its score counts as at Game Over (posted if it makes the table). Your character stays where it
+  stood.
+- **Game Over** shows the score large, then where it landed (**New High Score!** or **You Placed #4**; nothing more
+  when it did not make the table), and **Play Again**. The new row is lit in the High Scores below.
 - **A Viewer's press** opens the same panel on the High Scores alone, with no Start and the line **Viewers See the
   Scores**.
+- **Pressing the cabinet**: while your Insert Coin bubble shows, the whole cabinet (and the bubble) is one press, with
+  the pointer cursor; away from it a click on the cabinet walks you to its front as before. Enter and Space open it
+  only while the bubble shows, nothing else holds the keyboard (a field, a dialog, a focused button) and the panel is
+  shut; they then neither jump nor open the message box.
 
 ### Controls
 
