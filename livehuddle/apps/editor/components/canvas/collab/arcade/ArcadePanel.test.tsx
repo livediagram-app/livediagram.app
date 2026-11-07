@@ -250,9 +250,17 @@ describe('ArcadePanel', () => {
     const dim = () =>
       document.querySelector<HTMLElement>('[data-arcade-panel]')!.parentElement!.firstElementChild!;
     key(' ');
+    // Where the focus trap puts focus after a press outside it.
+    document.querySelector<HTMLElement>('[data-arcade-panel] button')!.focus();
     fireEvent.click(dim());
     expect(screen.getByText('Paused')).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
+    // Focus is back on the game, so Space resumes rather than pressing Close.
+    expect(document.activeElement).toBe(document.querySelector('[data-moon-mail-screen]'));
+    key(' ');
+    expect(screen.queryByText('Paused')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+    key('p');
     fireEvent.click(dim());
     expect(onClose).toHaveBeenCalledTimes(1);
   });

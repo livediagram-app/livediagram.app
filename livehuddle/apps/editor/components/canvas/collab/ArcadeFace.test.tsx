@@ -47,10 +47,17 @@ describe('ArcadeFace', () => {
   });
 
   it('opens Moon Mail on a press, Loading… until its code is in', async () => {
+    // Laid out, so the focus trap sees Close as a control it could focus.
+    const laidOut = vi
+      .spyOn(HTMLElement.prototype, 'offsetParent', 'get')
+      .mockReturnValue(document.body);
     render(<ArcadeFace element={machine()} />);
     fireEvent.click(press()!);
     expect(screen.getByRole('dialog', { name: 'Moon Mail' })).toBeTruthy();
     expect(screen.getByText('Loading…')).toBeTruthy();
+    // Focus on the panel while it loads, never on Close, where a Space would close it.
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+    laidOut.mockRestore();
     expect(await screen.findByText('Viewers See the Scores')).toBeTruthy();
     // Closed with its Close button, the face is back to its bubble.
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }));
@@ -69,6 +76,19 @@ describe('ArcadeFace', () => {
     expect(await screen.findByText('Viewers See the Scores')).toBeTruthy();
     // Open, the panel holds them itself.
     expect(avatarKeyClaimed({ key: 'Enter' })).toBe(false);
+  });
+
+  it('opens on Space ahead of the canvas, whose held-Space pan takes Space on the document', async () => {
+    // The canvas's pan (useCanvasPanAndMarquee) prevents Space's default on the document.
+    const pan = vi.fn((e: KeyboardEvent) => e.preventDefault());
+    document.addEventListener('keydown', pan);
+    render(<ArcadeFace element={machine()} />);
+    act(() => {
+      fireEvent.keyDown(document.body, { key: ' ', code: 'Space' });
+    });
+    expect(await screen.findByText('Viewers See the Scores')).toBeTruthy();
+    expect(pan).not.toHaveBeenCalled();
+    document.removeEventListener('keydown', pan);
   });
 
   it('leaves Enter and Space to a field, a focused button, a held-down key and an open dialog', () => {

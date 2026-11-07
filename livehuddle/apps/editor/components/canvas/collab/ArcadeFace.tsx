@@ -33,13 +33,16 @@ function useOpenKeys(on: boolean, open: () => void) {
       if (!isOpenKey(e) || e.repeat || e.defaultPrevented) return;
       if (isTypingTarget(e.target) || isEnterActivatedTarget(e.target) || walkInputBlocked())
         return;
+      // The press is the machine's: kept from the canvas's held-Space pan, which would otherwise take Space first.
       e.preventDefault();
+      e.stopPropagation();
       openRef.current();
     };
-    window.addEventListener('keydown', onKeyDown);
+    // In the capture phase, ahead of the canvas's own document listeners (the held-Space pan claims Space there).
+    window.addEventListener('keydown', onKeyDown, true);
     return () => {
       release();
-      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keydown', onKeyDown, true);
     };
   }, [on, openRef]);
 }
@@ -90,7 +93,13 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
 /** The panel while its code loads: its frame, its name and Close, and Loading…. */
 function ArcadeLoading({ onClose }: { onClose: () => void }) {
   return (
-    <ReaderShell title="Moon Mail" onClose={onClose} widthClassName="max-w-[360px]">
+    // Focus on the panel, as the loaded one has it: a Space pressed while it loads must not press Close.
+    <ReaderShell
+      title="Moon Mail"
+      onClose={onClose}
+      widthClassName="max-w-[360px]"
+      initialFocus="container"
+    >
       <p
         className="flex aspect-square items-center justify-center text-[13px] text-slate-500 dark:text-slate-400"
         role="status"

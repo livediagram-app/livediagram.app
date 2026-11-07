@@ -54,6 +54,12 @@ export default function ArcadePanel({
     setResult({ score: run.score, place: post?.place ?? null, id: post?.score.id ?? null });
   };
   const game = useMoonMail({ playable, onEnd });
+  // A press on the dim moves focus out of the panel, and the focus trap hands it to Close, where the next Space
+  // (resume) would close the panel and end the run: the game's screen takes it back.
+  const pauseFromDim = () => {
+    game.pause();
+    game.screenRef.current?.focus({ preventScroll: true });
+  };
 
   return (
     <ReaderShell
@@ -62,7 +68,7 @@ export default function ArcadePanel({
       widthClassName="max-w-[360px]"
       initialFocus="container"
       // A stray press beside the panel pauses a run rather than ending it.
-      onBackdrop={game.phase === 'playing' ? game.pause : onClose}
+      onBackdrop={game.phase === 'playing' ? pauseFromDim : onClose}
       data-arcade-panel={element.id}
     >
       {playable ? <MoonMailScreen game={game} result={result ?? null} /> : null}
