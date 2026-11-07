@@ -44,6 +44,8 @@ import {
   RUG_FILL,
   STAGE_FLOOR,
   stageParts,
+  isLongTable,
+  longTableArt,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
 import { outlinedRoomPaths } from './room-builder';
@@ -523,11 +525,13 @@ function avatarPadArt(el: Face, stroke: string): string {
 // A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
-  const art = isSeatingShape(el.shape)
-    ? FURNITURE_ART[el.shape]
-    : isGridOfficeShape(el.shape)
-      ? OFFICE_ART[el.shape]
-      : null;
+  const art = isLongTable(el)
+    ? longTableArt(el.width, el.height)
+    : isSeatingShape(el.shape)
+      ? FURNITURE_ART[el.shape]
+      : isGridOfficeShape(el.shape)
+        ? OFFICE_ART[el.shape]
+        : null;
   if (!art) return '';
   const facing = isSeatingShape(el.shape)
     ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })

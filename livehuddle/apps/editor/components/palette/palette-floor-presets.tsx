@@ -64,7 +64,7 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
     'boardroom',
     'Boardroom',
     'A long table for sixteen',
-    'A boardroom, furnished: two meeting tables end to end down the middle for sixteen, plants in the back corners, and a water cooler and a coffee machine by the door.',
+    'A boardroom, furnished: a long table for sixteen down the middle with a screen on the wall above its head, plants in the back corners, and a water cooler and a coffee machine by the door.',
     <>
       <path d="M9.5 18H1.5V7h21v11h-8" />
       <path d="M1.5 9.5h21" />

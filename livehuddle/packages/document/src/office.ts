@@ -15,7 +15,12 @@ import {
   ROOM_WALL,
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
-import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
+import {
+  LONG_TABLE_VARIANT,
+  MEETING_TABLE_SEATS,
+  longTableGrid,
+  type TableSeat,
+} from '@liveworkspace/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
@@ -406,6 +411,53 @@ export const MEETING_TABLE_ART: FurnitureArt = allSides({
   ...MEETING_TABLE_VIEW,
   seats: MEETING_TABLE_VIEW.tableSeats.map(({ u, v }) => ({ u, v })),
 });
+
+/** Whether a piece is a Long Table (office.md "Long Table"): a Meeting Table of the `long` type. */
+export function isLongTable(el: { shape: string; variant?: unknown }): boolean {
+  return el.shape === 'meeting-table' && el.variant === LONG_TABLE_VARIANT;
+}
+
+// The last few drawings, by grid width: a table is redrawn on every render, its width changes only on a resize.
+const longTables = new Map<number, FurnitureArt>();
+
+/**
+ * A Long Table's drawing for its box (office.md "Long Table"): the Meeting Table's chairs and top, stretched along the
+ * grid `longTableGrid` gives (so a sitter lands on a drawn chair): far chairs, the ends, the top, the near chairs.
+ */
+export function longTableArt(width: number, height: number): FurnitureArt {
+  const grid = longTableGrid(width, height);
+  const cached = longTables.get(grid.width);
+  if (cached) return cached;
+  const w = grid.width;
+  const sides = grid.seats.filter((s) => s.facing === 'down').map((s) => r1(s.u * w));
+  const end = w - 232;
+  const view: FurnitureDrawing = {
+    width: w,
+    height: grid.height,
+    parts: [
+      ellipse('shadow', w / 2, 160, w / 2 - 6, 6),
+      ...sides.flatMap(far),
+      path('line', 'M10 80v18M32 80v18'),
+      rect('panel', 6, 66, 30, 12, 3),
+      rect('panel', 2, 44, 8, 36, 3),
+      path('line', `M${200 + end} 80v18M${222 + end} 80v18`),
+      rect('panel', 196 + end, 66, 30, 12, 3),
+      rect('panel', 222 + end, 44, 8, 36, 3),
+      path('line', `M50 110v20M${w / 2} 110v20M${w - 50} 110v20`),
+      rect('panel', 40, 56, w - 80, 44, 6),
+      rect('face', 40, 96, w - 80, 12, 4),
+      ...sides.flatMap(near),
+    ],
+    seats: grid.seats.map(({ u, v }) => ({ u, v })),
+    ring: { cx: w / 2, cy: 82, rx: w / 2 - 4, ry: 70 },
+  };
+  const art = allSides(view);
+  if (longTables.size >= 16) longTables.clear();
+  longTables.set(grid.width, art);
+  return art;
+}
+
+const r1 = (v: number) => Math.round(v * 10) / 10;
 
 // Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
 export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {

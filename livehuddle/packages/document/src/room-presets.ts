@@ -19,6 +19,8 @@ type PresetPiece = {
   y: number;
   facing?: ChairFacing;
   variant?: string;
+  // A width other than the kind's own (an aspect-locked piece keeps its proportions).
+  width?: number;
 };
 
 /** Where the Restroom's pieces stand, room-relative, for a room at its default 480 × 320: on the floor in front of the
@@ -44,14 +46,15 @@ export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]
     { kind: 'plant', x: 152, y: 52 },
     { kind: 'bookshelf', x: 224, y: 36 },
   ],
-  // Two meeting tables end to end down the middle (sixteen seats), plants in the back corners, drinks by the door.
+  // A Long Table for sixteen down the middle under a Screen on the back wall, plants in the back corners, drinks in the
+  // front corners clear of the door.
   boardroom: [
     { kind: 'plant', x: 20, y: 40 },
     { kind: 'plant', x: 724, y: 40 },
-    { kind: 'meeting-table', x: 168, y: 104 },
-    { kind: 'meeting-table', x: 400, y: 104 },
-    { kind: 'water-cooler', x: 640, y: 272 },
-    { kind: 'coffee-machine', x: 712, y: 288 },
+    { kind: 'screen', x: 336, y: 32, width: 128 },
+    { kind: 'meeting-table', x: 120, y: 120, variant: 'long' },
+    { kind: 'water-cooler', x: 24, y: 276 },
+    { kind: 'coffee-machine', x: 704, y: 290 },
   ],
   // Five pods of two desks face to face across the wide floor, the shared kit and plants in the wing.
   'open-plan': [
@@ -77,9 +80,9 @@ export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]
     { kind: 'bar-stool', x: 242, y: 196 },
     { kind: 'water-cooler', x: 20, y: 196 },
   ],
-  // A fire on the back wall, a round rug before it, two sofas facing in across it, plants either side of the door.
+  // A fire on the back wall, a bordered rug before it, two sofas facing in across it, plants either side of the door.
   lounge: [
-    { kind: 'rug', x: 140, y: 172, variant: 'round' },
+    { kind: 'rug', x: 100, y: 170, variant: 'bordered' },
     { kind: 'fireplace', x: 156, y: 44 },
     { kind: 'sofa', x: 36, y: 174, facing: 'w' },
     { kind: 'sofa', x: 319, y: 174, facing: 'e' },
@@ -93,8 +96,11 @@ export const RESTROOM_SIGN = { width: 88, gap: 10, beside: 16 } as const;
 
 // A piece made at its place: a seat turned to its facing (a desk or sofa on its side taking its turned box), a rug
 // given its type.
-function presetPiece({ kind, x, y, facing, variant }: PresetPiece): ShapeElement {
-  const made = applyShapeVariant(createShape(kind, x, y), variant);
+function presetPiece({ kind, x, y, facing, variant, width }: PresetPiece): ShapeElement {
+  const base = applyShapeVariant(createShape(kind, x, y), variant);
+  const made = width
+    ? { ...base, width, height: Math.round((base.height * width) / base.width) }
+    : base;
   if (!facing || made.shape === 'meeting-table') return made;
   if (made.shape !== 'chair' && made.shape !== 'desk' && made.shape !== 'sofa') return made;
   const turned = turnedSeatingBox({ ...made, shape: made.shape }, made.chairFacing ?? 'n', facing);

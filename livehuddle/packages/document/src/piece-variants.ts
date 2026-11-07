@@ -33,6 +33,8 @@ export const RUG_VARIANTS = [
 
 /** The kinds whose drawing reads a stored `variant`, each with its types in order. */
 const STORED_VARIANTS: Readonly<Record<string, readonly string[]>> = {
+  // The Meeting Table and its Long Table (office.md "Long Table").
+  'meeting-table': ['standard', 'long'],
   door: DOOR_VARIANTS,
   rug: RUG_VARIANTS,
   corridor: CORRIDOR_VARIANTS,
@@ -70,6 +72,7 @@ export function isPieceVariant(v: unknown): v is string {
 export const PIECE_VARIANT_SIZES: Readonly<
   Record<string, Readonly<Record<string, { width: number; height: number }>>>
 > = {
+  'meeting-table': { long: { width: 560, height: 168 } },
   door: { double: { width: 144, height: 24 }, sliding: { width: 120, height: 24 } },
   rug: {
     round: { width: 160, height: 160 },

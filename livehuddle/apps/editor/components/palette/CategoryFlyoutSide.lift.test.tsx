@@ -101,4 +101,42 @@ describe('CategoryFlyoutSide', () => {
     });
     expect(panel.style.top).toBe('238px');
   });
+
+  it('on a phone covers the whole flyout from its top, and hides at once while a tile is dragged out', () => {
+    const def = {
+      id: 'tools:rug',
+      label: 'Add Rug',
+      caption: 'Rug',
+      action: { type: 'shape', kind: 'rug' },
+    } as unknown as PaletteTileDef;
+    const props = {
+      isMobile: true,
+      scale: 1,
+      actions: {} as never,
+      pendingDraw: null,
+      openBody: () => null,
+      hoverHandlers: {
+        onPointerEnter: () => {},
+        onPointerLeave: () => {},
+        onDragStart: () => {},
+        onDragEnd: () => {},
+      },
+    };
+    const { container, rerender } = render(
+      <CategoryFlyoutSide side={{ def, top: 300, right: 0, flyoutTop: 60 }} {...props} />,
+    );
+    const panel = container.querySelector<HTMLElement>('[data-category-flyout-side]')!;
+    expect(panel.style.top).toBe('60px');
+    expect(panel.className).not.toContain('opacity-0');
+    rerender(
+      <CategoryFlyoutSide
+        side={{ def, top: 300, right: 0, flyoutTop: 60 }}
+        {...props}
+        seeThrough
+      />,
+    );
+    expect(panel.className).toContain('opacity-0');
+    expect(panel.className).not.toContain('transition-opacity');
+    expect(panel.hasAttribute('data-drop-through')).toBe(true);
+  });
 });

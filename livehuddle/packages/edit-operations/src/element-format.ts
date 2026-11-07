@@ -144,6 +144,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   door: ['doorClosed', 'variant'],
   // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.
   rug: ['variant'],
+  // office.md "Long Table": a Meeting Table's type.
+  'meeting-table': ['variant'],
   corridor: ['variant'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],

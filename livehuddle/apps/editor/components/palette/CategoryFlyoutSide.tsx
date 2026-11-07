@@ -18,7 +18,9 @@ const PRESETS_HINT = 'Start from a preset, then change any of it.';
 export const SIDE_PX = 304;
 const SIDE_GAP_PX = 8;
 
-export type SideOpen = { def: PaletteTileDef; top: number; right: number };
+// `top` lines it up with its tile; `flyoutTop` is the flyout's own top, where a phone's panel starts so it covers the
+// whole flyout (none of its headings peeking out above).
+export type SideOpen = { def: PaletteTileDef; top: number; right: number; flyoutTop?: number };
 
 // How far clear of the canvas region's bottom (the tab bar below it) the panel keeps.
 const FLOOR_GAP_PX = 8;
@@ -66,7 +68,7 @@ export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen 
   else if (leftColumn) left = box.right + SIDE_GAP_PX;
   else left = box.left - SIDE_GAP_PX - SIDE_PX;
   const right = root.right - left - SIDE_PX;
-  return { def, top, right };
+  return { def, top, right, flyoutTop: Math.max(0, flyout.top - root.top) };
 }
 
 export function CategoryFlyoutSide({
@@ -86,7 +88,8 @@ export function CategoryFlyoutSide({
   pendingDraw: PendingDraw | null;
   // An opener's body: the category it stands for, at its group.
   openBody: (categoryId: string, group: string | null) => ReactNode;
-  // A tile is being dragged out: faded, and a drop on it lands on the canvas beneath (`data-drop-through`).
+  // A tile is being dragged out: hidden at once (no fade, so it never lies over the fading flyout as a second layer of
+  // see-through text), and a drop on it lands on the canvas beneath (`data-drop-through`).
   seeThrough?: boolean;
   hoverHandlers: {
     onPointerEnter: (e: React.PointerEvent) => void;
@@ -103,6 +106,8 @@ export function CategoryFlyoutSide({
   // to fit (8px clear), never above the strip's top. Measured before it paints, again once its opening animation has
   // settled (mid-animation it is scaled down, so it reads short), and whenever its size or the window's changes.
   const [lift, setLift] = useState(0);
+  // Where it hangs from: its tile's top, or on a phone the flyout's own top (it lies over the whole flyout).
+  const anchor = isMobile ? (side.flyoutTop ?? side.top) : side.top;
   const liftRef = useRef(0);
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -112,7 +117,7 @@ export function CategoryFlyoutSide({
       // the lift it has.
       const box = panel.getBoundingClientRect();
       const height = box.height / animationScale(getComputedStyle(panel).transform);
-      const next = sideLift(box.top + liftRef.current + height, sideFloor(panel), side.top);
+      const next = sideLift(box.top + liftRef.current + height, sideFloor(panel), anchor);
       liftRef.current = next;
       setLift(next);
     };
@@ -126,7 +131,7 @@ export function CategoryFlyoutSide({
       window.removeEventListener('resize', measure);
       observer?.disconnect();
     };
-  }, [side.top]);
+  }, [anchor]);
   const a = def.action;
   const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
   return (
@@ -140,10 +145,10 @@ export function CategoryFlyoutSide({
       {...hoverHandlers}
       style={
         isMobile
-          ? { top: side.top - lift }
+          ? { top: anchor - lift }
           : { ...uiUnscaleStyle(scale), top: side.top - lift, right: side.right }
       }
-      className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down transition-opacity duration-short ${seeThrough ? 'opacity-30' : ''} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
+      className={`absolute ${isMobile ? 'inset-x-3' : 'w-[19rem]'} max-h-[calc(100dvh-10rem)] origin-top-left animate-dropdown-down ${seeThrough ? 'opacity-0' : 'transition-opacity duration-short'} overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50`}
     >
       <FlyoutHeader
         icon={def.icon}

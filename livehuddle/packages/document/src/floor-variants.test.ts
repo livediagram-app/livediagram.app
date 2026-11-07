@@ -23,6 +23,8 @@ import {
   LOCKED_DOOR_SHADE,
   ROOM_PRESETS,
   createOutlinedRoom,
+  isLongTable,
+  longTableArt,
   doorLockCentre,
   outlineNameAlign,
   pointInPolygon,
@@ -127,13 +129,33 @@ describe('room presets', () => {
       applyShapeVariant(createShape('room', 0, 0), 'lounge'),
       'lounge',
     ) as ShapeElement[];
-    expect(lounge[2]).toMatchObject({ shape: 'rug', variant: 'round' });
+    expect(lounge[2]).toMatchObject({ shape: 'rug', variant: 'bordered' });
     expect(
       lounge.filter((p) => p.shape === 'sofa').map((p) => [p.chairFacing, p.width, p.height]),
     ).toEqual([
       ['w', 85, 152],
       ['e', 85, 152],
     ]);
+  });
+
+  it('gives the Boardroom a Long Table for sixteen under a screen, drawn and seated to its width', () => {
+    const [, , ...pieces] = withDoorPiece(
+      applyShapeVariant(createShape('room', 0, 0), 'boardroom'),
+      'boardroom',
+    ) as ShapeElement[];
+    const table = pieces.find((p) => p.shape === 'meeting-table')!;
+    expect(table).toMatchObject({ variant: 'long', width: 560, height: 168 });
+    expect(table.aspectLocked).toBeUndefined();
+    expect(isLongTable(table)).toBe(true);
+    expect(isLongTable(createShape('meeting-table', 0, 0))).toBe(false);
+    expect(pieces.find((p) => p.shape === 'screen')).toMatchObject({ width: 128, height: 80 });
+    const art = longTableArt(table.width, table.height).front;
+    expect(art.width).toBe(560);
+    expect(art.seats).toHaveLength(16);
+    // Wider takes more chairs; the drawing is cached by width.
+    expect(longTableArt(900, 168).front.seats).toHaveLength(28);
+    expect(longTableArt(560, 168)).toBe(longTableArt(560, 168));
+    expect(face(table)).toContain('viewBox="0 0 560 168"');
   });
 
   it("spreads a preset's pieces with a room placed bigger, each keeping its size", () => {

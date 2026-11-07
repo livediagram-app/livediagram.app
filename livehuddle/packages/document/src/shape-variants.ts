@@ -148,6 +148,11 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
   if (storesVariant(el.shape) && variantsOf(el.shape).includes(variant)) {
     const size = PIECE_VARIANT_SIZES[el.shape]?.[variant];
     const typed: ShapeElement = { ...el, variant, ...size };
+    // A Long Table is drawn to its width, so it takes any (office.md "Long Table").
+    if (el.shape === 'meeting-table' && variant === 'long') {
+      const { aspectLocked: _held, ...long } = typed;
+      return long;
+    }
     if (el.shape !== 'rug') return typed;
     // A Round rug stays a circle; the other patterned rugs are drawn to their box, so they take any.
     if (variant === 'round') return { ...typed, aspectLocked: true };

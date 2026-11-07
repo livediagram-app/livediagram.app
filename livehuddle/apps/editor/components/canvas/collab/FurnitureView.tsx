@@ -31,6 +31,8 @@ import {
   type GridOfficeKind,
   type SeatingKind,
   type ShapeElement,
+  isLongTable,
+  longTableArt,
 } from '@livehuddle/document';
 
 // How long a machine answers a drink.
@@ -147,7 +149,12 @@ export function FurnitureView({
   const kind = element.shape;
   if (!isFurnitureViewShape(kind)) return null;
   const seating = isSeatingShape(kind);
-  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as GridOfficeKind];
+  // A Long Table (office.md "Long Table") is drawn for its width.
+  const art = isLongTable(element)
+    ? longTableArt(element.width, element.height)
+    : seating
+      ? FURNITURE_ART[kind]
+      : OFFICE_ART[kind as GridOfficeKind];
   const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
   const frame = furnitureFrame(art, facing);
   const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);

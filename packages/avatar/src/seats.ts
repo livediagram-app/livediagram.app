@@ -141,6 +141,39 @@ export const MEETING_TABLE_SEATS: { width: number; height: number; seats: readon
   ],
 };
 
+/** The Meeting Table's long type (livehuddle's office.md "Long Table"): a boardroom table drawn to its width. */
+export const LONG_TABLE_VARIANT = 'long';
+
+// Where its chairs go: the side chairs between this far in from each end, this far apart at least.
+const LONG_TABLE_SIDE_IN = 86;
+const LONG_TABLE_PITCH = 60;
+
+/** The x of each side chair along a long table's grid `width` (at least two, spaced evenly). */
+export function longTableSideXs(width: number): number[] {
+  const run = Math.max(0, width - 2 * LONG_TABLE_SIDE_IN);
+  const n = Math.max(2, Math.floor(run / LONG_TABLE_PITCH) + 1);
+  return Array.from({ length: n }, (_, i) => LONG_TABLE_SIDE_IN + (run * i) / (n - 1));
+}
+
+/**
+ * A long table's grid for a box: the Meeting Table's 168 px deep drawing as wide as the box's proportions allow (so
+ * it fills the box), its side chairs along both sides and one at each end, every seat facing the table.
+ */
+export function longTableGrid(boxWidth: number, boxHeight: number): FixedSeatGrid {
+  const width = Math.max(TW, Math.round((boxWidth * TH) / Math.max(1, boxHeight)));
+  const xs = longTableSideXs(width);
+  return {
+    width,
+    height: TH,
+    seats: [
+      ...xs.map((x): TableSeat => ({ u: x / width, v: 40 / TH, facing: 'down' })),
+      ...xs.map((x): TableSeat => ({ u: x / width, v: 116 / TH, facing: 'up' })),
+      { u: 21 / width, v: 72 / TH, facing: 'right' },
+      { u: (width - 21) / width, v: 72 / TH, facing: 'left' },
+    ],
+  };
+}
+
 /** A piece that never turns: its grid and its seats, each with the way its sitter faces. */
 export type FixedSeatGrid = { width: number; height: number; seats: readonly TableSeat[] };
 
@@ -273,7 +306,7 @@ const FIXED_SEATS: Readonly<Record<FixedSeatKind, FixedSeatGrid>> = {
 };
 
 /** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */
-export type SeatedBox = Rect & { shape: SitKind; chairFacing?: SeatFacing };
+export type SeatedBox = Rect & { shape: SitKind; chairFacing?: SeatFacing; variant?: unknown };
 
 /** A seat's feet point in canvas coordinates; a meeting table's seat also says which way its sitter faces. */
 export type Seat = { x: number; y: number; facing?: AvatarFacing };
@@ -282,7 +315,12 @@ export type Seat = { x: number; y: number; facing?: AvatarFacing };
 export function seatPoints(el: SeatedBox): Seat[] {
   const shape = el.shape;
   if (shape === 'meeting-table' || isFixedSeatShape(shape)) {
-    const grid = shape === 'meeting-table' ? MEETING_TABLE_SEATS : FIXED_SEATS[shape];
+    const grid =
+      shape !== 'meeting-table'
+        ? FIXED_SEATS[shape]
+        : el.variant === LONG_TABLE_VARIANT
+          ? longTableGrid(el.width, el.height)
+          : MEETING_TABLE_SEATS;
     const drawn = drawnRect(el, grid);
     return grid.seats.map(({ u, v, facing }) => ({
       x: drawn.x + drawn.width * u,
