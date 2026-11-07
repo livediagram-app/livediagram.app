@@ -471,7 +471,40 @@ export type NoticeNote = {
   // When it was pinned, epoch ms.
   at: number;
   color?: NoteColor;
+  // The day it is pinned to, on a Calendar Wall (docs/specs/009-elements/team-pieces.md "Calendar Wall"): `YYYY-MM-DD`.
+  day?: string;
 };
+
+/** The pieces whose notes are `noticeNotes`, changed by the `notice-pin` and `notice-unpin` deltas. */
+export const NOTE_PIECE_KINDS: readonly string[] = ['notice-board', 'calendar-wall'];
+export function holdsNotes(kind: string): boolean {
+  return NOTE_PIECE_KINDS.includes(kind);
+}
+
+const pad2 = (v: number) => String(v).padStart(2, '0');
+
+/** A calendar day (`YYYY-MM-DD`, years 2000 to 2100), checked against its month's length. Parsed by position. */
+export function isNoteDay(v: unknown): v is string {
+  if (typeof v !== 'string' || v.length !== 10 || v[4] !== '-' || v[7] !== '-') return false;
+  const digits = v.slice(0, 4) + v.slice(5, 7) + v.slice(8, 10);
+  for (const c of digits) if (c < '0' || c > '9') return false;
+  const year = Number(v.slice(0, 4));
+  const month = Number(v.slice(5, 7));
+  const day = Number(v.slice(8, 10));
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1) return false;
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** The `YYYY-MM-DD` of a moment on this screen's clock. */
+export function localDay(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+/** The day a note counts on: its own, else the day it was pinned, on this screen's clock. */
+export function noteDay(note: NoticeNote): string {
+  return note.day ?? localDay(note.at);
+}
 
 export const NOTE_TITLE_MAX = 60;
 export const NOTE_TEXT_MAX = 280;
@@ -506,7 +539,8 @@ export function isNoticeNote(v: unknown): v is NoticeNote {
     n.by.length <= 128 &&
     typeof n.at === 'number' &&
     Number.isFinite(n.at) &&
-    (n.color === undefined || isNoteColor(n.color))
+    (n.color === undefined || isNoteColor(n.color)) &&
+    (n.day === undefined || isNoteDay(n.day))
   );
 }
 

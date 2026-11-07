@@ -180,6 +180,11 @@ const WORDLESS_SHAPES = new Set<string>([
   'hot-desk',
   'pet-bed',
   'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   'door',
   'directory',
   'elevator',

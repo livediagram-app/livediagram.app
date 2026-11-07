@@ -95,6 +95,11 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'hot-desk',
   'pet-bed',
   'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md). Read, posted in, pressed to walk, looked at.
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.

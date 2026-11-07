@@ -291,6 +291,8 @@ export * from './knock';
 export * from './bell';
 // A game at a piece, the Ping-Pong Table's first (docs/specs/009-elements/social-pieces.md "The wire").
 export * from './table-game';
+// A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "The wire").
+export * from './suggestions';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

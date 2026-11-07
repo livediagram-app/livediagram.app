@@ -118,6 +118,11 @@ export const SHAPE_KINDS = new Set<string>([
   'hot-desk',
   'pet-bed',
   'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).

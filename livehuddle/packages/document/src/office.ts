@@ -25,6 +25,7 @@ import { OFFICE_RESTROOM_ART } from './office-restroom';
 import { OFFICE_VENUE_ART } from './office-venue';
 import { OFFICE_WORKDAY_ART } from './office-workday';
 import { WAYFINDING_ART } from './office-wayfinding';
+import { OFFICE_TEAM_ART } from './office-team';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
 // footprints) is @liveworkspace/avatar's, shared with every product that has Avatar mode.
@@ -106,7 +107,12 @@ export type OfficeKind =
   | 'standing-desk'
   | 'hot-desk'
   | 'pet-bed'
-  | 'reception-desk';
+  | 'reception-desk'
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  | 'calendar-wall'
+  | 'suggestion-box'
+  | 'signpost'
+  | 'photo-wall';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -177,6 +183,10 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'hot-desk',
   'pet-bed',
   'reception-desk',
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
@@ -399,6 +409,7 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   ...OFFICE_VENUE_ART,
   ...OFFICE_WORKDAY_ART,
   ...WAYFINDING_ART,
+  ...OFFICE_TEAM_ART,
 };
 
 // --- The room ----------------------------------------------------------------

@@ -149,6 +149,11 @@ export type ShapeKind =
   | 'hot-desk'
   | 'pet-bed'
   | 'reception-desk'
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  | 'calendar-wall'
+  | 'suggestion-box'
+  | 'signpost'
+  | 'photo-wall'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in
