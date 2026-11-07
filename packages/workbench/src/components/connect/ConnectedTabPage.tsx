@@ -11,11 +11,7 @@ import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
 import { ConnectedTabCard } from './ConnectedTabCard';
 import { isBrokenState, type ConnectedTabView } from './connected-tab-view';
-import {
-  pickIsFresh,
-  setConnectedTabBroken,
-  useConnectedTabPick,
-} from './connected-tab-store';
+import { pickIsFresh, setConnectedTabBroken, useConnectedTabPick } from './connected-tab-store';
 import { openConnectedTab, type Navigator } from './open-connected-tab';
 
 export type ConnectedTabPageProps = {

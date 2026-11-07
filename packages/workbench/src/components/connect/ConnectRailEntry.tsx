@@ -14,7 +14,13 @@ import type { App } from '@liveworkspace/index-client';
 const LinkGlyph = lucideGlyph(lucideLink, 15);
 
 // The other apps' logos at the row's end, the host's own left out, three at most.
-const FAN: readonly App[] = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'];
+const FAN: readonly App[] = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+];
 
 export const CONNECT_RAIL_ID = 'connect';
 

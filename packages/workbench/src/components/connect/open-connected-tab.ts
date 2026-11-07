@@ -44,6 +44,8 @@ export async function openConnectedTab({
   } catch (error) {
     return { view: connectedTabViewOf(error), open: null };
   }
+  // A newer open (or the page going) overtook this one: it goes nowhere.
+  if (signal?.aborted) return { view: { state: 'failed' }, open: null };
   if (open.app === hostApp) {
     navigate.assign(open.href);
     return { view: { state: 'opening' }, open };

@@ -2,9 +2,14 @@
 
 // A connected tab (connected-tabs.md "How it looks"): the target app's logo before the name, the arrow for another
 // app, the amber dot when it opens nothing, never renamed by hand.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConnectedTab, type ConnectedTabProps } from './ConnectedTab';
+import {
+  resetConnectedTabStoreForTests,
+  setConnectedTabBroken,
+  useConnectedTabPick,
+} from '../connect/connected-tab-store';
 
 afterEach(cleanup);
 
@@ -64,5 +69,17 @@ describe('ConnectedTab', () => {
   it('keeps the menu slot like any tab', () => {
     render(<ConnectedTab {...props({ menu: <button type="button">Tab menu</button> })} />);
     expect(screen.getByRole('button', { name: 'Tab menu' })).toBeTruthy();
+  });
+
+  it('shows the dot the last open found, and records a press for its page', () => {
+    resetConnectedTabStoreForTests();
+    const pick = renderHook(() => useConnectedTabPick('t1'));
+    const { container } = render(<ConnectedTab {...props()} />);
+    expect(container.querySelector('[data-connected-broken]')).toBeNull();
+    act(() => setConnectedTabBroken('cn_abcdefghijklmnopqrstuvwx', true));
+    expect(container.querySelector('[data-connected-broken]')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Launch plan/ }));
+    expect(pick.result.current?.nonce).toBe(1);
+    resetConnectedTabStoreForTests();
   });
 });
