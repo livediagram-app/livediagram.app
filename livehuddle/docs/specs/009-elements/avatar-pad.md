@@ -46,16 +46,14 @@ Walking is the default way to be in a Space (a Participant and a Viewer always w
 button), so every board starts with an entrance (owner, 2026-11-06: "Make sure all templates and blank tabs gain an
 Avatar Pad - probably replace the old selection mode button").
 
-- **Every Spaces template** (all eighteen, in every category) places **one** pad at its entrance, where its **Walk
-  In** [Selection Mode button](mode-button.md) used to stand, which it replaces: at the end of the Virtual Office's
-  corridor, under the Team Pod's door, under a garden's or a campus's gate, under a building's front door, with the
-  how-to line beside it (`wayIn` in `packages/templates/src/template-office-parts.ts`). It stands on open floor,
-  `WAY_IN_CLEAR` (72 px) below the wall or fence above it, so neither the pad nor the Regular character standing on
-  its core overlaps a wall or a piece of furniture. A pad is a floor, so it comes first in the template's elements
-  with the other floors (`floorsFirst` in `build-template.ts`).
+- **Every Spaces template** (all eighteen, in every category) places **one** pad, which replaced its **Walk In**
+  [Selection Mode button](mode-button.md), **in the middle of the action** ([Where a Space's pad
+  stands](#where-a-spaces-pad-stands)), with the how-to line centred under it (`arrival` in
+  `packages/templates/src/template-arrival.ts`). A pad is a floor, so it comes first in the template's elements with
+  the other floors (`floorsFirst` in `build-template.ts`).
 - **A building's other floors** (the Hotel and Suites' Suites and Rooftop, the Co-working Tower's Level 2 and Level 3)
   have one too, by their Elevators and Directory: a ride still steps you out beside the Elevator, and someone who
-  changes floor from the tab bar arrives on the pad.
+  changes floor from the tab bar arrives on the pad, where the ride would have put them.
 - **A blank tab gets one when it is started blank**: **Blank Space** chosen on Start a Space; the start's **×** (and
   Escape, and the phone's drag down), which starts from a blank space; an explicit blank (`/new?blank=1`,
   `/new?start=blank`); and an agent's blank tab (`buildTemplateTab` with `blank-session`). All of them are the Blank
@@ -74,6 +72,49 @@ Avatar Pad - probably replace the old selection mode button").
   and an agent build it round (0, 0)) ([Fit-to-screen](../008-canvas/canvas-and-palette.md)). Choosing Blank Space likewise leaves the view where it was,
   selects nothing and keeps the tool in hand, as the empty blank did.
 - **The × is not a pick**: it lands the same pad but counts no `Template·Used`.
+
+### Where a Space's pad stands
+
+Someone joining a Space arrives on its pad, and opening walking puts them in the middle of the screen at 100%
+([The camera](../008-canvas/avatar-mode.md#the-camera)), so the pad decides what a newcomer sees first. It used to
+stand at the entrance, under the plan's bottom-right corner, which left the newcomer at the edge of the Space, away from
+everyone, and (seen from a seat near the bottom of a room, with the camera following) under the canvas's bottom-right
+cluster (owner, Work Tracker #601: "Place the avatar pads in better locations so the avatar doesn't get lost right
+away when joining, for example in the middle of a key room, or the centre of a courtyard"; #584).
+
+- **In the middle of the action**: the Space's busiest shared room, its corridor, its lobby or its lawn, so the
+  people, the seats and the stage are on screen around you when you arrive, at every window size.
+- **On open floor**: neither the pad nor the Regular character standing on its core touches a wall, a fence or a piece
+  of furniture; the pad lies on no Garden Path (its stones would hide under it) and on no Stage (the presenter's).
+- **The how-to line under it**: centred under the pad and at most 360 px wide, so a phone's view centred on someone
+  arriving (390 px at 100%) shows it whole; never over a piece or a wall (it may cross a path). Where the floor is
+  narrow the line is narrower and wraps, or says less. (A line level with the pad, beside it, ran off a phone's screen:
+  PR #1386's browser check.)
+- **Inside the plan**: never in the margin under it or in its bottom-right quarter, where the bottom-right cluster
+  floats. A building's other floors keep theirs by the Elevators.
+
+| Space            | Where everyone arrives                                                                  | Line width |
+| ---------------- | --------------------------------------------------------------------------------------- | ---------- |
+| Virtual Office   | The middle of the corridor every room opens onto, between the Desks' and Lounge's doors | 360        |
+| Coworking Space  | The open floor between the desk clusters and the lounge                                 | 160        |
+| Team Pod         | The middle of the pod, between the desks and the table                                  | 320        |
+| All-Hands Hall   | The centre aisle among the rows, facing the stage (the line a narrow sign down it)      | 140        |
+| Focus Library    | The open floor between the two rows of desks                                            | 320        |
+| Training Room    | The middle of the room, the four tables round it and the stage ahead                    | 360        |
+| Rooftop Bar      | The middle of the terrace, the bar ahead and a sofa either side                         | 360        |
+| Cafe             | The middle of the cafe, the counter, coffee machine and tables round it                 | 360        |
+| Garden Retreat   | The lawn beside the summer house, its door and the campfire in view                     | 360        |
+| City Park        | The lawn above the fountain plaza, between the north path and the trees                 | 260        |
+| Company Campus   | The Auditorium, in the aisle between its first two rows                                 | 360        |
+| Conference Venue | The Main Hall, in the aisle between its first two rows                                  | 360        |
+| Startup HQ       | The Town Hall, in the aisle between its first two rows                                  | 360        |
+| School Quad      | The Lecture Hall, in the aisle between its first two rows                               | 360        |
+| Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             | 240        |
+| Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | 360        |
+| Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |
+| Beach Offsite    | The sand between the huts' walk and the campfire                                        | 360        |
+
+A campus lands you in its main hall, where the all-company moments happen; its Directory stays just inside the gate.
 
 ## Starting on the pad
 

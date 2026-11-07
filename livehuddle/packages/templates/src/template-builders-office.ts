@@ -8,7 +8,8 @@
 
 import { counterTopY, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import { officePlan, wayIn, type OfficeRoom } from './template-office-parts';
+import { arrival } from './template-arrival';
+import { officePlan, type OfficeRoom } from './template-office-parts';
 
 // The office's footprint: two rows of rooms either side of a corridor.
 const ROW_H = 340;
@@ -141,7 +142,6 @@ const ROOMS: RoomSpec[] = [
 export function buildVirtualOffice(cx: number, cy: number): Element[] {
   const x0 = cx - WIDTH / 2;
   const y0 = cy - HEIGHT / 2;
-  const top = y0 + HEAD;
   return officePlan(
     ROOMS.map((r) => ({ ...r, h: ROW_H })),
     x0,
@@ -157,13 +157,13 @@ export function buildVirtualOffice(cx: number, cy: number): Element[] {
       'Walk in, find a desk, meet round the table and grab a coffee together. Rename the rooms to fit your team.',
     ),
     [
-      // At the corridor's end: the way in, and what to do once you are. It stands under the top row's wall, so the
-      // character on it stands in the corridor, clear of both rows' walls and furniture.
-      ...wayIn(
-        x0 + WIDTH - 20,
-        top + ROW_H,
-        'You arrive on the Avatar Pad. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
-      ),
+      // In the middle of the corridor every room opens onto, between the Desks' door and the Lounge's: the way in,
+      // and what to do once you are.
+      ...arrival({
+        x: cx,
+        y: cy + 48,
+        hint: 'You arrive on the Avatar Pad. Enter says something, a chair or sofa seats you, and the coffee machine makes a coffee.',
+      }),
     ],
   );
 }

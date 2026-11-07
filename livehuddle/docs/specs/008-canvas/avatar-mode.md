@@ -677,7 +677,7 @@ The pop on opening, the sway and the rise are decoration. Under **reduced motion
 
 A tab **offers the walk** when it holds an [Avatar Pad](../009-elements/avatar-pad.md) or a
 Selection Mode button set to Avatar, **and something besides its pads**. Every Spaces template's tab does (its Avatar
-Pad at the entrance), so a space made from a Spaces template opens walking ([v1 scope](../002-project-scope/v1-scope.md)
+Pad in the middle of the action), so a space made from a Spaces template opens walking ([v1 scope](../002-project-scope/v1-scope.md)
 feature 1). A tab holding **nothing but its pad** does not: that is a blank tab ([Every Space and blank tab has
 one](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)), there is nothing to walk round yet, and the
 Editor who made it is about to build, so it opens on the tool it always did (a Participant and a Viewer walk anyway,
@@ -712,7 +712,7 @@ A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops th
 
 ## Entering on a pad
 
-An [Avatar Pad](../009-elements/avatar-pad.md) is the board's entrance, and every Space has one: each Spaces template places one at its entrance (where its Walk In button used to be) and every blank tab gets one when it is started blank ([Every Space and blank tab has one](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)). A Space made from a template therefore opens walking with you arriving on its pad in a beam of light, rather than standing below a Walk In button. While the tab has one, every entry into the mode puts the character on it (the pad nearest the view's centre, if there are several), centres the view on it when it is off screen, and plays the arrival beam in the person's colour. Placing or moving a pad never moves a character already walking. The pure choice (`pickSpawnPad`, `padEntry`) lives in `../packages/avatar/src/pad.ts`; the arrivals (yours and peers', derived from presence) in `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`, drawn by `AvatarPadArrivals.tsx`.
+An [Avatar Pad](../009-elements/avatar-pad.md) is the board's entrance, and every Space has one: each Spaces template places one in the middle of the action, where the people are (it replaced the Walk In button, [Where a Space's pad stands](../009-elements/avatar-pad.md#where-a-spaces-pad-stands)) and every blank tab gets one when it is started blank ([Every Space and blank tab has one](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)). A Space made from a template therefore opens walking with you arriving on its pad in a beam of light, rather than standing below a Walk In button. While the tab has one, every entry into the mode puts the character on it (the pad nearest the view's centre, if there are several), centres the view on it when it is off screen, and plays the arrival beam in the person's colour. Placing or moving a pad never moves a character already walking. The pure choice (`pickSpawnPad`, `padEntry`) lives in `../packages/avatar/src/pad.ts`; the arrivals (yours and peers', derived from presence) in `../packages/avatar/src/hooks/useAvatarPadArrivals.ts`, drawn by `AvatarPadArrivals.tsx`.
 
 ## Where the code lives
 

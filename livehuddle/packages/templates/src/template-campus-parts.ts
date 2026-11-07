@@ -3,17 +3,16 @@
 // and its way in is a Door piece standing on its wall (docs/specs/009-elements/room-builder.md "Door"). A short path
 // runs out from every Door to a walk `reach` px from the wall, a Room Sign stands on the lawn beside it, and the paths
 // join as docs/specs/009-elements/office.md "Garden Path" says: a path that meets another ends under it, and paths
-// that cross meet at a round plaza. The Avatar Pad waits under the garden's gate.
+// that cross meet at a round plaza. The Avatar Pad stands in the middle of it all (`arrival`: the courtyard, the lobby).
 //
 // Pure: campusPlan takes the site's top left and returns a fresh Element[], floors first.
 
 import { createShape, snapDoorToWall, type Element, type ShapeElement } from '@livehuddle/document';
+import { arrival, type Arrival } from './template-arrival';
 import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  wayIn,
-  WAY_IN_HALF,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -132,11 +131,10 @@ export type CampusSite = {
   // the order they lie: a path that ends on another comes before it, plazas last.
   open: readonly OfficePiece[];
   title: { text: string; width: number; sticker: string; subtitle: string };
-  // The gate's middle along the bottom fence (or a building's entrance): the Avatar Pad waits under it. A building's
-  // upper floor has none there: it is arrived at by Elevator, and its pad stands by the Elevators, one of its `open`
-  // pieces (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors").
-  gateAt?: number;
-  hint?: string;
+  // Where everyone arrives (template-arrival.ts): the Avatar Pad's centre, relative to the plan's centre, and its
+  // how-to line. A building's upper floor has none here: it is arrived at by Elevator, and its pad stands by the
+  // Elevators, one of its `open` pieces (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors").
+  arrival?: Omit<Arrival, 'x' | 'y'> & { dx: number; dy: number };
   // Anything else placed absolutely (a stage's Bring Focus), given the site's top left.
   extra?: (left: number, top: number) => Element[];
 };
@@ -210,9 +208,9 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
     site.title,
     [
       ...(site.extra?.(x0, top) ?? []),
-      ...(site.gateAt === undefined
+      ...(site.arrival === undefined
         ? []
-        : wayIn(x0 + site.gateAt + WAY_IN_HALF, top + site.height, site.hint ?? '')),
+        : arrival({ ...site.arrival, x: cx + site.arrival.dx, y: cy + site.arrival.dy })),
     ],
     open,
   );

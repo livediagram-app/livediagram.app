@@ -11,6 +11,7 @@ import { AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { buildTemplate } from './build-template';
+import { ARRIVAL_HINT_W } from './template-arrival';
 import { templateFloors } from './template-floors';
 import { templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -138,6 +139,59 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
         els.some((e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? '')),
         'how-to line',
       ).toBe(true);
+  });
+
+  // docs/specs/009-elements/avatar-pad.md "Where a Space's pad stands" (Work Tracker #601, #584): the pad stands in the
+  // plan, among the rooms and pieces, never in the margin under it or in its bottom-right corner, where the canvas's
+  // bottom-right cluster floats; and its how-to line beside it lies on open floor, inside the plan too.
+  it('lands everyone inside the plan, clear of its bottom-right corner, the how-to line on open floor', () => {
+    // A building's other floors keep theirs by the Elevators, where a ride steps you out (the spec's "other floors").
+    if (!first) return;
+    const pad = all.find((e) => e.shape === 'avatar-pad')!;
+    const placed = [
+      ...els.filter((e) => e.type === 'sticky'),
+      ...all.filter((e) => e.shape !== 'avatar-pad' && e.shape !== 'sticker'),
+    ] as Box[];
+    const left = Math.min(...placed.map((e) => e.x));
+    const top = Math.min(...placed.map((e) => e.y));
+    const right = Math.max(...placed.map((e) => e.x + e.width));
+    const bottom = Math.max(...placed.map((e) => e.y + e.height));
+    const middle = { x: pad.x + pad.width / 2, y: pad.y + pad.height / 2 };
+    expect(inside(pad, { x: left, y: top, width: right - left, height: bottom - top })).toBe(true);
+    expect(bottom - (pad.y + pad.height), 'off the plan’s bottom edge').toBeGreaterThanOrEqual(64);
+    const inCorner =
+      middle.x > left + (right - left) * 0.75 && middle.y > top + (bottom - top) * 0.75;
+    expect(inCorner, 'in the bottom-right corner').toBe(false);
+    // Nobody arrives on a stage (a floor to walk onto, and the presenter's): the pad and its line keep off it.
+    const stages = all.filter((e) => e.shape === 'stage') as Box[];
+    for (const stage of stages) expect(meets(pad, stage), 'pad on the stage').toBe(false);
+    const hint = els.find(
+      (e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? ''),
+    ) as unknown as Box;
+    expect(inside(hint, { x: left, y: top, width: right - left, height: bottom - top })).toBe(true);
+    // Centred under the pad and no wider than ARRIVAL_HINT_W, so a phone's 390 px view centred on someone arriving
+    // shows the whole line (a line beside the pad ran off the screen: PR #1386's browser check).
+    expect(hint.x + hint.width / 2, 'line centred on the pad').toBeCloseTo(middle.x, 6);
+    expect(hint.width / 2, 'line within 180 px of the pad').toBeLessThanOrEqual(ARRIVAL_HINT_W / 2);
+    expect(hint.y, 'line under the pad').toBeGreaterThan(pad.y + pad.height);
+    const solid = [
+      ...els.filter((e) => e.type === 'sticky'),
+      ...all.filter((e) => !isFloorShape(e.shape) && e.shape !== 'sticker'),
+    ] as Box[];
+    for (const piece of solid)
+      expect(meets(hint, piece), `how-to line meets ${JSON.stringify(piece).slice(0, 120)}`).toBe(
+        false,
+      );
+    for (const room of rooms)
+      for (const w of roomWalls(room)) {
+        const wall = {
+          x: Math.min(w.a.x, w.b.x) - 5,
+          y: Math.min(w.a.y, w.b.y) - 5,
+          width: Math.abs(w.a.x - w.b.x) + 10,
+          height: Math.abs(w.a.y - w.b.y) + 10,
+        };
+        expect(meets(hint, wall), `how-to line meets ${room.label}'s wall`).toBe(false);
+      }
   });
 
   // Everyone arrives on the pad, feet on its core: the pad and that standing character (Regular, the one size
@@ -363,9 +417,12 @@ describe('the new Spaces furnish what they promise', () => {
     expect(path.x).toBeGreaterThanOrEqual(house.x + span[0]);
     expect(path.x + path.width).toBeLessThanOrEqual(house.x + span[1]);
     expect(path.y).toBe(house.y + house.height);
-    // The Avatar Pad waits under the gate.
+    // The Avatar Pad waits on the lawn beside the summer house, off every path, not down at the gate.
     const walk = all.find((e) => e.shape === 'avatar-pad')!;
-    expect(walk.x + walk.width / 2).toBe(path.x + path.width / 2);
+    const lawn = all.find((e) => e.shape === 'grass')!;
+    expect(inside(walk, lawn)).toBe(true);
+    expect(walk.y + walk.height).toBeLessThan(path.y + path.height / 2);
+    expect(walk.x).toBeGreaterThan(house.x + house.width);
   });
 
   it('crosses the City Park with two paths meeting at a fountain plaza, a bandstand, benches and a picnic table', () => {

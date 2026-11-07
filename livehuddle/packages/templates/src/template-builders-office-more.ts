@@ -5,13 +5,8 @@
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
-import {
-  SPACE_BELOW,
-  SPACE_HEAD,
-  spacePlan,
-  wayIn,
-  type OfficeRoom,
-} from './template-office-parts';
+import { arrival } from './template-arrival';
+import { SPACE_BELOW, SPACE_HEAD, spacePlan, type OfficeRoom } from './template-office-parts';
 
 const LIBRARY_W = 1100;
 const LIBRARY_H = 660;
@@ -66,10 +61,12 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
       subtitle:
         'Somewhere quiet to get things done: take a desk, step into a pod for a call, or read on the sofa.',
     },
-    wayIn(
-      x0 + width,
-      y0 + SPACE_HEAD + LIBRARY_H,
-      'You arrive on the Avatar Pad. Sit at a desk to work, or step into an Office Pod to talk without disturbing anyone.',
-    ),
+    // On the open floor between the two rows of desks, the shelves and the pods in view.
+    arrival({
+      x: cx + 52,
+      y: cy + 60,
+      hintW: 320,
+      hint: 'You arrive on the Avatar Pad. Take a desk, or an Office Pod for a call.',
+    }),
   );
 }

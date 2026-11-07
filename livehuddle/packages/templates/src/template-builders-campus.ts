@@ -213,8 +213,13 @@ export function buildCompanyCampus(cx: number, cy: number): Element[] {
       subtitle:
         'The whole company on one site: offices, an auditorium, a bar and a games room, joined by a garden.',
     },
-    gateAt: MID,
-    hint: 'You arrive on the Avatar Pad by the gate. The Directory by it walks you to any room.',
+    // In the Auditorium, the company's meeting place, in the aisle between its first two rows, facing the stage.
+    arrival: {
+      dx: 0,
+      dy: -246,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in the Auditorium. The Directory by the gate walks you to any room.',
+    },
     // The presenter's Bring Focus, beside the stage.
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 730, top + HALL.y + 64)],
   });
