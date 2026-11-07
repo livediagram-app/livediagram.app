@@ -143,6 +143,8 @@ export function ElementDataSections({
     isPortal ||
     isChair ||
     (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
+    // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
+    shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
