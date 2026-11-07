@@ -57,6 +57,30 @@ the document has it, somewhere else.
   drawn at their new place, so nothing jumps back; on a cancel, before the next paint. An element
   that stops only translating mid-gesture (a resize, a rebind turning an arrow end) leaves the offset
   and is drawn from the preview.
+- **Offsets are kept to a thousandth of a pixel**, so the elements of one move share one offset
+  exactly (each is its new place less its old one, which floating point makes differ in the last
+  bits), and an arrow between two of them rides with them instead of re-routing.
+
+## A very large move rides as one layer
+
+Shifting each element costs the page a restyle and repaint of every node it shifts, which is what a
+whole-board drag of thousands of elements spends its frame on. So a very large move shifts the
+elements' layer instead.
+
+- **The layer that holds the elements carries the offset most of them share**, when at least 200
+  of them share it and they are more than half of what the layer holds. It moves as one
+  transform, the way a pan moves the canvas, so a frame of the move restyles the layer and what
+  does not share the offset, not every element. It is not promoted to a compositor layer of its
+  own: that split everything overlapping it into layers that were laid out again on every frame,
+  and drew the elements' text without sub-pixel smoothing, so the drag would not look the same.
+- **What does not share it is held where it should be**: an element that does not move, an arrow
+  that re-routes, a stack's child, or one riding another offset (a collaborator's) is shifted back
+  by the difference, so it is drawn exactly where it was drawn before.
+- **Nothing else changes**: every element stays in its place in the layer, so paint order holds;
+  the grips layer's grips are carried the same way.
+- **The offset goes as it does today**: dropped on release in the same paint as the elements drawn
+  at their new place, and on a cancel before the next paint.
+- **Below that size each element rides its own offset**, as above: few nodes are written anyway.
 
 ## Live movement for collaborators
 
@@ -65,6 +89,14 @@ the document has it, somewhere else.
   and for each previewed element only what the gesture changes (position and size for a box; the
   changed geometry for an arrow). A last message says the preview has ended, and whether the
   gesture landed or was cancelled.
+- **A very large move goes as one offset.** A gesture changing more than 200 elements sends the
+  offset most of them ride instead of a patch each (a ride), the ids riding it on the gesture's
+  first message, whenever they change and at least once a second, and a patch for each other
+  changed element. A collaborator moves those ids by the offset, so a whole-board drag shows live.
+  A gesture whose other changed elements are more than 200 still sends nothing, and a ride names
+  at most 5,000 ids; past either, collaborators see the gesture on release.
+- **An editor that does not know rides yet** drops the message whole and sees the gesture on
+  release, as before; the release converges everyone either way.
 - **A collaborator draws a peer's preview the same way** the dragger draws their own: those elements
   from the preview, the rest of each element as the collaborator has it, nothing written. A
   cancelled gesture's preview ends on its end message; a landed one is kept until the peer's real
@@ -91,7 +123,8 @@ the document has it, somewhere else.
 ## Observability
 
 - `[drag-preview] begin` / `commit` / `cancel` (debug) with the gesture and element count.
-- `[drag-preview] ride` (debug) with how many elements ride an offset, when that number changes.
+- `[drag-preview] ride` (debug) with how many elements ride an offset, and how many layers carry
+  it, when that number changes.
 - `[drag-preview] peer ignored` (debug) for a preview dropped because its sender may only view.
 - `[drag-preview] peer expired` (debug) for a peer preview that went silent.
 
