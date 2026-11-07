@@ -39,6 +39,9 @@ export type Project = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
+  // The plan's Community post (docs/specs/025-community/community.md): 'listed', 'hidden', or
+  // null / absent when it has none. Owner-only: every other reader gets null.
+  communityState?: 'listed' | 'hidden' | null;
   // Folder placement. null means the project sits at the root of its
   // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
@@ -309,6 +312,9 @@ export type CapabilitiesResponse = {
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;
+  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
+  // false hides it, so an older worker that omits it leaves the Community showing.
+  communityEnabled?: boolean;
 };
 
 export * from '@liveworkspace/api-schema/access-levels';
@@ -371,6 +377,11 @@ export * from './workbench-messages';
 export * from './mcp-origin';
 // Forms (docs/specs/030-forms/forms.md).
 export * from './forms';
+// The Community's shared contract is liveworkspace's (liveworkspace/docs/specs/007-community/community.md); re-exported so the
+// editor, the marketing site and the api read it from here.
+export * from '@liveworkspace/community';
+export * from './community-categories';
+export * from './community-paths';
 
 // The readable signed-in hint cookie the api sets and the apps read (see ./signed-in-hint.ts).
 export { SIGNED_IN_HINT_COOKIE, signedInHintOf } from './signed-in-hint';

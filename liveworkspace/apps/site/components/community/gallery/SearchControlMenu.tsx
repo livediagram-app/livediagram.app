@@ -21,6 +21,8 @@ type SearchMenuRow<T> = {
   id: T;
   key: string;
   label: string;
+  // What a screen reader hears instead of the label, where the group's heading says more (All Apps' app name).
+  ariaLabel?: string;
   count?: number | null;
   checked: boolean;
 };
@@ -123,6 +125,7 @@ function SearchMenuOptions<T>({
                   type="button"
                   role={role}
                   aria-checked={row.checked}
+                  aria-label={row.ariaLabel}
                   tabIndex={-1}
                   onClick={() => onPick(row.id)}
                   className={menuRadioRowClass(row.checked, { weight: 'checked' })}

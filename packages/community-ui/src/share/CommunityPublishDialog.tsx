@@ -92,12 +92,12 @@ export function CommunityPublishDialog({
 
   const submit = async () => {
     setError(null);
-    const checked = validateCommunityPostInput(form.draft);
+    const checked = validateCommunityPostInput(form.draft, host.app);
     if (!form.check() || !checked.ok) return;
     setBusy(true);
     try {
       const saved = await onPublish(checked.value);
-      const type = communityCategoryType(saved.category);
+      const type = communityCategoryType(host.app, saved.category);
       if (editing) {
         host.track?.('Changed', type);
         notify('Listing saved', 'success');

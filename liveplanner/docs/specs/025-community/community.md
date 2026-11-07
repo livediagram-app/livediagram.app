@@ -2,9 +2,9 @@
 
 **Community** is liveplanner's public gallery of plans people are proud of. A signed-in owner **publishes** a plan to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
-post's plan read-only, like it, and make their own copy of it. Its pages will be liveworkspace.app's shared Community
-page, served at liveplanner's `/community` by liveplanner's router once its Community is built, and it shows in the
-landing page's **From the Community** section.
+post's plan read-only, like it, and make their own copy of it. Its pages are liveworkspace.app's shared Community
+page, served at liveplanner's `/community` by liveplanner's router, and it shows in the landing page's **From the
+Community** section.
 
 ## Where it lives
 
@@ -40,21 +40,27 @@ A team that has a board, a budget sheet or a sign-up form that works has nowhere
 
 ## Categories
 
-liveplanner's closed set, in display order (the platform spec's "Categories"). The id is stored; the label is shown; the
-line beside it is the description the publish dialog shows for the chosen category.
+liveplanner's closed set is its **Start With template categories**
+([Template categories](../008-canvas/canvas-and-palette.md), `TEMPLATE_CATEGORIES` in `@liveplanner/templates`), with
+the same ids, labels and descriptions, so a shared plan is found beside the templates for the same job, plus
+**Something Else** last. The list itself is the platform's (the platform spec's "Categories"); a test in
+`@liveplanner/templates` pins it to the template categories, so neither changes without the other. The id is stored;
+the label is shown; the description is the line the publish dialog shows for the chosen category.
 
-| id           | Label                | For                                     |
-| ------------ | -------------------- | --------------------------------------- |
-| `projects`   | Project Plans        | Projects, launches, delivery plans      |
-| `roadmaps`   | Roadmaps & Timelines | Roadmaps, timelines, Gantts, milestones |
-| `workflows`  | Kanban & Workflows   | Kanban boards, pipelines, triage        |
-| `trackers`   | Trackers & Sheets    | Trackers, logs, inventories, sheets     |
-| `budgets`    | Budgets & Finance    | Budgets, forecasts, expenses            |
-| `events`     | Events & Schedules   | Events, rotas, schedules, calendars     |
-| `forms`      | Forms & Surveys      | Forms, surveys, sign-ups, requests      |
-| `dashboards` | Dashboards & Reports | Dashboards, status reports, metrics     |
-| `personal`   | Personal & Home      | Habits, home, travel, study             |
-| `other`      | Something Else       | Anything that fits nowhere above        |
+| id          | Label                   | For                                                |
+| ----------- | ----------------------- | -------------------------------------------------- |
+| `support`   | Customer Support        | Tickets, contact forms and what customers say.     |
+| `education` | Education               | Study plans, coursework and a class grade book.    |
+| `events`    | Events                  | Plans, guest lists and RSVPs for any occasion.     |
+| `finance`   | Finance                 | Budgets, invoices, expenses, loans and stock.      |
+| `hiring`    | Hiring and People       | Open roles, candidates and their first month.      |
+| `marketing` | Marketing               | Content and launches, planned to the day.          |
+| `meetings`  | Meetings                | Agendas, retros and the actions they lead to.      |
+| `personal`  | Personal                | Your week, goals, habits and household money.      |
+| `product`   | Product and Engineering | Sprints, bugs and feedback for product teams.      |
+| `planning`  | Projects and Teams      | Boards, trackers and goals that keep teams moving. |
+| `sales`     | Sales                   | Deals, contacts and the forecast they add up to.   |
+| `other`     | Something Else          | Anything that fits nowhere above.                  |
 
 ## What a post shows
 
@@ -99,10 +105,10 @@ viewer does not stream changes. The publish dialog says so plainly.
 
 ## The gallery
 
-liveplanner will keep no Community pages of its own: once its Community is built, `/community` will be
-liveworkspace.app's shared Community page served by liveplanner's router
-([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app));
-until then its router leaves `/community` to liveplanner's own site. It behaves as every app's gallery does, as
+liveplanner keeps no Community pages of its own: `/community` is liveworkspace.app's shared Community page served by
+liveplanner's router
+([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app)).
+It behaves as every app's gallery does, as
 livediagram's [Community page](../../../../livediagram/docs/specs/025-community/community.md#the-community-page)
 describes, in liveplanner's words:
 
@@ -127,6 +133,20 @@ it, including any added later. What it shows is redacted for strangers: comment 
 name, colour, folder or origin, and every card image and per-tab image is drawn from the redacted plan. While the post
 is not public the link grants nothing and answers only "not found". The viewer shows the slim **Community bar**
 ("Shared to the Community by <author>", **Back to Community**, **Make a Copy**; the author gets **Edit Your Plan**).
+
+In detail, a stranger's plan is redacted the same way at every door it reads (`apps/api/src/community-redact.ts`):
+
+- **A card** loses its assignee, every People field (any field holding a person or a list of people, whatever its
+  type says), its votes (built-in and a type's Votes fields), its Comments field and comment count. Who made and last
+  changed it reads as a neutral **Someone**. A Time Spent field keeps its minutes and loses who tracked them.
+  Calculated values are worked out from the redacted cards.
+- **A form's response card** keeps its title and the column it sits in; every answer goes. A **response sheet** (the
+  sheet a form sends its responses to) keeps its heading row alone.
+- **A tab** loses its comment threads, cell comments, actions, votes and any Participant's adder key, and a connected
+  tab its connection. A sheet names nobody as its last writer.
+- The doors the link opens: the plan, its tab list, each tab, the cards and their board outline, the sheets, card
+  pictures, the card image and each tab's image, and the copy. Comment threads, card history, the form link, the
+  timeline, the room and every write stay closed to it.
 
 Making a copy works as for any view link, signed in or not, and the copy carries exactly what the viewer shows. A
 copy through a Community link is named after the post. Each distinct person who copies counts once.
@@ -158,16 +178,24 @@ fewer than six to show (a young Community, or the service unreachable), the sect
 **How the Community Works** beside it. The service answers
 `GET liveworkspace.app/api/community/featured?app=liveplanner.app`, from Cloudflare's edge cache for a minute.
 
+## In Start Planning
+
+Start Planning is liveplanner's Start With screen: after Inspiration's templates come up to three posts from each
+category, the month's most liked (at least five likes in 30 days), badged **Community**, and choosing one makes the
+person's own copy, counted as a copy ([Plan mode "From the
+Community"](../026-plan/plan-mode.md#from-the-community)). They are read from
+`GET liveworkspace.app/api/community/start?app=liveplanner.app`.
+
 ## Where Community is linked from
 
 - The Explorer panel's footer row of links, the shared site footer and the marketing sitemap (`/community/`).
-- The Share dialog's **Community** tab, and the help articles **Sharing to the Community** and **Finding Plans in
+- The Share dialog's **Community** tab, Start Planning's Community tiles, and the help articles **Sharing to the Community** and **Finding Plans in
   the Community** under Collaboration, Sharing.
 
 ## Telemetry
 
 Category `Community`, as livediagram's: `Community·Shared|Changed·<Category>` and `Community·Removed·Post` from the
-Share dialog; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
+Share dialog; `Community·Copied·StartWith` from a Community tile chosen in Start Planning; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
 `Community·Searched·Query` and `Community·Selected·<Category|Tag|Sort|Mine>` from the gallery. `<Category>` is the
 category's type (its id in PascalCase).
 
@@ -175,8 +203,8 @@ category's type (its id in PascalCase).
 
 Setting the api Worker's `COMMUNITY_ENABLED` to `false` (or `0`, `off`) switches it off with no redeploy:
 `GET /api/capabilities` reports `communityEnabled: false`, every Community route and community link answers 404, and
-it disappears from every interface (the footer links, the landing section, the Share dialog's tab, the Public
-badge). Nothing is deleted. Until the capabilities answer, the pages assume it is on.
+it disappears from every interface (the footer links, the landing section, the Share dialog's tab, Start Planning's
+tiles, the Public badge). Nothing is deleted. Until the capabilities answer, the pages assume it is on.
 
 ## Configuration
 

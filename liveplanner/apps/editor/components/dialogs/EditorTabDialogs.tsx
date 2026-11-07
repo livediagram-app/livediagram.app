@@ -15,6 +15,7 @@ import { shareUrl } from '@/lib/explorer-host';
 import { planHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
+import { firstTabIsEmpty } from '@/lib/community-first-tab';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -24,10 +25,16 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
-const ShareDialog = dynamic(() => import('@liveworkspace/explorer').then((m) => m.ShareDialog), {
-  ssr: false,
-});
+// The shared Explorer's Share dialog (@liveworkspace/explorer) with the Community tab beside Passes
+// (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there. Loaded only when Share
+// opens, the Community's binding with it.
+const ShareDialog = dynamic(
+  () =>
+    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
+      (m) => m.ShareDialogWithCommunity,
+    ),
+  { ssr: false },
+);
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -58,8 +65,10 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
     syncToCloud,
     accountUserId,
+    accountDisplayName,
     projectTeamId,
     setSelfParticipant,
+    plan,
   } = useEditorContext();
   const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
@@ -131,6 +140,21 @@ export function EditorTabDialogs() {
             teamId: projectTeamId,
           }}
           tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
+          ownerId={selfParticipant.id}
+          documentName={projectName}
+          signedIn={!!accountUserId}
+          // The first tab is the Community card's picture: Share says so while it is open and has nothing on it
+          // (docs/specs/025-community/community.md "Publishing"). Only the open tab is judged, as its content is
+          // the one held whole; the server refuses any other empty first tab.
+          firstTabEmpty={
+            !!activeTab &&
+            tabs[0]?.id === activeTab.id &&
+            firstTabIsEmpty(activeTab, plan.context.status === 'ready' ? plan.context.items : null)
+          }
+          author={{
+            name: accountDisplayName || selfParticipant.name,
+            color: selfParticipant.color,
+          }}
           shareUrl={shareUrl}
           handOver={planHandOver}
           helpHref={shareHelpHref}

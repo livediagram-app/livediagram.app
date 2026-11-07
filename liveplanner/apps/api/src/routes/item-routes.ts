@@ -81,7 +81,7 @@ import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { importItems } from './item-import-route';
 import { trackTime } from './item-time-route';
-import { readBody, type PlanRouteContext } from './context';
+import { COMMUNITY_CONTENT, readBody, type PlanRouteContext } from './context';
 
 // A create as read, with the threads it puts the card back on (a restore), each checked as one.
 export type ReadCreate = ItemCreate & { restoredThreads?: CardThread[] };
@@ -142,16 +142,18 @@ const created = (item: Item) => ({ before: null, after: item });
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, projectId, 'read');
+  const caller = await itemCaller(ctx, projectId, 'read', COMMUNITY_CONTENT);
   if (caller instanceof Response) return caller;
   const [items, rev] = await Promise.all([
     caller.items ?? listItems(ctx.env, projectId),
     getItemsRev(ctx.env, projectId),
   ]);
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
-  const body: ItemsResponse = { items: forCaller(caller, shown), rev };
+  const answered = forCaller(caller, shown);
+  const body: ItemsResponse = { items: answered, rev };
   if (ctx.url.searchParams.get('include') === 'calculated') {
-    const calculated = await calculatedFor(ctx, caller, shown);
+    // Worked out from the cards as the caller sees them, so a Community visitor's values name nobody either.
+    const calculated = await calculatedFor(ctx, caller, caller.community ? answered : shown);
     if (calculated) body.calculated = calculated;
   }
   return json(body);

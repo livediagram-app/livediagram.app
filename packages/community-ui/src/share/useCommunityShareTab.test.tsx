@@ -5,8 +5,9 @@ import type { CommunityOwnPost } from '@liveworkspace/community';
 import { testHost } from '../test/host';
 
 // The Share dialog's Community tab (liveworkspace/docs/specs/007-community/community.md "The Share dialog's Community
-// tab"): offered only where a post can exist, the password lock only while listed, the publish dialog in place of the
-// Share dialog, and nothing at all while the Community is switched off.
+// tab"): offered on any personal document, a guest's included, the post read only when signed in, the password
+// lock only while listed, the publish dialog in place of the Share dialog, and nothing at all while the Community is
+// switched off.
 
 const h = vi.hoisted(() => ({
   post: null as CommunityOwnPost | null,
@@ -22,8 +23,20 @@ vi.mock('./useCommunityPost', () => ({
 vi.mock('./CommunityGuide', () => ({ CommunityGuide: () => <p>Guide</p> }));
 vi.mock('./CommunitySection', () => ({
   CommunityPublicBadge: () => <span>Public</span>,
-  CommunitySection: (p: { onPublish: () => void; firstTabEmpty?: boolean }) => (
-    <button type="button" onClick={p.onPublish} disabled={!!p.firstTabEmpty}>
+  CommunitySection: (p: {
+    onPublish: () => void;
+    firstTabEmpty?: boolean;
+    signedIn: boolean;
+    signInHref: string;
+  }) => (
+    <button
+      type="button"
+      data-testid="section"
+      data-signed-in={String(p.signedIn)}
+      data-sign-in-href={p.signInHref}
+      onClick={p.onPublish}
+      disabled={!!p.firstTabEmpty}
+    >
       Share to Community
     </button>
   ),
@@ -83,12 +96,17 @@ describe('useCommunityShareTab', () => {
     render(<Share />);
     expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: true }));
     cleanup();
-    for (const over of [{ signedIn: false }, { teamDocument: true }]) {
-      render(<Share {...over} />);
-      expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
-      expect(screen.getByTestId('share').dataset.tab).toBe('');
-      cleanup();
-    }
+    render(<Share teamDocument />);
+    expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
+    expect(screen.getByTestId('share').dataset.tab).toBe('');
+  });
+
+  it('offers a guest the tab, to sign in from, without reading a post', () => {
+    render(<Share signedIn={false} />);
+    expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
+    expect(screen.getByTestId('share').dataset.tab).toBe('Community');
+    expect(screen.getByTestId('section').dataset.signedIn).toBe('false');
+    expect(screen.getByTestId('section').dataset.signInHref).toBe('/sign-in/');
   });
 
   it('locks the share password only while the post is listed', () => {

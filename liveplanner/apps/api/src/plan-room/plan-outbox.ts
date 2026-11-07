@@ -31,6 +31,7 @@ import {
   type IndexAppClient,
   type ItemSummary,
 } from '@liveworkspace/index-client';
+import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import { cardsPushOf, noteKnownPeople } from './plan-cards-push';
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
@@ -137,7 +138,7 @@ export async function readContentSummary(
   env: PlanEnv,
   planId: string,
 ): Promise<{ summary: ContentSummary; savedAt: number; ownerId: string | null }> {
-  const [tabs, stats, plan, records] = await env.PLAN_DB.batch([
+  const [tabs, stats, plan, records, community] = await env.PLAN_DB.batch([
     env.PLAN_DB.prepare(
       // A Form tab's form is not an element, and still content: only a tab with no elements is parsed for one.
       `SELECT dt.tab_id, t.element_count,
@@ -152,6 +153,9 @@ export async function readContentSummary(
       `SELECT EXISTS (SELECT 1 FROM items WHERE plan_id = ?1)
            OR EXISTS (SELECT 1 FROM sheets WHERE plan_id = ?1) AS held`,
     ).bind(planId),
+    // Listed in the Community (community-post.ts): a post not hidden after reports, whose plan the listing last
+    // heard was public (nothing heard yet, just after publishing, counts).
+    env.PLAN_DB.prepare(COMMUNITY_LISTED_QUERY),
   ]);
   const tabRows = (tabs?.results ?? []) as {
     tab_id: string;
@@ -173,6 +177,7 @@ export async function readContentSummary(
       tabCounts,
       stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
       hasContent,
+      communityListed: (community?.results?.length ?? 0) > 0,
     },
     savedAt: (plan?.results?.[0] as { saved_at?: number } | undefined)?.saved_at ?? 0,
     ownerId: (plan?.results?.[0] as { owner_id?: string | null } | undefined)?.owner_id ?? null,
@@ -191,6 +196,8 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     // Whether anything is on any tab: false, the index's daily empty clean-up moves the item to the Trash once it has
     // sat unchanged for 30 days (docs/specs/013-workspace/empty-project-cleanup.md).
     hasContent: summary.hasContent,
+    // Listed in the public Community: the Explorer's Public badge (@liveworkspace/explorer VisibilityBadge).
+    ...(summary.communityListed ? { public: true } : {}),
   };
 }
 

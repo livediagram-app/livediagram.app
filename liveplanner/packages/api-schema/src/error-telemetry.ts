@@ -30,6 +30,8 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'openapi.json',
   'events',
   'share',
+  // The Community's own reads (docs/specs/025-community/community.md): `/community/mine`.
+  'community',
   // A form link's public doors (docs/specs/030-forms/forms.md).
   'forms',
   'projects',

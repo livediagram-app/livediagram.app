@@ -156,6 +156,21 @@ const wrap = (key: string, name: string): BodySchema => ({
   required: [key],
 });
 
+// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
+// "The gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
+const COMMUNITY_QUERY = [
+  {
+    name: 'q',
+    required: false,
+    description:
+      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
+  },
+  { name: 'category', required: false, description: 'One category id.' },
+  { name: 'tag', required: false, description: 'One tag.' },
+  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
+  { name: 'offset', required: false, description: 'From `nextOffset`.' },
+] as const;
+
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
   {
@@ -1236,6 +1251,41 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404],
   },
   {
+    method: 'GET',
+    path: '/projects/{id}/community',
+    segment: 'projects',
+    tag: 'Community',
+    summary: "The plan's Community post, in any state, or null (owner only).",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
+      required: ['post'],
+    },
+    statuses: [200, 400, 401, 403, 404, 410, 502],
+  },
+  {
+    method: 'PUT',
+    path: '/projects/{id}/community',
+    segment: 'projects',
+    tag: 'Community',
+    summary:
+      'Publish the plan to Community, or save its listing (signed-in owner; not a team plan, not password protected).',
+    auth: 'clerk',
+    requestSchema: ref('CommunityPostInput'),
+    responseSchema: wrap('post', 'CommunityOwnPost'),
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410, 502],
+  },
+  {
+    method: 'DELETE',
+    path: '/projects/{id}/community',
+    segment: 'projects',
+    tag: 'Community',
+    summary: 'Remove the plan from Community (owner only).',
+    auth: 'guest-or-clerk',
+    statuses: [204, 400, 401, 403, 404, 409, 410, 502],
+  },
+  {
     method: 'POST',
     path: '/projects/{id}/room-ticket',
     segment: 'projects',
@@ -1362,6 +1412,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: ref('FormReportBody'),
     statuses: [201, 400, 404, 429],
   },
+  // Every other Community read, and likes and reports, are the liveworkspace Community service's
+  // (liveworkspace/docs/specs/007-community/community.md), which the Community pages call directly.
+  {
+    method: 'GET',
+    path: '/community/mine',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
+    auth: 'clerk',
+    query: [...COMMUNITY_QUERY],
+    responseSchema: ref('CommunityMineResponse'),
+    statuses: [200, 400, 401, 404, 502],
+  },
   {
     method: 'GET',
     path: '/share/{code}',
@@ -1376,6 +1440,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         project: ref('Project'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
+        community: ref('CommunityShareInfo'),
       },
       required: ['project', 'role', 'tabId'],
     },

@@ -64,7 +64,7 @@ export const COMMUNITY_COPIES = chart(
   'Community',
   'Copied',
   'Copies Made',
-  'Someone pressed Make a Copy on a post to start their own design from it.',
+  'Someone made their own copy of a post to start from: Make a Copy in the gallery, or a Community tile in the template start.',
 );
 
 // Discovery: how people look for designs. Only the kind of filter, never what was typed or picked.

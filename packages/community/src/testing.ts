@@ -10,7 +10,7 @@ export function communityPostFixture(patch: Partial<CommunityPost> = {}): Commun
     app: 'livediagram.app',
     title: 'Payments Platform',
     description: 'How our payment services talk to each other.',
-    category: 'architecture',
+    category: 'software',
     tags: [],
     likeCount: 0,
     copyCount: 0,

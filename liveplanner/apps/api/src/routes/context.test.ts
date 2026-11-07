@@ -3,6 +3,7 @@ import type { Env } from '../types';
 import type { PlanGrant } from '../index-service';
 import type { RouteContext, WorkbenchContext } from './context';
 import {
+  COMMUNITY_CONTENT,
   deniedOnTab,
   deniedParticipate,
   gateEdit,
@@ -37,6 +38,7 @@ function makeCtx(
     owner?: string | null;
     headers?: Record<string, string>;
     grant?: PlanGrant | null;
+    community?: { code: string; open: boolean } | null;
     token?: { id: string } | null;
     workbench?: Partial<WorkbenchContext> | null;
     verifiedUserId?: string | null;
@@ -60,6 +62,7 @@ function makeCtx(
     teams: [{ id: 'team_1', name: 'T', role: 'member' }],
     bearer: opts.bearer ?? null,
     grant: opts.grant === undefined ? grant() : opts.grant,
+    community: opts.community ?? null,
   };
 }
 
@@ -90,6 +93,7 @@ describe('the grant gates', () => {
       role: 'edit',
       tabScope: 't1',
       shareCode: null,
+      community: false,
     });
   });
 
@@ -102,6 +106,55 @@ describe('the grant gates', () => {
   it('carry the share code a link grant came by', async () => {
     const ctx = makeCtx({ grant: grant({ sub: 'link:CODE', shareCode: 'CODE', level: 'view' }) });
     expect((await gateGrant(ctx, 'd1'))?.shareCode).toBe('CODE');
+  });
+});
+
+// docs/specs/025-community/community.md "Viewing a post's plan": the post's link is a content-only pass, read-only
+// whatever the index's link says, refused at every door that does not take it, and nothing while the post is closed.
+describe("a Community post's link", () => {
+  const visitor = (open: boolean, level: PlanGrant['level'] = 'edit') =>
+    makeCtx({
+      owner: 'guest_v',
+      grant: grant({ sub: 'link:POST', shareCode: 'POST', level }),
+      community: { code: 'POST', open },
+    });
+
+  it('reads through the doors that take it, as a Viewer, and writes through none', async () => {
+    const ctx = visitor(true);
+    expect(await gateGrant(ctx, 'd1', null, null, COMMUNITY_CONTENT)).toEqual({
+      role: 'view',
+      tabScope: null,
+      shareCode: 'POST',
+      community: true,
+    });
+    expect(await gateRead(ctx, 'd1', undefined, undefined, undefined, COMMUNITY_CONTENT)).toBe(
+      true,
+    );
+    expect(await gateParticipate(ctx, 'd1')).toBe(false);
+    expect(await gateEdit(ctx, 'd1')).toBe(false);
+  });
+
+  it('opens no door that does not take it: comments, threads, history, the form link', async () => {
+    const ctx = visitor(true);
+    expect(await gateGrant(ctx, 'd1')).toBeNull();
+    expect(await gateRead(ctx, 'd1')).toBe(false);
+  });
+
+  it('opens nothing while the post is hidden, closed or no longer its author', async () => {
+    const ctx = visitor(false);
+    expect(await gateGrant(ctx, 'd1', null, null, COMMUNITY_CONTENT)).toBeNull();
+    expect(await gateRead(ctx, 'd1', undefined, undefined, undefined, COMMUNITY_CONTENT)).toBe(
+      false,
+    );
+  });
+
+  it('leaves any other link as it was, whichever door', async () => {
+    const ctx = makeCtx({
+      grant: grant({ sub: 'link:OTHER', shareCode: 'OTHER', level: 'participate' }),
+      community: { code: 'POST', open: true },
+    });
+    expect(await gateGrant(ctx, 'd1')).toMatchObject({ role: 'participate', community: false });
+    expect(await gateParticipate(ctx, 'd1')).toBe(true);
   });
 });
 

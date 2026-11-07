@@ -107,7 +107,7 @@ beforeEach(() => {
     () =>
       Response.json({
         total: 3,
-        categories: { architecture: 3 },
+        categories: { software: 3 },
         tags: [{ tag: 'aws', count: 3 }],
       }),
   );
@@ -162,12 +162,12 @@ describe('the gallery', () => {
     await screen.findByText('Post 1');
 
     fireEvent.click(screen.getByRole('button', { name: 'Filter by category' }));
-    fireEvent.click(screen.getByRole('menuitemradio', { name: /Architecture/ }));
-    await waitFor(() => expect(search().value).toBe('category:architecture'));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Software & IT/ }));
+    await waitFor(() => expect(search().value).toBe('category:software'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Filter by tag' }));
     fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: /aws/ }));
-    await waitFor(() => expect(search().value).toBe('category:architecture #aws'));
+    await waitFor(() => expect(search().value).toBe('category:software #aws'));
     expect(h.telemetry.selected).toHaveBeenCalledWith('Category');
     expect(h.telemetry.selected).toHaveBeenCalledWith('Tag');
   });
@@ -459,6 +459,32 @@ describe('All Apps', () => {
     );
     // My Shares is one app's: All Apps has none.
     expect(screen.queryByRole('button', { name: 'My Shares' })).toBeNull();
+  });
+
+  it("offers each app's categories under its name, each written with its app", async () => {
+    route(isPosts, () => Response.json({ posts: [post()], nextOffset: null }));
+    route(
+      (url) => url.startsWith(`${SERVICE}/facets`),
+      () =>
+        Response.json({
+          total: 3,
+          categories: { meetings: 3 },
+          apps: { 'livediagram.app': { meetings: 1 }, 'liveplanner.app': { meetings: 2 } },
+          tags: [],
+        }),
+    );
+    render(<GalleryView />, { wrapper: allApps() });
+    await screen.findByText('Post 1');
+    fireEvent.click(screen.getByRole('button', { name: 'Filter by category' }));
+    // The same id, two apps, two labels: each row says whose it is.
+    expect(
+      await screen.findByRole('menuitemradio', { name: 'Meetings & Workshops, livediagram' }),
+    ).toBeTruthy();
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Meetings, liveplanner' }));
+    await waitFor(() => expect(search().value).toBe('category:liveplanner/meetings'));
+    expect(
+      screen.getByRole('button', { name: 'Category: Meetings, liveplanner' }).textContent,
+    ).toContain('Meetings');
   });
 
   it('switches between the app and All Apps from the switch beside the search', async () => {

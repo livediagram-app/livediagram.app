@@ -11,7 +11,10 @@
     "./words": "./src/share/words.ts",
     "./help-link": "./src/help-link/CommunityHelpLink.tsx",
     "./landing": "./src/landing/CommunityShowcase.tsx",
-    "./links": "./src/links/index.ts"
+    "./links": "./src/links/index.ts",
+    "./start": "./src/start/index.ts",
+    "./editor": "./src/editor/index.ts",
+    "./community-bar": "./src/editor/CommunityBar.tsx"
   },
   "scripts": {
     "lint": "oxlint",

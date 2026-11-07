@@ -177,6 +177,19 @@ name = "EMAIL"
 # in `.dev.vars` locally, `wrangler secret put DATA_EXPORT_KEY` (and `--env staging`) in production and staging. Unset,
 # the data export cannot read plans.
 
+# COMMUNITY_KEY is liveplanner's secret on the liveworkspace Community service
+# (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where it proves a
+# publish, a check or a copy is liveplanner's. The service holds the same value as COMMUNITY_KEY_LIVEPLANNER.
+# Never in [vars]:
+#
+#   - Local dev: `COMMUNITY_KEY=dev-liveplanner-community-key` and
+#     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
+#   - Production and staging: set once on each Worker with `wrangler secret put COMMUNITY_KEY` (and `--env
+#     staging`); a deploy keeps it. COMMUNITY_URL comes from hosted-vars.json.
+#
+# Unset = no Community: the capabilities report it off, publishing answers 404, and the checks do nothing.
+# COMMUNITY_ENABLED=false (a secret or dashboard variable) is the off switch that keeps the key.
+
 # TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), sent as
 # X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts

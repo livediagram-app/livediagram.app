@@ -43,6 +43,9 @@ DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
 # switch is on (liveworkspace/docs/specs/004-index/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
+# liveworkspace's Community service behind the local site (it forwards /api/community): the Community page's head
+# and its sitemap read it (liveworkspace/docs/specs/007-community/community.md "Search engines").
+COMMUNITY_URL = "http://localhost:3000/api/community"
 MARKETING_ORIGIN = "http://127.0.0.1:3201"
 EDITOR_ORIGIN = "http://127.0.0.1:3202"
 API_ORIGIN = "http://127.0.0.1:8887"
@@ -102,6 +105,7 @@ service = "liveplanner-help-staging"
 [env.staging.vars]
 DEPLOY_ENV = "staging"
 WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
+COMMUNITY_URL = "https://staging.liveworkspace.app/api/community"
 TELEMETRY_DASHBOARD_URL = "https://staging.liveworkspace.app/telemetry"
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
 DRIVE_ORIGIN = "https://staging.liveworkspace.app"

@@ -1,0 +1,89 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CommunityShareSection } from '@liveworkspace/help-site/art/illustrations/community';
+
+export const metadata = helpMetadata({
+  title: 'Sharing to the Community',
+  description:
+    'Publish a plan you are proud of to the Community, where anyone can find it, view it read-only and make their own copy.',
+  path: '/help/collaboration/sharing/community/',
+});
+
+<ArticleLayout title="Sharing to the Community" description="Put a plan in the public gallery so others can find it, learn from it and make their own copy." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "community")}>
+
+The [Community](/community/) is a public gallery of plans people are proud of: sprint boards, budgets, event plans, sign-up forms, hiring pipelines and more. Anyone can browse it, filter it by category and tag, open a plan read-only, like it, and make their own copy to start from. Sharing a plan there is a way to show how you work and to help someone else get going.
+
+## Sharing a plan
+
+You need to be signed in to share a plan to the Community, so every plan there has a real author. A guest still sees the Share dialog's **Community** tab, with a note that sharing needs an account and a **Sign In to Share** button. Browsing, liking and copying need no account.
+
+<Step n={1}>Open the **Share** dialog on your plan.</Step>
+<Step n={2}>
+  Open the dialog's **Community** tab, beside **Passes**, and choose **Share to Community**.
+</Step>
+<Step n={3}>
+  Give it a title (3 to 80 characters), a description of what it shows and how someone could reuse
+  it (20 to 500 characters), a **Category** and up to five **Tags**, then choose **Share to
+  Community**.
+</Step>
+
+You can do the same from the **Share** dialog in the Explorer, for any plan of your own. The dialog shows a preview of the card people will see: its picture is your plan's first tab. Once it is shared, a confirmation offers **Copy Link** to copy the Community page's address, and **View Post** to open it.
+
+The categories are the same as the template categories under **Start With**, such as **Projects and Teams**, **Finance**, **Events** or **Hiring and People**, so a shared plan is found beside the templates for the same job. **Something Else** is there for anything that fits none of them.
+
+Good tags are the words someone would search for: the team, the method, the purpose. Each tag is 2 to 24 characters. They help people find your plan through the filters on the Community page.
+
+Your plan is shared anonymously by default: it shows as Anonymous, with no name or picture. Turn off **Share Anonymously** in the same dialog to show your name instead.
+
+## What people see
+
+A Community plan always shows your **latest saved version**, every tab of it, so your edits appear there too. Visitors see it read-only:
+
+- They can look through every Board, Sheet, Dashboard and Form tab, and make their own copy with **Make a Copy**. Their copy is theirs; it never changes yours.
+- They do not join your plan live, so you won't see strangers' cursors, and you won't get an email for each visitor.
+- **Comments, votes and who cards are assigned to stay private.** Every People field is left empty, a Form's link is left out, and a response card keeps only its title. None of it is shown to Community visitors, and a copy made from the Community leaves it out too.
+
+Each card shows how many people liked the plan and how many made a copy.
+
+Opened from the Community, a plan is read-only for you too, so you can see it exactly as visitors do and never change it by accident from the gallery. The bar across the top offers **Edit Your Plan**, which opens your own plan.
+
+## Editing or removing it
+
+Open the **Share** dialog again, on its **Community** tab. It shows your post with its category, likes and copies, and three buttons:
+
+- **View Post** opens its Community page in a new tab.
+- **Edit Listing** changes the title, description, category, tags or **Share Anonymously**. Choose **Save Changes** when you are done.
+- **Remove From Community** asks you to confirm, then takes it out of the gallery straight away. Its likes and copy count go with it; copies people already made stay theirs. Choose **Keep It** to back out.
+
+<Figure caption="The Share dialog's Community tab for a listed plan: View Post, Edit Listing and Remove From Community.">
+  <CommunityShareSection
+    title="Sprint board, start to finish"
+    meta="Projects and Teams · ♥ 12 · Copied 3 times"
+  />
+</Figure>
+
+While it is listed, your plan reads **Public** in the editor's header and in the Explorer.
+
+<Tip>
+  A plan in the Community can't also have a [share
+  password](/help/collaboration/sharing/share-passwords/), because a public plan can't ask its
+  visitors for one. While it is listed, **Password Protection** is locked off; while a password is
+  set, **Share to Community** is unavailable. Remove one to use the other.
+</Tip>
+
+## If your post is hidden
+
+Anyone can report a post. When three different people, on different networks, report yours, it is taken out of the Community automatically and for good: nobody reviews posts by hand, so the reports decide. The **Community** tab of the **Share** dialog then says **Hidden after reports**, and it shows in [My Shares](/help/collaboration/sharing/finding-community-documents/#your-own-shares) marked **Hidden**. Only you can see it. A hidden post can't be edited or removed, so the same plan can't be shared again, but your plan itself is untouched and you can still set a share password on it.
+
+## Things that can't be shared
+
+- Plans in a **team library** belong to the team, so the Share dialog has no **Community** tab for them.
+- A plan whose first tab is empty (a Board with no card, a Sheet with no value, a Dashboard with nothing on it, or a Form with no question) can't be shared until you add something to it: that tab is the picture on your Community card.
+- A plan in the **Trash** disappears from the Community until you restore it.
+
+## Finding plans
+
+Browsing the Community, searching it by tag and making your own copy are covered in [Finding Plans in the Community](/help/collaboration/sharing/finding-community-documents/), along with reporting a plan that shouldn't be there.
+
+</ArticleLayout>

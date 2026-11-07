@@ -19,6 +19,7 @@ import { platformComputedEmitters } from '../platform-emitters';
 import {
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
+  COMMUNITY_CATEGORY_TYPES,
   LEVEL_TELEMETRY_TYPE,
   SHEET_CHANGE_KINDS,
   pascalToken,
@@ -231,6 +232,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Uncaught.Project.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
+  // The Community's help deep links (docs/specs/025-community/community.md "Where Community is linked from"):
+  // COMMUNITY_HELP's two ids.
+  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
+    values: ['community', 'finding-community-documents'],
+    open: SLUG_WHY,
+  },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
     values: ['/', '/project', '/explorer/home', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
@@ -373,6 +380,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
+  // Publishing to the Community: the post's category, as communityCategoryType.
+  // Through the Share dialog's Community tab (@liveworkspace/community-ui), bound in lib/community-share-host.tsx.
+  'apps/editor/lib/community-share-host.tsx Community·Shared': { values: COMMUNITY_CATEGORY_TYPES },
+  'apps/editor/lib/community-share-host.tsx Community·Changed': {
+    values: COMMUNITY_CATEGORY_TYPES,
+  },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
   'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {

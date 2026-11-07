@@ -3,7 +3,7 @@
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import {
   COMMUNITY_SEARCH_MAX,
-  communitySearchCategory,
+  communitySearchCategoryFilter,
   communitySearchMine,
   communitySearchSort,
   setCommunitySearchMine,
@@ -11,7 +11,7 @@ import {
   communitySearchTags,
   setCommunitySearchSort,
   toggleCommunitySearchTag,
-  type CommunityCategory,
+  type CommunityCategoryFilter,
   type CommunityFacetsResponse,
   type CommunitySort,
 } from '@liveworkspace/community';
@@ -80,7 +80,7 @@ export function SearchBox({
     if (adding) onTagChosen?.();
   };
 
-  const chooseCategory = (category: CommunityCategory | null) => {
+  const chooseCategory = (category: CommunityCategoryFilter | null) => {
     const next = setCommunitySearchCategory(draft, category);
     setDraft(next);
     onSearch(next.trim());
@@ -165,7 +165,7 @@ export function SearchBox({
           />
         ) : null}
         <CategoryMenu
-          value={communitySearchCategory(draft)}
+          value={communitySearchCategoryFilter(draft)}
           facets={facets}
           onChange={chooseCategory}
         />

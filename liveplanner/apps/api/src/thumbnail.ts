@@ -8,12 +8,19 @@ import {
   drawnCount,
   formLook,
   migrateStoredTab,
+  readDashboard,
   renderElementsToSvg,
   resolveFontStack,
   tabKindOf,
   type Tab,
 } from '@liveplanner/project';
-import { readForm } from '@liveplanner/forms';
+import { questionsOf, readForm } from '@liveplanner/forms';
+import {
+  redactItemsForCommunity,
+  redactPlanTabForCommunity,
+  redactSheetForCommunity,
+} from './community-redact';
+import { readResponseSheetIds } from './plan-room/community-post';
 import { formArt } from '@liveplanner/plan-art';
 import { openCommentCountsOfPlan } from './db/card-threads';
 import { cardSourceOf, itemIdsShownOnTab, typesOf, type Item } from '@liveplanner/items';
@@ -42,7 +49,9 @@ export type DrawSubject = Pick<ProjectDTO, 'id' | 'name'> & {
 };
 
 // `defer` hands the count stamp (below) to a waitUntil, so the drawing goes out as soon as it is drawn.
-export type DrawOptions = { defer?: (write: Promise<unknown>) => void };
+// `community`: a Community visitor's drawing (docs/specs/025-community/community.md "Viewing a post's plan"), from the
+// redacted plan (community-redact.ts), so no comment, person, vote or form answer reaches the public card image.
+export type DrawOptions = { defer?: (write: Promise<unknown>) => void; community?: boolean };
 
 // The first tab (or `tabId`) drawn, or null when there is nothing to draw: no tab, an empty or unparseable one.
 export async function drawPlan(
@@ -54,6 +63,44 @@ export async function drawPlan(
   const body = tabId ? await getTabBody(env, plan.id, tabId) : await getTabBody(env, plan.id);
   // A named tab's picture is what a link confined to it gets: its card functions read only the cards it shows.
   return renderTabBodyToSvg(env, plan, body, opts, tabId !== null);
+}
+
+// Something to show, for a Community post (docs/specs/025-community/community.md "Publishing"): the first tab is not
+// empty, since it is the post's card picture. A Board with a card, a Sheet with a value, a Dashboard with a part, a
+// Form with a question, any other tab with an element. Counted from the stored body and the plan's store, never
+// rendered.
+export async function firstTabHasSomethingToShow(env: PlanEnv, planId: string): Promise<boolean> {
+  const body = await getTabBody(env, planId);
+  if (!body) return false;
+  let parsed: Partial<Tab>;
+  try {
+    parsed = JSON.parse(body.data) as Partial<Tab>;
+  } catch {
+    return false;
+  }
+  const elements = Array.isArray(parsed.elements) ? parsed.elements : [];
+  const kind = tabKindOf(parsed);
+  if (kind === 'form') {
+    const form = readForm(parsed.form);
+    return !!form && questionsOf(form).length > 0;
+  }
+  if (kind === 'dashboard') {
+    const layout = readDashboard(parsed.dashboard);
+    return !!layout?.rows.some((row) => row.slots.some((slot) => !!slot.content));
+  }
+  const frames = sheetFramesOf(elements);
+  if (frames.length > 0) {
+    const sheets = await listSheets(env, planId, {
+      ids: [...new Set(frames.map((f) => f.sheetId))].slice(0, 50),
+    });
+    if (sheets.some((s) => s.cells.some((c) => c.i !== undefined))) return true;
+  }
+  const boards = elements.some(
+    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
+  );
+  if (boards) return itemIdsShownOnTab(elements, await listItems(env, planId)).size > 0;
+  if (kind === 'sheet' || kind === 'board') return false;
+  return elements.length > 0;
 }
 
 // One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
@@ -134,10 +181,20 @@ async function renderTabBodyToSvg(
   // renderer only reads `elements` + `backgroundColor`, both already in
   // the parsed body.
   // Migrated like every other stored-tab read (docs/specs/011-theme/retired-schemes.md).
-  const stored = migrateStoredTab({ id: body.id, name: liveDoc.name, ...parsed } as Tab);
+  const migrated = migrateStoredTab({ id: body.id, name: liveDoc.name, ...parsed } as Tab);
+  const community = opts.community === true;
+  const stored = community ? redactPlanTabForCommunity(migrated) : migrated;
   // A Dashboard is its page laid out, its metrics and charts drawn from the cards (thumbnail-dashboard.ts), never the
   // canvas under it with each one a labelled box.
-  const laidOut = dashboard ? await dashboardImageOf(env, liveDoc.id, stored) : null;
+  const laidOut = dashboard
+    ? await dashboardImageOf(
+        env,
+        liveDoc.id,
+        stored,
+        undefined,
+        community ? redactPlanTabForCommunity : undefined,
+      )
+    : null;
   const tab = laidOut?.tab ?? stored;
   if (tab.elements.length === 0) return null;
   // A Plan board or card draws its project's items (docs/specs/026-plan/plan-board.md); a Dashboard's metrics and
@@ -152,23 +209,31 @@ async function renderTabBodyToSvg(
   // A Sheet draws its window of cells (docs/specs/029-sheets/sheet.md "Exports and images"); card functions in
   // its formulas read the items too.
   const frames = sheetFramesOf(tab.elements);
-  const sheetJson = frames.length
+  const readSheets = frames.length
     ? await listSheets(env, liveDoc.id, {
         ids: [...new Set(frames.map((f) => f.sheetId))].slice(0, 50),
       })
     : [];
+  const responseSheets =
+    community && readSheets.length ? await readResponseSheetIds(env, liveDoc.id) : null;
+  const sheetJson = responseSheets
+    ? readSheets.map((s) => redactSheetForCommunity(s, responseSheets))
+    : readSheets;
   const sheetCards = sheetJson.some((s) =>
     s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
   );
-  const [items, catalogue] =
+  const [read, catalogue] =
     plan || sheetCards
       ? await Promise.all([
-          // Each card's comment count, from its threads' links (no thread is read): its face draws it.
+          // Each card's comment count, from its threads' links (no thread is read): its face draws it. A Community
+          // visitor's drawing counts none.
           Promise.all([
             listItems(env, liveDoc.id),
             // A count that cannot be read leaves the faces without it rather than the image undrawn.
             Promise.resolve()
-              .then(() => openCommentCountsOfPlan(env, liveDoc.id))
+              .then(() =>
+                community ? new Map<string, number>() : openCommentCountsOfPlan(env, liveDoc.id),
+              )
               .catch((err: unknown) => {
                 console.warn('[thumbnail] comment.counts.failed', { error: String(err) });
                 return new Map<string, number>();
@@ -185,6 +250,11 @@ async function renderTabBodyToSvg(
           liveDoc.itemTypes !== undefined ? liveDoc.itemTypes : getPlanItemTypes(env, liveDoc.id),
         ])
       : [undefined, null];
+  // A Community visitor's cards carry nobody (community-redact.ts).
+  const items =
+    read && community
+      ? new Map(redactItemsForCommunity([...read.values()], catalogue).map((i) => [i.id, i]))
+      : read;
   const cardItems = (all: Map<string, Item>) => {
     if (!scoped) return all.values();
     const shown = itemIdsShownOnTab(tab.elements, all.values());

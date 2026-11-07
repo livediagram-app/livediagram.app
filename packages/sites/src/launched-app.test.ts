@@ -45,6 +45,7 @@ describe('a launched app (livehuddle)', () => {
       offlineConversions: true,
     });
     expect(APP_ITEMS.livehuddle.share.communityPath).toBe('/api/documents/:id/community');
+    expect(APP_ITEMS.liveplanner.share.communityPath).toBe('/api/projects/:id/community');
     expect(APP_NAMES).toEqual([
       'livediagram',
       'liveplanner',

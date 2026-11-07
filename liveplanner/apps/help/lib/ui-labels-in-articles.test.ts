@@ -31,6 +31,8 @@ const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 const SETTINGS_PACKAGE = `${ROOT}/../packages/settings-ui/src`;
 // The shared icon catalogues (@liveworkspace/icons) print the sticker words and icon names the palette shows.
 const ICONS_PACKAGE = `${ROOT}/../packages/icons/src`;
+// The Share dialog's Community tab is every app's (@liveworkspace/community-ui), rendered by the editor as its own.
+const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
@@ -106,6 +108,7 @@ function editorSource(): string {
   // The design system (@liveworkspace/ui) left this product's packages/ui for the monorepo's; its words still print here.
   walk(`${ROOT}/../packages/ui/src`);
   walk(ICONS_PACKAGE);
+  walk(COMMUNITY_UI_PACKAGE);
   walk(WORKBENCH_PACKAGE);
   // API tokens and the Explorer page's search are liveworkspace.app's own pages, which articles send readers to.
   walk(`${ROOT}/../liveworkspace/apps/site/components`);

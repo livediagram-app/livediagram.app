@@ -32,7 +32,9 @@ import {
 } from '../db';
 import { sheetDeleteWhenUnreferencedStatements, sheetKeepStatement } from '../db/sheet-refs';
 import { json, methodNotAllowed, noContent } from '../responses';
-import { readBody, type PlanRouteContext } from './context';
+import { redactSheetForCommunity } from '../community-redact';
+import { readResponseSheetIds } from '../plan-room/community-post';
+import { COMMUNITY_CONTENT, readBody, type PlanRouteContext } from './context';
 import { writer } from './item-route-kit';
 import {
   relaySheet,
@@ -46,7 +48,7 @@ import { writeSheet } from './sheet-write-route';
 const IDS_PER_GET_MAX = 50;
 
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
-  const caller = await sheetCaller(ctx, projectId, 'read');
+  const caller = await sheetCaller(ctx, projectId, 'read', COMMUNITY_CONTENT);
   if (caller instanceof Response) return caller;
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   const idsParam = ctx.url.searchParams.get('ids');
@@ -55,6 +57,11 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
     return sheetRejected('write_invalid');
   let sheets = await listSheets(ctx.env, projectId, ids ? { ids } : tabId ? { tabId } : {});
   if (caller.scopeTab) sheets = sheets.filter((s) => s.tabId === caller.scopeTab);
+  // A Community visitor sees no one's edits and a form's response sheet as its heading row alone.
+  if (caller.community && sheets.length > 0) {
+    const responseSheets = await readResponseSheetIds(ctx.env, projectId);
+    sheets = sheets.map((s) => redactSheetForCommunity(s, responseSheets));
+  }
   const body: SheetsResponse = { sheets };
   return json(body);
 }

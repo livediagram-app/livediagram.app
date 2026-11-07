@@ -2,6 +2,7 @@
 // here rather than under any one resource. The person's plans are the index's (liveworkspace/docs/specs/004-index/one-explorer.md):
 // the index purges them when the account closes, and has each plan's Durable Object drop its content.
 
+import { communityService } from '../community-service';
 import { mediaClient, mediaOwner } from '../media';
 import type { Env } from '../types';
 
@@ -22,6 +23,9 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<void> {
     if (!forgotten.ok)
       throw new Error(`media: deleting the owner's images answered ${forgotten.status}`);
   }
+  // The Community copies they took stop counting (docs/specs/025-community/community.md "Plan lifecycle"); their
+  // posts go with their plans, whose purge tells the service each is gone. Best effort.
+  await communityService.forgetCopier(env, ownerId);
   // What they had seen of forms is the index's (collab_form_reads), which drops it with the account.
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27) they wrote on other people's plans are in
   // those plans' own stores (each plan's Durable Object), out of reach of one statement; they age out with the

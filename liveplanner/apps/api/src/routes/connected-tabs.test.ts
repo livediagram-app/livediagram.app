@@ -13,7 +13,6 @@ import { opForScope } from '../room-scope';
 // Connected tabs in a plan (liveworkspace/docs/specs/004-index/connected-tabs.md, blueprint "Each app"): the
 // column, the editor's save that adds one and the index's confirm, the removal the index hears, the reverse write,
 // scope redaction, copies, exports, the tab kinds' own writes, and who may do each (Editor, Participant, Viewer).
-// liveplanner has no Community posts, so there is no Community read or copy to redact.
 
 const told = { confirm: vi.fn(), remove: vi.fn() };
 vi.mock('../index-service', async (original) => ({

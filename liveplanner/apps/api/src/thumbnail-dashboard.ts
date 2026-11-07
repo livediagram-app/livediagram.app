@@ -37,11 +37,13 @@ const boardSetupsOf = (tab: Tab): unknown[] =>
   );
 
 /** The Dashboard `tab` of project `projectId` laid out for an image, or null when it lays out nothing. */
+// `seen`: how each tab it reads is drawn; a Community visitor's image passes the redaction (community-redact.ts).
 export async function dashboardImageOf(
   env: PlanEnv,
   projectId: string,
   tab: Tab,
   now: Date = new Date(),
+  seen: (tab: Tab) => Tab = (t) => t,
 ): Promise<DashboardImage | null> {
   const layout = readDashboard(tab.dashboard);
   const shown = new Set<string>();
@@ -50,7 +52,7 @@ export async function dashboardImageOf(
       if (slot.content?.type === 'tab' && slot.content.tabId !== tab.id)
         shown.add(slot.content.tabId);
   const read = await dashboardSourceTabs(env, projectId, [...shown], DASHBOARD_IMAGE_TABS_MAX);
-  const tabs = [tab, ...read.filter((t) => t.id !== tab.id)];
+  const tabs = [tab, ...read.filter((t) => t.id !== tab.id).map(seen)];
   const image = planImageOf(tab, { tabs, now });
   if (!image) return null;
   // The statuses every board names, in tab order (the editor's own order puts the open tab first; a Dashboard holds

@@ -7,7 +7,7 @@ import type { PlanResponse } from '@liveplanner/api-schema';
 import { planOutline, type PlanTabInput } from '@liveplanner/items';
 import { getTab, tabBodiesWithBoards, tabOutlines } from '../db';
 import { json, methodNotAllowed } from '../responses';
-import type { PlanRouteContext } from './context';
+import { COMMUNITY_CONTENT, type PlanRouteContext } from './context';
 import { itemCaller } from './item-route-kit';
 
 // Tabs read per query: the project overview's batch (project-views-route.ts).
@@ -43,7 +43,8 @@ export async function handlePlanRoute(ctx: PlanRouteContext): Promise<Response |
   if (segments.length !== 4 || segments[3] !== 'plan') return null;
   if (request.method !== 'GET') return methodNotAllowed();
   const projectId = segments[2]!;
-  const caller = await itemCaller(ctx, projectId, 'read');
+  // The boards' outline names no one: a Community post's link reads it too.
+  const caller = await itemCaller(ctx, projectId, 'read', COMMUNITY_CONTENT);
   if (caller instanceof Response) return caller;
   const scopedTab = caller.scope ? ctx.url.searchParams.get('tabId') : null;
   const [boardTabs, tabs] = await Promise.all([

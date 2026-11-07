@@ -43,7 +43,7 @@ export type CommunityShareDialogProps = {
 };
 
 export type CommunityShareTab =
-  // Not offered: the Community switched off, signed out, or a team library's document.
+  // Not offered: the Community switched off, or a team library's document.
   | { kind: 'none' }
   // The Share dialog, with these props spread over it.
   | { kind: 'share'; props: CommunityShareDialogProps }
@@ -56,8 +56,10 @@ export type CommunityShareTab =
 // Protection, and a document behind a password cannot be published.
 export function useCommunityShareTab(input: CommunityShareTabInput): CommunityShareTab {
   const { host, ownerId, documentId, signedIn, teamDocument, communityOn } = input;
-  // Only a signed-in owner's personal document can have a post, so only then is it read.
-  const eligible = communityOn && signedIn && !teamDocument;
+  // The tab is offered on any owner's personal document, a guest's included: a guest sees why they can't share yet
+  // and Sign In to Share. Only a signed-in owner's document can have a post, so only then is it read.
+  const offered = communityOn && !teamDocument;
+  const eligible = offered && signedIn;
   const community = useCommunityPost({
     client: host.client,
     ownerId,
@@ -72,7 +74,7 @@ export function useCommunityShareTab(input: CommunityShareTabInput): CommunitySh
   // Back from the publish dialog, the Share dialog opens on the Community tab it was left from.
   const [backFromPublish, setBackFromPublish] = useState(false);
 
-  if (!eligible) return { kind: 'none' };
+  if (!offered) return { kind: 'none' };
 
   if (publishing) {
     return {

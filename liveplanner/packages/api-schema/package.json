@@ -23,6 +23,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/community": "workspace:^",
     "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {

@@ -22,11 +22,13 @@ import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { getSessionSharePassword } from '@/lib/api-client';
+import { API_BASE, getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newPlanHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenPlan } from '@/lib/project-delete-undo';
@@ -58,7 +60,7 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   // The plans kept only in this browser, as the person (an account, or this browser's guest).
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const thisBrowser = useThisBrowserHost(
@@ -66,7 +68,20 @@ function ExplorerImpl({
     !!accountUserId,
     currentProjectId ?? null,
   );
-  const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
+  // The Community tab for the person's own plans (lib/explorer-community-host.ts), a guest's included (with Sign
+  // In to Share), so whether the Community is on is asked for a guest too.
+  const communityOn = useCommunityEnabled(API_BASE);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(accountUserId ?? null),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+        guestId ?? null,
+      ),
+    }),
+    [accountUserId, accountDisplayName, communityOn, guestId],
+  );
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
   const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);

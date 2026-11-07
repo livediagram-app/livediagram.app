@@ -60,6 +60,13 @@ export const COMMUNITY_SEARCH_MAX = 200;
 export const COMMUNITY_FEATURED_COUNT = 6;
 export const COMMUNITY_FEATURED_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 export const COMMUNITY_SEARCH_TERM_MAX = 40;
+// Start With (liveworkspace/docs/specs/007-community/community.md "Start With"): in each app's new-document template
+// picker, each category shows up to COMMUNITY_START_PER_CATEGORY posts after its templates, the most liked over the
+// last COMMUNITY_START_WINDOW_MS, and only posts with at least COMMUNITY_START_MIN_LIKES likes in that window (owner,
+// 2026-11-07), so a tile there is a document people have really taken to.
+export const COMMUNITY_START_PER_CATEGORY = 3;
+export const COMMUNITY_START_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+export const COMMUNITY_START_MIN_LIKES = 5;
 
 // The header the Community pages' per-browser key travels under (liveworkspace/docs/specs/007-community/community.md "Public routes"; each app keeps it
 // under its own storage key). Deliberately not the guest owner id: a like must never put an owner credential on
@@ -241,7 +248,10 @@ export type CommunityMineResponse = {
 };
 export type CommunityFacetsResponse = {
   total: number;
+  // Posts per category id (for All Apps, the same id's posts in every app together).
   categories: Partial<Record<CommunityCategory, number>>;
+  // All Apps only: each app's posts per category, for its category menu, which names each app's own.
+  apps?: Partial<Record<CommunityApp, Partial<Record<CommunityCategory, number>>>>;
   tags: { tag: string; count: number }[];
 };
 export type CommunityPostResponse = { post: CommunityPost; related: CommunityPost[] };
@@ -253,6 +263,48 @@ export type CommunitySitemapResponse = { posts: CommunitySitemapEntry[] };
 // 0.6 MB at the cap). Past it the oldest posts drop off the sitemap, never out of the Community.
 export const COMMUNITY_SITEMAP_MAX = 5000;
 export type CommunityFeaturedResponse = { posts: CommunityPost[] };
+// A post as a Start With tile: only what the tile shows and opens, so the one answer for every category stays small
+// (blueprint "Start With"). `line` is the description's first paragraph, cut to COMMUNITY_START_LINE_MAX at a word.
+// `authorName` is "Anonymous" when the author chose it.
+export type CommunityStartPost = Pick<
+  CommunityPost,
+  'id' | 'app' | 'title' | 'category' | 'shareCode' | 'likeCount' | 'copyCount' | 'anonymous'
+> & { authorName: string; line: string };
+
+// `GET /start?app=`: Start With's Community tiles, per category of the app, best first. A category with none is
+// absent. The same for everyone, and served from the edge.
+export type CommunityStartResponse = {
+  categories: Partial<Record<CommunityCategory, CommunityStartPost[]>>;
+};
+
+// The longest line a Start With tile shows: about two lines of a template tile's description.
+export const COMMUNITY_START_LINE_MAX = 120;
+
+// A description as a tile's line: its first paragraph, whitespace collapsed, cut at the last word that fits with an
+// ellipsis.
+export function communityStartLine(description: string): string {
+  const first = (description.split(/\n\s*\n/)[0] ?? '').replace(/\s+/g, ' ').trim();
+  if (first.length <= COMMUNITY_START_LINE_MAX) return first;
+  const cut = first.slice(0, COMMUNITY_START_LINE_MAX - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > COMMUNITY_START_LINE_MAX / 2 ? cut.slice(0, space) : cut).replace(/[\s.,;:!?-]+$/, '')}…`;
+}
+
+// A post as its Start With tile.
+export function communityStartPost(post: CommunityPost): CommunityStartPost {
+  return {
+    id: post.id,
+    app: post.app,
+    title: post.title,
+    category: post.category,
+    shareCode: post.shareCode,
+    likeCount: post.likeCount,
+    copyCount: post.copyCount,
+    anonymous: post.anonymous,
+    authorName: post.author.name,
+    line: communityStartLine(post.description),
+  };
+}
 export type CommunityOwnPostResponse = { post: CommunityOwnPost | null };
 export type CommunityLikeResponse = { likeCount: number; liked: boolean };
 export type CommunityReportInput = { reason: CommunityReportReason; note?: string | null };

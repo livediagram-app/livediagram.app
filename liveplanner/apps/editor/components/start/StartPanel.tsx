@@ -80,6 +80,7 @@ export function StartPanel<C extends string>({
   categories,
   initialCategory,
   cardsIn,
+  countIn,
   search,
   onChoose,
   footer,
@@ -97,6 +98,9 @@ export function StartPanel<C extends string>({
   categories: readonly StartPanelCategory<C>[];
   initialCategory: C;
   cardsIn: (category: C) => readonly StartPanelCard[];
+  // What the rail's count says for a category, where it is not every card it holds (the Community's tiles join
+  // Inspiration's cards but not its count, so their arrival changes nothing on the rail).
+  countIn?: ((category: C) => number) | undefined;
   // Every match, grouped by category, in rail order.
   search: (query: string) => readonly StartPanelResult<C>[];
   onChoose: (cardId: string) => void;
@@ -189,7 +193,7 @@ export function StartPanel<C extends string>({
         {/* How many it holds, as a badge (the shared CountBadge), tinted with the chosen category. The chosen
             one's figure is the ink: the accent on its own tint, over the row's, read 3.6:1 in dark. */}
         <CountBadge
-          count={cardsIn(c.id).length}
+          count={countIn ? countIn(c.id) : cardsIn(c.id).length}
           className="shrink-0 max-sm:hidden"
           background={on ? startTint(palette, 22) : palette.column}
           color={on ? palette.text : palette.muted}

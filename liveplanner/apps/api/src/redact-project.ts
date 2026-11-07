@@ -37,7 +37,27 @@ import type { ProjectDTO } from './types';
 export function redactProjectForReader(liveDoc: ProjectDTO, caller: string | null): ProjectDTO {
   return caller && caller === liveDoc.ownerId
     ? liveDoc
-    : { ...liveDoc, ownerId: '', shareCode: null };
+    : { ...liveDoc, ownerId: '', shareCode: null, communityState: null };
+}
+
+// A Community visitor's copy (docs/specs/025-community/community.md "Viewing a post's plan"), on top of the reader
+// redaction: the post names its author (or "Anonymous") itself, so the plan carries nobody's name or colour, and
+// nothing about where it sits in its owner's library or came from. A connected tab keeps its name and loses its
+// connection (connected-tabs.md): a stranger is told of no other item. The cards, sheets and each tab's content are
+// redacted at their own doors (community-redact.ts).
+export function redactProjectForCommunity(liveDoc: ProjectDTO): ProjectDTO {
+  return {
+    ...liveDoc,
+    ownerName: null,
+    ownerColor: null,
+    folderId: null,
+    source: null,
+    tabs: liveDoc.tabs.map((tab) => {
+      if (!('connection' in tab)) return tab;
+      const { connection: _connection, ...rest } = tab as typeof tab & { connection?: unknown };
+      return rest;
+    }),
+  };
 }
 
 // A tab-scoped visitor's copy (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab keeps

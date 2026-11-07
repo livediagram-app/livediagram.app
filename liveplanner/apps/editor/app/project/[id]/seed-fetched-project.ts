@@ -4,6 +4,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/project';
 import type { Project } from '@liveplanner/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
+import { setCommunityState } from '@liveworkspace/community-ui/editor';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 import { placeholdersFromSummaries } from './editor-page-helpers';
@@ -131,6 +132,7 @@ export function makeSeedFetchedProject(deps: {
     }
     setLoadedExistingProject(true);
     setProjectShareable(fetched.shareable);
+    setCommunityState(fetched.id, fetched.communityState ?? null);
     setProjectTeamId(fetched.teamId ?? null);
     setProjectShareCode(fetched.shareCode);
     setProjectOwnerId(fetched.ownerId);

@@ -124,7 +124,8 @@ links, so they open in a new tab with the usual gestures.
 ## 12. Observability
 
 `Community·Shared|Changed·<Category>` and `Community·Removed·Post` (`trackCommunity`, listed in
-`apps/editor/lib/telemetry-manifest.ts`); the help deep links send `UI·Opened·<article id>` (the site's computed
+`apps/editor/lib/telemetry-manifest.ts`); `Community·Copied·StartWith` from a Community tile chosen on Start Making
+Pages (`components/start/StartFromTemplates.tsx`, the pair `Community·Copied` in the manifest); the help deep links send `UI·Opened·<article id>` (the site's computed
 emitters list both ids).
 
 ## 13. Testing

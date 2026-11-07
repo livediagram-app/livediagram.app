@@ -104,16 +104,17 @@ export function ExplorerHost({
   const guestId = useGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
-  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const communityOn = useCommunityEnabled(API_BASE);
   const shareHost = useMemo(
     () => ({
       ...explorerShareHost(viewerId ?? null),
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
+        guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   const library = useMemo(() => explorerLibraryHosts(), []);

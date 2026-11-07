@@ -378,15 +378,16 @@ export function ExplorerShell() {
     [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
   // The Community tab, for the apps with one that this page can offer it for (APP_ITEMS[app].share.communityPath),
-  // for an account only. Each app is asked whether its Community is on the first time one of its items is shared.
+  // for an account and for a guest (who sees Sign In to Share). Each app is asked whether its Community is on the
+  // first time one of its items is shared.
   const communityApps = useMemo(() => communityShareAppsHere(host), [host]);
-  const communityOn = useCommunityAppsOn(communityApps, signedIn);
+  const communityOn = useCommunityAppsOn(communityApps, !!identity);
   const accountName = session.state === 'in' ? session.name : null;
   const share = useMemo(
     () =>
       shareHostFor(
         app,
-        signedIn && identity ? { id: identity.sub, name: accountName } : null,
+        identity ? { id: identity.sub, name: accountName, guest: !signedIn } : null,
         communityOn,
         explorerSignInHref,
       ),

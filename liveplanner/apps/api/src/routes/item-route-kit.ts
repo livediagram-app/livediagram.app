@@ -24,6 +24,7 @@ import {
 } from '@liveplanner/items';
 import { getProject, getTab, listItems } from '../db';
 import { getParticipant } from '../person/profiles';
+import { redactItemsForCommunity } from '../community-redact';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';
 import {
@@ -32,6 +33,7 @@ import {
   gateGrant,
   gateParticipate,
   gateRead,
+  grantOn,
   missingProject,
   requireOwner,
   type PlanRouteContext,
@@ -53,7 +55,14 @@ export type ItemCaller = {
   items?: Item[];
   // Whether the caller holds edit, once a write has had to ask (isItemEditor).
   editor?: boolean;
+  // Through the plan's Community post's link (docs/specs/025-community/community.md "Viewing a post's plan"): every
+  // card it is answered is redacted (community-redact.ts).
+  community?: boolean;
 };
+
+// The reads a Community post's link may make pass this (routes/context.ts COMMUNITY_CONTENT); every other door,
+// and every write, stays closed to it.
+export type ItemCallerOptions = { community?: boolean };
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
 
@@ -175,11 +184,15 @@ export async function itemCaller(
   ctx: PlanRouteContext,
   projectId: string,
   level: Level,
+  opts: ItemCallerOptions = {},
 ): Promise<ItemCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const doc = await getProject(ctx.env, projectId);
   if (!doc) return missingProject(ctx, projectId);
+  // A Community post's link reads (never writes) the whole plan, redacted.
+  if (level === 'read' && opts.community && grantOn(ctx, projectId, opts)?.community)
+    return { projectId, owner, doc, scope: null, community: true };
   const gate = GATES[level];
   if (await gate(ctx, projectId, doc.ownerId, doc.teamId))
     return { projectId, owner, doc, scope: null };
@@ -231,5 +244,9 @@ export function relay(
 }
 
 // What a caller is answered with. A card holds no comments (its threads are their own, card-thread-routes.ts); an old
-// single thread a row still carried (moved by the plan's schema, plan-room/card-thread-schema.ts) never leaves.
-export const forCaller = (_caller: ItemCaller, items: Item[]) => items.map(withoutLegacyThread);
+// single thread a row still carried (moved by the plan's schema, plan-room/card-thread-schema.ts) never leaves. A
+// Community visitor's cards carry nobody (community-redact.ts).
+export const forCaller = (caller: ItemCaller, items: Item[]) => {
+  const out = items.map(withoutLegacyThread);
+  return caller.community ? redactItemsForCommunity(out, caller.doc?.itemTypes) : out;
+};

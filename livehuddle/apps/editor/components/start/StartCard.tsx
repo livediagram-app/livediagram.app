@@ -4,6 +4,7 @@
 // over its name and line, larger than it draws elsewhere, in the tab's own colours (the palette), and the grid they sit
 // in. Shared by a start's own groups, its search results and the other modes' matches (StartOtherModes).
 import type { ReactNode } from 'react';
+import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
 import type { StartPalette } from './start-palette';
 
 export type StartPanelCard = {
@@ -63,7 +64,8 @@ function StartCard({
             {card.badge ? (
               <span
                 className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: startTint(palette, 14), color: palette.focus }}
+                // The accent's tint, its ink deepened until it reads at AA (community-ui start-badge.ts).
+                style={communityStartBadgeStyle(palette.focus, palette.surface)}
               >
                 {card.badge}
               </span>

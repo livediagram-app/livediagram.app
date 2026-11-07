@@ -2,6 +2,7 @@
 // catalogue, forms, agent presence and changesets.
 
 import { redactCommentAuthorIds } from '../comments';
+import { redactPlanTabForCommunity } from '../community-redact';
 import { deleteFormLinksForTab, deleteTabRow, getProject, getProjectForSave, getTab } from '../db';
 import { tellConnectionLeft } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
@@ -23,6 +24,7 @@ import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
 import { handlePlanRoute } from './plan-route';
 import {
+  COMMUNITY_CONTENT,
   deniedOnTab,
   gateEdit,
   gateGrant,
@@ -104,7 +106,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // Naming the tab confines a tab-scoped link to its own tab
       // (docs/specs/013-workspace/tab-scoped-share-links.md). Every other tab reads as missing: 404, no
       // existence leak.
-      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId);
+      // A Community post's link reads every tab, redacted (docs/specs/025-community/community.md "Viewing a post's plan").
+      const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId, COMMUNITY_CONTENT);
       if (!grant || (grant.tabScope !== null && grant.tabScope !== tabId)) {
         return deniedOnTab(ctx, existing);
       }
@@ -117,8 +120,10 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // id (so they can delete-own), never another participant's owner
       // id. The project owner sees everything (viewerId === ownerId is a
       // no-op). Same anti-claim posture as redactOwner on the project.
-      const safe =
-        owner === existing.ownerId
+      // A Community visitor gets the tab without its conversation, its people or the connection it came from.
+      const safe = grant.community
+        ? { ...redactPlanTabForCommunity(tab), connection: undefined }
+        : owner === existing.ownerId
           ? tab
           : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);

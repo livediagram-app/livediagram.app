@@ -4510,6 +4510,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -4544,6 +4547,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^5.20261104.1
         version: 5.20261104.1
+      '@liveworkspace/community-service':
+        specifier: workspace:^
+        version: link:../../../liveworkspace/apps/community
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -4674,6 +4680,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community-ui':
+        specifier: workspace:^
+        version: link:../../../packages/community-ui
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
@@ -4877,6 +4886,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
@@ -5044,6 +5056,9 @@ importers:
 
   liveplanner/apps/router:
     dependencies:
+      '@liveworkspace/community-site':
+        specifier: workspace:*
+        version: link:../../../packages/community-site
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
@@ -5160,6 +5175,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -5601,6 +5619,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../../../packages/settings
@@ -5745,6 +5766,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../../../packages/vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6

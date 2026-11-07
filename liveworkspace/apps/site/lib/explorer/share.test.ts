@@ -109,11 +109,30 @@ describe('the Community tab on liveworkspace.app', () => {
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok');
   });
 
-  it('offers none for someone else’s item, a guest, an app with no Community yet, or while it is off', () => {
+  it('offers a guest the tab on their own items, signed out, without reading their post', () => {
+    const fetch = vi.fn(async () => Response.json({ post: null }));
+    const guest = { id: 'guest_g', name: null, guest: true };
+    const tab = communityShareOf(
+      { ...canvas, ownerId: 'guest_g' },
+      guest,
+      true,
+      '/sign-in',
+      fetch,
+    )!;
+    expect(tab).toMatchObject({
+      ownerId: 'guest_g',
+      signedIn: false,
+      signInHref: '/sign-in',
+      author: { name: 'You' },
+    });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(communityShareOf(canvas, guest, true, '')).toBeUndefined();
+  });
+
+  it('offers none for someone else’s item, no one, an app it does not know, or while it is off', () => {
     expect(communityShareOf({ ...canvas, ownerId: 'user_b' }, account, true, '')).toBeUndefined();
     expect(communityShareOf(canvas, null, true, '')).toBeUndefined();
     expect(communityShareOf(canvas, account, false, '')).toBeUndefined();
-    expect(communityShareOf({ ...canvas, app: 'liveplanner' }, account, true, '')).toBeUndefined();
     expect(
       communityShareOf({ ...canvas, app: 'nope' as never }, account, true, ''),
     ).toBeUndefined();
@@ -129,6 +148,18 @@ describe('the Community tab on liveworkspace.app', () => {
     await tab.host.client.get();
     const [url] = fetch.mock.calls[0] as unknown as [string];
     expect(url).toBe('https://www.livedocuments.app/api/documents/x/community');
+  });
+
+  it('offers liveplanner’s plans through its own owner route, in its own words', async () => {
+    const fetch = vi.fn(async () => Response.json({ post: null }));
+    const plan = { ...canvas, app: 'liveplanner' as Item['app'], id: 'p 1' };
+    const tab = communityShareOf(plan, account, true, '/sign-in', fetch)!;
+    expect(tab.host.app).toBe('liveplanner.app');
+    expect(tab.host.words.noun).toBe('plan');
+    expect(tab.host.postHref('p1')).toBe('https://www.liveplanner.app/community/post?id=p1');
+    await tab.host.client.get();
+    const [url] = fetch.mock.calls[0] as unknown as [string];
+    expect(url).toBe('https://www.liveplanner.app/api/projects/p%201/community');
   });
 
   it('offers livedesign’s designs through its own owner route, in its own words', async () => {
@@ -156,12 +187,14 @@ describe('the Community tab on liveworkspace.app', () => {
   it('lists the apps with a Community tab, and on an app’s own address only that app', () => {
     expect(COMMUNITY_SHARE_APPS).toEqual([
       'livediagram',
+      'liveplanner',
       'livedocuments',
       'livedesign',
       'livehuddle',
     ]);
     expect(communityShareAppsHere(null)).toEqual([
       'livediagram',
+      'liveplanner',
       'livedocuments',
       'livedesign',
       'livehuddle',
@@ -169,6 +202,6 @@ describe('the Community tab on liveworkspace.app', () => {
     expect(communityShareAppsHere('livehuddle')).toEqual(['livehuddle']);
     expect(communityShareAppsHere('livedocuments')).toEqual(['livedocuments']);
     expect(communityShareAppsHere('livedesign')).toEqual(['livedesign']);
-    expect(communityShareAppsHere('liveplanner')).toEqual([]);
+    expect(communityShareAppsHere('liveplanner')).toEqual(['liveplanner']);
   });
 });

@@ -118,17 +118,18 @@ export function ExplorerHost({
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
-  // The Community tab for a signed-in account's own documents (lib/explorer-community-host.ts).
-  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  // The Community tab for the person's own documents, a guest's included (lib/explorer-community-host.ts).
+  const communityOn = useCommunityEnabled(API_BASE);
   const shareHost = useMemo(
     () => ({
       ...explorerShareHost(viewerId ?? null),
       community: explorerCommunity(
         accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
         communityOn,
+        guestId ?? null,
       ),
     }),
-    [viewerId, accountUserId, accountDisplayName, communityOn],
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // This Browser: the documents kept only in this browser, which the index never sees, as a view of the Explorer.

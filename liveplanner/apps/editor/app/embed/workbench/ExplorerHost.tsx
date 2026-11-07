@@ -25,6 +25,9 @@ import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { API_BASE } from '@/lib/api-client';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderPlanThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/project-delete-undo';
@@ -90,11 +93,23 @@ export function ExplorerHost({
   children?: (chrome: ExplorerChrome) => ReactNode;
 }) {
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
-  const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
+  // The Community tab for the person's own plans, a guest's included (lib/explorer-community-host.ts).
+  const communityOn = useCommunityEnabled(API_BASE);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId ?? null),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+        guestId ?? null,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
+  );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
   // copy merged in once the person is known.
