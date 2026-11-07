@@ -71,6 +71,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
+    'HearingRingOn',
+    'HearingRingOff',
+    'Audio Proximity Ring',
+    'The ring round your character showing where people can hear you while you talk in a call.',
+  ),
+  toggle(
+    'UI',
     'HomeBannerOn',
     'HomeBannerOff',
     'Home Banner',

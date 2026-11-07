@@ -133,6 +133,17 @@ audio. Nobody out of earshot receives any media: it costs no Realtime egress and
 - **Hover or tap the bars**: "Sam is talking, walk over". Pressing them walks your character towards Sam, stopping a
   short way off (60 canvas px) so you do not shove them. Only while you walk; otherwise the bars only show.
 - **Your own bars** show above your own head while you talk, so you can see you are coming through.
+- **Your hearing ring** (owner, 2026-11-07): whenever your own bars show (unmuted and talking, in a call or on the
+  microphone's local preview), a soft ring in your colour lies on the floor round your feet at the hearing radius
+  (260 canvas px), so you see where people can hear you. It pulses while you talk, a ripple running out from your
+  feet to its edge, and fades away within a moment of your stopping (the same 600 ms hangover as the bars, then a 200
+  ms fade). Walls block sound both ways, so inside a room (or a Phone Booth) it is cut to the room's floor, and every
+  other room it reaches (standing outside one, or in the room round it) is cut out of it; on the top of a stage that
+  lets you speak, where the whole tab hears you, it does not show (worked out from the board, so on the local preview
+  too). Only you see it, never others; with the local preview it shows where you would be heard once the call is on.
+  Under reduced motion it holds still. **Settings > Collaborate > Audio Proximity Ring** turns it off (on by default;
+  `hearingRing`, synced with your other preferences); the call is unchanged. It sits under every character and takes
+  no presses.
 - Under reduced motion the bars hold still at their level's height.
 - A screen reader is not read the bars (they change too often); the hover card is their text.
 

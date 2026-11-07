@@ -27,6 +27,7 @@ import { useTimerEarshot } from '@/lib/office/timer-earshot';
 import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
 import { useReceptionBell } from '@/lib/office/reception-bell';
 import type { TalkingBarsPeer } from './TalkingBars';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 type WalkingSelf = {
   pos: Point | null;
@@ -136,7 +137,11 @@ export function useCanvasCall(deps: {
   });
 
   // Let Speak (meeting-rooms-and-stage.md "Raise hand"): an Editor anywhere, or whoever speaks from a stage.
-  const level = props.canShareScreen ? 'edit' : props.takePart ? 'participate' : 'view';
+  const level: AccessLevel = props.canShareScreen
+    ? 'edit'
+    : props.takePart
+      ? 'participate'
+      : 'view';
   const send = props.onCallSignal;
   const mayLetSpeak = inMode && !!send && mayLetSpeakSelf(self, level, stages);
   const selfBadge = self ? { at: self, scale: deps.avatarScale } : null;
@@ -167,6 +172,13 @@ export function useCanvasCall(deps: {
             avatar.walkTo(walkTowards(self, at));
           }
         : undefined,
+    },
+    // Your hearing ring (proximity-audio.md "Your hearing ring"): your feet with your seat, cut to your room.
+    ring: {
+      self: seatedSelf ? { at: seatedSelf, color: props.selfParticipant.color } : null,
+      zones,
+      stages,
+      level,
     },
     hands: {
       peers,

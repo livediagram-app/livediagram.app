@@ -153,6 +153,9 @@ held frames for one step. The editor's store is memory only and empties on leavi
   a locator Realtime refuses is never asked for again in a loop.
 - The hearing check runs on each change of `remoteAvatars` (at most once a frame), linear in walkers.
 - Bars animate in CSS from a level custom property; a level change re-renders one bar group.
+- The hearing ring renders nothing while you are silent; it re-renders on your own steps and level changes
+  (at most 4 a second), finds your room only while you talk (linear in rooms), and animates one transform and
+  opacity in CSS, dropped while silent.
 - The calls code loads when walking first joins a call (`loadProximityCall`), not on a press, so the canvas chunk gains
   only the store, the bars, `LocalMic` (store, constraints and voice detector only) and the buttons. Walking in opens no
   microphone, so it costs no prompt; a join made without a press starts its audio suspended and resumes on the next
@@ -170,6 +173,11 @@ held frames for one step. The editor's store is memory only and empties on leavi
 - Bars: three 3 px rounded bars, 2 px apart, 12 px tall at most, the speaker's colour, 6 px above the name chip
   (`components/calls/TalkingBars.tsx`). They live in the canvas layer and zoom with the characters and their chips,
   and slide with a walking character's glide (`avatarGlides`), landing at once on a jump.
+- Hearing ring (`components/calls/HearingRing.tsx`, geometry in `lib/calls/hearing-ring.ts`): one SVG in canvas px
+  under the characters, centred on your feet, radius `HEARING_RADIUS_PX`, masked to the room you stand in
+  (`zoneAt`, its outline or box) less every other room the ring reaches that you are not inside. A faint fill, a steady edge and a ripple (`animate-hearing-ripple`) in your
+  colour; shown while your own bars would (unmuted, `level > 0`, in a call or the preview mic) and you are not a stage speaker; opacity fades over 200 ms
+  and the ripple is dropped while silent. Reduced motion stops the ripple.
 - The microphone starts **Muted**; **Mic Off** is only the moment while an unmuted microphone opens ("Your microphone
   is opening"); a Viewer's reads **Listening**.
 

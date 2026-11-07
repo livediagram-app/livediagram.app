@@ -292,6 +292,24 @@ export const CATALOGUE: AppCatalogue = {
             off: 'CollaboratePanelOff',
           },
         },
+        {
+          kind: 'toggle',
+          id: 'hearingRing',
+          label: 'Audio Proximity Ring',
+          description:
+            'While you talk, a ring round your character shows where people can hear you. Off, nothing else about your microphone or the call changes.',
+          keywords:
+            'audio proximity ring hearing range call voice microphone talking who can hear me circle zone show hide',
+          key: 'hearingRing',
+          on: true,
+          off: false,
+          fallback: true,
+          event: {
+            category: 'UI',
+            on: 'HearingRingOn',
+            off: 'HearingRingOff',
+          },
+        },
       ],
     },
     {

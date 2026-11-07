@@ -89,13 +89,16 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   it does for a room.
 - **The mic indicator** reads **Live** on the stage while anyone else walks the tab (they all hear you).
 - **The stage shows who is on it, to everyone.** While anyone stands on a stage, the stage lights up for everyone on
-  the tab: a soft spotlight falls on its top, and an **On Stage** badge with a red dot hangs from its plate, with a dot in
-  each person's presence colour and their names ("Alex", "Alex and Sam", "Alex, Sam +2"). Your own name reads **You**,
-  so on your screen the badge says "You" (or "You and Sam"). It is presence, never the document (like a chair's
-  sitter, [Chair](../009-elements/chair.md) "Occupancy is presence"): it goes out the moment the last person steps
-  off, leaves Avatar mode, changes tab or drops off, and it works with calls off too. The spotlight fades in and out
-  (off under reduced motion). Someone on a stage they may not speak from still lights it: it says who stands there;
-  the mic indicator and the stage line say who is heard.
+  the tab: a soft spotlight falls on its top, and an **On Stage** badge with a red dot hangs from its plate, with a
+  dot in each person's presence colour and their names ("Alex", "Alex and Sam", "Alex, Sam +2"). Your own name reads
+  **You**, so on your screen the badge says "You" (or "You and Sam"). While you stand on a stage that lets you speak,
+  unmuted, a second badge sits to its right on your screen alone: **Everyone Can Hear You**, with a megaphone (owner,
+  2026-11-07). It is worked out from the board, so it shows on the local preview too (Mic: Only You), and goes while
+  you are muted. It is presence, never the document (like a chair's sitter, [Chair](../009-elements/chair.md)
+  "Occupancy is presence"): it goes out the moment the last person steps off, leaves Avatar mode, changes tab or
+  drops off, and it works with calls off too. The spotlight fades in and out (off under reduced motion). Someone on a
+  stage they may not speak from still lights it: it says who stands there; the mic indicator and the stage line say
+  who is heard.
 - **You are told you are on it.** While you speak from a stage, a calm line hangs over the call group, where the stage
   line goes: **"You're on stage. Everyone on this tab hears you."** (the may-not-speak line keeps its place for a stage
   you may not speak from). It is an `aria-live="polite"` status, so it is announced once.
