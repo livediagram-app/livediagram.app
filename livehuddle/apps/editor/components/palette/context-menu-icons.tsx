@@ -34,7 +34,6 @@ import {
   lucideSquare,
   lucideStar,
   lucideStarOff,
-  lucideTable,
   lucideType,
   lucideWandSparkles,
   lucideWrench,
@@ -111,7 +110,6 @@ export function LineGlyph() {
 
 // The "Pointer" section.
 export const PointerGlyph = lucideGlyph(lucideArrowRight, MENU_ICON_PX);
-export const TableGlyph = lucideGlyph(lucideTable, MENU_ICON_PX);
 export const ImageGlyph = lucideGlyph(lucideImage, MENU_ICON_PX);
 // The "Border" section: the outline alone.
 export const BorderGlyph = lucideGlyph(lucideSquare, MENU_ICON_PX);

@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { DOCUMENT_CONTENT_CODE, EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
+import { EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -59,9 +59,8 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   useEffect(() => {
     void ensureIconCatalogs();
   }, []);
-  // The code the editor loads on demand (lib/editor-deferred-code.ts): what a board may draw on open
-  // alongside the document request, and the surfaces someone opens once the document has rendered.
-  useEffect(() => prefetchWhenIdle(DOCUMENT_CONTENT_CODE), []);
+  // The code the editor loads on demand (lib/editor-deferred-code.ts): the surfaces someone opens, fetched once the
+  // document has rendered.
   useEffect(
     () => (state.loadingDocument ? undefined : prefetchWhenIdle(EDITOR_SURFACE_CODE)),
     [state.loadingDocument],

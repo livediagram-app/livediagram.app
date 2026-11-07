@@ -65,15 +65,6 @@ export type BoxedElementViewProps = {
     edgeOf: (el: LaneLike) => LaneGutterEdge,
     sizeOf: (el: LaneLike) => number,
   ) => number;
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livehuddle/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): switches the LOCAL participant into
@@ -146,9 +137,6 @@ export type BoxedElementViewProps = {
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
   onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
-  // Open the link picker for one of this table's cells. Only used by
-  // table elements; omitted for read-only viewers.
-  onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Right-click on the element. Receives the element id + the
   // cursor's screen-space coords so the caller can anchor a context
   // menu under it. The caller is also responsible for selecting the
@@ -158,16 +146,11 @@ export type BoxedElementViewProps = {
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text
-  // editing is blocked upstream in the editing handlers, but the table
-  // edits in-component (TableView's own cell double-click + menus), so it
-  // needs the flag passed through to stay read-only for viewers.
+  // editing is blocked upstream in the editing handlers; the faces that edit in place read it to stay read-only.
   readOnly: boolean;
   // Whether a drag would move it: false in a read-only session unless this element is one a Participant may move
   // (docs/specs/013-workspace/share-roles.md), so the move cursor never promises a drag that will not start.
   movable?: boolean;
-  // Whether its words may be written: false in a read-only session unless a Participant may write on it. Opens a
-  // table's cell text, never its rows, columns or styles.
-  writable?: boolean;
   // Whether its resize handles show: false in a read-only session unless a Participant may resize it.
   resizable?: boolean;
   // Other participants whose realtime selection is currently on this

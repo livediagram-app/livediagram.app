@@ -18,7 +18,7 @@ import {
   type ShapeKind,
 } from '@livehuddle/document';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { ArrowPresets, ShapePresets, TablePresets } from '@/components/palette/StylePresets';
+import { ArrowPresets, ShapePresets } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -127,44 +127,11 @@ export function ArrowPresetsSection({
 
 /** Whether `TargetPresetsSection` would render anything for this element. */
 export function hasStylePresets(el: Element): boolean {
-  return (
-    shapeSupportsPresets(el) || el.type === 'table' || el.type === 'sticky' || el.type === 'arrow'
-  );
-}
-
-// Table looks (docs/specs/010-palette/style-presets.md): the four surfaces a table paints plus its banding,
-// theme-derived like the shape presets. Reset goes through the shared
-// reset-colours handler, which is what the Colours section's own reset uses.
-function TablePresetsSection({
-  current,
-  props,
-  accordion,
-  onClose,
-}: {
-  current: { fillColor?: string; strokeColor?: string; headerFill?: string; zebra?: boolean };
-  props: EditorContextMenuProps;
-  accordion: AccordionProps;
-  onClose: () => void;
-}) {
-  return (
-    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
-      <TablePresets
-        presets={props.tableColorPresets}
-        current={current}
-        onApply={props.onApplyTablePreset}
-        onPreview={props.onPreviewTablePreset}
-        onPreviewEnd={props.onPreviewStyleEnd}
-        onReset={() => {
-          props.onResetColors();
-          onClose();
-        }}
-      />
-    </MenuAccordionSection>
-  );
+  return shapeSupportsPresets(el) || el.type === 'sticky' || el.type === 'arrow';
 }
 
 // Which Presets grid an element gets, and the choice is its own question, so it lives with the sections rather than
-// inside the appearance menu's render: a shape's theme looks, a table's looks, a sticky's pad of note colours, or an
+// inside the appearance menu's render: a shape's theme looks, a sticky's pad of note colours, or an
 // arrow's line looks. Elements with none of them
 // render nothing, which is why the caller can mount this unconditionally.
 export function TargetPresetsSection({
@@ -178,21 +145,6 @@ export function TargetPresetsSection({
   accordion: AccordionProps;
   onClose: () => void;
 }) {
-  if (target.type === 'table') {
-    return (
-      <TablePresetsSection
-        current={{
-          fillColor: target.fillColor,
-          strokeColor: target.strokeColor,
-          headerFill: target.headerFill,
-          zebra: target.zebra,
-        }}
-        props={props}
-        accordion={accordion}
-        onClose={onClose}
-      />
-    );
-  }
   if (shapeSupportsPresets(target)) {
     return (
       <ShapePresetsSection

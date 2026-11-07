@@ -41,22 +41,6 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
     const { fillColor: _f, strokeColor: _s, textColor: _t, ...rest } = el;
     return rest;
   }
-  if (el.type === 'table') {
-    // Reset to Theme: grid + text; clear cell fill + header overrides.
-    return {
-      ...el,
-      ...(theme.elementStroke !== null
-        ? { strokeColor: theme.elementStroke }
-        : { strokeColor: undefined }),
-      ...(theme.elementText !== null ? { textColor: theme.elementText } : { textColor: undefined }),
-      fillColor: undefined,
-      headerFill: undefined,
-      headerTextColor: undefined,
-      // The look goes with the colours it painted: this is the
-      // "back to plain theme colours" button, not "this theme's Banded".
-      tablePreset: undefined,
-    };
-  }
   if (el.type === 'arrow') {
     return {
       ...el,

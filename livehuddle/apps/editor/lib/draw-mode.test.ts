@@ -34,7 +34,6 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   fill: [{ type: 'fill', fill: '#dbeafe' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
-  table: [{ type: 'table' }],
   'link-card': [{ type: 'link-card' }],
   arrow: [{ type: 'arrow' }],
   polygon: [{ type: 'polygon' }],
@@ -61,9 +60,6 @@ describe('drawBannerMessage', () => {
     );
     expect(drawBannerMessage({ type: 'arrow' }, false)).toBe(
       'Click to drop or drag to draw an arrow',
-    );
-    expect(drawBannerMessage({ type: 'table' }, false)).toBe(
-      'Click to drop or drag to draw a table',
     );
     expect(drawBannerMessage({ type: 'arrow', ends: 'none' }, false)).toBe(
       'Click to drop or drag to draw a line',
@@ -306,7 +302,6 @@ describe('dropsOnTap', () => {
       { type: 'text' },
       { type: 'sticky' },
       { type: 'image' },
-      { type: 'table' },
       { type: 'link-card' },
       { type: 'arrow' },
       { type: 'component', kind: 'hero' },

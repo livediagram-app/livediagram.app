@@ -24,7 +24,6 @@ import type {
   TextAlignY,
   ShapeKind,
   ShapeMarker,
-  TablePreset,
   TextSize,
   TextSizePreset,
 } from '@livehuddle/document';
@@ -177,11 +176,6 @@ export type EditorContextMenuProps = {
   onPreviewShapeColorPreset: (preset: ShapeColorPreset) => void;
   onPreviewArrowPreset: (preset: ArrowPreset) => void;
   onPreviewStyleEnd: () => void;
-  // Table looks (docs/specs/010-palette/style-presets.md): cells + grid + header band + banding in one step.
-  // Theme-derived, like the shape presets.
-  tableColorPresets: TablePreset[];
-  onApplyTablePreset: (preset: TablePreset) => void;
-  onPreviewTablePreset: (preset: TablePreset) => void;
   // Arrow style presets (docs/specs/010-palette/style-presets.md): one-click line looks (pattern / thickness /
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
@@ -253,11 +247,6 @@ export type EditorContextMenuProps = {
   // colour across the tab. Absent where the menu cannot edit the tab.
   tagColours?: readonly import('@livehuddle/document').TagColour[];
   onSetTagColour?: (tag: string, colour: string | null) => void;
-  // Table structure toggles (header row / column, zebra) for the Table
-  // category.
-  onToggleTableHeaderRow: () => void;
-  onToggleTableHeaderColumn: () => void;
-  onToggleTableZebra: () => void;
   // Re-place a shape's inline icon (same iconId, new side). Commit +
   // hover-preview pair.
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;

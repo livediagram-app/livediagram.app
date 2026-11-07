@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
@@ -37,7 +36,6 @@ import { PortalFace } from '@/components/canvas/PortalFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
-import { loadTableView } from '@/lib/editor-deferred-code';
 import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { ChipFace } from '@/components/canvas/ChipFace';
@@ -52,10 +50,6 @@ import { PhotoWallFace } from '@/components/canvas/wayfinding/PhotoWallFace';
 import { SignpostFace } from '@/components/canvas/wayfinding/SignpostFace';
 import { StairsFace } from '@/components/canvas/wayfinding/StairsFace';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-
-// Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts
-// (lib/editor-deferred-code.ts), so a board that has one finds it already in.
-const TableView = dynamic(loadTableView, { ssr: false });
 
 // WHAT AN ELEMENT SHOWS IN PLACE OF A PLAIN LABEL.
 //
@@ -79,15 +73,12 @@ type ElementFaceRouterProps = Pick<
   | 'isEditing'
   | 'isSelected'
   | 'readOnly'
-  | 'writable'
   | 'fontFamily'
   | 'activeMode'
   | 'imageContext'
   | 'tabSummaries'
-  | 'onCommitTable'
   | 'onEnterPortal'
   | 'onFollowLink'
-  | 'onLinkCell'
   | 'onPressModeButton'
   | 'onPressFocusButton'
   | 'onSetPageHeading'
@@ -142,15 +133,12 @@ function KnownElementFace({
   isEditing,
   isSelected,
   readOnly,
-  writable = true,
   fontFamily,
   activeMode,
   imageContext,
   tabSummaries,
-  onCommitTable,
   onEnterPortal,
   onFollowLink,
-  onLinkCell,
   onPressModeButton,
   onPressFocusButton,
   onSetPageHeading,
@@ -316,18 +304,6 @@ function KnownElementFace({
           }
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
-      ) : element.type === 'table' ? (
-        <TableView
-          element={element}
-          isSelected={isSelected}
-          readOnly={readOnly && !writable}
-          cellsOnly={readOnly}
-          tabSummaries={tabSummaries}
-          onCommitTable={onCommitTable}
-          onLinkCell={onLinkCell}
-          onFollowLink={onFollowLink}
-          fontFamily={fontFamily}
         />
       ) : element.type === 'shape' && isConceptShape(element.shape) ? (
         // A timeline (docs/specs/009-elements/timeline.md): its milestones along a line.

@@ -56,7 +56,6 @@ import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
 import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
 import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
@@ -1791,7 +1790,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     addShape,
     addSticker,
-    addTable,
     addAnnotation,
     addLinkCard,
     addImage,
@@ -1828,13 +1826,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commit,
     tick,
   });
-
-  // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
-  // the history-committed write into that cell's style. See
-  // useCellLinkPicker; the shared LinkPickerDialog renders against it
-  // in EditorView.
-  const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
-    useCellLinkPicker({ editsBlocked, commit });
 
   // Structural element operations (delete, marquee commit, and the
   // duplicate family). They change the element set
@@ -1894,14 +1885,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
     setHeaderFillSelected,
     burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
-    setTableHeaderTextColorSelected,
     setArrowStyleSelected,
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
@@ -1915,8 +1902,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderRadiusSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    appendTableRowSelected,
-    appendTableColumnSelected,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2005,8 +1990,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewIconAnimation,
     commitIconAnimation,
     previewFillColor,
-    previewTablePreset,
-    commitTablePreset,
     previewLabelFill,
     commitLabelFill,
     previewHeaderFill,
@@ -2096,7 +2079,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     beginEdit,
     commitLabel,
-    commitTable,
     commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
@@ -2354,7 +2336,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addImage,
     addShape,
     addSticky,
-    addTable,
     addAnnotation,
     addLinkCard,
     addHero,
@@ -2441,7 +2422,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
-    commitTable,
     commitHeaderSize,
     contextMenu,
     deleteComment,
@@ -2484,10 +2464,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     linkPickerInitialMode,
     openLinkPicker,
     applyElementLink,
-    cellLinkPickerOpenFor,
-    setCellLinkPickerOpenFor,
-    openCellLinkPicker,
-    applyCellLink,
     activeTabLoadState,
     commentMentions,
     commentReactions,
@@ -2539,8 +2515,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitIconAnimation,
     // Granular colour / border / rotation hover preview + click commit.
     previewFillColor,
-    previewTablePreset,
-    commitTablePreset,
     previewLabelFill,
     commitLabelFill,
     previewHeaderFill,
@@ -2601,14 +2575,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
     setHeaderFillSelected,
     burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
-    setTableHeaderTextColorSelected,
     setBackgroundColor,
     setBackgroundOpacity,
     setBackgroundPatternScale,
@@ -2620,8 +2590,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderStyleSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    appendTableRowSelected,
-    appendTableColumnSelected,
     setPageHeading,
     setWebRows,
     appendWebRowTo,

@@ -9,7 +9,6 @@ import {
   trimLabel,
   truncateName,
   type Element,
-  type TableElement,
   type Tab,
   type TextRun,
 } from '@livehuddle/document';
@@ -128,24 +127,8 @@ export function useSelectionEditing(opts: {
     setEditingId(elementId);
   };
 
-  // Single entry point for every table mutation: a partial patch of the
-  // table's fields, applied in ONE commit. Structural ops (insert / delete
-  // / move row-column, clear cell) change `cells` AND the parallel
-  // `colWidths` / `rowHeights` / `cellStyles` arrays at once; issuing those
-  // as separate commits each read the same stale `activeTab.elements` base
-  // and clobbered one another (only the last landed), losing the reorder
-  // and dropping pinned widths / styles. One patch, one commit, no drift.
-  const commitTable = (
-    elementId: string,
-    patch: Partial<Pick<TableElement, 'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'>>,
-  ) => {
-    commit((els) =>
-      els.map((el) => (el.id === elementId && el.type === 'table' ? { ...el, ...patch } : el)),
-    );
-  };
-
   // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit on release, like the table's dividers: the drag itself is live
+  // commit on release: the drag itself is live
   // local state in the view, so a gesture is one undo step rather than one
   // per pixel.
   const commitHeaderSize = (elementId: string, headerSize: number) => {
@@ -375,7 +358,6 @@ export function useSelectionEditing(opts: {
   return {
     beginEdit,
     commitLabel,
-    commitTable,
     commitHeaderSize,
     cancelEdit,
     typeIntoSelected,

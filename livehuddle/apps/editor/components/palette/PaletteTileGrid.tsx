@@ -24,7 +24,6 @@ export type PaletteTileActions = {
   beginRoomWalls?: () => void;
   addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   addSticky: () => void;
-  addTable: () => void;
   addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
@@ -76,8 +75,6 @@ export function tileHandler(
       return () => actions.addArrow(a.ends);
     case 'sticky':
       return actions.addSticky;
-    case 'table':
-      return actions.addTable;
     case 'image':
       return actions.addImage;
     case 'annotation':

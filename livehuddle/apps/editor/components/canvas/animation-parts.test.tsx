@@ -2,11 +2,10 @@
 import { render, renderHook } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DRAWING_ANIMATIONS, type PathElement, type TableElement } from '@livehuddle/document';
+import { DRAWING_ANIMATIONS, type PathElement } from '@livehuddle/document';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { useDrawingAnimation } from './drawing-animation';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { useTableAnimation } from './useTableAnimation';
 
 const path = (animation?: string) =>
   ({
@@ -87,43 +86,5 @@ describe('InlineTextLine with a Text animation', () => {
     );
     expect(container.querySelector('.lvd-tx .lvd-tx-unit')).not.toBeNull();
     expect(container.querySelector('[role="textbox"]')!.className).toContain('opacity-0');
-  });
-});
-
-describe('useTableAnimation', () => {
-  it('starts each cell’s units where the cell before it ended', () => {
-    const table = {
-      id: 't',
-      type: 'table',
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 50,
-      cells: [
-        ['ab', 'cde'],
-        ['f', ''],
-      ],
-      textAnimation: 'typewriter',
-      animation: 'rows',
-    } as unknown as TableElement;
-    const r = renderHook(() => useTableAnimation(table, '#000', false)).result.current;
-    expect(r.textStarts).toEqual([
-      [0, 2],
-      [5, 6],
-    ]);
-    expect(r.gridClass).toBe('lvd-tbl-rows');
-    expect(r.gridStyle).toMatchObject({ '--lvd-rows': 2, '--lvd-cols': 2 });
-  });
-
-  it('stands still while a cell is being edited', () => {
-    const table = {
-      id: 't',
-      type: 'table',
-      cells: [['a']],
-      textAnimation: 'wave',
-    } as unknown as TableElement;
-    expect(
-      renderHook(() => useTableAnimation(table, '#000', true)).result.current.textAnim,
-    ).toBeUndefined();
   });
 });

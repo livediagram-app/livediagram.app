@@ -37,7 +37,6 @@ export {
   resetThemeElementsToTheme,
   resetArrowsToTheme,
   shapeColorPresets,
-  tableColorPresets,
   rederiveColorPresetForTheme,
   themePresetColors,
 } from '@livehuddle/document';
@@ -158,11 +157,6 @@ export function deriveNewBoxedColours(
     if (bg !== DEFAULT_BACKGROUND_COLOR) {
       colours.textColor = deriveTextColorForBg(bg);
     }
-  } else if (base.type === 'table') {
-    // Cells get a solid background matching the canvas so the pattern doesn't
-    // bleed through; text contrasts with it. (Grid lines use the slate default.)
-    colours.fillColor = bg;
-    colours.textColor = deriveTextColorForBg(bg);
   }
   // Theme overrides win. Per-shape themes (UML) paint a shape KIND its own
   // colours; fall through to the theme's element colours otherwise.
@@ -178,9 +172,6 @@ export function deriveNewBoxedColours(
     if (elementText) colours.textColor = elementText;
   } else if (base.type === 'text') {
     if (theme.elementText) colours.textColor = theme.elementText;
-  } else if (base.type === 'table') {
-    if (theme.elementText) colours.textColor = theme.elementText;
-    if (theme.elementStroke) colours.strokeColor = theme.elementStroke;
   }
   return colours;
 }

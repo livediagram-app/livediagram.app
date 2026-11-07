@@ -569,3 +569,92 @@ describe('a retired element and the share roles', () => {
     expect(can.remove(board())).toBe(false);
   });
 });
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 2: a table as stored before #459
+// part 2, with its cells, cell styles and a cell link, which nothing reads any more.
+const storedTable = () =>
+  ({
+    id: 'tbl',
+    type: 'table',
+    x: 0,
+    y: 0,
+    width: 360,
+    height: 150,
+    cells: [
+      ['Owner', 'Status'],
+      ['Sasha', 'Blocked'],
+    ],
+    cellStyles: [[{ bold: true }, { link: { kind: 'url', url: 'https://example.com' } }]],
+    headerRow: true,
+    tablePreset: 'table-banded',
+  }) as unknown as Element & { width: number; height: number };
+
+function faceProps(element: Element, readOnly: boolean, onDeleteRetired?: (id: string) => void) {
+  return {
+    element,
+    isEditing: false,
+    isSelected: true,
+    readOnly,
+    fontFamily: undefined,
+    onDeleteRetired,
+  } as unknown as Parameters<typeof ElementFaceRouter>[0];
+}
+
+describe('a stored table', () => {
+  it('draws as the placeholder named Table, never its cells', () => {
+    const { container } = render(<ElementFaceRouter {...faceProps(storedTable(), false)} />);
+    const svg = container.querySelector('svg[data-retired-element="table"]')!;
+    expect(svg).not.toBeNull();
+    expect(lines(svg)).toEqual([
+      ['name', 'Table'],
+      ['note', RETIRED_ELEMENT_NOTE],
+    ]);
+    expect(container.textContent).not.toContain('Blocked');
+    expect(container.querySelector('textarea, input, [contenteditable]')).toBeNull();
+  });
+
+  it('offers Delete to an Editor, and nothing to a read-only surface', () => {
+    const onDeleteRetired = vi.fn();
+    const editable = render(
+      <ElementFaceRouter {...faceProps(storedTable(), false, onDeleteRetired)} />,
+    );
+    fireEvent.click(editable.container.querySelector('button[data-retired-delete]')!);
+    expect(onDeleteRetired).toHaveBeenCalledWith('tbl');
+    cleanup();
+    const readOnly = render(
+      <ElementFaceRouter {...faceProps(storedTable(), true, onDeleteRetired)} />,
+    );
+    expect(readOnly.container.querySelector('button')).toBeNull();
+  });
+
+  it('an Editor may delete it; a Viewer and a Participant who did not place it may not', () => {
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: 'a'.repeat(32) });
+    const participant = resolveEditorCapabilities({
+      level: 'participate',
+      adderKey: 'b'.repeat(32),
+    });
+    expect([editor, viewer, participant].map((can) => can.remove(storedTable()))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    let after: Element[] | null = null;
+    const table = storedTable();
+    const actions = buildSelectionActions({
+      currentSelectionIds: () => new Set<string>(),
+      readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
+      activeTab: { id: 't', name: 'T', elements: [table] },
+      commit: (map) => {
+        after = map([table]);
+      },
+      setSelectedId: () => {},
+      setEditingId: () => {},
+      setMultiSelectedIds: () => {},
+      setFormatSourceId: () => {},
+      lockedByOther: () => false,
+    });
+    actions.deleteElementById('tbl');
+    expect(after).toEqual([]);
+  });
+});

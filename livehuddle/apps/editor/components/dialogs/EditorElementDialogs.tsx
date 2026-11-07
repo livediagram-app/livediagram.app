@@ -33,9 +33,6 @@ export function EditorElementDialogs() {
     documentId,
     applyElementLink,
     setLinkPickerOpenForId,
-    cellLinkPickerOpenFor,
-    applyCellLink,
-    setCellLinkPickerOpenFor,
     imagePickerOpenFor,
     selfParticipant,
     removeImageFromElement,
@@ -52,11 +49,6 @@ export function EditorElementDialogs() {
     activeTab.elements,
     [
       [linkPickerOpenForId, () => setLinkPickerOpenForId(null), editable],
-      [
-        cellLinkPickerOpenFor?.tableId ?? null,
-        () => setCellLinkPickerOpenFor(null),
-        (el) => !isReadOnly && el.type === 'table',
-      ],
       [
         imagePickerOpenFor?.forElementId ?? null,
         closeImagePicker,
@@ -92,36 +84,6 @@ export function EditorElementDialogs() {
               );
           }}
           onClose={() => setLinkPickerOpenForId(null)}
-        />
-      ) : null}
-      {cellLinkPickerOpenFor !== null && !isReadOnly ? (
-        <LinkPickerDialog
-          title="Link cell"
-          currentLink={(() => {
-            const t = activeTab.elements.find(
-              (e) => e.id === cellLinkPickerOpenFor.tableId && e.type === 'table',
-            );
-            return t && t.type === 'table'
-              ? (t.cellStyles?.[cellLinkPickerOpenFor.r]?.[cellLinkPickerOpenFor.c]?.link ?? null)
-              : null;
-          })()}
-          tabs={tabs.map((t) => ({ id: t.id, name: t.name }))}
-          currentTabId={activeId}
-          recentDocuments={documentList
-            .filter((d) => d.id !== documentId)
-            .slice(0, 8)
-            .map((d) => ({ id: d.id, name: d.name }))}
-          onCommit={(link) => {
-            applyCellLink(link);
-            if (link === null) track('Element', 'Unlinked');
-            else
-              track(
-                'Element',
-                'Linked',
-                link.kind === 'url' ? 'Url' : link.kind === 'document' ? 'Document' : 'Tab',
-              );
-          }}
-          onClose={() => setCellLinkPickerOpenFor(null)}
         />
       ) : null}
       {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}

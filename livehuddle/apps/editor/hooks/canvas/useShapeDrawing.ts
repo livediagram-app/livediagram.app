@@ -32,7 +32,7 @@ import {
 import { getTheme } from '@/lib/themes';
 import { armedRoomSnap } from '@/lib/palette-drag-snap';
 import { placedSelection } from '@/lib/placed-selection';
-import { track, titleCaseType } from '@/lib/telemetry';
+import { track } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
 import {
@@ -257,14 +257,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
           ? 'Text'
           : intent.type === 'sticky'
             ? 'Sticky'
-            : intent.type === 'table'
-              ? titleCaseType('table')
-              : intent.type === 'link-card'
-                ? // titleCase would emit 'Link-Card' (it capitalises at the
-                  // hyphen); the click path always reported 'LinkCard', so
-                  // moving the event here must not split the dashboard token.
-                  'LinkCard'
-                : 'Image';
+            : intent.type === 'link-card'
+              ? // titleCase would emit 'Link-Card' (it capitalises at the
+                // hyphen); the click path always reported 'LinkCard', so
+                // moving the event here must not split the dashboard token.
+                'LinkCard'
+              : 'Image';
     track('Element', 'Added', label);
     // An image lands as its empty placeholder, selected, with no picker popping up: the
     // placeholder's Select Image button (or a double-click) opens it when the person is ready

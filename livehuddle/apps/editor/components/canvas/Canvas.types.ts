@@ -43,8 +43,6 @@ export type CanvasProps = {
   canShareScreen?: boolean;
   // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
   canMove?: (el: Element) => boolean;
-  // Which elements' words a read-only session may still write (a Participant's); absent, none.
-  canWriteText?: (el: Element) => boolean;
   // Which elements a read-only session may still resize (a Participant's); absent, none.
   canResize?: (el: Element) => boolean;
   documentName: string;
@@ -211,7 +209,6 @@ export type CanvasProps = {
   onAddShape: (kind: ShapeKind) => void;
   // Sticker (docs/specs/010-palette/stickers.md): its own kind, its own handler.
   onAddSticker: (stickerId: string) => void;
-  onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
@@ -394,21 +391,9 @@ export type CanvasProps = {
   // Inline label-editor (rich-text) alignment control, threaded through
   // CanvasElementsLayer to the in-place editor on the selected element.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // Single combined table commit (cells + the parallel colWidths /
-  // rowHeights / cellStyles arrays) applied in ONE commit, so structural
-  // ops can't drop a side array or clobber each other off a stale base.
   // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
   // commit per gesture, so a drag is one undo step.
   onCommitHeaderSize?: (elementId: string, px: number) => void;
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@livehuddle/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
   onCancelEdit: () => void;
   // Delete a retired element from its placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it").
   // An Editor's alone: omitted in read-only.
@@ -449,9 +434,6 @@ export type CanvasProps = {
   // gates its mutations itself.
   onOpenAction: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
-  // Open the link picker for a specific table cell. Optional so read-
-  // only / pre-identity Canvas mounts can omit it.
-  onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;

@@ -21,12 +21,10 @@ const SHEET: Record<AnimationSetId, string> = {
   sticky: 'motion-sticky.css',
   drawing: 'motion-drawing.css',
   media: 'motion-media.css',
-  table: 'motion-table.css',
 };
-// The values a set draws with the Shape set's classes (a note and a table are rectangles).
+// The values a set draws with the Shape set's classes (a note is a rectangle).
 const SHARED: Partial<Record<AnimationSetId, readonly string[]>> = {
   sticky: ['pulse', 'glow', 'highlight'],
-  table: ['pulse', 'glow'],
 };
 
 // Structural classes that share a prefix but name no animation (the Shape set's child layer, the

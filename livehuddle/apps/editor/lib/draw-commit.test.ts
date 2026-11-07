@@ -174,19 +174,6 @@ describe('buildDrawnBoxed', () => {
     expect(out).toMatchObject({ iconId: 'aws-s3', label: 'S3', aspectLocked: false });
   });
 
-  // The kinds that used to drop at the viewport centre with no draw gesture
-  // at all (docs/specs/008-canvas/canvas-and-palette.md "Placement on add"). A tap keeps the factory default, a
-  // drag sizes them like any other box.
-  it('taps a table out at its factory default, and drags it to the drawn box', () => {
-    const tapped = buildDrawnBoxed({ type: 'table' }, 500, 300, 503, 302, null, tab());
-    expect(tapped).toMatchObject({ type: 'table', width: 360, height: 150 });
-    expect(tapped.x).toBe(500 - 180);
-    // The 3x3 grid divides whatever box it is given, so a drag is meaningful.
-    const drawn = buildDrawnBoxed({ type: 'table' }, 0, 0, 600, 400, null, tab());
-    expect({ width: drawn.width, height: drawn.height }).toEqual({ width: 600, height: 400 });
-    expect(drawn.type === 'table' && drawn.cells).toHaveLength(3);
-  });
-
   it('draws a link card to the dragged box (docs/specs/009-elements/link-cards.md)', () => {
     const out = buildDrawnBoxed({ type: 'link-card' }, 10, 10, 210, 110, null, tab());
     expect(out).toMatchObject({ type: 'link-card', x: 10, y: 10, width: 200, height: 100 });

@@ -18,7 +18,6 @@ export function kindLabel(el: Element): string {
   if (el.type === 'arrow') return 'Arrow';
   if (el.type === 'text') return 'Text';
   if (el.type === 'sticky') return 'Sticky note';
-  if (el.type === 'table') return 'Table';
   if (el.type === 'image') return 'Image';
   if (el.type === 'annotation') return 'Annotation';
   if (el.type === 'freehand') {
@@ -60,11 +59,9 @@ function pluralise(label: string): string {
 // win when the element has one; otherwise we fall back to the
 // articled kind.
 export function describeOne(el: Element): string {
-  // Tables + images don't carry a meaningful single label (a table's
-  // content is in `cells`, not `label`), so naming them by label
-  // produced nonsense like "Edited 'C'" after a cell edit. Name them
-  // by kind ("a Table" / "an Image") instead. Arrows already opt out.
-  if (el.type !== 'arrow' && el.type !== 'table' && el.type !== 'image') {
+  // Images don't carry a meaningful single label, so they are named by kind ("an Image") instead. Arrows already
+  // opt out.
+  if (el.type !== 'arrow' && el.type !== 'image') {
     const trimmed = ((el as BoxedElement).label ?? '').trim();
     if (trimmed) return `'${trimmed}'`;
   }
@@ -82,7 +79,7 @@ export function describeSelected(el: Element, elements: readonly Element[]): str
   const endName = (end: (typeof el)['from']): string | null => {
     if (end.kind !== 'pinned') return null;
     const target = elements.find((x) => x.id === end.elementId);
-    return target && target.type !== 'arrow' && target.type !== 'table' && target.type !== 'image'
+    return target && target.type !== 'arrow' && target.type !== 'image'
       ? ((target as BoxedElement).label ?? '').replace(/\s+/g, ' ').trim() || null
       : null;
   };
@@ -149,8 +146,7 @@ export function elementRole(el: Element, hasIndicators = false): 'img' | 'group'
   // A retired element's placeholder holds an Editor's Delete button (docs/specs/002-project-scope/not-in-livehuddle.md
   // "Retired elements"), a control on its face.
   if (isRetiredElement(el)) return 'group';
-  // A table's cells edit in place and, selected, it shows its column and row options buttons.
-  if (el.type === 'link-card' || el.type === 'table') return 'group';
+  if (el.type === 'link-card') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
   return 'img';

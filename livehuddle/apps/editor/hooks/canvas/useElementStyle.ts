@@ -179,35 +179,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // per-field arrow setters share this; setArrowStyleSelected stays separate
   // because it also has to drop curvePoints.
 
-  // Toggle the header row / column band on the selected table(s).
-  // Toggle a boolean structure flag on every selected table. The three table
-  // toggles differ only in the field + telemetry type, so they share one body.
-  const toggleTableFlag = (
-    field: 'headerRow' | 'headerColumn' | 'zebra',
-    telemetryType: 'TableHeaderRow' | 'TableHeaderColumn' | 'TableZebra',
-  ) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    track('Element', 'Toggled', telemetryType);
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && el.type === 'table'
-          ? {
-              ...el,
-              [field]: !el[field],
-              // Banding is part of a table's LOOK, so hand-toggling it breaks
-              // the preset binding the same way hand-picking a colour does.
-              // The two header flags are structure, not look, and leave it.
-              ...(field === 'zebra' ? { tablePreset: undefined } : {}),
-            }
-          : el,
-      ),
-    );
-  };
-  const setTableHeaderRowSelected = () => toggleTableFlag('headerRow', 'TableHeaderRow');
-  const setTableZebraSelected = () => toggleTableFlag('zebra', 'TableZebra');
-  const setTableHeaderColumnSelected = () => toggleTableFlag('headerColumn', 'TableHeaderColumn');
-
   // Clear animation (docs/specs/028-animation/element-animations.md "Shared behaviour"): the body and
   // the Text animation together. Picking one goes through the per-set setters below.
   const clearAnimationsSelected = () => {
@@ -271,9 +242,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     sendSelectedToBack,
     setPaddingSelected,
     setIconSizeSelected,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
     clearAnimationsSelected,
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,

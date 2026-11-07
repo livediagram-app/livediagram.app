@@ -20,7 +20,7 @@ import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/Dialog
 //
 // Generic by design: the dialog builds the chosen `ElementLink` and
 // hands it back via `onCommit` (null = remove). The caller decides where
-// it lands (an element's `link`, or a table cell's `cellStyles.link`).
+// it lands (an element's `link`).
 
 type LinkTarget = { id: string; name: string };
 

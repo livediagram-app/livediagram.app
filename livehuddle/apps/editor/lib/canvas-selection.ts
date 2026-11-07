@@ -70,7 +70,7 @@ export function elementGrips(
     !isFixedSizeElement(el);
   // A badge or step number takes no connectors (docs/specs/009-elements/badge.md "Connectors").
   const chip = el.type === 'shape' && isChipShape(el.shape);
-  return { handles, anchors: handles && !ctx.readOnly && el.type !== 'table' && !chip };
+  return { handles, anchors: handles && !ctx.readOnly && !chip };
 }
 
 export function deriveCanvasSelection(input: {

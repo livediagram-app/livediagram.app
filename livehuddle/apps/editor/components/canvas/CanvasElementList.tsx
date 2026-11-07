@@ -41,7 +41,6 @@ export type BoxedShared = Omit<
   | 'isEditing'
   | 'editCursorAtEnd'
   | 'movable'
-  | 'writable'
   | 'resizable'
   | 'fontFamily'
 >;
@@ -76,7 +75,6 @@ type CanvasElementListProps = Pick<
   | 'shiftDupGhostIds'
   | 'remoteSelectionsByElement'
   | 'canMove'
-  | 'canWriteText'
   | 'canResize'
   | 'tabFont'
   | 'tabFinish'
@@ -112,7 +110,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   shiftDupGhostIds,
   remoteSelectionsByElement,
   canMove,
-  canWriteText,
   canResize,
   tabFont,
   tabFinish,
@@ -205,7 +202,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 movable={!readOnly || canMove?.(element) === true}
-                writable={!readOnly || canWriteText?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
 
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).

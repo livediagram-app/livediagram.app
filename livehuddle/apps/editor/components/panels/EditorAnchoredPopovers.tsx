@@ -159,16 +159,9 @@ export function EditorAnchoredPopovers() {
             );
             if (!target || !isBoxed(target)) return null;
             const cardTarget = Array.isArray((target as { actions?: unknown }).actions);
-            // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text —
-            // its label, or a table's first non-empty cell. Null when the
-            // element is unlabelled (the field just starts empty).
-            const targetLabel =
-              target.type === 'table'
-                ? (target.cells
-                    .flat()
-                    .find((c) => c.trim().length > 0)
-                    ?.trim() ?? null)
-                : (target.label?.trim() ?? null);
+            // Default action name (docs/specs/012-collaboration/assigned-actions.md §2): the element's own text, its
+            // label. Null when the element is unlabelled (the field just starts empty).
+            const targetLabel = target.label?.trim() ?? null;
             return (
               <AssignActionDialog
                 open

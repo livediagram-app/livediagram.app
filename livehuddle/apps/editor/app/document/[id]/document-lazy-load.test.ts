@@ -18,7 +18,6 @@ describe('the document page’s first load', () => {
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
-    ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
   ])('%s loads %s on demand', (file, module) => {
     expect(importsOf(file)).not.toContain(module);
   });

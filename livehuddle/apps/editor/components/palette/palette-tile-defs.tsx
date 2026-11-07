@@ -118,7 +118,6 @@ import {
   lucideMoveRight,
   lucideSquare,
   lucideStickyNote,
-  lucideTable,
   lucideType,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, Prims } from '@livehuddle/ui';
@@ -148,7 +147,7 @@ const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 export type PaletteTileSection =
   | 'shapes'
   // Structure (docs/specs/010-palette/build-category.md): the elements you lay a diagram OUT with rather than
-  // draw on it — a lane, a frame, a timeline, a table. They were
+  // draw on it: a lane, a frame, a timeline. They were
   // scattered across Write, Draw, Data and Components, filed by what they look
   // like; what they have in common is that they hold other work.
   | 'build'
@@ -188,7 +187,6 @@ type PaletteTileAction =
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livehuddle/document').ArrowEnds }
   | { type: 'sticky' }
-  | { type: 'table' }
   | { type: 'image' }
   | { type: 'annotation' }
   | { type: 'link-card' }
@@ -591,20 +589,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       <Glyph size={TILE_GLYPH_PX} units={24}>
         <path d={lucideStickyNotePaths.body} fill="rgb(254 243 199)" />
         <path d={lucideStickyNotePaths.fold} />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:table',
-    blurb: 'An editable grid of cells',
-    section: 'build',
-    label: 'Add Table',
-    description: 'Editable grid. Double-click a cell to type.',
-    dividerAfter: true,
-    action: { type: 'table' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucideTable} />
       </Glyph>
     ),
   },

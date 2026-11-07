@@ -127,16 +127,13 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       !isSelfDrawingShape(target.shape);
     // Consistent category grouping (docs/specs/008-canvas/canvas-and-palette.md): placement (Layer / Shape /
     // Rotation) · appearance (Progress / Animation / Colours / Border) ·
-    // content (Line / Pointer / Text / Icon / Image / Table / Link) ·
+    // content (Line / Pointer / Text / Icon / Image / Link) ·
     // collaboration. A group divider renders above a group only when that
     // group has a visible section, so an absent group never leaves a dangling
     // rule. Placement always shows (Layer is unconditional), so each later
     // group's divider just gates on the group's own visibility.
     const showContentGroup =
-      target.type === 'arrow' ||
-      target.type === 'table' ||
-      target.type === 'image' ||
-      target.type === 'link-card';
+      target.type === 'arrow' || target.type === 'image' || target.type === 'link-card';
     const showCollaborateGroup = boxed;
     return (
       <ContextMenu

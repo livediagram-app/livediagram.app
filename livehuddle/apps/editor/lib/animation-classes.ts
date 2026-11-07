@@ -17,14 +17,12 @@ export const ANIMATION_CLASS_PREFIX: Readonly<Record<AnimationSetId, string>> = 
   sticky: 'lvd-note-',
   drawing: 'lvd-draw-',
   media: 'lvd-media-',
-  table: 'lvd-tbl-',
 };
 
-// The Sticky and Table values drawn by the Shape set's classes on the wrapper
-// (useBoxedElementAnimation's wrapperShapeAnimation): a note and a table are rectangles.
+// The Sticky values drawn by the Shape set's classes on the wrapper
+// (useBoxedElementAnimation's wrapperShapeAnimation): a note is a rectangle.
 const DRAWN_AS_SHAPE: Partial<Record<BodyAnimationSet, ReadonlySet<string>>> = {
   sticky: new Set(['pulse', 'glow', 'highlight']),
-  table: new Set(['pulse', 'glow']),
 };
 
 /** The marker a reveal carries when Repeat is off: its keyframes play once and stay revealed. */

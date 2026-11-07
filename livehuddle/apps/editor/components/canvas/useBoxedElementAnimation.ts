@@ -58,7 +58,7 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
   const set = bodyAnimationSetOf(element);
   // Icons, charts, progress and rating own other fields; a Shape motion, or an old value, here plays.
   if (set === undefined || set === 'shape') return value as ShapeAnimation;
-  if ((set === 'sticky' || set === 'table') && SHARED_WITH_SHAPE.has(value)) {
+  if (set === 'sticky' && SHARED_WITH_SHAPE.has(value)) {
     return value as ShapeAnimation;
   }
   return keptAnimation(set, value);

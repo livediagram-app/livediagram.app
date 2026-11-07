@@ -93,7 +93,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onSetTextAlign,
-    onCommitTable,
     onCommitHeaderSize,
     onDeleteRetired,
     onSetPageHeading,
@@ -109,11 +108,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onLinkCell,
     onShiftSelect,
     readOnly,
     canMove,
-    canWriteText,
     canResize,
     canvasTool,
     onEnterPortal,
@@ -153,7 +150,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onShiftSelect,
 
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onCommitTable,
     onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
     // The seam's snap targets (docs/specs/009-elements/lane.md). Resolved here because this is where
     // the sibling elements are: BoxedElementView only ever sees its own.
@@ -182,7 +178,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenAction,
     onOpenNote,
     onEditLink,
-    onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onOpenElementSettings,
     onEnterPortal,
@@ -230,7 +225,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
       onSetTextAlign: h.onSetTextAlign,
-      onCommitTable: h.onCommitTable,
       onCommitHeaderSize: h.onCommitHeaderSize,
       onSnapSeam: h.onSnapSeam,
       onDeleteRetired: h.onDeleteRetired,
@@ -253,7 +247,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
-      onLinkCell: h.onLinkCell,
       imageContext,
       onContextSelect: h.handleElementContextSelect,
     }),
@@ -344,7 +337,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           shiftDupGhostIds={shiftDupGhostIds}
           remoteSelectionsByElement={remoteSelectionsByElement}
           canMove={canMove}
-          canWriteText={canWriteText}
           canResize={canResize}
           tabFont={tabFont}
           tabFinish={tabFinish}

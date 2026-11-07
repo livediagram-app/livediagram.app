@@ -27,7 +27,7 @@ export function ModifierHintBanner({
 }: {
   drag: DragState | null;
   // The primary selection's flavour, for the no-drag hints.
-  selectedKind: 'arrow' | 'table' | 'other' | null;
+  selectedKind: 'arrow' | 'other' | null;
   // False on an empty canvas — nothing to multi-select.
   hasElements: boolean;
   // True while a mode banner (paint / group / draw) owns the top slot,
@@ -41,14 +41,14 @@ export function ModifierHintBanner({
   return <Hint modifier="⇧ Shift">{message}</Hint>;
 }
 
-// The selected element's flavour for the no-drag hints: an arrow, a table, anything else, or none.
+// The selected element's flavour for the no-drag hints: an arrow, anything else, or none.
 export function selectedKindOf(
   elements: readonly Element[],
   selectedId: string | null,
-): 'arrow' | 'table' | 'other' | null {
+): 'arrow' | 'other' | null {
   const el = selectedId ? elements.find((e) => e.id === selectedId) : undefined;
   if (!el) return null;
-  return el.type === 'arrow' ? 'arrow' : el.type === 'table' ? 'table' : 'other';
+  return el.type === 'arrow' ? 'arrow' : 'other';
 }
 
 // The banner with its selection read from the store (docs/specs/008-canvas/blueprints/selection-store.md):
@@ -98,7 +98,7 @@ function Hint({ modifier, children }: { modifier: string; children: React.ReactN
 
 function shiftHintMessage(
   drag: DragState | null,
-  selectedKind: 'arrow' | 'table' | 'other' | null,
+  selectedKind: 'arrow' | 'other' | null,
   hasElements: boolean,
 ): string | null {
   // Drawing a NEW arrow's endpoint (quick-connect drag or follow mode):
@@ -111,6 +111,5 @@ function shiftHintMessage(
   // Mid-gesture otherwise (move, curve handles, …): Shift does nothing.
   if (drag) return null;
   if (selectedKind === 'arrow') return 'Drag an arrowhead to split it into a branch';
-  if (selectedKind === 'table') return 'Click cells to select several';
   return hasElements ? 'Click elements to select several' : null;
 }

@@ -42,14 +42,12 @@ export type PendingDraw =
   | { type: 'text' }
   | { type: 'sticky' }
   | { type: 'image' }
-  // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
-  // are their own element types rather than ShapeKinds, so each needs its own
-  // intent to ride the same gesture. They used to drop at the viewport centre
+  // A link card (docs/specs/009-elements/link-cards.md) is its own element type rather than a ShapeKind, so it needs
+  // its own intent to ride the same gesture. It used to drop at the viewport centre
   // for want of one, which made "draws or drops?" a property of how the
   // element was modelled instead of whether it has a size worth choosing.
   // Annotation is deliberately absent: a fixed 44x44 marker has no box to
   // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
-  | { type: 'table' }
   | { type: 'link-card' }
   // `ends` rides the arrow intent for the whiteboard's Line and Arrow shapes
   // (docs/specs/023-draw-mode/draw-mode.md), which differ only in their heads.
@@ -227,8 +225,6 @@ export function drawBannerMessage(intent: PendingDraw, isMobile: boolean): strin
       return `${press} to drop or drag to draw a sticky note`;
     case 'image':
       return `${press} to drop or drag to draw image bounds`;
-    case 'table':
-      return `${press} to drop or drag to draw a table`;
     case 'link-card':
       return `${press} to drop or drag to draw a link card`;
     case 'arrow':
@@ -322,13 +318,6 @@ export function drawIntentCursor(intent: PendingDraw): string {
   if (intent.type === 'image') {
     return drawCursorFromGlyph(
       `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
-    );
-  }
-  if (intent.type === 'table') {
-    // A 3x3 grid: a box with one vertical and one horizontal rule, and a
-    // filled top band for the header row the factory turns on.
-    return drawCursorFromGlyph(
-      `<rect x="13" y="13" width="12" height="10" rx="1" fill="none" stroke="black" stroke-width="1.3" /><path d="M13 16.5 H25" stroke="black" stroke-width="1.3" /><path d="M17 16.5 V23 M21 16.5 V23 M13 20 H25" stroke="black" stroke-width="1" />`,
     );
   }
   if (intent.type === 'link-card') {

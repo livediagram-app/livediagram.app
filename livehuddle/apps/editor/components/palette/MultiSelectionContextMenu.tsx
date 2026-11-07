@@ -41,7 +41,6 @@ import {
   LineGlyph,
   PointerGlyph,
   StyleMenuGlyph,
-  TableGlyph,
   TextColourIcon,
   TextGlyph,
 } from '@/components/palette/context-menu-icons';
@@ -54,7 +53,6 @@ import {
   ColourRow,
   MarkersMenuGlyph,
   MarkerTiles,
-  MenuToggleRow,
   TextToggle,
 } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
@@ -134,15 +132,13 @@ export function MultiSelectionContextMenu({
         const shadowSrc = sel.find((el) => supportsShadow(el)) as
           { shadow?: ElementShadow } | undefined;
         const arrowSrc = arrowSel[0];
-        // Arrow-with-label / table members get the content Text section
+        // Arrow-with-label members get the content Text section
         // (B / I / U / S + size + colour), same as their single menus.
-        const contentTextSrc =
-          arrowSel.find((a) => a.label) ?? sel.find((el) => el.type === 'table');
-        const tableSrc = sel.find((el) => el.type === 'table');
+        const contentTextSrc = arrowSel.find((a) => a.label);
         // Same grouping as the single-element menu: placement (Layer / Shape
         // / Rotation) · appearance (Presets / Animation / Colours / Border /
         // Icon / Markers / Alignment) · content (Line / Pointer / Text).
-        // Image / Table / Link / Note / Comments stay excluded — those are
+        // Image / Link / Note / Comments stay excluded: those are
         // per-element identity or content, not formatting.
         const showMultiAppearance =
           boxedSel.length > 0 || !!arrowSrc || colourable || borderableSel;
@@ -334,10 +330,8 @@ export function MultiSelectionContextMenu({
                 ) : null}
               </MenuFlyoutSection>
             ) : null}
-            {/* ── Content group: Line / Pointer / Text / Table ── */}
-            {(arrowSrc || contentTextSrc || tableSrc) && showMultiAppearance ? (
-              <MenuGroupSeparator />
-            ) : null}
+            {/* ── Content group: Line / Pointer / Text ── */}
+            {arrowSrc && showMultiAppearance ? <MenuGroupSeparator /> : null}
             {arrowSrc ? (
               <>
                 <MenuAccordionSection title="Line" icon={<LineGlyph />} {...sectionProps('m-line')}>
@@ -377,16 +371,10 @@ export function MultiSelectionContextMenu({
                 </MenuAccordionSection>
               </>
             ) : null}
-            {/* Text — whole-element label formatting for labelled arrows /
-                  every cell of the selection's tables, mirroring the single
+            {/* Text: whole-element label formatting for labelled arrows, mirroring the single
                   menu's content Text section. */}
             {contentTextSrc ? (
               <MenuAccordionSection title="Text" icon={<TextGlyph />} {...sectionProps('m-text')}>
-                {contentTextSrc.type === 'table' ? (
-                  <p className="px-3 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                    Applies to every cell.
-                  </p>
-                ) : null}
                 <div className="flex gap-1 px-2 py-1.5">
                   <TextToggle
                     active={!!contentTextSrc.textBold}
@@ -433,37 +421,6 @@ export function MultiSelectionContextMenu({
                   {...textColorHandlers}
                   {...colorProps('m-content-text')}
                   {...props.colourPalette}
-                />
-              </MenuAccordionSection>
-            ) : null}
-            {/* Table — header row / column + zebra, applied to every table
-                  in the selection (the single menu's Table section,
-                  selection-wide). */}
-            {tableSrc ? (
-              <MenuAccordionSection
-                title="Table"
-                icon={<TableGlyph />}
-                {...sectionProps('m-table')}
-              >
-                <MenuToggleRow
-                  label="Header Row"
-                  description="Style the first row as a header."
-                  checked={tableSrc.headerRow ?? false}
-                  onToggle={props.onToggleTableHeaderRow}
-                />
-                <ContextMenuDivider />
-                <MenuToggleRow
-                  label="Header Column"
-                  description="Style the first column as a header."
-                  checked={tableSrc.headerColumn ?? false}
-                  onToggle={props.onToggleTableHeaderColumn}
-                />
-                <ContextMenuDivider />
-                <MenuToggleRow
-                  label="Zebra Striping"
-                  description="Tint alternate body rows."
-                  checked={tableSrc.zebra ?? false}
-                  onToggle={props.onToggleTableZebra}
                 />
               </MenuAccordionSection>
             ) : null}

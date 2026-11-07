@@ -2,8 +2,7 @@
 // "Search panel"). Pure function so the matcher (case-insensitive
 // substring), the cap rules (8 per section, 12 elements total), the
 // section ordering (documents, shared, folders, teams, tabs,
-// elements), and the label-extraction fallbacks (blank labels,
-// table cells) can be reasoned about without rendering React or
+// elements), and the label extraction (blank labels skipped) can be reasoned about without rendering React or
 // mocking a DOM.
 //
 // Lives in lib/ rather than next to the component so the test
@@ -91,10 +90,10 @@ type ElementItem = {
     | 'image'
     | 'freehand'
     | 'path'
-    | 'table'
     | 'annotation'
     | 'link-card'
     | 'video'
+    | 'table'
     | 'arrow';
 };
 
@@ -115,7 +114,7 @@ export type PaletteAdd =
   // A sticker (docs/specs/010-palette/stickers.md) is its own element kind, so it adds through its own
   // handler rather than the icon one.
   | { type: 'sticker'; stickerId: string }
-  // Every other palette tile (text, arrow, table, image, embeds, web
+  // Every other palette tile (text, arrow, image, embeds, web
   // components, ...): the editor runs the tile's own
   // handler (tileHandler), so a search add behaves exactly like the tile.
   | { type: 'tile'; tileId: string };
@@ -404,19 +403,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     const elementMatches: ElementItem[] = [];
     outer: for (const t of tabs) {
       for (const el of t.elements) {
-        const rawLabel = ('label' in el && typeof el.label === 'string' && el.label.trim()) || '';
-        // Tables have no single label (cells carry the text), so they
-        // surface via the first non-empty cell that matches the query.
-        // The matching cell becomes the row's label, so the user sees
-        // the text they searched for rather than an opaque "Table".
-        const label =
-          rawLabel ||
-          (el.type === 'table'
-            ? (el.cells
-                .flat()
-                .find((c) => c.trim() && matches(q, c.trim()))
-                ?.trim() ?? '')
-            : '');
+        const label = ('label' in el && typeof el.label === 'string' && el.label.trim()) || '';
         if (!label) continue;
         if (!matches(q, label)) continue;
         elementMatches.push({
@@ -457,7 +444,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   // non-empty query (an empty one would dump the whole catalogue), matched on
   // name + keywords, and ranked so the element you NAMED comes first: exact
   // name, then name prefix, then name substring, then keyword-only. Without
-  // it "table" listed Entity (whose keywords say table) and Tablet above Table.
+  // a keyword-only match could list above the tile it names.
   if (q && input.paletteItems && input.paletteItems.length > 0) {
     const paletteMatches = input.paletteItems
       // Keyword-only when the words are found across name and keywords but not as one phrase in either.

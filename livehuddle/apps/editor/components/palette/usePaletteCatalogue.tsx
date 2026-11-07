@@ -28,7 +28,6 @@ export function usePaletteCatalogue({
   onAddSticker,
   onAddText,
   onAddSticky,
-  onAddTable,
   onAddAnnotation,
   onAddLinkCard,
   onAddHero,
@@ -60,7 +59,6 @@ export function usePaletteCatalogue({
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addText = armed(onAddText);
   const addSticky = armed(onAddSticky);
-  const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
   // fixed 44x44 marker has no box to draw.
   const addAnnotation = armed(onAddAnnotation);
@@ -103,7 +101,6 @@ export function usePaletteCatalogue({
       beginRoomWalls,
       addArrow,
       addSticky,
-      addTable,
       addImage,
       addAnnotation,
       addLinkCard,

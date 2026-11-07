@@ -182,53 +182,25 @@ describe('buildSearchResults', () => {
   });
 });
 
-describe('buildSearchResults — table cells (docs/specs/008-canvas/canvas-and-palette.md Search panel)', () => {
-  const table = (id: string, cells: string[][]): Element => ({
-    id,
-    type: 'table',
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 100,
-    cells,
-  });
-
-  it('matches a table by its cell text and surfaces the matching cell as the label', () => {
-    const t = tab('t1', 'Tab', [
-      table('tbl', [
-        ['Owner', 'Status'],
-        ['Sasha', 'Blocked on review'],
-      ]),
-    ]);
-    const out = buildSearchResults({ query: 'blocked', documents: [], folders: [], tabs: [t] });
-    const elementGroup = out.find((g) => g.key === 'elements')!;
-    expect(elementGroup.items[0]).toMatchObject({
-      kind: 'element',
-      elementId: 'tbl',
-      label: 'Blocked on review',
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine": a stored table's cells are not read.
+describe('buildSearchResults: a stored table', () => {
+  it('does not match on cell text', () => {
+    const table = {
+      id: 'tbl',
       type: 'table',
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 100,
+      cells: [['Blocked on review']],
+    } as unknown as Element;
+    const out = buildSearchResults({
+      query: 'blocked',
+      documents: [],
+      folders: [],
+      tabs: [tab('t1', 'Tab', [table])],
     });
-  });
-
-  it('skips tables whose cells are all empty (nothing matchable)', () => {
-    const t = tab('t1', 'Tab', [
-      table('tbl', [
-        ['', ' '],
-        ['', ''],
-      ]),
-    ]);
-    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
     expect(out.find((g) => g.key === 'elements')).toBeUndefined();
-  });
-
-  it('surfaces a table on the empty query via its first non-empty cell, like labelled elements', () => {
-    const t = tab('t1', 'Tab', [table('tbl', [['', 'First cell with text']])]);
-    const out = buildSearchResults({ query: '', documents: [], folders: [], tabs: [t] });
-    const elementGroup = out.find((g) => g.key === 'elements')!;
-    expect(elementGroup.items[0]).toMatchObject({
-      elementId: 'tbl',
-      label: 'First cell with text',
-    });
   });
 });
 

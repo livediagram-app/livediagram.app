@@ -8,8 +8,6 @@
 //     that's the user's own silhouette choice) + a reset.
 //   - ArrowPresets — line looks in tiers (solid weights, patterns, animated
 //     flows) + a reset.
-//   - TablePresets: a table's four surfaces (cells, grid, header band, header
-//     text) plus the banding, which only read well in combination.
 // Purely presentational: every apply is a callback prop. Shape presets are
 // theme-derived (passed in); arrow presets are the static table below. Lives in
 // its own file so EditorContextMenu doesn't accrete more large categories
@@ -17,7 +15,6 @@
 
 import {
   ARROW_THICKNESS_PX,
-  type TablePreset,
   type ArrowFlow,
   type ArrowThickness,
   type BorderStyle,
@@ -246,81 +243,6 @@ export function ArrowPresets({
           >
             <PresetLabel name={p.name}>
               <ArrowPresetSwatch preset={p} />
-            </PresetLabel>
-          </SizeButton>
-        ))}
-      </div>
-      <ResetButton onReset={onReset} />
-    </div>
-  );
-}
-
-// ── Table looks ─────────────────────────────────────────────────────────
-
-// A miniature of the table: header band, grid lines, and a banded body row
-// when the preset bands. The four surfaces only read well in combination, so
-// the tile has to show the combination.
-function TablePresetSwatch({ preset }: { preset: TablePreset }) {
-  const cell = preset.fill === 'transparent' ? 'none' : preset.fill;
-  return (
-    <svg width="28" height="18" viewBox="0 0 28 18" aria-hidden>
-      <rect x="0.75" y="0.75" width="26.5" height="16.5" rx="1.5" fill={cell} />
-      <rect
-        x="0.75"
-        y="0.75"
-        width="26.5"
-        height="5"
-        fill={preset.headerFill === 'transparent' ? 'none' : preset.headerFill}
-      />
-      {preset.zebra ? (
-        <rect x="0.75" y="10.75" width="26.5" height="3.5" fill={preset.stroke} opacity="0.18" />
-      ) : null}
-      <g stroke={preset.stroke} strokeWidth="1" vectorEffect="non-scaling-stroke">
-        <rect x="0.75" y="0.75" width="26.5" height="16.5" rx="1.5" fill="none" />
-        <path d="M0.75 5.75 H27.25 M0.75 10.75 H27.25 M0.75 14.25 H27.25 M9.5 0.75 V17.25 M18.5 0.75 V17.25" />
-      </g>
-      <rect x="2.5" y="2.5" width="5" height="1.5" rx="0.75" fill={preset.headerText} />
-    </svg>
-  );
-}
-
-export function TablePresets({
-  presets,
-  current,
-  onApply,
-  onPreview,
-  onPreviewEnd,
-  onReset,
-}: {
-  presets: TablePreset[];
-  // The table's current colours, to highlight a matching tile. A table has no
-  // `colorPreset` binding field, so this matches on the colours themselves.
-  current: { fillColor?: string; strokeColor?: string; headerFill?: string; zebra?: boolean };
-  onApply: (preset: TablePreset) => void;
-  onPreview: (preset: TablePreset) => void;
-  onPreviewEnd: () => void;
-  onReset: () => void;
-}) {
-  useRevertOnUnmount(onPreviewEnd);
-  const eq = (a?: string, b?: string) => (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
-  const isActive = (p: TablePreset) =>
-    eq(current.fillColor, p.fill) &&
-    eq(current.strokeColor, p.stroke) &&
-    eq(current.headerFill, p.headerFill) &&
-    (current.zebra ?? false) === p.zebra;
-  return (
-    <div className="px-2 py-1">
-      <div className="mb-1.5 grid grid-cols-4 gap-1">
-        {presets.map((p) => (
-          <SizeButton
-            key={p.id}
-            active={isActive(p)}
-            onClick={() => onApply(p)}
-            onPointerEnter={onMouseHover(() => onPreview(p))}
-            onPointerLeave={onMouseHover(onPreviewEnd)}
-          >
-            <PresetLabel name={p.name}>
-              <TablePresetSwatch preset={p} />
             </PresetLabel>
           </SizeButton>
         ))}

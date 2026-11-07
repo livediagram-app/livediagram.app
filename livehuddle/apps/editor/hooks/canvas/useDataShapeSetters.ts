@@ -1,6 +1,4 @@
 import {
-  addTableColumn,
-  addTableRow,
   type ChairFacing,
   type Element,
   turnsWithFacing,
@@ -28,7 +26,7 @@ type DataShapeSetterDeps = {
   elements: () => Element[];
 };
 
-// The selection-wide setters for the content-bearing pieces: a table's rows and columns, the masthead lines, the
+// The selection-wide setters for the content-bearing pieces: the masthead lines, the
 // furniture's turns and the Space pieces' settings. All resolve the selection and commit through the two shared
 // handles, so they live together off useElementStyle.
 
@@ -37,45 +35,6 @@ export function useDataShapeSetters({
   commit,
   elements,
 }: DataShapeSetterDeps) {
-  // Append a row / column to each selected table — the table quick-connect
-  // ring's structural adds (docs/specs/008-canvas/canvas-and-palette.md). The helper returns the spliced cells
-  // PLUS the realigned side arrays; apply them together so pinned sizes and
-  // per-cell styles can't drift onto the wrong track.
-  const appendTableRowSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    track('Element', 'Added', 'TableRow');
-    commit((els) =>
-      els.map((el) => {
-        if (!(ids.has(el.id) && el.type === 'table')) return el;
-        const next = addTableRow(el, el.cells.length);
-        return {
-          ...el,
-          cells: next.cells,
-          ...(next.rowHeights ? { rowHeights: next.rowHeights } : {}),
-          ...(next.cellStyles ? { cellStyles: next.cellStyles } : {}),
-        };
-      }),
-    );
-  };
-  const appendTableColumnSelected = () => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    track('Element', 'Added', 'TableColumn');
-    commit((els) =>
-      els.map((el) => {
-        if (!(ids.has(el.id) && el.type === 'table')) return el;
-        const next = addTableColumn(el, el.cells[0]?.length ?? 0);
-        return {
-          ...el,
-          cells: next.cells,
-          ...(next.colWidths ? { colWidths: next.colWidths } : {}),
-          ...(next.cellStyles ? { cellStyles: next.cellStyles } : {}),
-        };
-      }),
-    );
-  };
-
   // The masthead lines: a callout's or card's heading and subtitle and a boundary's
   // (docs/specs/009-elements/web-components-and-no-groups.md). One setter for both lines rather than two
   // near-identical ones, since the only difference is which field.
@@ -169,8 +128,6 @@ export function useDataShapeSetters({
 
   return {
     ...webSetters,
-    appendTableRowSelected,
-    appendTableColumnSelected,
     setPageHeading,
     setChairFacingSelected,
     turnSelected,

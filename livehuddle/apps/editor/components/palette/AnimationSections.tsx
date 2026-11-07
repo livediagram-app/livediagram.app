@@ -53,7 +53,6 @@ const ORDER: readonly Category[] = [
   'sticky',
   'drawing',
   'media',
-  'table',
   'icon',
   'concept',
   'text',
