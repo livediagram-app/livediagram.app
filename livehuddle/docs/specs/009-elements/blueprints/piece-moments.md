@@ -80,7 +80,9 @@ Local only: no input from anyone else reaches it.
 
 Coordinates are in each piece's drawing (`OFFICE_ART` grid). Durations: tree 2.6 s, outdoor plant 2.4 s, plant 2 s,
 pond 2.2 s, fountain 1.8 s, fireplace and campfire 1.6 s, vending machine 1.4 s. Easing is ease-out or ease-in-out;
-nothing is linear but a thrown arc's travel across.
+nothing is linear but a thrown arc's travel across. The tree's rock peaks at 3.6 degrees and settles; a falling leaf is
+12 px long. A stoked fire's flare and glow are `SOCIAL_TONES.flame` on light paper and `DARK_FLARE` (`#fcd34d`, a light
+amber) on dark paper, where the orange read brown over the soot.
 
 ## Accessibility
 

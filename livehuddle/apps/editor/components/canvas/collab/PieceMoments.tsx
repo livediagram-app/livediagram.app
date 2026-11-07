@@ -16,12 +16,16 @@ import {
   type PieceMomentPlay,
   type Side,
 } from '@/lib/piece-moments';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Piece moments (docs/specs/009-elements/piece-moments.md), drawn in the piece's own grid over its art: leaves falling
 // from a tree, butterflies out of a bush, a stoked fire's sparks, a coin in the fountain, a can dropping, a pebble in
 // the pond. Each is one-shot CSS on transform and opacity (app/piece-moments.css), mounted only once a moment plays
 // and keyed by it, so nothing runs at rest; the finished frames are invisible or the resting pose, so nothing needs a
 // timer to take them down. None plays under reduced motion (usePieceMoments), and the CSS hides any that was mounted.
+
+/** A stoked fire's flare and glow on dark paper: a light, warm amber. */
+export const DARK_FLARE = '#fcd34d';
 
 const vars = (v: Record<string, string | number>) => v as CSSProperties;
 
@@ -129,7 +133,7 @@ function Leaf({
         })}
       >
         <g className="lh-moment lh-moment-flutter">
-          <path d="M0 -3.2C2.6 -2 2.6 2 0 3.2C-2.6 2 -2.6 -2 0 -3.2Z" fill={fill} />
+          <path d="M0 -6C4.2 -3.6 4.2 3.6 0 6C-4.2 3.6 -4.2 -3.6 0 -6Z" fill={fill} />
         </g>
       </g>
     </g>
@@ -213,6 +217,8 @@ function Stoke({
     `M${cx - w} ${base}C${cx - w} ${base - tall * 0.5} ${cx - w * 0.3} ${base - tall * 0.62} ${cx} ${base - tall}` +
     `C${cx + w * 0.3} ${base - tall * 0.62} ${cx + w} ${base - tall * 0.5} ${cx + w} ${base}Z`;
   const T = SOCIAL_TONES;
+  // On dark paper the orange flare read brown and muddy over the soot: a brighter amber there instead.
+  const flareFill = useCanvasSurface() === 'dark' ? DARK_FLARE : T.flame;
   const sparks = [
     { dx: -10, r: 1.6, delay: 0.1, fill: T.flameHot },
     { dx: 6, r: 1.3, delay: 0.2, fill: T.flame },
@@ -228,10 +234,10 @@ function Stoke({
         cy={glowY}
         rx={44}
         ry={10}
-        fill={T.flame}
+        fill={flareFill}
         className="lh-moment lh-moment-glow"
       />
-      <path d={flare} fill={T.flame} className="lh-moment lh-moment-flare" />
+      <path d={flare} fill={flareFill} className="lh-moment lh-moment-flare" />
       {sparks.map((s, i) => (
         <circle
           key={i}

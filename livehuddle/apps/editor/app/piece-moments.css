@@ -19,16 +19,16 @@
     transform: rotate(0deg);
   }
   16% {
-    transform: rotate(calc(var(--lean, 1) * 2.4deg));
+    transform: rotate(calc(var(--lean, 1) * 3.6deg));
   }
   40% {
-    transform: rotate(calc(var(--lean, 1) * -1.3deg));
+    transform: rotate(calc(var(--lean, 1) * -2deg));
   }
   62% {
-    transform: rotate(calc(var(--lean, 1) * 0.6deg));
+    transform: rotate(calc(var(--lean, 1) * 0.9deg));
   }
   82% {
-    transform: rotate(calc(var(--lean, 1) * -0.2deg));
+    transform: rotate(calc(var(--lean, 1) * -0.3deg));
   }
   100% {
     transform: rotate(0deg);

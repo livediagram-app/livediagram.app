@@ -3,7 +3,9 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ShapeElement } from '@livehuddle/document';
 import { MOMENT_KINDS, playMoment, resetPieceMoments, type MomentKind } from '@/lib/piece-moments';
+import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { FurnitureView } from './FurnitureView';
+import { DARK_FLARE } from './PieceMoments';
 import { PondView } from './PondView';
 
 afterEach(() => {
@@ -67,6 +69,20 @@ describe('a piece moment on screen', () => {
     act(() => playMoment('w', 1));
     pond.unmount();
     expect(draw('pond', 'w').container.querySelector('[data-moment-parts]')).toBeNull();
+  });
+
+  it('flares a stoked fire in a light amber on dark paper, its own orange on light', () => {
+    const flare = (surface: 'light' | 'dark', id: string) => {
+      const { container } = render(
+        <CanvasSurfaceProvider surface={surface}>
+          <FurnitureView element={piece('campfire', id)} stroke="#64748b" sitters={[]} />
+        </CanvasSurfaceProvider>,
+      );
+      act(() => playMoment(id, 1));
+      return container.querySelector('.lh-moment-flare')!.getAttribute('fill');
+    };
+    expect(flare('dark', 'd')).toBe(DARK_FLARE);
+    expect(flare('light', 'l')).not.toBe(DARK_FLARE);
   });
 
   it('throws the pebble and the coin from your side', () => {
