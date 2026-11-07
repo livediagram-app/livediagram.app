@@ -311,3 +311,38 @@ describe('a Notice Board', () => {
     expect(addedByAdder({ ...board(), addedBy: '' } as Element, '')).toBe(false);
   });
 });
+
+// docs/specs/009-elements/team-pieces.md "Calendar Wall": a calendar's notes merge exactly as a board's.
+describe('a Calendar Wall', () => {
+  const mine = { id: 'n1', text: 'Offsite', author: 'Sam', by: ME, at: 1, day: '2026-11-20' };
+  const theirs = { ...mine, id: 'n2', by: 'someone-else' };
+  const calendar = (notes?: unknown[]) =>
+    ({
+      id: 'cal',
+      type: 'shape',
+      shape: 'calendar-wall',
+      ...box,
+      ...(notes ? { noticeNotes: notes } : {}),
+    }) as unknown as Element;
+
+  it('pins its own note to a day, and never one signed by another key', () => {
+    const r = applyParticipantOp(
+      tabOf([calendar()]),
+      { kind: 'update', element: calendar([mine, theirs]) },
+      ME,
+    );
+    expect(r.result).toBe('applied');
+    const el = r.result === 'applied' ? (r.tab.elements[0] as { noticeNotes?: unknown[] }) : null;
+    expect(el?.noticeNotes).toEqual([mine]);
+  });
+
+  it('unpins its own last note', () => {
+    const r = applyParticipantOp(
+      tabOf([calendar([mine])]),
+      { kind: 'update', element: calendar([]) },
+      ME,
+    );
+    expect(r.result).toBe('applied');
+    expect(r.result === 'applied' && r.tab.elements[0]).not.toHaveProperty('noticeNotes');
+  });
+});

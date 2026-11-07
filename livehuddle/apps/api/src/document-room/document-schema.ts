@@ -262,7 +262,22 @@ const V3 = migrationSchema();
 // run once by the version row; every key already there reads as never tried.
 const V4 = outboxRetrySchema();
 
-const STEPS: readonly string[] = [V1, V2, V3, V4];
+// A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "Suggestion Box"), kept beside the content, never in
+// the box element: each is its text and its UTC day, and nothing about who dropped it. Listed by the box, newest
+// first (rowid); a tab's go with the tab (db/tabs.ts deleteTabRow).
+const V5 = `
+CREATE TABLE IF NOT EXISTS suggestions (
+  id          TEXT PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  tab_id      TEXT NOT NULL,
+  element_id  TEXT NOT NULL,
+  text        TEXT NOT NULL,
+  day         TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS suggestions_by_box ON suggestions (document_id, tab_id, element_id);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

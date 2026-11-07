@@ -41,11 +41,15 @@ const IN_PLACE = [
   'jukebox',
   'link-card',
   'video',
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
 ];
 
 // Walked to only when arriving is the point: floor, seats, drinks, proximity, scenery, areas and marks.
 const WALK = [
   'avatar-pad',
+  'photo-wall',
   'stage',
   'room',
   'office-pod',
@@ -176,7 +180,7 @@ describe('avatarPressOutcome', () => {
 
   it('does nothing on a control piece with no press of yours, never the reader', () => {
     expect([...NO_READER_KINDS].sort()).toEqual(
-      ['focus-button', 'mode-button', 'stopwatch', 'timer'].sort(),
+      ['focus-button', 'mode-button', 'signpost', 'stopwatch', 'timer'].sort(),
     );
     for (const kind of NO_READER_KINDS) {
       expect(avatarClickIntent(kind), kind).toBe('use');

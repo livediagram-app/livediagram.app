@@ -94,6 +94,9 @@ const WALL_PIECE_KINDS: readonly string[] = [
   // livehuddle's venue pieces (its venue-pieces.md "How each one walks"): Stage Curtains hang over a stage, walked
   // between and in front of, never into.
   'stage-curtains',
+  // livehuddle's team pieces (its team-pieces.md "How each one walks"): the Calendar Wall and the Team Photo Wall.
+  'calendar-wall',
+  'photo-wall',
 ];
 export function isWallPieceShape(kind: string): boolean {
   return WALL_PIECE_KINDS.includes(kind);
@@ -172,6 +175,9 @@ const OFFICE_FOOTPRINT: Partial<
   // livehuddle's workday pieces (its workday-pieces.md): the reception desk's counter, from the middle of its top down to
   // its foot, full width.
   'reception-desk': { x0: 0.02, x1: 0.98, y0: 52 / 112, y1: 106 / 112 },
+  // livehuddle's team pieces (its team-pieces.md): the Suggestion Box's foot and the Signpost's post at the ground.
+  'suggestion-box': { x0: 14 / 64, x1: 50 / 64, y0: 98 / 112, y1: 108 / 112 },
+  signpost: { x0: 50 / 120, x1: 70 / 120, y0: 126 / 144, y1: 138 / 144 },
 };
 
 // livehuddle's Swimming Pool (its venue-pieces.md "How each one walks"): drawn to its size, its deck a fixed band, so

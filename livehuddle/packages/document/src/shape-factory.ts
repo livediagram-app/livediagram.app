@@ -197,6 +197,11 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'hot-desk': { width: 120, height: 112 },
   'pet-bed': { width: 72, height: 48 },
   'reception-desk': { width: 200, height: 112 },
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall': { width: 200, height: 160 },
+  'suggestion-box': { width: 64, height: 112 },
+  signpost: { width: 120, height: 144 },
+  'photo-wall': { width: 176, height: 112 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -413,7 +418,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'standing-desk' ||
       kind === 'hot-desk' ||
       kind === 'pet-bed' ||
-      kind === 'reception-desk'
+      kind === 'reception-desk' ||
+      kind === 'calendar-wall' ||
+      kind === 'suggestion-box' ||
+      kind === 'signpost' ||
+      kind === 'photo-wall'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

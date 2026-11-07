@@ -14,6 +14,7 @@ import { PondView } from '@/components/canvas/collab/PondView';
 import { SwimmingPoolView } from '@/components/canvas/collab/SwimmingPoolView';
 import { hasSocialFace, SocialFace } from '@/components/canvas/collab/SocialFaces';
 import { hasWorkdayFace, WorkdayFace } from '@/components/canvas/collab/WorkdayFaces';
+import { hasTeamFace, TeamFace } from '@/components/canvas/collab/TeamFaces';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
 import { ScreenView } from '@/components/canvas/collab/ScreenView';
@@ -97,6 +98,14 @@ export function PieceArt({
         <>
           {art}
           <SocialFace element={element} walking={walking} />
+        </>
+      );
+    // A team piece's face (docs/specs/009-elements/team-pieces.md): the calendar's month, the suggestion box's button.
+    if (hasTeamFace(kind))
+      return (
+        <>
+          {art}
+          <TeamFace element={element} walking={walking} />
         </>
       );
     // A workday piece's face (docs/specs/009-elements/workday-pieces.md): the reception desk's Welcome, the office dog.

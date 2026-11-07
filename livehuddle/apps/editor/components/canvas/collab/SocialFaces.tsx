@@ -96,7 +96,7 @@ export const PILL =
 // While walking, a press anywhere on a reading piece opens it large. Not a piece control: the click policy
 // (lib/avatar-click-intent) keeps it from walking, and outside Avatar mode it is not drawn, so the piece selects
 // and drags as any other.
-function ReaderHit({ label, onOpen }: { label: string; onOpen: () => void }) {
+export function ReaderHit({ label, onOpen }: { label: string; onOpen: () => void }) {
   return (
     <button
       type="button"

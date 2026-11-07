@@ -23,7 +23,7 @@ import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
-import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { holdsNotes, isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
@@ -61,7 +61,8 @@ export type ElementDelta =
       name: string;
       on: boolean;
     }
-  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): pin one, or take one down by id.
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"), and a Calendar Wall's, each
+  // pinned to a day (team-pieces.md): pin one, or take one down by id.
   // An unpin names the note's signer too, and removes the note only while that is still its `by`: the room lets a
   // Participant send only its own key there, so it can unpin only what it pinned.
   | { kind: 'notice-pin'; note: NoticeNote }
@@ -98,9 +99,10 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
   return (thread ? { ...rest, commentThread: thread } : rest) as Element;
 }
 
-// A notice board that takes note changes: a locked board refuses them, on every screen alike.
-function openNoticeBoard(el: Element): ShapeElement | null {
-  return el.type === 'shape' && el.shape === 'notice-board' && el.locked !== true ? el : null;
+// A piece that takes note changes (a Notice Board, a Calendar Wall: docs/specs/009-elements/team-pieces.md): a locked
+// one refuses them, on every screen alike.
+function openNotePiece(el: Element): ShapeElement | null {
+  return el.type === 'shape' && holdsNotes(el.shape) && el.locked !== true ? el : null;
 }
 
 // The board with its notes set, the field dropped when none are left.
@@ -190,7 +192,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       return changed ? withThread(el, { ...thread, comments }) : el;
     }
     case 'notice-pin': {
-      const board = openNoticeBoard(el);
+      const board = openNotePiece(el);
       if (!board || !isNoticeNote(delta.note)) return el;
       const notes = board.noticeNotes ?? [];
       // A replay, or a board already full: the note does not land (two pins racing for the last place settle in
@@ -199,7 +201,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       return withNotes(board, [...notes, delta.note]);
     }
     case 'notice-unpin': {
-      const board = openNoticeBoard(el);
+      const board = openNotePiece(el);
       if (!board || typeof delta.noteId !== 'string' || typeof delta.by !== 'string') return el;
       const notes = board.noticeNotes ?? [];
       const at = notes.findIndex((n) => n.id === delta.noteId && n.by === delta.by);

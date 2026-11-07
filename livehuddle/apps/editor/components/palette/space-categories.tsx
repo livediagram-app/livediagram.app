@@ -107,7 +107,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'meeting',
     label: 'Meet',
     description:
-      'What a meeting room needs: a screen on the wall, a sign by its door, a notice board, a world clock, a timer and a stopwatch.',
+      'What a meeting room and a team need: a screen on the wall, a sign by its door, a notice board, a world clock, a calendar wall, a suggestion box, a team photo wall, a timer and a stopwatch.',
     tagline: 'Share on the wall, knock at the door.',
     icon: <ScreenIcon size={18} />,
   },
@@ -117,7 +117,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'travel',
     label: 'Travel',
     description:
-      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory and an elevator.',
+      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory, a signpost and an elevator.',
     tagline: 'What takes people somewhere.',
     icon: <MoveGroupIcon />,
     // Its own band, so the category bar sets it apart between two dividers.
