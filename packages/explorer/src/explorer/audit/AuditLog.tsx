@@ -27,7 +27,7 @@ import { siteOf } from '../../words';
 import { AppMark } from '../badges';
 import { useExplorer } from '../context';
 import { MoreFailed } from '../MoreFailed';
-import { AUDIT_GROUPS, auditDetail, auditSentence, dayRange, fileSlug, personWords } from './rows';
+import { auditDetail, auditGroups, auditSentence, dayRange, fileSlug, personWords } from './rows';
 import { exportAuditCsv, useAuditLog, type AuditFilter } from './useAuditLog';
 
 export const AUDIT_LOG_TITLE = 'Audit Log';
@@ -104,7 +104,8 @@ function AuditBody({
   members: readonly TeamMember[];
   helpHref?: string;
 }) {
-  const { client } = useExplorer();
+  const { client, kind } = useExplorer();
+  const groups = useMemo(() => auditGroups(kind.many), [kind.many]);
   const toast = useToast();
   const ids = useId();
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -192,7 +193,7 @@ function AuditBody({
             }}
           >
             <option value="">All Events</option>
-            {AUDIT_GROUPS.map((group) => (
+            {groups.map((group) => (
               <optgroup key={group.label} label={group.label}>
                 {group.kinds.map((kind) => (
                   <option key={kind} value={kind}>

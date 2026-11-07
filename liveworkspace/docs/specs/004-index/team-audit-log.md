@@ -106,7 +106,8 @@ reads, so the two are never mistaken for each other.
   kept a year". Nothing is read until it opens; another team's view starts it closed again.
 - **Filters**, above the list, each reading the first page again: **Person** (who did it: Everyone, the team's joined
   members by name, then anyone else the loaded rows name, such as a member who has left), **Event** (All Events, or
-  one kind by its label, grouped People, Documents and Webhooks), and **From** and **To** (whole days in the reader's
+  one kind by its label, grouped People, the host app's own items in its word (Canvases, Plans, Documents, Designs,
+  Spaces) and Webhooks), and **From** and **To** (whole days in the reader's
   time zone, both included: To is sent as the next day's midnight). **Clear Filters** shows while any is set. There is
   no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused.
 - **Each row**: the kind's glyph; one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee

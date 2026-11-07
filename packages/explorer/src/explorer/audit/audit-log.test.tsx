@@ -214,7 +214,8 @@ describe('the Audit Log', () => {
 
     const kind = screen.getByLabelText('Event') as HTMLSelectElement;
     const groups = [...kind.querySelectorAll('optgroup')].map((g) => g.label);
-    expect(groups).toEqual(['People', 'Documents', 'Webhooks']);
+    // liveplanner's word for its items names the middle group.
+    expect(groups).toEqual(['People', 'Plans', 'Webhooks']);
     // No token or OAuth app kind is offered.
     expect([...kind.options].some((o) => /token|oauth/i.test(o.value))).toBe(false);
     fireEvent.change(kind, { target: { value: 'moved' } });

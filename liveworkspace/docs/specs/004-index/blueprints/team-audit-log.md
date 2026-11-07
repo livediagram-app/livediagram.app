@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/api-kit/src/csv.ts`                             | `toCsv`, formula-safe (shared with the data export)                                                                                           |
 | `packages/explorer/src/explorer/audit/AuditLog.tsx`       | the Audit Log section: the disclosure, the filters, the rows by day, Show More, Export CSV and every state                                    |
 | `packages/explorer/src/explorer/audit/useAuditLog.ts`     | the paged read (`teamAudit`), keyed on the filters; `exportAuditCsv` follows `X-Next-Cursor` and joins the files                              |
-| `packages/explorer/src/explorer/audit/rows.ts`            | `auditSentence`, `auditDetail`, `auditGroup`, `dayRange`: what a row says, and the filters' range                                             |
+| `packages/explorer/src/explorer/audit/rows.ts`            | `auditSentence`, `auditDetail`, `auditGroups`, `dayRange`: what a row says, the Event groups and the range                                    |
 
 ## Domain and naming
 
@@ -125,7 +125,8 @@ in memory until saved, so the largest export (200,000 rows, about 40 MB) is a sh
 
 `AuditLog` is drawn by `TeamPage` (`packages/explorer/src/explorer/TeamPane.tsx`) only when `useTeamDetails` has
 found the team and its `myRole` is `admin`, keyed `audit-<team>`. It reuses the shared primitives: `Select` for
-Person and Event (an `optgroup` per `AUDIT_GROUPS` group), `DateInput` for From and To, `Button` for Clear Filters,
+Person and Event (an `optgroup` per `auditGroups(kind.many)` group, the middle one named in the host's word for
+its items: `useExplorer().kind`, so Designs on livedesign), `DateInput` for From and To, `Button` for Clear Filters,
 Show More, Try again and Export CSV, `EmptyState` (compact) for every empty or failed state, `MoreFailed` for a
 failed Show More, `AppMark` for the app, and `auditIcon` (the Timeline's glyphs, plus `deleted`, `webhook_added`
 and `webhook_removed`'s own). The filters are a two-column grid on a phone (Person and Event full width) and one

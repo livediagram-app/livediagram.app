@@ -109,18 +109,22 @@ export function auditDetail(event: TeamAuditEvent): string | null {
   }
 }
 
-/** The Event filter's groups, in the order the list offers them. */
-export const AUDIT_GROUPS: readonly { label: string; kinds: readonly TeamAuditEventType[] }[] = [
-  { label: 'People', kinds: TEAM_AUDIT_ACCOUNT_TYPES },
-  {
-    label: 'Documents',
-    kinds: TEAM_AUDIT_EVENT_TYPES.filter(
-      (k) =>
-        !(TEAM_AUDIT_ACCOUNT_TYPES as readonly string[]).includes(k) && !k.startsWith('webhook_'),
-    ),
-  },
-  { label: 'Webhooks', kinds: ['webhook_added', 'webhook_removed'] },
-];
+type AuditGroup = { label: string; kinds: readonly TeamAuditEventType[] };
+
+// What happened to the team's items: every kind but an account's and a webhook's.
+const ITEM_KINDS: readonly TeamAuditEventType[] = TEAM_AUDIT_EVENT_TYPES.filter(
+  (k) => !(TEAM_AUDIT_ACCOUNT_TYPES as readonly string[]).includes(k) && !k.startsWith('webhook_'),
+);
+
+/** The Event filter's groups, in the order the list offers them. The middle one is named in the host app's word for
+ *  its items (`useExplorer().kind.many`: "Designs" on livedesign, "Plans" on liveplanner). */
+export function auditGroups(items: string): readonly AuditGroup[] {
+  return [
+    { label: 'People', kinds: TEAM_AUDIT_ACCOUNT_TYPES },
+    { label: items, kinds: ITEM_KINDS },
+    { label: 'Webhooks', kinds: ['webhook_added', 'webhook_removed'] },
+  ];
+}
 
 const DAY = /^(\d{4})-(\d{2})-(\d{2})$/;
 

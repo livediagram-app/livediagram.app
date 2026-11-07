@@ -3,19 +3,21 @@
 import { describe, expect, it } from 'vitest';
 import {
   TEAM_AUDIT_EVENT_TYPES,
+  type App,
   type TeamAuditEvent,
   type TeamAuditEventType,
 } from '@liveworkspace/index-client';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
-  AUDIT_GROUPS,
   auditDetail,
+  auditGroups,
   auditSentence,
   dayRange,
   fileSlug,
   personWords,
   type AuditSentence,
 } from './rows';
+import { kindWords } from '../../words';
 
 const ev = (type: TeamAuditEventType, over: Partial<TeamAuditEvent> = {}): TeamAuditEvent => ({
   id: 'e1',
@@ -112,11 +114,19 @@ describe('auditDetail', () => {
   });
 });
 
-describe('AUDIT_GROUPS', () => {
+describe('auditGroups', () => {
   it('offers every kind once, and never a token’s', () => {
-    const kinds = AUDIT_GROUPS.flatMap((g) => g.kinds);
+    const kinds = auditGroups('Designs').flatMap((g) => g.kinds);
     expect([...kinds].sort()).toEqual([...TEAM_AUDIT_EVENT_TYPES].sort());
-    expect(AUDIT_GROUPS.map((g) => g.label)).toEqual(['People', 'Documents', 'Webhooks']);
+  });
+
+  it('names the items group in each app’s word for its items', () => {
+    const labels = (app: App) => auditGroups(kindWords(app).many).map((g) => g.label);
+    expect(labels('livedesign')).toEqual(['People', 'Designs', 'Webhooks']);
+    expect(labels('livediagram')).toEqual(['People', 'Canvases', 'Webhooks']);
+    expect(labels('liveplanner')).toEqual(['People', 'Plans', 'Webhooks']);
+    expect(labels('livedocuments')).toEqual(['People', 'Documents', 'Webhooks']);
+    expect(labels('livehuddle')).toEqual(['People', 'Spaces', 'Webhooks']);
   });
 });
 
