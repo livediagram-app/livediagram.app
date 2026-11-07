@@ -98,7 +98,10 @@ import { useAvatarCamera } from '@/hooks/canvas/useAvatarCamera';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
+import { apiNotifyActionAssigned, apiSaveSelf, apiSaveTab } from '@/lib/api-client';
+import { documentGrant } from '@/lib/api/document-grants';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
 import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
 import { useTokenTeams } from '@/lib/explorer-host';
@@ -1376,6 +1379,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // pointer paths the overlay covers. 'ready' is the only editable state
   // (a loaded tab, a locally-created/peer-delivered tab with content, or
   // a dismissed template picker — see deriveTabLoadState).
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md) holds no content: every edit is shut on it.
+  const activeTabConnected = connectionOf(activeTab) !== null;
   const activeTabLoadState = deriveTabLoadState({
     hydrated,
     hasDocument: !!documentId,
@@ -1390,7 +1395,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
   // A Participant commits too: every one of its commits passes participant.guardCommit.
-  const editsBlocked = (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  const editsBlocked =
+    activeTabConnected ||
+    (isReadOnly && !participant.participating) ||
+    activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1553,6 +1561,26 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     requestFit,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
+    toast,
+  });
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new
+  // tab, the host's grant for opening one, and Connect Again.
+  const connectedTabs = useConnectedTabActions({
+    tabs,
+    hostKind: 'space',
+    documentId,
+    grantFor: async (id) =>
+      (await documentGrant(id, sessionShareCode ? { code: sessionShareCode } : null))?.grant ??
+      null,
+    createTab,
+    saveTab: (tab) => apiSaveTab(selfParticipant.id, documentId ?? '', tab, sessionShareCode),
+    commitTabs,
+    markTabLoaded,
+    openTab: (id) => {
+      setActiveId(id);
+      setSelectedId(null);
+      setEditingId(null);
+    },
     toast,
   });
   // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
@@ -2337,6 +2365,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...persistence,
     ...realtime,
     activeTab,
+    activeTabConnected,
+    connectedTabs,
     // The whole creation gate: a view-only session or a tab still loading.
     createBlocked: editsBlocked,
     quickStyleDeps,

@@ -29,6 +29,11 @@ import {
   Portal,
 } from '@livehuddle/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
+import { lucideGlyph } from '@livehuddle/ui';
+import { lucideLink } from '@liveworkspace/icons/lucide';
+import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
+
+const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
@@ -53,6 +58,7 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
+  connected,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -79,6 +85,9 @@ export function PortalMenu({
   onDelete: () => void;
   canDelete: boolean;
   canClearContent: boolean;
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): it has no content and its name
+  // follows its file, so its menu keeps only Remove Tab, its folder and, when it opens nothing, Connect Again.
+  connected?: ConnectedTabMenu | undefined;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
@@ -195,8 +204,46 @@ export function PortalMenu({
     );
   }
 
+  // A connected tab's menu: Remove Tab (the file stays as it is), its folder and, when it opens nothing, Connect Again.
+  const connectedBody = connected ? (
+    <>
+      <MenuToolbar>
+        <div className="ml-auto flex items-center gap-0.5">
+          <MenuToolButton
+            icon={<TrashIcon />}
+            label="Remove Tab"
+            description="Remove this tab. The file it opens stays as it is."
+            onClick={() => {
+              onDelete();
+              onClose();
+            }}
+            disabled={!canDelete}
+          />
+        </div>
+      </MenuToolbar>
+      <MenuGroupSeparator />
+      {connected.broken ? (
+        <MenuActionRow
+          plain
+          icon={<ConnectAgainIcon />}
+          label="Connect Again"
+          onClick={() => {
+            connected.onConnectAgain();
+            onClose();
+          }}
+        />
+      ) : null}
+      <MenuActionRow
+        plain
+        icon={<FolderMenuIcon />}
+        label="Organise in Tab Folder"
+        onClick={() => setView('folder')}
+      />
+    </>
+  ) : null;
+
   // The menu's rows, the same in the anchored box and in a phone's bottom sheet.
-  const body = (
+  const body = connectedBody ?? (
     <>
       {view === 'actions' ? (
         <>

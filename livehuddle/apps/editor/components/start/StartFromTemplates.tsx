@@ -25,6 +25,7 @@ import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/sta
 import { startClosedKey } from './start-closed-key';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
@@ -67,6 +68,8 @@ export function StartFromTemplates({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  const connect = useConnectStart();
   const start = TEMPLATE_STARTS[mode];
   const copy = COPY[mode];
   const categories = useMemo(
@@ -121,6 +124,7 @@ export function StartFromTemplates({
       onClose={closeToBlank}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
+      connect={connect}
     />
   );
 }

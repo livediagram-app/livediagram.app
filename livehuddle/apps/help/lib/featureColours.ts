@@ -31,6 +31,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'session-tools': '#f43f5e',
   // The last cards
   'side-by-side': '#0ea5e9',
+  'connected-files': '#4f46e5',
   'auto-align': '#22c55e',
   about: '#0891b2',
   minimap: '#94a3b8',

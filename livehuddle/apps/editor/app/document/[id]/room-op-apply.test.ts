@@ -138,6 +138,41 @@ describe('applyRoomOpToTabs', () => {
   });
 });
 
+// A connected tab rides the outline op (liveworkspace/docs/specs/004-index/connected-tabs.md).
+describe('applyRoomOpToTabs: connected tabs', () => {
+  const connection = {
+    id: 'cn_abcdefghijklmnopqrstuvwx',
+    app: 'liveplanner',
+    itemId: 'plan1',
+  } as const;
+
+  it("carries a summary's connection onto a new placeholder", () => {
+    const next = applyRoomOpToTabs([tab()], {
+      kind: 'document-meta',
+      name: 'D',
+      tabs: [
+        { id: 't1', name: 'Tab 1', orderIndex: 0 },
+        { id: 't2', name: 'Roadmap', orderIndex: 1, connection },
+      ],
+    });
+    expect((next[1] as { connection?: unknown }).connection).toEqual(connection);
+    expect(next[1]!.elements).toEqual([]);
+  });
+
+  it("keeps a local tab's connection when the summary carries none", () => {
+    const local = { ...tab({ id: 't2', name: 'Roadmap', elements: [] }), connection } as Tab;
+    const next = applyRoomOpToTabs([tab(), local], {
+      kind: 'document-meta',
+      name: 'D',
+      tabs: [
+        { id: 't1', name: 'Tab 1', orderIndex: 0 },
+        { id: 't2', name: 'Roadmap', orderIndex: 1 },
+      ],
+    });
+    expect(next[1]).toBe(local);
+  });
+});
+
 // docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same
 // instant, then each of their autosaves runs. Everybody must end up with
 // both marks.

@@ -22,11 +22,13 @@ const StartFromTemplates = dynamic(
 export function EditorStartPanels() {
   const ctx = useEditorContext();
   const { hydrated, embedMode, pendingDraw, activeTab, isReadOnly } = ctx;
+  // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
+  const connected = ctx.activeTabConnected;
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
   // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
   // sits at the bottom, clear of it, so the two show together.
   const showEmptyCanvasBanner = showsEmptyCanvasCard({
-    hydrated,
+    hydrated: hydrated && !connected,
     embed: embedMode,
     drawToolArmed: !!pendingDraw,
     elementCount: activeTab.elements.length,
@@ -44,6 +46,7 @@ export function EditorStartPanels() {
   // (docs/specs/013-workspace/share-roles.md), read from `can`.
   const templateStart: TemplateStartMode | null =
     hydrated &&
+    !connected &&
     !embedMode &&
     roleGates(ctx.can, false).shape &&
     !pendingDraw &&
