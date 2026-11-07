@@ -14,7 +14,8 @@ planning boards and games are livediagram's ([Not in livehuddle](../002-project-
 
 ## The blank
 
-**Blank Space** (`blank-session`) is the one blank: an empty tab, and a space named "Untitled Space"
+**Blank Space** (`blank-session`) is the one blank: a tab holding only an [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
+a little below the middle of the view, where people arrive, and a space named "Untitled Space"
 ([Domain language](../003-system-architecture/domain-language.md#space)). It leads Popular and Start a Space's
 Recommended, is on no category shelf or tile, and is what a new space starts from. It was **Blank Workshop**, making
 "Untitled Workshop", before the noun settled; a space still carrying that name, or "Untitled canvas", counts as
@@ -63,8 +64,10 @@ untitled.
 - The catalogue is the eighteen Spaces and the blank, nineteen templates (`templates.test.ts`'s kind list, the `TemplateKind`
   union and `TEMPLATES` move together).
 - Every Space is walkable (`template-builders-spaces-more.test.ts` and `template-builders-office.test.ts`): its floors
-  lie first, it has one Walk In with open floor under it, every piece in a room sits inside its walls, no seat stands
-  in a doorway's first 80 px, and no two pieces of furniture overlap.
+  lie first, every tab (a building's every floor) has exactly one [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one)
+  and no Selection Mode button, the pad and the character standing on it touch no wall and no furniture, every piece in
+  a room sits inside its walls, no seat stands in a doorway's first 80 px, and no two pieces of furniture overlap.
+- Blank Space is one pad, centred across and below the middle (`build-template.test.ts`).
 - **Every Space is roomy**: a walk between seats never brushes one. Two seats (chairs, desks, sofas, stools,
   benches, tables) side by side are either one row (at most 16 px apart) or an aisle apart, and two seats one behind
   the other either share an edge (a desk cluster's facing pair) or are an aisle apart. An aisle is at least
@@ -74,7 +77,7 @@ untitled.
   (`template-builders-spaces-more.test.ts` "keeps every aisle between seats wide enough to walk").
 - Every Campus Space is joined up (`template-builders-campus.test.ts`): every room is closed with exactly one Door on
   its walls and a Garden Path outside it, the first 96 px inside each Door is clear, every room has a Room Sign that
-  reads it, the Directory waits inside the gate above the Walk In, the aisles are roomy and the hall's centre aisle is
+  reads it, the Directory waits inside the gate above the Avatar Pad, the aisles are roomy and the hall's centre aisle is
   at least 160 px. A template's floors are held to the same rules, floor by floor (`template-floors.test.ts`): rooms
   closed with a signed Door, pieces inside their walls or clear of them, roomy aisles, no furniture on furniture, and
   named Elevators, the same number on every floor of the Co-working Tower.

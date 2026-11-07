@@ -22,7 +22,7 @@ describe('useCanvasTool: changing tab', () => {
     expect(result.current.canvasTool).toBe('select');
   });
 
-  it('leaves Avatar mode for the Hand tool when that was the tool before it', () => {
+  it('leaves Avatar mode for the touch Edit (pan) when that was the tool before it', () => {
     const { result, rerender } = setup(true);
     act(() => result.current.selectCanvasTool('avatar'));
     rerender({ tabId: 'tab-2' });
@@ -38,9 +38,9 @@ describe('useCanvasTool: changing tab', () => {
 
   it('leaves every other tool alone on a tab change', () => {
     const { result, rerender } = setup();
-    act(() => result.current.selectCanvasTool('eraser'));
+    act(() => result.current.selectCanvasTool('format'));
     rerender({ tabId: 'tab-2' });
-    expect(result.current.canvasTool).toBe('eraser');
+    expect(result.current.canvasTool).toBe('format');
   });
 
   // Travel (an Elevator ride, a Portal, the Directory's Go) keeps the mode; the next manual switch still ends it.
@@ -98,11 +98,11 @@ describe('useCanvasTool: openWalking', () => {
 
   it('does nothing while already walking', () => {
     const { result } = renderHook(() => useCanvasTool());
-    act(() => result.current.selectCanvasTool('eraser'));
+    act(() => result.current.selectCanvasTool('format'));
     act(() => result.current.selectCanvasTool('avatar'));
     act(() => result.current.openWalking());
     expect(result.current.canvasTool).toBe('avatar');
-    expect(result.current.toolBeforeCurrent()).toBe('eraser');
+    expect(result.current.toolBeforeCurrent()).toBe('format');
   });
 });
 

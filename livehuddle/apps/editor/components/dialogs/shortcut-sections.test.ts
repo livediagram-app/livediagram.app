@@ -38,8 +38,8 @@ const singleKeyRows = EDITOR_SECTIONS.flatMap((section) =>
 describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
-    expect(singleKeyRows.length).toBeGreaterThan(5);
-    expect(handledKeys.size).toBeGreaterThan(8);
+    expect(singleKeyRows.length).toBeGreaterThanOrEqual(5);
+    expect(handledKeys.size).toBeGreaterThanOrEqual(8);
   });
 
   it('lists no key the editor does not bind', () => {

@@ -19,9 +19,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('behaviour').filter((a) => a.slug !== 'mode-buttons')}
 >
 
-A Selection Mode button is an element that hands out [Avatar mode](/help/selection-modes/avatar-mode/). Put one on the canvas and anybody can press it to start walking, without ever having opened the mode picker. Avatar is the one mode a button hands out in livehuddle, so it is called the **Avatar Button** in the palette.
+A Selection Mode button is an element that hands out [Avatar mode](/help/selection-modes/avatar-mode/). Put one on the canvas and an editor can press it to start walking; Participants and view-only visitors are always walking, so for them it is just a sign. Avatar is the one mode a button hands out in livehuddle, so it is called the **Avatar Button** in the palette.
 
-It is the board's own way into Avatar mode, beside **Avatar** in the Selection Mode menu, and a space with one opens walking, just below the first, once each visit. To make a board somewhere people walk round, put an Avatar button on it, and an [Avatar Pad](/help/palette/avatar-pads/) where you want them to arrive.
+It is the board's own way into Avatar mode, beside **Walk** at the start of the palette strip, and a space with one opens walking, just below the first, once each visit. The templates no longer carry one: every Space, and every blank tab you start, has an [Avatar Pad](/help/palette/avatar-pads/) where people arrive instead. Spaces made before keep their **Walk In** button, and it still works; add an Avatar button yourself when you want a visible door on the board.
 
 ## Adding One
 
@@ -45,9 +45,9 @@ Your character appears just below the button, rather than in the middle of the s
 
 ## Where It Works
 
-The button keeps working while you walk, even though Avatar mode makes the rest of the canvas read-only, which is what makes it the way back out. It also works for somebody on a view-only link, since switching your own tool changes nothing for anyone else. That is what makes it useful on a walkthrough: the viewer has the way in right there on the canvas, rather than in a menu they were never told about.
+The button is for Editors: it keeps working while you walk, even though walking makes the rest of the canvas read-only, which makes it a way back out. Participants are always walking, so for them the button does nothing; hover it to see why.
 
-In a read-only embed there is no tool to switch, so the button shows but does nothing.
+In a read-only embed there is no walking, so the button shows but does nothing.
 
 <Tip>
   Older boards may still have Select, Hand, Eraser or Format buttons on them. They open as Avatar

@@ -10,25 +10,80 @@ Excalidraw's tool bar works. The strip is the **category bar** (below): the pale
 flyout of its tiles:
 
 ```
- ☰       ┌───────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write Draw │ Layout │ Ask Session │ Icons … │ [🔍] │
- ▼        └───────────────────────────────────────────────────────────────┘
+ ☰       ┌──────────────────────────────────────────────────────────────────────────┐
+ │        │ [↖ Edit|👣 Walk] │ Shapes Write Draw │ Layout │ Ask Session │ Icons … │ [🔍] │
+ ▼        └──────────────────────────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, zoom: the bottom-right cluster)
 ```
 
 - **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
   ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below).
-- **Left: the selection mode.** The canvas-tool picker, in three named bands: **Build** (Select, Hand), **Edit** (Eraser, Format)
-  and **Interact** (Avatar) ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
-  as a compact icon trigger, opening the banded tile grid.
+- **Left: the Edit | Walk toggle** ([The Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle)),
+  an Editor's one switch between building the board and walking it as a character. Edit is on while building. It
+  replaced the Selection Mode picker (owner, 2026-11-06: "change the selection mode dropdown so it just lets me
+  toggle between Editor and ... whatever using the board is without too long a name"): Select, Hand, Eraser and
+  Format are no longer modes to pick. Edit is plain selecting; panning is Space-drag, the trackpad or the middle
+  button (a drag on empty canvas on a touch screen); Delete removes what the Eraser did; the Format Painter is on the
+  selection toolbar ([Format panel](../008-canvas/format-panel.md)).
 - **Then the category bar** ("The category bar").
 - **Far right: Search** (a magnifier), on every strip (see "Search: every element type").
+
+**While walking** the strip is the [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette) instead, in the
+same place and built from the same parts: **the call controls first, on the left** (Join Audio or the microphone, the
+camera, Share Screen, Leave; owner 2026-11-06, moved there from the bottom-right cluster), a divider, the character's
+look, Actions and React on the right, and Say where Search sits. An Editor's avatar palette starts with the
+same Edit | Walk toggle, Walk on, ahead of the call group, so the way back to building is where it was; a
+Participant's and a Viewer's has none ([Always walking](../013-workspace/share-roles.md#always-walking)). The building
+strip comes back, as it was, when the walk ends. Join Audio, the microphone, the camera and Share Screen are square
+glyph buttons, their name and state in the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space
+kept in This Browser) Join Audio stays, greyed, saying why. The building strip carries no call controls: a call rides Avatar
+mode, so there is none to control while building
+([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
+
+```
+ ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
+ │ [↖ Edit|👣 Walk] │ [🎙 Join Audio] [📷] [🖥] │ Character Clothes Hair Status │ Behaviour Reactions │ [Say] │
+ └────────────────────────────────────────────────────────────────────────────────────────────────┘
+   (an Editor's only)
+```
+
+### Switching morphs the strip
+
+Pressing Edit or Walk swaps the strips, and the swap reads as **one bar resizing**, not two cards trading places
+(owner, 2026-11-06: "Switching between edit and walk should slide the bar over", then "clicking between edit and
+walk is jarring, no animation to soften the transition and size change on the palette"):
+
+- **The bar morphs.** The strip's surface (its fill, border, rounded corners and shadow) resizes from the outgoing
+  strip's box to the incoming one's, centred as the strip is (at the gutter beside the menu card on a phone), so its
+  width eases from one strip's to the other's instead of jumping. The contents show only inside it as it resizes.
+- **The contents crossfade inside it.** The outgoing contents fade and slide 12 px toward the side they leave
+  (the micro token); the incoming ones slide 12 px in from the other side, a short beat later and a 10 ms cascade
+  apart: on **Walk** the avatar palette's contents come in from the right, on **Edit** the building strip's from the
+  left.
+- **The toggle stays the toggle.** The Edit | Walk toggle and the divider after it do not fade or re-enter: they ride
+  the bar's start edge (on a phone that edge does not move, so they hold still), and the brand pill glides from the
+  side that was on to the side now on.
+- **A flyout closes first.** A category's flyout, More or Search open at the switch goes with its strip and is not
+  there when that strip comes back.
+- **Timing.** 240 ms (just inside the chrome ceiling, [Motion](../004-interface-design/motion.md)), a soft ease-out
+  with no overshoot. Transform and opacity, plus the size of the bar drawn behind the card: the card's own layout
+  never changes, so nothing that measures the strip (its names, crowding, the corners) sees the morph. The outgoing
+  strip is measured once as the switch renders, the incoming one once before it paints. A second press mid-morph
+  starts from the bar as drawn.
+- **Only on a switch.** A board that opens walking or building, a reload, the chrome coming back from Zen or a resize
+  shows the strip at once; the strip coming back from hidden no longer replays the floating chrome's fade-in.
+  Reduced motion (the system setting or the app's) makes the switch instant
+  ([Reduced motion](../004-interface-design/motion.md)).
+
+The numbers are `apps/editor/lib/strip-morph.ts` (pure, unit-tested); the measuring and playing are
+`apps/editor/components/palette/strip-morph-dom.ts` (`captureStrip` before React changes the DOM, from
+`StripMorph.tsx`'s `getSnapshotBeforeUpdate`; `playStripMorph` in its `componentDidUpdate`, before the paint).
 
 ## The category bar
 
 > **In livehuddle** (Work Tracker #423, part 3): the bar is the meeting palette's
-> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write | Rooms, Seating, Amenities, Bar,
-> Recreation, Garden, Meeting | Travel | Stickers** ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
+> ([The meeting board](../012-collaboration/workshop-mode.md#the-palette)): **Write | Rooms, Seats, Perks,
+> Play, Garden, Meet | Travel | Stickers** ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)).
 > There is no Icons button ([Icons](../002-project-scope/not-in-livehuddle.md#icons)), so the two-pane browse below
 > serves Stickers alone. There is no Shapes, Draw, Layout, Ask, Session or Data button and no Session browse; the
 > bar's mechanics below (hover intent, the keyboard, the flyouts, names fit or go) are livehuddle's as written, and
@@ -68,7 +123,7 @@ under the pointer as a category is switched.
   estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs
   need more than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
-  sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
+  sideways while the Edit | Walk toggle and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
   icon; an edge with nothing beyond it stays sharp.
@@ -92,8 +147,7 @@ under the pointer as a category is switched.
 - **The keyboard:** Left and Right walk the bar (wrapping), and an open flyout follows the focus. Down, Enter or
   Space opens a category with its first tile focused. In a flyout the arrows walk the tiles by position across its
   groups, Home and End jump to the ends, Escape closes it and hands the focus back to its button.
-- **One menu at a time:** a flyout is a strip menu ("One menu at a time"); opening Search or the selection mode
-  closes it. Using a tile closes it, so the canvas is clear.
+- **One menu at a time:** a flyout is a strip menu ("One menu at a time"); opening Search closes it. Using a tile closes it, so the canvas is clear.
 - **Above the canvas chrome:** while a flyout (or More, or Search) is open the strip rises to the popover layer
   (`--z-popover`), so what hangs from it sits over an element's toolbar, the style panel and the start panels.
 
@@ -278,10 +332,12 @@ every add.
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
+- **Rooms**, **Play** and **Garden** (livehuddle's meeting palette): between their named groups
+  ([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons and Stickers
 catalogues have none. A category
-has two at most. A divider shows only between two tiles both on the strip, and on a phone's
+has two at most, but Garden, whose four named groups take three. A divider shows only between two tiles both on the strip, and on a phone's
 swiping strip only while a tile on each side of it is at least partly in view: scrolled to where
 the tiles after it are out of sight, it is hidden, never left standing at the strip's edge beside
 More's own divider (`useEdgeDividers`, re-checked as the strip scrolls or resizes). They take room, about
@@ -327,7 +383,7 @@ header hidden.
 
 ## One menu at a time
 
-The strip's menus (selection mode, category, More, Search) and the Explorer popover
+The strip's menus (category, More, Search) and the Explorer popover
 are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
@@ -363,16 +419,20 @@ its bottom-row button. What changes to fit the width:
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
   whole top row.
-- **The category picker is icon-only**, like the selection mode, and the two sit together with no divider between
-  them, each caret 4px from its glyph. The strip's tiles are 32px wide (36px elsewhere), so more fit in view.
+- **The Edit | Walk toggle is glyphs alone** (each side 44px wide, for the thumb), its names in its tooltips and
+  `aria-label`s. **The category picker is icon-only** too, its caret 4px from its glyph. The strip's tiles are 32px wide (36px elsewhere), so more fit in view.
 - **The tiles swipe.** The strip holds the whole current category and fills the row to the
-  right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
+  right gutter; only its tiles scroll sideways, under a finger, while the Edit | Walk toggle, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
   More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
   other category's tiles, and Icons and Stickers their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
+- **The avatar palette's toggle and call group stay put** with Say, while the look and action buttons swipe between them
+  ([The avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette)), so Mute or Leave is always one tap away.
+  Its buttons are the strip's 44px phone buttons; Share Screen is not offered on a phone (no screen picker), so a
+  live call's group is the microphone, the camera and Leave.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Editor app](editor-app.md)). Fit
   stays.
 - **The top corner stacks start below the strip** (68px down rather than
@@ -454,7 +514,7 @@ is its flyout's ("Opening a flyout").
     compositing layer, which costs sub-pixel text anti-aliasing on a 1x display.
     The promotion is gone. Tile captions went from 9px to 10px.
 
-- The dropdown-style controls (selection mode, category, More) sit on a
+- The dropdown-style controls (category, More) sit on a
   faint tint so
   they read as menus beside the plain tiles. The tint is the brand ramp,
   which follows the active tab's theme (`useEditorAccent`), so a Sunset tab
@@ -477,7 +537,7 @@ is its flyout's ("Opening a flyout").
   (`useStripCrowdsCorners`, re-checked as panels dock and the window
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
-  a docked panel (the Eraser panel, say) sat under the strip's right end and
+  a docked panel (the Format panel, say) sat under the strip's right end and
   could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right

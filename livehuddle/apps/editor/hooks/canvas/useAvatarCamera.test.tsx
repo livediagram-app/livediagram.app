@@ -2,6 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { STRIP_MORPH_MS } from '@/lib/strip-morph';
 import { useAvatarCamera } from './useAvatarCamera';
 
 // docs/specs/008-canvas/avatar-mode.md "The camera": entering and Fit centre the character at 100%, the zoom
@@ -86,13 +87,43 @@ describe('useAvatarCamera', () => {
     expect(fitToScreen).toHaveBeenCalledOnce();
   });
 
-  it('centres the character at 100% on entering the mode', () => {
+  // "The Edit | Walk toggle": switching to Walk glides in, as Edit glides out.
+  it('glides to the character at 100% on entering the mode', () => {
     const { rerender, viewport } = setup(false);
     rerender({ walking: true });
     act(() => {
-      vi.runOnlyPendingTimers();
+      vi.advanceTimersByTime(STRIP_MORPH_MS / 2);
+    });
+    const mid = viewport.get();
+    expect(mid.zoom).toBeGreaterThan(0.5);
+    expect(mid.zoom).toBeLessThan(1);
+    act(() => {
+      vi.advanceTimersByTime(STRIP_MORPH_MS * 2);
     });
     expect(viewport.get()).toEqual({ zoom: 1, offset: { x: 400, y: 350 } });
+  });
+
+  it('lands at once when a load opens walking', () => {
+    const { viewport } = setup(true);
+    act(() => {
+      vi.advanceTimersByTime(20);
+    });
+    expect(viewport.get()).toEqual({ zoom: 1, offset: { x: 400, y: 350 } });
+  });
+
+  it('stops the glide where it got to when the walk ends', () => {
+    const { rerender, viewport } = setup(false);
+    rerender({ walking: true });
+    act(() => {
+      vi.advanceTimersByTime(STRIP_MORPH_MS / 2);
+    });
+    rerender({ walking: false });
+    const stopped = viewport.get();
+    act(() => {
+      vi.advanceTimersByTime(STRIP_MORPH_MS * 2);
+    });
+    expect(viewport.get()).toEqual(stopped);
+    expect(stopped.zoom).toBeLessThan(1);
   });
 
   it('anchors the zoom on where the character stands on screen', () => {
@@ -102,6 +133,52 @@ describe('useAvatarCamera', () => {
     expect(result.current.zoomAnchor()).toEqual({
       x: 10 + 500 + 2 * (100 - 500),
       y: 20 + 400 + 2 * (50 - 400),
+    });
+  });
+
+  // "The Edit | Walk toggle": Edit frames the whole tab, only when a walk ends on the same tab.
+  describe('fitOnEdit', () => {
+    function withFit(walking: boolean, tabId = 't1') {
+      const viewport = createViewportStore(0.5);
+      const fitOnEdit = vi.fn();
+      const hook = renderHook(
+        (p: { walking: boolean; tabId: string }) =>
+          useAvatarCamera({
+            walking: p.walking,
+            tabId: p.tabId,
+            viewport,
+            canvasMainRef: { current: canvas },
+            fitToScreen: vi.fn(),
+            fitOnEdit,
+          }),
+        { initialProps: { walking, tabId } },
+      );
+      return { ...hook, fitOnEdit };
+    }
+
+    it('fits once when a walk ends', () => {
+      const { rerender, fitOnEdit } = withFit(true);
+      rerender({ walking: false, tabId: 't1' });
+      expect(fitOnEdit).toHaveBeenCalledOnce();
+      rerender({ walking: false, tabId: 't1' });
+      expect(fitOnEdit).toHaveBeenCalledOnce();
+    });
+
+    it('never fits on a load, building or walking', () => {
+      expect(withFit(false).fitOnEdit).not.toHaveBeenCalled();
+      expect(withFit(true).fitOnEdit).not.toHaveBeenCalled();
+    });
+
+    it('does not fit on entering the walk', () => {
+      const { rerender, fitOnEdit } = withFit(false);
+      rerender({ walking: true, tabId: 't1' });
+      expect(fitOnEdit).not.toHaveBeenCalled();
+    });
+
+    it('does not fit when the walk ends with a change of tab', () => {
+      const { rerender, fitOnEdit } = withFit(true);
+      rerender({ walking: false, tabId: 't2' });
+      expect(fitOnEdit).not.toHaveBeenCalled();
     });
   });
 });

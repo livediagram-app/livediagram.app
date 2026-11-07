@@ -8,8 +8,10 @@ import { createShape, createSticky, createText, type Element } from '@livehuddle
 import { heading } from './template-session-parts';
 import {
   officePlan,
-  walkIn,
-  WALK_IN_BUTTON_W,
+  wayIn,
+  padCentreClearBelow,
+  wayInBeside,
+  WAY_IN_PAD_W,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -114,10 +116,10 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
     360,
     'emoji-desktop',
     'Grab any desk, take calls in a booth, and meet at the coffee bar. Everyone is welcome to work here.',
-    walkIn(
+    wayIn(
       x0 + width,
-      y0 + HEAD + COWORK_H + BELOW / 2,
-      'Press Walk In (or W) to come in. Sit at any desk, step into a booth for a call, and say hello with Enter.',
+      y0 + HEAD + COWORK_H,
+      'You arrive on the Avatar Pad. Sit at any desk, step into a booth for a call, and say hello with Enter.',
     ),
   );
 }
@@ -186,13 +188,14 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
       ...board,
       // Under the board, beside the pod (docs/specs/012-collaboration/virtual-office-template.md "Spaces"), not under
       // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
-      // the bottom-right cluster floats, and a button under the pod sat under the cluster. Here it is level with the
-      // pod's lower half, with open floor under it and a short walk round to the door.
-      ...walkIn(
+      // the bottom-right cluster floats, and a way in under the pod sat under the cluster. Here the pad is level with
+      // the pod's lower half, with open floor under it and a short walk round to the door.
+      // Never so high that someone standing on it would stand in the board.
+      ...wayInBeside(
         x0 + width,
-        (boardBottom + y0 + HEAD + POD_H) / 2,
-        'Press Walk In (or W), take a desk, and meet at the table for the stand-up.',
-        BOARD_W - WALK_IN_BUTTON_W - 20,
+        Math.max((boardBottom + y0 + HEAD + POD_H) / 2, padCentreClearBelow(boardBottom)),
+        'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
+        BOARD_W - WAY_IN_PAD_W - 20,
       ),
     ],
   );
@@ -256,10 +259,10 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
       focus,
-      ...walkIn(
+      ...wayIn(
         x0 + width,
-        y0 + HEAD + HALL_H + BELOW / 2,
-        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
+        y0 + HEAD + HALL_H,
+        'You arrive on the Avatar Pad: take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
       ),
     ],
   );

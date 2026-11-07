@@ -71,7 +71,7 @@ adds seven elements in one commit.
 
 ## Presentation and UX
 
-Drawings: see the spec. Amenities' flyout shows the three named groups. Tile captions: Printer, Copier, Lockers, Coat
+Drawings: see the spec. Perks' flyout shows the three named groups. Tile captions: Printer, Copier, Lockers, Coat
 Rack, Umbrella Stand, Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle, Restroom, Toilet Cubicle, Washbasin,
 Hand Dryer.
 
@@ -115,6 +115,6 @@ FurnitureView names each (`NOUN`: "Printer", "Copier", "Lockers", "Coat rack", "
 
 ## Defaults ledger
 
-- Amenities holds all thirteen pieces in three named groups, rather than a new Kitchen or Restroom category (a category
+- Perks holds all thirteen pieces in three named groups, rather than a new Kitchen or Restroom category (a category
   per room would double the Space bar).
 - The preset reports `Room` in telemetry, as a Card preset reports `Card`.

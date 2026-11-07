@@ -7,11 +7,10 @@ the shared tour rules hold.
 
 ## Domain language
 
-| Term              | Means                                                                             |
-| ----------------- | --------------------------------------------------------------------------------- |
-| **Avatar tour**   | This tour. On the Start Tour button: **Start Avatar Tour**                        |
-| **Avatar button** | The bottom-bar button that opens the Avatar panel ([Avatar mode](avatar-mode.md)) |
-| **Avatar panel**  | The character sheet, a popover over the Avatar button                             |
+| Term               | Means                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| **Avatar tour**    | This tour. On the Start Tour button: **Start Avatar Tour**                         |
+| **Avatar palette** | The palette strip while walking ([Avatar mode](avatar-mode.md#the-avatar-palette)) |
 
 ## Where it appears
 
@@ -36,34 +35,31 @@ the shared tour rules hold.
 
 ## Tour content
 
-None. The tour opens the Avatar panel to show it and, at the end or on a Skip, leaves it as it found it: closed if
-the tour opened it, open again if the person had it open (the push step closes it to show the canvas); it changes no costume, plays no reaction,
-sends no message and pushes nobody. There is nothing to take away and nothing in the document's history.
+None. Everything it shows is the avatar palette, on screen for as long as the walk lasts, so it opens nothing and
+closes nothing; it changes no costume, plays no reaction, sends no message and pushes nobody. There is nothing to take away and nothing in the document's history.
 
 ## The steps
 
 Five steps, then an outro card, which sits outside the step count. There is no welcome card. Each step rings an
 element by its `data-tour-id`. The exact strings live in `apps/editor/components/tour/avatar-tour-steps.ts`.
 
-1. **Your Avatar**: rings the Avatar button (`avatar-button`). The character sheet and everything your character
-   can do live here.
-2. **Make It Yours**: opens the Avatar panel if it is closed and rings its character section (`avatar-character`):
-   gender, clothing, hair and size, the dice for a whole new look, and a [status](avatar-mode.md#status) so people
-   know whether you are free; on a desktop, that right-clicking your character swaps its gender. The shirt is always
-   your colour, so people know which character is you.
-3. **Behaviour and Reactions**: rings the panel's action rows (`avatar-actions`). Jumping jacks, a wave, a spin,
-   a cheer or a dance, and confetti, hearts and more thrown around you.
-4. **Say Something**: rings the panel's Send a Message button (`avatar-message`). Press Enter to type above your
-   head (on a desktop), or use this button; the bubble floats up for everyone, up to 50 words. **Left out for a
-   Viewer**, who may not speak, up front so the count stays honest.
-5. **Give Someone a Push**: closes the panel and rings your own character (`avatar-self`). Click someone else's
-   character to walk over and give them a playful push; arrow keys walk, Space hops.
+1. **Your Avatar Palette**: rings the strip (`palette`, the anchor the building strip's card also carries; only the visible one is found). While you walk, the palette dresses your character
+   and holds everything it can do.
+2. **Make It Yours**: rings the look's buttons (`avatar-character`): Gender (Randomise for a whole new look, and
+   gender), Clothes, Hair (with its colour), and a [status](avatar-mode.md#status) so people know whether you are free; on a desktop,
+   that right-clicking your character swaps its gender. The shirt is always your colour, so people know which
+   character is you.
+3. **Actions and React**: rings the action buttons on the right (`avatar-actions`). Jumping jacks, a wave, a
+   spin, a cheer or a dance, and confetti, hearts and more thrown around you.
+4. **Say Something**: rings the palette's Say button (`avatar-message`). Press Enter to type above your head (on a
+   desktop), or use this button; the bubble floats up for everyone, up to 50 words. **Left out for a Viewer**, who
+   may not speak, up front so the count stays honest.
+5. **Give Someone a Push**: rings your own character (`avatar-self`). Click someone else's character to walk over
+   and give them a playful push; arrow keys walk, Space hops.
 6. **You're Ready to Roam** (outro): a help-centre link to the Avatar mode article (new tab) and **Start**,
    which completes the tour.
 
 - A step whose target never appears is skipped, as in every tour.
-- Step 2 opens the panel the way a person would (pressing the Avatar button); step 5 closes it so the character is
-  in view. Back from step 5 opens it again. Leaving the tour (Skip, the outro) closes it if the tour opened it.
 - If the tour can no longer run where it started (the person leaves Avatar mode, or opens another tab) it ends as
   skipped.
 
@@ -85,7 +81,7 @@ Every tour's funnel, with its own tokens:
   load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `AvatarTourOffer` counted
   **No**; nothing sends Closed now.
 - **Start**: `UI` · `Started` · `AvatarTour` on a press of the button (or the Settings rerun).
-- **Stage views**: `UI` · `View` · `AvatarTourStep<Id>` once per step entry (`AvatarTourStepAvatarButton`,
+- **Stage views**: `UI` · `View` · `AvatarTourStep<Id>` once per step entry (`AvatarTourStepPalette`,
   `AvatarTourStepCharacter`, `AvatarTourStepActions`, `AvatarTourStepMessage`, `AvatarTourStepPush`,
   `AvatarTourStepOutro`).
 - **End**: `UI` · `Ended` · `AvatarTourCompleted` | `AvatarTourSkipped`.

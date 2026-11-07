@@ -1,7 +1,7 @@
 // The Jukebox on this device (docs/specs/009-elements/social-pieces.md "Jukebox"): whether you listen ('off' until
 // you press Play once, then 'on' or 'muted', remembered here), which jukebox's area you stand in, and the one audio
 // element every jukebox plays through. Module stores read through useSyncExternalStore, so only the jukeboxes and the
-// Avatar panel row re-render when they change. Nothing here is shared with anyone: what you hear is yours.
+// avatar palette's Jukebox Music switch re-render when they change. Nothing here is shared with anyone: what you hear is yours.
 
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
@@ -43,7 +43,7 @@ export function setJukeboxListening(next: JukeboxListening): void {
   applyArea();
 }
 
-/** The face's button and the Avatar panel row: Play the first time, then Mute and Unmute. */
+/** The face's button and the avatar palette's switch: Play the first time, then Mute and Unmute. */
 export function toggleJukeboxListening(): void {
   setJukeboxListening(current() === 'on' ? 'muted' : 'on');
 }

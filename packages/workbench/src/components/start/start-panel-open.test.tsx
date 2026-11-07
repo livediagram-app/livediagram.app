@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   noteStartPanelLeft,
   setStartPanelOpen,
+  startPanelIsOpen,
   startPanelJustLeft,
   useStartPanelOpen,
 } from './start-panel-open';
@@ -19,6 +20,14 @@ describe('start panel open', () => {
     expect(result.current).toBe(true);
     act(() => setStartPanelOpen(false));
     expect(result.current).toBe(false);
+  });
+
+  it('answers a one-off read the same way, for listeners outside React', () => {
+    expect(startPanelIsOpen()).toBe(false);
+    setStartPanelOpen(true);
+    expect(startPanelIsOpen()).toBe(true);
+    setStartPanelOpen(false);
+    expect(startPanelIsOpen()).toBe(false);
   });
 });
 

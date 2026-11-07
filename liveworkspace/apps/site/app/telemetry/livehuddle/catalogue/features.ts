@@ -91,8 +91,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser and format painter options.',
-  { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: format painter options.',
+  { typeIn: (t) => /^Format/.test(t ?? '') },
 );
 
 // Shape recognition on a pen stroke (docs/specs/023-draw-mode/draw-mode.md "Shape recognition"): Alt, or the chip on a
@@ -365,7 +365,6 @@ export const PALETTE_USE: MetricStack = {
 // The canvas selection modes, one chart per mode, and the options set inside
 // them (Canvas Modes tab has the rankings).
 const MODE_TITLES: Record<string, string> = {
-  Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
   AvatarMode: 'Avatar Mode',
 };

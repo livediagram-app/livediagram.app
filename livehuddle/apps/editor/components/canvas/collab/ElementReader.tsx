@@ -2,15 +2,15 @@
 
 // An element opened large while walking (docs/specs/008-canvas/avatar-mode.md "The reader"): a `read` kind, or a
 // `use` piece with no main action right now (an idle Screen, a Room Sign nobody may knock on). Sticky and Text show
-// their words at reading size, an Image its picture; a Screen and a Room Sign say what they show; everything else is
+// their words at reading size, an Image its picture; a Screen says what it shows and a Room Sign opens its own door panel (RoomSignReader); everything else is
 // a still, read-only copy of its own face scaled to fit. Mounted only while open.
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { roomSignLine, inUseFor, type BoxedElement, type Element } from '@livehuddle/document';
+import type { BoxedElement, Element } from '@livehuddle/document';
 import { kindLabel } from '@/lib/element-names';
-import { useMeetingLive } from '@/lib/office/meeting-live';
 import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
 import { lucideImage, lucideMusic } from '@liveworkspace/icons/lucide';
 import { ReaderShell } from './ReaderShell';
+import { RoomSignReader } from './RoomSignReader';
 import { ScreenReaderBody } from './ScreenReaderBody';
 
 // A copy is never blown up past this: a tiny badge at 3x already reads, and more only pixelates.
@@ -37,6 +37,9 @@ export function useElementReader(elements: readonly Element[]): {
 }
 
 export function ElementReader({ element, onClose }: { element: Element; onClose: () => void }) {
+  // The Room Sign is a door panel of its own: its room's name, status, who is inside, Knock and Walk In.
+  if (element.type === 'shape' && element.shape === 'room-sign')
+    return <RoomSignReader elementId={element.id} onClose={onClose} />;
   const label = 'label' in element && typeof element.label === 'string' ? element.label.trim() : '';
   const title =
     label && element.type !== 'text' && element.type !== 'sticky' ? label : kindLabel(element);
@@ -76,8 +79,6 @@ function ReaderBody({ element }: { element: Element }) {
         description="An Editor sets what it plays in its menu. Then a press anywhere on it plays or mutes it."
       />
     );
-  if (element.type === 'shape' && element.shape === 'room-sign')
-    return <SignBody id={element.id} />;
   // Arrows are never under a walking click (lib/avatar-press-target), so nothing else reaches here.
   return element.type === 'arrow' ? null : <FaceCopy element={element} />;
 }
@@ -99,23 +100,6 @@ function ImageBody({ id }: { id: string }) {
       />
     );
   return <img src={src} alt="" className="mx-auto max-h-[70dvh] w-auto max-w-full rounded-lg" />;
-}
-
-function SignBody({ id }: { id: string }) {
-  const live = useMeetingLive(id);
-  const sign = live && !('inside' in live) ? live : null;
-  const [now] = useState(() => Date.now());
-  if (!sign) return <p className="text-[16px] font-semibold">Free</p>;
-  const ms = sign.since === null ? 0 : now - sign.since;
-  return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[22px] font-semibold">{sign.name}</p>
-      <p className="text-[16px]">{roomSignLine(sign.status, sign.count, ms)}</p>
-      {sign.status === 'in-use' ? (
-        <p className="text-[14px] text-slate-500 dark:text-slate-400">In use for {inUseFor(ms)}</p>
-      ) : null}
-    </div>
-  );
 }
 
 // A still copy of the element's own face, scaled to fit: taken once as the reader opens, its ids stripped so no

@@ -28,9 +28,7 @@ export type DockPanel =
   | 'explorer'
   | 'collaborate'
   // The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up'
-  // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
-  | 'avatar';
+  | 'tidy-up';
 
 export type { DockAnchor };
 
@@ -40,7 +38,6 @@ export type { DockAnchor };
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
-  else if (id === 'avatar') track('UI', 'Opened', 'AvatarPanel');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

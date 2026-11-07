@@ -22,16 +22,14 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // are not a MovablePanel and stay pinned bottom-right. The Palette, the
 // Explorer and Layers are not corner panels (the strip, and popovers off
 // their buttons, docs/specs/007-editor/toolbar-layout.md), nor the retired Timer popover
-// (docs/specs/012-collaboration/session-tools.md), nor the Avatar panel (a popover off its button,
+// (docs/specs/012-collaboration/session-tools.md), nor the retired Avatar panel (the avatar palette now,
 // docs/specs/008-canvas/avatar-mode.md), nor the retired AI assistant panel: a stored layout naming them is
 // read like any unknown id.
 export type PanelId =
   | 'collaborate'
   | 'minimap'
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, present only while the Eraser
-  // tool is.
-  | 'eraser'
-  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
+  // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, present only while it is on.
+  // (The Eraser Panel's `eraser` left with the Eraser; a stored layout naming it drops it.)
   | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
@@ -41,7 +39,7 @@ export const PANEL_CORNERS: readonly PanelCorner[] = [
   'bottom-right',
 ];
 
-export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'eraser', 'format'];
+export const PANEL_IDS: readonly PanelId[] = ['collaborate', 'minimap', 'format'];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
 // plain { x, y } object literals to freePanel().
@@ -64,9 +62,8 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   // button, so its corner is only where a stored layout falls back to.
   collaborate: 'bottom-right',
   minimap: 'bottom-left',
-  // The tool panels: bottom-right, above the bottom cluster. Each exists only while its tool does, so it joins and
+  // The tool panel: bottom-right, above the bottom cluster. It exists only while its tool does, so it joins and
   // leaves its corner stack.
-  eraser: 'bottom-right',
   format: 'bottom-right',
 };
 

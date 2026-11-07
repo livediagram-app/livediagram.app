@@ -96,16 +96,18 @@ describe('useCanvasCall', () => {
           ...(viewport ? { viewport } : {}),
         }),
       );
+    // Zoomed to 200% about the screen's middle: the middle shows canvas (1640, 320), and the area spreads half the
+    // screen over the zoom either side of it (1320 to 1960 across, 145 to 495 down), each edge snapped.
     const { result } = run({ offset: { x: -1000, y: 30 }, zoom: 2, width: 1280, height: 700 });
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(
       expect.objectContaining({
         canShare: true,
-        view: { x: 1024, y: 0, width: 640, height: 320 },
+        view: { x: 1344, y: 128, width: 640, height: 384 },
       }),
     );
     expect(result.current.bubbles.self).toMatchObject({ at: { x: 0, y: 0 }, color: '#00f' });
     // The bubbles wrap inside what is surely on screen: half a snap step in from each edge (#487).
-    expect(result.current.bubbles.view).toEqual({ left: 1056, width: 576 });
+    expect(result.current.bubbles.view).toEqual({ left: 1376, width: 576 });
     // Each edge snaps on its own (#503): the screen's right edge at 1410 holds the bubbles' at 1376, where a snapped
     // width (1472) would have put it at 1440, past the screen.
     const panned = run({ offset: { x: 30, y: 0 }, zoom: 1, width: 1440, height: 900 });
@@ -117,6 +119,37 @@ describe('useCanvasCall', () => {
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
     run();
     expect(hook.useProximityCall).toHaveBeenLastCalledWith(expect.objectContaining({ view: null }));
+  });
+
+  // video-and-screen-bubbles.md "Who sees what": the canvas zooms about the screen's middle, so at any zoom the area
+  // handed to the call is the one on screen. Anchored at the top-left it left everyone right of and below a centred
+  // character unreceived when zoomed in, and their bubbles were never subscribed.
+  it.each([0.5, 1, 1.5, 2, 3])('centres the visible area on the screen at %s zoom', (zoom) => {
+    const width = 1440;
+    const height = 900;
+    const me = { x: 5000, y: 3000 };
+    // The view centred on your character, as walking keeps it.
+    const offset = { x: width / 2 - me.x, y: height / 2 - me.y };
+    renderHook(() =>
+      useCanvasCall({
+        props,
+        canvasTool: 'avatar',
+        avatar: { pos: me, walkTo: vi.fn() },
+        avatarScale: 1,
+        viewport: { offset, zoom, width, height },
+      }),
+    );
+    const { view } = hook.useProximityCall.mock.lastCall![0] as {
+      view: { x: number; y: number; width: number; height: number };
+    };
+    // Its middle is your character, within half a snap step.
+    expect(Math.abs(view.x + view.width / 2 - me.x)).toBeLessThanOrEqual(32);
+    expect(Math.abs(view.y + view.height / 2 - me.y)).toBeLessThanOrEqual(32);
+    // And it reaches each screen edge, within half a snap step.
+    expect(Math.abs(view.x - (me.x - width / zoom / 2))).toBeLessThanOrEqual(32);
+    expect(Math.abs(view.x + view.width - (me.x + width / zoom / 2))).toBeLessThanOrEqual(32);
+    expect(Math.abs(view.y - (me.y - height / zoom / 2))).toBeLessThanOrEqual(32);
+    expect(Math.abs(view.y + view.height - (me.y + height / zoom / 2))).toBeLessThanOrEqual(32);
   });
 
   // docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls": every room on the tab is a call, and

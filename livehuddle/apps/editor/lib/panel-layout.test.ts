@@ -31,9 +31,9 @@ describe('panel-layout', () => {
     // Left its old corner...
     expect(next.corners['bottom-right']).toEqual([]);
     // ...and joined below whatever is in the target corner.
-    expect(dockPanel(next, 'eraser', 'top-right').corners['top-right']).toEqual([
+    expect(dockPanel(next, 'format', 'top-right').corners['top-right']).toEqual([
       'collaborate',
-      'eraser',
+      'format',
     ]);
   });
 
@@ -59,23 +59,22 @@ describe('panel-layout', () => {
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
     // Stack two in the bottom-right, then move the first away; the second leads the stack.
-    const stacked = dockPanel(defaultPanelLayout(), 'eraser', 'bottom-right');
-    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'eraser']);
+    const stacked = dockPanel(defaultPanelLayout(), 'format', 'bottom-right');
+    expect(stacked.corners['bottom-right']).toEqual(['collaborate', 'format']);
     const next = dockPanel(stacked, 'collaborate', 'top-left');
-    expect(next.corners['bottom-right']).toEqual(['eraser']);
+    expect(next.corners['bottom-right']).toEqual(['format']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
-    expect(resolvePlacement(layout, 'eraser')).toEqual({
+    expect(resolvePlacement(layout, 'format')).toEqual({
       mode: 'corner',
       corner: 'bottom-right',
     });
   });
 
-  it('homes every tool panel bottom-right', () => {
-    for (const id of ['eraser', 'format'] as const)
-      expect(DEFAULT_PANEL_CORNER[id]).toBe('bottom-right');
+  it('homes the tool panel bottom-right', () => {
+    expect(DEFAULT_PANEL_CORNER.format).toBe('bottom-right');
   });
 
   describe('normalize', () => {
@@ -83,13 +82,13 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['format', 'bogus', 'format'],
-          'top-right': ['format', 'eraser'],
+          'top-right': ['format', 'minimap'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['format']);
-      // format already seen in top-left, so top-right keeps only eraser.
-      expect(layout.corners['top-right']).toEqual(['eraser']);
+      // format already seen in top-left, so top-right keeps only minimap.
+      expect(layout.corners['top-right']).toEqual(['minimap']);
     });
 
     // Poll and Vote moved to the Session strip, then left (docs/specs/002-project-scope/not-in-livehuddle.md).
@@ -125,6 +124,17 @@ describe('panel-layout', () => {
         free: { ai: { x: 5, y: 6 } },
       });
       expect(layout.corners['bottom-right']).toEqual(['collaborate']);
+      expect(layout.free).toEqual({});
+    });
+
+    // The Eraser Panel left with the Eraser (docs/specs/002-project-scope/not-in-livehuddle.md); a stored layout
+    // naming it drops it.
+    it('ignores the retired Eraser panel in a stored layout', () => {
+      const layout = normalizePanelLayout({
+        corners: { 'bottom-right': ['collaborate', 'eraser', 'format'] },
+        free: { eraser: { x: 5, y: 6 } },
+      });
+      expect(layout.corners['bottom-right']).toEqual(['collaborate', 'format']);
       expect(layout.free).toEqual({});
     });
 

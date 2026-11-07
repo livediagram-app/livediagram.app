@@ -24,7 +24,8 @@ const bubble: SpeechBubble = {
   x: 0,
   y: 0,
   bornAt: 0,
-  flightMs: 4000,
+  // The shortest flight a message gets (two words or fewer).
+  flightMs: 7000,
 };
 const props = {
   bubbles: [bubble],
@@ -127,9 +128,9 @@ describe('the speech bubbles flight', () => {
         />,
       );
       const card = container.querySelector<HTMLElement>('[aria-hidden].w-max')!;
-      // Starting with its top at 160, three seconds in it would have risen 54px (a top at 106); it stops at 120, so
-      // it stands 40px up, not 54.
-      vi.advanceTimersByTime(3000);
+      // Starting with its top at 160, 3.5 seconds in it would have risen 42px (a top at 118); it stops at 120, so
+      // it stands 40px up, not 42.
+      vi.advanceTimersByTime(3500);
       const y = Number(/, (-?[\d.]+)px\) scale/.exec(card.style.transform)![1]);
       expect(y).toBeCloseTo(-40, 6);
     });

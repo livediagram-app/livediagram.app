@@ -2,10 +2,10 @@
 // floors, one tab each, joined by named Elevators.
 //
 // - Lobby (the first tab, Marble): a Lobby Bar, a Ballroom with a Stage, a Business Centre and a Library Lounge round
-//   an open lobby with a reception, sofas on rugs, four Columns and the Lobby Lift; the Walk In at the front door.
-// - Suites (Carpet): six suites either side of a corridor, the Suites Lift and a Directory at its end.
-// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a
-//   garden round a Swimming Pool, the Rooftop Lift and a Directory.
+//   an open lobby with a reception, sofas on rugs, four Columns and the Lobby Lift; the Avatar Pad at the front door.
+// - Suites (Carpet): six suites either side of a corridor, the Suites Lift, a Directory and an Avatar Pad at its end.
+// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a garden
+//   round a Swimming Pool, the Rooftop Lift, a Directory and an Avatar Pad.
 //
 // Indoors, every room's Door opens onto the floor's open lobby or corridor (campusPlan, IndoorRoom). Each builder is
 // pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -131,7 +131,7 @@ export function buildHotelLobby(cx: number, cy: number): Element[] {
         'Three floors to stay on: the lobby, bar and ballroom here, the suites and the rooftop by the Lobby Lift.',
     },
     gateAt: LOBBY_MID,
-    hint: 'Press Walk In (or W) and come in at the front door. The Lobby Lift takes you up to the suites and the rooftop.',
+    hint: 'You arrive on the Avatar Pad by the front door. The Lobby Lift takes you up to the suites and the rooftop.',
     extra: (left, top) => [
       createShape('focus-button', left + BALLROOM.x + 580, top + BALLROOM.y + 60),
     ],
@@ -183,6 +183,9 @@ const SUITES_FLOOR: OfficePiece[] = [
   // The lift at the corridor's end, the Directory beside it, and plants along the corridor.
   lift(60, 510, 'Suites Lift'),
   { kind: 'directory', x: 200, y: 520 },
+  // The floor's Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): in the corridor
+  // past the Directory, so someone who changes floor from the tab bar arrives by the lift.
+  { kind: 'avatar-pad', x: 290, y: 560 },
   { kind: 'plant', x: 2120, y: 520 },
 ];
 
@@ -255,6 +258,8 @@ const TERRACE: OfficePiece[] = [
   // The lift and the Directory beside it.
   lift(60, 880, 'Rooftop Lift'),
   { kind: 'directory', x: 200, y: 890 },
+  // The floor's Avatar Pad, past the Directory, under the Rooftop Bar.
+  { kind: 'avatar-pad', x: 300, y: 920 },
 ];
 
 export function buildHotelRooftop(cx: number, cy: number): Element[] {

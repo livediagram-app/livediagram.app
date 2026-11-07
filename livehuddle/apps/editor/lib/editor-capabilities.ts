@@ -1,7 +1,8 @@
 // What this session may do in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state").
 // Presentation only: the server is the rule, so a flag here decides what renders and what a gesture starts,
-// never what is allowed. An Editor holds every flag; a Viewer none; a Participant takes part, uses the pieces and
-// always walks, and changes no content (docs/specs/013-workspace/share-roles.md "A Participant walks").
+// never what is allowed. An Editor holds every flag; a Viewer none but walking, always; a Participant takes part,
+// uses the pieces and always walks, and changes no content (docs/specs/013-workspace/share-roles.md "A Participant
+// walks", "Always walking").
 //
 // `isReadOnly` stays true for a Participant, so every structural gate in the editor (the mode switch, tabs, the
 // palette, connectors, frames, layers, templates) stays shut without a change.
@@ -23,7 +24,8 @@ export type EditorCapabilities = {
   remove: (el: Element) => boolean;
   // Open or close a Door (docs/specs/009-elements/room-builder.md "Opening and closing").
   swingDoor: (el: Element) => boolean;
-  // Held in Avatar mode with no way out: a Participant's (useCanvasTool `alwaysWalking`).
+  // Held in Avatar mode with no way out: a Participant's and a Viewer's, never an Editor's (useCanvasTool
+  // `alwaysWalking`; share-roles.md "Always walking").
   alwaysWalks: boolean;
 };
 
@@ -65,7 +67,7 @@ export function resolveEditorCapabilities(input: {
       recolour: never,
       remove: never,
       swingDoor: never,
-      alwaysWalks: false,
+      alwaysWalks: true,
     };
   }
   return {

@@ -1,0 +1,175 @@
+/* The Avatar-mode status signatures' loops (docs/specs/008-canvas/avatar-mode.md "Status"), drawn by
+   components/avatar-status-effects.tsx and imported once by each editor's globals.css. Canvas motion, not chrome.
+
+   Every loop moves a few SVG rects in whole sprite pixels (a CSS px on an SVG element is one user unit, one sprite
+   pixel), stepped with step-end so the art jumps from frame to frame like pixel art rather than sliding between
+   them. A stepped animation also changes the picture only a few times a cycle, so the browser has little to repaint
+   however many characters wear one. No timers, no JS. Each element's resting style is its drawn frame, which is what
+   reduced motion (below) holds. */
+
+/* Angry: a puff rises from an ear, drifting outward, and fades. The late puff runs half a cycle behind. */
+.avatar-status-steam-l {
+  animation: avatar-status-steam-l 1.6s step-end infinite;
+}
+.avatar-status-steam-r {
+  animation: avatar-status-steam-r 1.6s step-end infinite;
+}
+@keyframes avatar-status-steam-l {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(0, -1px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-1px, -2px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(-1px, -3px);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-1px, -3px);
+    opacity: 0;
+  }
+}
+@keyframes avatar-status-steam-r {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(0, -1px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(1px, -2px);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translate(1px, -3px);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(1px, -3px);
+    opacity: 0;
+  }
+}
+
+/* Available: the big star and the small one take turns. */
+.avatar-status-blink {
+  animation: avatar-status-blink 1.6s step-end infinite;
+}
+@keyframes avatar-status-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Half a cycle behind its partner (a negative delay, so it is mid-loop from the first frame). */
+.avatar-status-steam-l.avatar-status-late,
+.avatar-status-steam-r.avatar-status-late,
+.avatar-status-blink.avatar-status-late {
+  animation-delay: -0.8s;
+}
+
+/* Need Help: the "?" bobs a pixel. */
+.avatar-status-bob {
+  animation: avatar-status-bob 1.2s step-end infinite;
+}
+@keyframes avatar-status-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+/* Celebrating: confetti falls four pixels, sidesteps one, and fades; each piece its own beat. */
+.avatar-status-fall {
+  animation: avatar-status-fall 2s step-end infinite;
+}
+.avatar-status-fall-1 {
+  animation-delay: -0.5s;
+}
+.avatar-status-fall-2 {
+  animation-delay: -1s;
+}
+.avatar-status-fall-3 {
+  animation-delay: -1.5s;
+}
+@keyframes avatar-status-fall {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(0, 1px);
+  }
+  40% {
+    transform: translate(1px, 2px);
+  }
+  60% {
+    transform: translate(1px, 3px);
+  }
+  80% {
+    transform: translate(0, 4px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(0, 4px);
+    opacity: 0;
+  }
+}
+
+/* Thinking: the bubble's three dots light in turn, then all dim together. */
+.avatar-status-dot {
+  animation: avatar-status-dot 1.8s step-end infinite backwards;
+}
+.avatar-status-dot-1 {
+  animation-delay: 0.3s;
+}
+.avatar-status-dot-2 {
+  animation-delay: 0.6s;
+}
+@keyframes avatar-status-dot {
+  0% {
+    opacity: 0.2;
+  }
+  25% {
+    opacity: 1;
+  }
+}
+
+/* Out to Lunch: the sandwich lifted for a bite every five seconds. */
+.avatar-status-bite {
+  animation: avatar-status-bite 5s step-end infinite;
+}
+@keyframes avatar-status-bite {
+  0% {
+    transform: translateY(0);
+  }
+  80% {
+    transform: translateY(-2px);
+  }
+  92% {
+    transform: translateY(0);
+  }
+}
+
+/* Reduced motion, the system's or the in-app preference: every signature holds its drawn frame. */
+@media (prefers-reduced-motion: reduce) {
+  [class*='avatar-status-'] {
+    animation: none !important;
+  }
+}
+:root.reduce-motion [class*='avatar-status-'] {
+  animation: none !important;
+}

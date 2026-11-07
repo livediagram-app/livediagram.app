@@ -1,7 +1,8 @@
 // Whether a template start panel is on screen (docs/specs/007-editor/start-diagramming.md "The tours wait"): a tour
 // that waits holds its offer until it has gone, so the welcome card never lands over the panel. One panel shows at a
 // time (the active tab's). liveplanner's tours never wait (start-panel.md there): its panel shows only on an empty
-// tab, where no tour has a subject.
+// tab, where no tour has a subject. Walking waits too (docs/specs/008-canvas/avatar-mode.md "Not over a start"): the
+// character never moves behind a start.
 import { useSyncExternalStore } from 'react';
 import { createListeners } from '../../lib/listeners';
 
@@ -12,6 +13,12 @@ export function setStartPanelOpen(next: boolean): void {
   if (open === next) return;
   open = next;
   listeners.notify();
+}
+
+// The same, read once, for window-level listeners that run outside React (the walk's keys and clicks,
+// @liveworkspace/avatar/walk-guard).
+export function startPanelIsOpen(): boolean {
+  return open;
 }
 
 export function useStartPanelOpen(): boolean {

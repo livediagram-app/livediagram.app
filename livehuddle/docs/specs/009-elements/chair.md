@@ -20,7 +20,7 @@ portal ([Portal element](portal-element.md)) works.
 
 ## The element
 
-A **shape kind**, `chair`, in the palette's **Seating** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the desk, the sofa and the
+A **shape kind**, `chair`, in the palette's **Seats** category ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)), beside the desk, the sofa and the
 meeting table.
 
 - Drawn as a chair seen from above-front: a seat, a back, and a shadow, so it
@@ -146,7 +146,7 @@ reaches the stored document or undo.
 
 ## Desk and sofa
 
-Two more pieces of furniture seat a character exactly as a chair does, beside it in **Seating**:
+Two more pieces of furniture seat a character exactly as a chair does, beside it in **Seats**:
 
 - **Desk** (shape kind `desk`): a chair pulled up to a desk with a computer on it, the monitor's
   screen toward the room. Whoever sits at it **faces the computer**, so a new desk is placed with

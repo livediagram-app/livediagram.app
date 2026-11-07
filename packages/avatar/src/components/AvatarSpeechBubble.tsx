@@ -12,7 +12,7 @@ import {
   countWords,
 } from '@liveworkspace/api-schema/avatar-say';
 import { lucideSend } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideGlyph, TextArea } from '@liveworkspace/ui';
 import { nextDraft, SPEECH_COUNTER_FROM_WORDS } from '../speech';
 
 export const SendIcon = lucideGlyph(lucideSend, 14);
@@ -98,6 +98,8 @@ const LINE_PX = 18;
 /**
  * The draft's text area: newlines become spaces, a keystroke past the limits is refused and a paste is clamped
  * (nextDraft). Enter (with or without Shift) sends; Escape cancels. Grows with its text up to `maxRows`.
+ * `framed` draws it as the app's standard text field (`TextArea`, compact) for the message popover; unframed it is bare
+ * text on the speech bubble it sits in.
  */
 export function SpeechDraftField({
   value,
@@ -108,6 +110,7 @@ export function SpeechDraftField({
   autoFocus,
   minRows = 1,
   maxRows = 5,
+  framed = false,
   className = '',
 }: {
   value: string;
@@ -118,6 +121,7 @@ export function SpeechDraftField({
   autoFocus?: boolean;
   minRows?: number;
   maxRows?: number;
+  framed?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -131,33 +135,43 @@ export function SpeechDraftField({
     el.style.height = 'auto';
     el.style.height = `${Math.min(maxRows * LINE_PX + pad, Math.max(minRows * LINE_PX + pad, el.scrollHeight))}px`;
   }, [value, minRows, maxRows]);
-  return (
+  const field = {
+    ref,
+    'aria-label': 'Message',
+    placeholder: 'Say something…',
+    // React's autoFocus focuses on mount without scrolling the canvas.
+    autoFocus,
+    rows: minRows,
+    maxLength: AVATAR_SAY_MAX_CHARS + 50,
+    value,
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      // Only a key typed is refused at the limit; anything put in at once (a paste, a drop, an autocorrection, an
+      // input method's composed text) is trimmed to it, as a refusal would snap the field back under the person.
+      const typed = (e.nativeEvent as InputEvent).inputType === 'insertText';
+      onChange(nextDraft(value, e.target.value, !typed));
+    },
+    onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!e.nativeEvent.isComposing) onSubmit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCancel();
+      }
+    },
+    onBlur,
+  };
+  // The growth above reads its line height: 18 px both ways.
+  return framed ? (
+    <TextArea
+      {...field}
+      compact
+      className={`block resize-none overflow-y-auto leading-[18px] ${className}`}
+    />
+  ) : (
     <textarea
-      ref={ref}
-      aria-label="Message"
-      placeholder="Say something…"
-      // React's autoFocus focuses on mount without scrolling the canvas.
-      autoFocus={autoFocus}
-      rows={minRows}
-      maxLength={AVATAR_SAY_MAX_CHARS + 50}
-      value={value}
-      onChange={(e) => {
-        // Only a key typed is refused at the limit; anything put in at once (a paste, a drop, an autocorrection, an
-        // input method's composed text) is trimmed to it, as a refusal would snap the field back under the person.
-        const typed = (e.nativeEvent as InputEvent).inputType === 'insertText';
-        onChange(nextDraft(value, e.target.value, !typed));
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (!e.nativeEvent.isComposing) onSubmit();
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          onCancel();
-        }
-      }}
-      onBlur={onBlur}
+      {...field}
       className={`block w-full resize-none overflow-y-auto bg-transparent text-[13px] leading-[18px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 ${className}`}
     />
   );

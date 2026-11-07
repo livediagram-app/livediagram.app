@@ -28,7 +28,7 @@ to change.
 
 ## What stays
 
-- **Spaces, avatars, rooms and calls**: Avatar mode, the Space elements (Travel, Seating, Rooms, Amenities), the Selection Mode
+- **Spaces, avatars, rooms and calls**: Avatar mode, the Space elements (Travel, Seats, Rooms, Perks), the Selection Mode
   buttons, the four Spaces templates, proximity audio and calls.
 - **Light meeting tools**: [Bring Focus](../012-collaboration/bring-focus.md), the
   [facilitator baton](../012-collaboration/facilitator.md) it answers to, and Follow-me. The Session strip's Timer went
@@ -133,7 +133,7 @@ a banner; the Session strip's Timer stayed then, and left later ([The Session st
 The owner (2026-11-05): "The Timer button should be removed, and instead have elements we can place in rooms that are
 Timer or Stopwatches". A tab-wide timer button is a workshop's: one facilitator, one timebox. A Space holds several
 rooms, each with its own meeting, so a meeting's clock is now a piece on a room's wall: the
-[Timer and Stopwatch](../009-elements/timer-and-stopwatch.md), in the Meeting category. livediagram keeps its Session
+[Timer and Stopwatch](../009-elements/timer-and-stopwatch.md), in the Meet category. livediagram keeps its Session
 strip and Timer, and its [Session tools](../../../../livediagram/docs/specs/012-collaboration/session-tools.md) spec is
 the one to read for them; livehuddle's [Session tools](../012-collaboration/session-tools.md) is kept as the record.
 
@@ -261,7 +261,7 @@ by side is one more place to look. livediagram keeps the Icons category, and its
 inside shapes, swapping an icon) and
 [Browsing the palette by category](../../../../livediagram/docs/specs/010-palette/palette-category-browse.md).
 
-- **Gone from every surface**: the Icons button on the category bar (between Meeting and Stickers) and its two-pane
+- **Gone from every surface**: the Icons button on the category bar (between Meet and Stickers) and its two-pane
   browse of icon groups; the Toolbar strip Search's icon matches; the search panel's Add to Canvas icon results;
   dragging a palette icon onto a shape (an inline icon) or onto an icon (a swap), and clicking a palette icon while a
   shape is selected (no palette icon is left to drag or click); the Technology marks (AWS, React...) in the Toolbar
@@ -419,6 +419,26 @@ Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to 
 palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
 pens, the layout containers) is Work Tracker #459's, not this part's: a stored one still draws, moves and deletes.
 
+## Hand, Eraser and Format as modes
+
+The owner (2026-11-06): "change the selection mode dropdown so it just lets me toggle between Editor and ...
+whatever using the board is without too long a name". The Selection Mode picker (Build: Select, Hand; Edit: Eraser,
+Format) and the cluster's Walk button gave way to one [Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle)
+at the start of the strip. livediagram keeps its modes.
+
+- **Hand** is not a mode: Space-drag, the trackpad, the middle button, and on a touch screen a drag on empty canvas
+  (the device's default, unchanged) pan. `H` does nothing; Search has no Hand Tool.
+- **Eraser** leaves livehuddle with its panel, brush ring, cursor, settings and the `E` and `0` keys
+  ([Eraser Panel](../008-canvas/eraser-panel.md), retired): Delete removes a selection. `E` now means Edit.
+- **Format** stays as the painter, started from the selection toolbar's **Format Painter** button
+  ([Format painter](../008-canvas/canvas-and-palette.md#format-painter)); Search has no Format Painter entry.
+- **Select** is **Edit**, the toggle's other side (`E`, `V`); Search's Select Tool and Avatar Mode are **Edit** and
+  **Walk**.
+- **Stored boards** load as before: a Selection Mode button only ever hands out Avatar in livehuddle, and one that
+  carried Select, Hand, Eraser or Format loads as an Avatar button (`legacy-mode-buttons`).
+- **Help**: the Hand and Eraser articles go and their addresses redirect; the Select and Format Painter articles say
+  where the two now live.
+
 ## The MCP server, the CLI and workbenches
 
 The owner (2026-11-06, Work Tracker #562 and #563): "We previously weren't sure whether we needed the MCP for
@@ -469,7 +489,7 @@ comments on it; a Viewer sees it).
   with Blank Space (`retired-templates.test.ts`); a palette test pins the meeting palette.
 - The Session strip's Timer: a stored tab with a `timer` field loads and saves without it (`retired-timer.test.ts`);
   the cluster has no Session strip (`CanvasChrome` has no `session-tools` strip); the palette offers Timer and
-  Stopwatch in Meeting (`palette-layouts.test.ts`).
+  Stopwatch in Meet (`palette-layouts.test.ts`).
 - Part 4: a stored tab holding each deleted kind loads, saves unchanged and shows its placeholder
   (`retired-kinds.test.ts` in `packages/document`, `RetiredElementFace.test.tsx` and the e2e
   `retired-elements.spec.ts` in the editor); the export draws the placeholder (`svg-render-retired.test.ts`); no

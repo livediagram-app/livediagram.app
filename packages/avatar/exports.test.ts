@@ -26,6 +26,19 @@ describe('avatar exports', () => {
     const expected = Object.fromEntries(
       modules.sort().map((path) => [`./${path.replace(/\.tsx?$/, '')}`, `./src/${path}`]),
     );
-    expect(pkg.exports).toEqual(expected);
+    // A stylesheet is its own subpath too, named with its extension (an editor's globals.css imports it).
+    const code = Object.fromEntries(
+      Object.entries(pkg.exports).filter(([key]) => !key.endsWith('.css')),
+    );
+    expect(code).toEqual(expected);
+  });
+
+  it('gives every stylesheet its own subpath, extension and all', () => {
+    const sheets = (readdirSync(src, { recursive: true }) as string[])
+      .map((path) => relative(src, join(src, path)).split(sep).join('/'))
+      .filter((path) => path.endsWith('.css'));
+    expect(Object.fromEntries(sheets.map((path) => [`./${path}`, `./src/${path}`]))).toEqual(
+      Object.fromEntries(Object.entries(pkg.exports).filter(([key]) => key.endsWith('.css'))),
+    );
   });
 });

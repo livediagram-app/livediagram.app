@@ -1,112 +1,36 @@
-// Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Avatar) and the palette
-// settings (Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds, except the Avatar sprite, which is deliberately pixel art.
+// Palette-category illustrations (docs/specs/018-help/help-app.md): Edit and Walk (the two sides of the toggle at
+// the start of the palette strip), the Format Painter on the selection toolbar, and the palette settings (Panel
+// Opacity). Composed only from the shared primitives so the house style holds, except the Avatar sprite, which is
+// deliberately pixel art.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { PixelCharacter } from '@liveworkspace/help-site/art/pixel-character';
-import { PickerTrigger } from './selection-modes';
+import { MenuCard, Strip } from './toolbar-layout';
+import { SelectionToolbar } from './user-interface';
 
 // --- Mode scenes ------------------------------------------------------------
 
-/** Select mode: the picker set to Select and a shape selected with handles. */
-export function SelectMode() {
+/** Edit: the strip with Edit on at its start, and a shape selected with its handles. */
+export function EditMode() {
   return (
     <Scene w={420} h={230}>
-      <PickerTrigger tool="select" />
-      <Shape x={140} y={132} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={140} y={132} w={120} h={56} />
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} />
+      <Shape x={150} y={124} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
+      <SelectionBox x={150} y={124} w={120} h={56} />
     </Scene>
   );
 }
 
-/** Hand mode: the picker set to Hand and a grabbing-hand cursor panning the
- *  canvas (a faint drag trail behind it). */
-export function HandMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="hand" />
-      <Shape x={84} y={108} w={72} h={42} label="A" />
-      <Shape x={252} y={150} w={72} h={42} accent label="B" />
-      <Arrow from={[156, 129]} to={[252, 171]} kind="elbow" tone="muted" />
-      {/* Drag trail */}
-      <path
-        d="M120 188 q40 -16 88 -8"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-      />
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(196 150)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Eraser mode: the picker set to Eraser and a drag across shapes, the ones
- *  already swept fading away. */
-export function EraserMode() {
-  return (
-    <Scene w={420} h={230}>
-      <PickerTrigger tool="eraser" />
-      {/* Erased (fading) */}
-      <Shape x={70} y={118} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={150} y={150} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      {/* Still present */}
-      <Shape x={244} y={132} w={62} h={38} kind="circle" label="C" />
-      <Shape x={320} y={172} w={62} h={38} accent label="D" />
-      {/* Eraser drag path */}
-      <path
-        d="M96 132 L184 168 L276 150"
-        className="stroke-rose-400"
-        strokeWidth={2.5}
-        fill="none"
-        strokeDasharray="6 5"
-        strokeLinecap="round"
-      />
-      {/* Eraser cursor */}
-      <g transform="translate(276 150)">
-        <rect
-          x={-9}
-          y={-5}
-          width={18}
-          height={11}
-          rx={2}
-          transform="rotate(-30)"
-          className="fill-white stroke-slate-500"
-          strokeWidth={1.8}
-        />
-        <rect
-          x={-9}
-          y={1}
-          width={18}
-          height={5}
-          rx={1}
-          transform="rotate(-30)"
-          className="fill-rose-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
-    </Scene>
-  );
-}
-
-/** Format Painter mode: the picker set to Format, copying one shape's style
- *  onto another via a brush cursor. */
+/** The Format Painter: the source selected with Format Painter pressed on its selection toolbar, and its look
+ *  being brushed onto another element. */
 export function FormatPainterMode() {
+  const tx = 24;
   return (
     <Scene w={420} h={220}>
-      <PickerTrigger tool="format" />
+      <SelectionToolbar x={tx} y={30} formatOn />
       <Shape x={48} y={120} w={88} h={52} accent label="Source" />
+      <SelectionBox x={48} y={120} w={88} h={52} />
       <Arrow from={[140, 146]} to={[252, 146]} kind="curved" tone="muted" dashed />
       <Shape x={262} y={120} w={88} h={52} accent label="Painted" />
       {/* Brush cursor */}
@@ -119,17 +43,23 @@ export function FormatPainterMode() {
           strokeWidth={1.5}
         />
       </g>
+      {/* A leader from the pressed button down to the element it took the style from. */}
+      <path
+        d={`M${tx + 6 + 3 * 30 + 12} 64 V112`}
+        className="stroke-brand-300"
+        strokeWidth={1.2}
+        strokeDasharray="3 3"
+      />
     </Scene>
   );
 }
 
-/** Avatar mode: the picker set to Avatar, the pixel character standing on the
+/** Avatar mode: the pixel character standing on the
  *  shape being talked about (its feet inside it, which is what rings it), to the
  *  side of the label so both read, at the end of the dashed path it walked. */
 export function AvatarMode() {
   return (
     <Scene w={420} h={230}>
-      <PickerTrigger tool="avatar" />
       <Shape x={68} y={150} w={76} h={44} label="A" />
       <Shape x={226} y={128} w={140} h={54} label="B" />
       {/* Walked path + the click that started it */}

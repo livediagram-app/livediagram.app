@@ -11,7 +11,7 @@
 
 import { keycapEdge } from '@/components/canvas/paper-kit';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
-import { Glyph } from '@livehuddle/ui';
+import { Glyph, HoverCard } from '@livehuddle/ui';
 
 // A target: the reticle you put over the thing you want looked at. Not an eye
 // (that is the reveal's, docs/specs/009-elements/reveal-zone.md) and not an arrow (that is the portal's):
@@ -36,9 +36,11 @@ export function FocusButtonFace({
   // problem" over it wins, which is the point of having several on a canvas.
   label: string;
   textColor: string;
-  // Undefined on a surface that cannot ask anyone to look anywhere: an export,
-  // the minimap, a solo canvas. The face still renders, inert, because a viewer
-  // should see what the canvas is offering.
+  // Undefined where this session may not ask anyone to look anywhere: a
+  // Participant or a Viewer, an Editor while someone else holds the baton
+  // (docs/specs/012-collaboration/bring-focus.md "Rules"). The face still
+  // renders, inert, because a viewer should see what the canvas is offering,
+  // and its target says on hover who may press it.
   onPress?: () => void;
 }) {
   const press = usePressWithoutDrag(onPress);
@@ -74,9 +76,17 @@ export function FocusButtonFace({
           <TargetGlyph />
         </button>
       ) : (
-        <span className={chip} style={{ color: textColor }} aria-hidden>
-          <TargetGlyph />
-        </span>
+        // Not a button: a walking click on it does nothing (lib/avatar-click-intent NO_READER_KINDS), so the
+        // cursor stays the arrow, and the card says why. It takes pointers back only to be hovered.
+        <HoverCard
+          title="Bring Focus"
+          description="An Editor presses this to ask everyone to look here. While someone facilitates, only they can."
+          className="pointer-events-auto cursor-default"
+        >
+          <span className={chip} style={{ color: textColor }}>
+            <TargetGlyph />
+          </span>
+        </HoverCard>
       )}
       <span
         className="w-full px-2 text-center text-[12px] font-semibold leading-tight"

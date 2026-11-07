@@ -4,6 +4,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // the names of its groups. Pure, so the rules are testable without rendering the strip.
 
 import { SPACE_CATEGORIES } from './space-categories';
+import { SPACE_GROUP_NAMES } from './space-category-groups';
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).
@@ -100,11 +101,11 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:avatar': 'People',
   'data:pie': 'Charts',
   'data:progress-bar': 'Meters',
-  // Rooms (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): what a room is made with,
-  // then the rest of the floor.
-  'tools:room': 'Build',
-  'tools:fence': 'Floor',
-  // Amenities (docs/specs/009-elements/office-amenities.md "Where they live"): the office kit, the kitchen, the restroom.
+  // Rooms, Play and Garden (docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout"):
+  // named where their groups are listed, in space-category-groups.ts.
+  ...SPACE_GROUP_NAMES,
+  // Perks (docs/specs/009-elements/office-amenities.md "Where they live"): the office kit, the kitchen, the restroom,
+  // split by its tiles' dividers.
   'tools:plant': 'Office',
   'tools:water-cooler': 'Kitchen',
   'tools:restroom': 'Restroom',

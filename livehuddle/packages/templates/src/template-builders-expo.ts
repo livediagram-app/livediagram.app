@@ -2,7 +2,7 @@
 // (the tab's Concrete). Along the top, a Food Court, a Speaker Lounge and a Meeting Room, each closed with a Door onto
 // the hall; in the middle, the keynote Stage with Bring Focus and twelve chairs either side of a centre aisle; either
 // side of it, sponsor booths, twelve Office Pods in rows of three, aisles of at least 160 px between the rows and the
-// stage. The Walk In waits at the entrance below, with the Directory beside it. Built with campusPlan
+// stage. The Avatar Pad waits at the entrance below, with the Directory beside it. Built with campusPlan
 // (template-campus-parts.ts): indoors a Door opens onto the hall's open floor, so no Garden Path runs from it.
 //
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -125,7 +125,7 @@ export function buildExpoHall(cx: number, cy: number): Element[] {
         'A day at the show: the keynote on the stage, a sponsor in every booth, lunch in the food court.',
     },
     gateAt: MID,
-    hint: 'Press Walk In (or W) and come in at the entrance. Step into a booth to talk to its sponsor.',
+    hint: 'You arrive on the Avatar Pad by the entrance. Step into a booth to talk to its sponsor.',
     extra: (left, top) => [createShape('focus-button', left + MID + 260, top + STAGE_Y + 10)],
   });
 }

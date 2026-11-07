@@ -7,9 +7,9 @@ import {
 
 // docs/specs/008-canvas/avatar-tour.md "The steps"
 describe('the Avatar tour steps', () => {
-  it('runs the button, the character, the actions, speaking and pushing, then the outro', () => {
+  it('runs the palette, the look, the actions, speaking and pushing, then the outro', () => {
     expect(AVATAR_TOUR_STEPS.map((s) => s.id)).toEqual([
-      'avatar-button',
+      'palette',
       'character',
       'actions',
       'message',
@@ -17,7 +17,7 @@ describe('the Avatar tour steps', () => {
       'outro',
     ]);
     expect(AVATAR_TOUR_STEPS.slice(0, -1).map((s) => s.target)).toEqual([
-      'avatar-button',
+      'palette',
       'avatar-character',
       'avatar-actions',
       'avatar-message',
@@ -58,8 +58,12 @@ describe('the Avatar tour steps', () => {
       expect(`${step.title} ${step.body} ${step.mobileBody ?? ''}`).not.toMatch(/—/);
   });
 
+  it('opens and closes nothing: every step rings what is already on screen', () => {
+    for (const step of AVATAR_TOUR_STEPS) expect(step.prepare).toBeUndefined();
+  });
+
   it('names its step views', () => {
-    expect(avatarTourStepTelemetryType('avatar-button')).toBe('AvatarTourStepAvatarButton');
+    expect(avatarTourStepTelemetryType('palette')).toBe('AvatarTourStepPalette');
   });
 
   it('teaches right-click to swap gender on a desktop, and not on a phone', () => {

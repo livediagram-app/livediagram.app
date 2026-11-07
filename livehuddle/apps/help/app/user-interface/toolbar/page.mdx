@@ -18,7 +18,7 @@ export const metadata = helpMetadata({
 
 Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match. A small caption above it names the selection, for example "Selected Square".
 
-<Figure caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, stacking order, Lock and Delete.">
+<Figure caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order, Lock and Delete.">
   <ContextualToolbar />
 </Figure>
 
@@ -29,6 +29,7 @@ From left to right:
 - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
 - **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path, to adjust its points and curves.
 - **Duplicate**.
+- **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
 - **Bring to Front** and **Send to Back**.
 - **Lock** (or **Unlock**) and **Delete**.
 
@@ -53,8 +54,9 @@ The caption reads "Selected Elements" with a count.
 The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back.
 
 <Tip>
-  To copy one element's look onto others, use the **Format** tool in the Palette's selection-mode
-  dropdown (see [Format Painter](/help/selection-modes/format-painter/)).
+  To copy one element's look onto others, select it and press **Format Painter** on this toolbar,
+  then press each element you want to paint (see [Format
+  Painter](/help/selection-modes/format-painter/)).
 </Tip>
 
 </ArticleLayout>

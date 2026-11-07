@@ -33,6 +33,18 @@ livehuddle runs on Cloudflare. Your space content goes to another company only w
   <WorkStorage />
 </Figure>
 
+## Calls, cameras and screens
+
+What you say, show on camera or share from your screen in a Space is never stored. It travels from your browser through Cloudflare's realtime service to the people who can hear you, and nowhere else: livehuddle's server sets up each connection but never receives the sound or picture, and nothing is recorded or transcribed.
+
+- **Only when you choose.** The microphone opens after you press **Join Audio**, the camera when you turn it on, and a screen when you pick it, each after your browser asks. The microphone closes by itself after 15 seconds with nobody else on your tab, and a screen share carries no sound.
+- **A preview stays with you.** A camera or screen turned on with no call joined shows only to you, marked **Only You**; nothing is sent.
+- **Who receives it.** The people in earshot, or in the same room, hear you and see your camera and screen. From a stage, the whole tab hears you, and sees you only if the stage shows cameras. Everyone on the tab can see that you are talking, never what you say.
+- **Never peer to peer.** Your browser connects to Cloudflare, not to anyone else's browser, so other people never see your IP address.
+- **Your character's moves, messages, status, raised hand and knocks** go live to the people in the Space and are never stored.
+
+The [Privacy Policy](https://www.liveworkspace.app/privacy#livehuddle-calls) says the same, formally.
+
 ## What is stored, and who can read it
 
 A space is owned by an identity. That identity is either a signed-in account or, for guests, a per-browser id kept in your browser's local storage. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the space is in can read a space. A space you [share to the Community](/help/collaboration/sharing/community/) is public until you remove it. Opening a space you cannot access returns a plain "not found", so its contents and name are never revealed.

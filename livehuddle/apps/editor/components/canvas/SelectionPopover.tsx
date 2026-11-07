@@ -1,7 +1,14 @@
 import { useRef, type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
+import {
+  CommentIcon,
+  DuplicateIcon,
+  FormatPainterIcon,
+  LockIcon,
+  TrashIcon,
+  HoverCard,
+} from '@livehuddle/ui';
 import {
   BringToFrontIcon,
   EllipsisIcon,
@@ -38,6 +45,9 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
+  // The Format painter, loaded with this element (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): its
+  // one way in. Omitted in read-only.
+  onFormatPainter?: () => void;
   // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
@@ -86,6 +96,7 @@ export function SelectionPopover({
   hasText = true,
   onEditPoints,
   onDuplicate,
+  onFormatPainter,
   onBringToFront,
   onSendToBack,
   onOpenComments,
@@ -201,15 +212,26 @@ export function SelectionPopover({
             </>
           ) : null}
 
-          {onDuplicate ? (
+          {onDuplicate || onFormatPainter ? (
             <>
-              <PopoverButton
-                label="Duplicate"
-                description="Create a copy of this element."
-                onClick={onDuplicate}
-              >
-                <DuplicateIcon />
-              </PopoverButton>
+              {onDuplicate ? (
+                <PopoverButton
+                  label="Duplicate"
+                  description="Create a copy of this element."
+                  onClick={onDuplicate}
+                >
+                  <DuplicateIcon />
+                </PopoverButton>
+              ) : null}
+              {onFormatPainter ? (
+                <PopoverButton
+                  label="Format Painter"
+                  description="Copy this element's look, then press others to paint it on."
+                  onClick={onFormatPainter}
+                >
+                  <FormatPainterIcon />
+                </PopoverButton>
+              ) : null}
               <Divider />
             </>
           ) : null}

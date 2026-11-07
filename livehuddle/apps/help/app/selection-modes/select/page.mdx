@@ -1,45 +1,51 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SelectMode } from '@/components/illustrations/palette-modes';
-import { ToolPicker } from '@/components/illustrations/selection-modes';
+import { EditMode } from '@/components/illustrations/palette-modes';
+import { EditWalkToggleScene } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
-  title: 'Select',
+  title: 'Edit and Walk',
   description:
-    'The default pointer mode in livehuddle: select, move, resize and edit elements, and the palette tool picker every other mode is chosen from.',
+    'The Edit | Walk toggle in livehuddle: Edit to select, move and build, Walk to walk the Space as your character, plus how to pan and delete.',
   path: '/help/selection-modes/select/',
 });
 
 <ArticleLayout
-  title="Select"
-  description="The default pointer mode for selecting, moving, resizing, and editing elements."
-  categoryTitle="Selection Modes"
+  title="Edit and Walk"
+  description="One toggle at the start of the palette: Edit to build the board, Walk to walk it as your character."
+  categoryTitle="Edit or Walk"
   categorySlug="selection-modes"
   subArticles={getSubArticles("select")}
 >
 
-Select is the ordinary pointer: the tool for picking elements, moving them, resizing them and editing their text. It is where you spend most of your time on a desktop, and every other tool hands you back here when you are done. Choose it from the tool picker at the start of the palette strip, or press **`V`**.
+If you can edit a Space, the palette strip starts with a small toggle in two halves: **Edit** (a pointer arrow) and **Walk** (footprints). It is your one switch between building the board and being in it. On a computer each half shows its icon and its name; on a phone, the icons alone.
 
-## The tool picker
+- **Edit** is plain selecting and building: pick elements, move them, resize them, type into them, and add new ones from the palette's categories.
+- **Walk** puts you in [Avatar mode](/help/selection-modes/avatar-mode/): you walk the Space as your character, talk to whoever is near, sit at a desk and react.
 
-The palette strip starts with the tool picker, showing the tool you are holding, then the palette's categories. Open the tool picker and the tools are laid out as tiles, in three named bands:
-
-- **Build**: **Select** and **Hand**, for arranging the board and moving round it.
-- **Edit**: **Eraser** and **Format**, for changing what is drawn.
-- **Interact**: **Avatar**, for being on the board yourself. It is never greyed out: an empty space is still somewhere to stand.
-
-The current tool is tinted, and a tool with a keyboard shortcut shows its letter in the tile's corner. Eraser and Format need something on the canvas to act on, so they are greyed out on an empty tab.
-
-<Figure caption="The tool picker opened from the palette, in its Build, Edit and Interact bands, with Select as the current tool.">
-  <ToolPicker />
+<Figure caption="The Edit | Walk toggle: Edit on while you build, with the palette's categories after it, and Walk on while you walk, at the start of the avatar palette.">
+  <EditWalkToggleScene />
 </Figure>
 
-You can also switch tool from the [search panel](/help/search-panel/the-search-panel/command-palette/): type the tool's name, such as "Hand Tool" or "Eraser".
+## Switching between them
 
-## What you can do
+While you build, Edit is on. Press **Walk** and your character appears, and the strip becomes the avatar palette (the call controls, your character's look, Actions and React). The same toggle sits at the very start of that strip with Walk on, so pressing **Edit** brings the building palette straight back.
 
-In Select mode the pointer interacts directly with your elements:
+On a keyboard:
+
+- **`W`** walks, from Edit.
+- **`E`** goes back to Edit. **`V`** and **`Esc`** do too.
+
+While you walk, `W` is Wave (one of your character's actions), so `W` only starts walking from Edit.
+
+You can also type "Edit" or "Walk" in the [search panel](/help/search-panel/the-search-panel/command-palette/).
+
+While **Start a Space** is open, the Walk half is greyed out: pick a template, or close Start a Space, to walk. Edit always works.
+
+**Participants and view-only visitors are always walking**, so they never see the toggle. See [Avatar Mode](/help/selection-modes/avatar-mode/).
+
+## What you can do in Edit
 
 - **Click** an element to select it. Click an empty patch of canvas, or press `Esc`, to clear the selection.
 - **Shift-click** to add elements to the selection, or take them out again.
@@ -48,28 +54,33 @@ In Select mode the pointer interacts directly with your elements:
 - **Drag its handles** to resize.
 - **Double-click** an element to edit its label. With one element selected you can also just start typing: the first key opens the label and replaces what was there.
 
-<Figure caption="The palette's tool picker set to Select, with a shape selected and its resize handles showing.">
-  <SelectMode />
+<Figure caption="Edit on at the start of the palette strip, with a shape selected and its resize handles showing.">
+  <EditMode />
 </Figure>
 
-You can still pan while holding Select: drag with the middle mouse button (unless it is turned off in Settings), hold `Space` and drag, or scroll with two fingers on a trackpad. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+## Moving around the canvas
 
-## When Select is not the starting tool
+There is no separate tool for panning. In Edit, or while you walk:
 
-Select is the starting tool on a desktop. A few places start you somewhere else, because a drag there should move the view rather than an element:
+- Hold `Space` and drag.
+- Scroll with two fingers on a trackpad.
+- Drag with the middle mouse button (unless it is turned off in Settings).
+- On a phone or tablet, drag one finger across empty canvas.
 
-- **On a phone**, the editor opens on [Hand](/help/selection-modes/hand/), so a one-finger drag pans the canvas.
-- **An embedded board** always opens on Hand.
+See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
 
-## Returning here
+## Removing things
 
-Select is your home base. Choosing a different tool changes what a click or drag does, so coming back to Select restores normal selection and editing. `Esc` takes you straight back from [Format](/help/selection-modes/format-painter/) and [Avatar](/help/selection-modes/avatar-mode/) (Avatar returns to Hand on a phone).
+To remove elements, select them and press `Delete` or `Backspace`, or press Delete on the selection toolbar above them. Locked elements are kept. [Undo](/help/canvas/undo/) brings back anything you removed by mistake.
 
-View-only visitors have no palette, but they can still press `V` to select an element and read it. They cannot move or edit it.
+## Copying a look
+
+To copy one element's style onto others, select it and press **Format Painter** on its selection toolbar. See [Format Painter](/help/selection-modes/format-painter/).
 
 <Tip>
-  Press `V` to jump straight back to Select without opening the tool picker. If a single element is
-  selected, press `Esc` first: with one element selected, a letter key types into its label instead.
+  Press `E` to get back to Edit from anywhere without reaching for the palette. If a single element
+  is selected, press `Esc` first: with one element selected, a letter key types into its label
+  instead.
 </Tip>
 
 </ArticleLayout>

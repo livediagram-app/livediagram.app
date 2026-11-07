@@ -2,9 +2,10 @@ import type { Browser, Page } from '@playwright/test';
 import { adoptGuest, documentHeaders, expect, mintGuest, seedDocumentItem, test } from './fixtures';
 import { legacyViewerLink } from './legacy-viewer';
 
-// The Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button", Work Tracker #486): a Viewer has
-// no palette strip and so no picker, so the bottom-right cluster gives them Walk. On a plain board (no Walk In, no
-// pad, so nothing opens walking) it takes them into Avatar mode and back out; an Editor has it too (avatar-mode.md "The Walk button").
+// Always walking (docs/specs/013-workspace/share-roles.md "Always walking", owner 2026-11-06): a Viewer opens even a
+// plain board (no Walk In, no pad, so nothing else opens walking) in Avatar mode, with no Edit | Walk toggle and no
+// way out. The toggle is an Editor's alone (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): Walk takes
+// them in and Edit back out.
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
@@ -37,10 +38,12 @@ async function joinIfAsked(page: Page): Promise<void> {
   await page.locator(CANVAS).waitFor();
 }
 
-const walk = (page: Page) => page.getByRole('button', { name: 'Walk', exact: true });
+const toggle = (page: Page) => page.getByRole('group', { name: 'Edit or Walk' });
+const walk = (page: Page) => toggle(page).getByRole('button', { name: 'Walk', exact: true });
+const edit = (page: Page) => toggle(page).getByRole('button', { name: 'Edit', exact: true });
 const self = (page: Page) => page.locator('[data-avatar="self"]');
 
-test('a Viewer walks in and out from the Walk button; an Editor has one too', async ({
+test('a Viewer is always walking with no Edit | Walk toggle; an Editor walks in and out from it', async ({
   page,
   browser,
   baseURL,
@@ -68,29 +71,44 @@ test('a Viewer walks in and out from the Walk button; an Editor has one too', as
   // livehuddle makes no new Viewer link: a legacy one, as stored before.
   const code = await legacyViewerLink(page.request, apiBase, id, headers);
 
-  // The Editor: every role has the Walk button.
+  // The Editor: the toggle on Edit, then Walk into Avatar mode and Edit back out.
   const editor = await openAs(browser, baseURL!, `/document/${id}`, owner);
   await editor.locator(CANVAS).waitFor();
   await expect(editor.locator('[data-element-id="note"]')).toBeVisible();
-  await expect(walk(editor)).toHaveCount(1);
+  await expect(walk(editor)).toHaveAttribute('aria-pressed', 'false');
+  await expect(self(editor)).toHaveCount(0);
+  await walk(editor).click();
+  await expect(walk(editor)).toHaveAttribute('aria-pressed', 'true');
+  await expect(self(editor)).toHaveCount(1);
+  // The toggle starts the avatar palette too, and there is no selection-mode picker: Edit is the way out.
+  await expect(
+    editor.locator('[data-avatar-palette]').getByRole('group', { name: 'Edit or Walk' }),
+  ).toHaveCount(1);
+  await expect(editor.getByRole('button', { name: /Selection mode/ })).toHaveCount(0);
+  await edit(editor).click();
+  await expect(walk(editor)).toHaveAttribute('aria-pressed', 'false');
+  await expect(self(editor)).toHaveCount(0);
+  // W walks again, E edits (avatar-mode.md "The Edit | Walk toggle").
+  await editor.locator(CANVAS).click({ position: { x: 40, y: 400 } });
+  await editor.keyboard.press('w');
+  await expect(self(editor)).toHaveCount(1);
+  await editor.keyboard.press('e');
+  await expect(self(editor)).toHaveCount(0);
 
-  // The Viewer: the board opens on the plain view, Walk off.
+  // The Viewer: walking from the start, its avatar palette up, and no toggle.
   const viewer = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
   await joinIfAsked(viewer);
-  await expect(walk(viewer)).toBeVisible();
-  await expect(walk(viewer)).toHaveAttribute('aria-pressed', 'false');
-  await expect(self(viewer)).toHaveCount(0);
-
-  // Walk: into Avatar mode, the character on the board and the button pressed.
-  await walk(viewer).click();
-  await expect(walk(viewer)).toHaveAttribute('aria-pressed', 'true');
   await expect(self(viewer)).toHaveCount(1);
+  await expect(viewer.locator('[data-avatar-palette]')).toBeVisible();
+  await expect(toggle(viewer)).toHaveCount(0);
   await viewer.screenshot({ path: test.info().outputPath('viewer-walking.png') });
 
-  // Again: back out, the character gone.
-  await walk(viewer).click();
-  await expect(walk(viewer)).toHaveAttribute('aria-pressed', 'false');
-  await expect(self(viewer)).toHaveCount(0);
+  // No way out: the view-tool keys and Escape leave it walking.
+  await viewer.locator(CANVAS).click({ position: { x: 40, y: 400 } });
+  for (const key of ['e', 'v', 'Escape']) {
+    await viewer.keyboard.press(key);
+    await expect(self(viewer)).toHaveCount(1);
+  }
 
   await editor.context().close();
   await viewer.context().close();

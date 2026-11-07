@@ -3,9 +3,9 @@
 Status: **approved** (owner, 2026-11-05). Pieces that give a Space somewhere to leave a note, see the time where
 colleagues are, and hang out between meetings: a **Notice Board** and a **World Clock** on the wall, a **Jukebox**, a
 **Ping-Pong Table**, a **Pool Table**, a **Foosball Table**, an **Arcade Machine**, a **Dartboard** and a **Fireplace**
-in a new **Recreation** category, a **Vending Machine** in **Amenities**, **Bean Bags** and a **Reading Nook** in
-**Seating**, and outdoor seating (**Bench**, **Picnic Table**, **Hammock**), a **Garden Umbrella**, a **Fountain**, a
-**Pond** and a **Campfire** in **Garden**. They are [Office](office.md) pieces in every way not said here: drawn upright from the room's camera,
+in a new **Play** category, a **Vending Machine** in **Perks**, **Bean Bags** and a **Reading Nook** in **Seats**, and
+outdoor seating (**Bench**, **Picnic Table**, **Hammock**), a **Garden Umbrella**, a **Fountain**, a **Pond** and a
+**Campfire** in **Garden**. They are [Office](office.md) pieces in every way not said here: drawn upright from the room's camera,
 placed at a fixed size (the Pond alone is resizable), no settings `…`, an Editor's to place, move and delete, and
 walked, sat at and used by everyone in [Avatar mode](../008-canvas/avatar-mode.md).
 
@@ -17,16 +17,18 @@ These pieces give a Space those small, social places, built from the same parts 
 
 ## Where they live
 
-| Category             | Pieces                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------ |
-| **Seating**          | Bean Bag, Reading Nook (after the office's Chair, Desk, Sofa and Meeting Table)            |
-| **Amenities**        | Vending Machine (after the office's Plant, Bookshelf, Water Cooler and Coffee Machine)     |
-| **Meeting**          | Notice Board, World Clock                                                                  |
-| **Recreation** (new) | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace |
-| **Garden**           | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire                    |
+| Category       | Pieces                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| **Seats**      | Bean Bag, Reading Nook (after the office's Chair, Desk, Sofa and Meeting Table)            |
+| **Perks**      | Vending Machine (after the office's Plant, Bookshelf, Water Cooler and Coffee Machine)     |
+| **Meet**       | Notice Board, World Clock                                                                  |
+| **Play** (new) | Jukebox, Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace |
+| **Garden**     | Bench, Picnic Table, Hammock, Garden Umbrella, Fountain, Pond, Campfire                    |
 
-Recreation (`collab-recreation`, a game controller glyph, "Somewhere to unwind between meetings.") sits after Bar and
-before Garden ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)).
+Play (`collab-recreation`) sits after Perks and before Garden, and since 2026-11-06 holds the bar pieces too,
+in named groups: **Bar**, **Games** (Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard) and
+**Lounge** (Jukebox, Fireplace). Garden's pieces sit in **Plants**, **Paths and Fences**, **Furniture** and **Features**
+([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 
 Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcade-machine`, `fireplace`, `bench`,
 `picnic-table`, `hammock`, `garden-umbrella`, `fountain`, `pond`, `campfire`, and the second set (Work Tracker #549 to
@@ -144,7 +146,7 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   sound that starts without a press, and music should never surprise anyone. After that it plays whenever you walk
   into an area, at a low volume (20%). The choice is remembered on this device.
 - **Muting**: the face's button reads **Play** (never pressed), then **Mute** and **Unmute**. The same switch is the
-  **Jukebox Music** row in the Avatar panel. Muted, nothing plays anywhere until you unmute.
+  **Jukebox Music** switch in the avatar palette's Status flyout. Muted, nothing plays anywhere until you unmute.
 - **Playing shows**: the face's lights glow and three notes drift up while it plays for you (CSS; still under reduced
   motion). Who hears what is never shared: it is all on your own machine, and nothing is written to the document.
 - **A stream that fails** (an address that does not load, or refuses to play) shows **Can't Play** on the face for

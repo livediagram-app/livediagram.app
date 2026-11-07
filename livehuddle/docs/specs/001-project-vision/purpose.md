@@ -18,7 +18,7 @@ livediagram grew three things that are about people being together rather than a
 
 - [Avatar mode](../008-canvas/avatar-mode.md): a pixel character for everyone in the room, who walks, sits, talks in
   speech bubbles, waves and shows a status.
-- The **Space** elements, in the palette's Travel, Seating, Rooms and Amenities categories: portals, chairs, desks, sofas, fences, Avatar Pads and the
+- The **Space** elements, in the palette's Travel, Seats, Rooms and Perks categories: portals, chairs, desks, sofas, fences, Avatar Pads and the
   [office pieces](../009-elements/office.md) (rooms, meeting tables, plants, bookshelves, water coolers, coffee
   machines, rugs).
 - The **Spaces** templates ([Virtual Office and space templates](../012-collaboration/virtual-office-template.md)):
@@ -43,7 +43,7 @@ see everyone's character and cursor, hear the people near them, and take part at
 The meeting is the product. Everything else exists because a team meeting together needs somewhere to stand, a way to
 talk, and a few light tools to keep a meeting moving:
 
-- **Somewhere to stand**: the Spaces templates, Avatar mode and the Space elements (Travel, Seating, Rooms, Amenities).
+- **Somewhere to stand**: the Spaces templates, Avatar mode and the Space elements (Travel, Seats, Rooms, Perks).
 - **A way to talk**: [proximity audio](../012-collaboration/proximity-audio.md) and calls between the people near
   each other, speech bubbles, comments with mentions and reactions.
 - **Light meeting tools**: a [Timer or Stopwatch](../009-elements/timer-and-stopwatch.md) on a room's wall and

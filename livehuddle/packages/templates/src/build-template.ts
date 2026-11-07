@@ -18,7 +18,13 @@ import { buildHotelLobby } from './template-builders-hotel';
 import { buildExpoHall } from './template-builders-expo';
 import { buildBeachOffsite } from './template-builders-beach';
 import { buildSchoolQuad } from './template-builders-school';
-import { settleChips, type Element } from '@livehuddle/document';
+import {
+  AVATAR_PAD_DEFAULT_SIZE,
+  createShape,
+  isFloorShape,
+  settleChips,
+  type Element,
+} from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 
 // Build the elements for a given template, centred on the supplied canvas
@@ -27,7 +33,29 @@ import type { TemplateKind } from './templates';
 // after making it, so its number is set to half the disc here, as a stored board reads back, and a
 // preview or an agent's create shows what the editor will.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return settleChips([], buildUnsettled(kind, cx, cy), { attachLoose: false });
+  return settleChips([], floorsFirst(buildUnsettled(kind, cx, cy)), { attachLoose: false });
+}
+
+const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
+
+/**
+ * Every floor ahead of everything else, each group in its own order: a Space's Avatar Pad is a floor, placed by `wayIn`
+ * after the plan, and the floors lie first (docs/specs/007-editor/templates-by-mode.md "Testing"). Paint order sorts
+ * the floors among themselves (paintOrder), so the pad still lies on a room or the grass.
+ */
+export function floorsFirst(elements: Element[]): Element[] {
+  return [...elements.filter(isFloor), ...elements.filter((el) => !isFloor(el))];
+}
+
+// How far below the middle of the view a blank tab's Avatar Pad stands, centre to centre
+// (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one", D216): the middle stays free to build in,
+// and the pad is in view at 100% on a phone.
+export const BLANK_PAD_DROP = 160;
+
+/** Blank Space's one element: an Avatar Pad, centred across `cx` and BLANK_PAD_DROP below `cy`. */
+function blankPad(cx: number, cy: number): Element[] {
+  const { width, height } = AVATAR_PAD_DEFAULT_SIZE;
+  return [createShape('avatar-pad', cx - width / 2, cy + BLANK_PAD_DROP - height / 2)];
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
@@ -68,9 +96,9 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildHotelLobby(cx, cy);
     case 'coworking-tower':
       return buildTowerGround(cx, cy);
-    // The blank is truly blank: no seeded element. The user starts from an empty tab (with the empty-canvas hint
-    // banner, docs/specs/007-editor/new-document-route.md) and adds their first element from the palette.
+    // The blank holds only its entrance (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): an
+    // Avatar Pad a little below the middle, where people arrive; the user adds the rest from the palette.
     case 'blank-session':
-      return [];
+      return blankPad(cx, cy);
   }
 }

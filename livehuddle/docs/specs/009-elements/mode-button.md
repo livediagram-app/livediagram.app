@@ -8,6 +8,13 @@ A Space can be walked around, but that mode lives behind a picker in the palette
 
 It is how people get into a Space, which is why its tile sits in the palette's **Travel** category beside the Portal, Bring Focus and the Avatar Pad.
 
+**Nothing in livehuddle places one any more.** Every Spaces template's **Walk In** was one until the
+[Avatar Pad](avatar-pad.md#every-space-and-blank-tab-has-one) replaced it (owner, 2026-11-06): a Participant and a
+Viewer always walk, and an Editor has the Edit | Walk toggle, so a switch on the board says nothing a pad does not, while a
+pad says where people arrive. The element stays: boards made before keep their Walk In and it still works (it reads
+"Leave Avatar" while you walk, and a pad on the tab still wins the spawn), its tile stays in Travel for an author who
+wants one, and agents may still place one.
+
 ## The element
 
 - A **shape kind**, `mode-button`, rather than a new element type: exactly the call [The Page element](page-element.md) made for the Page. It inherits everything a shape already has: label, colours, border, shadow, resize, rotation, groups, comments, actions, export.
@@ -28,7 +35,7 @@ It is how people get into a Space, which is why its tile sits in the palette's *
 - **A button that hands out Avatar mode spawns the character at the button**, just below it (the whole figure clear of the button, so its label stays readable), rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. An [Avatar Pad](avatar-pad.md) on the tab wins over the button: everyone starts on the pad.
 - **It stays pressable inside a pointer-inert mode.** Avatar makes the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, the button would be unreachable from the very mode it is the way out of (it reads "Leave Avatar" while you walk). Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed), so it can be reconfigured mid-walk.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
-- **A Participant's button is inert too.** A Participant is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)), so no button can switch it: the face draws with its own label (never "Leave") and pressing it does nothing.
+- **A Participant's button is inert too.** A Participant is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)), so no button can switch it: the face draws with its own label (never "Leave") and pressing it does nothing. A Viewer's is the same, and a walking click anywhere on an inert button opens no reader ([Always walking](../013-workspace/share-roles.md#always-walking)).
 
 ## Configuring it
 

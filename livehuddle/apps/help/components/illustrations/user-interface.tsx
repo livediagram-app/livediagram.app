@@ -16,6 +16,7 @@ import {
   Label,
 } from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
+import { PainterGlyph } from './palette-modes-parts';
 
 // --- Glyphs ------------------------------------------------------------------
 
@@ -78,17 +79,33 @@ function IconButton({
   x,
   y,
   size = 24,
+  tone = 'plain',
   children,
 }: {
   x: number;
   y: number;
   size?: number;
+  /** `brand` fills it in the brand colour, as a pressed toggle button draws. */
+  tone?: 'plain' | 'brand';
   children: ReactNode;
 }) {
   return (
     <g>
-      <rect x={x} y={y} width={size} height={size} rx={6} className="fill-slate-50" />
-      <g transform={`translate(${x + size / 2} ${y + size / 2})`}>{children}</g>
+      <rect
+        x={x}
+        y={y}
+        width={size}
+        height={size}
+        rx={6}
+        className={tone === 'brand' ? 'fill-brand-500' : 'fill-slate-50'}
+      />
+      {/* A brand button's white glyph stays white in dark mode too (help-art-as-drawn). */}
+      <g
+        transform={`translate(${x + size / 2} ${y + size / 2})`}
+        className={tone === 'brand' ? 'help-art-as-drawn' : undefined}
+      >
+        {children}
+      </g>
     </g>
   );
 }
@@ -224,14 +241,14 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 // --- Scenes ------------------------------------------------------------------
 
 /** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a tool panel (Eraser) docked top-right under it, the Map bottom-left, the corner cluster
- *  bottom-right, and the bottom bar. */
+ *  top, a tool panel (Format, while the Format Painter is on) docked top-right under it, the
+ *  Map bottom-left, the corner cluster bottom-right, and the bottom bar. */
 export function PanelLayout() {
   return (
     <Scene w={420} h={250}>
       <MenuCard x={12} y={12} />
       <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="ERASER">
+      <Panel x={318} y={56} w={90} h={66} title="FORMAT">
         {[0, 1].map((i) => (
           <rect
             key={i}
@@ -405,39 +422,76 @@ export function ZoomControls() {
   );
 }
 
-/** One selected shape with its toolbar above: the "Selected Square" caption,
- *  then More, Add text, Duplicate, Bring to front, Send to back, Lock and
- *  Delete (an editor's toolbar; Add Comment is in the More menu). */
-export function ContextualToolbar() {
-  const tx = 92;
-  const ty = 40;
-  const buttons: ReactNode[] = [
-    <DotsGlyph key="more" x={0} y={0} />,
-    <path key="text" d="M-5 -5 h10 M0 -5 v10" {...GLYPH} />,
-    <g key="dup">
-      <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
-      <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
-    </g>,
-    <path key="front" d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} />,
-    <path key="back" d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
-    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
+/** The selection toolbar an Editor sees over one selected element, its top-left corner at (x, y), 34 tall: More,
+ *  Add text, Duplicate, Format Painter, Bring to front, Send to back, Lock and Delete (Add Comment is in the More
+ *  menu). `formatOn` draws Format Painter pressed, as while its brush is loaded. */
+export function SelectionToolbar({
+  x,
+  y,
+  formatOn = false,
+}: {
+  x: number;
+  y: number;
+  formatOn?: boolean;
+}) {
+  const buttons: { key: string; glyph: ReactNode }[] = [
+    { key: 'more', glyph: <DotsGlyph x={0} y={0} /> },
+    { key: 'text', glyph: <path d="M-5 -5 h10 M0 -5 v10" {...GLYPH} /> },
+    {
+      key: 'dup',
+      glyph: (
+        <g>
+          <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
+          <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
+        </g>
+      ),
+    },
+    { key: 'format', glyph: <PainterGlyph on={formatOn} /> },
+    { key: 'front', glyph: <path d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} /> },
+    { key: 'back', glyph: <path d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} /> },
+    {
+      key: 'lock',
+      glyph: (
+        <g>
+          <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
+          <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
+        </g>
+      ),
+    },
+    { key: 'delete', glyph: <path d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} /> },
   ];
+  return (
+    <Panel x={x} y={y} w={selectionToolbarWidth()} h={34}>
+      {buttons.map((b, i) => (
+        <IconButton
+          key={b.key}
+          x={x + 6 + i * 30}
+          y={y + 5}
+          tone={b.key === 'format' && formatOn ? 'brand' : 'plain'}
+        >
+          {b.glyph}
+        </IconButton>
+      ))}
+    </Panel>
+  );
+}
+
+/** The width `SelectionToolbar` draws at: its eight buttons, 30 apart. */
+function selectionToolbarWidth(): number {
+  return 8 + 8 * 30;
+}
+
+/** One selected shape with its toolbar above: the "Selected Square" caption, then the selection toolbar, Format
+ *  Painter among its buttons. */
+export function ContextualToolbar() {
+  const tx = 82;
+  const ty = 40;
   return (
     <Scene w={420} h={210}>
       <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
         Selected Square
       </Label>
-      <Panel x={tx} y={ty} w={8 + buttons.length * 30} h={34}>
-        {buttons.map((g, i) => (
-          <IconButton key={i} x={tx + 6 + i * 30} y={ty + 5}>
-            {g}
-          </IconButton>
-        ))}
-      </Panel>
+      <SelectionToolbar x={tx} y={ty} />
       <Shape x={150} y={108} w={120} h={60} label="Checkout" />
       <SelectionBox x={150} y={108} w={120} h={60} />
     </Scene>

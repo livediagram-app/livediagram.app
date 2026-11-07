@@ -18,8 +18,10 @@ someone in the mode hears or is heard. Leaving the mode, changing tab or closing
 that is not shared (a This Browser Space, or one with no room) has nobody to talk to and shows no audio controls; the
 camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
 
-- **Join Audio.** Entering the mode does not open the microphone by itself. A **Join Audio** button sits in the
-  bottom-right cluster beside Avatar while calls are on. Pressing it is the gesture a browser needs before it plays
+- **Join Audio.** Entering the mode does not open the microphone by itself. A **Join Audio** button sits first on the
+  [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette), at the strip's left, while calls are on (owner,
+  2026-11-06: moved there from the bottom-right cluster, so the call's controls are at the top with the rest of the
+  walk's). Pressing it is the gesture a browser needs before it plays
   sound, and asks for the microphone (once per site, as the browser decides). Someone who may only listen joins without
   a microphone.
 - **Leave Audio** ends it: the microphone is released, every subscription closes and the session ends. Leaving the
@@ -76,7 +78,20 @@ inside, and walls block sound fully. Inside a room, as on the open floor, the ru
   - **Mic Blocked** (amber): the browser refused the microphone; the hover card says how to allow it. You still hear
     everyone.
   - **Mic Off**: nobody else is on your tab, so the microphone is closed until somebody arrives.
-- The hover card names the state in words; the button's label is the action it takes.
+- The button is the glyph alone, square, in the avatar palette's call group; the hover card names it and its state in
+  words ("Mic: Live", "Mic: Muted"), and the button's label is the action it takes.
+
+## No call here
+
+While walking somewhere calls cannot reach (a space kept in This Browser, which has no server room to call through,
+or a server with calls switched off), the avatar palette still shows **Join Audio**, greyed and `aria-disabled` so its
+hover card shows, saying why (owner, 2026-11-06: "audio which I don't see for some reason locally"):
+
+- **This Browser**: "Join Audio: This space is only saved in your browser, so nobody else can join. Save it online to talk with people."
+- **Calls off on this server**: "Join Audio: Calls are not available on this server."
+
+A press does nothing. The camera and Share Screen beside it still preview locally. Someone who may not speak (a
+Viewer) gets no greyed button. The reason comes from `useProximityCall` (`CallSelf.unavailableReason`).
 
 ## The talking equaliser
 

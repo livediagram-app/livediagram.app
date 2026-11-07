@@ -21,7 +21,16 @@ export const AVATAR_PALETTE = {
   // leather-ish apron.
   denim: '#41597f',
   denimDark: '#2f4260',
+  // Overall stitching and straps: a lighter denim so the bib still reads over a dark shirt.
+  denimLight: '#7391c2',
   coat: '#eef2f6',
   coatDark: '#cfd8e3',
   apron: '#8b5e34',
+  apronDark: '#6b4524',
+  // Fixed accents for outfit details that must not follow the shirt hue: overall buckles, a Hawaiian print's
+  // leaves, bloom centres and (on a light shirt) its petals.
+  brass: '#e0b13e',
+  leaf: '#22a34a',
+  bloom: '#fde047',
+  petal: '#db2777',
 } as const;

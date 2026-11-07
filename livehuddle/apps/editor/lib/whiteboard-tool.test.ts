@@ -23,22 +23,19 @@ const pen: PendingDraw = {
 
 describe('activeWhiteboardTool', () => {
   it.each([
-    ['eraser', null, 'eraser'],
     // No highlighter on a whiteboard: a stray marker arm reads as Select.
-    ['select', { type: 'freehand', variant: 'highlighter' }, 'select'],
-    ['select', pen, 'pen'],
-    ['pan', pen, 'pen'],
-    ['select', { type: 'path' }, 'path'],
-    ['select', { type: 'fill', fill: '#dbeafe' }, 'fill'],
-    ['select', { type: 'sticky' }, 'sticky'],
-    ['select', { type: 'text' }, 'text'],
-    ['select', { type: 'shape', kind: 'circle' }, 'shape'],
-    ['select', { type: 'arrow', ends: 'none' }, 'shape'],
-    ['select', null, 'select'],
-    ['pan', null, 'select'],
-    ['select', { type: 'freehand' }, 'select'],
-  ] as const)('reads %s with %j as %s', (tool, draw, expected) => {
-    expect(activeWhiteboardTool(tool, draw as PendingDraw | null)).toBe(expected);
+    [{ type: 'freehand', variant: 'highlighter' }, 'select'],
+    [pen, 'pen'],
+    [{ type: 'path' }, 'path'],
+    [{ type: 'fill', fill: '#dbeafe' }, 'fill'],
+    [{ type: 'sticky' }, 'sticky'],
+    [{ type: 'text' }, 'text'],
+    [{ type: 'shape', kind: 'circle' }, 'shape'],
+    [{ type: 'arrow', ends: 'none' }, 'shape'],
+    [null, 'select'],
+    [{ type: 'freehand' }, 'select'],
+  ] as const)('reads %j as %s', (draw, expected) => {
+    expect(activeWhiteboardTool(draw as PendingDraw | null)).toBe(expected);
   });
 });
 

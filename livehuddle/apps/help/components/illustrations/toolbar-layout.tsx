@@ -2,9 +2,8 @@
 // of the canvas as the category bar, and a category's flyout opening under it. `Strip` and `MenuCard`
 // are exported so other scenes draw the editor's top row the same way.
 // Composed only from the shared primitives, like every other help scene.
-import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
-import { SelectGlyph } from './palette-modes-parts';
+import { EditWalkToggle, editWalkToggleWidth } from './palette-modes-parts';
 
 // The strip's element tiles, drawn as the simple outlines the real tiles use.
 function SpaceGlyph({
@@ -50,59 +49,22 @@ function SpaceGlyph({
   }
 }
 
-// A pill-shaped dropdown in the strip: tinted, so it reads as a menu beside
-// the plain tiles, the way the real strip draws its selection mode, category
-// and More controls.
-function Pill({
-  x,
-  y,
-  w,
-  active = false,
-  children,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  active?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={24}
-        rx={6}
-        className={active ? 'fill-brand-100 stroke-brand-300' : 'fill-brand-50 stroke-brand-100'}
-        strokeWidth={1}
-      />
-      {children}
-      <path
-        d={`M${x + w - 12} ${y + 10} l3 3 l3 -3`}
-        className="stroke-brand-600"
-        strokeWidth={1.4}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </g>
-  );
-}
-
-// The meeting palette's category bar, as many of its categories as the figure has room for, in order: category
-// names, and '|' for the divider between the bands.
-const BAR: readonly string[] = ['Write', '|', 'Rooms', 'Seating', '|', 'Travel', '|', 'Stickers'];
+// The meeting palette's category bar, as many of its categories as the figure has room for beside the Edit | Walk
+// toggle, in order: category names, and '|' for the divider between the bands.
+const BAR: readonly string[] = ['Write', '|', 'Rooms', 'Seats', '|', 'Travel'];
 // A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
 // strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
 const charW = 4.5;
 const PAD = 5;
 const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);
+// Where the category bar starts, past the Edit | Walk toggle (4 in from the strip's edge) and its divider.
+const BAR_START = 4 + editWalkToggleWidth() + 11;
 
 /** The width of the strip drawn by `Strip`. */
-export const STRIP_W = 49 + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 36;
+export const STRIP_W = BAR_START + BAR.reduce((w, c) => w + (c === '|' ? 9 : nameW(c)), 0) + 36;
 
-/** The palette strip as the meeting palette's category bar, top-left corner at (x, y), STRIP_W wide and 32 tall: the selection
- *  mode, the categories by name (`open` pressed, its flyout showing), and Search. */
+/** The palette strip as an Editor sees it while building, top-left corner at (x, y), STRIP_W wide and 32 tall: the
+ *  Edit | Walk toggle (Edit on), the categories by name (`open` pressed, its flyout showing), and Search. */
 export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
   const slots = barSlots(x);
   const end = slots.at(-1)!.left + slots.at(-1)!.w;
@@ -151,12 +113,8 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Pill x={x + 4} y={y + 4} w={34}>
-        <g transform={`translate(${x + 15} ${y + 16}) scale(0.8)`}>
-          <SelectGlyph />
-        </g>
-      </Pill>
-      <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <EditWalkToggle x={x + 4} y={y + 4} on="edit" />
+      <path d={`M${x + BAR_START - 6} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       {items}
       {/* Search, last on the strip behind its own divider. */}
       <path d={`M${end + 5} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
@@ -181,7 +139,7 @@ export function Strip({ x, y, open }: { x: number; y: number; open?: string }) {
 function barSlots(x: number): { name: string; left: number; w: number }[] {
   return BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
     const prev = out.at(-1);
-    const left = prev ? prev.left + prev.w : x + 49;
+    const left = prev ? prev.left + prev.w : x + BAR_START;
     return [...out, { name, left, w: name === '|' ? 9 : nameW(name) }];
   }, []);
 }
@@ -237,11 +195,11 @@ export function ToolbarLayoutOverview() {
       {/* Two rows of labels: side by side, neighbouring labels ran into each other. The lower row
           hangs from its control on a thin leader through the gap in the row above. */}
       <Label x={10} y={62} size={10} tone="muted">
-        Explorer, mode
+        Explorer, tab
       </Label>
-      <line x1={99} y1={51} x2={99} y2={70} {...leader} />
-      <Label x={99} y={80} size={10} anchor="middle" tone="muted">
-        Selection mode
+      <line x1={124} y1={51} x2={124} y2={70} {...leader} />
+      <Label x={124} y={80} size={10} anchor="middle" tone="muted">
+        Edit | Walk
       </Label>
       <line x1={250} y1={51} x2={250} y2={70} {...leader} />
       <Label x={250} y={80} size={10} anchor="middle" tone="accent" weight={700}>
@@ -296,15 +254,15 @@ export function ToolbarLayoutOverview() {
   );
 }
 
-/** A category open: resting on Seating hangs its flyout under it, its tiles in one block. */
+/** A category open: resting on Seats hangs its flyout under it, its tiles in one block. */
 export function ToolbarCategoryFlyout() {
   const tiles = ['chair', 'desk', 'sofa', 'table'] as const;
-  const seating = stripCategory(78, 'Seating');
+  const seating = stripCategory(78, 'Seats');
   const panelX = Math.round(seating.left + seating.w / 2 - 90);
   return (
     <Scene w={420} h={236}>
       <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} open="Seating" />
+      <Strip x={78} y={16} open="Seats" />
       <Panel x={panelX} y={58} w={180} h={126} title="SEATING">
         {tiles.map((kind, i) => (
           <Tile key={kind} x={panelX + 10 + (i % 3) * 54} y={90 + Math.floor(i / 3) * 44} size={34}>

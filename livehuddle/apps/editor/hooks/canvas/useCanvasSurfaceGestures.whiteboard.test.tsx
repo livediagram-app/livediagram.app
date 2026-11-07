@@ -23,7 +23,6 @@ function setup(
   canvasTool: string = 'select',
 ) {
   const setPan = vi.fn();
-  const onEraseStart = vi.fn();
   const beginPendingDrawGesture = vi.fn(() => true);
   const main = document.createElement('main');
   const { result } = renderHook(() =>
@@ -45,7 +44,6 @@ function setup(
       isoCamera: {},
       onDeselect: vi.fn(),
       beginPendingDrawGesture,
-      onEraseStart,
       onCanvasContextMenu: vi.fn(),
       onCanvasDoubleClick: vi.fn(),
     } as never),
@@ -78,7 +76,7 @@ function setup(
       preventDefault: vi.fn(),
       stopPropagation: vi.fn(),
     } as unknown as ReactPointerEvent);
-  return { press, bubble, setPan, beginPendingDrawGesture, onEraseStart, undo, cluster, main };
+  return { press, bubble, setPan, beginPendingDrawGesture, undo, cluster, main };
 }
 
 afterEach(() => resetPenSeenForTests());
@@ -136,14 +134,6 @@ describe('the bottom-right cluster is chrome, not canvas', () => {
     const s = setup(false, { type: 'shape', kind: 'square' });
     s.press('mouse', s.undo);
     expect(s.beginPendingDrawGesture).not.toHaveBeenCalled();
-  });
-
-  it('starts no erase sweep under the cluster', () => {
-    const s = setup(true, null, 'eraser');
-    s.press('mouse', s.undo);
-    expect(s.onEraseStart).not.toHaveBeenCalled();
-    s.press('mouse');
-    expect(s.onEraseStart).toHaveBeenCalledTimes(1);
   });
 
   it('starts no draw when a press on a strip frame bubbles to the canvas', () => {

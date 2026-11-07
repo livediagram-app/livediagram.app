@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape } from '@livehuddle/document';
 import {
@@ -22,17 +22,19 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const shape = createShape('square', 100, 100);
 const other = createShape('square', 300, 100);
 
-function renderToolbars(multi: boolean) {
+function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
   const elements = [shape, other];
+  const readOnly = over.readOnly ?? false;
   const props = {
     elements,
-    readOnly: false,
+    readOnly,
     canvasTool: 'select',
     onDuplicateSelected: vi.fn(),
     onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
     onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
+    ...over,
   } as unknown as CanvasProps;
   const store = createSelectionStore();
   if (multi) store.setMultiSelectedIds(new Set([shape.id, other.id]));
@@ -42,7 +44,7 @@ function renderToolbars(multi: boolean) {
     editingId: null,
     isPaintMode: false,
     tabLocked: false,
-    readOnly: false,
+    readOnly,
   };
   return render(
     <SelectionStoreProvider store={store}>
@@ -57,7 +59,10 @@ function renderToolbars(multi: boolean) {
 const overlayOf = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[style*="visibility"]')!;
 
-afterEach(() => resetCanvasGesturesForTests());
+afterEach(() => {
+  cleanup();
+  resetCanvasGesturesForTests();
+});
 
 describe('selection chrome while a selection moves', () => {
   for (const multi of [false, true]) {
@@ -85,4 +90,20 @@ describe('selection chrome while a selection moves', () => {
       expect(overlayOf(container).style.visibility).toBe('visible');
     });
   }
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Format painter": the selection toolbar's Format Painter is its one way
+// in, loaded with the selected element, an Editor's alone.
+describe('the Format Painter button', () => {
+  it('starts the painter with the selected element', () => {
+    const onStartFormatPainter = vi.fn();
+    renderToolbars(false, { onStartFormatPainter });
+    fireEvent.click(screen.getByRole('button', { name: 'Format Painter' }));
+    expect(onStartFormatPainter).toHaveBeenCalledWith(shape.id);
+  });
+
+  it('is not offered read-only', () => {
+    renderToolbars(false, { readOnly: true, onStartFormatPainter: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
+  });
 });

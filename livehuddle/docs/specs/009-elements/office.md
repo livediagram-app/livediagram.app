@@ -6,7 +6,7 @@ a **Stage**; an **Office Pod** for two; a bar (a **Bar**, a **Bar Stool**, a **D
 Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **Grass** and a **Garden Fence**).
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
-The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
+The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Play corner (Jukebox, Ping-Pong Table,
 Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
 and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 The [Office amenities](office-amenities.md) add a Printer, a Copier, Lockers, a Coat Rack and an Umbrella Stand, a
@@ -14,7 +14,7 @@ kitchenette (Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle) and a res
 Dryer, and a Restroom room preset).
 The [Venue pieces](venue-pieces.md) add Pillars and Columns, a Car Park and a Bike Rack, a Swimming Pool, and Stage
 Curtains and a Podium for the Stage.
-A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
+A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meet** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
 ## Why
@@ -27,11 +27,13 @@ places, so an office is drawn with the same tools as a diagram.
 ## Where they live
 
 Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
-(with the fence), `meeting-table` in **Seating** (with the chair, desk and sofa), and `plant`, `bookshelf`,
-`water-cooler` and `coffee-machine` in **Amenities** (the Stage's tile from Work Tracker #319 part 4), where the
+(with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
+`water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
 [Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
-joins **Seating**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` make a **Bar** category, and
-`outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` a **Garden** category.
+joins **Seats**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` are **Play**'s **Bar** group (Bar
+was a category of its own until 2026-11-06), and `outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` are
+**Garden**'s **Plants** and **Paths and Fences** groups
+([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
 theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.

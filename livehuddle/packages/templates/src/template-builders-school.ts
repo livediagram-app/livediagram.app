@@ -160,7 +160,7 @@ export function buildSchoolQuad(cx: number, cy: number): Element[] {
         'Learn together: the lecture in the hall, groups in the classrooms, quiet in the library and lunch in the canteen.',
     },
     gateAt: MID,
-    hint: 'Press Walk In (or W) and come in through the gate. The Directory by it walks you to any room.',
+    hint: 'You arrive on the Avatar Pad by the gate. The Directory by it walks you to any room.',
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 580, top + HALL.y + 60)],
   });
 }

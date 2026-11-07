@@ -2,7 +2,7 @@
 
 Two meeting pieces for a Space ([Office](office.md)): a **Screen** on a room's wall that shows what someone in the room
 is sharing, and a **Room Sign** by a room's door that says whether the room is free. Both are placed pieces (a fixed
-default size, like the office furniture) in the palette's **Meeting** category, and both read the room they belong to
+default size, like the office furniture) in the palette's **Meet** category, and both read the room they belong to
 from where they stand. Neither stores anything about who is where: occupancy and sharing are presence and the call,
 worked out on every machine, as a [chair's occupancy](chair.md#occupancy-is-presence) is.
 
@@ -84,6 +84,33 @@ A small plaque by a room's door: the room's name over a status line with a colou
   **Knocked** and does nothing. A free room has no Knock: walk in.
 - Re-renders when its room's count, status or name change, and once a minute while In Use; never on a step.
 
+### The sign's reader
+
+Pressing a Room Sign you may not knock on while walking (a free room, a room you are inside, a sign with no room)
+opens it in the [reader](../008-canvas/avatar-mode.md#the-reader), laid out as a small meeting-room door panel. It
+reads live: it changes as people come and go, and its time ticks once a minute while the room is in use.
+
+- **Header**: the room's name as the title, and under it a status chip in the sign's colour (a dot and **Free**,
+  **In Use** or **Do Not Disturb**) beside what the room is (**Room** or **Office Pod**).
+- **Two figures** side by side: **Inside**, how many ("Nobody", "1 Person", "3 People"), and **In Use For**, the
+  sign's own time ("Just now", "12 min"), or **Not in use** while the room is free.
+- **Who's Inside**: one row per person, you first (with a "You" chip), then everyone else as presence lists them:
+  their initials on their colour, and their name. An empty room shows an empty state, **Nobody's Inside**, saying
+  the room is free to walk into. A shut pod adds a line saying its door is shut while both seats are
+  held, and that a knock asks someone to make room.
+- **No Room**: a sign too far from any room shows an empty state saying to move it within a short step of a room's or
+  pod's floor, and no actions.
+- **Footer** (the dialog's action row), by state, with a short reason on its left when an action is not available
+  (on a phone, on its own line above the buttons). A button that is not available stays in place, dimmed, and its
+  hover card says why:
+  - **Knock** (primary) while In Use or Do Not Disturb, as the plaque's button: **Knocked** for ten seconds after a
+    knock. Not available to someone inside ("You're inside this room").
+  - **Walk In** (secondary while there is a Knock, primary on a free room): walks your character to just inside the
+    room's doorway by the Directory's own route ([Walk There](directory.md#walk-there)), and closes the reader. Not
+    available to someone already inside, or at a shut pod (its door is shut).
+- **Share roles**: the reader is your own view, so every role sees it; Knock and Walk In are the walk's, open to
+  anyone walking (a Viewer walks), as the table below says.
+
 ## Share roles
 
 | Act                                                 | Editor | Participant | Viewer |
@@ -93,6 +120,7 @@ A small plaque by a room's door: the room's name over a status line with a colou
 | See a Screen (share, video poster, idle) and a Sign | Yes    | Yes         | Yes    |
 | Open a Screen large                                 | Yes    | Yes         | Yes    |
 | Knock from a Room Sign                              | Yes    | Yes         | Yes    |
+| Walk In from a Room Sign's reader                   | Yes    | Yes         | Yes    |
 
 - Placing and the Video Link are editing (`can.edit`); a Participant has no palette.
 - Seeing and opening are your own view. Knocking is presence: anyone who may walk may knock (a Viewer walks).

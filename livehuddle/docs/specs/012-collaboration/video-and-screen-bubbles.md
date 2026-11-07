@@ -19,7 +19,10 @@ someone out of earshot, so a bubble costs nothing until somebody walks up.
 On top of earshot, a bubble is received only while it can be seen:
 
 - **Off-screen bubbles are not received.** A speaker in earshot whose character is outside the canvas's visible area
-  (with a margin of 120 canvas px, so a bubble at the edge does not flicker) gets no video.
+  (with a margin of 120 canvas px, so a bubble at the edge does not flicker) gets no video. The visible area is what
+  the screen shows at any zoom: the canvas zooms about the middle of the screen, so zoomed in or out the area is
+  centred where the screen's middle is, never anchored at its top-left corner (a bug until 2026-11-06 left everyone to
+  your right and below you unreceived when zoomed in).
 - **A hidden tab receives none.** While the page is hidden (another browser tab, a minimised window), every video and
   screen subscription closes; voices carry on. Coming back opens them again.
 - **At most 6 camera bubbles at once**, the nearest. Further cameras in earshot show their character only.
@@ -28,7 +31,7 @@ On top of earshot, a bubble is received only while it can be seen:
 
 ## The camera (#317)
 
-- **Camera** is one button beside the microphone in the call's strip. Off by default. Pressing it asks for the camera
+- **Camera** is one button beside the microphone in the call group, at the left of the avatar palette. Off by default. Pressing it asks for the camera
   (once per site, as the browser decides) and turns it on; pressing again turns it off and the browser's camera light
   goes out. Before you join, or where there is no call at all, it is a [local preview](#local-preview).
 - Your own bubble shows above your own head, mirrored, so you see what others see. Others see it unmirrored.
@@ -58,12 +61,23 @@ waits for it.
   browser's own picker (`getDisplayMedia`): a screen, a window or a tab.
 - Capped for cost and clarity: up to **1920×1080 at 5 to 15 frames a second**, tuned for text (`contentHint`
   `detail`), at most **1 Mbps**, one layer.
-- The sharer sees a clear **"You are sharing your screen"** bar at the top of the canvas with a **Stop Sharing**
-  button ("Sharing your screen" on a phone, so it never cuts off), and a small bubble of their own share above
-  their head.
+- **While you share, the sharing controls take the look's place in the strip** (owner, 2026-11-06: "When I am
+  sharing my screen, remove the customisation option for my character and use the space it frees up to move the
+  sharing controls into the palette"). The [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette) drops
+  **Gender**, **Clothes** and **Hair** (Status stays: it is not dressing up), and in their place, right after the call
+  group, a **Screen Share** group: a **Sharing** indicator (a pulsing rose dot, a `status` region whose hover card
+  reads "You Are Sharing Your Screen"), then **Stop Sharing** (rose, named while the strip names its buttons, the
+  glyph alone otherwise). The call group's own Share button gives way to it while the share is on, so Stop Sharing has
+  one home; it comes back, with the look, the moment the share ends however it ends. A look flyout open when the
+  share starts closes. On a phone the group stays put beside the call group while the rest of the strip swipes. The
+  floating "You are sharing your screen" bar this replaced is gone. The sharer still sees a small bubble of their own
+  share above their head.
+- **The camera has no controls of its own** beyond its on and off button in the call group (no device switch, no
+  blur, no mirror toggle: your own camera is always mirrored), so turning it on changes nothing else in the strip
+  (owner, 2026-11-06: "Maybe same with camera too, if that has any controls").
 - Viewers in earshot see the share as a bubble above the sharer, next to their camera bubble when both are on, and
   maximise it the same way.
-- **It stops** when the sharer presses Stop Sharing (the bar or the strip), when they stop it from the browser's own
+- **It stops** when the sharer presses Stop Sharing (in the strip), when they stop it from the browser's own
   control, when they leave the call, the mode or the tab, and when the kill switch tightens. Walking away from people
   stops them receiving it, as with a voice; the share itself carries on for whoever is still near.
 - No audio from the shared screen or tab: voices stay the call's only sound.
@@ -76,14 +90,16 @@ your own screen and nothing is sent; once a call is joined, the same bubble is s
 - **Offered whenever the browser can capture.** In Avatar mode, the Camera button shows wherever the browser has a
   camera API in a secure context, and Share Screen wherever it has a screen picker (not on a phone), whether or not
   calls are on: in a This Browser Space, in a private Space nobody else can open, with calls off on the deployment or
-  paused by the kill switch, and before you join. With no call to offer, the strip holds just the two buttons and the
-  `?`; with Join Audio (or Calls Paused) on offer, they sit beside it.
+  paused by the kill switch, and before you join. With no call to offer, the call group at the left of the
+  [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette) holds just the two buttons; with Join Audio (or
+  Calls Paused) on offer, they sit beside it.
 - **No call, nothing sent.** With no call joined (no room, calls off or paused, or not joined yet), turning one on
   captures locally, at the same sizes and frame rates as a sent one, and shows your own bubble above your own head.
   Nothing goes to the room or to Cloudflare: no session, no `call-track` op, no publish.
 - **"Only You".** A preview bubble carries a small **Only You** tag, and its hover card says "Only you see this.
-  Nothing is sent." The strip's button reads **Only You See Your Camera** (or Screen) in its hover card, and the top bar
-  reads **Only you see your screen** (with the same Stop Sharing) in place of "You are sharing your screen".
+  Nothing is sent." The strip's button reads **Only You See Your Camera** (or Screen) in its hover card, and the Screen Share
+  group's indicator reads **Only You** ("Only You See Your Screen" in its hover card) in place of Sharing, with the
+  same Stop Sharing.
 - **Joining sends it.** When a call goes live while a preview is on, the call takes the track already captured: no
   second permission prompt, no second picker. From then on it is an ordinary camera or share (counted, capped and
   received as above) and the tag goes. A preview turned on while a call is joining is taken the moment it goes live.

@@ -15,7 +15,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `../packages/avatar/src/hooks/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
 | `../packages/avatar/src/components/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
 | `../packages/avatar/src/components/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble                |
-| `../packages/avatar/src/components/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                                     |
+| `apps/editor/components/canvas/AvatarClusterButton.tsx`      | The Avatar button in the bottom-right cluster                                                     |
 | `apps/editor/components/panels/AvatarPanel.tsx`              | The panel, now a popover, with Send a Message                                                     |
 | `../packages/avatar/src/components/AvatarMessagePopover.tsx` | The panel's message popover                                                                       |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`             | `broadcastAvatarSay`                                                                              |
@@ -200,8 +200,9 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 - Button: `ClusterPopoverButton` with label "Avatar", hover title "Avatar", description "Dress your character,
   react, and say something." (Viewer: "Dress your character and react.").
 - Panel's button: full-width secondary `Button` "Send a Message", `kbd` "Enter" on a desktop.
-- Message popover: title "Send a Message", textarea (4 rows), counter, Cancel and Send (primary, disabled while
-  empty or cooling down).
+- Message popover: title "Send a Message", the draft as `SpeechDraftField framed` (the shared `TextArea`, compact, 3
+  to 6 lines), "Up to 50 words." / "One moment…" and the counter under it, then Cancel (secondary) and Send (primary,
+  paper plane, disabled while empty or cooling down), right-aligned. The composer's send button has a `Tooltip` "Send".
 
 ## Accessibility
 
@@ -247,10 +248,10 @@ canvas. INP: Enter opens the composer in one render.
 | `AVATAR_SAY_MAX_WORDS`      | 50    | The user's limit                          | fixed      |
 | `AVATAR_SAY_MAX_CHARS`      | 300   | 50 words × 6 characters (D107)            | 250–400    |
 | `SPEECH_COUNTER_FROM_WORDS` | 40    | Spec                                      | 30–49      |
-| `SPEECH_BASE_MS`            | 4000  | Spec                                      | fixed      |
-| `SPEECH_PER_WORD_MS`        | 150   | Spec                                      | fixed      |
-| `SPEECH_MAX_MS`             | 10000 | Spec                                      | fixed      |
-| `SPEECH_RISE_PX_PER_S`      | 18    | Spec                                      | 10–30      |
+| `SPEECH_BASE_MS`            | 7000  | Spec                                      | fixed      |
+| `SPEECH_PER_WORD_MS`        | 250   | Spec                                      | fixed      |
+| `SPEECH_MAX_MS`             | 16000 | Spec                                      | fixed      |
+| `SPEECH_RISE_PX_PER_S`      | 12    | Spec                                      | 10–30      |
 | `SPEECH_SWAY_PX`            | 6     | D108                                      | 0–12       |
 | `SPEECH_SWAY_PERIOD_MS`     | 2400  | D108                                      | 1500–4000  |
 | `SPEECH_FADE_FRACTION`      | 1/3   | Spec                                      | fixed      |

@@ -68,6 +68,9 @@ export function EditorStartPanels() {
                 void ctx.chooseTemplate(kind);
                 moveOnTemplatePick(kind);
               }}
+              // The × lands the blank's Avatar Pad, uncounted: a close is no pick
+              // (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one").
+              onStartBlank={(kind) => void ctx.chooseTemplate(kind, { counted: false })}
             />
             {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
             <StartAgainTray

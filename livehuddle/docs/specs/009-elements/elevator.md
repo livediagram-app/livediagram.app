@@ -31,7 +31,7 @@ each tab and every floor is one press away, with nothing to link.
   adding, moving or deleting one never needs a menu.
 - **Where a floor arrives**: at that floor's first Elevator in reading order (or the one picked), stepping out at its
   base: centred, in front of its doors, with the whole figure below its name (the avatar's position being its feet,
-  its head a small gap under the name's line, as a Walk In button's entry places it), so the character never stands
+  its head a small gap under the name's line, as a Selection Mode button's entry places it), so the character never stands
   over the name and stays clear of the footprint. A floor with **no Elevator**
   arrives at its [Avatar Pad](avatar-pad.md) (the first in layer order, on its core), else at the middle of what the
   tab holds, else the canvas origin.

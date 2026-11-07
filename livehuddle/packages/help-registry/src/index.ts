@@ -116,10 +116,10 @@ export const categories: Category[] = [
   },
   {
     slug: 'selection-modes',
-    title: 'Selection Modes',
+    title: 'Edit or Walk',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Avatar, Eraser and Format Painter.',
-    articleCount: 6,
+      'The Edit | Walk toggle at the start of the palette: build the board, or walk it as your character, and the Format Painter.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -363,9 +363,9 @@ export const articles: Article[] = [
     slug: 'command-palette',
     title: 'The Palette',
     description:
-      'Pick a selection mode and add sticky notes, text, icons and more from the palette strip.',
+      'Switch between Edit and Walk and add sticky notes, text, rooms and more from the palette strip.',
     keywords:
-      'quick add search elements toolbar strip launcher categories dropdown popular selection mode tiles bands',
+      'quick add search elements toolbar strip launcher categories dropdown popular edit walk toggle tiles bands',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -711,37 +711,24 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
     group: 'Basics',
   },
-  // ---- Selection Modes (own feature category, extracted from Palette) ----
+  // ---- Edit or Walk (the selection-modes category: the palette's Edit | Walk toggle) ----
   {
     slug: 'select',
-    title: 'Select',
-    description: 'The default pointer for selecting, moving, and editing elements.',
-    keywords: 'pointer cursor arrow tool default mode click marquee picker shift',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'hand',
-    title: 'Hand',
-    description: 'Pan the canvas with a plain drag on empty space.',
-    keywords: 'pan drag move canvas grab scroll navigate space middle click hand tool',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'eraser',
-    title: 'Eraser',
-    description: 'Click or drag across elements to delete them quickly.',
-    keywords: 'delete remove rub out erase clear wipe brush size filter drawings arrows sweep tap',
-    category: 'Selection Modes',
+    title: 'Edit and Walk',
+    description:
+      'The Edit | Walk toggle: select and build in Edit, walk as your character in Walk.',
+    keywords:
+      'edit walk toggle switch pointer cursor arrow select default mode click marquee shift build footprints avatar character pan hand space drag trackpad middle click delete remove erase eraser backspace selection mode tool picker',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
     slug: 'format-painter',
     title: 'Format Painter',
-    description: "Copy one element's style and paint it onto others.",
-    keywords: 'copy style clone look paste formatting appearance brush',
-    category: 'Selection Modes',
+    description: "Copy one element's style from the selection toolbar and paint it onto others.",
+    keywords:
+      'copy style clone look paste formatting appearance brush selection toolbar paint match',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
@@ -749,8 +736,8 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb change tab switch tab leave avatar mode',
-    category: 'Selection Modes',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb need help question lunch sandwich angry steam ears celebrating party hat confetti thinking thought bubble sick ice pack mood change tab switch tab leave avatar mode',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
@@ -760,7 +747,7 @@ export const articles: Article[] = [
       'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
     keywords:
       'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
-    category: 'Selection Modes',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes/avatar-mode',
     parentSlug: 'avatar-mode',
   },
@@ -770,7 +757,7 @@ export const articles: Article[] = [
     description: "Everyone on a shared space sees everyone else's walking character.",
     keywords:
       'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence document',
-    category: 'Selection Modes',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
     parentSlug: 'avatar-mode',
   },
@@ -881,7 +868,7 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Meeting Elements',
     description:
-      'The elements a Space is built from: the Travel, Seating, Rooms and Amenities pieces people walk round, Bring Focus and the Avatar button.',
+      'The elements a Space is built from: the Travel, Seats, Rooms and Perks pieces people walk round, Bring Focus and the Avatar button.',
     keywords:
       'behaviour behavior behaviours behaviors interactive button portal mode switch walk in chair seat desk sofa couch fence barrier link card bookmark bring focus look here attention gather meeting travel seating rooms amenities navigate selection mode',
     category: 'Palette',
