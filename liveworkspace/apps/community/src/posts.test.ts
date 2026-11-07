@@ -13,6 +13,7 @@ import {
   type CommunityListQuery,
   type CommunityPostInput,
 } from '@liveworkspace/community';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -612,13 +613,14 @@ describe('Start With', () => {
       for (let j = 0; j < 10; j++) insertLike.run(`post${i}`, `k${i}-${j}`, `n${j}`, NOW - DAY);
     }
     db.sql.exec('COMMIT');
-    const started = performance.now();
-    const answer = await start();
-    const took = performance.now() - started;
+    let answer: Awaited<ReturnType<typeof start>> = {};
+    const took = await cpuMsOfAsync(async () => {
+      answer = await start();
+    });
     expect(Object.keys(answer)).toHaveLength(categories.length);
     for (const list of Object.values(answer)) expect(list).toHaveLength(3);
     // A CPU-time budget for a shared CI runner, far above what it takes.
-    expect(took).toBeLessThan(1000);
+    expect(took).toBeLessThan(cpuBudgetMs(1000));
   });
 });
 
