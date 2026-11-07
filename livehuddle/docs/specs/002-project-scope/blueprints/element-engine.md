@@ -32,7 +32,11 @@ of Work Tracker #459 and the rules every later part follows.
   runs `deleteElementById` (`useElementSelectionActions`): the editor's ordinary removal of one id
   (`removeSelected(new Set([id]))`), one history entry that takes its attached arrows with it, as Delete does.
 - Visibility: the button is in the DOM for an Editor always and shown by CSS while the element wrapper is hovered
-  (`group-hover`), while it holds focus (`focus-visible`), or while the element is selected (`selected` prop).
+  (`group-hover`), while it holds focus (`focus-visible`), or while the element is selected (`selected` prop). While
+  hidden it is `pointer-events-none` (made `auto` by the same hover or selection), so a touch, which has no hover,
+  can't press it on an unselected card; focus ignores pointer-events, so the keyboard still reaches it. A tap that
+  selects the card shows the button under the finger before the tap's click lands, so a click deletes only when its
+  press began on the button, or comes from the keyboard (`detail` 0).
 
 ## Interfaces and contracts
 

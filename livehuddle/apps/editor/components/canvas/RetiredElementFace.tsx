@@ -7,6 +7,7 @@ import {
   type BoxedElement,
   type RetiredPlaceholderLayout,
 } from '@livehuddle/document';
+import { useRef } from 'react';
 import { Glyph, Prims, Tooltip } from '@livehuddle/ui';
 import { lucideTrash2 } from '@liveworkspace/icons/lucide';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
@@ -194,6 +195,10 @@ function RetiredDeleteButton({
   onDelete: (elementId: string) => void;
 }) {
   const zoom = useCanvasZoom();
+  // Whether the press now ending began on the button. A tap that selects the card shows the button under the
+  // finger before the tap's click lands, so that click must not count: only a press that started on the button,
+  // or the keyboard (a click with no pointer, detail 0), deletes.
+  const pressed = useRef(false);
   const width = Math.max(0, element.width);
   const height = Math.max(0, element.height);
   const place = retiredDeletePlacement(card, width, height, zoom, indicators);
@@ -219,13 +224,27 @@ function RetiredDeleteButton({
             data-retired-delete=""
             // The canvas reads a press on an element as select-and-maybe-drag: stop it here, or the press that
             // deletes would first start a drag of the card it removes.
-            onPointerDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              pressed.current = true;
+            }}
+            onPointerCancel={() => {
+              pressed.current = false;
+            }}
             onClick={(e) => {
               e.stopPropagation();
+              const fromPress = pressed.current;
+              pressed.current = false;
+              if (e.detail !== 0 && !fromPress) return;
               onDelete(element.id);
             }}
-            className={`pointer-events-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 ${
-              selected ? 'opacity-100' : 'opacity-0 group-hover/el:opacity-100'
+            // Hidden, it takes no press: a touch has no hover, so a tap on an unselected card where the button
+            // sits would otherwise delete a card the user never saw a Delete on. A pointer that can hover shows
+            // it first; a keyboard still reaches it, since focus ignores pointer-events.
+            className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-white/10 ${
+              selected
+                ? 'pointer-events-auto opacity-100'
+                : 'pointer-events-none opacity-0 group-hover/el:pointer-events-auto group-hover/el:opacity-100'
             }`}
             style={{ color: ink }}
           >

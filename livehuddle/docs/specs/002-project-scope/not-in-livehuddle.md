@@ -448,7 +448,8 @@ has deleted so far, any other shape kind livehuddle does not know, and an elemen
   shows below that when it has one. The export and the thumbnail draw the same card, without the Delete button.
 - **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target that keeps its size on screen
   at every zoom, as the selection grips do) in the card's top-right corner while the pointer is over the card, it has
-  keyboard focus or the card is selected (a touch screen has no hover, so selecting it shows the button). It sits far
+  keyboard focus or the card is selected (a touch screen has no hover, so selecting it shows the button). While hidden
+  it takes no press, so a tap on an unselected card never deletes it unseen. It sits far
   enough in that a tap on it never lands on a resize grip, and when the card shows indicators in that corner (its
   comment pip, its link, note or action) it steps left of them, so a tap meant for the comments never deletes the
   card. It only ever shows inside the card. A card smaller than 72 by 48 on screen, or with no room for it clear of

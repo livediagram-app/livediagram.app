@@ -216,16 +216,42 @@ describe('the placeholder Delete button', () => {
     expect(onDelete).toHaveBeenCalledWith('qa');
   });
 
+  it('ignores the click of a tap that began on the card, so the tap that selects it never deletes', () => {
+    const onDelete = vi.fn();
+    const { container } = render(
+      <RetiredElementFace element={board()} selected onDelete={onDelete} />,
+    );
+    const b = button(container)!;
+    // The selecting tap pressed the card, then the button appeared under the finger before the click.
+    fireEvent.click(b, { detail: 1 });
+    expect(onDelete).not.toHaveBeenCalled();
+    // A press cancelled on the button doesn't arm the next click either.
+    fireEvent.pointerDown(b);
+    fireEvent.pointerCancel(b);
+    fireEvent.click(b, { detail: 1 });
+    expect(onDelete).not.toHaveBeenCalled();
+    // A press on the button, or the keyboard (a click with detail 0), deletes.
+    fireEvent.pointerDown(b);
+    fireEvent.click(b, { detail: 1 });
+    fireEvent.click(b, { detail: 0 });
+    expect(onDelete).toHaveBeenCalledTimes(2);
+  });
+
   it('shows on hover and focus, and stays shown while selected (a touch has no hover)', () => {
     const idle = render(<RetiredElementFace element={board()} onDelete={() => {}} />);
     const quiet = button(idle.container)!.className;
     expect(quiet).toContain('opacity-0');
     expect(quiet).toContain('group-hover/el:opacity-100');
     expect(quiet).toContain('focus-visible:opacity-100');
+    // Hidden, it takes no tap: a touch on an unselected card never deletes it unseen.
+    expect(quiet.split(' ')).toContain('pointer-events-none');
+    expect(quiet).toContain('group-hover/el:pointer-events-auto');
     cleanup();
     const picked = render(<RetiredElementFace element={board()} selected onDelete={() => {}} />);
     expect(button(picked.container)!.className).toContain('opacity-100');
     expect(button(picked.container)!.className).not.toContain('opacity-0');
+    expect(button(picked.container)!.className.split(' ')).toContain('pointer-events-auto');
+    expect(button(picked.container)!.className.split(' ')).not.toContain('pointer-events-none');
   });
 
   it('leaves a box too small to hold it with words only', () => {
