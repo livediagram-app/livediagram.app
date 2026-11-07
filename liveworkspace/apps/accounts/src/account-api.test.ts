@@ -476,6 +476,26 @@ describe('the account API, for the apps', () => {
     expect((await index('nope')).status).toBe(401);
   });
 
+  it("names accounts to the index's key alone, leaving out ids it doesn't know", async () => {
+    const people = (body: unknown, key = 'merge-key', method = 'POST') =>
+      handleAccountApi(
+        new Request(`${BASE}/api/account/index/people`, {
+          method,
+          headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+          body: method === 'POST' ? JSON.stringify(body) : undefined,
+        }),
+        { ...env, INDEX_MERGE_KEY: 'merge-key' },
+        auth,
+      );
+    const named = await people({ ids: ['user_ada', 'user_nobody', 'deleted', 7] });
+    expect(await named.json()).toEqual({ people: [{ id: 'user_ada', name: 'Ada' }] });
+    expect((await people({ ids: 'user_ada' })).status).toBe(400);
+    const many = Array.from({ length: 101 }, (_, i) => `user_${i}`);
+    expect((await people({ ids: many })).status).toBe(400);
+    expect((await people({ ids: [] }, 'nope')).status).toBe(401);
+    expect((await people(undefined, 'merge-key', 'GET')).status).toBe(404);
+  });
+
   it('refuses wrong client credentials', async () => {
     const response = await internal(
       '/teams/changes',
