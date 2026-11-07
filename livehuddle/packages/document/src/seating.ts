@@ -306,7 +306,7 @@ export const FURNITURE_GLINT = { stroke: '#ffffff', opacity: 0.35 } as const;
 // How much of the stroke colour shades a face toward the room, over the seat fill.
 export const FURNITURE_FACE_SHADE = 0.22;
 // A woven pattern's strength over the fill: the stroke's tint, white's sheen, a dye's own colour.
-export const FURNITURE_WEAVE = { tint: 0.2, sheen: 0.32, dye: 0.55 } as const;
+export const FURNITURE_WEAVE = { tint: 0.2, sheen: 0.32, dye: 0.7 } as const;
 
 /** The drawing a piece shows at a facing: its grid as a viewBox, and the mirror for facing right. */
 export function furnitureFrame(

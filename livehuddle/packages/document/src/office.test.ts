@@ -106,6 +106,7 @@ describe('the office pieces', () => {
     ]);
     const sized = [
       'room',
+      'corridor',
       'stage',
       'garden-path',
       'grass',

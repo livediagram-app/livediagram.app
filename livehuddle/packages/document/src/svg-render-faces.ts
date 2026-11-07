@@ -353,7 +353,12 @@ export function svgBehaviourFace(
     case 'rug':
       // A patterned rug (office.md "Rug types") is drawn to its size; the Oval keeps its scaled drawing.
       return rugDrawnToSize(el)
-        ? sizedSvg(el, rugParts(el.width, el.height, el.variant), fill ?? el.fillColor ?? RUG_FILL, stroke)
+        ? sizedSvg(
+            el,
+            rugParts(el.width, el.height, el.variant),
+            fill ?? el.fillColor ?? RUG_FILL,
+            stroke,
+          )
         : furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     // A Corridor (docs/specs/009-elements/corridor.md): its floor and walls.
     case 'corridor':

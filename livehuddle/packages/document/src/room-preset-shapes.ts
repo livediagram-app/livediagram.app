@@ -5,7 +5,6 @@
 import type { OutlinePoint } from '@liveworkspace/avatar/room-outline';
 import type { ShapeElement } from './index';
 
-
 type RoomPreset = {
   label: string;
   width: number;

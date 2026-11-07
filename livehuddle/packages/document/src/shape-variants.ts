@@ -147,13 +147,12 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
   // because its drawing reads it, with the type's size.
   if (storesVariant(el.shape) && variantsOf(el.shape).includes(variant)) {
     const size = PIECE_VARIANT_SIZES[el.shape]?.[variant];
-    return {
-      ...el,
-      variant,
-      ...size,
-      // A Round rug stays a circle.
-      ...(el.shape === 'rug' && variant === 'round' ? { aspectLocked: true } : {}),
-    };
+    const typed: ShapeElement = { ...el, variant, ...size };
+    if (el.shape !== 'rug') return typed;
+    // A Round rug stays a circle; the other patterned rugs are drawn to their box, so they take any.
+    if (variant === 'round') return { ...typed, aspectLocked: true };
+    const { aspectLocked: _locked, ...free } = typed;
+    return free;
   }
   return el;
 }

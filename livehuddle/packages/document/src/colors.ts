@@ -230,7 +230,15 @@ const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 // The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
 const FLOOR_FILLS: Record<
-  'room' | 'corridor' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond' | 'swimming-pool',
+  | 'room'
+  | 'corridor'
+  | 'rug'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'door'
+  | 'pond'
+  | 'swimming-pool',
   readonly [string, string]
 > = {
   // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").

@@ -12,11 +12,12 @@ export type DoorPose = { rotate: number; dx: number };
 
 /**
  * How a part is painted. `floor` the gap it cuts, in the floor; `jamb` and `leaf` the floor's fill outlined in the
- * stroke; `glass` the stroke as a faint pane, outlined; `wing` a revolving door's wings, the stroke's line; `swing` the
+ * stroke; `glass` the stroke as a faint pane, outlined; `pane` the same wash unoutlined (a drum's floor); `wing` a revolving door's wings, the stroke's line; `swing` the
  * dashed swing arc; `track` a thin rail; `ink` the stroke itself (a filled hub or padlock body, a stroked
  * shackle).
  */
-export type DoorPaint = 'floor' | 'jamb' | 'leaf' | 'glass' | 'wing' | 'swing' | 'track' | 'ink';
+export type DoorPaint =
+  'floor' | 'jamb' | 'leaf' | 'glass' | 'pane' | 'wing' | 'swing' | 'track' | 'ink';
 
 export type DoorArtPart = (
   | { tag: 'rect'; x: number; y: number; w: number; h: number; rx: number }
@@ -129,7 +130,7 @@ export function doorArt(
     };
     const wing = r2(r - 2);
     parts.push(
-      { tag: 'circle', cx, cy: r2(mid), r, paint: 'glass' },
+      { tag: 'circle', cx, cy: r2(mid), r, paint: 'pane' },
       {
         tag: 'path',
         d: `M${at(130)} A${r} ${r} 0 0 1 ${at(230)}M${at(-50)} A${r} ${r} 0 0 1 ${at(50)}`,
@@ -178,10 +179,7 @@ export function doorArt(
 }
 
 /** A pose as an SVG transform attribute (the export, which draws the one pose the door is in); '' for none. */
-export function doorPoseTransform(
-  pose: DoorPose,
-  origin: { x: number; y: number },
-): string {
+export function doorPoseTransform(pose: DoorPose, origin: { x: number; y: number }): string {
   const parts: string[] = [];
   if (pose.dx !== 0) parts.push(`translate(${pose.dx} 0)`);
   if (pose.rotate !== 0) parts.push(`rotate(${pose.rotate} ${origin.x} ${origin.y})`);

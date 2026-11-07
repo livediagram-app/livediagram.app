@@ -18,7 +18,6 @@ export {
 
 /** A Door's types (room-builder.md "Door types"), the first the one an absent `variant` draws. */
 export const DOOR_VARIANTS = ['swing', 'double', 'sliding', 'revolving'] as const;
-export type DoorVariant = (typeof DOOR_VARIANTS)[number];
 
 /** A Rug's types (office.md "Rug types"), the first the one an absent `variant` draws. */
 export const RUG_VARIANTS = [
@@ -31,7 +30,6 @@ export const RUG_VARIANTS = [
   'kilim',
   'doormat',
 ] as const;
-export type RugVariant = (typeof RUG_VARIANTS)[number];
 
 /** The kinds whose drawing reads a stored `variant`, each with its types in order. */
 const STORED_VARIANTS: Readonly<Record<string, readonly string[]>> = {
@@ -53,7 +51,9 @@ export function variantsOf(kind: string): readonly string[] {
 /** The type a piece draws: its stored `variant` when its kind takes it, else the kind's first (or '' for none). */
 export function pieceVariant(el: { shape: string; variant?: unknown }): string {
   const types = variantsOf(el.shape);
-  return typeof el.variant === 'string' && types.includes(el.variant) ? el.variant : (types[0] ?? '');
+  return typeof el.variant === 'string' && types.includes(el.variant)
+    ? el.variant
+    : (types[0] ?? '');
 }
 
 // The longest a stored variant may be, and what it may be made of: a short lowercase word or words joined by hyphens.
@@ -92,7 +92,8 @@ const r2 = (v: number) => Math.round(v * 100) / 100;
 /** A run of points as an SVG path, closed (a floor) or open (a wall run). */
 function pointsPath(pts: readonly { x: number; y: number }[], closed: boolean): string {
   return (
-    pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${r2(p.x)} ${r2(p.y)}`).join(' ') + (closed ? ' Z' : '')
+    pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${r2(p.x)} ${r2(p.y)}`).join(' ') +
+    (closed ? ' Z' : '')
   );
 }
 

@@ -407,6 +407,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Avatar-pad',
     // The virtual office (docs/specs/009-elements/office.md), in Navigate.
     'Room',
+    // The Corridor (docs/specs/009-elements/corridor.md), beside the Room.
+    'Corridor',
     'Meeting-table',
     'Plant',
     'Bookshelf',

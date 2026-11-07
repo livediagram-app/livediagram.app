@@ -41,6 +41,8 @@ export function doorPaintAttrs(p: DoorArtPart, floor: string, line: string): str
       return `fill="${floor}" stroke="${line}" stroke-width="${FURNITURE_PANEL_STROKE}"`;
     case 'glass':
       return `fill="${line}" fill-opacity="${GLASS_OPACITY}" stroke="${line}" stroke-width="${FURNITURE_RAIL_STROKE}"`;
+    case 'pane':
+      return `fill="${line}" fill-opacity="${GLASS_OPACITY}"`;
     case 'wing':
       return `fill="none" stroke="${line}" stroke-width="3" stroke-linecap="round"`;
     case 'swing':

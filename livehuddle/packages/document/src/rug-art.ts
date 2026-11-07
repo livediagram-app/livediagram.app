@@ -11,7 +11,7 @@ import type { FurniturePart } from './seating';
 // The dyes the patterned rugs are woven with, each half seen through the rug's fill.
 const DYE = {
   crimson: '#9f1239',
-  navy: '#1e3a8a',
+  navy: '#1e40af',
   terracotta: '#c2410c',
   teal: '#0f766e',
   sage: '#4d7c0f',
@@ -61,7 +61,7 @@ export function rugParts(width: number, height: number, variant: unknown): Furni
     case 'bordered':
       return [
         rect('panel', 0, 0, w, h, 4),
-        rect('tint', 6, 6, w - 12, h - 12, 3),
+        rect('dye', 6, 6, w - 12, h - 12, 3, DYE.terracotta),
         rect('floor', 18, 18, w - 36, h - 36, 2),
         rect('rail', 23, 23, w - 46, h - 46, 2),
         rect('sheen', 9, 9, w - 18, 3, 1.5),
@@ -107,8 +107,8 @@ function runnerRug(w: number, h: number): FurniturePart[] {
   const parts: FurniturePart[] = [
     fringe(w, h, 6),
     rect('panel', 0, 0, w, h, 3),
-    rect('tint', 4, 4, r2(band), h - 8, 2),
-    rect('tint', r2(w - 4 - band), 4, r2(band), h - 8, 2),
+    rect('dye', 4, 4, r2(band), h - 8, 2, DYE.teal),
+    rect('dye', r2(w - 4 - band), 4, r2(band), h - 8, 2, DYE.teal),
     rect('sheen', r2(band / 2), 4, 3, h - 8, 1.5),
     rect('sheen', r2(w - band / 2 - 3), 4, 3, h - 8, 1.5),
     rect('rail', r2(8 + band), 8, r2(w - 16 - 2 * band), h - 16, 2),
@@ -119,27 +119,27 @@ function runnerRug(w: number, h: number): FurniturePart[] {
   let d = '';
   for (let i = 0; i < n; i++)
     d += diamond(band + 12 + step * (i + 0.5), h / 2, Math.min(9, step / 3), Math.min(12, h / 4));
-  if (d) parts.push(path('dye', d, DYE.navy));
+  if (d) parts.push(path('dye', d, DYE.crimson));
   return parts;
 }
 
-// Bold stripes across it, alternating a dye and the stroke's tint, a thin sheen between each.
+// Bold stripes across it, alternating teal and terracotta, a thin sheen between each.
 function stripedRug(w: number, h: number): FurniturePart[] {
   const parts: FurniturePart[] = [rect('panel', 0, 0, w, h, 3)];
   const run = w - 12;
   const n = repeats(run, 28);
   const step = run / n;
   let dye = '';
-  let tint = '';
+  let warm = '';
   let sheen = '';
   for (let i = 0; i < n; i++) {
     const x = 6 + i * step;
     const band = `M${r2(x + 2)} 4h${r2(step * 0.42)}V${r2(h - 4)}h${r2(-step * 0.42)}Z`;
     if (i % 2 === 0) dye += band;
-    else tint += band;
+    else warm += band;
     sheen += `M${r2(x + step * 0.62)} 4h2.5V${r2(h - 4)}h-2.5Z`;
   }
-  parts.push(path('dye', dye, DYE.teal), path('tint', tint), path('sheen', sheen));
+  parts.push(path('dye', dye, DYE.teal), path('dye', warm, DYE.terracotta), path('sheen', sheen));
   parts.push(rect('rail', 4, 4, w - 8, h - 8, 2));
   return parts;
 }
@@ -210,8 +210,7 @@ function doormat(w: number, h: number): FurniturePart[] {
   const n = repeats(h - 14, 5);
   const step = (h - 14) / n;
   let ribs = '';
-  for (let i = 0; i < n; i++)
-    ribs += `M9 ${r2(7 + step * (i + 0.5))}H${r2(w - 9)}`;
+  for (let i = 0; i < n; i++) ribs += `M9 ${r2(7 + step * (i + 0.5))}H${r2(w - 9)}`;
   return [
     rect('panel', 0, 0, w, h, 6),
     rect('tint', 5, 5, w - 10, h - 10, 4),
