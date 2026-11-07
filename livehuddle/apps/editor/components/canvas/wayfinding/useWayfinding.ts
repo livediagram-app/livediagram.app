@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type Ref } from '
 import type { Element, Tab } from '@livehuddle/document';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { AvatarPoint } from '@liveworkspace/avatar/walk';
+import type { AvatarConfig } from '@liveworkspace/avatar/config';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { viewportOffsetCentredOn } from '@/lib/portals';
 import {
@@ -32,6 +33,8 @@ export type WayfindingInput = {
   /** The current tab's visible elements. */
   elements: readonly Element[];
   self: Person;
+  /** Your own character, for the Team Photo Wall's portrait of you. */
+  selfConfig?: AvatarConfig;
   remoteAvatars: readonly (Person & { avatar: AvatarPresence })[];
   /** The tab bar's people on each tab (docs/specs/009-elements/directory.md "Another tab"). */
   tabPresence?: ReadonlyMap<string, readonly Person[]>;
@@ -56,7 +59,8 @@ type PendingGo = { tabId: string; point: WayPoint; ignoreId?: string };
 const NO_PRESENCE: ReadonlyMap<string, readonly Person[]> = new Map();
 
 export function useWayfinding(input: WayfindingInput): Wayfinding {
-  const { walking, activeTabId, tabs, elements, self, remoteAvatars, avatar, loadedTabIds } = input;
+  const { walking, activeTabId, tabs, elements, self, selfConfig, remoteAvatars, avatar } = input;
+  const { loadedTabIds } = input;
   const tabPresence = input.tabPresence ?? NO_PRESENCE;
   const [store] = useState(createWayfindingStore);
 
@@ -89,16 +93,17 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
       whoIsWhere({
         activeTabId: activeTabId ?? '',
         findPlace,
-        self: { ...self, feet: selfFeet },
+        self: { ...self, feet: selfFeet, config: selfConfig },
         peers: remoteAvatars.map((p) => ({
           id: p.id,
           name: p.name,
           color: p.color,
           feet: { x: p.avatar.x, y: p.avatar.y },
+          config: p.avatar.config,
         })),
         byTab: tabPresence,
       }),
-    [activeTabId, findPlace, self, selfFeet, remoteAvatars, tabPresence],
+    [activeTabId, findPlace, self, selfConfig, selfFeet, remoteAvatars, tabPresence],
   );
   const key = peopleKey(people);
   const peopleNow = useLatest(people);

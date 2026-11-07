@@ -367,6 +367,7 @@ export function useCanvasAvatar({
     loadFloors: props.onLoadPortalTabs,
     elements,
     self: props.selfParticipant,
+    selfConfig: avatarLook.config,
     remoteAvatars: props.remoteAvatars,
     tabPresence: props.tabPresence,
     avatar,
@@ -381,7 +382,11 @@ export function useCanvasAvatar({
   });
   const resolveFace = useCallback(
     (element: ShapeElement) =>
-      element.shape === 'directory' || element.shape === 'elevator'
+      // The Signpost and the Team Photo Wall (team-pieces.md) read the same store: the tab's places, who is here.
+      element.shape === 'directory' ||
+      element.shape === 'elevator' ||
+      element.shape === 'signpost' ||
+      element.shape === 'photo-wall'
         ? { targetName: null, wayfinding }
         : resolvePortal(element),
     [resolvePortal, wayfinding],

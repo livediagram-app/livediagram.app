@@ -50,6 +50,8 @@ import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { DirectoryFace } from '@/components/canvas/wayfinding/DirectoryFace';
 import { ElevatorFace } from '@/components/canvas/wayfinding/ElevatorFace';
+import { PhotoWallFace } from '@/components/canvas/wayfinding/PhotoWallFace';
+import { SignpostFace } from '@/components/canvas/wayfinding/SignpostFace';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Tables are on few boards, so their face loads on demand; its code is fetched as the editor mounts
@@ -223,6 +225,12 @@ function KnownElementFace({
       ) : element.type === 'shape' && element.shape === 'directory' ? (
         /* Directory (docs/specs/009-elements/directory.md): a press over the stand opens the space's rooms. */
         <DirectoryFace elementId={element.id} wayfinding={onEnterPortal?.(element).wayfinding} />
+      ) : element.type === 'shape' && element.shape === 'signpost' ? (
+        /* Signpost (docs/specs/009-elements/team-pieces.md): arrows to the tab's nearest places, each a Walk There. */
+        <SignpostFace element={element} wayfinding={onEnterPortal?.(element).wayfinding} />
+      ) : element.type === 'shape' && element.shape === 'photo-wall' ? (
+        /* Team Photo Wall (team-pieces.md): the people here now, a portrait a frame. */
+        <PhotoWallFace element={element} wayfinding={onEnterPortal?.(element).wayfinding} />
       ) : element.type === 'shape' && element.shape === 'elevator' && !isEditing ? (
         /* Elevator (docs/specs/009-elements/elevator.md): a press (or a walk-in) opens the panel; its name under it,
            retyped like any label while editing. */

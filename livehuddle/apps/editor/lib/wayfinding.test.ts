@@ -14,13 +14,18 @@ import {
   peopleKey,
   placeFinder,
   placePoints,
+  signpostBoards,
+  signpostFoot,
   spaceFloors,
   spacePlaces,
   tabPlaces,
   walkThereRoute,
   whoIsWhere,
+  type SpacePlace,
   type WayPoint,
 } from './wayfinding';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { DEFAULT_AVATAR_CONFIG, type AvatarConfig } from '@liveworkspace/avatar/config';
 
 const at = (kind: Parameters<typeof createShape>[0], x: number, y: number, over = {}) =>
   ({ ...createShape(kind, x, y), id: `${kind}-${x}-${y}`, ...over }) as Element;
@@ -314,5 +319,81 @@ describe('walkThereRoute', () => {
       bounds: { x: 0, y: 0, width: 100, height: 100 },
     };
     expect(walkThereRoute({ x: 50, y: 300 }, place)).toEqual([place.approach, place.arrival]);
+  });
+});
+
+// docs/specs/009-elements/team-pieces.md "Team Photo Wall": the people carry their look, and a change of look is news.
+describe('who is where, with their look', () => {
+  const look: AvatarConfig = { ...DEFAULT_AVATAR_CONFIG, hair: 'long' };
+  const run = (config: AvatarConfig = look, peerConfig?: AvatarConfig) =>
+    whoIsWhere({
+      activeTabId: 'a',
+      findPlace: () => null,
+      self: { id: 'me', name: 'Me', color: '#000', feet: null, config },
+      peers: [{ id: 'p', name: 'Pat', color: '#111', feet: { x: 0, y: 0 }, config: peerConfig }],
+      byTab: new Map([['b', [{ id: 'r', name: 'Rae', color: '#333' }]]]),
+    });
+
+  it('carries the look of the self and of the peers walking here, and none for the tab bar', () => {
+    const people = run(look, DEFAULT_AVATAR_CONFIG);
+    expect(people.map((p) => p.config)).toEqual([look, DEFAULT_AVATAR_CONFIG, undefined]);
+    expect(run(look, undefined)[1]).not.toHaveProperty('config');
+  });
+
+  it('changes the key when a look changes, never for the same look', () => {
+    expect(peopleKey(run(look))).toBe(peopleKey(run({ ...look })));
+    expect(peopleKey(run(look))).not.toBe(peopleKey(run({ ...look, hairColour: 'black' })));
+  });
+});
+
+// docs/specs/009-elements/team-pieces.md "Signpost": the three nearest places to its foot, pointing the way.
+describe('signpostBoards', () => {
+  const place = (id: string, x: number, y: number): SpacePlace => ({
+    id,
+    tabId: 't',
+    kind: 'room',
+    name: id,
+    approach: null,
+    arrival: { x, y },
+    bounds: null,
+  });
+  const foot = { x: 0, y: 0 };
+
+  it('stands the foot at its post', () => {
+    expect(signpostFoot({ x: 100, y: 200, width: 120, height: 144 })).toEqual({ x: 160, y: 332 });
+  });
+
+  it('keeps the nearest few, nearest first, each pointing its way', () => {
+    const places = [
+      place('far', 900, 0),
+      place('near-left', -50, 10),
+      place('mid', 300, 300),
+      place('nearer', 40, -20),
+      place('farther', -800, 800),
+    ];
+    expect(signpostBoards(places, foot, 3).map((b) => [b.place.id, b.dir])).toEqual([
+      ['nearer', 'right'],
+      ['near-left', 'left'],
+      ['mid', 'right'],
+    ]);
+  });
+
+  it('keeps reading order on a tie, and holds fewer when there are fewer', () => {
+    const places = [place('a', 10, 0), place('b', -10, 0)];
+    expect(signpostBoards(places, foot, 3).map((b) => b.place.id)).toEqual(['a', 'b']);
+    expect(signpostBoards(places, foot, 1).map((b) => b.place.id)).toEqual(['a']);
+    expect(signpostBoards(places, foot, 0)).toEqual([]);
+    expect(signpostBoards([], foot, 3)).toEqual([]);
+  });
+
+  it('scans a tab of thousands of places in a moment', () => {
+    const many = Array.from({ length: 5000 }, (_, i) =>
+      place(`p${i}`, (i * 37) % 4000, (i * 91) % 3000),
+    );
+    // A scan that keeps the best three: ~0.3ms measured for 5000; a sort would allocate and compare far more.
+    const best = Math.min(
+      ...[0, 1, 2].map(() => cpuMsOf(() => signpostBoards(many, { x: 2000, y: 1500 }, 3))),
+    );
+    expect(best).toBeLessThan(cpuBudgetMs(10));
   });
 });
