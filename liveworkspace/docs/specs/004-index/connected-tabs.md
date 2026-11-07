@@ -32,8 +32,8 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 ## Connecting
 
 From an editor's start screen, **Connect liveworkspace File** (the last entry of the start screen's sidebar, pinned
-to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row; it reads
-**Connect a File** on one line beside the other apps' logos, and its tooltip and accessible name say the full name) lists the person's most recent items across every app
+to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row; in a 240px rail its
+name breaks once, evenly, with the other apps' logos fanned under it) lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
 - **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked

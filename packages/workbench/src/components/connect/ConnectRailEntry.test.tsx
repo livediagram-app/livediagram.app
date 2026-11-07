@@ -27,8 +27,8 @@ describe('ConnectRailEntry', () => {
     const button = screen.getByRole('button', { name: 'Connect liveworkspace File' });
     expect(button.getAttribute('data-rail')).toBe(CONNECT_RAIL_ID);
     expect(button.getAttribute('aria-current')).toBeNull();
-    // Short on the row, so it fits one line beside the logos in a 240px rail; the full name is its name.
-    expect(button.textContent).toBe('Connect a File');
+    // The owner's words, in full, on the row (balanced onto two lines in a 240px rail).
+    expect(button.textContent).toBe('Connect liveworkspace File');
     fireEvent.click(button);
     expect(onPick).toHaveBeenCalled();
     // Three logos, never the host's own.
