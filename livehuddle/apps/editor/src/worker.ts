@@ -22,9 +22,12 @@ type Env = { ASSETS: AssetsBinding; PREVIEWS_ORIGIN?: string };
 //     document ids in the path; don't leak full paths to third-party
 //     sites the user might click out to.
 //   - Permissions-Policy: deny every powerful feature the editor
-//     doesn't use (camera / mic / geolocation / payment / USB) so a
-//     compromised script can't request them. Clipboard isn't denied
-//     because the image picker uses paste; fullscreen=self is allowed.
+//     doesn't use (geolocation / payment / USB) so a compromised
+//     script can't request them. Calls use the camera, the microphone
+//     and screen capture, so those are allowed for this origin alone
+//     (docs/specs/012-collaboration/proximity-audio.md "Turning calls
+//     on"). Clipboard isn't denied because the image picker uses
+//     paste; fullscreen=self is allowed.
 //   - Strict-Transport-Security: 1-year HSTS with includeSubDomains.
 //     Pins the browser to HTTPS for the apex + every subdomain
 //     after the first visit; subsequent loads can't be downgraded
@@ -42,7 +45,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy':
-    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)',
+    'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=(), fullscreen=(self)',
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
 

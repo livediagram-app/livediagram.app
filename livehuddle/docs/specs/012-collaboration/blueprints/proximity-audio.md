@@ -91,8 +91,9 @@ Rejections: `503 { error: 'calls_off', reason: 'unconfigured' | 'paused' | 'audi
 last two from the [kill switch](../../016-platform/blueprints/calls-kill-switch.md#wired-in-part-2)); `404` without a grant; `410` trashed;
 `403 { error: 'calls_listen_only' }` for a listener's publish or a listener-signed session; `400 { error:
 'invalid_call_request' }` for a malformed body, a bad session token, a bad track token, more than
-`MAX_SUBSCRIBE_BATCH` (16) locators or a `trackName` other than `mic`; `502 { error: 'calls_upstream' }` when Realtime
-fails (logged `[calls] upstream` with the operation and status).
+`MAX_SUBSCRIBE_BATCH` (16) locators or a `trackName` other than `mic`; `410 { error: 'calls_session_gone' }` when
+Realtime answers `410` (the session expired: nobody connected to it in time); `502 { error: 'calls_upstream' }` when
+Realtime fails otherwise (both logged `[calls] upstream` with the operation and status).
 
 Tokens (`apps/api/src/calls/call-tokens.ts`): HMAC-SHA256 keyed by `REALTIME_APP_TOKEN`, base64url.
 `sessionToken = '<s|l>.' + mac('own|<documentId>|<sessionId>|<s|l>')`, `trackToken = mac('pub|<documentId>|<sessionId>')`.
@@ -116,6 +117,13 @@ held frames for one step. The editor's store is memory only and empties on leavi
   the mode does, into **Calls Paused**.
 - Microphone refused (on the first unmute): `micState: 'blocked'`, still hearing; the button says how to allow it and a press asks the browser again.
 - Connection fails (`iceconnectionstate` `failed`): phase `error`, the Retry press starts fresh.
+- Session gone (`410 calls_session_gone` on any step, spec "A session that expires"): `SfuSession` raises
+  `onSessionGone` (only the current session's counts), and `ProximityCall.renew` closes it, mints and proves a new one,
+  republishes the open microphone (`CallMic.republish`; a released one is unpublished, so the next unmute publishes
+  afresh), the camera and the screen (`CallVideo.republish`), sends its locators and hears again. More than
+  `RENEW_MAX` (3) renewals inside `RENEW_WINDOW_MS` (60 s) fail the call (`fail('session')`).
+- A publish that fails forgets its sender and stops its transceiver, so a later publish of that name negotiates
+  afresh instead of swapping a track into a sender Realtime never accepted.
 - A locator for a session that ended: the subscribe's per-track error is ignored; the peer is retried only when it
   sends a new locator.
 - A peer who walks out of range mid-subscribe: the queue's reconciliation closes it on the next run.
@@ -191,6 +199,8 @@ token. The editor logs through `debugLog('calls', …)`.
 | Button states per role; bars hover text and walk              | `apps/editor/components/calls/*.test.tsx`             |
 | The call: mint, publish, earshot, mute, idle close, errors    | `apps/editor/lib/calls/proximity-call.test.ts`        |
 | One queue, batches, refused locators, closes                  | `apps/editor/lib/calls/sfu-session.test.ts`           |
+| Session gone: renew, republish, prove, cap                    | `apps/editor/lib/calls/proximity-call.test.ts`        |
+| Editor allows camera, microphone and screen for self          | `apps/editor/src/worker.test.ts`                      |
 | Join, leave with the mode or tab, rejoin after failure        | `apps/editor/lib/calls/useProximityCall.test.tsx`     |
 
 ## Constants and configuration
@@ -213,6 +223,8 @@ token. The editor logs through `debugLog('calls', …)`.
 | `VOICE_STALE_MS`         | 8000      | A lost stop clears                                 |
 | `VOICE_DB_FLOOR/CEIL`    | −34 / −10 | The level's range                                  |
 | `MIC_IDLE_CLOSE_MS`      | 15000     | Alone on a tab                                     |
+| `RENEW_MAX`              | 3         | Renewals of a gone session before the call fails   |
+| `RENEW_WINDOW_MS`        | 60000     | The window those renewals are counted in           |
 | `LOCATOR_RESEND_MS`      | 1000      | Late joiners learn the locator                     |
 | `WALK_TO_TALKER_STOP_PX` | 60        | Stop short of shoving                              |
 | `TURN_TTL_S`             | 14400     | 4 hours, a long session                            |

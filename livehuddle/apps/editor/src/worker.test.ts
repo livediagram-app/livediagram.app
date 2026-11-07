@@ -38,6 +38,18 @@ describe('editor worker security headers', () => {
     }
   });
 
+  // proximity-audio.md "Turning calls on": calls need the camera, the microphone and screen capture; the rest stays denied.
+  it('lets this origin alone use the camera, the microphone and screen capture', async () => {
+    const { env: e } = env();
+    const res = await worker.fetch(new Request('https://www.livehuddle.app/document/abc'), e);
+    const policy = res.headers.get('Permissions-Policy') ?? '';
+    for (const allowed of ['camera=(self)', 'microphone=(self)', 'display-capture=(self)']) {
+      expect(policy).toContain(allowed);
+    }
+    for (const denied of ['geolocation=()', 'payment=()', 'usb=()'])
+      expect(policy).toContain(denied);
+  });
+
   it('leaves the embed view frameable', async () => {
     const { env: e } = env();
     const res = await worker.fetch(new Request('https://www.livehuddle.app/embed'), e);

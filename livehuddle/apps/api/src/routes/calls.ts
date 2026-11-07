@@ -90,7 +90,11 @@ async function bodyOf(request: Request): Promise<Record<string, unknown> | null>
   }
 }
 
-/** Calls the Realtime API, answering 502 when it fails. */
+/**
+ * Calls the Realtime API, answering 410 `calls_session_gone` when Realtime says the session is gone (it expired before
+ * anyone connected to it: the browser renews it, proximity-audio.md "A session that expires") and 502 for any other
+ * failure.
+ */
 async function upstream<T>(
   work: () => Promise<T>,
   done: (value: T) => Response,
@@ -100,6 +104,7 @@ async function upstream<T>(
   } catch (error) {
     if (!(error instanceof RealtimeError)) throw error;
     console.warn('[calls] upstream', error.operation, error.status);
+    if (error.status === 410) return refuse(410, 'calls_session_gone');
     return refuse(502, 'calls_upstream');
   }
 }

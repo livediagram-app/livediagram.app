@@ -31,6 +31,11 @@ export class CallsApiError extends Error {
     return this.code === 'calls_off' && this.reason === 'paused';
   }
 
+  /** Realtime dropped the session: the call renews it (proximity-audio.md "A session that expires"). */
+  get sessionGone(): boolean {
+    return this.status === 410 && this.code === 'calls_session_gone';
+  }
+
   /** The kill switch allows audio alone: a camera or a screen was refused (video-and-screen-bubbles.md). */
   get audioOnly(): boolean {
     return this.code === 'calls_off' && this.reason === 'audio-only';

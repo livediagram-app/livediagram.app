@@ -189,7 +189,10 @@ export type CallsErrorCode =
   | 'calls_listen_only'
   | 'calls_editor_only'
   | 'invalid_call_request'
-  | 'calls_upstream';
+  | 'calls_upstream'
+  // Realtime dropped the session (nobody connected to it in time): the browser mints a new one (proximity-audio.md
+  // "A session that expires").
+  | 'calls_session_gone';
 // `paused` and `audio-only` are the calls kill switch's (docs/specs/016-platform/calls-kill-switch.md "The mint
 // route"): everything is paused, or this track's media is while calls are audio only.
 export type CallsOffReason = 'unconfigured' | 'paused' | 'audio-only';

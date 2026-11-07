@@ -22,6 +22,7 @@ import {
   LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
   ProximityCall,
+  RENEW_MAX,
   REPROVE_MS,
   SCREEN_CONSTRAINTS,
   type CallSignal,
@@ -42,6 +43,7 @@ const sfu = vi.hoisted(() => ({
       onPaused: () => void;
       onAudioOnly: () => void;
       onNotHeard: () => void;
+      onSessionGone: () => void;
     };
     publish: ReturnType<typeof vi.fn>;
     replaceMic: ReturnType<typeof vi.fn>;
@@ -554,6 +556,7 @@ describe('ProximityCall video and screens', () => {
       });
       expect(preview.stream('camera')).toBeNull();
       expect(callMedia().get('self')).toEqual({ video: cam.stream, screen: screen.stream });
+      await settle();
       expect(sent.at(-1)).toMatchObject({ video: me('cam'), screen: me('screen') });
       // Now the call's: leaving stops it, as a camera turned on in the call.
       call.stop();
@@ -1285,5 +1288,171 @@ describe('ProximityCall in a silent room', () => {
     vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
     expect(listener.sent).toEqual([]);
     listener.call.stop();
+  });
+});
+
+// proximity-audio.md "A session that expires": Realtime drops a session nobody connected to in time.
+describe('ProximityCall renewing a session Realtime dropped', () => {
+  const gone = () => new CallsApiError(410, 'calls_session_gone');
+  const renewed = { ...session, sessionId: 'me2', sessionToken: 's.y' };
+
+  // The first unmute, half a minute after walking in: its publish finds the session gone.
+  // The session raises onSessionGone as the publish is refused.
+  async function goneOnPublish(unmute: () => void) {
+    const inst = sfu.instances[0]!;
+    inst.publish.mockRejectedValueOnce(gone());
+    unmute();
+    inst.events.onSessionGone();
+    await settle();
+  }
+
+  it('mints a new session, proves it, and publishes the microphone on it', async () => {
+    const { call, sent, proved, mic } = makeCall();
+    await call.start();
+    api.apiCallSession.mockResolvedValueOnce(renewed);
+    await goneOnPublish(() => call.toggleMute());
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2);
+    expect(sfu.instances[0]!.close).toHaveBeenCalledTimes(1);
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledWith(mic.track);
+    expect(proved.at(-1)).toEqual({ kind: 'call-session', sessionId: 'me2', sessionToken: 's.y' });
+    expect(sent.at(-1)).toEqual({
+      kind: 'call-track',
+      track: { sessionId: 'me', trackName: 'mic', token: 'tt' },
+    });
+    expect(sfu.instances[1]!.want).toHaveBeenCalled();
+    expect(telemetry.track).toHaveBeenCalledWith('Canvas', 'Used', 'CallRenewed');
+    expect(callSelf()).toMatchObject({ phase: 'live', mic: 'open', muted: false });
+    call.stop();
+  });
+
+  it('publishes the camera again beside the microphone', async () => {
+    const { call, mic, camera } = makeCall();
+    await speak(call);
+    await call.toggleCamera();
+    sfu.instances[0]!.events.onSessionGone();
+    await settle();
+    const publish = sfu.instances[1]!.publish;
+    expect(publish).toHaveBeenCalledWith(mic.track);
+    expect(publish).toHaveBeenCalledWith(camera.track, 'cam', CAMERA_ENCODINGS);
+    call.stop();
+  });
+
+  it('keeps a camera whose publish was refused on your own screen, with no unhandled error', async () => {
+    const { call } = makeCall();
+    await call.start();
+    sfu.instances[0]!.publish.mockRejectedValueOnce(new CallsApiError(502, 'calls_upstream'));
+    await call.toggleCamera();
+    expect(callSelf().camera).toBe('on');
+    call.stop();
+  });
+
+  it('leaves a released microphone unpublished, so the next unmute publishes it on the new session', async () => {
+    const { call } = makeCall();
+    await speak(call);
+    call.toggleMute();
+    call.update(scene([]));
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS);
+    sfu.instances[0]!.events.onSessionGone();
+    await settle();
+    expect(sfu.instances[1]!.publish).not.toHaveBeenCalled();
+    call.toggleMute();
+    await settle();
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledTimes(1);
+    expect(sfu.instances[1]!.replaceMic).not.toHaveBeenCalled();
+    call.stop();
+  });
+
+  it('opens a microphone unmuted while the session was being renewed', async () => {
+    const { call, getUserMedia } = makeCall();
+    await call.start();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    call.toggleMute();
+    await settle();
+    expect(getUserMedia).not.toHaveBeenCalled();
+    mint(renewed);
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(sfu.instances[1]!.publish).toHaveBeenCalledTimes(1);
+    call.stop();
+  });
+
+  it('renews once at a time, and ignores the closed session from then on', async () => {
+    const { call } = makeCall();
+    await call.start();
+    sfu.instances[0]!.events.onSessionGone();
+    sfu.instances[0]!.events.onSessionGone();
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2);
+    const old = sfu.instances[0]!.events;
+    old.onSessionGone();
+    old.onFailed();
+    old.onPaused();
+    old.onAudioOnly();
+    old.onNotHeard();
+    old.onTrack('p1', 'mic', {});
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ phase: 'live', mode: 'on' });
+    call.stop();
+  });
+
+  it('fails into Retry after RENEW_MAX renewals inside a minute, never looping', async () => {
+    const { call } = makeCall();
+    await call.start();
+    for (let i = 0; i < RENEW_MAX; i++) {
+      sfu.instances.at(-1)!.events.onSessionGone();
+      await settle();
+    }
+    expect(api.apiCallSession).toHaveBeenCalledTimes(1 + RENEW_MAX);
+    sfu.instances.at(-1)!.events.onSessionGone();
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(1 + RENEW_MAX);
+    expect(callSelf().phase).toBe('error');
+  });
+
+  it('renews again once the window has passed', async () => {
+    const { call } = makeCall();
+    await call.start();
+    for (let i = 0; i < RENEW_MAX; i++) {
+      sfu.instances.at(-1)!.events.onSessionGone();
+      await settle();
+    }
+    vi.advanceTimersByTime(61_000);
+    sfu.instances.at(-1)!.events.onSessionGone();
+    await settle();
+    expect(api.apiCallSession).toHaveBeenCalledTimes(2 + RENEW_MAX);
+    expect(callSelf().phase).toBe('live');
+    call.stop();
+  });
+
+  it('a renewal the kill switch refuses pauses calls; any other refusal fails', async () => {
+    const paused = makeCall();
+    await paused.call.start();
+    api.apiCallSession.mockRejectedValueOnce(new CallsApiError(503, 'calls_off', 'paused'));
+    sfu.instances[0]!.events.onSessionGone();
+    await settle();
+    expect(callSelf()).toMatchObject({ phase: 'off', mode: 'off' });
+    setCallsMode('on');
+    const failed = makeCall();
+    await failed.call.start();
+    api.apiCallSession.mockRejectedValueOnce(new Error('offline'));
+    sfu.instances.at(-1)!.events.onSessionGone();
+    await settle();
+    expect(callSelf().phase).toBe('error');
+  });
+
+  it('stops renewing a call that ended meanwhile', async () => {
+    const { call } = makeCall();
+    await call.start();
+    let mint: (v: typeof session) => void = () => {};
+    api.apiCallSession.mockImplementationOnce(() => new Promise((r) => (mint = r)));
+    sfu.instances[0]!.events.onSessionGone();
+    call.stop();
+    mint(renewed);
+    await settle();
+    expect(sfu.instances).toHaveLength(1);
+    expect(callSelf().phase).toBe('off');
   });
 });

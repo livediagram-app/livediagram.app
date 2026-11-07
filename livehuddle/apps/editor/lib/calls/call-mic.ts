@@ -82,11 +82,22 @@ export class CallMic {
     this.startSampling();
     if (this.published) {
       await sfu.replaceMic(track);
-    } else {
-      this.published = true;
-      await sfu.publish(track);
-      this.host.announce();
+      return;
     }
+    await this.publish(sfu, track);
+  }
+
+  // Publish the open microphone. A refused publish (already logged by the session) leaves it unpublished, and a
+  // session Realtime dropped is renewed by the call, which publishes it again (republish).
+  private async publish(sfu: SfuSession, track: MediaStreamTrack): Promise<void> {
+    this.published = true;
+    try {
+      await sfu.publish(track);
+    } catch {
+      this.published = false;
+      return;
+    }
+    this.host.announce();
   }
 
   private close(): void {
@@ -159,6 +170,22 @@ export class CallMic {
     setCallSelf({ muted: this.muted });
     if (!this.muted && !this.stream && this.host.input.canSpeak) void this.open();
     this.keepFor(this.company);
+  }
+
+  /**
+   * The call renewed a session Realtime dropped (proximity-audio.md "A session that expires"): an open microphone is
+   * published on the new one; a released one is no longer published, so the next open publishes it afresh.
+   */
+  async republish(): Promise<void> {
+    const sfu = this.host.sfu();
+    const track = this.stream?.getAudioTracks()[0];
+    if (sfu && track) {
+      await this.publish(sfu, track);
+      return;
+    }
+    this.published = false;
+    // Unmuted while the session was renewed, the microphone could not open then: it opens now.
+    if (!this.muted && !this.blocked && this.host.input.canSpeak) await this.open();
   }
 
   /** The call is ending: no idle close is due. */

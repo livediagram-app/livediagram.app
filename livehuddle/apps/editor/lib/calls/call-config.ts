@@ -26,6 +26,12 @@ export const LOCATOR_RESEND_MS = 1000;
 /** The call proves its session to the room again, on a `not_heard`, at most this often (sfu-session.ts retries). */
 export const REPROVE_MS = 2000;
 /**
+ * A session Realtime dropped is renewed (proximity-audio.md "A session that expires"); more than RENEW_MAX renewals
+ * inside RENEW_WINDOW_MS is a broken call, which fails into Retry rather than looping.
+ */
+export const RENEW_MAX = 3;
+export const RENEW_WINDOW_MS = 60_000;
+/**
  * A publishing call that has sent the room nothing this long asks it to read the kill switch (#463): just past a
  * talking speaker's level refresh, so a speaker who is talking never sends one.
  */
