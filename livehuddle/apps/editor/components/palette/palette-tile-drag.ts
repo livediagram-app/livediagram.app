@@ -1,4 +1,4 @@
-import { SHAPE_DEFAULT_SIZE } from '@livehuddle/document';
+import { applyShapeVariant, createShape } from '@livehuddle/document';
 import { PALETTE_DND_MIME, STICKER_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef } from './palette-tile-defs';
@@ -15,8 +15,14 @@ export function tileDragStart(
       return (e) => {
         // `kind` or `kind|choice`, so a dragged Eraser button drops an Eraser button.
         copy(e, PALETTE_DND_MIME, choice ? `${action.kind}|${choice}` : action.kind);
-        const { width, height } = SHAPE_DEFAULT_SIZE[action.kind];
-        setPaletteDragPreview({ kind: action.kind, width, height });
+        // At the preset's own size when it has one (a Boardroom, a Double Door, a Runner).
+        const { width, height } = applyShapeVariant(createShape(action.kind, 0, 0), action.variant);
+        setPaletteDragPreview({
+          kind: action.kind,
+          width,
+          height,
+          ...(action.variant ? { variant: action.variant } : {}),
+        });
         suppressNativeDragImage(e);
       };
     }

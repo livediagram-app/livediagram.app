@@ -13,9 +13,11 @@ import { outlineWalls } from './room-outline';
 // in the ground, and a lawn.
 export function isFloorShape(
   kind: string,
-): kind is 'room' | 'rug' | 'avatar-pad' | 'stage' | 'garden-path' | 'grass' {
+): kind is 'room' | 'corridor' | 'rug' | 'avatar-pad' | 'stage' | 'garden-path' | 'grass' {
   return (
     kind === 'room' ||
+    // livehuddle's Corridor (its docs/specs/009-elements/corridor.md): a passage of floor between rooms.
+    kind === 'corridor' ||
     kind === 'rug' ||
     kind === 'avatar-pad' ||
     kind === 'stage' ||

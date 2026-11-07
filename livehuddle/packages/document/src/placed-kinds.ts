@@ -51,5 +51,5 @@ export function isFixedSizeElement(el: {
 // (docs/specs/009-elements/office.md "Room": dropped, then resized), which unlike a placed piece keeps its resize
 // handles once on the canvas.
 export function dropsAtOwnSize(kind: string): boolean {
-  return isPlacedShape(kind) || kind === 'room';
+  return isPlacedShape(kind) || kind === 'room' || kind === 'corridor';
 }

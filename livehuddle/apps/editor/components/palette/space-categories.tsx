@@ -58,7 +58,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'rooms',
     label: 'Rooms',
     description:
-      'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage with curtains and a podium, rugs, an office pod, a phone booth, a nap pod, a reception desk, pillars and columns.',
+      'What a floor is laid out with: a fence, rooms, the Room Builder, corridors, doors, a stage with curtains and a podium, rugs, an office pod, a phone booth, a nap pod, a reception desk, pillars and columns.',
     tagline: 'Lay out the floor: rooms, walls and a stage.',
     icon: lucide(lucidePanelsTopLeft),
   },

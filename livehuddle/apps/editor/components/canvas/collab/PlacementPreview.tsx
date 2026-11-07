@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import {
+  applyShapeVariant,
   createShape,
   dropsAtOwnSize,
   defaultFillColor,
@@ -20,15 +21,16 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 
-// Where a placed piece would land with the pointer at canvas point `at`: at its own size, centred on the point (as a
-// click or a drop places one). A Door then snaps onto the nearest wall, as its click and drop do
-// (docs/specs/009-elements/room-builder.md "Door").
+// Where a placed piece would land with the pointer at canvas point `at`: at its own size (its preset's, `variant`),
+// centred on the point (as a click or a drop places one). A Door then snaps onto the nearest wall, as its click and
+// drop do (docs/specs/009-elements/room-builder.md "Door").
 export function placementLanding(
   kind: string,
   at: { x: number; y: number },
   elements: readonly Element[],
+  variant?: string,
 ): { piece: ShapeElement; onWall: boolean } {
-  const base = createShape(kind as ShapeElement['shape'], 0, 0);
+  const base = applyShapeVariant(createShape(kind as ShapeElement['shape'], 0, 0), variant);
   const free = { ...base, x: at.x - base.width / 2, y: at.y - base.height / 2 };
   if (kind !== 'door') return { piece: free, onWall: false };
   const door = snapDoorToWall(free, elements);
@@ -83,6 +85,13 @@ export function PlacementPreview({
   // A drag lands where the alignment snap says, as the ghost and the drop do.
   const snap = usePaletteDragSnap();
   const dragging = !!dragged && dragged.kind === kind;
+  // The preset being placed (a Boardroom, a Sliding Door, a Runner): the armed tile's, else the dragged one's.
+  const variant =
+    pendingDraw?.type === 'shape' && pendingDraw.kind === kind
+      ? pendingDraw.variant
+      : dragging
+        ? dragged.variant
+        : undefined;
   const surface = useCanvasSurface();
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   if (!kind && at) setAt(null);
@@ -116,7 +125,7 @@ export function PlacementPreview({
   // piece (the Door is the exception, as its wall turns it).
   const art = useMemo(() => {
     if (!kind || kind === 'door' || !hasPieceArt(kind)) return null;
-    const piece = createShape(kind as ShapeElement['shape'], 0, 0);
+    const piece = applyShapeVariant(createShape(kind as ShapeElement['shape'], 0, 0), variant);
     return (
       <PieceArt
         element={piece}
@@ -124,7 +133,7 @@ export function PlacementPreview({
         fill={defaultFillColor(piece, surface)}
       />
     );
-  }, [kind, surface]);
+  }, [kind, variant, surface]);
 
   if (!kind || !at) return null;
   // An armed Room snaps to its neighbours as a dragged one does, wall to wall included (docs/specs/009-elements/
@@ -135,7 +144,7 @@ export function PlacementPreview({
     : dragging && snap
       ? { x: at.x + snap.dx, y: at.y + snap.dy }
       : at;
-  const { piece, onWall } = placementLanding(kind, point, elements);
+  const { piece, onWall } = placementLanding(kind, point, elements, variant);
   const door = kind === 'door';
   const drawn = door ? (
     <PieceArt

@@ -54,9 +54,23 @@ export function facingSwapsBox(from: ChairFacing, to: ChairFacing): boolean {
 //   glint:  a light reflection on the glass
 //   floor:  a room's floor, in the element's fill, unstroked (docs/specs/009-elements/office.md)
 //   mark:   a small unstroked mark in its own `fill`: a table's white line, a flame, a dark screen (social-pieces.md)
+//   tint:   a pattern woven darker into the fill: the stroke, faint, unstroked (a rug's bands, office.md "Rug types")
+//   sheen:  a pattern woven lighter into the fill: white, faint, unstroked
+//   dye:    a pattern in its own `fill`, half seen through the rug's fill, unstroked (a Persian's crimson)
 // A panel or face may carry its own `fill`: what keeps its colour whatever the theme (a leaf, water, coffee).
 export type FurniturePartRole =
-  'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint' | 'floor' | 'mark';
+  | 'shadow'
+  | 'panel'
+  | 'face'
+  | 'line'
+  | 'rail'
+  | 'screen'
+  | 'glint'
+  | 'floor'
+  | 'mark'
+  | 'tint'
+  | 'sheen'
+  | 'dye';
 
 export type FurniturePart = (
   | { tag: 'rect'; role: FurniturePartRole; x: number; y: number; w: number; h: number; rx: number }
@@ -291,6 +305,8 @@ export const FURNITURE_SHADOW = { fill: '#0f172a', opacity: 0.12 } as const;
 export const FURNITURE_GLINT = { stroke: '#ffffff', opacity: 0.35 } as const;
 // How much of the stroke colour shades a face toward the room, over the seat fill.
 export const FURNITURE_FACE_SHADE = 0.22;
+// A woven pattern's strength over the fill: the stroke's tint, white's sheen, a dye's own colour.
+export const FURNITURE_WEAVE = { tint: 0.2, sheen: 0.32, dye: 0.55 } as const;
 
 /** The drawing a piece shows at a facing: its grid as a viewBox, and the mirror for facing right. */
 export function furnitureFrame(

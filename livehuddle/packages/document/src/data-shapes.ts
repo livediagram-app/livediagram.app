@@ -207,6 +207,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'water-cooler' ||
     kind === 'coffee-machine' ||
     kind === 'rug' ||
+    // A corridor (docs/specs/009-elements/corridor.md) is floor and walls, with nothing to write on.
+    kind === 'corridor' ||
     // The bar and the garden (office.md): scenery and machines likewise; a pod and a stool keep theirs.
     kind === 'bar' ||
     kind === 'drinks-cabinet' ||

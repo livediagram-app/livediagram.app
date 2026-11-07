@@ -79,6 +79,8 @@ export type ShapeKind =
   // cooler, coffee machine), a rug on the floor, and a stage whoever stands on is heard by the whole tab
   // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage").
   | 'room'
+  // A Corridor (docs/specs/009-elements/corridor.md): a passage between rooms, its type in `variant`.
+  | 'corridor'
   | 'meeting-table'
   | 'plant'
   | 'bookshelf'

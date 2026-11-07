@@ -33,6 +33,8 @@ export * from '@liveworkspace/avatar/office-geometry';
 
 export type OfficeKind =
   | 'room'
+  // The Corridor (docs/specs/009-elements/corridor.md).
+  | 'corridor'
   | 'meeting-table'
   | 'plant'
   | 'bookshelf'
@@ -116,6 +118,7 @@ export type OfficeKind =
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -191,9 +194,19 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
 export type SizedOfficeKind =
-  'room' | 'stage' | 'garden-path' | 'grass' | 'garden-fence' | 'door' | 'pond' | 'swimming-pool';
+  | 'room'
+  | 'corridor'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'garden-fence'
+  | 'door'
+  | 'pond'
+  | 'swimming-pool';
 const SIZED_OFFICE_KINDS: readonly string[] = [
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md): its walls keep their thickness.
+  'corridor',
   'stage',
   'garden-path',
   'grass',

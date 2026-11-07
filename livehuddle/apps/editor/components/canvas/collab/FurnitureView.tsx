@@ -18,6 +18,7 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
   OFFICE_ART,
@@ -363,6 +364,13 @@ export function FurniturePartView({
           opacity: FURNITURE_GLINT.opacity,
           strokeLinecap: 'round' as const,
         };
+      // A rug's woven pattern (docs/specs/009-elements/office.md "Rug types"): the stroke's tint, a white sheen, a dye.
+      case 'tint':
+        return { fill: stroke, opacity: FURNITURE_WEAVE.tint };
+      case 'sheen':
+        return { fill: FURNITURE_GLINT.stroke, opacity: FURNITURE_WEAVE.sheen };
+      case 'dye':
+        return { fill: part.fill ?? stroke, opacity: FURNITURE_WEAVE.dye };
     }
   })();
   switch (part.tag) {

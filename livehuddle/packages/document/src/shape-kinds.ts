@@ -48,6 +48,8 @@ export const SHAPE_KINDS = new Set<string>([
   'sofa',
   // The virtual office (docs/specs/009-elements/office.md).
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md).
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',

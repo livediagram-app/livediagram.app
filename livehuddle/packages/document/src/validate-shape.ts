@@ -7,6 +7,7 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor, isStageSpeakers } from './office';
+import { isPieceVariant, PIECE_VARIANT_MAX } from './piece-variants';
 import {
   CLOCK_LABEL_MAX,
   CLOCK_ZONES_MAX,
@@ -268,6 +269,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   flag('stageCameras'),
   flag('doorClosed'),
+  {
+    field: 'variant',
+    valid: isPieceVariant,
+    rule: `a piece's type (1 to ${PIECE_VARIANT_MAX} lowercase letters and hyphens)`,
+  },
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   {
     field: 'noticeNotes',

@@ -45,6 +45,7 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'avatar-pad': W,
   stage: W,
   room: W,
+  corridor: W,
   'office-pod': W,
   rug: W,
   grass: W,
