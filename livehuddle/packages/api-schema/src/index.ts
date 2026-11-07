@@ -289,6 +289,8 @@ export * from './call-control';
 export * from './knock';
 // The reception bell (docs/specs/009-elements/workday-pieces.md "The wire").
 export * from './bell';
+// A game at a piece, the Ping-Pong Table's first (docs/specs/009-elements/social-pieces.md "The wire").
+export * from './table-game';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

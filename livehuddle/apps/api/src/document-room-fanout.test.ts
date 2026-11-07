@@ -241,6 +241,30 @@ describe('the avatar relay in the room', () => {
     expect(talker.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
   });
 
+  // A game's paddle (docs/specs/009-elements/social-pieces.md "The wire"): a sample, like the talking level.
+  it('sends a paddle only to its tab, and in a busy room only its newest sample each step', () => {
+    const { room, join, sockets } = newRoom();
+    const paddle = (tabId: string, axis: number) => ({
+      kind: 'game-input',
+      tabId,
+      pieceId: 'table',
+      seat: 0,
+      axis,
+    });
+    const player = join('p0', 't1', true, 'participate');
+    const sameTab = join('p1', 't1');
+    const otherTab = join('p2', 't2');
+    say(room, player, paddle('t1', 0.2));
+    expect(sameTab.sent.flatMap(opsIn).map((f) => f.op?.kind)).toContain('game-input');
+    expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'game-input')).toBe(false);
+    for (let i = 3; i < 12; i++) join(`p${i}`, 't1');
+    for (const s of sockets) s.sent.length = 0;
+    for (const axis of [0.3, 0.4, 0.5]) say(room, player, paddle('t1', axis));
+    vi.advanceTimersByTime(presenceStepMs(sockets.length));
+    const seen = sameTab.sent.flatMap(opsIn).filter((f) => f.op?.kind === 'game-input');
+    expect(seen.map((f) => (f.op as { axis?: number }).axis)).toEqual([0.5]);
+  });
+
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients").
   it('tells every socket, once, when a call op finds the kill switch off', async () => {
     resetCallsModeCache();
