@@ -360,7 +360,7 @@ ship steadily instead of blinking, and nothing flashes or shakes.
   The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
 - **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
 - **Clearing**: an Editor's element menu has an **Arcade Machine** section (under Tools) saying how many scores the
-  table holds ("3 Scores", or **No Scores Yet**) with **Clear High Scores**, off while the table is empty. It asks
+  table holds ("3 Scores on the table", or **No Scores Yet**) with **Clear High Scores**, off while the table is empty. It asks
   first ("Clear all 10 scores? This can't be undone.", "Clear 1 score?" for one) and empties the table for everyone,
   the machine's bubble and every open panel alike.
 - **Copies**: a copied machine (Duplicate, or copy and paste, in this Space or another) starts with no scores: its
