@@ -267,7 +267,8 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
   two buttons on its panel. Under reduced motion the screen holds still.
 - Walking up to it (your character's feet within 24 px of its front) shows an **Insert Coin** bubble above it for you,
   for as long as you stand there; nobody else sees your bubble. With a score on the machine's table the bubble adds
-  its best below: **Best 1,240 · Ann**.
+  its best below: **Best 1,240 · Ann** (the name cut short to fit). A score posted or a clear made anywhere in the
+  Space changes it at once.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
   `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
   way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on
@@ -358,8 +359,13 @@ ship steadily instead of blinking, and nothing flashes or shakes.
   scores on it, or better than its tenth). A tie keeps the earlier score above. One person may hold several places.
   The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
 - **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
-- **Clearing**: an Editor's element menu has an **Arcade Machine** section with **Clear High Scores**, which asks
-  first ("Clear all 10 scores? This can't be undone.") and empties the table for everyone.
+- **Clearing**: an Editor's element menu has a **High Scores** section (under Tools, before the machine's facing) saying how many scores the
+  table holds ("3 Scores on the table", or **No Scores Yet**) with **Clear High Scores**, off while the table is empty. It asks
+  first ("Clear all 10 scores? This can't be undone.", "Clear 1 score?" for one) and empties the table for everyone,
+  the machine's bubble and every open panel alike.
+- **Copies**: a copied machine (Duplicate, or copy and paste, in this Space or another) starts with no scores: its
+  table is a competition among the people at that machine, and its rows carry their names. A duplicated tab or a
+  copied Space keeps every machine's table, as it keeps everything else on the tab.
 - **Stored on the element** (`ShapeElement.arcadeScores`, best first, at most ten): each `{ id, name, score, ms, by,
 at }`, where `ms` is how long the run played (paused time not counted), `by` the poster's adder key (an Editor
   without one writes their participant key) and `at` the epoch ms it was posted.

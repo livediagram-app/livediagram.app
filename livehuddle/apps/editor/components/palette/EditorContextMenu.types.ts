@@ -205,6 +205,8 @@ export type EditorContextMenuProps = {
   // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
   onSetClockZones?: (zones: import('@livehuddle/document').ClockZone[] | undefined) => void;
   onSetJukeboxSource?: (source: string | undefined) => void;
+  // An Arcade Machine's High Scores (social-pieces.md "Clearing"): an Editor's Clear, given only at `can.level` edit.
+  onClearArcadeScores?: (elementId: string) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
   tabs: import('@livehuddle/document').Tab[];

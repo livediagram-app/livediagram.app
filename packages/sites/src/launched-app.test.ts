@@ -25,7 +25,7 @@ describe('a launched app (livehuddle)', () => {
       id: 'livehuddle.app',
       name: 'livehuddle',
       url: siteUrl('livehuddle.app', 'https://www.livehuddle.app'),
-      pitch: 'Meet and run workshops together',
+      pitch: 'Meet up in shared Spaces',
       accent: '#10b981',
       deep: '#047857',
       light: '#34d399',

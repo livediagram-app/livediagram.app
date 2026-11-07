@@ -7,13 +7,12 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { lucidePause, lucideShieldCheck } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph, Tooltip } from '@livehuddle/ui';
+import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 import { arcadePlaceLine } from '@/lib/arcade/arcade-post';
 import type { MoonMailGame } from './useMoonMail';
 
 const PauseIcon = lucideGlyph(lucidePause, 16);
 const ShieldIcon = lucideGlyph(lucideShieldCheck, 16);
-
-const SCORE = new Intl.NumberFormat('en-GB');
 
 /** How the last run ended: its score and, when it made the table, its place. */
 export type RunResult = { score: number; place: number | null };
@@ -60,7 +59,7 @@ export function MoonMailScreen({ game, result }: { game: MoonMailGame; result: R
               Game Over
             </p>
             <p className="text-[40px] font-bold leading-none text-white tabular-nums">
-              {SCORE.format(result?.score ?? strip.score)}
+              {formatArcadeScore(result?.score ?? strip.score)}
             </p>
             {result?.place ? (
               <p className="text-[13px] font-semibold text-amber-300" role="status">
@@ -99,7 +98,7 @@ function Strip({ game }: { game: MoonMailGame }) {
           className="min-w-[3ch] text-[15px] font-semibold tabular-nums"
           data-moon-mail-score=""
         >
-          {SCORE.format(strip.score)}
+          {formatArcadeScore(strip.score)}
         </span>
       </div>
       <span

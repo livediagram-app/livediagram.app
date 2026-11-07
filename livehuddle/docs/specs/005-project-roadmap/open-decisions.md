@@ -82,7 +82,9 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 the Community and the emails wear emerald through `@livehuddle/tailwind-config` and `@liveworkspace/brand`
 ([Theme](../004-interface-design/color-scheme.md), [Brand mark](../004-interface-design/brand-mark.md)), and the
 landing page says "Meet your team in a Space" ([Marketing site](../019-marketing/marketing-site.md); it said "Meet and
-run workshops together" until Work Tracker #423 refocused livehuddle on meeting). The domain
+run workshops together" until Work Tracker #423 refocused livehuddle on meeting). The pitch is now **"Meet up in
+shared Spaces"** (the site switcher's line and the emails' tagline), as (a) was about workshops, which livehuddle no
+longer runs. The domain
 waits on the owner (D8).
 
 - **Domain:** (a) `livehuddle.app`, canonical on `www.livehuddle.app`, as every product; (b) another name.
@@ -91,7 +93,8 @@ waits on the owner (D8).
 - **Colour:** each product owns a hue (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, the
   platform slate). (a) **emerald** (accent `#10b981`, deep `#047857`, light `#34d399`); (b) teal; (c) another.
   **Recommendation: (a)**, the clearest gap on the wheel and a calm, "go ahead and talk" colour.
-- **Pitch** (the site switcher's line): (a) "Meet and run workshops together"; (b) "Huddle up together".
+- **Pitch** (the site switcher's line): (a) "Meet and run workshops together"; (b) "Huddle up together". Since
+  Work Tracker #423, decided as "Meet up in shared Spaces" (see Settled below).
   **Recommendation: (a)**, in the shape of the others' ("Diagram and draw together", "Plan the work together").
 
 ## D6. What a person calls the thing they make

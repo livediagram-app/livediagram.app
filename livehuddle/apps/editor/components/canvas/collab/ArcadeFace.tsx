@@ -13,6 +13,7 @@ import { claimAvatarKeys, type ClaimedKey } from '@liveworkspace/avatar/key-clai
 import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
 import { isEnterActivatedTarget, isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 import { pieceControlProps } from '@/lib/piece-control';
 import { ReaderShell } from './ReaderShell';
 import { useNearArcade } from './useSocialPieces';
@@ -52,12 +53,16 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
   const [open, setOpen] = useState(false);
   useOpenKeys(near && !open, () => setOpen(true));
   const close = () => setOpen(false);
+  // The machine's best, read from the element, so a score posted or a clear made on any screen shows as it lands.
+  const best = element.arcadeScores?.[0];
   return (
     <>
       {near ? (
         <>
           <span className="sr-only" role="status">
-            Insert Coin
+            {best
+              ? `Insert Coin. Best ${formatArcadeScore(best.score)} by ${best.name}`
+              : 'Insert Coin'}
           </span>
           <button
             type="button"
@@ -73,10 +78,21 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
           >
             <span
               aria-hidden
-              className="lh-coin-bubble absolute bottom-[calc(100%+6px)] left-1/2 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md transition-colors group-hover:bg-amber-50 dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:group-hover:bg-slate-800"
+              className="lh-coin-bubble absolute bottom-[calc(100%+6px)] left-1/2 whitespace-nowrap text-center rounded-xl border-2 border-slate-800 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md transition-colors group-hover:bg-amber-50 dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100 dark:group-hover:bg-slate-800"
               style={{ transform: 'translateX(-50%)' }}
             >
               Insert Coin
+              {best ? (
+                <span
+                  data-arcade-best=""
+                  className="flex max-w-[140px] items-baseline justify-center gap-1 text-[10px] font-semibold text-slate-600 dark:text-slate-300"
+                >
+                  <span className="shrink-0">
+                    Best <span className="tabular-nums">{formatArcadeScore(best.score)}</span> ·
+                  </span>
+                  <span className="min-w-0 truncate">{best.name}</span>
+                </span>
+              ) : null}
             </span>
           </button>
         </>

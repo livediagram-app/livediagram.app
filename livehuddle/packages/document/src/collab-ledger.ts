@@ -34,7 +34,7 @@
 // Pure, and a LEAF module: the DO stores these values, it doesn't interpret
 // them.
 
-import type { Tab } from './index';
+import type { ShapeElement, Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
@@ -363,7 +363,11 @@ function applyArcadeEvents<E extends Tab['elements'][number]>(
     if (seq > since) events.push({ seq, delta: { kind: 'arcade-score', score } });
   }
   events.sort((x, y) => x.seq - y.seq);
-  return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);
+  const next = events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);
+  // A replayed clear drops the table and the scores rebuild the same one as new objects: the element itself, so an
+  // answers flush that changes nothing never rewrites the stored tab. Ten rows at most, so the compare is cheap.
+  const table = (e: E) => JSON.stringify((e as ShapeElement).arcadeScores ?? []);
+  return next !== el && table(next) === table(el) ? el : next;
 }
 
 // The thread changes the saver hadn't seen, in the order the room took them,
