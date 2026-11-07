@@ -84,3 +84,12 @@ From [Social pieces](../009-elements/social-pieces.md):
   #529), each for the people at it, on the Ping-Pong Table's game wire (Work Tracker #528).
 - **A snack from the Vending Machine.** Walking up to it hands you a can or a snack, as the Drinks Fridge does; it
   needs a held-snack drawing and a way to use a piece that blocks.
+
+## Piece moments
+
+From [Piece moments](../009-elements/piece-moments.md):
+
+- **Shared moments.** Others in the room seeing the leaves fall from the tree you brushed: one small `piece-moment`
+  presence op (the piece and your side), sent only when a moment plays, so at most one every 4 seconds a walker.
+- **More moments.** A book sliding out of the Bookshelf, the Hammock swaying, the Garden Umbrella's canopy lifting in
+  a breeze; and a press on a piece you stand beside to play its moment on purpose.
