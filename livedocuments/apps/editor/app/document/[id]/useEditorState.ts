@@ -112,6 +112,7 @@ import {
 } from '@/lib/api-client';
 import { documentGrant } from '@/lib/api/document-grants';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
@@ -1866,10 +1867,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const connectedTabs = useConnectedTabActions({
     tabs,
     hostKind: 'document',
-    documentId,
+    hostId: documentId,
+    // The share code and its password, as the room asks with: a renewal without the password is refused.
     grantFor: async (id) =>
-      (await documentGrant(id, sessionShareCode ? { code: sessionShareCode } : null))?.grant ??
-      null,
+      (
+        await documentGrant(
+          id,
+          sessionShareCode ? { code: sessionShareCode, password: getSessionSharePassword() } : null,
+        )
+      )?.grant ?? null,
     createTab,
     saveTab: (tab) => apiSaveTab(selfParticipant.id, documentId ?? '', tab, sessionShareCode),
     commitTabs,

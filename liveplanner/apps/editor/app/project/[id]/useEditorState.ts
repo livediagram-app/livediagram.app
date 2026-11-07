@@ -113,6 +113,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveSelf, apiSaveTab } from '@/lib/api-client';
 import { planGrant } from '@/lib/api/plan-grants';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { getSessionSharePassword } from '@/lib/api/core';
 import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { usePlanList } from '@/hooks/persistence/usePlanList';
 import { usePlanShareState } from '@/hooks/persistence/usePlanShareState';
@@ -1742,9 +1743,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const connectedTabs = useConnectedTabActions({
     tabs,
     hostKind: 'plan',
-    documentId: projectId,
+    hostId: projectId,
+    // The share code and its password, as the room asks with: a renewal without the password is refused.
     grantFor: async (id) =>
-      (await planGrant(id, sessionShareCode ? { code: sessionShareCode } : null))?.grant ?? null,
+      (
+        await planGrant(
+          id,
+          sessionShareCode ? { code: sessionShareCode, password: getSessionSharePassword() } : null,
+        )
+      )?.grant ?? null,
     createTab,
     saveTab: (tab) => apiSaveTab(selfParticipant.id, projectId ?? '', tab, sessionShareCode),
     commitTabs,
