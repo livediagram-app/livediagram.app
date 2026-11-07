@@ -1,3 +1,4 @@
+import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, RoomElementOp, Tab } from '@livehuddle/document';
@@ -440,7 +441,16 @@ export type RoomOp =
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
-      tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
+      // `connection`: a connected tab's (liveworkspace/docs/specs/004-index/connected-tabs.md), as the room sends when
+      // the index adds one (the reverse tab of a connection made both ways).
+      tabs: {
+        id: string;
+        name: string;
+        orderIndex: number;
+        folder?: string;
+        outOfScope?: true;
+        connection?: TabConnectionWire;
+      }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older documents (tab duplication used to
