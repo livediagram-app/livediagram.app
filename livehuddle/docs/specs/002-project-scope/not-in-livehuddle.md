@@ -21,7 +21,7 @@ which has every one of these tools, so nothing is lost to anyone: each tool now 
 | The retrospective, workshop, planning and strategy templates, and the quizzes and games                                                                                                                                                                                                                                                                                | [Templates by mode](../007-editor/templates-by-mode.md) (rewritten), [Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Part 3 (done)                                                                         |
 | Every Collaborate element: Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box, Q&A board; Timer, Stopwatch, Reveal zone, Done check, Picker; Comment panel, Action card, Agenda, Decision record, Roll call                                                                                                                                        | [Live poll](../012-collaboration/live-poll.md), [Keeping a poll's results](../012-collaboration/poll-result-capture.md), [Vote integrity](../012-collaboration/vote-integrity.md), [Quiz](../012-collaboration/quiz.md), [Estimate card](../012-collaboration/estimate-card.md), [Temperature check](../012-collaboration/temperature-check.md), [Idea box](../012-collaboration/idea-box.md), [Q&A board](../012-collaboration/qa-board.md), [Per-participant responses](../012-collaboration/participant-responses.md), [Done check](../012-collaboration/done-check.md), [Picker](../012-collaboration/picker.md), [Reveal zone](../009-elements/reveal-zone.md), [The Comment Panel](../012-collaboration/comment-pin.md), [The Action Panel](../012-collaboration/action-panel.md), [Agenda](../012-collaboration/agenda.md), [Decision record](../012-collaboration/decision-record.md), [Roll call](../012-collaboration/roll-call.md) | Part 3 (done); code: part 4 (done)                                                    |
 | The Session strip's Poll, the Session button, the Workshop tour                                                                                                                                                                                                                                                                                                        | [Session button](../012-collaboration/session-button.md), [Workshop tour](../012-collaboration/workshop-tour.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Part 3 (done); code: part 4 (done)                                                    |
-| The diagram tools: the Shapes and My shapes categories, arrows and lines, the Draw tools (pencil, highlighter), the Layout containers but the frame (lane, stack, boundary, timeline, diagram key, card, badge, step number), pointer notes, tables and checklists, the Data charts and progress and rating, code blocks, the components, the video and website embeds | [The lane](../009-elements/lane.md), [The stack](../009-elements/stack.md), [The boundary](../009-elements/boundary.md), [Timeline](../009-elements/timeline.md), [The diagram key](../009-elements/diagram-key.md), [The card](../009-elements/card.md), [The badge](../009-elements/badge.md), [The step number](../009-elements/step-number.md), [The pointer note](../009-elements/pointer-note.md), [Checklist](../009-elements/checklist.md), [Data charts](../009-elements/pie-chart.md), [Progress](../009-elements/progress.md), [Rating](../009-elements/rating.md), [Code block](../009-elements/code-block.md), [Web components](../009-elements/web-components-and-no-groups.md), [YouTube video](../009-elements/youtube-video.md), [More than YouTube](../009-elements/embed-providers.md), [Website embed](../009-elements/website-embed.md), and the arrow, shape and pen specs in `008-canvas/`                             | Part 3 (offered nowhere, done); their UI leftovers: part 4 (done); element code: #459 |
+| The diagram tools: the Shapes and My shapes categories, arrows and lines, the Draw tools (pencil, highlighter), the Layout containers but the frame (lane, stack, boundary, timeline, diagram key, card, badge, step number), pointer notes, tables and checklists, the Data charts and progress and rating, code blocks, the components, the video and website embeds | [The lane](../009-elements/lane.md), [The stack](../009-elements/stack.md), [The boundary](../009-elements/boundary.md), [Timeline](../009-elements/timeline.md), [The diagram key](../009-elements/diagram-key.md), [The card](../009-elements/card.md), [The badge](../009-elements/badge.md), [The step number](../009-elements/step-number.md), [The pointer note](../009-elements/pointer-note.md), [Checklist](../009-elements/checklist.md), [Data charts](../009-elements/pie-chart.md), [Progress](../009-elements/progress.md), [Rating](../009-elements/rating.md), [Code block](../009-elements/code-block.md), [Web components](../009-elements/web-components-and-no-groups.md), [YouTube video](../009-elements/youtube-video.md), [More than YouTube](../009-elements/embed-providers.md), [Website embed](../009-elements/website-embed.md), and the arrow, shape and pen specs in `008-canvas/`                             | Part 3 (offered nowhere, done); their UI leftovers: part 4 (done); element code: #459 ([parts](#the-element-engine)) |
 
 Each leaving spec has its twin in livediagram under the same path (`livediagram/docs/specs/`), which stays the one
 to change.
@@ -435,14 +435,23 @@ A stored Space may already hold a retro board, a poll card or a Page.
 A **retired element** is a stored element whose kind livehuddle no longer has: the 14 shape kinds part 4 deleted
 (`session-button`, `reveal`, `picker`, `comment-pin`, `action-card`, `done-check`, `estimate`, `temperature`,
 `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `quiz`), the `reaction-pad` that went with the
-presenting tools, the `frame` ([The Frame](#the-frame)), and any other shape kind livehuddle does not know.
+presenting tools, the `frame` ([The Frame](#the-frame)), the diagram tools' kinds [the element engine](#the-element-engine)
+has deleted so far, any other shape kind livehuddle does not know, and an element of a retired element type (an
+`type` the engine deleted, such as `video`).
 
 - **Kept untouched.** Its kind and every field it carries (a poll's question, a board's notes, its responses) stay in
   the document exactly as stored. Nothing in livehuddle reads or writes them, so a save, a sync, a copy and an undo
   carry them through; livediagram still opens them as they were.
 - **Drawn as a placeholder.** A plain card in the element's own box: a dashed outline, a muted fill, the kind's name
-  ("Q&A Board", "Poll", "Agenda"; "Unknown Element" for a kind livehuddle never had) and, beneath it, "Not in
-  livehuddle". Its stored label shows below that when it has one. The export and the thumbnail draw the same card.
+  ("Q&A Board", "Poll", "Bar Chart", "Video"; "Unknown Element" for a kind livehuddle never had) and, beneath it,
+  "No longer supported in livehuddle", so the two lines read as one sentence about this element. Its stored label
+  shows below that when it has one. The export and the thumbnail draw the same card, without the Delete button.
+- **Deleting it.** An Editor sees a small **Delete** button (a bin and the word) in the card's top-right corner while
+  the pointer is over the card or the card is selected (a touch screen has no hover, so selecting it shows the
+  button). Pressing it removes the element as Delete would, as one undo step; it never selects or drags the element
+  on its way. It has a tooltip and an accessible name ("Delete <kind name>"), takes a keyboard focus ring, and draws in
+  the card's own quiet ink in light and dark. A Participant and a Viewer never see it (`can.remove`), and an Editor
+  with Delete, the context menu or a multi-selection removes one the usual way too.
 - **What it does.** It selects, moves, resizes, copies and deletes like any element, and takes
   comments. It takes no typed label (double-clicking it opens nothing), has no settings or context-menu section of its
   own, presses nothing and starts nothing. Agents read it by its stored kind.
@@ -461,6 +470,53 @@ cleanup), the Explorer's Shape Libraries page and library import, the draw.io, M
 Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to Canvas results for tiles the meeting
 palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
 pens, the layout containers) is Work Tracker #459's, not this part's: a stored one still draws, moves and deletes.
+
+## The element engine
+
+Work Tracker #459 deletes the diagram tools' own code from livehuddle's element engine (the element union, the
+renderers, the ops and the palette code under them), now that part 3 offers them nowhere and part 4 took their UI. It
+is cut into parts, each one PR, so each stays reviewable; until its part lands a kind keeps working as part 4 left it
+([What stays](#the-diagram-tools-still-in-livehuddles-ui)).
+
+**What the engine keeps** is what a Space is made of and what the meeting palette offers, plus the kinds earlier
+parts kept for stored content: the sticky note, text, the sticker, the Space pieces (every Travel, Seats, Rooms and
+Perks kind: the chair to the Arcade Machine, the Room, Door, Window and Stairs, the Directory and Elevator, the
+Screen and Room Sign, the Timer and Stopwatch), the Selection Mode button, the portal, Bring Focus and the Avatar
+Pad, and, kept for what a Space already holds ([Icons](#icons), [Media](#media-image-and-link-card)), the icon, the
+image and the link card.
+
+| Part | What leaves the engine | State |
+| ---- | ---------------------- | ----- |
+| 1 | The content widgets and the embeds: the data charts (`pie-chart`, `bar-chart`, `line-chart`, `legend`), progress (`progress-bar`, `progress-ring`), `rating`, `code-block`, `checklist`, the Page (`page`), the web components but the card (`banner`, `stat-row`, `process`, `site-header`), and the video and website embeds (the `video` element type) | Done |
+| 2 | Tables (the `table` element type) and their cell links and styles | Next |
+| 3 | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries | Later |
+| 4 | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers | Later |
+| 5 | The diagram shapes (`square`, `circle`, `diamond` and the rest of the Shapes category) and the agent-side diagram code left (`diagram-lint`, the edit operations' diagram verbs) | Later |
+
+What every part does:
+
+- **A stored element of a deleted kind loads, saves unchanged and shows its placeholder.** It becomes a [retired
+  element](#retired-elements): its kind and every field stay in the document exactly as stored, nothing migrates and
+  nothing is dropped. A deleted shape kind leaves `SHAPE_KINDS`, so a stored one is retired by the rule that already
+  covers any kind livehuddle does not know. A deleted element type joins `RETIRED_ELEMENT_TYPES`
+  (`packages/document/src/retired-kinds.ts`): validation still accepts one (a box and an id, as before), and the
+  canvas, the export and the thumbnail draw the placeholder in its box.
+- **No migration rewrites one.** A load-time cleanup that only served a deleted kind (part 1: the chart rows'
+  settling) goes with it, so the stored fields are never touched.
+- **Gone with the code**: the kind's face, its menu sections, its edit dialog, its palette tile definition, its
+  factory, its defaults, its validation rules, its export renderer, its outline and search text, and its spec here,
+  which turns to a **Gone from livehuddle** banner (livediagram's twin stays the one to read).
+- **The names stay.** Each deleted kind keeps the name a person knew it by (`RETIRED_SHAPE_NAMES`,
+  `RETIRED_TYPE_NAMES`), so its placeholder, its selection and Search say "Bar Chart", not "Unknown Element".
+- **Agents.** The api's agent schema and the edit operations already make none of them (part 3); an agent that names a
+  deleted shape kind gets a square, as with any kind it does not know, and a deleted element type is refused as an
+  unknown `type`. Reading a stored one, an agent sees its stored kind and fields.
+- **The count.** Part 1 started from a read-only count: the build machine's two local document stores hold no tab,
+  and no checked-in fixture outside a test names a deleted kind. Production tabs live in each document's Durable
+  Object, which no read-only query reaches, so the owner counts them after merging and the placeholder keeps them
+  safe meanwhile.
+- **Share roles**: as any retired element ([Share roles](#share-roles)); only an Editor deletes one, from its Delete
+  button or the usual ways.
 
 ## Hand, Eraser and Format as modes
 
@@ -572,4 +628,9 @@ comments on it; a Viewer sees it).
   the api and the editor) refuse nothing for a lock, a Participant swings any Door, and an edit right is still
   checked as before; agent changesets refuse nothing as `element_locked`; and the router pins the two old help
   addresses.
+- The element engine (#459): a stored tab holding each deleted kind and type loads, saves unchanged and shows its
+  placeholder (`retired-kinds.test.ts`, `retired-element-types.test.ts` and `svg-render-retired.test.ts` in
+  `packages/document`, `RetiredElementFace.test.tsx` in the editor); the placeholder's Delete shows for an Editor
+  only and removes the element without selecting it (`RetiredElementFace.test.tsx`, `editor-capabilities.test.ts`);
+  validation accepts a stored element of a retired type (`validate.test.ts`).
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.
