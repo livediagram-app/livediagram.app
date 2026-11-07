@@ -116,6 +116,9 @@ import {
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
 import { PresenceRelay, type RelaySession } from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
+import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDocumentComments } from './document-comments';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -754,6 +757,23 @@ export class DocumentRoom extends DurableObject<Env> {
   async importFile(documentId: string, file: DocumentFileImport): Promise<void> {
     this.bindDocument(documentId);
     await importDocumentFile(this.requireEnv(), documentId, file);
+  }
+
+  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
+  // with the canvas open sees it arrive, as an ordered system op a blipped socket replays.
+  async addConnectedTab(
+    documentId: string,
+    write: ConnectedTabWrite,
+  ): Promise<ConnectedTabOutcome> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return 'not_found';
+    const env = this.requireEnv();
+    const outcome = await addConnectedDocumentTab(env, documentId, write);
+    if (typeof outcome === 'object' && outcome.made) {
+      const op = await connectedTabArrival(env, documentId);
+      if (op) this.broadcastOrderedSystemOp(op);
+    }
+    return outcome;
   }
 
   async hasTab(documentId: string, tabId: string): Promise<boolean> {
