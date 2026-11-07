@@ -456,7 +456,9 @@ export function AvatarPaletteFlyout({
         key={category.id}
         ref={bodyRef}
         onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}
-        className="flex max-h-[min(70vh,32rem)] flex-col gap-3 overflow-y-auto p-3 animate-fade-in"
+        // Status runs to six rows of cards and Sound, so its cap is taller: the whole of it fits without scrolling on a
+        // desktop (docs/specs/008-canvas/avatar-mode.md "Set from the palette").
+        className={`flex ${category.id === 'status' ? 'max-h-[min(70vh,38rem)]' : 'max-h-[min(70vh,32rem)]'} flex-col gap-3 overflow-y-auto p-3 animate-fade-in`}
       >
         {category.id === 'character' ? (
           <CharacterBody a={actions} mobile={mobile} />
