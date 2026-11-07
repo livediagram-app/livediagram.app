@@ -12,6 +12,8 @@ and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
 The [Office amenities](office-amenities.md) add a Printer, a Copier, Lockers, a Coat Rack and an Umbrella Stand, a
 kitchenette (Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle) and a restroom (Toilet Cubicle, Washbasin, Hand
 Dryer, and a Restroom room preset).
+The [Venue pieces](venue-pieces.md) add Pillars and Columns, a Car Park and a Bike Rack, a Swimming Pool, and Stage
+Curtains and a Podium for the Stage.
 A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meet** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
@@ -144,9 +146,13 @@ room's floor, and a room never covers what stands in it. Default 200 × 120.
 A raised platform for an all-hands: whoever stands on it is heard by the whole tab
 ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#the-stage-part-2-built)).
 
-- **Drawn from the room's camera**: its top in the element's fill (a floor a little lighter than a room's), with two
-  faint plank lines, and a front edge 24 px tall you see the face of, shaded with the stroke.
-- **The name** is the element's label, on a plate centred on the front edge. A new stage is called **Stage**.
+- **Drawn from the room's camera**: its top in the element's fill (a warm honey wood, deep brown on dark paper) laid
+  in boards (faint plank lines with staggered joints), a darker nosing along its front lip, and a front edge 24 px
+  tall you see the face of: a stained-wood skirt shaded with the stroke, with a row of warm footlights along it
+  ([Venue pieces](venue-pieces.md#the-stronger-stage), Work Tracker #512). [Stage Curtains and a
+  Podium](venue-pieces.md#stage-curtains-podium) pair with it.
+- **The name** is the element's label, on a plate in the top's fill centred on the front edge, clear of the
+  footlights. A new stage is called **Stage**.
 - **A floor piece** like a rug: placed behind everything, never blocks, never a destination; a stage on a room's
   floor paints over the floor and under the furniture. Not aspect locked. Default 360 × 140.
 - **Standing on it** is having your feet on its top; the front edge is off it.

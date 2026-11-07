@@ -57,6 +57,7 @@ import {
   grassEdgePath,
 } from './office-garden';
 import { POND_FILL, pondParts } from './office-social';
+import { POOL_FILL, swimmingPoolParts } from './office-venue';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
 import { timerPieceSvg } from './svg-render-timers';
@@ -151,6 +152,13 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'toilet-cubicle',
   'washbasin',
   'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
   'door',
   'directory',
   'elevator',
@@ -275,6 +283,12 @@ export function svgBehaviourFace(
     case 'toilet-cubicle':
     case 'washbasin':
     case 'hand-dryer':
+    case 'pillar':
+    case 'column':
+    case 'car-park':
+    case 'bike-rack':
+    case 'stage-curtains':
+    case 'podium':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':
@@ -282,6 +296,14 @@ export function svgBehaviourFace(
         el,
         pondParts(el.width, el.height),
         fill ?? el.fillColor ?? POND_FILL,
+        stroke,
+      );
+    // A swimming pool (docs/specs/009-elements/venue-pieces.md "Swimming Pool"): its water in the fill, drawn to its size.
+    case 'swimming-pool':
+      return sizedSvg(
+        el,
+        swimmingPoolParts(el.width, el.height),
+        fill ?? el.fillColor ?? POOL_FILL,
         stroke,
       );
     // A garden path and grass are floor like a rug, a garden fence its pickets (docs/specs/009-elements/office.md).

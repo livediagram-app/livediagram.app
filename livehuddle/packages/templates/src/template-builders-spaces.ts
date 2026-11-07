@@ -232,6 +232,10 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
         // The stage, and rows of chairs facing it either side of an aisle. Whoever speaks from it is heard by the
         // whole hall, and seen: the hall exists for a presenter everyone watches.
         { kind: 'stage', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H, stageCameras: true },
+        // Its curtains framing it from the back wall, and the presenter's podium right of the middle
+        // (docs/specs/009-elements/venue-pieces.md "In the templates").
+        { kind: 'stage-curtains', x: STAGE_X - 10, y: 30, w: STAGE_W + 20 },
+        { kind: 'podium', x: STAGE_X + 290, y: 82 },
         ...ROW_YS.flatMap((y) =>
           SEAT_XS.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })),
         ),

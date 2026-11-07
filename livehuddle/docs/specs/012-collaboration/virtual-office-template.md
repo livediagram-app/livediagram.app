@@ -54,7 +54,8 @@ three (`template-builders-spaces.ts`):
 - **All-Hands Hall**: one big room with a real [Stage](../009-elements/office.md#stage) up front (400 × 160,
   centred, with Show Cameras on; whoever speaks from it is heard by the whole hall,
   [Meeting rooms and the stage](meeting-rooms-and-stage.md#the-stages-way-in-part-4-built)) and a [Bring Focus](bring-focus.md) button
-  for the presenter, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
+  for the presenter, [Stage Curtains and a Podium](../009-elements/venue-pieces.md#stage-curtains-podium) on the
+  stage, thirty-two chairs in four rows facing the stage either side of a centre aisle, plants and a
   water cooler.
 
 And six more, one module a category (`template-builders-office-more.ts`, `template-builders-events.ts`,
@@ -62,7 +63,7 @@ And six more, one module a category (`template-builders-office-more.ts`, `templa
 
 - **Focus Library** (Office): one quiet room, a row of bookshelves and six study desks, two **Office Pods** along the
   back for a call for two, a reading corner (a sofa and a chair on a rug) and a water cooler.
-- **Training Room** (Events): one room with a small Stage up front (cameras on) and Bring Focus beside it, four meeting
+- **Training Room** (Events): one room with a small Stage up front (cameras on, a Podium on it) and Bring Focus beside it, four meeting
   tables in two pairs either side of a centre aisle for group work, a coffee machine, a water cooler and plants.
 - **Rooftop Bar** (Recreation): an open terrace (one room) with a long **Bar** of two counters and eight **Bar Stools**
   in front of it, a **Drinks Cabinet** and a **Drinks Fridge** behind, two lounges (a sofa and a chair on a rug each)
@@ -92,8 +93,9 @@ a fenced garden that joins them up, so one Space holds the whole working day (`t
   fridge, a jukebox, a sofa and a chair on a rug) and a **Games Room** (a ping-pong table, two arcade machines, a
   fireplace, a sofa and a chair on a rug). Between them a garden: a walk along each column's doors, a cross path
   between them and the main path from the gate to the auditorium meeting at a round fountain plaza, benches facing
-  it, a picnic table, a pond, a garden umbrella, a hammock and trees.
-- **Conference Venue**: across the top, a **Foyer Bar**, a **Main Hall** (a Stage, two Screens, Bring Focus and twenty
+  it, a picnic table, a pond, a garden umbrella, a hammock and trees; by the gate, a
+  [Car Park](../009-elements/venue-pieces.md#car-park-bike-rack) of two rows and a Bike Rack.
+- **Conference Venue**: across the top, a **Foyer Bar**, a **Main Hall** (a Stage with Stage Curtains and a Podium, two Screens, Bring Focus and twenty
   chairs in two rows either side of a centre aisle) and a speakers' **Green Room**; along the bottom, **Breakout 1** to
   **Breakout 3** (a table and a Screen each) and a **Quiet Room** of two Office Pods. Between them a courtyard: a
   promenade with a path to every door, crossing the main path at a round fountain plaza, a cafe terrace of garden
@@ -102,15 +104,17 @@ a fenced garden that joins them up, so one Space holds the whole working day (`t
   **Town Hall** (a Stage, a Screen, Bring Focus and twelve chairs) and a **Kitchen Bar** (a bar with stools, coffee, two
   chairs); below, a **Games Room** (a ping-pong table, two arcade machines and a jukebox). The garden in front is
   for working outside: a path along the front meeting the main path at a small round junction, a campfire circle of
-  three chairs, two **Office Pods** on the lawn for calls, a pond, a hammock, trees and a garden umbrella.
+  three chairs, two **Office Pods** on the lawn for calls, a pond, a hammock, trees, a garden umbrella and a Bike Rack
+  by the gate.
 
 - **Hotel and Suites** (three floors, three tabs, [Spaces with floors](#spaces-with-floors)): the **Lobby** (marble),
-  with a reception, sofas on rugs and the **Lobby Lift**, round it a **Lobby Bar** (a bar with stools, a drinks cabinet,
+  with a reception, sofas on rugs, four [Columns](../009-elements/venue-pieces.md#pillar-column) and the **Lobby Lift**, round it a **Lobby Bar** (a bar with stools, a drinks cabinet,
   a sofa on a rug), a **Ballroom** (a Stage, a Screen, Bring Focus and twelve chairs either side of a centre aisle), a
   **Business Centre** (a table and a Screen) and a **Library Lounge** (shelves, a fireplace, a sofa on a rug); the
   **Suites** (carpet), six suites either side of a corridor, each a sofa on a rug, a desk and a plant, with the
   **Suites Lift** and a Directory at the corridor's end; the **Rooftop** (decking), a **Rooftop Bar**, a **Spa Room**
-  of two Office Pods and an open terrace of garden umbrellas, hammocks, planters and a long water garden (a Pond), with
+  of two Office Pods and an open terrace of garden umbrellas, hammocks, planters and a rooftop
+  [Swimming Pool](../009-elements/venue-pieces.md#swimming-pool), with
   the **Rooftop Lift**.
 - **Co-working Tower** (three floors, three tabs): the **Ground Floor** (wood), with **Hot Desks** (three islands of
   four, a print corner and lockers), a **Meeting Room**, a **Cafe** (a counter with stools, coffee, a fridge, two chairs)
@@ -172,13 +176,14 @@ The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor p
 ## More Spaces
 
 - **Expo Hall** (Events, one tab, concrete): sponsor booths, twelve **Office Pods** in rows of three, round a central
-  keynote **Stage** with Bring Focus and twelve chairs on the open floor, aisles of at least 160 px between the rows; a
+  keynote **Stage** (with Stage Curtains and a Podium) with Bring Focus and twelve chairs on the open floor, four
+  **Pillars** between the booths and the seats, aisles of at least 160 px between the rows; a
   **Food Court** (two counters with stools, coffee and tables), a **Speaker Lounge** and a **Meeting Room**, each closed
   with a Door and a Room Sign; the Avatar Pad at the entrance with a Directory beside it.
 - **Beach Offsite** (Outdoor, also in Campus; one tab, sand): a **Beach Hut** to meet in (a table and a Screen) and a
   **Tiki Bar** (a bar with stools, a drinks fridge, a jukebox), each closed with a Door and a Room Sign, joined by
   stone paths across the sand to the gate; a campfire circle of benches, hammocks under the palms (trees), garden
-  umbrellas and a lagoon (a Pond).
+  umbrellas, a lagoon (a Pond) and a Swimming Pool.
 
 ## Where they are
 

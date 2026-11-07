@@ -57,7 +57,8 @@ describe('the Space categories’ groups', () => {
     const own = [...ids('collab-garden').filter((id) => id !== 'tools:pond'), 'tools:sundial'];
     const tiles = groupedSpaceTiles('collab-garden', own, '|')!;
     expect(tiles).not.toContain('tools:pond');
-    expect(tiles.slice(-4)).toEqual(['|', 'tools:fountain', 'tools:campfire', 'tools:sundial']);
+    expect(tiles.slice(-4)).toEqual(['|', 'tools:car-park', 'tools:bike-rack', 'tools:sundial']);
+    expect(tiles).toContain('tools:fountain');
   });
 
   it('drops a group with none of its pieces, so no two dividers meet', () => {

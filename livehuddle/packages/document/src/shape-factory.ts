@@ -180,6 +180,14 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'toilet-cubicle': { width: 96, height: 152 },
   washbasin: { width: 72, height: 112 },
   'hand-dryer': { width: 36, height: 44 },
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  pillar: { width: 48, height: 152 },
+  column: { width: 64, height: 168 },
+  'car-park': { width: 240, height: 128 },
+  'bike-rack': { width: 136, height: 80 },
+  'swimming-pool': { width: 320, height: 200 },
+  'stage-curtains': { width: 360, height: 120 },
+  podium: { width: 56, height: 88 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -328,7 +336,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   if (kind === 'door') return base;
   // A garden path, grass and a garden fence (docs/specs/009-elements/office.md) are any size, drawn to it, with no
   // words on them.
-  if (kind === 'garden-path' || kind === 'grass' || kind === 'garden-fence' || kind === 'pond') {
+  if (
+    kind === 'garden-path' ||
+    kind === 'grass' ||
+    kind === 'garden-fence' ||
+    kind === 'pond' ||
+    kind === 'swimming-pool'
+  ) {
     return { ...base, label: '' };
   }
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): placed at their size, aspect locked,
@@ -376,7 +390,13 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'kettle' ||
       kind === 'toilet-cubicle' ||
       kind === 'washbasin' ||
-      kind === 'hand-dryer'
+      kind === 'hand-dryer' ||
+      kind === 'pillar' ||
+      kind === 'column' ||
+      kind === 'car-park' ||
+      kind === 'bike-rack' ||
+      kind === 'stage-curtains' ||
+      kind === 'podium'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

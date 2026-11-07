@@ -14,7 +14,19 @@ const ROOMS_BUILD = ['tools:room', 'tools:room-builder', 'tools:wall-door'] as c
 export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCategoryGroup[]>> = {
   'collab-rooms': [
     { name: 'Build', tiles: ROOMS_BUILD },
-    { name: 'Floor', tiles: ['tools:fence', 'tools:stage', 'tools:office-pod', 'tools:rug'] },
+    {
+      name: 'Floor',
+      tiles: [
+        'tools:fence',
+        'tools:stage',
+        'tools:stage-curtains',
+        'tools:podium',
+        'tools:office-pod',
+        'tools:rug',
+        'tools:pillar',
+        'tools:column',
+      ],
+    },
   ],
   // The bar first (the most furnished: a Rooftop Bar, a Cafe), then what people play, then what they sit by.
   'collab-recreation': [
@@ -34,7 +46,7 @@ export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCatego
     },
     { name: 'Lounge', tiles: ['tools:jukebox', 'tools:fireplace'] },
   ],
-  // Ground up: what grows, what is walked on and round, what is sat at, then the water and fire.
+  // Ground up: what grows, what is walked on and round, what is sat at, the water and fire, then the parking.
   'collab-garden': [
     { name: 'Plants', tiles: ['tools:outdoor-plant', 'tools:tree', 'tools:grass'] },
     { name: 'Paths and Fences', tiles: ['tools:garden-path', 'tools:garden-fence'] },
@@ -42,7 +54,12 @@ export const SPACE_CATEGORY_GROUPS: Readonly<Record<string, readonly SpaceCatego
       name: 'Furniture',
       tiles: ['tools:bench', 'tools:picnic-table', 'tools:hammock', 'tools:garden-umbrella'],
     },
-    { name: 'Features', tiles: ['tools:fountain', 'tools:pond', 'tools:campfire'] },
+    {
+      name: 'Features',
+      tiles: ['tools:fountain', 'tools:pond', 'tools:swimming-pool', 'tools:campfire'],
+    },
+    // Where people leave what they came in (docs/specs/009-elements/venue-pieces.md).
+    { name: 'Parking', tiles: ['tools:car-park', 'tools:bike-rack'] },
   ],
 };
 

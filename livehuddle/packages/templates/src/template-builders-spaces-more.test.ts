@@ -262,9 +262,14 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
     const onWorktop = (a: Shape, b: Shape) =>
       ['microwave', 'kettle'].includes(a.shape) &&
       ['kitchen-counter', 'kitchen-sink'].includes(b.shape);
+    // Stage Curtains hang over a stage, so a podium stands under them (docs/specs/009-elements/venue-pieces.md).
+    const underCurtains = (a: Shape, b: Shape) =>
+      a.shape === 'podium' && b.shape === 'stage-curtains';
+    const hung = (a: Shape, b: Shape) =>
+      onWorktop(a, b) || onWorktop(b, a) || underCurtains(a, b) || underCurtains(b, a);
     for (const [i, a] of solid.entries())
       for (const b of solid.slice(i + 1))
-        if (!onWorktop(a, b) && !onWorktop(b, a))
+        if (!hung(a, b))
           expect(meets(a, b), `${a.shape} at ${a.x},${a.y} / ${b.shape} at ${b.x},${b.y}`).toBe(
             false,
           );

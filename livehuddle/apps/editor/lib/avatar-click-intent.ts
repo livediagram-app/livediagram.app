@@ -78,6 +78,15 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'toilet-cubicle': W,
   washbasin: W,
   'hand-dryer': W,
+  // Walk: the venue pieces (docs/specs/009-elements/venue-pieces.md): scenery you stand by, the pool's deck, and the
+  // stage curtains, walked between as a wall piece (the stage under them is what you walk to).
+  pillar: W,
+  column: W,
+  'car-park': W,
+  'bike-rack': W,
+  'swimming-pool': W,
+  'stage-curtains': W,
+  podium: W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,

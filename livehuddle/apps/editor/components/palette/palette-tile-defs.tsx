@@ -41,6 +41,15 @@ import {
 } from './palette-icons-garden';
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
 import {
+  BikeRackIcon,
+  CarParkIcon,
+  ColumnIcon,
+  PillarIcon,
+  PodiumIcon,
+  StageCurtainsIcon,
+  SwimmingPoolIcon,
+} from './palette-icons-venue';
+import {
   CoatRackIcon,
   CopierIcon,
   FridgeIcon,
@@ -832,6 +841,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <StageIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:stage-curtains',
+    tileGroup: 'rooms',
+    blurb: 'Velvet drapes to frame a stage',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stage Curtains',
+    caption: 'Stage Curtains',
+    description:
+      'Red velvet drapes and a pelmet to hang over a stage, open in the middle. Characters walk between and in front of them.',
+    filled: true,
+    action: { type: 'shape', kind: 'stage-curtains' },
+    icon: <StageCurtainsIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:podium',
+    tileGroup: 'rooms',
+    blurb: 'A lectern to speak from',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Podium',
+    caption: 'Podium',
+    description:
+      'A wooden lectern with a microphone, to stand on a stage. Characters walk round its foot.',
+    filled: true,
+    action: { type: 'shape', kind: 'podium' },
+    icon: <PodiumIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Meeting Table (docs/specs/009-elements/office.md).
     id: 'tools:meeting-table',
     tileGroup: 'seating',
@@ -1501,6 +1540,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PondIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:swimming-pool',
+    tileGroup: 'garden',
+    blurb: 'A pool with lanes',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Swimming Pool',
+    caption: 'Swimming Pool',
+    description:
+      'A swimming pool with lanes and a ladder. Stretch it to any size; characters stop at the water and walk round on its deck.',
+    filled: true,
+    action: { type: 'shape', kind: 'swimming-pool' },
+    icon: <SwimmingPoolIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Social pieces (docs/specs/009-elements/social-pieces.md).
     id: 'tools:campfire',
     tileGroup: 'garden',
@@ -1514,6 +1568,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'campfire' },
     icon: <CampfireIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:car-park',
+    tileGroup: 'garden',
+    blurb: 'Bays with parked cars',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Car Park',
+    caption: 'Car Park',
+    description:
+      'Three parking bays, two cars parked, for a campus gate. Place several side by side for a longer row; characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'car-park' },
+    icon: <CarParkIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:bike-rack',
+    tileGroup: 'garden',
+    blurb: 'Two bikes at their stands',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Bike Rack',
+    caption: 'Bike Rack',
+    description: 'Two hoop stands with a bike locked to each. Characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'bike-rack' },
+    icon: <BikeRackIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen").
@@ -1619,6 +1702,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'rug' },
     icon: <RugIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:pillar',
+    tileGroup: 'rooms',
+    blurb: 'A square pillar',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Pillar',
+    caption: 'Pillar',
+    description:
+      'A plain square pillar to give a hall or a lobby its structure. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'pillar' },
+    icon: <PillarIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:column',
+    tileGroup: 'rooms',
+    blurb: 'A classical stone column',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Column',
+    caption: 'Column',
+    description:
+      'A fluted stone column with a scrolled capital, for a grand lobby. Characters walk round its plinth.',
+    filled: true,
+    action: { type: 'shape', kind: 'column' },
+    icon: <ColumnIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',

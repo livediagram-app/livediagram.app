@@ -1,7 +1,7 @@
 // The Beach Offsite (docs/specs/012-collaboration/virtual-office-template.md "More Spaces"): a team's day away on the
 // sand (the tab's Sand floor). Along the top, a lagoon (a Pond), a Tiki Bar and a Beach Hut to meet in, each closed
 // with a Door; a stone path along the beach in front of them meets the path up from the Avatar Pad at a small round
-// junction; below it, hammocks under the palms, a campfire circle of benches and garden umbrellas. No fence: a beach
+// junction; below it, hammocks under the palms, a campfire circle of benches, garden umbrellas and a swimming pool. No fence: a beach
 // is open, and the Avatar Pad waits where the path comes up off the road. Built with campusPlan
 // (template-campus-parts.ts), spacious by the same rule as the campuses.
 //
@@ -87,8 +87,10 @@ const BEACH: OfficePiece[] = [
   // Garden umbrellas along the beach, and planters.
   { kind: 'garden-umbrella', x: 1420, y: 700 },
   { kind: 'garden-umbrella', x: 1660, y: 700 },
-  { kind: 'outdoor-plant', x: 1500, y: 960 },
-  { kind: 'outdoor-plant', x: 1820, y: 960 },
+  // A swimming pool below the umbrellas (docs/specs/009-elements/venue-pieces.md), planters either side.
+  { kind: 'swimming-pool', x: 1400, y: 900, w: 440, h: 200 },
+  { kind: 'outdoor-plant', x: 1300, y: 1080 },
+  { kind: 'outdoor-plant', x: 1880, y: 960 },
   // The Directory beside the path up, where you arrive.
   { kind: 'directory', x: GATE + 50, y: 1040 },
 ];

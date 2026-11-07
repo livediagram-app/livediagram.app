@@ -104,6 +104,13 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'toilet-cubicle': 'toilet cubicle stall wc loo lavatory bathroom restroom washroom',
   washbasin: 'washbasin basin sink mirror wash hands bathroom restroom washroom',
   'hand-dryer': 'hand dryer drier wall bathroom restroom washroom',
+  pillar: 'pillar post support structure hall lobby atrium square concrete',
+  column: 'column pillar classical greek roman ionic stone hall lobby grand structure',
+  'car-park': 'car park parking lot garage cars bays arrivals campus drive',
+  'bike-rack': 'bike rack bicycle cycle stand parking arrivals campus commute',
+  'swimming-pool': 'swimming pool swim water lanes hotel rooftop beach resort spa lido',
+  'stage-curtains': 'stage curtains drapes theatre theater proscenium velvet backdrop show event',
+  podium: 'podium lectern speaker microphone mic talk keynote stage presentation event',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':

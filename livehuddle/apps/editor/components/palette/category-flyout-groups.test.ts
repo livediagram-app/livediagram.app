@@ -89,7 +89,7 @@ describe('a flyout’s groups', () => {
     ]);
   });
 
-  it('splits Garden into Plants, Paths and Fences, Furniture and Features', () => {
+  it('splits Garden into Plants, Paths and Fences, Furniture, Features and Parking', () => {
     const groups = flyoutGroups('collab-garden', tiles('collab-garden'));
     expect(groups.map((g) => [g.title, g.tiles.map((t) => t.id)])).toEqual([
       ['Plants', ['tools:outdoor-plant', 'tools:tree', 'tools:grass']],
@@ -98,7 +98,8 @@ describe('a flyout’s groups', () => {
         'Furniture',
         ['tools:bench', 'tools:picnic-table', 'tools:hammock', 'tools:garden-umbrella'],
       ],
-      ['Features', ['tools:fountain', 'tools:pond', 'tools:campfire']],
+      ['Features', ['tools:fountain', 'tools:pond', 'tools:swimming-pool', 'tools:campfire']],
+      ['Parking', ['tools:car-park', 'tools:bike-rack']],
     ]);
   });
 
