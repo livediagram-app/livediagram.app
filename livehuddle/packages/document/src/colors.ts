@@ -230,7 +230,15 @@ const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 // The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
 const FLOOR_FILLS: Record<
-  'room' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond' | 'swimming-pool',
+  | 'room'
+  | 'corridor'
+  | 'rug'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'door'
+  | 'pond'
+  | 'swimming-pool',
   readonly [string, string]
 > = {
   // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").
@@ -242,6 +250,8 @@ const FLOOR_FILLS: Record<
   'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
   grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
+  // A corridor's floor is a room's (docs/specs/009-elements/corridor.md).
+  corridor: [ROOM_FLOOR, '#292524'],
   rug: [RUG_FILL, '#713f12'],
   stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
 };
@@ -264,6 +274,7 @@ function behaviourSkin(
   // furniture's.
   if (
     kind === 'room' ||
+    kind === 'corridor' ||
     kind === 'rug' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
@@ -599,6 +610,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'avatar-pad',
   // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md) draws its floor and walls.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',

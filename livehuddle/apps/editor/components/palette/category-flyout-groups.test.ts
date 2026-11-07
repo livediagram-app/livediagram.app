@@ -60,12 +60,13 @@ describe('a flyout’s groups', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
-  it('opens Rooms on its Build group (Room, Room Builder, Door), then Floor', () => {
+  it('opens Rooms on its Build group (Room, Room Builder, Corridor, Door), then Floor', () => {
     const groups = flyoutGroups('collab-rooms', tiles('collab-rooms'));
     expect(groups.map((g) => g.title)).toEqual(['Build', 'Floor']);
     expect(groups[0]!.tiles.map((t) => t.id)).toEqual([
       'tools:room',
       'tools:room-builder',
+      'tools:corridor',
       'tools:wall-door',
     ]);
   });

@@ -99,10 +99,11 @@ describe('palette layouts', () => {
       'tools:standing-desk',
     ]);
     // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
-    // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
+    // Room Builder, Corridor and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
     expect(tileIds('collab-rooms')).toEqual([
       'tools:room',
       'tools:room-builder',
+      'tools:corridor',
       'tools:wall-door',
       'tools:fence',
       'tools:stage',

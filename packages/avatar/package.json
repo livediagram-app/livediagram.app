@@ -21,6 +21,7 @@
     "./components/avatar-sprite-palette": "./src/components/avatar-sprite-palette.ts",
     "./components/avatar-status-effects": "./src/components/avatar-status-effects.tsx",
     "./config": "./src/config.ts",
+    "./corridor": "./src/corridor.ts",
     "./facing": "./src/facing.ts",
     "./fence": "./src/fence.ts",
     "./furniture-art": "./src/furniture-art.ts",

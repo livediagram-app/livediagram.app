@@ -54,6 +54,7 @@ const WALK = [
   'photo-wall',
   'stage',
   'room',
+  'corridor',
   'office-pod',
   'rug',
   'grass',

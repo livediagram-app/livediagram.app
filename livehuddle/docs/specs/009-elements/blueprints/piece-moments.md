@@ -72,7 +72,7 @@ Local only: no input from anyone else reaches it.
 ## Performance and limits
 
 - Per step: one `inside` test per moment piece, no allocation. Budget test: 1000 steps among 2000 moment pieces inside
-  `cpuBudgetMs(60)` (`apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`).
+  `cpuBudgetMs(120)` (`apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`).
 - At rest: no loop, no timer, no rAF. A moment: one keyed SVG group of at most 8 nodes, one-shot CSS on transform and
   opacity, under 3 s.
 

@@ -193,7 +193,12 @@ test.describe('Motion budget', () => {
                 width: box.width,
                 surface: bar !== null,
               });
-              if (performance.now() - t0 < 400) requestAnimationFrame(step);
+              // Sample until the bar has come and gone. The morph starts only once the incoming strip has
+              // rendered, which a loaded CI runner can hold back 200 ms, so a fixed window from the click caught
+              // its end too early (#1392). The 2 s cap still fails a morph that never ends.
+              const seen = out.some((f) => f.surface);
+              if (performance.now() - t0 < 2000 && (!seen || bar !== null))
+                requestAnimationFrame(step);
               else done();
             }, 0);
           requestAnimationFrame(step);
