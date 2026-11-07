@@ -44,6 +44,17 @@ describe('TabBar: a connected tab', () => {
     expect(screen.queryByRole('button', { name: /Rename/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /Duplicate/ })).toBeNull();
     expect(screen.getByText('Organise in Tab Folder')).toBeTruthy();
+    // Plain labelled rows, Remove last: no icon row holding the bin alone.
+    const rows = ['Connect Again', 'Organise in Tab Folder', 'Remove Tab'].map((t) =>
+      screen.getByText(t),
+    );
+    rows
+      .slice(1)
+      .forEach((row, i) =>
+        expect(
+          rows[i]!.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy(),
+      );
     fireEvent.click(screen.getByText('Connect Again'));
     expect(onConnectAgain).toHaveBeenCalledWith('c1');
     fireEvent.click(screen.getByRole('button', { name: 'Tab menu' }));

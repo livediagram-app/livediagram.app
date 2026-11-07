@@ -32,7 +32,8 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 ## Connecting
 
 From an editor's start screen, **Connect liveworkspace File** (the last entry of the start screen's sidebar, pinned
-to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row) lists the person's most recent items across every app
+to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row; in a 240px rail its
+name breaks once, evenly, with the other apps' logos fanned under it) lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
 - **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked
@@ -122,8 +123,8 @@ the size of a tab's padlock) before the name. A target in another app carries a 
 it opens in a new browser tab; one in the same app carries none. A tab that opens nothing carries a small amber dot
 in place of the arrow, so a broken connection shows without opening it. Its name is never renamed by hand, so a
 double-click does nothing; a screen reader hears "<name>, connected <app> file, opens in a new tab" (or "connected
-file, needs attention"). It is dragged, foldered and opened like any tab, and its menu offers Remove Tab and, when it
-opens nothing, Connect Again, never Duplicate.
+file, needs attention"). It is dragged, foldered and opened like any tab, and its menu offers, as plain rows, Connect Again
+(only when it opens nothing), Organise in Tab Folder and, last under a hairline, Remove Tab; never Duplicate.
 
 **The tab's page.** Opened, a connected tab shows one calm card in place of a canvas, the target app's logo over the
 target's name and a line. A visitor whose share link lands on a connected tab is asked for their name first, as on any

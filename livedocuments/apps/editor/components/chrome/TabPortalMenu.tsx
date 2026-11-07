@@ -212,21 +212,6 @@ export function PortalMenu({
   // A connected tab's menu: Remove Tab (the file stays as it is), its folder and, when it opens nothing, Connect Again.
   const connectedBody = connected ? (
     <>
-      <MenuToolbar>
-        <div className="ml-auto flex items-center gap-0.5">
-          <MenuToolButton
-            icon={<TrashIcon />}
-            label="Remove Tab"
-            description="Remove this tab. The file it opens stays as it is."
-            onClick={() => {
-              onDelete();
-              onClose();
-            }}
-            disabled={!canDelete}
-          />
-        </div>
-      </MenuToolbar>
-      <MenuGroupSeparator />
       {connected.broken ? (
         <MenuActionRow
           plain
@@ -243,6 +228,18 @@ export function PortalMenu({
         icon={<FolderMenuIcon />}
         label="Organise in Tab Folder"
         onClick={() => setView('folder')}
+      />
+      {/* Three verbs at most, so plain rows, Remove last under a hairline: an icon row would hold the bin alone. */}
+      <MenuGroupSeparator />
+      <MenuActionRow
+        plain
+        icon={<TrashIcon />}
+        label="Remove Tab"
+        onClick={() => {
+          onDelete();
+          onClose();
+        }}
+        disabled={!canDelete}
       />
     </>
   ) : null;
