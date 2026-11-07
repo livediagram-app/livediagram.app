@@ -66,6 +66,8 @@ function meetingRoom(name: string, x: number, y: number, w: number): IndoorRoom 
     h: 360,
     indoor: true,
     door: { side: 's', at: w / 2, sign: 1 },
+    // A window in its back wall, the building's outside wall (docs/specs/009-elements/room-builder.md "Window").
+    windows: [{ side: 'n', at: w - 140 }],
     pieces: [
       { kind: 'screen', x: 24, y: 44, w: 110 },
       // Right of the Screen, so the Screen hangs clear of it.
@@ -89,6 +91,12 @@ const GROUND_ROOMS: IndoorRoom[] = [
     h: 540,
     indoor: true,
     door: { side: 's', at: 550, sign: 1 },
+    // Windows in the building's outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [
+      { side: 'n', at: 300 },
+      { side: 'n', at: 680 },
+      { side: 'n', at: 980 },
+    ],
     pieces: [
       // Three islands of four, 120 px apart, and a notice board, coffee and water along the front.
       ...island(40, 80),
@@ -113,6 +121,10 @@ const GROUND_ROOMS: IndoorRoom[] = [
     h: 460,
     indoor: true,
     door: { side: 's', at: 560, sign: -1 },
+    windows: [
+      { side: 'e', at: 200 },
+      { side: 'e', at: 340 },
+    ],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'coffee-machine', x: 300, y: 50 },
@@ -175,6 +187,7 @@ const L2_ROOMS: IndoorRoom[] = [
     h: 580,
     indoor: true,
     door: { side: 's', at: 400, sign: 1 },
+    windows: [{ side: 'n', at: 650 }],
     pieces: [
       // Two rows of three Office Pods, an aisle between the rows.
       ...[40, 220, 400].map((x) => ({ kind: 'office-pod' as const, x, y: 60 })),
@@ -191,6 +204,7 @@ const L2_ROOMS: IndoorRoom[] = [
     h: 400,
     indoor: true,
     door: { side: 's', at: 230, sign: 1 },
+    windows: [{ side: 'n', at: 300 }],
     pieces: [
       ...[30, 160].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       ...[20, 140].map((x) => ({ kind: 'desk' as const, x, y: 180, facing: 's' as const })),
@@ -222,6 +236,8 @@ const L2_ROOMS: IndoorRoom[] = [
   {
     ...meetingRoom('Meeting Room B', 1720, 600, 420),
     door: { side: 'w', at: 260, sign: 1 },
+    // Below Meeting Room A, so its window is in its right wall, the building's outside wall.
+    windows: [{ side: 'e', at: 200 }],
     // Its door in the left wall, so its plant stands on the right.
     pieces: [
       { kind: 'screen', x: 24, y: 44, w: 110 },
@@ -236,7 +252,15 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
     width: W,
     height: L2_H,
     rooms: L2_ROOMS,
-    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 900, y: 860 }],
+    open: [
+      ...LIFTS,
+      STAIRS,
+      LIFT_DIRECTORY,
+      LIFT_PAD,
+      { kind: 'plant', x: 900, y: 860 },
+      // A Vending Machine on the open floor, past the Phone Booths' way out (docs/specs/009-elements/piece-moments.md).
+      { kind: 'vending-machine', x: 800, y: 720 },
+    ],
     title: {
       text: 'Level 2',
       width: 160,
@@ -274,6 +298,10 @@ const L3_ROOMS: IndoorRoom[] = [
     h: 360,
     indoor: true,
     door: { side: 's', at: 200, sign: -1 },
+    windows: [
+      { side: 'n', at: 260 },
+      { side: 'e', at: 200 },
+    ],
     pieces: [
       { kind: 'water-cooler', x: 20, y: 40 },
       { kind: 'coffee-machine', x: 90, y: 50 },
@@ -291,7 +319,14 @@ const L3_ROOMS: IndoorRoom[] = [
     h: 480,
     indoor: true,
     door: { side: 'w', at: 320, sign: 1 },
+    windows: [
+      { side: 'e', at: 200 },
+      { side: 'e', at: 360 },
+      { side: 's', at: 200 },
+    ],
     pieces: [
+      // A Dartboard on the back wall, left of the bar (docs/specs/009-elements/social-pieces.md).
+      { kind: 'dartboard', x: 60, y: 36 },
       // The counter along the back wall away from the door's side, the sofa an aisle in front of its stools.
       { kind: 'bar', x: 200, y: 40 },
       { kind: 'drinks-fridge', x: 460, y: 36 },
@@ -308,7 +343,16 @@ export function buildTowerLevel3(cx: number, cy: number): Element[] {
     width: W,
     height: L3_H,
     rooms: L3_ROOMS,
-    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1100, y: 960 }],
+    open: [
+      ...LIFTS,
+      STAIRS,
+      LIFT_DIRECTORY,
+      LIFT_PAD,
+      { kind: 'plant', x: 1100, y: 960 },
+      // A games corner on the open floor below the Event Floor (docs/specs/009-elements/social-pieces.md).
+      { kind: 'ping-pong-table', x: 420, y: 860 },
+      { kind: 'foosball-table', x: 660, y: 1000 },
+    ],
     title: {
       text: 'Level 3',
       width: 160,
