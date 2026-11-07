@@ -53,6 +53,9 @@ export function redactDocumentForCommunity(liveDoc: DocumentDTO): DocumentDTO {
     folderId: null,
     source: null,
     presentation: withoutPresenterNotes(liveDoc.presentation),
+    // A connected tab keeps its name and loses its connection (connected-tabs.md): a stranger is told of no other
+    // item.
+    tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => tab),
   };
 }
 
