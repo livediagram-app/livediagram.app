@@ -175,7 +175,11 @@ describe('applyRoomOpToTabs', () => {
 
   // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the index's reverse tab arrives in the outline.
   it("document-meta carries a connected tab's connection, and keeps one a summary leaves out", () => {
-    const connection = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'liveplanner', itemId: 'p1' } as const;
+    const connection = {
+      id: 'cn_abcdefghijklmnopqrstuvwx',
+      app: 'liveplanner',
+      itemId: 'p1',
+    } as const;
     const held = { ...tab(), connection } as Tab;
     const next = applyRoomOpToTabs([held], {
       kind: 'document-meta',
