@@ -63,6 +63,8 @@ function breakout(name: string, x: number, w: number, sign: -1 | 1): CampusRoom 
     w,
     h: BREAKOUT_H,
     door: { side: 'n', at, sign, reach: UP_TO_PROMENADE },
+    // A window in the back wall, onto the garden (docs/specs/009-elements/room-builder.md "Window").
+    windows: [{ side: 's', at }],
     pieces: [
       // The sign hangs right of the door, clear of the room's name on the left of the back wall.
       { kind: 'screen', x: 24, y: 44, w: 110 },
@@ -80,6 +82,10 @@ const CV_ROOMS: CampusRoom[] = [
     w: 400,
     h: 640,
     door: { side: 's', at: 200, sign: 1, reach: DOWN_TO_PROMENADE },
+    windows: [
+      { side: 'w', at: 200 },
+      { side: 'w', at: 480 },
+    ],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
@@ -90,6 +96,9 @@ const CV_ROOMS: CampusRoom[] = [
       { kind: 'sofa', x: 174, y: 400, facing: 'n' },
       { kind: 'chair', x: 92, y: 400, facing: 'w' },
       { kind: 'plant', x: 330, y: 540 },
+      // Somewhere to hang a coat, by the bar's door (docs/specs/009-elements/office-amenities.md).
+      { kind: 'coat-rack', x: 30, y: 480 },
+      { kind: 'umbrella-stand', x: 96, y: 560 },
     ],
   },
   {
@@ -100,6 +109,10 @@ const CV_ROOMS: CampusRoom[] = [
     h: 640,
     // Its door's path runs down onto the fountain plaza.
     door: { side: 's', at: 560, sign: 1, reach: CV_PLAZA_Y - CV_PLAZA_IN - TOP_WALL - PATH / 2 },
+    windows: [
+      { side: 'w', at: 400 },
+      { side: 'e', at: 400 },
+    ],
     pieces: [
       { kind: 'stage', x: 320, y: 48, w: 480, h: 150, stageCameras: true },
       // Its curtains and the speaker's podium (docs/specs/009-elements/venue-pieces.md "In the templates").
@@ -119,6 +132,7 @@ const CV_ROOMS: CampusRoom[] = [
     w: 400,
     h: 360,
     door: { side: 's', at: 200, sign: -1, reach: PROMENADE_Y - 400 },
+    windows: [{ side: 'e', at: 200 }],
     pieces: [
       // A sofa on its rug and a chair beside it, back from the door, and coffee for the speakers.
       { kind: 'water-cooler', x: 20, y: 40 },
@@ -139,6 +153,10 @@ const CV_ROOMS: CampusRoom[] = [
     w: 440,
     h: BREAKOUT_H,
     door: { side: 'n', at: 220, sign: 1, reach: UP_TO_PROMENADE },
+    windows: [
+      { side: 's', at: 220 },
+      { side: 'e', at: 160 },
+    ],
     pieces: [
       { kind: 'office-pod', x: 40, y: 150 },
       { kind: 'office-pod', x: 224, y: 150 },
@@ -235,6 +253,8 @@ const HQ_ROOMS: CampusRoom[] = [
     w: 680,
     h: 480,
     door: { side: 's', at: 340, sign: 1, reach: HQ_PATH_Y - 540 },
+    // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window").
+    windows: [{ side: 'w', at: 240 }],
     pieces: [
       // Two islands of desks, 120 px apart, and the studio's shelf, coffee and team board along the front.
       ...island(30, 60),
@@ -257,6 +277,10 @@ const HQ_ROOMS: CampusRoom[] = [
     w: 760,
     h: 600,
     door: { side: 's', at: 380, sign: 1, reach: HQ_JOIN_Y - HQ_JOIN_IN - 660 - PATH / 2 },
+    windows: [
+      { side: 'w', at: 380 },
+      { side: 'e', at: 380 },
+    ],
     pieces: [
       { kind: 'stage', x: 200, y: 48, stageCameras: true },
       { kind: 'screen', x: 40, y: 44, w: 140 },
@@ -271,6 +295,10 @@ const HQ_ROOMS: CampusRoom[] = [
     w: 400,
     h: 560,
     door: { side: 's', at: 200, sign: -1, reach: HQ_PATH_Y - 620 },
+    windows: [
+      { side: 'e', at: 200 },
+      { side: 'e', at: 420 },
+    ],
     pieces: [
       { kind: 'bar', x: 40, y: 40 },
       { kind: 'drinks-fridge', x: 300, y: 36 },
@@ -289,7 +317,13 @@ const HQ_ROOMS: CampusRoom[] = [
     w: 500,
     h: 380,
     door: { side: 'n', at: 250, sign: 1, reach: GAMES_Y - HQ_PATH_Y - PATH },
+    windows: [
+      { side: 's', at: 250 },
+      { side: 'e', at: 190 },
+    ],
     pieces: [
+      // A Dartboard on the back wall, left of the way in (docs/specs/009-elements/social-pieces.md).
+      { kind: 'dartboard', x: 100, y: 36 },
       { kind: 'ping-pong-table', x: 60, y: 160 },
       { kind: 'arcade-machine', x: 320, y: 60 },
       { kind: 'arcade-machine', x: 400, y: 60 },
