@@ -14,7 +14,7 @@ draws them.
   Close this to start from a blank space."), the search box, and in the top right corner the
   **Help** link and (where the start can be closed) **Close** (×). On a phone the search takes its own row under the
   title, the help and × staying beside the title.
-- **Rail:** **Recommended** first, then the other groups (Campus, Events, Office, Outdoor, Recreation), each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
+- **Rail:** **Recommended** first, then the other groups (Campus, Events, Games Rooms, Homes, Office, Outdoor, Recreation, Venues), each with its glyph and count; long names wrap beside the glyph on a wide rail. The chosen group's
   count sits on a pill tinted with the accent, in the panel's ink: the accent on its own tint fell to 4.2:1 in dark
   and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
   its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker

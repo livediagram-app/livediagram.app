@@ -619,27 +619,35 @@ link, an agent or a seed naming one is answered with Blank Space, as any unknown
 
 #### Template categories
 
-The catalogue is browsed by **what a person is using it for**: the kind of place a Space is. livehuddle has five
+The catalogue is browsed by **what a person is using it for**: the kind of place a Space is. livehuddle has eight
 categories, declared in `packages/templates/src/template-categories.ts` and read by every template start, the
 marketing gallery and the agents' template catalogue, each holding two to seven Spaces:
 
-| Category   | Id           | Description                                       | Templates                                                                                                         |
-| ---------- | ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Campus     | `campus`     | Whole sites: offices, halls and bars in a garden. | Company Campus, Conference Venue, Startup HQ, School Quad, Hotel and Suites, Co-working Tower (and Beach Offsite) |
-| Events     | `events`     | Halls and rooms for talks, demos and training.    | All-Hands Hall, Training Room, Expo Hall                                                                          |
-| Office     | `office`     | Desks, pods and meeting rooms for the workday.    | Virtual Office, Coworking Space, Team Pod, Focus Library                                                          |
-| Outdoor    | `outdoor`    | Gardens and parks to meet in under an open sky.   | Garden Retreat, City Park, Beach Offsite                                                                          |
-| Recreation | `recreation` | Bars and cafes to unwind in together after work.  | Rooftop Bar, Cafe                                                                                                 |
+| Category    | Id           | Description                                        | Templates                                                                     |
+| ----------- | ------------ | -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Campus      | `campus`     | Whole sites: offices, halls and bars in a garden.  | Company Campus, Startup HQ, School Quad, Co-working Tower (and Beach Offsite) |
+| Events      | `events`     | Halls and rooms for talks, demos and training.     | All-Hands Hall, Training Room, Expo Hall                                      |
+| Games Rooms | `games`      | Arcades, dens and bars for playing games together. | Arcade Lounge, Games Night Den, Sports Bar                                    |
+| Homes       | `homes`      | Houses to meet in, with Stairs between the floors. | Family House, City Townhouse, Country Cottage                                 |
+| Office      | `office`     | Desks, pods and meeting rooms for the workday.     | Virtual Office, Coworking Space, Team Pod, Focus Library                      |
+| Outdoor     | `outdoor`    | Gardens and parks to meet in under an open sky.    | Garden Retreat, City Park, Beach Offsite                                      |
+| Recreation  | `recreation` | Bars and cafes to unwind in together after work.   | Rooftop Bar, Cafe (and Sports Bar)                                            |
+| Venues      | `venues`     | Halls, hotels and stages to host a big day at.     | Conference Venue, Hotel and Suites, Music Hall (and Expo Hall)                |
 
 - Blank Space is in no category: it is the start's own first card.
-- One cross-listing (`TEMPLATE_ALSO_IN`): the Beach Offsite, an Outdoor Space, is also shown in Campus, as a whole
-  site for a team's day away. The Brainstorming, Decisions, Goals & Metrics, Meetings &
+- Three cross-listings (`TEMPLATE_ALSO_IN`): the Beach Offsite, an Outdoor Space, is also shown in Campus, as a whole
+  site for a team's day away; the Sports Bar, a Games Room, in Recreation, as a bar to unwind in; and the Expo Hall, an
+  Event, in Venues, as a hall a show is held at. The Brainstorming, Decisions, Goals & Metrics, Meetings &
   Workshops, People & Teams, Planning, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching &
   Learning categories left with their templates. The one **Virtual Spaces** category (`spaces`) the four first Spaces
-  shared split into four when the catalogue grew, and **Campus** came with the three whole sites
-  ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)).
+  shared split into four when the catalogue grew, **Campus** came with the three whole sites
+  ([Campus Spaces](../012-collaboration/virtual-office-template.md#campus-spaces)), and **Games Rooms**, **Homes** and
+  **Venues** with Work Tracker #641, Venues taking the Conference Venue and the Hotel and Suites from Campus.
 - Each category's search words find its templates ("campus" or "site" a Campus Space, "desk" an Office, "stage" an Event,
-  "garden" an Outdoor Space, "drinks" a Recreation one), and every category's carry "avatar" and "walk".
+  "garden" an Outdoor Space, "drinks" a Recreation one, "game" or "play" a Games Room, "house" or "home" a Home, "venue"
+  or "gig" a Venue), and every category's carry "avatar" and "walk".
+- On Start a Space each category has its rail glyph: Campus a map, Events a presentation, Games Rooms a gamepad, Homes
+  a house, Office a building, Outdoor a tree, Recreation a glass and Venues a ticket.
 
 **Popular** (`packages/templates/src/popular.ts`) is the blank then four Spaces: Blank Space, Virtual Office, Team
 Pod, Coworking Space, All-Hands Hall.

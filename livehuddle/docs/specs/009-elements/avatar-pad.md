@@ -46,7 +46,7 @@ Walking is the default way to be in a Space (a Participant and a Viewer always w
 button), so every board starts with an entrance (owner, 2026-11-06: "Make sure all templates and blank tabs gain an
 Avatar Pad - probably replace the old selection mode button").
 
-- **Every Spaces template** (all eighteen, in every category) places **one** pad, which replaced its **Walk In**
+- **Every Spaces template** (all twenty-five, in every category) places **one** pad, which replaced its **Walk In**
   [Selection Mode button](mode-button.md), **in the middle of the action** ([Where a Space's pad
   stands](#where-a-spaces-pad-stands)), with the how-to line centred under it (`arrival` in
   `packages/templates/src/template-arrival.ts`). A pad is a floor, so it comes first in the template's elements with
