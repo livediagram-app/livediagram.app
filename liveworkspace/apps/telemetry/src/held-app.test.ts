@@ -65,6 +65,7 @@ describe('livehuddle in the telemetry service', () => {
       'Door',
       'Directory',
       'Elevator',
+      'Stairs',
       'Screen',
       'Room-sign',
       'Notice-board',
