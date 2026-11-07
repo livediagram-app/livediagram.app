@@ -18,6 +18,7 @@ import {
   Tooltip,
   useEscape,
   useFocusTrap,
+  type FocusTrapInitial,
 } from '@livehuddle/ui';
 
 const CloseIcon = lucideGlyph(lucideX, 16);
@@ -39,6 +40,8 @@ export function ReaderShell({
   onClose,
   tone = 'light',
   widthClassName = 'max-w-[720px]',
+  initialFocus = 'first',
+  onBackdrop,
   children,
   ...data
 }: {
@@ -51,10 +54,15 @@ export function ReaderShell({
   tone?: keyof typeof TONES;
   // The panel's width cap: a reader is up to 720 px; the Screen's player is sized to its video.
   widthClassName?: string;
+  // Where focus lands as it opens: the first control, or the dialog itself (the Arcade's game, where Space must
+  // never press Close).
+  initialFocus?: FocusTrapInitial;
+  // A press on the dim around it: closes, unless the caller does something else (the Arcade pauses a run).
+  onBackdrop?: () => void;
   children: ReactNode;
 } & { [attr: `data-${string}`]: string | boolean | undefined }) {
   const panel = useRef<HTMLDivElement>(null);
-  useFocusTrap(panel, true, 'first');
+  useFocusTrap(panel, true, initialFocus);
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <Portal>
@@ -70,7 +78,7 @@ export function ReaderShell({
           type="button"
           tabIndex={-1}
           aria-label="Close"
-          onClick={onClose}
+          onClick={onBackdrop ?? onClose}
           // The shared Dialog's dim.
           className="absolute inset-0 animate-fade-in cursor-default bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60"
         />

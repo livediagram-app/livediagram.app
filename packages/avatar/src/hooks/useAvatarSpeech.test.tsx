@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetSpeechBubbles, receivePeerSay, useSpeechBubbles } from '../speech-store';
 import { flightMs, SPEECH_COOLDOWN_MS } from '../speech';
 import { useAvatarSpeech } from './useAvatarSpeech';
+import { claimAvatarKeys } from '../key-claims';
 
 // The product's telemetry reaches the package through its bindings.
 const track = vi.fn<typeof import('../bindings').avatarBindings.track>();
@@ -89,6 +90,17 @@ describe('useAvatarSpeech (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"
     row.remove();
     tour.remove();
     expect(result.current.s.composerOpen).toBe(false);
+  });
+
+  it('leaves Enter to a piece that holds it (the Arcade Machine you stand at)', () => {
+    const { result } = setup();
+    const release = claimAvatarKeys((k) => k.key === 'Enter');
+    const e = enter();
+    release();
+    expect(e.defaultPrevented).toBe(false);
+    expect(result.current.s.composerOpen).toBe(false);
+    enter();
+    expect(result.current.s.composerOpen).toBe(true);
   });
 
   it('a Viewer cannot speak: Enter does nothing and nothing sends', () => {

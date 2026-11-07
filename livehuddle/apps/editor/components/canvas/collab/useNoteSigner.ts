@@ -5,6 +5,23 @@ import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { participantKey } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 
+type SigningEditor = {
+  participating: boolean;
+  adderKey: string | null;
+  selfParticipant: Parameters<typeof participantKey>[0];
+};
+
+/**
+ * The key a change to the room's answers is signed with (a note, an arcade score): a Participant's adder key, which
+ * the room checks; an Editor's adder key, or its participant key without one. Null outside an editor.
+ */
+export function signingKeyOf(editor: SigningEditor | null): string | null {
+  if (!editor) return null;
+  return editor.participating
+    ? editor.adderKey
+    : (editor.adderKey ?? participantKey(editor.selfParticipant));
+}
+
 // Who may pin and unpin a note on a piece that holds notes (a Notice Board, docs/specs/009-elements/social-pieces.md;
 // a Calendar Wall, team-pieces.md), and the one way a change is sent: a delta, never a whole-element update. An Editor
 // or a Participant pins and unpins its own, an Editor unpins any, a Viewer reads. A Participant signs with its adder
@@ -17,11 +34,7 @@ export function useNoteSigner(
   const editor = useOptionalEditorContext();
   const level = editor?.can.level ?? 'view';
   const isEditor = level === 'edit';
-  const myKey = editor
-    ? editor.participating
-      ? editor.adderKey
-      : (editor.adderKey ?? participantKey(editor.selfParticipant))
-    : null;
+  const myKey = signingKeyOf(editor);
   const mayPin =
     !!editor && (isEditor || (level === 'participate' && !!myKey)) && element.locked !== true;
   return {
