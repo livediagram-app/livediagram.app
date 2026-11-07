@@ -4,8 +4,12 @@
 @import '@liveworkspace/explorer/explorer.css';
 @import '@livehuddle/template-previews/preview-art-tile.css';
 @import '@livehuddle/template-previews/preview-motion.css';
+/* Avatar mode's status signatures' loops (@liveworkspace/avatar, docs/specs/008-canvas/avatar-mode.md "Status"). */
+@import '@liveworkspace/avatar/status-effects.css';
 @import './meeting-motion.css';
 @import './social-motion.css';
+@import './piece-moments.css';
+@import './workday-motion.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
 @import './motion-text.css';
@@ -715,32 +719,6 @@
   pointer-events: none;
 }
 
-/*
- * Eraser tool cursor (docs/specs/008-canvas/canvas-and-palette.md). A tilted block-eraser glyph so the canvas
- * reads as "in eraser mode"; the hotspot sits at the eraser's lower tip.
- * Falls back to crosshair if the data-URI cursor can't load. Returned as
- * the `cursor-eraser` class by canvasCursorClass.
- */
-.cursor-eraser {
-  --eraser-cursor:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-45 12 12)'%3E%3Crect x='4.5' y='9' width='15' height='8' rx='2' fill='white' stroke='%23334155' stroke-width='1.6'/%3E%3Cline x1='11' y1='9' x2='11' y2='17' stroke='%23334155' stroke-width='1.3'/%3E%3C/g%3E%3C/svg%3E")
-      4 19,
-    crosshair;
-  cursor: var(--eraser-cursor);
-}
-
-/*
- * In eraser mode the cursor must stay the eraser even over elements, which
- * each set their own move / pointer / copy cursor inline on hover. Force it
- * on canvas elements (and their inner parts) via the inherited custom
- * property. Scoped to [data-element-id] so floating panels (palette,
- * toolbars) — also descendants of the cursor-eraser surface — keep theirs.
- */
-.cursor-eraser [data-element-id],
-.cursor-eraser [data-element-id] * {
-  cursor: var(--eraser-cursor) !important;
-}
-
 /* Sticky-note paper peel (docs/specs/008-canvas/canvas-and-palette.md): the note is glued along its top strip
    and the rest of the sheet lifts ever so slightly off the canvas. The note
    itself never changes — same flat rectangle, same fill — and no mask or
@@ -935,4 +913,13 @@ html {
 ::view-transition-new(.start-mode) {
   animation-duration: var(--transition-duration-short);
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A palette tile carried onto the canvas by the pointer (lib/palette-carry.ts, docs/specs/009-elements/
+ * furniture-facing.md "Turning while placing") shows the copy cursor a browser's own drag does, everywhere it goes,
+ * and selects no text on its way. */
+:root[data-palette-carry],
+:root[data-palette-carry] * {
+  cursor: copy !important;
+  user-select: none;
 }

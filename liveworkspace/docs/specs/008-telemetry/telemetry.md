@@ -176,7 +176,10 @@ category colours, how its events read (`createEventExplanation` over its own sen
 events, its call-to-action vocabulary, and the charts on each tab and section. A section an app has
 nothing for is left out rather than shown empty: Community is livediagram's only, and Modes is left
 out for liveplanner, which has no canvas modes. `<app>/Body.tsx` hands the config to `AppDashboard`,
-which gives it to every view through context. The views draw with the shared design system,
+which gives it to every view through context. The accent itself is CSS: the page wraps the dashboard in
+`data-app="<app>"` and `telemetry.css` sets that app's brand scale under it. Anything portalled out to
+`<body>` (a stack's modal) copies the `data-app` of the card that opened it, so it wears the same accent
+rather than falling back to the default sky (Work Tracker #588). The views draw with the shared design system,
 `@liveworkspace/ui` (buttons, fields, tooltips, hover cards, menus), and import their glyphs (`Glyph`,
 `CloseIcon` and the rest, which `@livediagram/ui` re-exports from `@liveworkspace/ui`) and brand marks
 through `@livediagram/ui`. The shared views are tested against
@@ -209,10 +212,11 @@ A daily cron (03:17 UTC) deletes events older than 60 days.
 
 ```sh
 cd liveworkspace/apps/telemetry
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8790/api/telemetry
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 Development accepts events from any `localhost` page. Point an app at it with
 `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry` (and `TELEMETRY_URL`, plus the dev key
@@ -226,7 +230,21 @@ data under `apps/site/app/telemetry/<app>/` (`livediagram/`, `liveplanner/`, `li
 `livedesign/`, `livehuddle/`). Each folder's tests read that app's source: every event an emitter can send must be
 in its vocabulary and have a chart (`metric-emitters.test.ts`, `computed-emitters.ts`), and every
 event has an explanation (`event-explanation.test.ts`). An event of a removed feature goes in the app's
-`retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`).
+`retired-events.ts`, and the dashboard drops it before any chart (`_shared/retired-events.ts`). livehuddle's checks also
+run the other way round: every chart must count something its source can still send ("every chart has a sender"), so a
+feature that leaves takes its charts with it.
+
+The scan (`emitter-scan.ts`) reads a `track('A', 'B', 'C')` call and its forwarding helpers, a shared package's bound
+track called on its bindings with the category written out (`avatarBindings.track('UI', 'Changed', 'AvatarStatus')`),
+and each Settings catalogue row, including one built by a helper or spread from a shared base, whose kind it reads from
+the row's event (an on/off pair is a toggle, a lone `changed` a slider; `emitter-scan-settings.ts`). Each app's scan
+adds what the platform sends in its name (`platform-emitters.ts`): the accounts Worker, the Explorer and the Community
+page on liveworkspace.app, the shared browser client, editor and UI packages, and the shared help centre; livediagram's
+and livehuddle's add Avatar mode (`@liveworkspace/avatar`), the two editors that mount it.
+
+An app whose palette is not the diagram one gives its config `palette.cards`, one ranking card per palette category in
+the palette's order, and the shared Palette section shows those (livehuddle's Space categories); without it the
+section shows the diagram palette's Shapes, Tools, Components, Devices and Icons.
 
 ## Deploys
 

@@ -110,6 +110,7 @@ describe('redactDesignForCommunity', () => {
     ownerColor: '#f97316',
     folderId: 'f1',
     source: 'mcp',
+    tabs: [],
   } as DesignDTO;
 
   it('names nobody and says nothing of where the design sits or came from', () => {

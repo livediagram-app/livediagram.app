@@ -9,6 +9,7 @@ import { exportJWK, generateKeyPair, SignJWT, type JWK } from 'jose';
 import { vi } from 'vitest';
 import { clearGrantCacheForTests } from './index-service';
 import type { Env } from './types';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export const TEST_INDEX_ORIGIN = 'https://index.test';
 export const TEST_ACCOUNTS_URL = 'https://accounts.test';
@@ -65,7 +66,7 @@ export async function indexServiceFor(env: Partial<Env>): Promise<TestIndex> {
     waitUntil: (p: Promise<unknown>) => void pending.push(p),
     passThroughOnException: () => {},
   } as unknown as ExecutionContext;
-  const issuer = `${env.ACCOUNTS_URL.replace(/\/+$/, '')}/api/auth`;
+  const issuer = `${withoutTrailingSlashes(env.ACCOUNTS_URL)}/api/auth`;
   const index: TestIndex = {
     db,
     appFetch: () => new Response(null, { status: 200 }),

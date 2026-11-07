@@ -1,10 +1,10 @@
 // The Co-working Tower (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors"): a co-working
 // building on three floors, one tab each. The North Lift and the South Lift stand in the same place on every floor, at
-// the left by the stairs' wall, so riding one steps out where you expect.
+// the left, with the Stairs beside the North Lift, so riding one or climbing a flight steps out where you expect.
 //
-// - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Walk In at
+// - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Avatar Pad at
 //   the entrance with the Directory beside it.
-// - Level 2 (Carpet Tiles): Phone Booths (six Office Pods in two rows), a Quiet Room and two meeting rooms.
+// - Level 2 (Carpet Tiles), arrived at by lift or on the Avatar Pad between the lifts: Phone Booths (six Office Pods in two rows), a Quiet Room, two meeting rooms and a Restroom.
 // - Level 3 (Parquet): the Event Floor (a Stage, two Screens, Bring Focus and twenty chairs either side of a centre
 //   aisle), a Green Room and a Roof Bar.
 //
@@ -22,13 +22,31 @@ const LIFTS: OfficePiece[] = [
   { kind: 'elevator', x: 60, y: 300, label: 'North Lift' },
   { kind: 'elevator', x: 60, y: 700, label: 'South Lift' },
 ];
-const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 520 };
+// The Stairs (docs/specs/009-elements/stairs.md "In the templates"), beside the North Lift and in the same place on
+// every floor, so a flight lands on the Stairs a floor away.
+const STAIRS: OfficePiece = { kind: 'stairs', x: 184, y: 300 };
+// The Directory stands below the Stairs' landing spot (stairsFootPoint, about 115 px under their foot), so a climb
+// never ends with the character standing on it.
+const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 610 };
+// The upper floors' Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): between the
+// lifts, left of the Directory, so someone who changes floor from the tab bar arrives in the lift lobby. Clear of the
+// North Lift by more than a standing character (its head 67 px above the pad's top).
+const LIFT_PAD: OfficePiece = { kind: 'avatar-pad', x: 40, y: 560 };
 
 const stools = (xs: readonly number[], y: number): OfficePiece[] =>
   xs.map((x) => ({ kind: 'bar-stool' as const, x, y }));
 
 const seats = (xs: readonly number[], ys: readonly number[]): OfficePiece[] =>
   ys.flatMap((y) => xs.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })));
+
+// An island of four hot desks, two rows back to back that face the same way, like a classroom's
+// (docs/specs/009-elements/workday-pieces.md).
+const hotDesks = (x: number, y: number): OfficePiece[] => [
+  { kind: 'hot-desk', x, y },
+  { kind: 'hot-desk', x: x + 136, y },
+  { kind: 'hot-desk', x, y: y + 112 },
+  { kind: 'hot-desk', x: x + 136, y: y + 112 },
+];
 
 // An island of four desks, two facing two.
 const island = (x: number, y: number): OfficePiece[] => [
@@ -75,8 +93,13 @@ const GROUND_ROOMS: IndoorRoom[] = [
       // Three islands of four, 120 px apart, and a notice board, coffee and water along the front.
       ...island(40, 80),
       ...island(416, 80),
-      ...island(792, 80),
+      ...hotDesks(792, 80),
       { kind: 'notice-board', x: 40, y: 380 },
+      // A print corner and a bank of lockers for the hot-deskers (docs/specs/009-elements/office-amenities.md), both
+      // clear of the door's way in.
+      { kind: 'copier', x: 232, y: 384 },
+      { kind: 'printer', x: 352, y: 430 },
+      { kind: 'lockers', x: 640, y: 392 },
       { kind: 'coffee-machine', x: 820, y: 420 },
       { kind: 'water-cooler', x: 920, y: 410 },
     ],
@@ -97,6 +120,7 @@ const GROUND_ROOMS: IndoorRoom[] = [
       { kind: 'chair', x: 40, y: 360, facing: 'w' },
       { kind: 'chair', x: 124, y: 360, facing: 'e' },
       { kind: 'water-cooler', x: 440, y: 40 },
+      { kind: 'fridge', x: 516, y: 36 },
       { kind: 'plant', x: 600, y: 44 },
     ],
   },
@@ -104,12 +128,16 @@ const GROUND_ROOMS: IndoorRoom[] = [
 
 const GROUND_FLOOR: OfficePiece[] = [
   ...LIFTS,
+  STAIRS,
   // The entrance lounge: a sofa on its rug and plants, the Directory beside the door.
   { kind: 'rug', x: 500, y: 820 },
   { kind: 'sofa', x: 524, y: 840, facing: 'n' },
   { kind: 'plant', x: 300, y: 1120 },
   { kind: 'plant', x: 1380, y: 1120 },
   { kind: 'directory', x: GROUND_MID + 60, y: 1110 },
+  // A coat rack and an umbrella stand inside the entrance, beside the Directory.
+  { kind: 'coat-rack', x: GROUND_MID + 160, y: 1110 },
+  { kind: 'umbrella-stand', x: GROUND_MID + 220, y: 1172 },
 ];
 
 export function buildTowerGround(cx: number, cy: number): Element[] {
@@ -125,8 +153,12 @@ export function buildTowerGround(cx: number, cy: number): Element[] {
       subtitle:
         'Three floors to work on: hot desks and the cafe here, phone booths on Level 2, events on Level 3.',
     },
-    gateAt: GROUND_MID,
-    hint: 'Press Walk In (or W) and come in at the entrance. The North and South Lifts go to every floor.',
+    // In the lobby, between the Hot Desks' door and the Lifts.
+    arrival: {
+      dx: -254,
+      dy: 350,
+      hint: 'You arrive on the Avatar Pad in the lobby. The North and South Lifts go to every floor.',
+    },
   });
 }
 
@@ -162,7 +194,28 @@ const L2_ROOMS: IndoorRoom[] = [
     pieces: [
       ...[30, 160].map((x) => ({ kind: 'bookshelf' as const, x, y: 40 })),
       ...[20, 140].map((x) => ({ kind: 'desk' as const, x, y: 180, facing: 's' as const })),
+      // A nap pod for a rest away from the desks.
+      { kind: 'nap-pod', x: 268, y: 176 },
       { kind: 'plant', x: 380, y: 50 },
+    ],
+  },
+  // A restroom off the open floor below the Quiet Room (docs/specs/009-elements/office-amenities.md "Restroom"), its
+  // door low in its right wall and signed there, its basins and plant along the back wall, clear of the way in.
+  {
+    name: 'Restroom',
+    x: 1000,
+    y: 700,
+    w: 480,
+    h: 260,
+    indoor: true,
+    door: { side: 'e', at: 210, sign: -1 },
+    pieces: [
+      { kind: 'toilet-cubicle', x: 16, y: 40 },
+      { kind: 'toilet-cubicle', x: 112, y: 40 },
+      { kind: 'hand-dryer', x: 220, y: 64 },
+      { kind: 'washbasin', x: 264, y: 44 },
+      { kind: 'washbasin', x: 344, y: 44 },
+      { kind: 'plant', x: 420, y: 40 },
     ],
   },
   meetingRoom('Meeting Room A', 1720, 60, 420),
@@ -183,12 +236,12 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
     width: W,
     height: L2_H,
     rooms: L2_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 1200, y: 860 }],
+    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 900, y: 860 }],
     title: {
       text: 'Level 2',
       width: 160,
       sticker: 'emoji-phone',
-      subtitle: 'Phone booths for calls, a quiet room to focus and two meeting rooms.',
+      subtitle: 'Phone booths for calls, a quiet room to focus, two meeting rooms and a restroom.',
     },
   });
 }
@@ -255,7 +308,7 @@ export function buildTowerLevel3(cx: number, cy: number): Element[] {
     width: W,
     height: L3_H,
     rooms: L3_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, { kind: 'plant', x: 1100, y: 960 }],
+    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1100, y: 960 }],
     title: {
       text: 'Level 3',
       width: 160,

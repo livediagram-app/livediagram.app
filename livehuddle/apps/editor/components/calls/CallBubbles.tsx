@@ -7,7 +7,7 @@
 // in are handed on so speech bubbles keep clear of them.
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { avatarGlides } from '@liveworkspace/avatar/relay';
-import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
 import {
   SELF_MEDIA_ID,
   setCallMaximised,
@@ -30,13 +30,15 @@ import { useLocalOnly } from '@/lib/calls/local-preview';
 import { track } from '@/lib/telemetry';
 import { MaximisedBubble } from './MaximisedBubble';
 import { BUBBLE_WIDTH_PX, MediaBubble } from './MediaBubble';
-import type { TalkingBarsPeer } from './TalkingBars';
+import { BubbleBars, type TalkingBarsPeer } from './TalkingBars';
 
 /**
- * Above the head, clear of the name chip and the talking equaliser above it (they top out about 44 canvas px over
- * the head), with a small gap.
+ * Just over the head (owner, 2026-11-07: "bring it slightly closer to their body"): clear of what a head carries (the
+ * name chip, the status chip, the away Zz; AVATAR_HEAD_CHROME) and the 5 px tail under the bubble, with a small gap.
+ * Someone wearing a bubble shows their talking equaliser inside it (BubbleBars), not over their head, so the bubble
+ * need not clear it.
  */
-export const BUBBLE_LIFT_PX = 50;
+export const BUBBLE_LIFT_PX = AVATAR_HEAD_CHROME + 8;
 
 const MEDIA_ORDER: readonly CallMedia[] = ['video', 'screen'];
 const BUBBLE_HEIGHT_PX = (BUBBLE_WIDTH_PX * 9) / 16;
@@ -123,6 +125,8 @@ function Group({
             transition: NUDGE_TRANSITION,
           }}
         />
+        {/* Their talking equaliser, on the bubble's top-left corner while they talk. */}
+        <BubbleBars id={id} color={color} />
         {MEDIA_ORDER.map((media) => {
           const stream = streams[media];
           if (!stream) return null;

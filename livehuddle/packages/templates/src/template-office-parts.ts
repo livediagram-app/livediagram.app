@@ -4,7 +4,6 @@
 
 import {
   createShape,
-  createText,
   isFloorShape,
   roomWithDoorPiece,
   type ChairFacing,
@@ -12,7 +11,6 @@ import {
   type RoomDoor,
   type ShapeKind,
 } from '@livehuddle/document';
-import { CANVAS_TONES } from './template-inks';
 import { heading } from './template-session-parts';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
@@ -102,35 +100,6 @@ export function furnishRooms(
   return [...ground, ...walls, ...floor, ...doors, ...furniture];
 }
 
-export const WALK_IN_BUTTON_W = 104;
-const BUTTON_H = 96;
-const HINT_W = 520;
-
-/**
- * The way in: a Selection Mode button labelled Walk In (it hands out Avatar mode and drops the character at it),
- * with a line saying what to do, right-aligned to `right` and centred on `cy`. A narrower `hintW` (a way in tucked
- * into a column beside the plan) wraps the line over the button's whole height.
- */
-export function walkIn(right: number, cy: number, hint: string, hintW = HINT_W): Element[] {
-  const hintH = hintW < HINT_W ? BUTTON_H : 64;
-  return [
-    {
-      ...createText(right - WALK_IN_BUTTON_W - 20 - hintW, cy - hintH / 2),
-      width: hintW,
-      height: hintH,
-      label: hint,
-      textSize: 'sm',
-      textAlignX: 'right',
-      // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
-      textColor: CANVAS_TONES.slate,
-    },
-    {
-      ...createShape('mode-button', right - WALK_IN_BUTTON_W, cy - BUTTON_H / 2),
-      label: 'Walk In',
-    },
-  ];
-}
-
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
 
 /**
@@ -156,7 +125,8 @@ export function officePlan(
   ];
 }
 
-// A space's heading band above its plan, and the band under it the Walk In waits in.
+// A space's heading band above its plan, and the margin under it (where its Avatar Pad waited before it moved into
+// the plan: template-arrival.ts), which keeps every plan centred where it always was.
 export const SPACE_HEAD = 96;
 export const SPACE_BELOW = 120;
 

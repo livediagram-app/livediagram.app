@@ -60,7 +60,11 @@ function Panel({
   const title = mediaTitle(who.name, media);
   return (
     <Portal>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-8">
+      {/* Marked, as React carries a press inside the portal up to the canvas: Avatar mode's walk lets it be. */}
+      <div
+        data-call-maximised=""
+        className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-8"
+      >
         <button
           type="button"
           tabIndex={-1}

@@ -1103,6 +1103,17 @@ export const articles: Article[] = [
     group: 'Workshop Kits',
   },
   {
+    slug: 'turning-furniture',
+    title: 'Turning Furniture',
+    description:
+      'Face a chair, a sofa or a bookshelf down, left, up or right; its seats turn with it.',
+    keywords:
+      'turn turning rotate rotation rotating face facing direction orientation orient spin flip left right up down sideways side wall sofa desk chair meeting table bookshelf water cooler coffee machine rug furniture piece quarter space bar spacebar shift place placing drop seats sit',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
+  },
+  {
     slug: 'cards-and-callouts',
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
@@ -2432,6 +2443,17 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Teams ----
+  {
+    slug: 'audit-log',
+    title: 'Audit Log',
+    description:
+      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+    keywords:
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/teams',
+    parentSlug: 'teams',
+  },
   {
     slug: 'roles-and-invites',
     title: 'Roles and Invites',

@@ -10,8 +10,10 @@ import {
   INDEX_APP_HEADER,
   INDEX_PERSON_HEADER,
   INDEX_TEAMS_HEADER,
+  ITEM_GRANT_HEADER,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
+  TEAM_AUDIT_NEXT_CURSOR_HEADER,
   type App,
   type IndexErrorCode,
 } from './constants';
@@ -39,6 +41,9 @@ import type {
   ShareResolution,
   ItemRead,
   SharedWithItem,
+  TeamAuditCsv,
+  TeamAuditPage,
+  TeamAuditQuery,
   TimelinePage,
   TimelineQuery,
   AppTimelineEvent,
@@ -54,6 +59,13 @@ import type {
   Webhook,
   WebhookDelivery,
 } from './webhooks';
+import {
+  appConnectionPath,
+  type ConnectionInput,
+  type ConnectionMade,
+  type ConnectionOpen,
+} from './connections';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export class IndexError extends Error {
   readonly status: number;
@@ -67,6 +79,12 @@ export class IndexError extends Error {
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;
+
+// A refusal's `{ error }` as an IndexError; `unknown` when the body names none.
+function refusal(status: number, parsed: unknown): IndexError {
+  const error = (parsed as { error?: unknown } | null)?.error;
+  return new IndexError(status, typeof error === 'string' ? error : 'unknown');
+}
 
 // `?a=1&b=2` from the set values, or '' when none is set.
 export function queryString(query: Query = {}): string {
@@ -108,6 +126,8 @@ type CallOptions = {
   query?: Query;
   share?: ShareAccess | null;
   signal?: AbortSignal;
+  // A grant the index signed for an item (X-Index-Grant): the connected tabs' doors take the host's.
+  grant?: string;
 };
 
 // What a read can take besides its query: a signal, so a list superseded by a newer one (the Explorer's
@@ -120,9 +140,27 @@ export function createIndexClient({
   headers: fixedHeaders,
   fetch: doFetch,
 }: IndexClientOptions) {
-  const base = baseUrl.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl);
 
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
+    const res = await send(path, options);
+    if (res.status === 204) return undefined as T;
+    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
+    if (!res.ok) throw refusal(res.status, parsed);
+    return parsed as T;
+  }
+
+  // A read answered as text (a CSV file), with its response for the headers.
+  async function callText(
+    path: string,
+    options: CallOptions = {},
+  ): Promise<{ text: string; res: Response }> {
+    const res = await send(path, options);
+    if (!res.ok) throw refusal(res.status, await res.json().catch(() => null));
+    return { text: await res.text(), res };
+  }
+
+  async function send(path: string, options: CallOptions): Promise<Response> {
     const headers = new Headers(fixedHeaders);
     const token = await getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -130,25 +168,19 @@ export function createIndexClient({
       headers.set(SHARE_CODE_HEADER, options.share.code);
       if (options.share.password) headers.set(SHARE_PASSWORD_HEADER, options.share.password);
     }
+    if (options.grant) headers.set(ITEM_GRANT_HEADER, options.grant);
     let body: string | undefined;
     if (options.body !== undefined) {
       headers.set('Content-Type', 'application/json');
       body = JSON.stringify(options.body);
     }
     // Looked up per call so a test or a polyfill installed later is used.
-    const res = await (doFetch ?? fetch)(`${base}${path}${queryString(options.query)}`, {
+    return (doFetch ?? fetch)(`${base}${path}${queryString(options.query)}`, {
       method: options.method ?? 'GET',
       headers,
       body,
       signal: options.signal,
     });
-    if (res.status === 204) return undefined as T;
-    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    if (!res.ok) {
-      const code = typeof parsed?.error === 'string' ? parsed.error : 'unknown';
-      throw new IndexError(res.status, code);
-    }
-    return parsed as T;
   }
 
   return {
@@ -261,6 +293,20 @@ export function createIndexClient({
       }),
     removeShared: (itemId: string) => call<void>(`/shared/${enc(itemId)}`, { method: 'DELETE' }),
 
+    // Connected tabs (connected-tabs.md), each with the host's grant. Make one on `hostId`'s tab; where one leads
+    // (410 `connection_target_gone` or `connection_link_removed` when nowhere); take one back when the tab never
+    // made it into the host.
+    makeConnection: (hostId: string, input: ConnectionInput, grant: string) =>
+      call<ConnectionMade>(`/items/${enc(hostId)}/connections`, {
+        method: 'POST',
+        body: input,
+        grant,
+      }),
+    openConnection: (id: string, grant: string, options: RequestOptions = {}) =>
+      call<ConnectionOpen>(`/connections/${enc(id)}`, { grant, signal: options.signal }),
+    takeBackConnection: (id: string, grant: string) =>
+      call<void>(`/connections/${enc(id)}`, { method: 'DELETE', grant }),
+
     // Timeline: newest first, a page at a time.
     timeline: (query: TimelineQuery = {}, options: RequestOptions = {}) =>
       call<TimelinePage>('/timeline', { query, signal: options.signal }),
@@ -284,6 +330,15 @@ export function createIndexClient({
       call<{ queued: true }>(`/webhooks/${enc(id)}/test`, { method: 'POST' }),
     webhookDeliveries: (id: string) =>
       call<{ deliveries: WebhookDelivery[] }>(`/webhooks/${enc(id)}/deliveries`),
+
+    // The team audit log (team-audit-log.md "Who reads it"): a team admin's alone, newest first, a page at a time,
+    // or as a CSV file of up to TEAM_AUDIT_CSV_MAX rows.
+    teamAudit: (query: TeamAuditQuery, options: RequestOptions = {}) =>
+      call<TeamAuditPage>('/team-audit', { query, signal: options.signal }),
+    teamAuditCsv: async (query: Omit<TeamAuditQuery, 'limit'>): Promise<TeamAuditCsv> => {
+      const { text, res } = await callText('/team-audit', { query: { ...query, format: 'csv' } });
+      return { csv: text, nextCursor: res.headers.get(TEAM_AUDIT_NEXT_CURSOR_HEADER) };
+    },
 
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
@@ -319,7 +374,7 @@ export function createIndexDelegateClient({
   fetch: doFetch,
 }: IndexDelegateOptions): IndexClient {
   return createIndexClient({
-    baseUrl: (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, ''),
+    baseUrl: withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`),
     getToken: () => key,
     headers: {
       [INDEX_APP_HEADER]: app,
@@ -341,7 +396,7 @@ export type IndexAppClientOptions = {
 
 // What an app's server (its api Worker or an item's Durable Object) pushes about an item.
 export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
-  const base = (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`);
   const failed = async (res: Response): Promise<IndexError> => {
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
     return new IndexError(res.status, typeof parsed?.error === 'string' ? parsed.error : 'unknown');
@@ -355,6 +410,14 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+    });
+    if (!res.ok) throw await failed(res);
+  }
+  // A body-less call to one of the index's own `/app/...` paths (`appConnectionPath`).
+  async function send(method: 'PUT' | 'DELETE', path: string): Promise<void> {
+    const res = await (doFetch ?? fetch)(`${base}${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${key}`, [INDEX_APP_HEADER]: app },
     });
     if (!res.ok) throw await failed(res);
   }
@@ -398,6 +461,12 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // again: each is one delivery per webhook.
     pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
+    // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
+    // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
+    confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
+      send('PUT', appConnectionPath(hostId, connectionId, tabId)),
+    removeConnection: (hostId: string, connectionId: string, tabId: string) =>
+      send('DELETE', appConnectionPath(hostId, connectionId, tabId)),
   };
 }
 

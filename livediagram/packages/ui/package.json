@@ -34,7 +34,7 @@
     "next": "^16.4.3",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   },
   "dependencies": {
     "@livediagram/api-schema": "workspace:*",
@@ -43,7 +43,6 @@
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
-    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

@@ -79,6 +79,8 @@ export type ShapeKind =
   // cooler, coffee machine), a rug on the floor, and a stage whoever stands on is heard by the whole tab
   // (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage").
   | 'room'
+  // A Corridor (docs/specs/009-elements/corridor.md): a passage between rooms, its type in `variant`.
+  | 'corridor'
   | 'meeting-table'
   | 'plant'
   | 'bookshelf'
@@ -118,12 +120,50 @@ export type ShapeKind =
   | 'vending-machine'
   | 'bean-bag'
   | 'reading-nook'
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  | 'printer'
+  | 'copier'
+  | 'lockers'
+  | 'coat-rack'
+  | 'umbrella-stand'
+  | 'kitchen-counter'
+  | 'kitchen-sink'
+  | 'fridge'
+  | 'microwave'
+  | 'kettle'
+  | 'toilet-cubicle'
+  | 'washbasin'
+  | 'hand-dryer'
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  | 'pillar'
+  | 'column'
+  | 'car-park'
+  | 'bike-rack'
+  | 'swimming-pool'
+  | 'stage-curtains'
+  | 'podium'
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  | 'nap-pod'
+  | 'treadmill'
+  | 'weight-bench'
+  | 'phone-booth'
+  | 'standing-desk'
+  | 'hot-desk'
+  | 'pet-bed'
+  | 'reception-desk'
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  | 'calendar-wall'
+  | 'suggestion-box'
+  | 'signpost'
+  | 'photo-wall'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in
-  // each, and a lift between the space's tabs (its floors).
+  // each, and a lift between the space's tabs (its floors); and Stairs (docs/specs/009-elements/stairs.md), a flight
+  // to the floor above or below.
   | 'directory'
   | 'elevator'
+  | 'stairs'
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen showing a share from someone in
   // its room, and a sign by a room's door saying whether it is free.
   | 'screen'

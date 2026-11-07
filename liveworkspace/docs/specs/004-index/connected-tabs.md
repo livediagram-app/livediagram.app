@@ -54,6 +54,12 @@ Who may connect:
 The index checks every one of these itself when the connection is made, from the person's token and the host's
 grant, never from what the editor says it may do.
 
+A connection stands once its tab is in the host. The host app tells the index when it has put the tab in (it
+**confirms** the connection), and the index's reverse write confirms the reverse once the target app answers. When the
+editor's add fails after the index made the connection, the editor takes it back at once, and its pass goes with it.
+A connection still unconfirmed an hour after it was made (the editor closed mid-add, say) is swept by the index with
+its pass, so a pass never outlives a tab that never appeared.
+
 ## Both ways
 
 Both ways makes the pair in one request: a pass on the target and the host's connected tab, and a pass on the host
@@ -99,7 +105,12 @@ sent away from the target as with any deleted link. Undoing the removal brings t
 offers Connect Again.
 
 Moving the host to the Trash keeps its connections; purging it deletes them and their passes. Moving the target to
-the Trash leaves its connected tabs saying so; purging it deletes its connections and passes with its links.
+the Trash leaves its connected tabs saying so; purging it deletes its passes with its links, and its connections stay
+behind saying the file is no longer there until their tabs are removed (or their host is purged), so the tab says why
+rather than reading as a copy's.
+
+Undoing a removal never restores access (Work Tracker #572): a grace period before the pass goes would leave a live
+share link nobody can see. The tab comes back offering Connect Again.
 
 A pass can also be deleted from the target's Share dialog, where it is listed as "Connected from <host>": the
 connected tab then offers Connect Again.
@@ -115,7 +126,11 @@ connected tab then offers Connect Again.
   A public (Community) link's grant opens no connection; a tab-scoped grant opens only a connection in its tab.
 - **Copies carry nothing.** A tab copied into another item keeps `{id, app, itemId}`, and the index refuses that id
   anywhere but its own host and tab. A tab forged by hand (an edited export, say) holds ids that open nothing, and
-  its address is built from the registry, so it cannot lead elsewhere.
+  its address is built from the registry, so it cannot lead elsewhere. A copy through a Community link keeps no
+  connection, and a Community visitor reads none: a stranger is told of no other item.
+- **A connected tab stays in its host.** It is never shared into another item (a tab shared between items), and a
+  tab of content is never turned into one: only a new tab, or one already connected (Connect Again), takes a
+  connection.
 - **The cross-app write is narrow.** The only write into another app's item is the reverse tab: the index calls the
   target app's internal door with that app's own key (`INDEX_KEY`, as for revocations), carrying one connected tab and
   nothing else. The app appends it at the end of the tab bar, never replaces or edits an existing tab, refuses a
@@ -140,6 +155,9 @@ connected tab then offers Connect Again.
 ## Agents and the CLI
 
 Agents and the CLI read connected tabs (their app and name, never a code) and cannot make them: making a connection
-mints a share link, which an agent does through Share, on purpose. Only two writes put a `connection` on a tab: the
-editor's add after the index made the connection, and the index's reverse write. An agent's or the API's tab write
-keeps none, and a well-formed one is read as exactly `{id, app, itemId}`, anything else in it dropped.
+mints a share link, which an agent does through Share, on purpose. The index refuses an app acting for a person (an
+API token's, the Drive mirror, the data export) at both the make and the open door. Only two writes put a new `connection` on a tab: the
+editor's add after the index made the connection, and the index's reverse write. A copy, the Drive file and an
+editor's create (an Offline Mode sync) carry the one a tab already had. An agent's or the API's tab write (a
+changeset, a token's create) keeps none, and a well-formed one is read as exactly `{id, app, itemId}`, anything else
+in it dropped.

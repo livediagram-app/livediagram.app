@@ -35,10 +35,8 @@ import {
 import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
 import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
-import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useEraserConfig } from '@/hooks/canvas/useEraserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
@@ -136,6 +134,8 @@ import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useFormatTool } from './useFormatTool';
 import { useTabEntryEffects } from './useTabEntryEffects';
+import { holdsOnlyPads, padOnlyTabCentre } from '@/lib/pad-only-tab';
+import { STRIP_MORPH_MS } from '@/lib/strip-morph';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
@@ -146,6 +146,7 @@ import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
 import { activeElementsCommit } from './active-elements-commit';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
+import { startPanelIsOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 
 export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Where the editor runs (editor-surface.ts). The read-only embed view (docs/specs/013-workspace/
@@ -279,9 +280,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Canvas tool (Pan / Select / Avatar ...). See useCanvasTool: the raw
   // setter serves internal auto-switches, the tracked selectCanvasTool
   // serves the user-facing pickers.
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md): read by the erase gesture below and
-  // edited from the Eraser Panel.
-  const eraserSettings = useEraserConfig();
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
@@ -300,7 +298,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
-  const { formatToolActive, exitFormatTool } = useFormatTool({
+  const { formatToolActive, exitFormatTool, startFormatFrom } = useFormatTool({
     canvasTool,
     setCanvasTool,
     setFormatSourceId,
@@ -336,18 +334,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
   const pickCanvasTool = (tool: CanvasTool) => {
-    // Eraser / Format act on existing
-    // content, so they're unavailable on an empty canvas: the palette greys
-    // them out, and this guards the keyboard-shortcut path to match. Select,
-    // Hand and Avatar stay available (an empty board is still a place to stand in).
-    const tabForTool = tabs.find((t) => t.id === activeId) ?? tabs[0];
-    if (
-      tabForTool &&
-      tabForTool.elements.length === 0 &&
-      (tool === 'eraser' || tool === 'format')
-    ) {
-      return;
-    }
+    // No walking while Start a Space is in front of the canvas (docs/specs/008-canvas/avatar-mode.md "Not over a
+    // start"): the toggle's Walk greys out, and this guards every other way in (Search, a board's button) to match.
+    // A Participant or a Viewer held walking (share-roles.md "Always walking") is refused every other tool by
+    // useCanvasTool's hold, which selectCanvasTool below goes through.
+    if (tool === 'avatar' && canvasTool !== 'avatar' && startPanelIsOpen()) return;
     // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is a non-editing mode, so it clears the selection on entry.
     if (tool === 'avatar') {
       setSelectedId(null);
@@ -361,6 +352,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // in both directions. Everything else is an ordinary pick, guards included.
   const pressModeButton = (mode: CanvasTool) => {
     pickCanvasTool(canvasTool === mode ? toolBeforeCurrent() : mode);
+  };
+  // The selection toolbar's Format Painter (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): the
+  // painter on with the selected element loaded, the selection cleared so the toolbar steps out of the way.
+  const startFormatPainter = (id: string) => {
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    startFormatFrom(id, pickCanvasTool);
   };
   // Local-session participant. Initialised to a stable placeholder so the
   // SSG output and the first client paint agree (Math.random() in a lazy
@@ -1058,6 +1056,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     getViewportCanvasRect,
     fitToScreen: fitTabToScreen,
+    glideToFit,
     fitToBounds,
     centreOn,
     isCentredOn,
@@ -1075,6 +1074,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewport,
     canvasMainRef,
     fitToScreen: fitTabToScreen,
+    // Walk to Edit frames the whole tab, gliding beside the strip's morph (docs/specs/008-canvas/avatar-mode.md
+    // "The Edit | Walk toggle"); an empty tab, or one holding only its Avatar Pad, keeps the view it has.
+    fitOnEdit: () => {
+      const els = activeTab.elements;
+      if (els.length === 0 || holdsOnlyPads(els)) return;
+      glideToFit(STRIP_MORPH_MS);
+    },
   });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
@@ -1204,14 +1210,18 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects.
+  // entry). See useTabEntryEffects. A blank tab holding nothing but its Avatar Pad is not fitted to the pad: its view
+  // opens with the pad BLANK_PAD_DROP below the middle, as it lands when a tab is started blank in the editor
+  // (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one").
   const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
     fitToScreen: () => {
-      fitTabToScreen();
+      const padCentre = padOnlyTabCentre(activeTab.elements);
+      if (padCentre) centreOn(padCentre);
+      else fitTabToScreen();
       focusLanding.afterTabFit(activeId);
     },
     skipFitForTabRef: skipTabFitRef,
@@ -1859,21 +1869,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     writeUserPreferences,
     ownerId: selfParticipant.id,
   });
-
-  // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
-  // pointer touches, as a single-undo gesture. Canvas calls beginErase
-  // from its capture-phase pointerdown. See useCanvasEraser.
-  const { beginErase } = useCanvasEraser({
-    config: eraserSettings.config,
-    editsBlocked: structureBlocked,
-    activeId,
-    activeTab,
-    tick,
-    markCheckpoint,
-    setSelectedId,
-    setEditingId,
-  });
-
   // Element styling / layering actions (lock, layer order, text size /
   // align / style, fill / stroke / text colour, opacity, padding, the
   // arrow + border presets, shape-kind morph, reset-to-theme). All
@@ -1933,6 +1928,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     setChecklistItemsSelected,
     setChairFacingSelected,
+    turnSelected,
     setRoomDoorSelected,
     setStageSelected,
     setScreenUrlSelected,
@@ -2459,7 +2455,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Travel to another tab keeps Avatar mode (docs/specs/008-canvas/avatar-mode.md "Changing tab").
     keepWalkingTo: travelKeepingWalk,
     exitFormatTool,
-    beginErase,
+    startFormatPainter,
     chooseTemplate,
     clearTabContent,
     accountDisplayName,
@@ -2674,6 +2670,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     setChecklistItemsSelected,
     setChairFacingSelected,
+    turnSelected,
     setRoomDoorSelected,
     setStageSelected,
     setScreenUrlSelected,
@@ -2714,8 +2711,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     setCanvasTool: pickCanvasTool,
-    eraserConfig: eraserSettings.config,
-    onChangeEraserField: eraserSettings.setField,
     formatConfig: formatSettings.config,
     onToggleFormatGroup: formatSettings.toggleGroup,
     onSetFormatMode: formatSettings.setMode,

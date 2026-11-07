@@ -1,4 +1,5 @@
-import type { Element as CanvasElement, ShapeKind } from '@livehuddle/document';
+import { pieceFacing, type Element as CanvasElement, type ShapeKind } from '@livehuddle/document';
+import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
 
 // What a click on a piece means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"): `walk`
 // walks the character there (and arriving does what it does: sit, drink, travel), `use` does the piece's main action
@@ -28,6 +29,7 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   // Use: the piece's main action from anywhere on its footprint (data-piece-main), or the reader when it has none.
   directory: U,
   elevator: U,
+  stairs: U,
   portal: U,
   'mode-button': U,
   'focus-button': U,
@@ -45,6 +47,7 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'avatar-pad': W,
   stage: W,
   room: W,
+  corridor: W,
   'office-pod': W,
   rug: W,
   grass: W,
@@ -63,6 +66,46 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'ping-pong-table': W,
   'bean-bag': W,
   'reading-nook': W,
+  // Walk: the office amenities (docs/specs/009-elements/office-amenities.md): scenery you stand by, and the hand dryer,
+  // microwave and kettle, walked past as wall pieces (the counter under the last two is what you walk to).
+  printer: W,
+  copier: W,
+  lockers: W,
+  'coat-rack': W,
+  'umbrella-stand': W,
+  'kitchen-counter': W,
+  'kitchen-sink': W,
+  fridge: W,
+  microwave: W,
+  kettle: W,
+  'toilet-cubicle': W,
+  washbasin: W,
+  'hand-dryer': W,
+  // Walk: the venue pieces (docs/specs/009-elements/venue-pieces.md): scenery you stand by, the pool's deck, and the
+  // stage curtains, walked between as a wall piece (the stage under them is what you walk to).
+  pillar: W,
+  column: W,
+  'car-park': W,
+  'bike-rack': W,
+  'swimming-pool': W,
+  'stage-curtains': W,
+  podium: W,
+  // Walk: the workday pieces (docs/specs/009-elements/workday-pieces.md): seats you sit or stand in (arriving sits
+  // you, and may set your status), the pet bed you walk over, and the reception desk you walk up to (Welcome).
+  'nap-pod': W,
+  treadmill: W,
+  'weight-bench': W,
+  'phone-booth': W,
+  'standing-desk': W,
+  'hot-desk': W,
+  'pet-bed': W,
+  'reception-desk': W,
+  // The team pieces (docs/specs/009-elements/team-pieces.md): the calendar and the box open, the signpost walks to its
+  // top board's place; the photo wall is walked to, like a picture.
+  'calendar-wall': U,
+  'suggestion-box': U,
+  signpost: U,
+  'photo-wall': W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,
@@ -152,9 +195,75 @@ export function avatarClickIntent(kind: string | null | undefined): AvatarClickI
   );
 }
 
+/**
+ * The Use pieces that are only a control: a press of their main action is all they offer, so with none of yours right
+ * now (a Participant or a Viewer, who always walk; an Editor while someone else holds the baton; a Viewer's Timer) a
+ * click does nothing. Their reader would be the same face, larger and still not pressable (docs/specs/008-canvas/
+ * avatar-mode.md "Clicking a piece"; docs/specs/013-workspace/share-roles.md "Always walking").
+ */
+export const NO_READER_KINDS: ReadonlySet<AvatarClickKind> = new Set<AvatarClickKind>([
+  'focus-button',
+  'mode-button',
+  'timer',
+  'stopwatch',
+  // A Signpost with no places yet has no arrow to press (team-pieces.md "Signpost").
+  'signpost',
+]);
+
+/** What a walking click on a piece does, once its intent and whether it has a main action right now are known. */
+export type AvatarPressOutcome = 'walk' | 'press' | 'read' | 'nothing';
+
+export function avatarPressOutcome(
+  kind: string | null | undefined,
+  hasMain: boolean,
+): AvatarPressOutcome {
+  const intent = avatarClickIntent(kind);
+  if (intent === 'walk') return 'walk';
+  if (intent === 'use' && hasMain) return 'press';
+  if (intent === 'use' && NO_READER_KINDS.has(kind as AvatarClickKind)) return 'nothing';
+  return 'read';
+}
+
 /** The kind a box carries for `ELEMENT_KIND_ATTR`. */
 export function elementClickKind(el: CanvasElement): AvatarClickKind {
   return el.type === 'shape' ? el.shape : el.type;
+}
+
+// The pieces walked up to at their front, which is where arriving does its thing (the Reception Desk's Welcome, the
+// Arcade's Insert Coin): a click anywhere on one walks you to the floor just in front of it, under the click, as a seat
+// sits you wherever on it you click, never to the floor behind or inside it (docs/specs/008-canvas/avatar-mode.md
+// "Clicking a piece").
+const FRONT_KINDS: ReadonlySet<string> = new Set(['reception-desk', 'arcade-machine']);
+/** How far below a front piece's box its walk ends, in canvas px: clear of its footprint and inside its front strip. */
+export const FRONT_STAND = 16;
+/** How far in from a front piece's ends its walk ends, as a share of its width: on its front, never round its side. */
+const FRONT_END = 0.12;
+
+/**
+ * Where a walking click on `el` at `point` walks to: the point itself, or, on an unturned Reception Desk or Arcade
+ * Machine, the floor FRONT_STAND below its box under the click (kept off its ends). One turned to face
+ * another way (docs/specs/009-elements/furniture-facing.md) has its front there: the floor FRONT_STAND beyond its
+ * footprint on that side, beside the middle of its footprint's depth on its side, under the click from behind.
+ */
+export function walkPointFor(
+  el: CanvasElement | null,
+  point: { x: number; y: number },
+): { x: number; y: number } {
+  if (!el || el.type !== 'shape' || !FRONT_KINDS.has(el.shape) || (el.rotation ?? 0) % 360 !== 0)
+    return point;
+  // The arcade's bubble and the Reception Desk's Welcome follow their turned front (useSocialPieces arcadeAt,
+  // useWorkdayPieces receptionAt), so the walk ends there.
+  const facing = pieceFacing(el);
+  const foot = facing === 'n' ? null : officeFootprint({ ...el, chairFacing: facing });
+  if (foot && (facing === 'e' || facing === 'w'))
+    return {
+      x: facing === 'e' ? foot.x - FRONT_STAND : foot.x + foot.width + FRONT_STAND,
+      y: foot.y + foot.height / 2,
+    };
+  const lo = el.x + el.width * FRONT_END;
+  const hi = el.x + el.width * (1 - FRONT_END);
+  const x = Math.min(hi, Math.max(lo, point.x));
+  return foot ? { x, y: foot.y - FRONT_STAND } : { x, y: el.y + el.height + FRONT_STAND };
 }
 
 /** Whether a press in Avatar mode landed on a pressable part of a piece that is not walked to, so it acts there. */

@@ -3,16 +3,16 @@
 // and its way in is a Door piece standing on its wall (docs/specs/009-elements/room-builder.md "Door"). A short path
 // runs out from every Door to a walk `reach` px from the wall, a Room Sign stands on the lawn beside it, and the paths
 // join as docs/specs/009-elements/office.md "Garden Path" says: a path that meets another ends under it, and paths
-// that cross meet at a round plaza. The Walk In waits under the garden's gate.
+// that cross meet at a round plaza. The Avatar Pad stands in the middle of it all (`arrival`: the courtyard, the lobby).
 //
 // Pure: campusPlan takes the site's top left and returns a fresh Element[], floors first.
 
 import { createShape, snapDoorToWall, type Element, type ShapeElement } from '@livehuddle/document';
+import { arrival, type Arrival } from './template-arrival';
 import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -131,17 +131,13 @@ export type CampusSite = {
   // the order they lie: a path that ends on another comes before it, plazas last.
   open: readonly OfficePiece[];
   title: { text: string; width: number; sticker: string; subtitle: string };
-  // The gate's middle along the bottom fence (or a building's entrance): the Walk In waits under it. A building's upper
-  // floor has none: it is arrived at by Elevator (docs/specs/012-collaboration/virtual-office-template.md "Spaces with
-  // floors").
-  gateAt?: number;
-  hint?: string;
+  // Where everyone arrives (template-arrival.ts): the Avatar Pad's centre, relative to the plan's centre, and its
+  // how-to line. A building's upper floor has none here: it is arrived at by Elevator, and its pad stands by the
+  // Elevators, one of its `open` pieces (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors").
+  arrival?: Omit<Arrival, 'x' | 'y'> & { dx: number; dy: number };
   // Anything else placed absolutely (a stage's Bring Focus), given the site's top left.
   extra?: (left: number, top: number) => Element[];
 };
-
-// The Walk In's button is 104 wide: centred under the gate, its right edge is half that past it.
-const WALK_IN_HALF = 52;
 
 const defaultReach = (side: DoorSide) => (side === 'e' || side === 'w' ? REACH_SIDE : REACH_END);
 
@@ -188,7 +184,7 @@ const GROUND = new Set(['grass', 'garden-fence']);
 /** A room inside a building: its Door opens onto the floor's open corridor, so it runs no Garden Path. */
 export type IndoorRoom = CampusRoom & { indoor: true };
 
-/** A campus laid out round `(cx, cy)`: its heading, the site, every room's Door, path and sign, and the Walk In. */
+/** A campus laid out round `(cx, cy)`: its heading, the site, every room's Door, path and sign, and the Avatar Pad. */
 export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] {
   const x0 = cx - site.width / 2;
   const y0 = cy - (SPACE_HEAD + site.height + SPACE_BELOW) / 2;
@@ -212,13 +208,9 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
     site.title,
     [
       ...(site.extra?.(x0, top) ?? []),
-      ...(site.gateAt === undefined
+      ...(site.arrival === undefined
         ? []
-        : walkIn(
-            x0 + site.gateAt + WALK_IN_HALF,
-            top + site.height + SPACE_BELOW / 2,
-            site.hint ?? '',
-          )),
+        : arrival({ ...site.arrival, x: cx + site.arrival.dx, y: cy + site.arrival.dy })),
     ],
     open,
   );

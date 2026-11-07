@@ -29,6 +29,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
   // or up to it.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md): walked down.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -66,11 +68,46 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md). Read, posted in, pressed to walk, looked at.
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   // The Door (docs/specs/009-elements/room-builder.md): walked through.
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
   'directory',
   'elevator',
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a Screen pressed to open large, a Room
   // Sign knocked on.
   'screen',

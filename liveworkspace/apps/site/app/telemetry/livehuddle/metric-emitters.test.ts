@@ -4,7 +4,12 @@ import { COMPUTED_EMITTERS } from './computed-emitters';
 import { REPO, SCAN_ROOTS, SKIP } from './scan-roots';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livehuddle/api-schema';
-import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  platformEmitters,
+  avatarEmitters,
+  sharedClientEmitters,
+  sharedSiteEmitters,
+} from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -61,6 +66,8 @@ const EMITS = [
   ...platformEmitters(isValidTelemetryEvent, 'Document'),
   // Every app's client errors and timings, sent through the shared browser client.
   ...sharedClientEmitters(),
+  // Avatar mode's events, sent through this editor's bound track.
+  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
@@ -137,9 +144,9 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
-    // siteTrack called by name, through the Community app's wrapper object.
+    // The Community page on liveworkspace.app, reporting in this app's name with each type literal.
     expect(has('Community', 'Liked', 'Post')).toBe(true);
-    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
+    expect(has('Community', 'Reported', 'PersonalInfo')).toBe(true);
     // livehuddle's MCP server and CLI are left out of the scan (./scan-roots.ts).
     expect(KNOWN.some((e) => /^(apps\/(mcp|cli)|packages\/agent-verbs)\//.test(e.path))).toBe(
       false,
@@ -299,4 +306,20 @@ describe('no event is counted by two unrelated charts', () => {
   it('finds only the rollups and headline subsets that are meant to overlap', () => {
     expect([...new Set(clashes)].sort()).toEqual([]);
   });
+});
+
+// The other way round (Work Tracker telemetry review, 2026-11-07): every chart must count something an emitter can
+// still send. livehuddle came from livediagram and kept its whole dashboard, so once a feature left the product
+// (slides, data models, the diagram settings) its charts stayed on the page reading zero for ever, looking like
+// a feature nobody used. A chart whose events nothing sends any more goes, with its events in retired-events.ts
+// so Search still explains a stored one.
+describe('every chart has a sender', () => {
+  const counts = (m: Metric) =>
+    SENDS.some((e) => matches(m, e.category, e.action, e.type as string | null));
+  it.each(METRICS.map((m) => [m.title, m.category, m.action, m] as const))(
+    '%s (%s·%s) counts an event something sends',
+    (_title, _category, _action, metric) => {
+      expect(counts(metric)).toBe(true);
+    },
+  );
 });

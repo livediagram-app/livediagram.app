@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation } from '@livehuddle/document';
+import { isBoxed, renumberSteps, supportsRotation, turnsWithFacing } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -35,6 +35,7 @@ const INERT_HANDLERS: CommandHandlers = {
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
+  turn: noop,
   clearAnimation: noop,
   renumberSteps: noop,
   setMarker: noop,
@@ -85,6 +86,7 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
+    turnSelected,
     clearAnimationsSelected,
     commitElements,
     setArrowFlowSelected,
@@ -125,6 +127,15 @@ export function useEditorCommands(open: boolean): {
   const singleIsBoxed = single ? isBoxed(single) : false;
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
+  // Rotate Left / Right (docs/specs/009-elements/furniture-facing.md): any selected piece that turns.
+  const selectionTurns =
+    selectionCount > 0 &&
+    activeTab.elements.some(
+      (el) =>
+        (isMulti ? multiSelectedIds.has(el.id) : el.id === selectedId) &&
+        el.type === 'shape' &&
+        turnsWithFacing(el.shape),
+    );
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
@@ -135,7 +146,6 @@ export function useEditorCommands(open: boolean): {
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
-  const canvasEmpty = activeTab.elements.length === 0;
   const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
   const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
@@ -146,6 +156,7 @@ export function useEditorCommands(open: boolean): {
       selectionCount,
       singleIsBoxed,
       singleRotates,
+      selectionTurns,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -153,10 +164,6 @@ export function useEditorCommands(open: boolean): {
       canShare: canShareDocument,
       isOffline,
       canvasTool,
-      // Same emptiness test the palette's tool dropdown uses to disable the
-      // content-dependent tools, so search can never offer a tool the palette
-      // has greyed out.
-      canvasEmpty,
       tabLocked,
     }),
     [
@@ -166,6 +173,7 @@ export function useEditorCommands(open: boolean): {
       selectionCount,
       singleIsBoxed,
       singleRotates,
+      selectionTurns,
       singleIsShape,
       hasAnimation,
       tabHasSteps,
@@ -173,7 +181,6 @@ export function useEditorCommands(open: boolean): {
       canShareDocument,
       isOffline,
       canvasTool,
-      canvasEmpty,
       tabLocked,
     ],
   );
@@ -188,6 +195,7 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
+    turn: turnSelected,
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,

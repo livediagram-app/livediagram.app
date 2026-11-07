@@ -6,10 +6,15 @@ a **Stage**; an **Office Pod** for two; a bar (a **Bar**, a **Bar Stool**, a **D
 Fridge**); and a garden (an **Outdoor Plant**, a **Tree**, a **Garden Path**, **Grass** and a **Garden Fence**).
 With the [Chair, Desk and Sofa](chair.md), the [Fence](fence.md) and [speech bubbles](../008-canvas/avatar-mode.md#speech-bubbles),
 a team can lay out reception, desks, a meeting room, a kitchen and a lounge, then sit, talk and grab a coffee together.
-The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Recreation corner (Jukebox, Ping-Pong Table,
+The [Social pieces](social-pieces.md) add a Notice Board, a World Clock, a Play corner (Jukebox, Ping-Pong Table,
 Pool Table, Foosball Table, Arcade Machine, Dartboard, Fireplace), a Vending Machine, a Bean Bag and a Reading Nook,
 and outdoor seating, a Fountain, a Pond and a Campfire for the garden.
-A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meeting** category), and a busy room
+The [Office amenities](office-amenities.md) add a Printer, a Copier, Lockers, a Coat Rack and an Umbrella Stand, a
+kitchenette (Kitchen Counter, Kitchen Sink, Fridge, Microwave, Kettle) and a restroom (Toilet Cubicle, Washbasin, Hand
+Dryer, and a Restroom room preset).
+The [Venue pieces](venue-pieces.md) add Pillars and Columns, a Car Park and a Bike Rack, a Swimming Pool, and Stage
+Curtains and a Podium for the Stage.
+A meeting room gets a [Screen and a Room Sign](screen-and-room-sign.md) (the **Meet** category), and a busy room
 or a closed pod can be [knocked on](../012-collaboration/knock.md).
 
 ## Why
@@ -21,11 +26,14 @@ places, so an office is drawn with the same tools as a diagram.
 
 ## Where they live
 
-Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `stage` and `rug` in **Rooms**
-(with the fence), `meeting-table` in **Seating** (with the chair, desk and sofa), and `plant`, `bookshelf`,
-`water-cooler` and `coffee-machine` in **Amenities** (the Stage's tile from Work Tracker #319 part 4). `office-pod`
-joins **Seating**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` make a **Bar** category, and
-`outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` a **Garden** category.
+Shape kinds spread over three of the palette's Space categories ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)): `room`, `corridor`, `stage` and `rug` in **Rooms**
+(with the fence), `meeting-table` in **Seats** (with the chair, desk and sofa), and `plant`, `bookshelf`,
+`water-cooler` and `coffee-machine` in **Perks** (the Stage's tile from Work Tracker #319 part 4), where the
+[Office amenities](office-amenities.md#where-they-live) group them under Office, Kitchen and Restroom. `office-pod`
+joins **Seats**; `bar`, `bar-stool`, `drinks-cabinet` and `drinks-fridge` are **Play**'s **Bar** group (Bar
+was a category of its own until 2026-11-06), and `outdoor-plant`, `tree`, `garden-path`, `grass` and `garden-fence` are
+**Garden**'s **Plants** and **Paths and Fences** groups
+([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
 pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
 theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.
@@ -82,6 +90,50 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
   tie. Custom rooms snap by their box only (their walls are not on it). Cmd / Ctrl places freely, as every snap
   ([Snap override](../008-canvas/snap-override.md)). (`snapRoomWalls`, `snapRoomWallsResize` in `@livehuddle/document`.)
 
+### Room presets
+
+The Room tile opens six rooms to start from, the way the Card tile opens its presets ([Card presets](card.md#card-presets)):
+on the Toolbar strip and in the Rooms flyout it is an opener whose side panel lists them, one card each, and each places,
+drags and previews as the Room tile did (dropped at its own size, lining up with its neighbours). Every preset is an
+ordinary Room (`shape: 'room'`) placed already furnished, as the [Restroom](office-amenities.md#the-restroom-preset) is:
+the room, its Door and the pieces that show what the room is for arrive in one change (one undo). Nothing about the
+preset is stored on the room or its pieces: each is an ordinary element, so a placed one is moved, resized, renamed,
+recoloured, refurnished or emptied like any room, and its pieces like any piece.
+
+| Preset    | Variant     | Shape                                                     | Size      | Name      | Door                    |
+| --------- | ----------- | --------------------------------------------------------- | --------- | --------- | ----------------------- |
+| Room      | (none)      | A rectangle with its back wall standing up                | 480 × 320 | Room      | The front wall's middle |
+| Office    | `office`    | A small rectangle for one or two desks                    | 360 × 240 | Office    | The front wall's middle |
+| Boardroom | `boardroom` | A long rectangle round a big table                        | 800 × 400 | Boardroom | The front wall's middle |
+| Open Plan | `open-plan` | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan | The wing's front wall   |
+| Kitchen   | `kitchen`   | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall   |
+| Lounge    | `lounge`    | An octagon, every wall the same length                    | 440 × 440 | Lounge    | The front wall          |
+
+- The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
+  ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
+  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name inside their walls: at the top left
+  where the floor reaches it (the Open Plan, the Kitchen), else centred along the top (the Lounge's octagon). A room
+  drawn with the Room Builder places its name the same way.
+- Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
+  the room's stroke: one change, one undo, the room selected.
+- Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
+  (DEFAULTS.md D226):
+
+  | Preset    | Furnishings                                                                                                                                         |
+  | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Room      | None: the empty room to furnish from scratch                                                                                                        |
+  | Office    | A desk against the back wall, a plant and a bookshelf                                                                                               |
+  | Boardroom | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
+  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
+  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
+  | Lounge    | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
+
+  A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
+  own size.
+
+- The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
+- For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
+
 ## Meeting Table
 
 A table with six chairs round it, every seat facing the table.
@@ -95,7 +147,29 @@ A table with six chairs round it, every seat facing the table.
 - Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
   (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
   "Occupancy is presence").
-- It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
+- **It turns** ([Turning furniture](furniture-facing.md)), its chairs with it. From behind it reads the same, each
+  sitter now facing the other way. Turned to face left it is a tall table: the two chairs that were beyond sit down its
+  right facing left, the two in front down its left facing right, and the end chairs at its top and its foot.
+  Aspect locked. Default 232 × 168.
+
+### Long Table
+
+The Meeting Table's `long` type (`variant: 'long'`, the stored type field doors and rugs use): a boardroom table drawn to
+its width, the Boardroom preset's table.
+
+- Its top runs the box's width less 40 px each end, the same 168 px deep drawing as the Meeting Table's. Chairs stand
+  along both sides, as many as fit at 60 px apart between 86 px in from each end (seats per side: the room left over
+  divided by 60, plus one), spaced evenly, and one chair at each end in profile. At 560 wide, seven a side and two
+  ends: **sixteen seats**.
+- Every seat sits as the Meeting Table's do: the far side faces down, the near side up, the ends inward; nearest free
+  seat, one sitter each, rings and the sitters' pill (`@liveworkspace/avatar/seats`, `longTableGrid`).
+- Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Its drawing keeps its
+  proportions; a box of other proportions is drawn as wide as that depth allows. Default 560 × 168.
+- **Turned** ([Turning furniture](furniture-facing.md)), it turns as the Meeting Table does, at its own length: from
+  behind it reads the same with every chair a half turn round; on its side it is a tall table, its length down the box,
+  the far row's chairs in profile down its right, the near row's down its left, the left end's chair at its top and the
+  right end's at its foot. Its side chairs keep their places along it, drawn a little closer as the Meeting Table's are
+  on its side.
 
 ## Plant, Bookshelf
 
@@ -104,7 +178,8 @@ Scenery that **blocks**: a character walks round them, not through.
 - **Plant**: a potted plant, leaves above a pot. Default 56 × 88. Its **footprint** (the pot, at the bottom of the
   drawing) blocks.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
-  blocks, so it stands against a wall and you walk along in front of it.
+  blocks, so it stands against a wall and you walk along in front of it. Turned to face left it is narrow and long, its
+  books end on down its left and its base blocking along its length; from behind, its plain back's boards.
 - A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
   walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
   what stands up from the floor, and a character in front of it is drawn in front of it.
@@ -116,12 +191,15 @@ Walk up to one and your character **gets a drink**.
 
 - **Water Cooler**: a blue water bottle on a white cooler with a tap. Default 56 × 112.
 - **Coffee Machine**: a coffee machine with a carafe, on a little counter. Default 72 × 96.
+- **Turned**: the cooler shows its vent from behind and, facing left, its taps and drip tray down its left; the coffee
+  machine shows its vents from behind and, facing left, its screen and carafe down its left, its mug at the near end.
 - **Using it**: walking a character onto it (the same arrival as a chair or a portal) gives it a cup, **water** or
   **coffee**, held in its hand for **60 seconds**. Every 8 seconds it takes a sip (the arm lifts the cup for a
   moment). A coffee steams. Using it again, or the other machine, swaps or refreshes the cup. Sitting keeps the
   cup: coffee at your desk.
 - The machine **answers** on your screen: bubbles rise in the cooler's bottle, the coffee machine drips into the
-  carafe, for a second and a half.
+  carafe, for a second and a half, on the drawing its facing shows: the bubbles from every side, the drip wherever the
+  carafe shows (not from behind).
 - **Everyone sees your cup**: what you hold rides your avatar presence (`holding: 'water' | 'coffee'`), like
   sitting. Nothing is written to the document; leaving the mode puts the cup down.
 - Neither blocks, so you can walk right up to it; standing on it is standing in front of it.
@@ -131,16 +209,45 @@ Walk up to one and your character **gets a drink**.
 A floor rug: an oval with a border, in the element's fill. Decoration that never blocks and is never a destination;
 placed **behind everything** like a room, so it lies on the floor under the furniture. Rooms and rugs paint as
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
-room's floor, and a room never covers what stands in it. Default 200 × 120.
+room's floor, and a room never covers what stands in it. Default 200 × 120. Turned, it is the same flat pattern from
+behind and lies the other way round on its side, its box's sides swapped.
+
+### Rug types
+
+The Rug tile opens eight rugs, as the Room tile opens its presets: shapes, sizes and patterns to dress a floor with. A
+rug's type is stored in `variant` (the field the [Door types](room-builder.md#door-types) use), so it keeps its pattern
+when moved, resized or recoloured; absent is the Oval, and a value a rug does not take draws as the Oval.
+
+| Type     | `variant`  | Shape and pattern                                                         | Size      |
+| -------- | ---------- | ------------------------------------------------------------------------- | --------- |
+| Oval     | (none)     | An oval with rings (the rug as it always was)                             | 200 × 120 |
+| Round    | `round`    | A circle with a braided border and rings to the middle                    | 160 × 160 |
+| Bordered | `bordered` | A rectangle with a wide border band and a plain field                     | 240 × 160 |
+| Runner   | `runner`   | A long narrow rug with banded ends and a fringe, for a hall or a corridor | 320 × 88  |
+| Striped  | `striped`  | A rectangle in bold stripes across it                                     | 220 × 150 |
+| Persian  | `persian`  | A rectangle with a medallion, corner spandrels, a double border, a fringe | 260 × 170 |
+| Kilim    | `kilim`    | A rectangle in rows of stepped diamonds                                   | 240 × 150 |
+| Doormat  | `doormat`  | A small mat with a coir weave, for a doorway                              | 120 × 72  |
+
+- **Drawn to its size**, every type but the Oval: its border bands and pattern keep their thickness however big the
+  rug, and stripes, rows and diamonds repeat to fill it rather than stretch (the Oval keeps its drawing, scaled, as
+  before). The pattern is woven in the rug's own fill: tints of its stroke and a light sheen over the fill, so a
+  recoloured rug keeps its pattern, and a rug on dark paper (its deep fill) reads as well as on light.
+- A Round rug is aspect locked (it stays a circle); the others take any box.
+- Export draws each type as the canvas does.
 
 ## Stage
 
 A raised platform for an all-hands: whoever stands on it is heard by the whole tab
 ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#the-stage-part-2-built)).
 
-- **Drawn from the room's camera**: its top in the element's fill (a floor a little lighter than a room's), with two
-  faint plank lines, and a front edge 24 px tall you see the face of, shaded with the stroke.
-- **The name** is the element's label, on a plate centred on the front edge. A new stage is called **Stage**.
+- **Drawn from the room's camera**: its top in the element's fill (a warm honey wood, deep brown on dark paper) laid
+  in boards (faint plank lines with staggered joints), a darker nosing along its front lip, and a front edge 24 px
+  tall you see the face of: a stained-wood skirt shaded with the stroke, with a row of warm footlights along it
+  ([Venue pieces](venue-pieces.md#the-stronger-stage), Work Tracker #512). [Stage Curtains and a
+  Podium](venue-pieces.md#stage-curtains-podium) pair with it.
+- **The name** is the element's label, on a plate in the top's fill centred on the front edge, clear of the
+  footlights. A new stage is called **Stage**.
 - **A floor piece** like a rug: placed behind everything, never blocks, never a destination; a stage on a room's
   floor paints over the floor and under the furniture. Not aspect locked. Default 360 × 140.
 - **Standing on it** is having your feet on its top; the front edge is off it.
@@ -171,7 +278,14 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)): the two inside hear each
   other and nobody outside hears them, door open or shut. A pod in a room is the innermost call, so it is private
   from the room around it.
-- It does not turn. Aspect locked. Default 176 × 144.
+- **It turns**, and its walls, doorway, door, floor and seats turn with it: the doorway is always in the wall its front
+  faces. From behind the doorway is in the far wall, through its face, the benches swapped and the window wall nearest
+  you; turned to face left the doorway is down its left wall (the right wall facing right), the far wall's face along
+  its top and the benches across it, one under the far wall facing you and one against the near wall, its back to you.
+  The door slides behind the wall beside the doorway, and the strip where you knock is outside the doorway wherever it
+  faces. Aspect locked. Default 176 × 144.
+- A call for one is the [Phone Booth](workday-pieces.md#phone-booth): one seat, no invite, a call of its own that
+  shows Busy.
 
 ## Bar, Bar Stool
 
@@ -180,10 +294,14 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   and walk round its ends.
 - **Bar Stool**: a round padded seat on a tall stem, with a foot ring. **One seat**, its sitter facing up the canvas
   (their back to you, toward a bar placed above the stools). Seat rules as the [Chair](chair.md): walk onto it to sit,
-  one sitter, a ring in the sitter's colour and their name above it. It reads the same from every side and does not
-  turn. Aspect locked. Default 44 × 64. A stool tucked under the counter seats its sitter in the counter's footprint;
+  one sitter, a ring in the sitter's colour and their name above it. It reads the same from every side, so it keeps its
+  one drawing and turning it turns its sitter (Up, toward a bar above it, is its default). Aspect locked. Default 44 × 64. A stool tucked under the counter seats its sitter in the counter's footprint;
   standing up there, the character walks out of the counter toward its nearer side, never deeper in, so it is never
   stuck in the bar ([Fence](fence.md#blocking)).
+- **The bar turns**: from behind, the bartender's side, its counter beyond with glasses under it and the back shelf
+  nearest you, its bottles' necks over its top, the counter blocking; turned to face left it is long and narrow, the
+  counter and foot rail down its left (blocking down its length) and the back shelf down its right, its bottles toward
+  the counter.
 - Neither has a settings `…`; the stool's sitters, like every seat's, are presence.
 
 ## Drinks Cabinet, Drinks Fridge
@@ -195,6 +313,9 @@ Machine](#water-cooler-coffee-machine).
   (an orange cup). Default 88 × 120.
 - **Drinks Fridge**: a tall glass-fronted fridge of coloured cans. Walking onto it gives a **soda** (a red cup).
   Default 72 × 128.
+- **Turned**, each shows its plain back from behind (the fridge's cooling grille low down) and, facing left, is tall and
+  narrow, its front cheated down its left: the cabinet's glass doors and bottles over its drawers, the fridge's glass
+  and cans under its lit header.
 - The drink is held, sipped and seen by everyone exactly as water or coffee (`holding: 'juice' | 'soda'`), for the
   same minute; it never steams.
 - Neither blocks, so you walk right up to one; neither plays an answer.

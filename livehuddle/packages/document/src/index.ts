@@ -251,6 +251,10 @@ export * from './boundary';
 export * from './concept';
 export * from './concept-timeline';
 export * from './shape-variants';
+export * from './piece-variants';
+export * from './door-art';
+export * from './rug-art';
+export * from './room-preset-shapes';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
@@ -386,6 +390,7 @@ export * from '@liveworkspace/avatar/pad-art';
 export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
+export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
 export * from './room-snap';
@@ -393,7 +398,16 @@ export * from './room-outline-field';
 export * from './office-garden';
 export * from './office-social';
 export * from './office-recreation';
+export * from './office-workplace';
+export * from './office-kitchen';
+export * from './office-restroom';
+export * from './office-venue';
+// The workday pieces (docs/specs/009-elements/workday-pieces.md) and the office dog's legs.
+export * from './office-workday';
+export * from './pet-wander';
+export * from './room-presets';
 export * from './office-wayfinding';
+export * from './office-team';
 // Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
 export * from './call-geometry';
 // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).
@@ -583,6 +597,8 @@ export * from './tab-folders';
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
 export * from './timer-pieces';
+// The Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
+export * from './arcade-scores';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import

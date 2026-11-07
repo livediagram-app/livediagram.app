@@ -167,7 +167,7 @@ export function ArriveArt() {
         </g>
       }
     >
-      <Pill x={p.x + 120} y={p.y - 40} text="Walk In" colour="#047857" delay={0.8} />
+      <Pill x={p.x + 120} y={p.y - 40} text="Avatar Pad" colour="#047857" delay={0.8} />
     </SpaceShot>
   );
 }

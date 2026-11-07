@@ -313,23 +313,139 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
 
-// The `Element·Added` type tokens that correspond to a PALETTE item, in
-// the buckets the public dashboard ranks them by (docs/specs/017-telemetry/telemetry.md).
+// The `Element·Added` type tokens that correspond to a PALETTE item, in the buckets the public dashboard ranks them
+// by (docs/specs/017-telemetry/telemetry.md "The palette's categories"): one per category of livehuddle's palette,
+// in the category bar's order (docs/specs/010-palette/palette-top-level-categories.md "The strip's order"), so the
+// dashboard's Elements Added and Palette section read the way a Space is built.
 //
-// Shared here, rather than hand-mirrored in the dashboard, because both
-// ends of this have to agree exactly: the editor picks the token when it
-// emits, the dashboard buckets by it when it renders, and a token in one
-// but not the other is invisible in the worst way — the event is emitted,
-// validated, and stored, and simply never appears on the page. That had
-// already happened once: the dashboard still expected `Code-block` long
-// after the editor settled on `CodeBlock`, so every code block anyone
-// drew was missing from the Palette ranking.
+// Shared here, rather than hand-mirrored in the dashboard, because both ends of this have to agree exactly: the
+// editor picks the token when it emits, the dashboard buckets by it when it renders, and a token in one but not the
+// other is invisible in the worst way: the event is emitted, validated, and stored, and simply never appears on the
+// page. That had already happened once: the dashboard still expected `Code-block` long after the editor settled on
+// `CodeBlock`, so every code block anyone drew was missing from the Palette ranking.
 //
-// Not every `Element·Added` token belongs here. `TableRow` / `TableColumn`
-// are structure edits inside an existing table, not palette picks, so they
-// are deliberately absent.
+// `retired` holds the kinds that came from livediagram and that no palette category offers any more
+// (docs/specs/002-project-scope/not-in-livehuddle.md): a stored one still loads, and the element code stays until
+// Work Tracker #459 removes it, so a pasted or agent-made one is still counted, under Other Elements Added rather
+// than a category of its own.
+//
+// Not every `Element·Added` token belongs here. `TableRow` / `TableColumn` are structure edits inside an existing
+// table, not palette picks, so they are deliberately absent.
 export const PALETTE_TELEMETRY_TYPES = {
-  shapes: [
+  // Write: a word or a note, and the stickers Search finds.
+  write: ['Text', 'Sticky', 'Sticker'],
+  // Rooms: the floor plan, rooms and doors first, then what lays out the floor.
+  rooms: [
+    'Room',
+    // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md "Telemetry").
+    'CustomRoom',
+    // The Corridor (docs/specs/009-elements/corridor.md), beside the rooms.
+    'Corridor',
+    'Door',
+    'Fence',
+    'Stage',
+    'Stage-curtains',
+    'Podium',
+    'Office-pod',
+    'Phone-booth',
+    'Nap-pod',
+    'Reception-desk',
+    'Rug',
+    'Pillar',
+    'Column',
+  ],
+  // Seats: where people sit.
+  seats: [
+    'Chair',
+    'Desk',
+    'Sofa',
+    'Meeting-table',
+    'Bean-bag',
+    'Reading-nook',
+    'Hot-desk',
+    'Standing-desk',
+  ],
+  // Perks: the office, the kitchen and the restroom.
+  perks: [
+    'Plant',
+    'Bookshelf',
+    'Printer',
+    'Copier',
+    'Lockers',
+    'Coat-rack',
+    'Umbrella-stand',
+    'Water-cooler',
+    'Coffee-machine',
+    'Vending-machine',
+    'Kitchen-counter',
+    'Kitchen-sink',
+    'Fridge',
+    'Microwave',
+    'Kettle',
+    'Toilet-cubicle',
+    'Washbasin',
+    'Hand-dryer',
+  ],
+  // Play: the bar, the games, the gym and the lounge.
+  play: [
+    'Bar',
+    'Bar-stool',
+    'Drinks-cabinet',
+    'Drinks-fridge',
+    'Ping-pong-table',
+    'Pool-table',
+    'Foosball-table',
+    'Arcade-machine',
+    'Dartboard',
+    'Treadmill',
+    'Weight-bench',
+    'Jukebox',
+    'Fireplace',
+    'Pet-bed',
+  ],
+  // Garden: plants, paths, garden furniture, water and fire, and the parking.
+  garden: [
+    'Outdoor-plant',
+    'Tree',
+    'Grass',
+    'Garden-path',
+    'Garden-fence',
+    'Bench',
+    'Picnic-table',
+    'Hammock',
+    'Garden-umbrella',
+    'Fountain',
+    'Pond',
+    'Swimming-pool',
+    'Campfire',
+    'Car-park',
+    'Bike-rack',
+  ],
+  // Meet: a meeting room's own pieces.
+  meet: [
+    'Screen',
+    'Room-sign',
+    'Notice-board',
+    'World-clock',
+    'Calendar-wall',
+    'Suggestion-box',
+    'Photo-wall',
+    'Timer',
+    'Stopwatch',
+  ],
+  // Travel: what takes people somewhere.
+  travel: [
+    'Portal',
+    'Focus-button',
+    'Avatar-pad',
+    'Directory',
+    'Signpost',
+    'Elevator',
+    'Stairs',
+    'ModeButton',
+  ],
+  // Retired: what came from livediagram and no category offers (above).
+  retired: [
     'Square',
     'Circle',
     'Diamond',
@@ -343,27 +459,17 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Trapezoid',
     'Star',
     'Speech-bubble',
-    // The UML final state (a state machine's end), made by graph input.
     'Final-state',
-  ],
-  tools: [
-    'Text',
     'Freehand',
     'Arrow',
-    'Sticky',
     'Table',
     'Image',
     'Avatar',
     'Actor',
     'Frame',
     'Annotation',
-    // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
     'PointerNote',
     'LinkCard',
-    // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
-    // website embed, docs/specs/009-elements/website-embed.md) creates a `video` element, and all six report
-    // as `Video`: the provider is not part of the token. Missing here since
-    // the element shipped, so six palette tiles were counted nowhere.
     'Video',
     'Highlighter',
     'Polygon',
@@ -371,96 +477,23 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
-    // The Diagram elements cut with Diagram mode (docs/specs/007-editor/editor-modes.md); their tokens stay readable.
     'MindNode',
     'Flowchart',
     'FlowchartStep',
-    // Lane (docs/specs/009-elements/lane.md).
     'Lane',
-    // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
     'Boundary',
     'OrgChart',
-    // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
     'Sequence',
-    // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
     'DiagramKey',
     'Entity',
     'Checklist',
-    'ModeButton',
-    'Portal',
     'SessionButton',
     'Reveal',
     'Picker',
     'ReactionPad',
-    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
     'DoneCheck',
-    // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
     'Quiz',
-    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
-    'Chair',
-    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
-    'Desk',
-    'Sofa',
-    'Fence',
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
-    'Avatar-pad',
-    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
-    'Room',
-    'Meeting-table',
-    'Plant',
-    'Bookshelf',
-    'Water-cooler',
-    'Coffee-machine',
-    'Rug',
-    // The Stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage"), beside the office.
-    'Stage',
-    // The Office Pod, the bar, the garden (docs/specs/009-elements/office.md) and the Door
-    // (docs/specs/009-elements/room-builder.md), beside the office.
-    'Office-pod',
-    'Bar',
-    'Bar-stool',
-    'Drinks-cabinet',
-    'Drinks-fridge',
-    'Outdoor-plant',
-    'Tree',
-    'Garden-path',
-    'Grass',
-    'Garden-fence',
-    'Door',
-    // Wayfinding (docs/specs/009-elements/directory.md, elevator.md), beside the office.
-    'Directory',
-    'Elevator',
-    // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md), beside the office.
-    'Screen',
-    'Room-sign',
-    // The social pieces (docs/specs/009-elements/social-pieces.md), beside the office.
-    'Notice-board',
-    'World-clock',
-    'Jukebox',
-    'Ping-pong-table',
-    'Arcade-machine',
-    'Fireplace',
-    'Campfire',
-    'Bench',
-    'Picnic-table',
-    'Hammock',
-    'Garden-umbrella',
-    'Fountain',
-    'Pond',
-    'Pool-table',
-    'Foosball-table',
-    'Dartboard',
-    'Vending-machine',
-    'Bean-bag',
-    'Reading-nook',
-    // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
-    'Timer',
-    'Stopwatch',
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
-    // token is what elementTelemetryType actually emits for the kind, which
-    // for a hyphenated one is the hyphen kept (see Pie-chart above).
-    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -468,29 +501,16 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-ring',
     'Rating',
     'Legend',
-    // Sankey, cut with Diagram mode; its token stays readable.
     'Sankey',
-  ],
-  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
-  // than more entries under `tools`, because the palette gave it its own
-  // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
-  // other behaviour elements under `tools` above.
-  collaborate: [
     'Estimate',
     'Temperature',
     'Idea-box',
-    // Q&A board (docs/specs/012-collaboration/qa-board.md).
     'Qa-board',
     'Agenda',
     'Decision',
     'Roll-call',
-    // Comment pin (docs/specs/012-collaboration/comment-pin.md).
     'CommentPin',
-    // Action panel (docs/specs/012-collaboration/action-panel.md).
     'ActionPanel',
-  ],
-  components: [
     'Banner',
     'Hero',
     'Header',
@@ -500,11 +520,22 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Card',
     'Badge',
     'Step',
+    'LayerStack',
+    'Pyramid',
+    'Cycle',
+    'Hub',
+    'Onion',
+    'Chevrons',
+    'Browser',
+    'Monitor',
+    'Laptop',
+    'Phone',
+    'Tablet',
+    'Foldable',
+    'Smartwatch',
+    'Icon',
+    'TechIcon',
   ],
-  // Concept graphics (docs/specs/009-elements/timeline.md): the Concepts category.
-  concepts: ['LayerStack', 'Pyramid', 'Cycle', 'Hub', 'Onion', 'Chevrons'],
-  devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
-  icons: ['Icon', 'TechIcon', 'Sticker'],
 } as const satisfies Record<string, readonly string[]>;
 
 // Every palette token, flattened — the set an emitter can be checked against.

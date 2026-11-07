@@ -1,8 +1,12 @@
 'use client';
 
 import { answerMachine } from '@/lib/machine-answer';
+import { usePieceMoments } from '@/components/canvas/collab/usePieceMoments';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
-import { useAvatarStatus } from '@liveworkspace/avatar/hooks/useAvatarStatus';
+import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
+import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
+import { isStandingSeatShape } from '@livehuddle/document';
+import { useSeatStatus } from './useSeatStatus';
 import { useByValue } from '@/hooks/ui/useByValue';
 import {
   sameSitters,
@@ -83,7 +87,7 @@ export function useCanvasAvatar({
   // frame, its click-to-walk entry point, and the camera follow. Owns its own
   // rAF loop, dormant unless the tool is active.
   // The character's gender / clothing / hair / size (docs/specs/008-canvas/avatar-mode.md), persisted per
-  // browser. Owned here because both the sprite and the Avatar Panel (down in
+  // browser. Owned here because both the sprite and the avatar palette (down in
   // CanvasChrome) read it, and it outlives any one walk.
   const avatarLook = useAvatarConfig({ active: canvasTool === 'avatar' });
   // Where the next entry into Avatar mode should place the character, when it
@@ -126,10 +130,18 @@ export function useCanvasAvatar({
   // Ephemeral: nothing is stored and nothing is replayed.
   const [avatarBurst, setAvatarBurst] = useState<{ reaction: Reaction; seed: number } | null>(null);
   const avatarBurstSeq = useRef(0);
-  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it.
-  const [avatarStatus, setAvatarStatus] = useAvatarStatus(canvasTool === 'avatar');
   // A character walks among what is drawn.
   const walkElements = elements;
+  // The seat you sat on as of the last render: the walk below returns it and takes the status it sets, so the status
+  // reads it one render behind, caught up during render (never an effect) as soon as the walk reports a change.
+  const [statusSeat, setStatusSeat] = useState<string | null>(null);
+  // Your status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"), cleared on leaving it, with the status a
+  // seat piece sets laid over it while you sit there (docs/specs/009-elements/workday-pieces.md "Statuses a piece sets").
+  const [avatarStatus, setAvatarStatus] = useSeatStatus(
+    canvasTool === 'avatar',
+    statusSeat,
+    walkElements,
+  );
   // The peers on this tab as the seat rules read them (docs/specs/009-elements/chair.md "Occupancy is presence"):
   // where they stand, what they sit on and their claim. Rebuilt only when presence changes.
   const seatPeers = useMemo(
@@ -185,6 +197,24 @@ export function useCanvasAvatar({
   // The social pieces (docs/specs/009-elements/social-pieces.md): the jukebox whose area you stand in plays for you,
   // and the arcade machine you stand at asks for a coin.
   useSocialPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  // Piece moments (docs/specs/009-elements/piece-moments.md): a tree, a pond or a fire you walk right up to now and
+  // then plays a small moment, on your screen alone.
+  usePieceMoments({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md): the reception desk you stand at welcomes you.
+  useWorkdayPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  if (avatar.seatedOn !== statusSeat) setStatusSeat(avatar.seatedOn);
+  // Who stands rather than sits in what they hold (workday-pieces.md "How each one walks"): the standing seats' ids,
+  // once per board change, so drawing each character is one look-up.
+  const standingSeats = useMemo(() => {
+    const ids = new Set<string>();
+    for (const el of walkElements)
+      if (el.type === 'shape' && isStandingSeatShape(el.shape)) ids.add(el.id);
+    return ids;
+  }, [walkElements]);
+  const sitsDown = useCallback(
+    (seatedOn: string | null | undefined) => !!seatedOn && !standingSeats.has(seatedOn),
+    [standingSeats],
+  );
   // The editor's Fit, entry centring and zoom anchor read the character's live feet through this.
   const noAvatarAtRef = useRef<(() => AvatarPoint | null) | null>(null);
   useAssignRef(props.avatarAtRef ?? noAvatarAtRef, avatar.readPos);
@@ -192,8 +222,10 @@ export function useCanvasAvatar({
   const playAvatarBurst = (reaction: Reaction) => {
     avatarBurstSeq.current += 1;
     setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
+    // A burst played, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
+    track('Canvas', 'Used', 'AvatarReaction');
   };
-  // The panel's Behaviour and Reactions on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
+  // The palette's Actions and React on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
   useAvatarActionKeys({
     active: canvasTool === 'avatar',
     onReaction: avatar.playReaction,
@@ -250,6 +282,18 @@ export function useCanvasAvatar({
   // Each sitter on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a
   // table rings the exact seat, and at their drawn size, so the name pill clears the highest head.
   const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
+  // The game pieces (docs/specs/009-elements/social-pieces.md "A game"): who sits at each and may play, and the room.
+  useTableGameScene({
+    tabId: props.activeTabId ?? '',
+    selfId: props.selfParticipant.id,
+    selfColor: props.selfParticipant.color,
+    seatedOn: avatar.seatedOn,
+    seatClaim: avatar.seatClaim,
+    takePart: !!props.takePart,
+    peers: props.remoteAvatars,
+    seatsOf,
+    send: props.onCallSignal,
+  });
   const selfScale = avatarScale(avatarLook.config.size);
   const chairSitters = useByValue(
     useMemo(() => {
@@ -342,6 +386,7 @@ export function useCanvasAvatar({
     loadFloors: props.onLoadPortalTabs,
     elements,
     self: props.selfParticipant,
+    selfConfig: avatarLook.config,
     remoteAvatars: props.remoteAvatars,
     tabPresence: props.tabPresence,
     avatar,
@@ -356,7 +401,12 @@ export function useCanvasAvatar({
   });
   const resolveFace = useCallback(
     (element: ShapeElement) =>
-      element.shape === 'directory' || element.shape === 'elevator'
+      // The Signpost and the Team Photo Wall (team-pieces.md) read the same store: the tab's places, who is here.
+      element.shape === 'directory' ||
+      element.shape === 'elevator' ||
+      element.shape === 'stairs' ||
+      element.shape === 'signpost' ||
+      element.shape === 'photo-wall'
         ? { targetName: null, wayfinding }
         : resolvePortal(element),
     [resolvePortal, wayfinding],
@@ -375,6 +425,7 @@ export function useCanvasAvatar({
     setAvatarBurst,
     setAvatarStatus,
     sittersOf,
+    sitsDown,
     speech,
     speechBubbles,
   };

@@ -2,7 +2,7 @@
 // (the tab's Concrete). Along the top, a Food Court, a Speaker Lounge and a Meeting Room, each closed with a Door onto
 // the hall; in the middle, the keynote Stage with Bring Focus and twelve chairs either side of a centre aisle; either
 // side of it, sponsor booths, twelve Office Pods in rows of three, aisles of at least 160 px between the rows and the
-// stage. The Walk In waits at the entrance below, with the Directory beside it. Built with campusPlan
+// stage. The Avatar Pad waits at the entrance below, with the Directory beside it. Built with campusPlan
 // (template-campus-parts.ts): indoors a Door opens onto the hall's open floor, so no Garden Path runs from it.
 //
 // Pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -90,6 +90,14 @@ const ROOMS: IndoorRoom[] = [
 const FLOOR: OfficePiece[] = [
   // The keynote: the stage in the middle, its chairs in front of it.
   { kind: 'stage', x: MID - 240, y: STAGE_Y, w: 480, h: 150, stageCameras: true },
+  // Its curtains and podium, and four pillars between the booths and the seats
+  // (docs/specs/009-elements/venue-pieces.md "In the templates").
+  { kind: 'stage-curtains', x: MID - 240, y: STAGE_Y - 36, w: 480 },
+  { kind: 'podium', x: MID + 80, y: STAGE_Y + 30 },
+  ...BOOTH_ROWS.flatMap((y) => [
+    { kind: 'pillar' as const, x: 668, y },
+    { kind: 'pillar' as const, x: W - 668 - 48, y },
+  ]),
   ...chairsAt([MID - AISLE_HALF - 232, MID - AISLE_HALF - 154, MID - AISLE_HALF - 76]),
   ...chairsAt([MID + AISLE_HALF, MID + AISLE_HALF + 78, MID + AISLE_HALF + 156]),
   // The sponsor booths, rows of three either side.
@@ -116,8 +124,13 @@ export function buildExpoHall(cx: number, cy: number): Element[] {
       subtitle:
         'A day at the show: the keynote on the stage, a sponsor in every booth, lunch in the food court.',
     },
-    gateAt: MID,
-    hint: 'Press Walk In (or W) and come in at the entrance. Step into a booth to talk to its sponsor.',
+    // In the aisle between the stage's two rows of chairs, the booths either side.
+    arrival: {
+      dx: 0,
+      dy: 364,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in front of the stage. Step into a booth to talk to its sponsor.',
+    },
     extra: (left, top) => [createShape('focus-button', left + MID + 260, top + STAGE_Y + 10)],
   });
 }

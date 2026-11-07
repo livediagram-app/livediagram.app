@@ -103,6 +103,17 @@ export async function designServesImage(
   return (await servableImageIds(env, designId, [imageId])).has(imageId);
 }
 
+// A Participant's placement claim (routes/images.ts, which checked they may add to the design): grant each of `ids`
+// that `personId` uploaded. Answers how many it granted.
+export async function grantOwnImages(
+  env: DesignEnv,
+  ids: readonly string[],
+  personId: string,
+  now: number,
+): Promise<number> {
+  return grantsFor(env).grantOwn(sqlOf(env), ids, personId, now);
+}
+
 // As the design pushes the images it places (design-outbox.ts): grant each one whose owner is entitled to place it
 // here right now (a teammate, or someone who wrote to it since the last push: `editorKeys`).
 export async function grantPlacedImages(

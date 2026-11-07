@@ -4,6 +4,8 @@
 @import '@liveworkspace/explorer/explorer.css';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
+/* Avatar mode's status signatures' loops (@liveworkspace/avatar, docs/specs/008-canvas/avatar-mode.md "Status"). */
+@import '@liveworkspace/avatar/status-effects.css';
 @import './qa-board.css';
 @import './canvas-motion.css';
 @import './motion-shape.css';
@@ -837,7 +839,9 @@
    replace it. */
 [data-iso] [data-element-id],
 [data-iso] [data-arrow-svg] {
-  translate: 0 0 calc(var(--iso-z, 0) * 0.01px);
+  /* The depth, named so a drag's offset written on the node keeps it (drag-ride-dom.ts). */
+  --ride-z: calc(var(--iso-z, 0) * 0.01px);
+  translate: 0 0 var(--ride-z);
 }
 
 /* The floating chrome gets its OWN compositing layer while isometric is on.
@@ -865,7 +869,8 @@ body:has([data-mode-message]) [data-yields-to-mode] {
    a frame is a backdrop its contents sit on, and it is often added after the
    things inside it, so paint order alone would float it over them. */
 [data-iso] [data-frame] {
-  translate: 0 0 -1px;
+  --ride-z: -1px;
+  translate: 0 0 var(--ride-z);
 }
 
 /* Arrows get the same treatment in the other direction: an arrow's SVG is
@@ -880,7 +885,8 @@ body:has([data-mode-message]) [data-yields-to-mode] {
 [data-iso] [data-arrow-svg] {
   /* Arrows keep their nudge ON TOP of the index stagger: a connector should
      cross above the boxes it joins, whatever order it was added in. */
-  translate: 0 0 calc(1px + var(--iso-z, 0) * 0.01px);
+  --ride-z: calc(1px + var(--iso-z, 0) * 0.01px);
+  translate: 0 0 var(--ride-z);
 }
 
 /* The selection grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize") takes one index past
@@ -1028,4 +1034,13 @@ html {
 ::view-transition-new(.start-mode) {
   animation-duration: var(--transition-duration-short);
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* A palette tile carried onto the canvas by the pointer (lib/palette-carry.ts, docs/specs/009-elements/
+ * furniture-facing.md "Turning while placing") shows the copy cursor a browser's own drag does, everywhere it goes,
+ * and selects no text on its way. */
+:root[data-palette-carry],
+:root[data-palette-carry] * {
+  cursor: copy !important;
+  user-select: none;
 }

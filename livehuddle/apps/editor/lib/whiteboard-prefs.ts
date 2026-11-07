@@ -1,5 +1,5 @@
 // The whiteboard's device-local tool settings (docs/specs/023-draw-mode/draw-mode.md "Pens"): the main,
-// second and third pens, which one is in hand, shape recognition and the eraser mode. The user's,
+// second and third pens, which one is in hand, and shape recognition. The user's,
 // not the board's: stored in this browser, never sent with the document.
 
 import {
@@ -30,12 +30,10 @@ export type WhiteboardPenId = 'main' | 'second' | 'third';
 export type WhiteboardPen = { id: WhiteboardPenId; colour: PenColour | null; width: number };
 // A marker width's preset name, stored in place of its px.
 export type PenWidthId = 'fine' | 'medium' | 'bold' | 'thick' | 'heavy' | 'broad';
-export type WhiteboardEraserMode = 'stroke' | 'partial';
 export type WhiteboardPrefs = {
   pens: WhiteboardPen[];
   activePenId: WhiteboardPenId;
   recognise: boolean;
-  eraserMode: WhiteboardEraserMode;
   // The cursor while a pen is in hand (lib/whiteboard-pen-cursor).
   cursor: PenCursorVariant;
 };
@@ -75,7 +73,6 @@ export const DEFAULT_WHITEBOARD_PREFS: WhiteboardPrefs = {
   ],
   activePenId: 'main',
   recognise: false,
-  eraserMode: 'stroke',
   cursor: DEFAULT_PEN_CURSOR,
 };
 
@@ -164,7 +161,6 @@ export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs {
       ? (o.activePenId as WhiteboardPenId)
       : DEFAULT_WHITEBOARD_PREFS.activePenId,
     recognise: o.recognise === true,
-    eraserMode: o.eraserMode === 'partial' ? 'partial' : 'stroke',
     cursor: PEN_CURSOR_VARIANTS.includes(o.cursor as PenCursorVariant)
       ? (o.cursor as PenCursorVariant)
       : DEFAULT_PEN_CURSOR,

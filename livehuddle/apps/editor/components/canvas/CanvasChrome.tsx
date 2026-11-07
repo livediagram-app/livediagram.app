@@ -16,6 +16,8 @@ const IdentityPrompt = dynamic(
 
 import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
+import { AvatarPalette } from '@/components/palette/AvatarPalette';
+import { stripPaletteFor } from '@/lib/avatar-palette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
@@ -28,18 +30,18 @@ import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
+import { StripMorph } from '@/components/palette/StripMorph';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import { atLeastInset } from '@livehuddle/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { CallDock } from '@/components/calls/CallDock';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
-import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
-import { WalkClusterButton } from '@liveworkspace/avatar/components/WalkClusterButton';
-import { AvatarModeIcon } from '@/components/palette/palette-icons';
-import { CallClusterButton } from '@/components/calls/CallClusterButton';
+import { useStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
+import { EditWalkStrip, EditWalkToggle } from '@/components/palette/EditWalkToggle';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -94,16 +96,6 @@ type ChromeExtras = {
   avatarStatus?: import('@liveworkspace/avatar/status').AvatarStatus | null;
   onSetAvatarStatus?: (status: import('@liveworkspace/avatar/status').AvatarStatus | null) => void;
   avatarSpeechCooling?: boolean;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, owned by useEraserConfig in
-  // Canvas (the erase gesture reads it too).
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, owned in editor state
   // (the paint lives there), plus a description of the loaded element.
   formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
@@ -222,19 +214,43 @@ export function CanvasChrome(props: CanvasChromeProps) {
     whiteboard: false,
   });
 
-  // The palette strip: an Editor's alone; a Viewer and a Participant have none
-  // (docs/specs/013-workspace/share-roles.md "A Participant walks").
-  const paletteShown = !readOnly;
   // Walking is being in the room, not editing it (docs/specs/008-canvas/avatar-mode.md "No editing chrome while
   // walking"): Undo, Redo and Tab Style step aside for as long as the mode is on.
   const walking = canvasTool === 'avatar';
-  // The strip only renders with the chrome up.
-  const stripShown = paletteShown && !chromeHidden;
+  // Start a Space in front of the canvas greys the toggle's Walk (avatar-mode.md "Not over a start").
+  const startOpen = useStartPanelOpen();
+  // Which strip, from the session's `can` (lib/avatar-palette, docs/specs/013-workspace/share-roles.md): the building
+  // palette, an Editor's; or, while walking, the avatar palette, every role's, a Participant's and a Viewer's always
+  // (docs/specs/008-canvas/avatar-mode.md "The avatar palette"). The Call dock, bottom centre, shows with it, so every
+  // role that can be in a call has the call's buttons. A session without a level (an embed's) reads as its read-only flag says.
+  const can = {
+    level: props.accessLevel ?? (readOnly ? 'view' : 'edit'),
+    alwaysWalks: props.alwaysWalks === true,
+  } as const;
+  const strip = stripPaletteFor({ can, readOnly, walking });
+  // The building strip stays mounted (hidden) while an Editor walks, so it comes back exactly as it was.
+  const buildMounted = stripPaletteFor({ can, readOnly, walking: false }) === 'build';
+  const paletteShown = strip !== null;
+  // The strip only renders with the chrome up, and the avatar palette never over Start a Space ("Not over a start").
+  const stripShown = paletteShown && !chromeHidden && !(strip === 'avatar' && startOpen);
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
   // the left of the strip's row, the strip beside it (no room for a corner card
-  // above a strip that needs the whole top row). A read-only visitor has no
-  // strip, so it keeps the corner there.
-  const menuInStrip = isMobile && paletteShown;
+  // above a strip that needs the whole top row). A session with no strip (an
+  // Editor on a locked tab, not walking) keeps the corner there.
+  const menuInStrip = isMobile && paletteShown && !(strip === 'avatar' && startOpen);
+  // The Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): an Editor's one switch
+  // between building and walking, first on whichever strip shows. Not in an embed, and not for a session held walking
+  // (share-roles.md "Always walking"). Walk greys while Start a Space is open; Edit always works.
+  // The Edit | Walk switch morphs the strip (toolbar-layout.md "Switching morphs the strip"): StripMorph, rendered
+  // below, captures the outgoing strip before React changes the DOM and plays the morph before the incoming one paints.
+  const editWalk = props.walkToggle ? (
+    <EditWalkToggle
+      walking={walking}
+      onEdit={() => props.onExitAvatarMode?.()}
+      onWalk={() => props.onSetCanvasTool('avatar')}
+      walkBlockedReason={startOpen ? 'Pick a template or close Start a Space to walk.' : undefined}
+    />
+  ) : undefined;
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
@@ -244,7 +260,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const { panelEls, explorerEl, collaborateEl, tidyUpPopoverEl, avatarPopoverEl, paletteTint } =
+  const { panelEls, explorerEl, collaborateEl, tidyUpPopoverEl, paletteTint } =
     useCanvasChromePanels({
       props,
       chromeHidden,
@@ -323,6 +339,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
   return (
     <>
+      <StripMorph walking={walking} wrapperRef={wrapperRef} />
       {/* The menu button's card at the top left (or a workspace frame's Back), first of the canvas's controls in the
           keyboard order (docs/specs/007-editor/toolbar-layout.md); on a phone it rides in the strip's row instead.
           An embed hides it with the rest of the chrome. */}
@@ -375,22 +392,44 @@ export function CanvasChrome(props: CanvasChromeProps) {
           against the canvas, so it renders outside the corner layer, as Layers does. */}
       {chromeAway ? null : collaborateEl}
       {tidyUpPopoverEl}
-      {avatarPopoverEl}
-      {paletteShown ? (
+      {/* While walking, the avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): ahead of the
+          hidden building strip, so whatever measures the strip finds this one. */}
+      {strip === 'avatar' && props.avatarConfig ? (
+        <AvatarPalette
+          hidden={!stripShown}
+          leading={menuInStrip ? explorerMenuButton : undefined}
+          editWalk={editWalk}
+          config={props.avatarConfig}
+          onChange={props.onChangeAvatarField}
+          onRandomise={props.onRandomiseAvatar}
+          onReaction={props.onAvatarReaction}
+          onBurst={props.onAvatarBurst}
+          shirt={selfParticipant?.color}
+          status={props.avatarStatus ?? null}
+          onSetStatus={props.onSetAvatarStatus}
+          onSendMessage={props.onSendAvatarMessage}
+          speechCooling={props.avatarSpeechCooling}
+        />
+      ) : null}
+      {buildMounted ? (
         <ToolbarPalette
-          // Hidden, not unmounted, while the chrome is away (an embed, welcome),
-          // so the chosen category lasts the page load.
-          hidden={chromeHidden}
+          // Hidden, not unmounted, while the chrome is away (an embed, welcome) or the avatar palette stands in
+          // for it, so the chosen category lasts the page load.
+          hidden={chromeHidden || strip !== 'build'}
           canvasTool={canvasTool}
-          onSetCanvasTool={props.onSetCanvasTool}
           onExitAvatarMode={props.onExitAvatarMode}
-          canvasEmpty={elements.length === 0}
+          editWalk={editWalk}
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
           themeTint={paletteTint}
-          leading={menuInStrip ? explorerMenuButton : undefined}
+          leading={menuInStrip && strip === 'build' ? explorerMenuButton : undefined}
           tabElements={elements}
         />
+      ) : null}
+      {/* An Editor on a locked tab has no building strip, so the toggle stands alone where the strip would be: walking
+          is still one press away (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"). */}
+      {strip === null && editWalk && !chromeHidden ? (
+        <EditWalkStrip>{editWalk}</EditWalkStrip>
       ) : null}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
@@ -403,10 +442,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <>
           {panelEls.collaborate}
           {panelEls.minimap}
-          {panelEls.eraser}
           {panelEls.format}
         </>
       )}
+
+      {/* The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons, bottom centre,
+          while the avatar palette shows. */}
+      {strip === 'avatar' && stripShown ? (
+        <CallDock
+          doNotDisturb={props.avatarStatus === 'dnd'}
+          onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
+        />
+      ) : null}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the
@@ -444,36 +491,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canUndo={canUndo}
                 canRedo={canRedo}
               />
-            ) : null}
-            {/* Walk (docs/specs/008-canvas/avatar-mode.md "The Walk button"): every role's one-press way in to Avatar
-                mode and back out, where the surface walks (not in an embed). */}
-            {props.walkButton ? (
-              <WalkClusterButton
-                walking={props.canvasTool === 'avatar'}
-                onToggle={() =>
-                  props.canvasTool === 'avatar'
-                    ? props.onExitAvatarMode?.()
-                    : props.onSetCanvasTool('avatar')
-                }
-                icon={<AvatarModeIcon size={16} />}
-              />
-            ) : null}
-            {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode
-                is on, for every role : it is the mode's one piece of chrome. */}
-            {props.canvasTool === 'avatar' ? (
-              <>
-                {/* Proximity audio (docs/specs/012-collaboration/proximity-audio.md): Join Audio, then the
-                    microphone and Leave, left of Avatar. Draws nothing while calls are off. */}
-                <CallClusterButton
-                  doNotDisturb={props.avatarStatus === 'dnd'}
-                  onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
-                />
-                <AvatarClusterButton
-                  popoverOpen={activeDockPanel === 'avatar'}
-                  onTogglePopover={(button) => handleDockButtonClick('avatar', button, true)}
-                  canSpeak={!!props.onSendAvatarMessage}
-                />
-              </>
             ) : null}
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor

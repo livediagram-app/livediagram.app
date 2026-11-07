@@ -4,7 +4,7 @@
 //   - marketing/media/logo/: the full mark and the lockup, light and dark
 //   - marketing/media/icons/: transparent PNGs at Google Drive's sizes, and
 //     white-tile PNGs (also copied to apps/marketing/public/ for the manifest)
-//   - apps/{help,community}/app/icon.png: the 256px tile, their favicon's PNG fallback
+//   - apps/help/app/icon.png: the 256px tile, its favicon's PNG fallback
 //   - apps/marketing/public/email/livediagram-mark-64.png: the transparent 64px mark
 //     the api's emails show beside the wordmark (2x their 28px slot)
 // Run via `pnpm icons:brand` from the repo root. apps/marketing/lib/brand-icon.test.ts
@@ -40,7 +40,7 @@ const write = (path, text) => {
 };
 
 const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
-for (const app of ['marketing', 'editor', 'help', 'community']) {
+for (const app of ['marketing', 'editor', 'help']) {
   write(`apps/${app}/app/icon.svg`, `${favicon}\n`);
 }
 for (const scheme of ['light', 'dark']) {
@@ -81,8 +81,8 @@ for (const size of [256, 512, 1024]) {
 for (const size of [256, 512]) {
   await shoot(size, '#ffffff', `apps/marketing/public/livediagram-icon-${size}.png`);
 }
-// The apps that serve their own icon under a basePath pair app/icon.svg with this PNG (Next emits both links).
-for (const app of ['help', 'community']) {
+// The app that serves its own icon under a basePath pairs app/icon.svg with this PNG (Next emits both links).
+for (const app of ['help']) {
   copyFileSync(
     `${root}apps/marketing/public/livediagram-icon-256.png`,
     `${root}apps/${app}/app/icon.png`,

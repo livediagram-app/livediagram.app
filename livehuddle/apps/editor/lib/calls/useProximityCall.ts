@@ -1,10 +1,12 @@
 'use client';
 
 // Proximity audio's door in the canvas (docs/specs/012-collaboration/proximity-audio.md "Who is in a call"): learns
-// whether calls are on, offers Join Audio or Listen In through the calls store, loads the call itself only when
-// somebody presses it, feeds it where everyone stands, and ends it on leaving the mode, the room or the page. The
-// camera and screen share buttons (docs/specs/012-collaboration/video-and-screen-bubbles.md) drive the same call, and
-// with no call to send on, a local preview only you see (the same spec's "Local preview"), which a call takes on join.
+// whether calls are on and joins by itself the moment you walk where there is a call (owner, 2026-11-07: "Joining
+// audio and leaving audio ... is friction"), hearing the people near you at once, your microphone muted until you
+// unmute. It loads the call's code then, feeds it where everyone stands, and ends it on leaving the mode, the room or
+// the page. The camera and screen share buttons (docs/specs/012-collaboration/video-and-screen-bubbles.md) drive the
+// same call, and with no call to send on, a local preview only you see (the same spec's "Local preview"), which a call
+// takes on join; the microphone has one too (local-mic.ts).
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { apiGetCapabilities } from '@/lib/api/capabilities';
 import type { CallsCaller } from '@/lib/api/calls';
@@ -12,13 +14,14 @@ import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
 import { canCapture, LocalPreview, type PreviewCapture } from './local-preview';
+import { LocalMic } from './local-mic';
 import type { ViewRect } from './bubbles';
 import type { Point } from './hearing';
 import type { CallScene, CallSignal, ProximityCall } from './proximity-call';
 import type { CallStage } from './stage';
 import type { CallZone } from './zones';
 
-/** The call's code, loaded on the first Join press (blueprint "Performance and limits"). */
+/** The call's code, loaded when walking first joins a call (blueprint "Performance and limits"). */
 export const loadProximityCall = () => import('./proximity-call');
 
 export type ProximityCallDeps = {
@@ -51,6 +54,20 @@ export type ProximityCallDeps = {
 };
 
 const NO_ZONES: readonly CallZone[] = [];
+
+/**
+ * A call joined without a press (walking in) starts its audio suspended, as browsers keep sound from a page until it
+ * is touched: the next press or key anywhere resumes it. Already running (the join came from a press): nothing to do.
+ */
+function resumeOnGesture(context: AudioContext): void {
+  if (context.state !== 'suspended') return;
+  const events = ['pointerdown', 'keydown', 'touchend'] as const;
+  const resume = () => {
+    for (const e of events) window.removeEventListener(e, resume, true);
+    if (context.state === 'suspended') void context.resume().catch(() => {});
+  };
+  for (const e of events) window.addEventListener(e, resume, true);
+}
 const NO_STAGES: readonly CallStage[] = [];
 
 // Whether this deployment has calls, paused or not; the kill switch's mode goes to the store (Calls Paused).
@@ -80,6 +97,13 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   const latest = useRef(deps);
   // The camera and screen with no call to send them (video-and-screen-bubbles.md "Local preview"): one per canvas.
   const [preview] = useState(() => new LocalPreview(deps.capture));
+  // The microphone with no call to send it on (proximity-audio.md "Local preview"): one per canvas.
+  const [localMic] = useState(() => new LocalMic(deps.capture?.getUserMedia));
+  // Join, for walking in (below) as well as the buttons' retry.
+  const joinRef = useRef<(() => void) | null>(null);
+  // Bumped by every join and every end, so a call whose code arrives after you left (the mode, the tab, the canvas)
+  // is never started: walking in joins at once, and leaving again before the code loads is common.
+  const joinSeq = useRef(0);
 
   const scene: CallScene = useMemo(
     () => ({
@@ -109,12 +133,14 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       canShare,
       canPreviewCamera: previewable && (!!deps.capture?.getUserMedia || canCapture('camera')),
       canPreviewScreen: previewable && (!!deps.capture?.getDisplayMedia || canCapture('screen')),
+      canPreviewMic: previewable && (!!deps.capture?.getUserMedia || canCapture('camera')),
     });
   }, [available, deps.canSpeak, canShare, previewable, deps.capture]);
 
   // The buttons' actions, stable for the life of the canvas: each reads the latest props through the ref.
   useEffect(() => {
     const stop = () => {
+      joinSeq.current++;
       callRef.current?.stop();
       callRef.current = null;
     };
@@ -123,46 +149,68 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       const call = callRef.current;
       return call && !call.ended && callSelf().phase === 'live' ? call : null;
     };
-    setCallActions({
-      join: () => {
-        const { caller, send, canSpeak, canShare } = latest.current;
-        if (!caller || !send) return;
-        if (callRef.current) {
-          // Join again after a failure, or after a pause ended the call, starts fresh; a running call is left alone.
-          if (!callRef.current.ended && callSelf().phase !== 'error') return;
-          callRef.current.stop();
-          callRef.current = null;
-        }
-        // Made inside the press, so the browser lets it play.
-        const context = new AudioContext();
-        setCallSelf({ phase: 'joining' });
-        track('Canvas', 'Used', canSpeak ? 'AudioJoin' : 'AudioListen');
-        void loadProximityCall()
-          .then(({ ProximityCall }) => {
-            const call = new ProximityCall({
-              caller,
-              canSpeak,
-              canShare: canShare === true,
-              context,
-              send: (signal) => latest.current.send?.(signal),
-              onShareStopped: (by) => latest.current.onShareStopped?.(by),
-              preview,
-            });
-            callRef.current = call;
-            call.setDoNotDisturb(latest.current.doNotDisturb === true);
-            call.update(sceneRef.current);
-            return call.start();
-          })
-          .catch((error: unknown) => {
-            debugLog('[calls] load failed', error);
+    const join = () => {
+      const { caller, send, canSpeak, canShare } = latest.current;
+      if (!caller || !send) return;
+      if (callRef.current) {
+        // Join again after a failure, or after a pause ended the call, starts fresh; a running call is left alone.
+        if (!callRef.current.ended && callSelf().phase !== 'error') return;
+        callRef.current.stop();
+        callRef.current = null;
+      }
+      // The call takes the microphone over from the preview, muted, as every call starts.
+      localMic.stop();
+      // Made inside a press where there is one (a retry), so the browser lets it play; walking in waits for the next.
+      const context = new AudioContext();
+      resumeOnGesture(context);
+      setCallSelf({ phase: 'joining' });
+      track('Canvas', 'Used', canSpeak ? 'AudioJoin' : 'AudioListen');
+      const seq = ++joinSeq.current;
+      void loadProximityCall()
+        .then(({ ProximityCall }) => {
+          if (seq !== joinSeq.current) {
             void context.close().catch(() => {});
-            setCallSelf({ phase: 'error' });
+            return;
+          }
+          const call = new ProximityCall({
+            caller,
+            canSpeak,
+            canShare: canShare === true,
+            context,
+            send: (signal) => latest.current.send?.(signal),
+            onShareStopped: (by) => latest.current.onShareStopped?.(by),
+            preview,
           });
-      },
-      leave: stop,
+          callRef.current = call;
+          call.setDoNotDisturb(latest.current.doNotDisturb === true);
+          call.update(sceneRef.current);
+          return call.start();
+        })
+        .catch((error: unknown) => {
+          debugLog('[calls] load failed', error);
+          void context.close().catch(() => {});
+          if (seq === joinSeq.current) setCallSelf({ phase: 'error' });
+        });
+    };
+    joinRef.current = join;
+    setCallActions({
+      join,
       toggleMute: () => {
-        callRef.current?.toggleMute();
+        const call = liveCall();
+        if (call) {
+          call.toggleMute();
+          track('UI', 'Changed', 'AudioMute');
+          return;
+        }
+        // A call on its way: its microphone is not there to unmute yet.
+        if (callRef.current && !callRef.current.ended) return;
+        if (localMic.on || callSelf().previewMic === 'starting') {
+          localMic.stop();
+          return;
+        }
+        if (!callSelf().canPreviewMic) return;
         track('UI', 'Changed', 'AudioMute');
+        void localMic.start();
       },
       toggleCamera: () => {
         const self = callSelf();
@@ -202,30 +250,40 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       lowerHand: () => callRef.current?.lowerHand(),
     });
     return () => {
+      joinRef.current = null;
       stop();
       preview.stopAll();
+      localMic.stop();
       resetCallSelf();
     };
-  }, [preview]);
+  }, [preview, localMic]);
 
   // Leaving the mode, the room or the tab ends the call (the spec's "Who is in a call").
   useEffect(() => {
     if (available) return;
+    joinSeq.current++;
     callRef.current?.stop();
     callRef.current = null;
+    // A join still loading when the call went away reads off, not Connecting.
+    if (callSelf().phase === 'joining') setCallSelf({ phase: 'off' });
   }, [available]);
   // Leaving the mode (or losing the right to take part) stops a preview too; a tab change ends both.
   useEffect(() => {
-    if (!previewable) preview.stopAll();
-  }, [previewable, preview]);
+    if (previewable) return;
+    preview.stopAll();
+    localMic.stop();
+  }, [previewable, preview, localMic]);
   const tabRef = useRef(deps.tabId);
   useEffect(() => {
     if (tabRef.current === deps.tabId) return;
     tabRef.current = deps.tabId;
+    joinSeq.current++;
     callRef.current?.stop();
     callRef.current = null;
+    if (callSelf().phase === 'joining') setCallSelf({ phase: 'off' });
     preview.stopAll();
-  }, [deps.tabId, preview]);
+    localMic.stop();
+  }, [deps.tabId, preview, localMic]);
 
   useEffect(() => {
     callRef.current?.update(scene);
@@ -235,4 +293,14 @@ export function useProximityCall(deps: ProximityCallDeps): void {
   useEffect(() => {
     callRef.current?.setDoNotDisturb(doNotDisturb);
   }, [doNotDisturb]);
+
+  // Walking where there is a call joins it (proximity-audio.md "Who is in a call"): on arriving, and again after a tab
+  // change ended the last one. A failure or a pause waits for a press (the control's retry), never a loop.
+  useEffect(() => {
+    if (!available) return;
+    if (callRef.current && !callRef.current.ended) return;
+    const phase = callSelf().phase;
+    if (phase === 'error' || phase === 'joining' || callSelf().mode === 'off') return;
+    joinRef.current?.();
+  }, [available, deps.tabId]);
 }

@@ -4,26 +4,27 @@ Derived from [Office](../office.md).
 
 ## Files
 
-| File                                                     | Role                                                                                      |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `packages/document/src/office.ts`                        | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's parts and walls |
-| `packages/document/src/seating.ts`                       | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each  |
-| `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                        |
-| `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                     |
-| `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                      |
-| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                               |
-| `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                  |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                               |
-| `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                  |
-| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                        |
-| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
-| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
-| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                 |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
-| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
-| `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                     |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                      |
+| File                                                     | Role                                                                                                   |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/office.ts`                        | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's parts and walls              |
+| `packages/document/src/seating.ts`                       | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each               |
+| `packages/document/src/furniture-facing.ts`              | Which pieces turn (all but the room and plant) and the turn ([Turning furniture](furniture-facing.md)) |
+| `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                                     |
+| `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                                  |
+| `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                                   |
+| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                                            |
+| `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                               |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                                            |
+| `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                               |
+| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                                     |
+| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                             |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                                     |
+| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                              |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                                          |
+| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                                      |
+| `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                                      |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                                  |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                                   |
 
 ## Domain and naming
 
@@ -33,7 +34,7 @@ Derived from [Office](../office.md).
 | Floor piece  | `isFloorShape`                       | Room and rug: placed at the back, never block, never rung |
 | Doorway      | `RoomDoor` (`ShapeElement.roomDoor`) | `'n' \| 'e' \| 's' \| 'w' \| 'none'`; absent = `'s'`      |
 | Wall         | `roomWalls(el)` → `WallSegment[]`    | Blocking lines, broken at the doorway                     |
-| Footprint    | `officeFootprint(el)`                | The blocking box of a plant or bookshelf                  |
+| Footprint    | `officeFootprint(el)`                | The blocking box of a plant or bookshelf, at its facing   |
 | Drink        | `DrinkKind`, `drinkFrom(kind)`       | `'water'` (cooler), `'coffee'` (machine)                  |
 | Held drink   | `AvatarPresence.holding`             | The drink in a character's hand, or none                  |
 | Table seat   | `TableSeat`                          | `{ u, v, facing }`: a seat and its sitter's facing        |
@@ -49,8 +50,8 @@ Derived from [Office](../office.md).
 - **Destinations**: `elementUnderFeet` skips `isFloorShape`, `plant` and `bookshelf`. A meeting table and the
   machines remain destinations.
 - **Sitting at the table**: `seatPoints` (`@liveworkspace/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
-  their `facing` (`MEETING_TABLE_VIEW.tableSeats` spreads them); `Canvas.onWalkIntoChair` sits with `seatFor`, which
-  takes `seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(el)]`. `turnedSeatingBox` never turns a table.
+  their `facing` turned to the table's (`SEAT_VIEWS['meeting-table']`, [Turning furniture](furniture-facing.md));
+  `Canvas.onWalkIntoChair` sits with `seatFor`, which takes `seat.facing`.
 - **Drinks**: `arriveOn` calls `onWalkIntoDrink(el)` when `drinkFrom(el.shape)`. `Canvas` then calls
   `avatar.giveDrink(kind)`, bumps `machineAnswer` for that element, and tracks the use. `giveDrink` sets
   `holdingRef`, sets `drink = { kind, seq + 1 }` and publishes an idle snapshot; an effect keyed on `drink` puts

@@ -33,6 +33,9 @@ export type CommandContext = {
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;
+  // True when the selection (single or multi) holds a piece of furniture that turns
+  // (docs/specs/009-elements/furniture-facing.md): gates Rotate Left and Rotate Right.
+  selectionTurns?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -52,15 +55,10 @@ export type CommandContext = {
   // The editor in a workbench (livediagram/docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table; livehuddle no longer passes it):
   // no ownership powers, so neither Share nor Delete document.
   workbench?: boolean;
-  // The canvas tool in force, so the command for the CURRENT tool is dropped
-  // (offering "Hand tool" while holding the hand does nothing).
+  // The canvas tool in force, so the command for the CURRENT side (Edit or Walk) is dropped.
   canvasTool: string;
-  // Nothing drawn yet. Every tool but Select and Hand acts on existing
-  // content, so they disable on an empty canvas exactly as the palette's
-  // tool dropdown disables them.
-  canvasEmpty: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
-  // offers none of them: no selection verbs, no layout cleanup, no Eraser or Format.
+  // offers none of them: no selection verbs, no layout cleanup.
   tabLocked?: boolean;
 };
 
@@ -73,6 +71,8 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
+  // A quarter turn of the selection's furniture: +1 clockwise, -1 anticlockwise.
+  turn: (quarters: 1 | -1) => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;
@@ -100,63 +100,25 @@ export type CommandHandlers = {
   setTool: (tool: string) => void;
 };
 
-// The canvas tools reachable from search, in the tool dropdown's own order.
-// `ids` here MUST stay in step with buildCanvasToolOptions (a test pins it):
-// the whole point is that a tool the palette offers is also typeable, and a
-// stale id would hand the setter a tool that does not exist.
-//
-// Only the id + the words are restated. The gating (empty canvas, mobile,
-// read-only) is expressed once, below.
-export const CANVAS_TOOLS: {
-  id: string;
-  name: string;
-  keywords: string;
-  // Acts on existing content, so it goes away on an empty canvas.
-  needsContent?: boolean;
-  // Changes the document, so a view-only visitor never sees it.
-  mutates?: boolean;
-  // Edits the tab's elements, so it goes on a locked tab, as in the dropdown.
-  editsElements?: boolean;
-}[] = [
-  { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
-  { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
-  // Avatar mode is first-class here (docs/specs/008-canvas/avatar-mode.md "Where it lives"): findable as the picker
-  // offers it, on every viewport and an empty board, for every role (it writes nothing).
+// The two sides of the Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"), as Search
+// offers them: the one not in force. Neither writes to the document, so both stay for a read-only Editor. There are no
+// other tool commands: Hand, Eraser and Format Painter left with the Selection Mode picker (the Format Painter starts
+// from the selection toolbar). A session held walking never gets Edit to work (useCanvasTool's hold refuses it).
+export const CANVAS_TOOLS: { id: string; name: string; keywords: string }[] = [
+  {
+    id: 'select',
+    name: 'Edit',
+    keywords: 'edit build select pointer arrow cursor pick e v',
+  },
   {
     id: 'avatar',
-    name: 'Avatar Mode',
-    keywords: 'avatar walk walking character person figure move around office room meet hop',
-  },
-  {
-    id: 'eraser',
-    name: 'Eraser Tool',
-    keywords: 'eraser erase rub out delete remove e',
-    needsContent: true,
-    mutates: true,
-    editsElements: true,
-  },
-  {
-    id: 'format',
-    name: 'Format Painter',
-    keywords: 'format painter copy style paste style match appearance brush',
-    needsContent: true,
-    mutates: true,
-    editsElements: true,
+    name: 'Walk',
+    keywords: 'walk walking avatar mode character person figure move around office room meet hop w',
   },
 ];
 
-// The tool switches, minus whichever tool is already in force. Grouped with
-// the view-safe commands because most of them only change how you LOOK at the
-// canvas; the two that change it (eraser, format painter) opt in via
-// `mutates` and drop out for a read-only visitor.
 function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
-  return CANVAS_TOOLS.filter(
-    (t) =>
-      t.id !== ctx.canvasTool &&
-      !(t.needsContent && ctx.canvasEmpty) &&
-      !(t.mutates && ctx.isReadOnly) &&
-      !(t.editsElements && ctx.tabLocked),
-  ).map((t) => ({
+  return CANVAS_TOOLS.filter((t) => t.id !== ctx.canvasTool).map((t) => ({
     id: `tool:${t.id}`,
     name: t.name,
     keywords: `tool mode switch ${t.keywords}`,

@@ -369,7 +369,8 @@ describe('DocumentRoom hello frame role forcing', () => {
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
     const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
-    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT });
+    // `leanAvatars`: docs/specs/015-api/api.md "A busy room bounds its presence fan-out".
+    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, leanAvatars: true });
   });
 
   it('adds the live build id when the deploy set one', () => {
@@ -382,7 +383,12 @@ describe('DocumentRoom hello frame role forcing', () => {
     room.acceptSession(asWs(ws), 'edit');
     sendFrame(room, ws, { kind: 'hello', participant: { id: 'p', name: 'P', color: '#000' } });
     const sent = ws.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
-    expect(sent).toContainEqual({ kind: 'format', format: DOCUMENT_FORMAT, build: 'abc123' });
+    expect(sent).toContainEqual({
+      kind: 'format',
+      format: DOCUMENT_FORMAT,
+      build: 'abc123',
+      leanAvatars: true,
+    });
   });
 
   it('replaces the client participant id with a server-assigned ephemeral id', () => {
@@ -624,10 +630,43 @@ describe('DocumentRoom op-role enforcement', () => {
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
   // `call-session` too: the room checks and keeps it, never relays it (document-room-calls.test.ts).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'calls-check', 'call-session', 'avatar-knock'];
+  // A knock and a reception bell are throttled per sender and need their room or desk (both pinned below).
+  const ROOM_DECIDED_PRESENCE_KINDS = [
+    'follow',
+    'calls-check',
+    'call-session',
+    'avatar-knock',
+    'avatar-bell',
+  ];
   // Speaking is taking part (docs/specs/008-canvas/avatar-mode.md "Who may speak"): a Participant's, never a
   // Viewer's (docs/specs/013-workspace/share-roles.md).
   const PARTICIPANT_PRESENCE_KINDS = ['avatar-say'];
+  // Playing a game at a piece is taking part too (docs/specs/009-elements/social-pieces.md "Share roles"), pinned just
+  // below; the paddle is a tab-scoped sample.
+  const GAME_PRESENCE_KINDS = ['game-input', 'game-event'];
+  it("drops a Viewer's game paddle and moments and relays a Participant's to the tab", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    editor.ws.sent.length = 0;
+    const input = { kind: 'game-input', tabId: 't', pieceId: 'table-1', seat: 1, axis: 0.4 };
+    const miss = {
+      kind: 'game-event',
+      tabId: 't',
+      pieceId: 'table-1',
+      seat: 1,
+      game: 'ping-pong',
+      match: 'm1',
+      seq: 2,
+      event: 'miss',
+      score: [1, 0],
+    };
+    for (const op of [input, miss]) sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+    for (const op of [input, miss]) sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(2);
+  });
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -696,6 +735,7 @@ describe('DocumentRoom op-role enforcement', () => {
       !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
       !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
       !PARTICIPANT_PRESENCE_KINDS.includes(k) &&
+      !GAME_PRESENCE_KINDS.includes(k) &&
       !CALL_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
@@ -739,6 +779,31 @@ describe('DocumentRoom op-role enforcement', () => {
     });
     expect(opsReceived(viewer.ws)).toHaveLength(1);
     expect(opsReceived(bystander.ws)).toHaveLength(0);
+  });
+
+  // A reception bell (docs/specs/009-elements/workday-pieces.md "The wire"): a Viewer walks too, so it may ring; once
+  // per 5 seconds per sender, to everyone, who each decide whether they stand in earshot.
+  it("relays a Viewer's reception bell to everyone once per 5 seconds, and nothing malformed", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(1_000_000));
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const viewer = connect(room, 'viewer', 'view');
+      const bystander = connect(room, 'bystander', 'edit');
+      for (const c of [editor, viewer, bystander]) c.ws.sent.length = 0;
+      const bell = { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' };
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'avatar-bell', tabId: 't' } });
+      expect(opsReceived(editor.ws)).toHaveLength(1);
+      expect(opsReceived(bystander.ws)).toHaveLength(1);
+      vi.setSystemTime(new Date(1_005_001));
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      expect(opsReceived(editor.ws)).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room

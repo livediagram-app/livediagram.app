@@ -58,7 +58,6 @@ type Props = {
   input: FormulaInput;
   pointRef: PointRef;
   peers: readonly SheetPeer[];
-  fontFamily?: string;
   // The sheet's zoom while it covers the canvas (sheet-zoom.ts); 1 elsewhere.
   zoom?: number;
 };
@@ -66,15 +65,7 @@ type Props = {
 // Find's matches: a soft yellow, as a spreadsheet marks them.
 const FIND_HIGHLIGHT = '#facc15';
 
-export function SheetGrid({
-  elementId,
-  actions,
-  input,
-  pointRef,
-  peers,
-  fontFamily,
-  zoom = 1,
-}: Props) {
+export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1 }: Props) {
   const bridge = useSheetsBridgeContext();
   const c = useSheetController();
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -464,7 +455,6 @@ export function SheetGrid({
                 scroll={c.scroll}
                 palette={c.palette}
                 locale={c.locale}
-                fontFamily={fontFamily}
               />
               {c.interactive ? (
                 <SheetSelectionLayer
@@ -487,7 +477,7 @@ export function SheetGrid({
               <SheetRuleLayer actions={actions} />
               <SheetCellComments hover={pointer.hover} />
               {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
-              <SheetChartsLayer fontFamily={fontFamily} />
+              <SheetChartsLayer />
               {pointer.preview?.kind === 'fill' ? (
                 <SheetSelectionLayer
                   geometry={c.geometry}
@@ -535,7 +525,7 @@ export function SheetGrid({
               style={{ left: c.geometry.headW, top: c.geometry.headH }}
             >
               <div role="gridcell" aria-colindex={c.selection.active.c + 1}>
-                <SheetCellEditor input={input} fontFamily={fontFamily} />
+                <SheetCellEditor input={input} />
               </div>
             </div>
             {/* A finger held on the cells (useSheetTouch): the hold ring, portalled to the finger. */}

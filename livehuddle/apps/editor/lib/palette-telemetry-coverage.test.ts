@@ -50,19 +50,15 @@ describe('palette telemetry coverage', () => {
   });
 
   it('has no stale token that no shape kind can produce', () => {
-    // Tokens that aren't shape kinds at all — tools, components, devices and
-    // the icon buckets — are listed here so the check below can tell a
-    // legitimately non-shape token from a typo'd shape one.
-    const nonShape = new Set<string>([
-      ...PALETTE_TELEMETRY_TYPES.tools,
-      ...PALETTE_TELEMETRY_TYPES.components,
-      ...PALETTE_TELEMETRY_TYPES.devices,
-      ...PALETTE_TELEMETRY_TYPES.icons,
-    ]);
-    const producible = new Set([...SHAPE_KINDS].map(tokenForShapeKind));
-    const stale = PALETTE_TELEMETRY_TYPES.shapes.filter(
-      (token) => !producible.has(token) && !nonShape.has(token),
-    );
+    // Every Space category's token is a piece on the floor, so each must be one a shape kind produces: a typo'd or
+    // removed one would rank a piece nobody can place. Write's text, notes and stickers are not shape kinds, and
+    // the retired kinds are kept only so a stored or pasted one is still named, so neither is checked here.
+    const { write: _write, retired: _retired, ...spaceCategories } = PALETTE_TELEMETRY_TYPES;
+    // A room drawn with the Room Builder is a Room, but counted apart (useShapeDrawing's `CustomRoom`).
+    const producible = new Set([...[...SHAPE_KINDS].map(tokenForShapeKind), 'CustomRoom']);
+    const stale = Object.values(spaceCategories)
+      .flat()
+      .filter((token) => !producible.has(token));
     expect(stale).toEqual([]);
   });
 

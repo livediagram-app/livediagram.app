@@ -6,19 +6,18 @@ There is a second environment, **staging**, which does deploy on its own: when C
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                                                                                |
-| ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/marketing` | `livediagram-marketing` | Static assets only (Next.js `output: 'export'`).                                                                                    |
-| `apps/editor`    | `livediagram-editor`    | Static assets + a tiny path-rewrite worker.                                                                                         |
-| `apps/help`      | `livediagram-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                                              |
-| `apps/community` | `livediagram-community` | Static assets plus a small worker for post metadata and the sitemap, bound to the api ([Community](../025-community/community.md)). |
-| `apps/api`       | `livediagram-api`       | Worker (Durable Objects; no database or bucket of its own).                                                                         |
-| `apps/mcp`       | `livediagram-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                       |
-| `apps/router`    | `livediagram-router`    | Worker (service bindings to marketing, editor, api, help and community).                                                            |
+| App              | Cloudflare Worker       | Type                                                                          |
+| ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `apps/marketing` | `livediagram-marketing` | Static assets only (Next.js `output: 'export'`).                              |
+| `apps/editor`    | `livediagram-editor`    | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/help`      | `livediagram-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
+| `apps/api`       | `livediagram-api`       | Worker (Durable Objects; no database or bucket of its own).                   |
+| `apps/mcp`       | `livediagram-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
+| `apps/router`    | `livediagram-router`    | Worker (service bindings to marketing, editor, api and help).                 |
 
 `apps/cli` is the npm CLI and deploys nowhere. Publishing is a manual step outside CI: the CLI goes to npm by hand, and `livediagram/server.json` is listed on the official MCP Registry by hand, or by the root `mcp-registry.yml` workflow started by hand ([MCP server §4.16](../015-api/mcp-server.md#416-registry-listing)). CI builds and packs the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The community worker serves its static export under `/community` with a small script (`apps/community/worker/index.ts`) that runs first for only the post page and the sitemap, reading from the api through an `API` service binding ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livediagram.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). There is no Community Worker: `/community` is liveworkspace.app's page, whose head and sitemap the router fills ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livediagram.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, Durable Object bindings and the account it deploys to (`account_id`, the liveworkspace account). Secrets **never** go in `wrangler.toml`: they are set on each worker with `wrangler secret put`. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -68,15 +67,15 @@ Until 2026-11-06 every commit on `main` ran to the end in a group of its own. On
 The root `deploy.yml` (reusable) deploys one environment, and two thin callers run it, so both environments run identical steps:
 
 - `deploy-staging.yml` runs when CI passes for a push to `main`, and deploys that commit to every Worker's `[env.staging]`.
-- `deploy-production.yml` is run by hand: **Deploy Production** in the Actions tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs (the `deployed/staging` tag); a `ref` ships another commit.
+- `deploy-production.yml` is run by hand: **Deploy Production** in the Actions tab, or `gh workflow run deploy-production.yml`. By default it ships exactly what staging runs (its deploy record); a `ref` ships another commit.
 
-**Only what changed.** Each environment remembers the commit it last deployed in full, as the tag `deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since then, with everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them. A livediagram Worker none of whose files or dependencies changed is left as it is. With no tag yet, with **all**, or on a rollback, every Worker deploys. The tag moves only when every Worker succeeded, so a failed one is retried by the next deploy.
+**Only what changed.** Each environment remembers the commit it last deployed in full, as a GitHub deployment to its environment with the task `record` ([docs/ci.md](../../../../docs/ci.md) "Deploys"). A deploy asks Turborepo which workspaces changed since then, with everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and deploys the Workers among them. A livediagram Worker none of whose files or dependencies changed is left as it is. With no record yet, with **all**, or on a rollback, every Worker deploys. The record moves only when every Worker succeeded, so a failed one is retried by the next deploy.
 
 **Order.** Three tiers, each waiting for the one before, and a failing tier stops the ones after it:
 
 1. **Services and apis**: `livediagram-api`.
-2. **Sites and MCP**: `livediagram-marketing`, `livediagram-editor`, `livediagram-help`, `livediagram-community` and `livediagram-mcp`, so a new editor never calls an api that lacks its routes, and the community's and mcp's bindings to the api exist.
-3. **Routers**: `livediagram-router`, whose service bindings target the five workers above.
+2. **Sites and MCP**: `livediagram-marketing`, `livediagram-editor`, `livediagram-help` and `livediagram-mcp`, so a new editor never calls an api that lacks its routes, and the mcp's binding to the api exists.
+3. **Routers**: `livediagram-router`, whose service bindings target the api, marketing, editor and help workers above.
 
 **One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livediagram's sites and MCP in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars; on staging, the staging MCP origin too). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 
@@ -86,7 +85,7 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 
 There is no database migration step: each Durable Object makes its own schema the first time it is used. The apps' workers deploy separately, so old and new versions briefly serve side by side. The deploy keeps that window short and recoverable:
 
-- The api deploys a tier before the editor, so a new editor never calls an api that lacks its routes, and the router deploys last, after the five it binds.
+- The api deploys a tier before the editor, so a new editor never calls an api that lacks its routes, and the router deploys last, after the four it binds.
 - The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)), and a save that fails in the window is retried on its own ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
 
 ## Hosted profile
@@ -121,7 +120,7 @@ From the router:
 
 - `/api/*` → api worker (REST + WebSocket).
 - `/live` and `/live/<anything>` → the editor (the router strips the `/live` prefix before forwarding).
-- `/help` → help centre; `/community` → Community (both prefix-stripped).
+- `/help` → help centre (prefix-stripped); `/community` → liveworkspace.app's Community page, address bar unchanged ([Router app](router-app.md)).
 - `/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://www.liveworkspace.app/telemetry?app=livediagram.app`.
 - Everything else → marketing.
 

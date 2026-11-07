@@ -167,7 +167,7 @@ export const CanvasElementList = memo(function CanvasElementList({
     // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
     // changing restyles this node and not the board beneath it.
     // Its parent holds every node a riding element's offset is written to (useLayerDragPreview).
-    <div data-element-plane="" className="contents" ref={attachPlane}>
+    <div data-element-plane="" data-ride-plane="contents" className="contents" ref={attachPlane}>
       {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
         <PreviewedElement
           key={listed.id}

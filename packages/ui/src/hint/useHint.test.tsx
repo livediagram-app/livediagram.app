@@ -317,6 +317,78 @@ describe('useHint, pressing', () => {
   });
 });
 
+describe('useHint, a pointer already resting on the trigger', () => {
+  it('opens on the first move over a trigger that mounted under the pointer (no pointerenter came)', () => {
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerMove(button(), mouse);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('does nothing more on later moves once the pointer is known to be over it', () => {
+    render(<Harness kind="tooltip" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.pointerMove(button(), mouse);
+    fireEvent.pointerMove(button(), mouse);
+    advance(TOOLTIP_OPEN_DELAY_MS - 1);
+    expect(tip()).toBeNull();
+    advance(1);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('does not reopen from a move after a press dismissed it', () => {
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.pointerDown(button(), mouse);
+    fireEvent.pointerMove(button(), mouse);
+    expect(tip()).toBeNull();
+  });
+
+  it('ignores a touch move', () => {
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerMove(button(), touch);
+    expect(tip()).toBeNull();
+  });
+});
+
+describe('useHint, after a press', () => {
+  it('shows again once the pointer has left and come back, though the control kept focus', () => {
+    focusVisible(true);
+    render(<Harness kind="hover-card" />);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    fireEvent.focus(button());
+    fireEvent.pointerDown(button(), mouse);
+    expect(tip()).toBeNull();
+    fireEvent.pointerLeave(wrapper(), mouse);
+    fireEvent.pointerEnter(wrapper(), mouse);
+    expect(tip()).not.toBeNull();
+  });
+
+  it('shows again after the hint closed under the pointer (its surface sent no leave)', () => {
+    render(
+      <>
+        <Harness kind="hover-card" />
+        <Harness kind="hover-card" />
+      </>,
+    );
+    const [first, second] = screen.getAllByTestId('wrapper') as [HTMLElement, HTMLElement];
+    fireEvent.pointerEnter(first, mouse);
+    // Onto the first hint's surface, then the second trigger takes the slot and closes it under the pointer.
+    fireEvent.pointerLeave(first, mouse);
+    fireEvent.pointerEnter(screen.getByRole('tooltip'), mouse);
+    fireEvent.pointerEnter(second, mouse);
+    fireEvent.pointerLeave(second, mouse);
+    advance(HINT_CLOSE_GRACE_MS);
+    // Back on the first trigger: pressed (dismissed), left and entered again.
+    const firstButton = screen.getAllByRole('button')[0] as HTMLElement;
+    fireEvent.pointerEnter(first, mouse);
+    fireEvent.pointerDown(firstButton, mouse);
+    expect(screen.queryAllByRole('tooltip')).toHaveLength(0);
+    fireEvent.pointerLeave(first, mouse);
+    fireEvent.pointerEnter(first, mouse);
+    expect(screen.getAllByRole('tooltip')).toHaveLength(1);
+  });
+});
+
 describe('useHint, touch long press', () => {
   it('opens after the long press, eats the click that follows, and lingers after lift', () => {
     const onClick = vi.fn();

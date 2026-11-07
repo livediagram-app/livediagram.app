@@ -101,10 +101,11 @@ owner 2026-11-05): before, it added stickies, text and images and wrote on other
 
 Piece fields a Participant may change, on anyone's element:
 
-| Element                | Fields                                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| `shape` `door`         | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
-| `shape` `notice-board` | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
+| Element                 | Fields                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `shape` `door`          | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
+| `shape` `notice-board`  | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
+| `shape` `calendar-wall` | `noticeNotes`, as a `notice-board` (`holdsNotes`)                                                     |
 
 Every other field stays as stored, so a stale or crafted update that also moves, recolours or rewrites an element
 lands as its piece change alone, or as nothing (`changed: false`).
@@ -164,6 +165,12 @@ Editor state:
 speech, comments). `isReadOnly` is `!canEdit`, which equals `can.level !== 'edit'` in every session, preview and
 ended workbench included, so the switch changes no behaviour.
 
+A walking click on a control piece reads the same gates through the face's press: Bring Focus gets one on `run`
+(`EditorCanvasHost` passes `onPressFocusButton` only then), a Selection Mode button on `!can.alwaysWalks`, a Timer or
+Stopwatch on `takePart`. With none, `avatarPressOutcome(kind, hasMain)` (`lib/avatar-click-intent.ts`) answers
+`nothing` for the `NO_READER_KINDS` (those four), so the gesture neither walks nor opens the reader; every other Use
+piece with no main still reads. `FocusButtonFace` draws its inert target in a hover card saying who may press it.
+
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
 stamped on what it adds, only when the rule would take it unchanged; anything the room would refuse or trim is
@@ -182,10 +189,12 @@ A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_M
 Gestures opened for a Participant, each beside `isReadOnly`: answering session tools (`takePart`), the pieces
 (`swingDoor`, a Notice Board's pin and unpin, a Timer's controls) and the walk. It has no palette strip (the
 `participate` category and `participantPaletteCategories` are gone), no tile keys, and the keyboard treats it as a
-Viewer (`useEditorKeyboardShortcuts` takes no `participant` flag). `can.alwaysWalks` holds it in Avatar mode:
-`useCanvasTool({ alwaysWalking })` reports `'avatar'` and refuses every other tool, from the picker, a view-tool key,
-a Selection Mode button, an Avatar Pad, the palette reach and a change of tab alike; the cluster's Walk button is not
-drawn for it (`walkButton` false), and a Selection Mode button's face is inert.
+Viewer (`useEditorKeyboardShortcuts` takes no `participant` flag). `can.alwaysWalks` (a Participant's and a
+Viewer's, `resolveEditorCapabilities`; [Always walking](../share-roles.md#always-walking)) holds it in Avatar mode:
+`useCanvasTool`'s `holdWalking` reports `'avatar'` and refuses every other tool, from an editing key, Search, a
+Selection Mode button, an Avatar Pad, the palette reach and a change of tab alike; the Edit | Walk toggle is not
+drawn for it (`walkToggle` false), and a Selection Mode button's face is inert. `stripPaletteFor` gives it the avatar
+palette, and the Call dock (`CallDock`, whose call group is `CallStripGroup`) holds its call controls.
 
 Invariants:
 
@@ -354,7 +363,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
   `shareDocumentShape.role` is `z.enum(['participate', 'edit'])`.
 - Arrow keys step through the offered levels, wrapping; Home and End reach the ends.
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
-- A Participant has no palette strip and no Walk button; it is always walking. Tab add, rename and delete and context
+- A Participant and a Viewer have no building strip and no Edit | Walk toggle; they are always walking. Tab add, rename and delete and context
   menus' structural rows are absent.
 - A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
   add or upvote, no reactions. Its selection holds nothing

@@ -64,14 +64,7 @@ export function ShapeContentRouter({
     // it is a slot's Sheet Chart, drawn there (docs/specs/026-plan/plan-tabs.md "Sheet Chart").
     <OffDashboard id={element.id}>
       <SheetLinkedChart element={element}>
-        {(el) => (
-          <DataChartView
-            element={el}
-            fontFamily={fontFamily}
-            textColor={textColor}
-            palette={chartPalette}
-          />
-        )}
+        {(el) => <DataChartView element={el} textColor={textColor} palette={chartPalette} />}
       </SheetLinkedChart>
     </OffDashboard>
   ) : element.type === 'shape' && element.shape === 'plan-board' ? (

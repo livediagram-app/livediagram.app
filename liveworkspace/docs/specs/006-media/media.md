@@ -33,6 +33,16 @@ anyone else needs to be able to read a document that places it, and that documen
 serve it (its owner owns the image, or it holds a placement grant). Only then does the app fetch the
 bytes from the service and send them on, with its own `Cache-Control: private`.
 
+The app writes a placement grant only at a trusted moment: an Editor's write (the document's push), a copy,
+or a **placement claim**. A Participant's element ops reach the document through its room, which knows no
+person, so their editor first asks the app to let the document serve the pictures those ops place
+(`POST /api/images/grants?d=<document>`, `{ ids }`, at most `IMAGE_GRANT_IDS_MAX` = 100 a request). The app
+grants only the caller's own images, and only while the index lets the caller add to the document (a
+Participant or an Editor, not a Viewer). `@liveworkspace/media`'s `placement-claims.ts` holds the rule both
+sides share (`placedImageIds`, `parseImageGrantIds`, `createImageClaims`, and `isGalleryImageId` in
+`gallery-id.ts`); `@liveworkspace/index-app`'s `grantOwn` writes the grant. A claim is not liveplanner's
+claim at upload ([References](#references)), which keeps a reference at this service.
+
 ## Owners
 
 An image belongs to the person who uploaded it, whichever app they were in.
@@ -174,10 +184,11 @@ too, under `previews/` in the same bucket ([previews.md](previews.md)), so no ap
 
 ```sh
 cd liveworkspace/apps/media
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8792/api/media
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 `corepack pnpm dev:workspace` from the repo root runs it with the other liveworkspace APIs, and
 `corepack pnpm dev:media` runs it alone. Point an app's api at it with

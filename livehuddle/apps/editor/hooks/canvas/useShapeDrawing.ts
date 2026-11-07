@@ -37,6 +37,7 @@ import {
   HIGHLIGHTER_COLOR,
   HIGHLIGHTER_WIDTH,
 } from '@liveworkspace/workbench/lib/highlighter-config';
+import { withPlacingFacing } from '@/lib/placing-facing';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
@@ -96,11 +97,10 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // last one you had selected" behaviour through the combined gesture.
   const inheritSizeRef = useRef<Element | null>(null);
 
-  // The canvas tools an armed draw cannot share the pointer with: the eraser and the format painter go to select. With
-  // the eraser still held, A said "drag to draw an arrow" and the drag
-  // erased what it crossed.
+  // The canvas tool an armed draw cannot share the pointer with: the format painter goes to select, so the next press
+  // draws what the banner says rather than painting.
   const putDownPressTool = () => {
-    if (canvasTool === 'eraser' || canvasTool === 'format') setCanvasTool('select');
+    if (canvasTool === 'format') setCanvasTool('select');
   };
 
   // Shared "arm draw mode" path for every palette add. Tap-to-drop and
@@ -201,8 +201,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         : null;
     const sx = startX + (roomSnap?.dx ?? 0);
     const sy = startY + (roomSnap?.dy ?? 0);
+    // A piece that turns lands the way Space turned it while armed (docs/specs/009-elements/furniture-facing.md
+    // "Turning while placing"), about the centre the tap put it at.
     const dressed = styleNewElement(
-      buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab),
+      withPlacingFacing(
+        buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab),
+      ),
     );
     // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
     const sized =
@@ -214,12 +218,13 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // behind its contents regardless of array position.
     // A door tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door"), against the
     // live walls.
-    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"): one commit, one undo.
+    // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), and a room preset's
+    // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo.
     commit((els) => [
       ...els,
       ...(sized.type === 'shape' && sized.shape === 'door'
         ? [snapDoorToWall(sized, els)]
-        : withDoorPiece(sized)),
+        : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined)),
     ]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode

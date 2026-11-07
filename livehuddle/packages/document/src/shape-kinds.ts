@@ -48,6 +48,8 @@ export const SHAPE_KINDS = new Set<string>([
   'sofa',
   // The virtual office (docs/specs/009-elements/office.md).
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md).
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -87,11 +89,49 @@ export const SHAPE_KINDS = new Set<string>([
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   'directory',
   'elevator',
+  // Stairs (docs/specs/009-elements/stairs.md).
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',

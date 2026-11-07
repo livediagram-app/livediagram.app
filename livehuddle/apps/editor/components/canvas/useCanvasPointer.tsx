@@ -1,40 +1,22 @@
 'use client';
 
-import { useState } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
-type CanvasPointerInput = Pick<CanvasProps, 'canvasTool' | 'mainRef' | 'onCanvasPointerMove'> & {
+type CanvasPointerInput = Pick<CanvasProps, 'onCanvasPointerMove'> & {
   wrapperRef: React.RefObject<HTMLDivElement | null>;
   viewportZoom: number;
 };
 
-// Where the pointer is over the canvas: the eraser's brush ring in screen space, and the canvas-coords position
-// broadcast to peers.
+// Where the pointer is over the canvas: the canvas-coords position broadcast to peers.
 export function useCanvasPointer({
-  canvasTool,
-  mainRef,
   onCanvasPointerMove,
   wrapperRef,
   viewportZoom,
 }: CanvasPointerInput) {
-  // Where to draw the eraser's brush ring, in <main>-relative px. Null until
-  // the pointer has been over the canvas — an eraser ring parked in the middle
-  // of the screen would claim a brush that isn't there.
-  const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(null);
-
   // Broadcast the local pointer position to peers (canvas-coords).
   // Throttling lives in page.tsx so the Canvas stays prop-driven.
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {
-    // The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md) tracks the cursor in SCREEN space (px
-    // relative to <main>): <main> is `position: relative` with no border, so its content origin is its
-    // bounding-rect top-left.
-    if (canvasTool === 'eraser') {
-      const node = mainRef && 'current' in mainRef ? mainRef.current : null;
-      const mr = node?.getBoundingClientRect();
-      const at = mr ? { x: e.clientX - mr.left, y: e.clientY - mr.top } : null;
-      if (at) setEraserPos(at);
-    }
     const rect = wrapperRef.current?.getBoundingClientRect();
     if (!rect) return;
     const { x: sx, y: sy } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
@@ -44,7 +26,6 @@ export function useCanvasPointer({
     onCanvasPointerMove(null, null);
   };
   return {
-    eraserPos,
     handlePointerMoveCanvas,
     handlePointerLeaveCanvas,
   };

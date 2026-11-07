@@ -42,10 +42,12 @@ export function SelectionGripsLayer({
       {children}
       {/* An arrow's grips are SVG in canvas coordinates, as in the arrow's own <svg>. */}
       <svg className="absolute inset-0 h-full w-full" style={{ overflow: 'visible' }} aria-hidden>
-        <g ref={arrowsRef} />
+        {/* Hosts the arrows' grips; carries a very large move's offset for them (docs/specs/008-canvas/drag-preview.md). */}
+        <g ref={arrowsRef} data-ride-plane="" />
       </svg>
       {/* After the arrow grips: a free arrow's frame handles sit over its end grips. */}
-      <div ref={boxRef} />
+      {/* Where the layer is, so it can carry a very large move's offset for the grips in it. */}
+      <div ref={boxRef} data-ride-plane="" className="absolute inset-0" />
     </div>
   );
 }

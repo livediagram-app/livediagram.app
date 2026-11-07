@@ -28,7 +28,7 @@ const SCHEMA = `
 CREATE TABLE item (id TEXT PRIMARY KEY, saved_at INTEGER NOT NULL DEFAULT 0);
 CREATE TABLE tabs (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, data TEXT NOT NULL, updated_at INTEGER NOT NULL,
-  rev INTEGER NOT NULL DEFAULT 0
+  rev INTEGER NOT NULL DEFAULT 0, connection TEXT NULL
 );
 CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs WHEN NEW.rev IS NOT OLD.rev + 1
   BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
@@ -210,6 +210,17 @@ describe('a tab shared between items', () => {
     // A repeat is answered as it is, and adds nothing.
     expect(await w.link('B', 't1', 'A')).toMatchObject({ ok: true });
     expect(w.get('B').raw.prepare('SELECT COUNT(*) AS n FROM tabs').get()!.n).toBe(2);
+  });
+
+  it('never links a connected tab into another item (connected-tabs.md)', async () => {
+    const w = world();
+    withTab(w, 'A')
+      .raw.prepare("UPDATE tabs SET connection = ? WHERE id = 't1'")
+      .run('{"id":"cn_abcdefghijklmnop","app":"liveplanner","itemId":"p1"}');
+    withTab(w, 'B', '{}', 'own');
+    expect(await w.link('B', 't1', 'A')).toMatchObject({ ok: false });
+    expect(w.dataOf('B', 't1')).toBeNull();
+    expect(w.holders('A')).toEqual([]);
   });
 
   it('carries an edit in either item to the other, without sending it back', async () => {

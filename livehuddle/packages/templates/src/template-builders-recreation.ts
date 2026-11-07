@@ -5,11 +5,11 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
+import { arrival } from './template-arrival';
 import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -84,11 +84,12 @@ export function buildRooftopBar(cx: number, cy: number): Element[] {
       subtitle:
         'Drinks after work: pull up a stool at the bar, or sink into a sofa under the trees.',
     },
-    walkIn(
-      x0 + width,
-      y0 + SPACE_HEAD + ROOF_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) to come up. A stool or a sofa seats you, and the cabinet or the fridge gets you a drink.',
-    ),
+    // In the middle of the terrace, the bar ahead and a sofa either side.
+    arrival({
+      x: cx,
+      y: cy + 36,
+      hint: 'You arrive on the Avatar Pad. A stool or a sofa seats you, and the cabinet or the fridge gets you a drink.',
+    }),
   );
 }
 
@@ -142,10 +143,11 @@ export function buildCafe(cx: number, cy: number): Element[] {
       subtitle:
         'Meet for a coffee: a seat at the counter, a table to share, or the sofa in the corner.',
     },
-    walkIn(
-      x0 + width,
-      y0 + SPACE_HEAD + CAFE_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) to come in. The coffee machine makes a coffee, and any seat is yours.',
-    ),
+    // In the middle of the cafe, the counter, the coffee machine and the tables round it.
+    arrival({
+      x: cx + 52,
+      y: cy - 100,
+      hint: 'You arrive on the Avatar Pad. The coffee machine makes a coffee, and any seat is yours.',
+    }),
   );
 }

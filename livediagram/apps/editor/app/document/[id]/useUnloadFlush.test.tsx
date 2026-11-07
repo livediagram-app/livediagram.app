@@ -6,8 +6,10 @@ import type { Tab } from '@livediagram/document';
 
 // docs/specs/006-document/per-tab-storage.md "Saving": the edits still inside the debounce go when the editor goes.
 const flush = vi.fn<typeof import('@/lib/api-client').flushDocumentSavesBeacon>();
+const claim = vi.fn<typeof import('@/lib/api-client').claimPlacedImagesOnUnload>();
 vi.mock('@/lib/api-client', () => ({
   flushDocumentSavesBeacon: (...a: Parameters<typeof flush>) => flush(...a),
+  claimPlacedImagesOnUnload: (...a: Parameters<typeof claim>) => claim(...a),
 }));
 vi.mock('@/lib/document-tombstones', () => ({ isDocumentDeleted: () => false }));
 
@@ -44,7 +46,10 @@ function mount(tabs: Tab[], participant = false, send = vi.fn()) {
 }
 
 describe('useUnloadFlush', () => {
-  beforeEach(() => flush.mockClear());
+  beforeEach(() => {
+    flush.mockClear();
+    claim.mockClear();
+  });
 
   it('flushes on pagehide, once for the same content however many events follow', () => {
     mount([tab('typed')]);
@@ -72,6 +77,17 @@ describe('useUnloadFlush', () => {
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({ kind: 'op', op: expect.objectContaining({ tabId: 't1' }) }),
     );
+  });
+
+  // docs/specs/009-elements/images.md "Placement grants": the pictures a Participant's last ops place are claimed
+  // (a keepalive request) before the ops go, even on the way out.
+  it("claims the pictures a Participant's last change places, then relays it", () => {
+    const send = vi.fn();
+    const pic = { id: 'p', type: 'image', x: 0, y: 0, width: 10, height: 10, imageId: 'img-1' };
+    mount([{ ...tab('saved'), elements: [...tab('saved').elements, pic] } as Tab], true, send);
+    window.dispatchEvent(new Event('pagehide'));
+    expect(claim).toHaveBeenCalledWith('me', 'd1', ['img-1'], null);
+    expect(claim.mock.invocationCallOrder[0]!).toBeLessThan(send.mock.invocationCallOrder[0]!);
   });
 
   // A label still open when the page goes commits on blur, which a reload never fires: the flush commits it first.

@@ -63,6 +63,7 @@ Doors by level (server):
 | Comments: add, reply, resolve, reopen, delete own                                       | participate (`deniedParticipate`) |
 | Room: `reaction`                                                                        | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                     | participate                       |
+| Placement claim (`POST /api/images/grants`): the caller's own pictures                  | participate                       |
 | Tab PUT, tab DELETE, design PUT; room `tab`, `tab-meta`, `design-meta`, `el` `reorder`  | edit                              |
 | Room: `el-delta` `check`, `comment-*`; `drag-preview`                                   | edit                              |
 

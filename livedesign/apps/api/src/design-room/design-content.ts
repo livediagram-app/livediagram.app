@@ -24,6 +24,8 @@ import { blobRefsOfTabs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-b
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { rowToTabSummary, type TabRow } from '../tab-row';
+import { storedTabConnection, tabConnectionStatement } from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import type { DesignEnv, TabSummaryDTO } from '../types';
 
 // What the design knows of itself (design-schema.ts): its name, owner, team, provenance and creation intent. Null
@@ -76,7 +78,7 @@ function metaOf(head: DesignHeadRow | null): DesignMeta | null {
 export async function readDesignOutline(env: DesignEnv, designId: string): Promise<DesignOutline> {
   const [tabs, design] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
-      `SELECT t.id, dt.design_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
+      `SELECT t.id, dt.design_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
          FROM design_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.design_id = ?
@@ -226,6 +228,9 @@ export type DesignCopy = {
     folder: string | null;
     data: string;
     elementCount: number | null;
+    // A connected tab's connection, carried as exactly `{ id, app, itemId }` (connected-tabs.md "Copies carry
+    // nothing"): the index opens it only in its own host and tab, so in the copy it offers Connect Again.
+    connection?: TabConnection | null;
   }[];
   // Images of the copied bodies the source may serve: granted on the copy.
   grants: string[];
@@ -247,6 +252,7 @@ export type ContentTabRow = {
   folder: string | null;
   data: string;
   element_count: number | null;
+  connection: string | null;
 };
 
 export async function readContentTabRows(
@@ -255,7 +261,7 @@ export async function readContentTabRows(
   onlyTabId: string | null,
 ): Promise<ContentTabRow[]> {
   const tabRows = await env.DESIGN_DB.prepare(
-    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count
+    `SELECT t.id, t.name, dt.order_index, dt.folder, t.data, t.element_count, t.connection
        FROM design_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
       WHERE dt.design_id = ?${onlyTabId === null ? '' : ' AND dt.tab_id = ?'}
@@ -304,6 +310,8 @@ export async function exportDesignCopy(
           : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
+      // Not through a Community post's link: a stranger's copy names no other item.
+      connection: community ? null : storedTabConnection(row.connection),
     };
   });
   const placed = [...new Set(rows.flatMap((row) => imageRefIdsFromData(row.data)))];
@@ -391,6 +399,7 @@ export async function importDesignCopy(
       ...imageRefAddStatements(env, tab.id, imageRefIdsFromData(tab.data)),
       ...componentRefAddStatements(env, tab.id, componentRefIdsFromData(tab.data)),
     );
+    if (tab.connection) stmts.push(tabConnectionStatement(db, tab.id, tab.connection));
   }
   stmts.push(...componentInsertStatements(env, copy.components ?? []));
   if (copy.owners.length > 0) {

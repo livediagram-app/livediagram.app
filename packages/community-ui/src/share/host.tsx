@@ -43,7 +43,7 @@ export type CommunityShareHost = {
   words: CommunityWords;
   // The owner's side of the document's post, through its own app.
   client: CommunityOwnerClient;
-  // A post's page in the app's gallery (`/community/post/?id=`), absolute where the host is another site.
+  // A post's page in the app's gallery (`/community/post?id=`), absolute where the host is another site.
   postHref: (postId: string) => string;
   // How the tab says what happened (the host's toasts); the Share dialog's own note when absent.
   notify?: CommunityNotify;

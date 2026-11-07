@@ -184,7 +184,9 @@ The route owns:
 
 `/new` has **no screen of its own**: no wizard, no Create button. Opening it makes a **Blank Space**
 (`blank-session`) straight away and opens it on **Start a Space** ([Template starts](start-diagramming.md)), where
-the person picks a template, searches, or closes the start for a blank canvas.
+the person picks a template, searches, or closes the start for a blank space. The tab is made **empty**
+(`newDocumentTab`'s `blankOpensOnStart`), since the start shows only on an empty tab; the blank's
+[Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one) lands with whatever is chosen there.
 
 Why: the welcome card asked no question. livehuddle has one mode, there is no theme or location step, and its body
 only described what Create would make before sending the person to Start a Space anyway. A screen whose only action
@@ -249,7 +251,9 @@ Every `/new` creates; the query only says what and where. All params are read by
   retired kind (`kanban`, livediagram's `blank` and `whiteboard`) is ignored: the plain Blank Space is made, so a
   stale link never strands anyone.
 - **`/new?blank=1`** and **`/new?start=blank`**: **Start Blank**, a Blank Space that opens **with its start closed**
-  (`closeStartForBlank`), so whoever asked for a blank is not shown templates. `?blank=1` is Explorer Home's
+  (`closeStartForBlank`), so whoever asked for a blank is not shown templates. It is made with the Blank Space's
+  [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one) already on it, a little below the
+  middle of the view. `?blank=1` is Explorer Home's
   first-run Start Blank; `?start=blank` the public sites' ([Marketing site](../019-marketing/marketing-site.md#start-blank)).
   Only the exact `start` value `blank` counts. Either fires `UI / Used / JustDraw` (the token kept from the old "Just
   Draw" name, so the funnel's history reads on unbroken). `blank` wins over `template`.

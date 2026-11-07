@@ -85,6 +85,9 @@ export function handleInternalItems(
           throw new Error(`media: merging the guest's images answered ${merged.status}`);
       },
       anonymise: (id, personId) => planRoom(env, id).anonymise(personId),
+      // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
+      // connected tab at the end of the plan's tab bar.
+      connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
       // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.

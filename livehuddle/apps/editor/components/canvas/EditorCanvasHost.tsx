@@ -54,10 +54,6 @@ export function EditorCanvasHost() {
     activeTabLoadState,
     activeTabLocked,
     commitElements,
-    eraserPanelPosition,
-    setEraserPanelPosition,
-    eraserConfig,
-    onChangeEraserField,
     formatConfig,
     onToggleFormatGroup,
     onSetFormatMode,
@@ -94,7 +90,6 @@ export function EditorCanvasHost() {
     pressArmedAction,
     beginEdit,
     beginEndpointDrag,
-    beginErase,
     beginFreehand,
     beginHighlighter,
     beginShapePen,
@@ -152,11 +147,13 @@ export function EditorCanvasHost() {
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
+    turnSelected,
     editCursorAtEnd,
     editingId,
     embedMode,
 
     exitFormatTool,
+    startFormatPainter,
     fitToScreen,
     followLink,
     formatSourceId,
@@ -341,6 +338,8 @@ export function EditorCanvasHost() {
           tabLocked={activeTabLocked}
           readOnly={isReadOnly}
           takePart={can.takePart}
+          accessLevel={can.level}
+          alwaysWalks={can.alwaysWalks}
           canShareScreen={gates.shape}
           canMove={can.move}
           canWriteText={can.writeText}
@@ -392,8 +391,9 @@ export function EditorCanvasHost() {
           avatarShove={avatarShove}
           walkIn={walkIn}
           avatarAtRef={avatarAtRef}
-          // Not for a Participant: it is always walking (docs/specs/013-workspace/share-roles.md "A Participant walks").
-          walkButton={!embedMode && !can.alwaysWalks}
+          // An Editor's alone: a Participant and a Viewer are always walking (docs/specs/013-workspace/share-roles.md
+          // "Always walking").
+          walkToggle={!embedMode && !can.alwaysWalks}
           // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
           // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
           // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
@@ -412,8 +412,7 @@ export function EditorCanvasHost() {
           // the palette, so it goes through the same setter — telemetry, the
           // selection clear, and the empty-canvas guard all included. Pressing it
           // again, while already in that mode, hands you back your previous one.
-          // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
-          // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
+          // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS, docs/specs/013-workspace/share-roles.md).
           // Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it"): every role may walk, so a press is the
           // Avatar pick for anyone; the canvas has already told the walk which pad to start on.
           onPressAvatarPad={() => pressModeButton('avatar')}
@@ -429,7 +428,7 @@ export function EditorCanvasHost() {
             keepWalkingTo(tabId);
             followLink({ kind: 'tab', tabId });
           }}
-          // A Participant's buttons are inert faces: it is always walking, so none can switch it.
+          // A Participant's and a Viewer's buttons are inert faces: they are always walking, so none can switch them.
           onPressModeButton={
             can.alwaysWalks
               ? undefined
@@ -461,7 +460,6 @@ export function EditorCanvasHost() {
               : null
           }
           onStopFollowing={followMe.stopFollowing}
-          onEraseStart={isReadOnly ? undefined : beginErase}
           onDuplicateMultiSelected={duplicateMultiSelected}
           onDeleteMultiSelected={deleteMultiSelected}
           onToggleLockMultiSelected={toggleLockMultiSelected}
@@ -520,9 +518,6 @@ export function EditorCanvasHost() {
           }
           onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
           userPreferences={userPreferences}
-          eraserPanelPosition={eraserPanelPosition}
-          eraserConfig={eraserConfig}
-          onChangeEraserField={onChangeEraserField}
           formatConfig={formatConfig}
           onToggleFormatGroup={onToggleFormatGroup}
           onSetFormatMode={onSetFormatMode}
@@ -541,8 +536,6 @@ export function EditorCanvasHost() {
           formatPanelPosition={formatPanelPosition}
           onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}
           onResetFormatPanel={() => setFormatPanelPosition(null)}
-          onMoveEraserPanel={(x, y) => setEraserPanelPosition({ x, y })}
-          onResetEraserPanel={() => setEraserPanelPosition(null)}
 
           // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
           // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
@@ -719,6 +712,7 @@ export function EditorCanvasHost() {
           onBeginArrowElbowDrag={beginArrowElbowDrag}
           onShiftSelect={toggleInMultiSelect}
           onExitFormatTool={exitFormatTool}
+          onStartFormatPainter={isReadOnly ? undefined : startFormatPainter}
           onSetTextAlign={setTextAlignSelected}
           onFollowLink={followLink}
           onOpenComments={openComments}
@@ -751,6 +745,7 @@ export function EditorCanvasHost() {
           elementMenuOpen={contextMenu?.mode === 'element'}
           onDuplicateSelected={duplicateSelected}
           onBringSelectedToFront={stackSelectedFront}
+          onTurnSelected={turnSelected}
           onSendSelectedToBack={stackSelectedBack}
           onCanvasDoubleClick={handleCanvasDoubleClick}
           tabLoadState={tabLoadState}

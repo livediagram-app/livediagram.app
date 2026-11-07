@@ -11,6 +11,7 @@ import {
 } from 'react';
 import type { Tab } from '@livediagram/document';
 import {
+  apiClaimPlacedImages,
   apiDeleteTab,
   apiSaveDocumentMeta,
   apiSaveTab,
@@ -314,7 +315,10 @@ export function useAutosave(opts: {
         // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
         if (participant) {
-          writes.push(relayParticipantChanges(before, t, () => roomRef.current, ownWrites));
+          // The pictures it places are claimed first (docs/specs/009-elements/images.md "Placement grants").
+          const claim = (ids: string[]) =>
+            apiClaimPlacedImages(selfId, documentId, ids, sessionShareCode);
+          writes.push(relayParticipantChanges(before, t, () => roomRef.current, ownWrites, claim));
           continue;
         }
         // Derived and held now, at the snapshot, though the queue may run the save later.

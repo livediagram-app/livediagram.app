@@ -13,6 +13,7 @@ import {
   SHARE_PASSWORD_HEADER,
   SHARE_PASSWORD_MAX,
   SHARE_PASSWORD_MIN,
+  type App,
   type Level,
   type ShareLink,
   type ShareLinkExpiry,
@@ -72,6 +73,29 @@ const toLink = (row: LinkRow): ShareLink => ({
 });
 
 const LINK_COLUMNS = 'code, item_id, level, tab_id, expiry, expires_at, created_at, public';
+const LINK_COLUMNS_SL = LINK_COLUMNS.split(', ')
+  .map((column) => `sl.${column}`)
+  .join(', ');
+
+// A link on its item's share list, with the connected tab it is the pass of, if any.
+type PassRow = LinkRow & {
+  host_item_id: string | null;
+  host_app: App | null;
+  host_title: string | null;
+};
+
+const toListedLink = (row: PassRow): ShareLink => ({
+  ...toLink(row),
+  ...(row.host_item_id && row.host_app
+    ? {
+        connection: {
+          hostItemId: row.host_item_id,
+          hostApp: row.host_app,
+          hostTitle: row.host_title ?? '',
+        },
+      }
+    : {}),
+});
 
 // undefined: absent; null: every tab; a string: that tab. INVALID for anything else.
 const INVALID = Symbol('invalid');
@@ -165,16 +189,21 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
   }
 
   if (method === 'GET') {
+    // A connected tab's pass names the item whose tab it was made for: "Connected from <host>" (connected-tabs.md).
     const [links, password] = (await db.batch([
       db
         .prepare(
-          `SELECT ${LINK_COLUMNS} FROM share_links WHERE item_id = ? ORDER BY created_at LIMIT ?`,
+          `SELECT ${LINK_COLUMNS_SL}, c.host_item_id, h.app AS host_app, h.title AS host_title
+           FROM share_links sl
+           LEFT JOIN connections c ON c.share_code = sl.code
+           LEFT JOIN items h ON h.id = c.host_item_id
+           WHERE sl.item_id = ? ORDER BY sl.created_at LIMIT ?`,
         )
         .bind(id, SHARE_LINKS_PER_ITEM),
       db.prepare('SELECT 1 AS set_ FROM share_passwords WHERE item_id = ?').bind(id),
     ])) as D1Result<Record<string, unknown>>[];
     return json({
-      links: (links!.results as LinkRow[]).map(toLink),
+      links: (links!.results as PassRow[]).map(toListedLink),
       passwordSet: password!.results.length > 0,
     });
   }
@@ -231,7 +260,8 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
         itemId: id,
         type: 'shared',
         actorId: caller.person?.id ?? null,
-        detail: { level: link.level },
+        // A public link (a Community post's) says so, for the team audit log.
+        detail: link.public ? { level: link.level, public: 'true' } : { level: link.level },
         at: now,
         when: { sql: 'EXISTS (SELECT 1 FROM share_links WHERE code = ?)', args: [link.code] },
       }),

@@ -3,6 +3,8 @@
 
 import { redactCommentAuthorIds } from '../comments';
 import { deleteFormLinksForTab, deleteTabRow, getProject, getProjectForSave, getTab } from '../db';
+import { tellConnectionLeft } from '@liveworkspace/index-app';
+import { indexAppClient } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { tabEtag } from '@liveplanner/api-schema';
 import { handleFormLinkRoutes } from './form-link-routes';
@@ -140,7 +142,11 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      await deleteTabRow(env, id, tabId);
+      const removed = await deleteTabRow(env, id, tabId);
+      // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
+      // "Removing"), off the response path.
+      if (removed?.connection)
+        ctx.waitUntil?.(tellConnectionLeft(indexAppClient(env), id, tabId, removed.connection));
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
       // (docs/specs/030-forms/forms.md "Publishing and the form link").

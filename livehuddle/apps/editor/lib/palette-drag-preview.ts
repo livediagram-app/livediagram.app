@@ -14,9 +14,15 @@ import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 type PaletteDragPreview = {
   kind: ShapeKind;
   iconId?: string;
+  // The dragged tile's preset (docs/specs/009-elements/office.md "Room presets", room-builder.md "Door types"), so the
+  // placement preview draws the room, door, corridor or rug that lands.
+  variant?: string;
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
+  // Carried by the pointer rather than dragged by the browser (palette-carry.ts): its moves are pointermoves, not
+  // dragovers.
+  carried?: boolean;
 };
 
 let current: PaletteDragPreview | null = null;

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The category bar and its flyouts (docs/specs/007-editor/toolbar-layout.md "The category bar"): hover intent, the
-// keyboard and the guards that keep a flyout open mid-drag or mid-search, on the meeting palette's bar.
+// keyboard and the guard that keeps a flyout open mid-drag, on the meeting palette's bar.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
@@ -28,15 +28,7 @@ function show() {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
-  render(
-    <ToolbarPalette
-      canvasTool="select"
-      onSetCanvasTool={vi.fn()}
-      canvasEmpty={false}
-      pendingDraw={null}
-      {...h}
-    />,
-  );
+  render(<ToolbarPalette canvasTool="select" pendingDraw={null} {...h} />);
   return h;
 }
 
@@ -52,8 +44,8 @@ const wait = (ms: number) =>
 describe('hover intent', () => {
   it('opens a category the pointer rests on, not one it sweeps across', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
-    fireEvent.pointerLeave(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
+    fireEvent.pointerLeave(button('Seats'), mouse);
     fireEvent.pointerEnter(button('Travel'), mouse);
     wait(HOVER_OPEN_MS - 10);
     expect(flyout()).toBeNull();
@@ -63,7 +55,7 @@ describe('hover intent', () => {
 
   it('moves an open flyout to the next category at once, and ignores a touch', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
     wait(HOVER_OPEN_MS);
     fireEvent.pointerEnter(button('Rooms'), mouse);
     expect(heading()).toBe('Rooms');
@@ -73,9 +65,9 @@ describe('hover intent', () => {
 
   it('closes once the pointer has left both the bar and the flyout, after a grace', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
     wait(HOVER_OPEN_MS);
-    fireEvent.pointerLeave(button('Seating'), mouse);
+    fireEvent.pointerLeave(button('Seats'), mouse);
     // Crossing the gap into the flyout keeps it.
     fireEvent.pointerEnter(flyout()!.firstElementChild!, mouse);
     wait(HOVER_CLOSE_MS * 2);
@@ -87,10 +79,10 @@ describe('hover intent', () => {
 
   it('keeps a category opened by a click open when the pointer leaves, until a press outside', () => {
     show();
-    fireEvent.click(button('Seating'), { detail: 1 });
-    fireEvent.pointerLeave(button('Seating'), mouse);
+    fireEvent.click(button('Seats'), { detail: 1 });
+    fireEvent.pointerLeave(button('Seats'), mouse);
     wait(HOVER_CLOSE_MS * 2);
-    expect(heading()).toBe('Seating');
+    expect(heading()).toBe('Seats');
     // Pointing at another category still moves it there, and it stays pinned.
     fireEvent.pointerEnter(button('Travel'), mouse);
     expect(heading()).toBe('Travel');
@@ -103,40 +95,40 @@ describe('hover intent', () => {
 
   it('pins a category the hover opened once it is clicked', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
     wait(HOVER_OPEN_MS);
-    fireEvent.click(button('Seating'), { detail: 1 });
-    fireEvent.pointerLeave(button('Seating'), mouse);
+    fireEvent.click(button('Seats'), { detail: 1 });
+    fireEvent.pointerLeave(button('Seats'), mouse);
     wait(HOVER_CLOSE_MS * 2);
-    expect(heading()).toBe('Seating');
+    expect(heading()).toBe('Seats');
   });
 
   it('keeps a click on a category the hover opened from closing it', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
     wait(HOVER_OPEN_MS);
-    fireEvent.click(button('Seating'), { detail: 1 });
-    expect(heading()).toBe('Seating');
+    fireEvent.click(button('Seats'), { detail: 1 });
+    expect(heading()).toBe('Seats');
   });
 
   it('closes the open category on a second tap', () => {
     show();
-    fireEvent.pointerDown(button('Seating'), { pointerType: 'touch' });
-    fireEvent.click(button('Seating'), { detail: 1 });
-    expect(heading()).toBe('Seating');
-    fireEvent.pointerDown(button('Seating'), { pointerType: 'touch' });
-    fireEvent.click(button('Seating'), { detail: 1 });
+    fireEvent.pointerDown(button('Seats'), { pointerType: 'touch' });
+    fireEvent.click(button('Seats'), { detail: 1 });
+    expect(heading()).toBe('Seats');
+    fireEvent.pointerDown(button('Seats'), { pointerType: 'touch' });
+    fireEvent.click(button('Seats'), { detail: 1 });
     expect(flyout()).toBeNull();
     // And a third opens it again.
-    fireEvent.pointerDown(button('Seating'), { pointerType: 'touch' });
-    fireEvent.click(button('Seating'), { detail: 1 });
-    expect(heading()).toBe('Seating');
+    fireEvent.pointerDown(button('Seats'), { pointerType: 'touch' });
+    fireEvent.click(button('Seats'), { detail: 1 });
+    expect(heading()).toBe('Seats');
   });
 
   it('moves a tap on another category there rather than closing', () => {
     show();
-    fireEvent.pointerDown(button('Seating'), { pointerType: 'touch' });
-    fireEvent.click(button('Seating'), { detail: 1 });
+    fireEvent.pointerDown(button('Seats'), { pointerType: 'touch' });
+    fireEvent.click(button('Seats'), { detail: 1 });
     fireEvent.pointerDown(button('Travel'), { pointerType: 'touch' });
     fireEvent.click(button('Travel'), { detail: 1 });
     expect(heading()).toBe('Travel');
@@ -144,16 +136,16 @@ describe('hover intent', () => {
 
   it('keeps a second mouse click on the open category from closing it', () => {
     show();
-    fireEvent.pointerDown(button('Seating'), mouse);
-    fireEvent.click(button('Seating'), { detail: 1 });
-    fireEvent.pointerDown(button('Seating'), mouse);
-    fireEvent.click(button('Seating'), { detail: 1 });
-    expect(heading()).toBe('Seating');
+    fireEvent.pointerDown(button('Seats'), mouse);
+    fireEvent.click(button('Seats'), { detail: 1 });
+    fireEvent.pointerDown(button('Seats'), mouse);
+    fireEvent.click(button('Seats'), { detail: 1 });
+    expect(heading()).toBe('Seats');
   });
 
   it('stays open while a tile is dragged out, and closes on the drop', () => {
     show();
-    fireEvent.pointerEnter(button('Seating'), mouse);
+    fireEvent.pointerEnter(button('Seats'), mouse);
     wait(HOVER_OPEN_MS);
     const body = flyout()!.firstElementChild!;
     fireEvent.dragStart(within(flyout()!).getByRole('button', { name: 'Add Chair' }), {
@@ -165,18 +157,6 @@ describe('hover intent', () => {
     fireEvent.dragEnd(within(flyout()!).getByRole('button', { name: 'Add Chair' }));
     expect(flyout()).toBeNull();
   });
-
-  it('stays open while its search holds a query', () => {
-    show();
-    fireEvent.pointerEnter(button('Stickers'), mouse);
-    wait(HOVER_OPEN_MS);
-    const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
-    field.focus();
-    fireEvent.change(field, { target: { value: 'star' } });
-    fireEvent.pointerLeave(flyout()!.firstElementChild!, mouse);
-    wait(HOVER_CLOSE_MS * 2);
-    expect(flyout()).not.toBeNull();
-  });
 });
 
 describe('the keyboard', () => {
@@ -187,9 +167,8 @@ describe('the keyboard', () => {
     expect(document.activeElement).toBe(button('Rooms'));
     fireEvent.keyDown(button('Rooms'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
-    // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Stickers'));
-    fireEvent.keyDown(button('Stickers'), { key: 'ArrowLeft' });
+    // Wraps round to the last: Travel, Stickers being search-only.
+    expect(document.activeElement).toBe(button('Travel'));
     fireEvent.keyDown(button('Travel'), { key: 'ArrowDown' });
     expect(heading()).toBe('Travel');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
@@ -197,11 +176,11 @@ describe('the keyboard', () => {
 
   it('moves an open flyout along with the focus, and toggles from Enter', () => {
     show();
-    fireEvent.click(button('Seating'), { detail: 0 });
-    expect(heading()).toBe('Seating');
-    fireEvent.keyDown(button('Seating'), { key: 'ArrowRight' });
-    expect(heading()).toBe('Amenities');
-    fireEvent.click(button('Amenities'), { detail: 0 });
+    fireEvent.click(button('Seats'), { detail: 0 });
+    expect(heading()).toBe('Seats');
+    fireEvent.keyDown(button('Seats'), { key: 'ArrowRight' });
+    expect(heading()).toBe('Perks');
+    fireEvent.click(button('Perks'), { detail: 0 });
     expect(flyout()).toBeNull();
   });
 
@@ -220,12 +199,12 @@ describe('the keyboard', () => {
 
   it('hands the focus back to the category on Escape', () => {
     show();
-    fireEvent.click(button('Seating'), { detail: 0 });
+    fireEvent.click(button('Seats'), { detail: 0 });
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     expect(flyout()).toBeNull();
-    expect(document.activeElement).toBe(button('Seating'));
+    expect(document.activeElement).toBe(button('Seats'));
   });
 });

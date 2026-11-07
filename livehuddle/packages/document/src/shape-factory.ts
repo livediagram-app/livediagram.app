@@ -125,6 +125,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // The virtual office (docs/specs/009-elements/office.md): each at its drawing's grid, at the chair's scale; a
   // room is a floor big enough to furnish.
   room: { width: 480, height: 320 },
+  // A Corridor (docs/specs/009-elements/corridor.md): the Straight, one arm wide.
+  corridor: { width: 480, height: 120 },
   // A Door (docs/specs/009-elements/room-builder.md): a Room's doorway wide, a wall and its jambs deep.
   door: { width: 96, height: 24 },
   'meeting-table': { width: 232, height: 168 },
@@ -166,9 +168,47 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'vending-machine': { width: 72, height: 128 },
   'bean-bag': { width: 64, height: 56 },
   'reading-nook': { width: 160, height: 112 },
+  // The office amenities (docs/specs/009-elements/office-amenities.md).
+  printer: { width: 72, height: 80 },
+  copier: { width: 104, height: 128 },
+  lockers: { width: 136, height: 132 },
+  'coat-rack': { width: 56, height: 128 },
+  'umbrella-stand': { width: 40, height: 64 },
+  'kitchen-counter': { width: 112, height: 88 },
+  'kitchen-sink': { width: 112, height: 88 },
+  fridge: { width: 72, height: 136 },
+  microwave: { width: 60, height: 40 },
+  kettle: { width: 32, height: 36 },
+  'toilet-cubicle': { width: 96, height: 152 },
+  washbasin: { width: 72, height: 112 },
+  'hand-dryer': { width: 36, height: 44 },
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  pillar: { width: 48, height: 152 },
+  column: { width: 64, height: 168 },
+  'car-park': { width: 240, height: 128 },
+  'bike-rack': { width: 136, height: 80 },
+  'swimming-pool': { width: 320, height: 200 },
+  'stage-curtains': { width: 360, height: 120 },
+  podium: { width: 56, height: 88 },
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod': { width: 120, height: 112 },
+  treadmill: { width: 72, height: 112 },
+  'weight-bench': { width: 136, height: 88 },
+  'phone-booth': { width: 80, height: 136 },
+  'standing-desk': { width: 112, height: 104 },
+  'hot-desk': { width: 120, height: 112 },
+  'pet-bed': { width: 72, height: 48 },
+  'reception-desk': { width: 200, height: 112 },
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall': { width: 200, height: 160 },
+  'suggestion-box': { width: 64, height: 112 },
+  signpost: { width: 120, height: 144 },
+  'photo-wall': { width: 176, height: 112 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
+  // Stairs (docs/specs/009-elements/stairs.md): a flight to the floor above or below.
+  stairs: { width: 96, height: 128 },
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen and a door plaque.
   screen: MEETING_PIECE_SIZE.screen,
   'room-sign': MEETING_PIECE_SIZE['room-sign'],
@@ -312,9 +352,17 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   }
   // A Door keeps any width along its wall: not aspect locked, no label.
   if (kind === 'door') return base;
+  // A Corridor (docs/specs/009-elements/corridor.md) is any size of passage, with no words on it.
+  if (kind === 'corridor') return { ...base, label: '' };
   // A garden path, grass and a garden fence (docs/specs/009-elements/office.md) are any size, drawn to it, with no
   // words on them.
-  if (kind === 'garden-path' || kind === 'grass' || kind === 'garden-fence' || kind === 'pond') {
+  if (
+    kind === 'garden-path' ||
+    kind === 'grass' ||
+    kind === 'garden-fence' ||
+    kind === 'pond' ||
+    kind === 'swimming-pool'
+  ) {
     return { ...base, label: '' };
   }
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): placed at their size, aspect locked,
@@ -349,7 +397,40 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'dartboard' ||
       kind === 'vending-machine' ||
       kind === 'bean-bag' ||
-      kind === 'reading-nook'
+      kind === 'reading-nook' ||
+      kind === 'printer' ||
+      kind === 'copier' ||
+      kind === 'lockers' ||
+      kind === 'coat-rack' ||
+      kind === 'umbrella-stand' ||
+      kind === 'kitchen-counter' ||
+      kind === 'kitchen-sink' ||
+      kind === 'fridge' ||
+      kind === 'microwave' ||
+      kind === 'kettle' ||
+      kind === 'toilet-cubicle' ||
+      kind === 'washbasin' ||
+      kind === 'hand-dryer' ||
+      kind === 'pillar' ||
+      kind === 'column' ||
+      kind === 'car-park' ||
+      kind === 'bike-rack' ||
+      kind === 'stage-curtains' ||
+      kind === 'podium' ||
+      kind === 'nap-pod' ||
+      kind === 'treadmill' ||
+      kind === 'weight-bench' ||
+      kind === 'phone-booth' ||
+      kind === 'standing-desk' ||
+      kind === 'hot-desk' ||
+      kind === 'pet-bed' ||
+      kind === 'reception-desk' ||
+      kind === 'calendar-wall' ||
+      kind === 'suggestion-box' ||
+      kind === 'signpost' ||
+      kind === 'photo-wall' ||
+      // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+      kind === 'stairs'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

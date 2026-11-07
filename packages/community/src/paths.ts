@@ -3,12 +3,14 @@
 // rest of the contract (the `./paths` entry) so a link to the gallery (an apps menu, a footer, the editor's
 // Community bar) never loads the categories, limits and validation with it.
 
-// The gallery's own address on the app's site (the app's router serves its Community app there).
-export const COMMUNITY_HOME_PATH = '/community/';
+// The gallery's own address on the app's site. The page is liveworkspace.app's, served under the app's address by the
+// app's router (liveworkspace/docs/specs/007-community/community.md "One page for every app"), and, like every page
+// of that site, it has no trailing slash: `/community/` still answers, with one redirect that stays on the app.
+export const COMMUNITY_HOME_PATH = '/community';
 
 // A post's own page on the app's site.
 export function communityPostPath(postId: string): string {
-  return `/community/post/?id=${encodeURIComponent(postId)}`;
+  return `/community/post?id=${encodeURIComponent(postId)}`;
 }
 
 // The live image a post's card shows, relative to the app's api base (the community link's card image door).

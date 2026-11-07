@@ -7,7 +7,7 @@
 
 import type { App } from '@liveworkspace/index-client';
 import { useState, type ReactNode } from 'react';
-import { BackBar, Button } from '@liveworkspace/ui';
+import { AppScopeToggle, BackBar, Button } from '@liveworkspace/ui';
 import { PortalMenu } from '../ui/Menu';
 import {
   CaretDownIcon,
@@ -19,7 +19,7 @@ import {
   ListViewIcon,
   PlusIcon,
 } from '../ui/icons';
-import { siteOf, type AppFilter } from '../words';
+import { siteOf } from '../words';
 import { useExplorer } from './context';
 import { HelpButton } from './HomeHero';
 import { ChoiceTile, NewChoices } from './NewChoices';
@@ -214,44 +214,24 @@ const segment = (active: boolean) =>
       : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
   }`;
 
-/** This app's items, or every app's: the app's own name ("livediagram") beside All. */
+/** This app's items, or every app's: the app's own name ("livediagram") beside All (@liveworkspace/ui AppScopeToggle,
+ *  which the Community page draws too). */
 export function FilterToggle() {
   const { app, filter, setFilter, kind, renderAppLogo } = useExplorer();
   const { allLabel, showAppFilter } = useHostExtras();
-  const choose = (next: AppFilter) => () => setFilter(next);
   if (!showAppFilter) return null;
   // Each choice wears its logo: the app's, and the platform's for every app.
-  const logo = (of: AppFilter) => {
-    const node = renderAppLogo?.(of === 'app' ? app : 'all');
-    return node ? (
-      <span aria-hidden className="mr-1.5 inline-flex shrink-0 [&_svg]:size-4">
-        {node}
-      </span>
-    ) : null;
-  };
   return (
-    <div role="group" aria-label="Show" className={SEGMENTS}>
-      <button
-        type="button"
-        aria-pressed={filter === 'app'}
-        onClick={choose('app')}
-        title={`Only ${siteOf(app).name}'s ${kind.lowerMany}`}
-        className={segment(filter === 'app')}
-      >
-        {logo('app')}
-        {siteOf(app).name}
-      </button>
-      <button
-        type="button"
-        aria-pressed={filter === 'all'}
-        onClick={choose('all')}
-        title="Every app's items"
-        className={segment(filter === 'all')}
-      >
-        {logo('all')}
-        {allLabel}
-      </button>
-    </div>
+    <AppScopeToggle
+      value={filter}
+      onChange={setFilter}
+      app={{
+        label: siteOf(app).name,
+        logo: renderAppLogo?.(app),
+        description: `Only ${siteOf(app).name}'s ${kind.lowerMany}`,
+      }}
+      all={{ label: allLabel, logo: renderAppLogo?.('all'), description: "Every app's items" }}
+    />
   );
 }
 

@@ -16,7 +16,6 @@ import {
 import {
   lucideArmchair,
   lucideCoffee,
-  lucideGamepad2,
   lucidePanelsTopLeft,
   lucidePresentation,
   lucideTreePine,
@@ -38,18 +37,17 @@ export type BarCategory = { key: string; label: string; Icon: ComponentType };
 const glyph = (prims: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(prims, 18);
 
 // Each bar mode's categories, band by band (a hairline between bands), as the editor lays them out: Write · Rooms,
-// Seating, Amenities, Bar, Recreation, Garden, Meeting · Travel · Stickers.
+// Seats, Perks, Play, Garden, Meet · Travel · Stickers.
 export const MODE_BAR: Record<HeroMode, readonly (readonly BarCategory[])[]> = {
   workshop: [
     [{ key: 'write', label: 'Write', Icon: WriteTabIcon }],
     [
       { key: 'rooms', label: 'Rooms', Icon: glyph(lucidePanelsTopLeft) },
-      { key: 'seating', label: 'Seating', Icon: glyph(lucideArmchair) },
-      { key: 'amenities', label: 'Amenities', Icon: glyph(lucideCoffee) },
-      { key: 'bar', label: 'Bar', Icon: glyph(lucideWine) },
-      { key: 'recreation', label: 'Recreation', Icon: glyph(lucideGamepad2) },
+      { key: 'seating', label: 'Seats', Icon: glyph(lucideArmchair) },
+      { key: 'amenities', label: 'Perks', Icon: glyph(lucideCoffee) },
+      { key: 'recreation', label: 'Play', Icon: glyph(lucideWine) },
       { key: 'garden', label: 'Garden', Icon: glyph(lucideTreePine) },
-      { key: 'meeting', label: 'Meeting', Icon: glyph(lucidePresentation) },
+      { key: 'meeting', label: 'Meet', Icon: glyph(lucidePresentation) },
     ],
     [{ key: 'travel', label: 'Travel', Icon: MoveGroupIcon }],
     [{ key: 'stickers', label: 'Stickers', Icon: StickersTabIcon }],

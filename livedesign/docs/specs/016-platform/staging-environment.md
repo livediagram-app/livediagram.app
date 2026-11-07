@@ -88,7 +88,7 @@ declared through `[[migrations]]` tags in `apps/api/wrangler.toml`, restated und
 applies a new tag to staging's Durable Objects one manual deploy before production's.
 
 A deploy that fails stops the staging run before the tiers after it, and the
-`deployed/staging` tag stays put, so the next deploy retries it. The staging deploy is
+deploy record stays put, so the next deploy retries it. The staging deploy is
 chained to CI rather than fired in parallel with it, so only a green `main` reaches it.
 
 ## noindex, at the edge

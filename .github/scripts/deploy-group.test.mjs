@@ -40,7 +40,6 @@ const PRODUCTS = ['livedesign', 'livediagram', 'livedocuments', 'livehuddle', 'l
 const EVERY = [
   ...PRODUCTS.flatMap((p) => [
     worker(`@${p}/api`, `${p}/apps/api`, 0, { hosted: p }),
-    worker(`@${p}/community`, `${p}/apps/community`, 1, { build: true }),
     worker(`@${p}/editor`, `${p}/apps/editor`, 1, { build: true }),
     worker(`@${p}/help`, `${p}/apps/help`, 1, { build: true, history: true }),
     worker(`@${p}/marketing`, `${p}/apps/marketing`, 1, { build: true }),
@@ -80,13 +79,13 @@ test('sites group by product; services and apis, and routers, are one job each',
   assert.deepEqual(
     sites.map((g) => [g.label, g.count, g.history, g.timeout]),
     [
-      ...PRODUCTS.map((p) => [`Sites (${p})`, 5, true, 10 + 4 * 6 + 2]),
+      ...PRODUCTS.map((p) => [`Sites (${p})`, 4, true, 10 + 3 * 6 + 2]),
       ['Sites (liveworkspace)', 2, false, 10 + 6 + 2],
     ],
   );
   assert.equal(
     sites[1].workers,
-    '@livediagram/community, @livediagram/editor, @livediagram/help, @livediagram/marketing, @livediagram/mcp',
+    '@livediagram/editor, @livediagram/help, @livediagram/marketing, @livediagram/mcp',
   );
 
   const routers = deployGroups(EVERY, 2);

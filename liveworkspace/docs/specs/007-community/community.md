@@ -2,12 +2,16 @@
 
 Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments**,
 **livedesign** and **livehuddle** (owner, 2026-11-02; launched with Work Tracker #189). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
-service stores them in its own D1 database. It is an API only: liveworkspace.app has no Community pages. Each app
-hosts its own gallery and post pages, in its own look, and they show that app's posts only.
+service stores them in its own D1 database. The pages are liveworkspace.app's too: one Community page, built once in
+the site and served under every app's address by that app's router, the way the Explorer is (owner, 2026-11-06; "One
+page for every app" below). On an app's address it shows that app's posts first, with All Apps a click away; on
+liveworkspace.app it shows every app's.
 
 ```
 packages/community               @liveworkspace/community: apps, vocabulary, limits, search grammar, wire shapes
+packages/community-site          @liveworkspace/community-site: the routers' Community step (head, sitemap)
 liveworkspace/apps/community     the API Worker (@liveworkspace/community-service) and its D1 migrations
+liveworkspace/apps/site          the Community page (/community, /community/post), with the rest of liveworkspace.app
 ```
 
 Before October 2026, livediagram, livedocuments and livedesign each kept their posts, likes, copies and reports in
@@ -29,14 +33,68 @@ Each app offers the same Community, in its own words and look, built from the sa
   the Share dialog, beside Passes. The tab is the same wherever the Share dialog opens: in the app's editor, in the
   app's Explorer, and in the Explorer on liveworkspace.app, for every app's documents. It is offered for the owner's
   personal documents; a team library's document says it can't be shared to the Community.
-- **The gallery**: the app's own Community pages at `/community` on its site: search, categories, tags, sorts and
-  My Shares; a post page with a read-only preview, Make a Copy, likes and reports.
+- **The gallery**: the Community page at `/community` on the app's site (liveworkspace.app's page, served there by
+  the app's router): search, categories, tags, sorts and My Shares; a post page with a read-only preview, Make a
+  Copy, likes and reports.
 - **The landing page**: the app's home page carries a **From the Community** section, its six featured posts (the
   most liked over three months, topped up) leading to the gallery. Until an app's Community has six to feature, or
   while its service cannot be reached, the section is not shown at all: a half-empty showcase sells it short.
 - **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
 - **Moderation**: reports alone, as below, the same for every app.
 - **Categories**: each app has its own closed set (below), so a gallery's filters speak its product's language.
+
+## One page for every app
+
+The Community page lives in liveworkspace.app's site (`liveworkspace/apps/site`, [010-site](../010-site/site.md)
+"The Community") and is served two ways, like the Explorer
+([004-index/one-explorer.md](../004-index/one-explorer.md)):
+
+- **On an app's address** (`livediagram.app/community`), its router hands `/community` and everything under it to
+  liveworkspace.app with the address bar unchanged (`@liveworkspace/sites/workspace-proxy`, `COMMUNITY_ROUTE`, no
+  cookies forwarded). The page is that app's: its posts by default, its words, its colours, its session for My
+  Shares, its telemetry and its help centre.
+- **On liveworkspace.app** (`liveworkspace.app/community`, linked from the site's footer), it shows every app's
+  posts together, in the platform's words ("creations") and slate, with no switch.
+
+**Which posts.** On an app's address a switch beside the search reads **<app>** and **All Apps**, the same switch
+the Explorer's pane header draws (`@liveworkspace/ui` `AppScopeToggle`), each side with its logo and a hover card.
+It starts on the app every time the page opens, as the Explorer's does, and lives in the page, not the address: a
+shared gallery link opens on the app's own posts. All Apps lists every app's posts, its category menu offers every
+app's categories (each once, Something Else last), and My Shares is not offered there (it is one app's, on its own
+address); switching to All Apps takes `is:mine` out of the search.
+
+**A post opens on its own app's address**, where its viewer, embed, copy and session live. A card for the page's own
+app opens in place; a card for another app's post (All Apps, or anything on liveworkspace.app) is a full link to
+`<that app>/community/post?id=`. liveworkspace.app has no post pages of its own: `/community/post?id=…&app=<app>`
+there moves to that app's address, and without `app` shows not-found.
+
+**The header** reads `liveworkspace | app`, the Explorer's header (the liveworkspace logo with the site switcher,
+a slanted hairline and the app's logo, which leads back to the app; the account control on the right). On
+liveworkspace.app the app's half is left out. The site switcher leads each site to its own Community, and an app
+whose router serves no Community page yet (liveplanner) to its home.
+
+**Until the page knows where it is.** The page is one static export, so which address it is on is read in the
+browser. While it is prerendered and hydrating nothing loads, and the words that depend on it (the hero's "Made
+With …" and its line) hold their space unseen, so an app's visitor never sees liveworkspace's words first.
+
+**Search engines.** The gallery's static head is liveworkspace.app's All Apps (`Community · liveworkspace`,
+canonical `https://www.liveworkspace.app/community`). On an app's address the router's Community step
+(`@liveworkspace/community-site/router`) rewrites it to the app's own before it leaves: `Community | <product>`, the
+app's description, and the canonical, `og:url` and `og:site_name` on the app's origin, so each app's gallery is its
+own page. A post's shell names no canonical; the step fills its head from the service (title, description,
+canonical `https://www.<app>/community/post?id=`, JSON-LD) and answers 404 for a post that is gone. Each app's
+`/community/sitemap.xml` is answered by the same step, and liveworkspace.app's sitemap lists `/community`. Pages have
+no trailing slash, as the rest of the site: `/community/` and `/community/post/?id=` answer one redirect that stays
+on the app.
+
+**Likes** keep each app's per-browser key on the app's origin (`<product>:v2:community-key`), the key its own
+Community app used, so a visitor's hearts carry over. On liveworkspace.app the key is `liveworkspace:v2:community-key`.
+
+**Telemetry.** On an app's address the page sends the Community's events in that app's name, as its own Community
+app did: `Community·Opened·Post`, `·Liked·Post`, `·Unliked·Post`, `·Copied·Post`, `·Reported·<Reason>`,
+`·Searched·Query`, `·Selected·<Category|Tag|Sort|Mine>`, and `UI·Opened·<article>` for a help link
+(`apps/site/lib/community/telemetry.ts`, every type literal; the dashboards' scan reads it as platform code). On
+liveworkspace.app, where no app is the sender, it sends nothing.
 
 ## Categories
 
@@ -95,7 +153,9 @@ Every route is under `/api/community`. Answers are JSON; errors are `{ "error": 
 
 Each one names its app with `?app=livediagram.app` (or `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
 `livehuddle.app`); without one the answer is
-`400 invalid_app`, and another app's post answers `404`. Likes and reports carry the browser's
+`400 invalid_app`, and another app's post answers `404`. The gallery's two reads also take `?app=all`, the Community
+page's All Apps: `GET /posts` lists every app's public posts (each naming its `app`) and `GET /facets` counts them;
+any other route with `app=all` answers `400 invalid_app`. Likes and reports carry the browser's
 community key as `X-Community-Key`, never an owner id.
 
 | Route                           | What it answers                                                       | Cache                           |
@@ -170,7 +230,7 @@ document and its `community_post` row, so a trashed document's link closes at on
 | -------------- | --------------------------------------------------------------------------------------------------- |
 | api Worker     | `COMMUNITY_URL` var (default `https://www.liveworkspace.app/api/community`), `COMMUNITY_KEY` secret |
 | Browser builds | `NEXT_PUBLIC_COMMUNITY_API` (same default)                                                          |
-| Pages Worker   | `COMMUNITY_URL` var, for the post page's head and the sitemap                                       |
+| App router     | `COMMUNITY_URL` var, for the Community page's head and the sitemap                                  |
 | Both           | The app's own `COMMUNITY_ENABLED` still switches its Community off                                  |
 
 Without `COMMUNITY_KEY`, an app has no Community: it reports `communityEnabled: false`, and publishing
@@ -180,17 +240,19 @@ answers 404. The service's own `COMMUNITY_ENABLED` (`false`, `0` or `off`) answe
 
 ```sh
 cd liveworkspace/apps/community
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8791/api/community
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
 http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
 api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
 `COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments', livedesign's and livehuddle's apis
-the same, with `dev-livedocuments-community-key`, `dev-livedesign-community-key` and `dev-livehuddle-community-key`), and its pages with
-`NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community`. Development accepts writes from any
+the same, with `dev-livedocuments-community-key`, `dev-livedesign-community-key` and `dev-livehuddle-community-key`). The
+Community page is the site's (http://localhost:3000/community, and each app's router's `/community`), which reads the
+service through the site's own `/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.
 
 ## Deploys
@@ -215,27 +277,27 @@ them. An app keeps only thin doors: its routes, its storage and its words.
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@liveworkspace/community`      | The contract: apps, categories, limits, search grammar, wire shapes; the paths every app's site shares (`/paths`); and the app Worker's side (`/app`): the service's app routes and the copier hash, the room's `community_post` row and its check, the owner and My Shares routes, and what a community link's reads leave out |
 | `@liveworkspace/community-ui`   | The Share dialog's **Community** tab (the section, Share to Community, Edit Listing, Remove), the post tile, the landing page's **From the Community** section, the help deep link, the Community bar                                                                                                                           |
-| `@liveworkspace/community-site` | The gallery and post pages, and the small Worker in front of them (a post's head, the sitemap), on which each app's `apps/community` is a thin shell, as Help is on help-site                                                                                                                                                   |
+| `@liveworkspace/community-site` | The routers' Community step (`/router`): the gallery's head made the app's, a post's head, and the app's sitemap, in front of liveworkspace.app's page                                                                                                                                                                          |
+| `liveworkspace/apps/site`       | The Community page itself (`app/community`, `components/community`): the gallery and post pages, their binding to where the page is, their header and their telemetry                                                                                                                                                           |
 
 ### An app's Community pages
 
-An app's `apps/community` keeps only its layout (its header, footer, boot scripts and metadata), its routes and its
-binding; the pages are `@liveworkspace/community-site`'s, so they look and behave the same in every app, in the app's
-words and brand. The binding is a `CommunitySite`, which the layout's own small client provider hands the pages once:
+An app keeps no Community pages of its own. Its router runs the Community step first
+(`routeCommunity` from `@liveworkspace/community-site/router`), bound to the app (`livedocuments.app`), its canonical
+origin, its product name and its nouns, and forwards the rest through `routeToWorkspace`. The page works out the rest
+from its address (`components/community/CommunityBinding.tsx`):
 
-- **Which posts**: the app (`livedocuments.app`), and its words ("document", "documents", the product's name), from
-  `COMMUNITY_APP_WORDS`.
-- **Its api**: where it is (`/api` behind the router), which answers My Shares, the session and the capabilities;
-  and the Community service the build names, if any (`NEXT_PUBLIC_COMMUNITY_API`).
-- **The browser's community key**: where the app keeps it (its own localStorage key, on its own origin).
-- **Who is signed in**: the app's readable signed-in hint, so a signed-out browser asks nothing.
-- **Its routes**: the read-only viewer, Make a Copy, the embed, a post's card image, the author's own document,
-  sign-in, and where Share Your Own leads (the person's own documents).
-- **Its telemetry** (`Community·…`, as above) and **its help links** (its two Community articles, sent as its own
-  `UI·Opened`).
+- **Which posts**: the app's, or every app's, and their words from `COMMUNITY_APP_WORDS` ("creations" for All Apps).
+- **Its api**: the app's own `/api` on its address, for My Shares and the capabilities; the Community service as
+  seen from the page (`NEXT_PUBLIC_COMMUNITY_API` names another).
+- **Who is signed in**: the app's session, the one the header and the Explorer read
+  (`lib/explorer/app-session.ts` `appAccount`), asked only when the app's signed-in hint is set.
+- **Its routes**: the read-only viewer, Make a Copy, the embed, a post's card image and the author's own document,
+  each on the post's own app's address (`/design/…` for livedesign, `/document/…` for the rest); the app's sign-in;
+  Share Your Own leads to Explorer Home.
+- **Its telemetry** and **its help links**, as "One page for every app" says.
 
-The Worker is the same factory in every app, bound to the app, its canonical origin and its product name. The
-landing section takes the app, its words, its card images and its help link.
+The landing section takes the app, its words, its card images and its help link.
 
 ### The Share dialog's Community tab
 
@@ -268,9 +330,12 @@ app knows who owns the document and whether it may be published).
    the service's `src/env.ts` and `appKey`.
 2. In the app's api: the document room's `community_post` row, the owner routes, the link doors and the check,
    on the shared server side of `@liveworkspace/community`.
-3. Its pages: `apps/community` on `@liveworkspace/community-site` (its layout, routes and `CommunitySite` binding, as
-   "An app's Community pages" says), the landing section and the Share dialog's tab from `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer
-   offers the tab.
+3. Its pages: the router's Community step (`routeCommunity`, bound as "An app's Community pages" says) with its
+   `COMMUNITY_URL`, its brand ramp in `apps/site/app/app-colours.css` and its routes in the page's links
+   (`components/community/lib/links.ts`), the landing section and the Share dialog's tab from
+   `@liveworkspace/community-ui`, and `APP_ITEMS[app].share.communityPath` so liveworkspace.app's Explorer offers the
+   tab. Until its page is ready, `hasCommunityPage` (`@liveworkspace/sites/workspace-proxy`) keeps its router's
+   `/community` with its own site.
 
 ## Performance
 
@@ -289,7 +354,11 @@ Measured against the real schema in SQLite, with 1,000 posts by 40 owners:
 | Sync of 500 documents | 1 batch of at most 4             | 0       |
 | Hidden since          | 1                                | 13 B    |
 
-- Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`).
+- Every list and count is one indexed query per app (`posts (app, …, state, document_state, …)`). All Apps' list
+  and count lead with the state instead (`posts (state, document_state, …)`, migration 0002), so they stay one
+  indexed query across every app.
+- The Community page is liveworkspace.app's static export, cached at the edge like the rest of the site; an app's
+  router adds one rewrite of the head (and, for a post, one service read, bounded by `API_TIMEOUT_MS`).
 - The sync writes one statement per state, not per document, so a batch of 500 stays far inside D1's
   per-invocation query limit.
 - The app's minute cron is one indexed D1 read and one request when nothing changed.

@@ -8,6 +8,7 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  turnsWithFacing,
   type Element,
 } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -57,6 +58,13 @@ export function CanvasSelectionToolbars({
     useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
   );
   const commentsShown = useCommentBadges();
+  // The pieces of furniture in a multi-selection that turn (docs/specs/009-elements/furniture-facing.md "Several pieces
+  // at once"), read only while the multi-selection toolbar shows.
+  const turning = showMultiToolbar
+    ? props.elements.filter(
+        (el) => multiSelectedIds.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
+      )
+    : [];
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
@@ -133,7 +141,24 @@ export function CanvasSelectionToolbars({
                   }
                 : undefined
             }
+            // A piece of furniture's quarter turns (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"),
+            // an Editor's, on a piece that turns.
+            onTurn={
+              !readOnly &&
+              props.onTurnSelected &&
+              selected?.type === 'shape' &&
+              turnsWithFacing(selected.shape)
+                ? props.onTurnSelected
+                : undefined
+            }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
+            // The Format painter's one way in (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): this
+            // element's look, painted onto the next ones pressed.
+            onFormatPainter={
+              !readOnly && selected && props.onStartFormatPainter
+                ? () => props.onStartFormatPainter?.(selected.id)
+                : undefined
+            }
             // Intra-layer z-order (docs/specs/006-document/layers.md): stack within the element's own
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
@@ -210,6 +235,8 @@ export function CanvasSelectionToolbars({
               allLocked={elements
                 .filter((el) => multiSelectedIds.has(el.id))
                 .every((el) => el.locked === true)}
+              onTurn={readOnly || !turning.length ? undefined : props.onTurnSelected}
+              turnLocked={turning.every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}

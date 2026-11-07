@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { doorOnRoom, roomDoorSpan, roomWalls, type Element } from '@livehuddle/document';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { AVATAR_SPAWN_GAP, AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
+import {
+  doorOnRoom,
+  isFloorShape,
+  roomDoorSpan,
+  roomWalls,
+  type Element,
+} from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { furnishRooms } from './template-office-parts';
 
@@ -47,14 +51,10 @@ describe('the Virtual Office template', () => {
     for (const r of rooms) expect(doorSide(r, els)).toBe(r.y === top ? 's' : 'n');
   });
 
-  it('lays the rooms and rugs under everything else', () => {
-    const firstOther = els.findIndex(
-      (e) => !(e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug')),
-    );
-    const lastFloor = els.reduce(
-      (at, e, i) => (e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug') ? i : at),
-      -1,
-    );
+  it('lays the floors (rooms, rugs and its Avatar Pad) under everything else', () => {
+    const isFloor = (e: Element) => e.type === 'shape' && isFloorShape(e.shape);
+    const firstOther = els.findIndex((e) => !isFloor(e));
+    const lastFloor = els.reduce((at, e, i) => (isFloor(e) ? i : at), -1);
     expect(lastFloor).toBeLessThan(firstOther);
   });
 
@@ -63,15 +63,16 @@ describe('the Virtual Office template', () => {
     expect(shapes('meeting-table')).toHaveLength(1);
     expect(shapes('water-cooler')).toHaveLength(1);
     expect(shapes('coffee-machine')).toHaveLength(1);
-    expect(shapes('mode-button')).toEqual([
-      expect.objectContaining({ label: 'Walk In', mode: 'avatar' }),
-    ]);
+    // The way in is an Avatar Pad, where the Walk In button used to be
+    // (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one").
+    expect(shapes('avatar-pad')).toHaveLength(1);
+    expect(shapes('mode-button')).toHaveLength(0);
   });
 
   it('puts every piece inside a room, clear of its walls', () => {
     const rooms = shapes('room');
     for (const e of els) {
-      if (e.type !== 'shape' || ['room', 'door', 'mode-button', 'sticker'].includes(e.shape))
+      if (e.type !== 'shape' || ['room', 'door', 'avatar-pad', 'sticker'].includes(e.shape))
         continue;
       const room = rooms.find(
         (r) =>
@@ -148,14 +149,14 @@ describe('the space templates', () => {
   const count = (els: Element[], shape: string) =>
     els.filter((e) => e.type === 'shape' && e.shape === shape).length;
 
-  it('each lays its floors first and gives a way in', () => {
+  it('each lays its floors first and gives a way in, its Avatar Pad', () => {
     for (const kind of ['coworking-space', 'team-pod', 'all-hands-hall'] as const) {
       const els = build(kind);
-      const isFloor = (e: Element) =>
-        e.type === 'shape' && (e.shape === 'room' || e.shape === 'rug' || e.shape === 'stage');
+      const isFloor = (e: Element) => e.type === 'shape' && isFloorShape(e.shape);
       const firstOther = els.findIndex((e) => !isFloor(e));
       expect(els.slice(firstOther).some(isFloor), kind).toBe(false);
-      expect(count(els, 'mode-button'), kind).toBe(1);
+      expect(count(els, 'avatar-pad'), kind).toBe(1);
+      expect(count(els, 'mode-button'), kind).toBe(0);
     }
   });
 
@@ -195,7 +196,7 @@ describe('the space templates', () => {
     }
   });
 
-  it('gives the coworking space eight desks and two single-seat booths', () => {
+  it('gives the coworking space eight desks and two single-seat booths (each a Phone Booth)', () => {
     const els = build('coworking-space');
     expect(count(els, 'desk')).toBe(8);
     const rooms = els.filter((e) => e.type === 'shape' && e.shape === 'room').map((e) => e.label);
@@ -204,15 +205,15 @@ describe('the space templates', () => {
 
   it('gives the team pod four desks, a table and a board of four stickies', () => {
     const els = build('team-pod');
-    // The way in waits beside the pod under the board, level with the pod, never under the plan's bottom edge where
-    // the canvas's bottom-right cluster floats in a view from a desk (Work Tracker #580).
+    // Everyone arrives in the middle of the pod, between the desks and the table, never under the plan's bottom edge
+    // where the canvas's bottom-right cluster floats in a view from a desk (Work Tracker #580, #601, #584).
     type Box = Element & { x: number; y: number; width: number; height: number };
     const pod = els.find((e) => e.type === 'shape' && e.shape === 'room') as Box;
-    const walk = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Box;
-    const stickies = els.filter((e) => e.type === 'sticky') as Box[];
-    expect(walk.x).toBeGreaterThanOrEqual(pod.x + pod.width);
-    expect(walk.y + walk.height).toBeLessThanOrEqual(pod.y + pod.height);
-    expect(walk.y).toBeGreaterThanOrEqual(Math.max(...stickies.map((s) => s.y + s.height)));
+    const walk = els.find((e) => e.type === 'shape' && e.shape === 'avatar-pad') as Box;
+    expect(walk.x).toBeGreaterThan(pod.x);
+    expect(walk.x + walk.width).toBeLessThan(pod.x + pod.width);
+    expect(walk.y).toBeGreaterThan(pod.y);
+    expect(walk.y + walk.height).toBeLessThan(pod.y + pod.height);
     expect(count(els, 'desk')).toBe(4);
     expect(count(els, 'meeting-table')).toBe(1);
     expect(els.filter((e) => e.type === 'sticky')).toHaveLength(4);
@@ -271,62 +272,5 @@ describe('furnishRooms', () => {
     ) as (Element & { width: number; height: number })[];
     expect(rug!.width).toBe(400);
     expect(rug!.height).toBe(240);
-  });
-});
-
-// The character opens a full figure below the Walk In button (avatarSpawnBelow), so that spot has to be open floor:
-// Virtual Office's button once sat over the Focus Room's wall and bookshelf.
-describe('the Walk In button in every Spaces template', () => {
-  type Box = { x: number; y: number; width: number; height: number };
-  const kinds = [
-    'virtual-office',
-    'coworking-space',
-    'team-pod',
-    'focus-library',
-    'all-hands-hall',
-    'training-room',
-    'rooftop-bar',
-    'cafe',
-    'garden-retreat',
-    'city-park',
-    'company-campus',
-    'conference-venue',
-    'startup-hq',
-  ] as const;
-  const hits = (a: Box, b: Box) =>
-    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
-
-  it.each(kinds)('leaves open floor under it in %s', (kind) => {
-    const els = buildTemplate(kind, 0, 0);
-    const button = els.find((e) => e.type === 'shape' && e.shape === 'mode-button') as Element &
-      Box;
-    // The standing figure of the biggest size (Tall): its head AVATAR_SPAWN_GAP under the button, its feet one figure
-    // height below that.
-    const scale = avatarScale('tall');
-    const top = button.y + button.height + AVATAR_SPAWN_GAP;
-    const figure = {
-      x: button.x + button.width / 2 - (AVATAR_WIDTH * scale) / 2,
-      y: top,
-      width: AVATAR_WIDTH * scale,
-      height: avatarFigureHeight(scale),
-    };
-    const solid = els.filter(
-      (e) =>
-        e.type === 'sticky' ||
-        (e.type === 'shape' && !['room', 'rug', 'mode-button', 'sticker'].includes(e.shape)),
-    ) as Box[];
-    for (const piece of solid) expect(hits(figure, piece), JSON.stringify(piece)).toBe(false);
-    for (const room of els.filter((e) => e.type === 'shape' && e.shape === 'room') as (Element &
-      Box & { roomDoor?: 'n' | 's' | 'e' | 'w' })[]) {
-      for (const w of roomWalls(room)) {
-        const wall = {
-          x: Math.min(w.a.x, w.b.x) - 1,
-          y: Math.min(w.a.y, w.b.y) - 1,
-          width: Math.abs(w.a.x - w.b.x) + 2,
-          height: Math.abs(w.a.y - w.b.y) + 2,
-        };
-        expect(hits(figure, wall), `${room.label ?? 'room'} wall`).toBe(false);
-      }
-    }
   });
 });

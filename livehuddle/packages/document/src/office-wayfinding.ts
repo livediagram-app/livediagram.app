@@ -1,5 +1,5 @@
-// The Space's wayfinding pieces (docs/specs/009-elements/directory.md, elevator.md): the Directory stand and the
-// Elevator, drawn as tables of parts in the furniture's vocabulary (seating.ts), upright from the room's camera like
+// The Space's wayfinding pieces (docs/specs/009-elements/directory.md, elevator.md, stairs.md): the Directory stand,
+// the Elevator and the Stairs, drawn as tables of parts in the furniture's vocabulary (seating.ts), upright from the room's camera like
 // the rest of the office, so the canvas (FurnitureView) and an export (svg-render-faces) paint the same piece. What
 // they do (the list of rooms, the floor panel) is the editor's. Pure: no React, no DOM.
 
@@ -17,6 +17,9 @@ export const WAYFINDING_TONES = {
   steelDark: '#64748b',
   display: '#1e293b',
   lamp: '#fbbf24',
+  // The Stairs' stone: a tread's top lit, a riser's front in shade.
+  tread: '#f5f5f4',
+  riser: '#c7c2bd',
 } as const;
 
 const T = WAYFINDING_TONES;
@@ -72,7 +75,166 @@ const ELEVATOR_VIEW: FurnitureDrawing = {
   ring: { cx: 56, cy: 128, rx: 50, ry: 8 },
 };
 
+// The Stairs (docs/specs/009-elements/stairs.md): a flight of seven steps rising away from you, narrowing as it goes,
+// between two side walls that lean in with it, each step a lit tread over a shaded riser, a handrail along each wall
+// with a newel cap at its foot, the landing at the top opening dark onto the floor above, and a blue sign over it with
+// an up and a down arrow.
+const STAIRS_STEPS = 7;
+const STAIRS_LANDING = 28;
+const STAIRS_STEP = 13;
+const STAIRS_FOOT = STAIRS_LANDING + STAIRS_STEPS * STAIRS_STEP;
+// The flight's sides: 16..80 at its foot, 26..70 at the landing, straight between.
+const stairsSide = (y: number): [number, number] => {
+  const t = (STAIRS_FOOT - y) / (STAIRS_FOOT - STAIRS_LANDING);
+  return [16 + 10 * t, 80 - 10 * t];
+};
+// One band of the flight between two heights, as wide as the flight there.
+const band = (y0: number, y1: number): string => {
+  const [a0, b0] = stairsSide(y0);
+  const [a1, b1] = stairsSide(y1);
+  return `M${a0} ${y0}H${b0}L${b1} ${y1}H${a1}z`;
+};
+const STAIRS_VIEW: FurnitureDrawing = {
+  width: 96,
+  height: 128,
+  parts: [
+    ellipse('shadow', 48, 124, 44, 3.5),
+    path('face', 'M4 122h12l10-108h-8z'),
+    path('face', 'M92 122h-12l-10-108h8z'),
+    rect('panel', 24, 14, 48, STAIRS_LANDING - 14, 1, T.display),
+    ...Array.from({ length: STAIRS_STEPS }, (_, k) => {
+      const y = STAIRS_LANDING + k * STAIRS_STEP;
+      return [path('panel', band(y, y + 5), T.tread), path('face', band(y + 5, y + 13), T.riser)];
+    }).flat(),
+    path('line', 'M10 116l11-96M86 116l-11-96'),
+    ellipse('panel', 10, 116, 3.5, 3.5),
+    ellipse('panel', 86, 116, 3.5, 3.5),
+    rect('panel', 32, 2, 32, 14, 4, T.sign),
+    path('mark', 'M37.5 12l4.5-6.5 4.5 6.5z', T.white),
+    path('mark', 'M49.5 5.5l4.5 6.5 4.5-6.5z', T.white),
+  ],
+  seats: [],
+  ring: { cx: 48, cy: 118, rx: 42, ry: 7 },
+};
+
+/** Where a character climbing the Stairs ends up: its feet on the flight's second step from the top, as a share of
+ * the piece's height (the drawing's 128 grid), centred across it. */
+export const STAIRS_TOP_SHARE = (STAIRS_LANDING + STAIRS_STEP + 5) / 128;
+
+// From behind (the flight turned to climb down the canvas): the landing's dark opening nearest you, the treads
+// stepping down away from it toward the foot at the top, each tread's nosing a shaded gap (its riser faces away),
+// the handrails with their newel caps at the far foot, and the sign over the landing, its arrows reading from both
+// sides.
+const STAIRS_BACK_TOP = 16;
+const STAIRS_BACK_TREAD = 12;
+const STAIRS_BACK_LANDING = STAIRS_BACK_TOP + STAIRS_STEPS * STAIRS_BACK_TREAD;
+const STAIRS_BACK: FurnitureDrawing = {
+  width: 96,
+  height: 128,
+  parts: [
+    ellipse('shadow', 48, 124, 44, 3.5),
+    path('face', 'M4 122h12l10-108h-8z'),
+    path('face', 'M92 122h-12l-10-108h8z'),
+    path('face', band(STAIRS_BACK_TOP, STAIRS_BACK_LANDING), T.riser),
+    ...Array.from({ length: STAIRS_STEPS }, (_, k) => {
+      const y = STAIRS_BACK_TOP + k * STAIRS_BACK_TREAD;
+      return path('panel', band(y, y + STAIRS_BACK_TREAD - 2.5), T.tread);
+    }),
+    path('panel', band(STAIRS_BACK_LANDING, 118), T.display),
+    path('line', 'M10 116l11-96M86 116l-11-96'),
+    ellipse('panel', 21, 20, 3.5, 3.5),
+    ellipse('panel', 75, 20, 3.5, 3.5),
+    rect('panel', 32, 90, 32, 14, 4, T.sign),
+    path('mark', 'M37.5 100l4.5-6.5 4.5 6.5z', T.white),
+    path('mark', 'M49.5 93.5l4.5 6.5 4.5-6.5z', T.white),
+  ],
+  seats: [],
+  ring: { cx: 48, cy: 118, rx: 42, ry: 7 },
+};
+
+// Facing left (the flight climbing to the right): its foot on the left, each step a lit tread a rise higher than the
+// last with its riser a shaded strip on its left, the dark landing at the top on the right, the near side wall's face
+// rising with the flight and its handrail along it, the far wall and its handrail beyond, the newel caps at the foot,
+// and the sign over the landing seen nearly edge on.
+const SIDE_FAR = 68;
+const SIDE_NEAR = 120;
+const SIDE_RISE = 7;
+const SIDE_RUN = 14;
+const sideStep = (k: number) => ({ x: 8 + k * SIDE_RUN, h: (k + 1) * SIDE_RISE });
+const STAIRS_SIDE_LANDING = sideStep(STAIRS_STEPS);
+const STAIRS_SIDE: FurnitureDrawing = {
+  width: 136,
+  height: 128,
+  parts: [
+    ellipse('shadow', 68, 123, 64, 3.5),
+    path('face', `M4 ${SIDE_FAR}V${SIDE_FAR - 19}L106 7H132V${SIDE_FAR}Z`),
+    path('line', `M8 ${SIDE_FAR - 17}L106 ${SIDE_FAR - 59}`),
+    ...Array.from({ length: STAIRS_STEPS }, (_, k) => {
+      const { x, h } = sideStep(k);
+      return [
+        rect('face', x - 4, SIDE_FAR - h, 4, SIDE_NEAR - SIDE_FAR + SIDE_RISE, 0.5, T.riser),
+        rect('panel', x, SIDE_FAR - h, SIDE_RUN, SIDE_NEAR - SIDE_FAR, 1, T.tread),
+      ];
+    }).flat(),
+    rect(
+      'face',
+      STAIRS_SIDE_LANDING.x - 4,
+      SIDE_FAR - STAIRS_SIDE_LANDING.h + SIDE_RISE,
+      4,
+      SIDE_NEAR - SIDE_FAR,
+      0.5,
+      T.riser,
+    ),
+    rect(
+      'panel',
+      STAIRS_SIDE_LANDING.x,
+      SIDE_FAR - STAIRS_SIDE_LANDING.h + SIDE_RISE,
+      24,
+      SIDE_NEAR - SIDE_FAR,
+      1,
+      T.display,
+    ),
+    path('face', `M4 124V${SIDE_NEAR - 19}L106 ${SIDE_NEAR - 63}H132V124Z`),
+    path('line', `M8 ${SIDE_NEAR - 24}L106 ${SIDE_NEAR - 66}`),
+    ellipse('panel', 8, SIDE_NEAR - 24, 3.5, 3.5),
+    ellipse('panel', 8, SIDE_FAR - 17, 3.5, 3.5),
+    rect('panel', 112, 0, 14, 20, 3, T.sign),
+    path('mark', 'M115.5 9l3.5-5 3.5 5z', T.white),
+    path('mark', 'M115.5 11l3.5 5 3.5-5z', T.white),
+  ],
+  seats: [],
+  ring: { cx: 68, cy: 116, rx: 64, ry: 8 },
+};
+
+/**
+ * The two ends of a flight on each of its drawings (stairs.md "Turned"): where a climb ends (the feet on the second
+ * step from the top, as fractions of the drawing's grid) and which side of the piece its foot opens onto, where the
+ * walk off ends; `v` is the height a walk off to the side stands at. Facing right is the side drawing mirrored.
+ */
+export const STAIRS_ENDS: Readonly<
+  Record<
+    'front' | 'back' | 'side',
+    { top: { u: number; v: number }; foot: 'below' | 'above' | 'left'; v: number }
+  >
+> = {
+  front: { top: { u: 0.5, v: STAIRS_TOP_SHARE }, foot: 'below', v: 1 },
+  back: {
+    top: { u: 0.5, v: (STAIRS_BACK_TOP + 5 * STAIRS_BACK_TREAD + 5) / 128 },
+    foot: 'above',
+    v: 0,
+  },
+  side: {
+    top: {
+      u: (sideStep(5).x + SIDE_RUN / 2) / 136,
+      v: ((SIDE_FAR + SIDE_NEAR) / 2 - sideStep(5).h) / 128,
+    },
+    foot: 'left',
+    v: (SIDE_FAR + SIDE_NEAR) / 2 / 128,
+  },
+};
+
 export const WAYFINDING_ART = {
   directory: allSides(DIRECTORY_VIEW),
   elevator: allSides(ELEVATOR_VIEW),
+  stairs: { front: STAIRS_VIEW, back: STAIRS_BACK, side: STAIRS_SIDE },
 } as const;

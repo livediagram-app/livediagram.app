@@ -51,7 +51,9 @@ function renderInbox(index: ReturnType<typeof createFakeIndex>, over: Partial<Ex
   );
 }
 
-const NOW = Date.now();
+// A fixed mid-day, mid-week instant (Wednesday 12:00 local), so the Today and
+// Earlier This Week buckets never depend on when the suite happens to run.
+const NOW = new Date(2026, 9, 28, 12, 0).getTime();
 const MIN = 60_000;
 const DAY = 24 * 60 * MIN;
 
@@ -163,8 +165,14 @@ function asPhone() {
   window.matchMedia = mql as unknown as typeof window.matchMedia;
 }
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  // Only Date is faked; timers stay real for the async waits.
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(NOW);
+});
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   // @ts-expect-error jsdom has none; a test that stubbed it takes it away again.
   delete window.matchMedia;

@@ -1,7 +1,14 @@
 import { useRef, type ReactNode } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
-import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
+import {
+  CommentIcon,
+  DuplicateIcon,
+  FormatPainterIcon,
+  LockIcon,
+  TrashIcon,
+  HoverCard,
+} from '@livehuddle/ui';
 import {
   BringToFrontIcon,
   EllipsisIcon,
@@ -10,6 +17,7 @@ import {
 } from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
+import { TurnButtons } from '@liveworkspace/workbench/components/canvas/TurnButtons';
 import type { Rect } from '@livehuddle/document';
 
 type SelectionPopoverProps = {
@@ -34,10 +42,16 @@ type SelectionPopoverProps = {
   hasText?: boolean;
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
+  // Turn a piece of furniture a quarter (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"): a piece
+  // that turns only. Disabled, still in its place, while the piece is locked.
+  onTurn?: (quarters: 1 | -1) => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
+  // The Format painter, loaded with this element (docs/specs/008-canvas/canvas-and-palette.md "Format painter"): its
+  // one way in. Omitted in read-only.
+  onFormatPainter?: () => void;
   // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
@@ -85,7 +99,9 @@ export function SelectionPopover({
   onEditText,
   hasText = true,
   onEditPoints,
+  onTurn,
   onDuplicate,
+  onFormatPainter,
   onBringToFront,
   onSendToBack,
   onOpenComments,
@@ -201,15 +217,33 @@ export function SelectionPopover({
             </>
           ) : null}
 
-          {onDuplicate ? (
+          {onTurn ? (
             <>
-              <PopoverButton
-                label="Duplicate"
-                description="Create a copy of this element."
-                onClick={onDuplicate}
-              >
-                <DuplicateIcon />
-              </PopoverButton>
+              <TurnButtons onTurn={onTurn} locked={locked} />
+              <Divider />
+            </>
+          ) : null}
+
+          {onDuplicate || onFormatPainter ? (
+            <>
+              {onDuplicate ? (
+                <PopoverButton
+                  label="Duplicate"
+                  description="Create a copy of this element."
+                  onClick={onDuplicate}
+                >
+                  <DuplicateIcon />
+                </PopoverButton>
+              ) : null}
+              {onFormatPainter ? (
+                <PopoverButton
+                  label="Format Painter"
+                  description="Copy this element's look, then press others to paint it on."
+                  onClick={onFormatPainter}
+                >
+                  <FormatPainterIcon />
+                </PopoverButton>
+              ) : null}
               <Divider />
             </>
           ) : null}

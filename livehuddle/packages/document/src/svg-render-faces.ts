@@ -28,9 +28,9 @@ import {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   isSeatingShape,
-  seatingFacing,
   type FurniturePart,
 } from './seating';
 import {
@@ -43,9 +43,13 @@ import {
   RUG_FILL,
   STAGE_FLOOR,
   stageParts,
+  isLongTable,
+  longTableArt,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
-import { doorParts, outlinedRoomPaths } from './room-builder';
+import { outlinedRoomPaths } from './room-builder';
+import { corridorSvg, doorSvg } from './svg-render-doors';
+import { rugDrawnToSize, rugParts } from './rug-art';
 import {
   GARDEN_PATH_FILL,
   GARDEN_TONES,
@@ -57,12 +61,14 @@ import {
   grassEdgePath,
 } from './office-garden';
 import { POND_FILL, pondParts } from './office-social';
+import { POOL_FILL, swimmingPoolParts } from './office-venue';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
 import { timerPieceSvg } from './svg-render-timers';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
 import { borderOf } from './svg-render-border';
 import { text, type Face } from './svg-render-face-kit';
+import { pieceFacing } from './furniture-facing';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
 import type { CanvasSurface } from './colors';
@@ -101,6 +107,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'avatar-pad',
   // The virtual office (docs/specs/009-elements/office.md).
   'room',
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -138,9 +145,44 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   'door',
   'directory',
   'elevator',
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',
@@ -231,6 +273,7 @@ export function svgBehaviourFace(
     case 'tree':
     case 'directory':
     case 'elevator':
+    case 'stairs':
     case 'notice-board':
     case 'world-clock':
     case 'jukebox':
@@ -249,6 +292,37 @@ export function svgBehaviourFace(
     case 'vending-machine':
     case 'bean-bag':
     case 'reading-nook':
+    case 'printer':
+    case 'copier':
+    case 'lockers':
+    case 'coat-rack':
+    case 'umbrella-stand':
+    case 'kitchen-counter':
+    case 'kitchen-sink':
+    case 'fridge':
+    case 'microwave':
+    case 'kettle':
+    case 'toilet-cubicle':
+    case 'washbasin':
+    case 'hand-dryer':
+    case 'pillar':
+    case 'column':
+    case 'car-park':
+    case 'bike-rack':
+    case 'stage-curtains':
+    case 'podium':
+    case 'nap-pod':
+    case 'treadmill':
+    case 'weight-bench':
+    case 'phone-booth':
+    case 'standing-desk':
+    case 'hot-desk':
+    case 'pet-bed':
+    case 'reception-desk':
+    case 'calendar-wall':
+    case 'suggestion-box':
+    case 'signpost':
+    case 'photo-wall':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':
@@ -256,6 +330,14 @@ export function svgBehaviourFace(
         el,
         pondParts(el.width, el.height),
         fill ?? el.fillColor ?? POND_FILL,
+        stroke,
+      );
+    // A swimming pool (docs/specs/009-elements/venue-pieces.md "Swimming Pool"): its water in the fill, drawn to its size.
+    case 'swimming-pool':
+      return sizedSvg(
+        el,
+        swimmingPoolParts(el.width, el.height),
+        fill ?? el.fillColor ?? POOL_FILL,
         stroke,
       );
     // A garden path and grass are floor like a rug, a garden fence its pickets (docs/specs/009-elements/office.md).
@@ -273,7 +355,18 @@ export function svgBehaviourFace(
     // A rug and a room are floor: their own fill, not the seats' wash (docs/specs/009-elements/office.md), resolved
     // for the paper as the canvas resolves it (deep on a dark tab).
     case 'rug':
-      return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
+      // A patterned rug (office.md "Rug types") is drawn to its size; the Oval keeps its scaled drawing.
+      return rugDrawnToSize(el)
+        ? sizedSvg(
+            el,
+            rugParts(el.width, el.height, el.variant),
+            fill ?? el.fillColor ?? RUG_FILL,
+            stroke,
+          )
+        : furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
+    // A Corridor (docs/specs/009-elements/corridor.md): its floor and walls.
+    case 'corridor':
+      return corridorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'room':
       return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'door':
@@ -429,19 +522,19 @@ function avatarPadArt(el: Face, stroke: string): string {
   );
 }
 
-// A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
+// A piece of furniture (docs/specs/009-elements/furniture-facing.md "The camera"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
-  const art = isSeatingShape(el.shape)
-    ? FURNITURE_ART[el.shape]
-    : isGridOfficeShape(el.shape)
-      ? OFFICE_ART[el.shape]
-      : null;
+  const art = isLongTable(el)
+    ? longTableArt(el.width, el.height, pieceFacing(el))
+    : isSeatingShape(el.shape)
+      ? FURNITURE_ART[el.shape]
+      : isGridOfficeShape(el.shape)
+        ? OFFICE_ART[el.shape]
+        : null;
   if (!art) return '';
-  const facing = isSeatingShape(el.shape)
-    ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
-    : 'n';
-  const frame = furnitureFrame(art, facing);
+  // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
+  const frame = furnitureFrame(art, pieceFacing(el));
   const parts = frame.view.parts
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
     .join('');
@@ -473,33 +566,6 @@ function roomSvg(el: Face, floor: string, stroke: string): string {
     roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR),
     floor,
     stroke,
-  );
-}
-
-// A Door (docs/specs/009-elements/room-builder.md "Door"): the gap it paints over its wall, its jambs, the leaf
-// standing open and its swing, as the canvas draws it.
-function doorSvg(el: Face, floor: string, stroke: string): string {
-  const { gap, jambs, leaf, shut, swing } = doorParts(el.width, el.height);
-  const closed = (el as { doorClosed?: boolean }).doorClosed === true;
-  const f = xmlEscape(floor);
-  const l = xmlEscape(stroke);
-  const box = (b: { x: number; y: number; w: number; h: number }) =>
-    `x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"`;
-  return (
-    `<g transform="translate(${r2(el.x)} ${r2(el.y)})">` +
-    `<rect ${box(gap)} fill="${f}"/>` +
-    jambs
-      .map(
-        (j) =>
-          `<rect ${box(j)} fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>`,
-      )
-      .join('') +
-    // Closed (room-builder.md "Opening and closing"): the leaf across the opening, no swing.
-    (closed
-      ? ''
-      : `<path d="${swing}" fill="none" stroke="${l}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_RAIL_OPACITY}" stroke-dasharray="4 4"/>`) +
-    `<rect ${box(closed ? shut : leaf)} rx="1" fill="${f}" stroke="${l}" stroke-width="${FURNITURE_PANEL_STROKE}"/>` +
-    `</g>`
   );
 }
 
@@ -557,6 +623,13 @@ function furniturePart(p: FurniturePart, seat: string, line: string): string {
         return `fill="${line}"`;
       case 'glint':
         return `fill="none" stroke="${FURNITURE_GLINT.stroke}" stroke-width="${FURNITURE_RAIL_STROKE}" opacity="${FURNITURE_GLINT.opacity}" stroke-linecap="round"`;
+      // A rug's woven pattern (docs/specs/009-elements/office.md "Rug types").
+      case 'tint':
+        return `fill="${line}" opacity="${FURNITURE_WEAVE.tint}"`;
+      case 'sheen':
+        return `fill="${FURNITURE_GLINT.stroke}" opacity="${FURNITURE_WEAVE.sheen}"`;
+      case 'dye':
+        return `fill="${p.fill ? xmlEscape(p.fill) : line}" opacity="${FURNITURE_WEAVE.dye}"`;
     }
   })();
   // A face toward the room is the panel, shaded with its stroke colour.

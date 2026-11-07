@@ -40,11 +40,12 @@ import {
   notFound,
   readObject,
 } from '../http';
-import { accountsAdminTeams, type AdminTeams } from './access';
+import { accountsAdminTeams, type AdminTeams } from '../accounts-access';
 import { dohResolve, parseWebhookUrl, resolvesPublic, type Resolve } from './address';
 import { secretContext, urlContext } from './dispatch';
 import { cardMovesStatement, pingStatement } from './outbox';
 import { newSigningSecret } from './sign';
+import { webhookAuditStatement } from '../team-audit';
 
 export type WebhookRouteDeps = { adminTeams: AdminTeams; resolve: Resolve; now: () => number };
 
@@ -208,7 +209,25 @@ export async function handleWebhooks(
   }
 
   if (segments.length === 2 && method === 'DELETE') {
-    await env.INDEX_DB.prepare('DELETE FROM webhooks WHERE id = ?').bind(id).run();
+    const db = env.INDEX_DB;
+    // A team's goes in its audit log, in the same batch (team-audit.ts).
+    await db.batch([
+      db.prepare('DELETE FROM webhooks WHERE id = ?').bind(id),
+      ...(row.scope.startsWith('t:')
+        ? [
+            webhookAuditStatement(db, {
+              type: 'webhook_removed',
+              teamId: row.scope.slice(2),
+              webhookId: id,
+              name: row.name,
+              kind: row.kind,
+              host: row.host,
+              actorId: person.id,
+              at: now,
+            }),
+          ]
+        : []),
+    ]);
     return noContent();
   }
 
@@ -293,23 +312,42 @@ async function createWebhook(
 
   const id = crypto.randomUUID();
   const secret = kind === 'json' ? newSigningSecret() : null;
-  await env.INDEX_DB.prepare(
-    `INSERT INTO webhooks (id, scope, kind, name, url_sealed, host, secret_sealed, events, created_by, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  )
-    .bind(
-      id,
-      scope,
-      kind,
-      name,
-      await seal(key, urlContext(id), parsed.url.href),
-      parsed.host,
-      secret ? await seal(key, secretContext(id), secret) : null,
-      storedEvents(events),
-      person.id,
-      deps.now(),
-    )
-    .run();
+  const db = env.INDEX_DB;
+  const at = deps.now();
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO webhooks (id, scope, kind, name, url_sealed, host, secret_sealed, events, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        id,
+        scope,
+        kind,
+        name,
+        await seal(key, urlContext(id), parsed.url.href),
+        parsed.host,
+        secret ? await seal(key, secretContext(id), secret) : null,
+        storedEvents(events),
+        person.id,
+        at,
+      ),
+    // A team's goes in its audit log, in the same batch (team-audit.ts).
+    ...(teamId
+      ? [
+          webhookAuditStatement(db, {
+            type: 'webhook_added',
+            teamId,
+            webhookId: id,
+            name,
+            kind,
+            host: parsed.host,
+            actorId: person.id,
+            at,
+          }),
+        ]
+      : []),
+  ]);
   return json({ webhook: webhookOf((await readRow(env, id))!), secret }, { status: 201 });
 }
 

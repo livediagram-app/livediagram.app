@@ -33,6 +33,9 @@ describe('buildTemplateTab: every template opens on a meeting board', () => {
     const tab = buildTemplateTab('tab-b', 'Blank', 'blank-session');
     expect(tab.kind).toBe('diagram');
     expect(tab.opensIn).toBe('workshop');
+    // An agent's blank tab has the blank's Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank
+    // tab has one").
+    expect(tab.elements.map((e) => e.type === 'shape' && e.shape)).toEqual(['avatar-pad']);
   });
 });
 

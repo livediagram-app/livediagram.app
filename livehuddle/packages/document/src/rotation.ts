@@ -2,7 +2,7 @@
 // Every boxed element carries `rotation` except an annotation marker: it is a round numbered pin, so
 // turning it only turns its number (docs/specs/009-elements/blueprints/annotations.md [QD8]); and a
 // pointer note, whose tip is pinned to a point on the board (docs/specs/009-elements/pointer-note.md),
-// so turning the note would swing its leader off that point. One predicate gates the element menu's
+// so turning the note would swing its leader off that point; and furniture, which turns by its facing. One predicate gates the element menu's
 // Rotation category, the Rotate commands and the rotation write, so no surface can offer what another
 // refuses; `rotationOf` is what the canvas and the export draw, so a stored turn on either is ignored.
 
@@ -13,9 +13,17 @@ import {
 } from '@liveworkspace/model-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 import { isPointerNote } from './pointer-note';
+import { isFurnitureShape } from './furniture-facing';
 
 export function supportsRotation(el: Element): el is BoxedElement {
-  return isBoxed(el) && el.type !== 'annotation' && !isPointerNote(el);
+  return (
+    isBoxed(el) &&
+    el.type !== 'annotation' &&
+    !isPointerNote(el) &&
+    // Furniture stands upright, drawn from the room's camera: it turns a quarter at a time by its facing instead
+    // (docs/specs/009-elements/furniture-facing.md "No free rotation").
+    !(el.type === 'shape' && isFurnitureShape(el.shape))
+  );
 }
 
 /** The turn an element is drawn at: its own when it can rotate, else none. */

@@ -147,6 +147,31 @@ describe('gateClientOp', () => {
     expect(gateClientOp(op({ kind: 'notice-pin', note: null }), participant)).toEqual(DROP);
   });
 
+  // docs/specs/009-elements/social-pieces.md "High Scores": a Participant posts its own score, never clears the table.
+  it('relays an arcade score from a Participant only when signed with its adder key, and a clear only from an Editor', () => {
+    const op = (delta: Record<string, unknown>) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'arcade',
+      delta,
+    });
+    const post = (by: string) =>
+      op({
+        kind: 'arcade-score',
+        score: { id: 's', name: 'Ann', score: 10, ms: 5_000, by, at: 1 },
+      });
+    const clear = op({ kind: 'arcade-clear' });
+    const participant = as('participate', { adderKey: 'adder' });
+    expect(gateClientOp(post('adder'), participant)).toEqual(relay(false, true));
+    expect(gateClientOp(post('someone'), participant)).toEqual(DROP);
+    expect(gateClientOp(post('me'), participant)).toEqual(DROP);
+    expect(gateClientOp(post('adder'), as('view', { adderKey: 'adder' }))).toEqual(DROP);
+    expect(gateClientOp(post('anyone'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(clear, participant)).toEqual(DROP);
+    expect(gateClientOp(clear, as('view'))).toEqual(DROP);
+    expect(gateClientOp(clear, as('edit'))).toEqual(relay(false));
+  });
+
   it("shows only an editor's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);
@@ -250,5 +275,38 @@ describe('gateClientOp', () => {
     }
     expect(gateClientOp({ ...knock, roomId: '' }, as('edit'))).toEqual(DROP);
     expect(gateClientOp({ ...answer, answer: 'maybe' }, as('view'))).toEqual(DROP);
+  });
+
+  // docs/specs/009-elements/workday-pieces.md "Share roles": the reception bell is presence from every level.
+  it('relays a ring of the reception bell from every level, Viewer included, and only well formed', () => {
+    const ring = { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' };
+    for (const role of ['edit', 'participate', 'view'])
+      expect(gateClientOp(ring, as(role))).toEqual(relay(true));
+    expect(gateClientOp({ ...ring, deskId: '' }, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/009-elements/social-pieces.md "Share roles": an Editor and a Participant play, a Viewer watches.
+  it("relays a game's paddle and moments from an Editor or a Participant, never a Viewer's or a malformed one", () => {
+    const input = { kind: 'game-input', tabId: 't', pieceId: 'table-1', seat: 0, axis: 0.5 };
+    const event = {
+      kind: 'game-event',
+      tabId: 't',
+      pieceId: 'table-1',
+      seat: 1,
+      game: 'ping-pong',
+      match: 'm1',
+      seq: 3,
+      event: 'miss',
+      score: [1, 0],
+    };
+    for (const role of ['edit', 'participate']) {
+      expect(gateClientOp(input, as(role))).toEqual(relay(true));
+      expect(gateClientOp(event, as(role))).toEqual(relay(true));
+    }
+    expect(gateClientOp(input, as('view'))).toEqual(DROP);
+    expect(gateClientOp(event, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ ...input, axis: 2 }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...event, event: 'hit' }, as('edit'))).toEqual(DROP);
   });
 });

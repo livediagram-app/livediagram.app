@@ -2,7 +2,7 @@ name: Deploy Production
 
 # Production is a manual gate (docs/ci.md "Deploys"): run it from the Actions tab (or
 # `gh workflow run deploy-production.yml`) when staging looks right. By default it ships exactly what
-# staging runs (the `deployed/staging` tag); `source: Deploy Latest Main` ships main's tip instead, to
+# staging runs (staging's deploy record, deploy-record.mjs); `source: Deploy Latest Main` ships main's tip instead, to
 # move faster than staging. Of that, only what changed since production's own last deploy ships. `ref`
 # ships another commit instead of either; one older than production's (a rollback) redeploys every
 # Worker, as `all` does.
@@ -37,6 +37,9 @@ jobs:
     name: What to ship
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    permissions:
+      contents: read
+      deployments: read
     outputs:
       ref: ${{ steps.ref.outputs.ref }}
     steps:
@@ -50,6 +53,7 @@ jobs:
         env:
           INPUT: ${{ inputs.ref }}
           SOURCE: ${{ inputs.source }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if [ -n "${INPUT}" ]; then
@@ -57,9 +61,9 @@ jobs:
           elif [ "${SOURCE}" = 'Deploy Latest Main' ]; then
             ref="$(git rev-parse --verify 'refs/remotes/origin/main^{commit}')"
           else
-            ref="$(git rev-parse -q --verify 'refs/tags/deployed/staging^{commit}' || true)"
+            ref="$(node .github/scripts/deploy-record.mjs read staging)"
             if [ -z "${ref}" ]; then
-              echo "::error::Staging has never deployed (no deployed/staging tag); ship a ref, or deploy staging first"
+              echo "::error::Staging has never deployed (no deploy record); ship a ref, or deploy staging first"
               exit 1
             fi
           fi
@@ -70,7 +74,8 @@ jobs:
     name: Production
     needs: resolve
     permissions:
-      contents: write
+      contents: read
+      deployments: write
     uses: ./.github/workflows/deploy.yml
     with:
       environment: production

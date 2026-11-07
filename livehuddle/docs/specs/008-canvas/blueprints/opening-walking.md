@@ -5,28 +5,29 @@ Derived from [Avatar mode](../avatar-mode.md) "Where it lives" and "Opening walk
 
 ## Files
 
-| File                                                     | Role                                                                                   |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `apps/editor/lib/walk-entrance.ts`                       | Pure: `walkEntrance(elements)`, the tab's entrance (a pad, an Avatar button) or null   |
-| `apps/editor/app/document/[id]/useOpenWalking.ts`        | Judges each tab once per visit; asks for the walk; hands the start spot on as `walkIn` |
-| `apps/editor/hooks/canvas/useCanvasTool.ts`              | `openWalking()`: enters Avatar mode as a pick does, remembered, but uncounted          |
-| `apps/editor/app/document/[id]/useEditorState.ts`        | Wires the hook: `enabled` off in an embed, `loaded` from `loadedTabIds`                |
-| `apps/editor/app/document/[id]/useTemplateFlow.ts`       | `onLanded(tabId)` after a template lands content, so the tab is judged afresh          |
-| `apps/editor/components/canvas/useWalkIn.ts`             | Puts the start spot in `spawnAtRef`, and brings the view to it when it is off screen   |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Calls `useWalkIn` before `useAvatarWalk`, so the enter effect finds the spot           |
-| `apps/editor/components/palette/canvas-tool-options.tsx` | Avatar listed after Hand, group 0, never disabled                                      |
-| `apps/editor/lib/editor-commands.ts`                     | `tool:avatar`, Avatar Mode, in the search panel                                        |
-| `apps/editor/components/start/start-template-items.ts`   | the rail order (Recommended first), `initial`                                          |
+| File                                                   | Role                                                                                   |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `apps/editor/lib/walk-entrance.ts`                     | Pure: `walkEntrance(elements)`, the tab's entrance (a pad, an Avatar button) or null   |
+| `apps/editor/lib/pad-only-tab.ts`                      | Pure: `holdsOnlyPads(elements)`, a blank tab whose only element is its pad             |
+| `apps/editor/app/document/[id]/useOpenWalking.ts`      | Judges each tab once per visit; asks for the walk; hands the start spot on as `walkIn` |
+| `apps/editor/hooks/canvas/useCanvasTool.ts`            | `openWalking()`: enters Avatar mode as a pick does, remembered, but uncounted          |
+| `apps/editor/app/document/[id]/useEditorState.ts`      | Wires the hook: `enabled` off in an embed, `loaded` from `loadedTabIds`                |
+| `apps/editor/app/document/[id]/useTemplateFlow.ts`     | `onLanded(tabId)` after a template lands content, so the tab is judged afresh          |
+| `apps/editor/components/canvas/useWalkIn.ts`           | Puts the start spot in `spawnAtRef`, and brings the view to it when it is off screen   |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`    | Calls `useWalkIn` before `useAvatarWalk`, so the enter effect finds the spot           |
+| `apps/editor/components/palette/EditWalkToggle.tsx`    | Walk on the Edit                                                                       | Walk toggle, greyed only while Start a Space is open |
+| `apps/editor/lib/editor-commands.ts`                   | `tool:avatar`, Avatar Mode, in the search panel                                        |
+| `apps/editor/components/start/start-template-items.ts` | the rail order (Recommended first), `initial`                                          |
 
 ## Domain and naming
 
-| Term         | Identifier           | Meaning                                                                          |
-| ------------ | -------------------- | -------------------------------------------------------------------------------- |
-| Entrance     | `WalkEntrance`       | `{ kind: 'pad' }` or `{ kind: 'button', button }`: why and where a tab walks you |
-| Walk In      | `WalkIn`             | `{ button, seq }`: one request to start the character below `button`             |
-| Judged       | `judged` (a Set ref) | The tab ids already looked at this visit                                         |
-| Opening walk | `openWalking`        | Entering Avatar mode because the tab offers it, not because someone picked it    |
-| Re-judge     | `rejudge(tabId)`     | Forget a tab was judged, for the template that has just landed on it             |
+| Term         | Identifier           | Meaning                                                                           |
+| ------------ | -------------------- | --------------------------------------------------------------------------------- |
+| Entrance     | `WalkEntrance`       | `{ kind: 'pad' }` or `{ kind: 'button', button }`: why and where a tab walks you  |
+| Walk In      | `WalkIn`             | `{ button, seq }`: one request to start the character below `button` (old boards) |
+| Judged       | `judged` (a Set ref) | The tab ids already looked at this visit                                          |
+| Opening walk | `openWalking`        | Entering Avatar mode because the tab offers it, not because someone picked it     |
+| Re-judge     | `rejudge(tabId)`     | Forget a tab was judged, for the template that has just landed on it              |
 
 Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different feature, `useStartingTool`).
 
@@ -34,7 +35,7 @@ Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different featur
 
 1. The editor passes the active tab's id, elements and whether it has loaded.
 2. When the tab has loaded and is not in `judged`, `useOpenWalking` adds it, then reads `walkEntrance`.
-3. No entrance: nothing. Already in Avatar mode: nothing more.
+3. No entrance (none, or a tab that `holdsOnlyPads`: a blank tab): nothing. Already in Avatar mode: nothing more.
 4. A button entrance bumps `walkIn` (`seq + 1`) with the button's box; a pad entrance leaves `walkIn` alone, since
    the pad wins in `useAvatarWalk`.
 5. It calls `openWalking()`: selection cleared, then `useCanvasTool.openWalking`.
@@ -87,7 +88,8 @@ character's position follows the existing Avatar mode rules.
 ## Presentation and UX
 
 Avatar sits third in the picker (Select, Hand, Avatar) with its own icon; the start lists the Spaces first and opens
-on them. Opening walking shows the character just below the Walk In button, in view.
+on them. Opening walking shows the character on the Space's Avatar Pad, arriving in its beam, in view (or, on a board
+made before the pads, just below its Walk In button).
 
 ## Accessibility
 
@@ -108,8 +110,8 @@ Opening walking fires no `Canvas·Used·AvatarMode`; a pick from the picker or s
 - `hooks/canvas/useCanvasTool.test.ts`: `openWalking` is remembered and uncounted.
 - `components/canvas/useWalkIn.test.tsx`: the spot, the off-screen recentre, once per `seq`.
 - `app/document/[id]/useTemplateFlow.tool.test.ts`: `onLanded` on a template, not the blank.
-- `components/palette/canvas-tool-options.test.ts`, `participant-palette.test.ts`, `lib/editor-commands*.test.ts`:
-  the picker and search list Avatar for every role.
+- `components/palette/EditWalkToggle.test.tsx`, `participant-palette.test.ts`, `lib/editor-commands*.test.ts`:
+  the toggle and Search offer Walk.
 - `components/start/start-template-items.test.ts`, `StartFromTemplates.test.tsx`: Recommended leads.
 
 ## Constants and configuration

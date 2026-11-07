@@ -62,26 +62,29 @@ pointer events from bubbling, and the hint must still see them.
 
 ### Transitions
 
-| #   | Event (on the wrapper unless noted)        | Guard                                                         | Effect                                                                                     |
-| --- | ------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`, no touch ended within `HINT_TOUCH_COMPAT_MS` | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
-| T2  | `pointerleave`, `pointerType !== 'touch'`  |                                                               | clear `overTrigger`; cancel open; `settle()`                                               |
-| T3  | surface `pointerenter`                     |                                                               | `overSurface`; cancel close                                                                |
-| T4  | surface `pointerleave`                     |                                                               | clear `overSurface`; `settle()`                                                            |
-| T5  | `focus` (bubbled)                          | target matches `:focus-visible` (D27)                         | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
-| T6  | `blur` (bubbled)                           |                                                               | clear `focused`; `settle()`                                                                |
-| T7  | `pointerdown`, not touch                   |                                                               | cancel open; close; `dismissed`                                                            |
-| T8  | `pointerdown`, touch                       | `!hasVisibleText(anchor)`                                     | clear `suppressClick`; remember the point; `pressTimer` for `HINT_LONG_PRESS_MS`           |
-| T9  | `pressTimer` fires                         |                                                               | open, source `touch`; `suppressClick`                                                      |
-| T10 | `pointermove`, touch, `pressTimer` pending | moved > `HINT_LONG_PRESS_SLOP_PX`                             | cancel `pressTimer`                                                                        |
-| T11 | `pointerup` / `pointercancel`, touch       |                                                               | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
-| T12 | `click` (capture)                          | `suppressClick`                                               | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
-| T13 | project `keydown` `Escape` while open      |                                                               | close; `dismissed`; the event keeps propagating (spec)                                     |
-| T14 | another hint opens (registry)              |                                                               | close at once                                                                              |
-| T15 | unmount                                    |                                                               | clear every timer; release the registry                                                    |
+| #   | Event (on the wrapper unless noted)        | Guard                                                                                   | Effect                                                                                     |
+| --- | ------------------------------------------ | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`, no touch ended within `HINT_TOUCH_COMPAT_MS`                           | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
+| T1b | `pointermove`, `pointerType !== 'touch'`   | not `overTrigger` (no `pointerenter` came: the trigger mounted under a resting pointer) | as T1                                                                                      |
+| T2  | `pointerleave`, `pointerType !== 'touch'`  |                                                                                         | clear `overTrigger`; cancel open; `settle()`                                               |
+| T3  | surface `pointerenter`                     |                                                                                         | `overSurface`; cancel close                                                                |
+| T4  | surface `pointerleave`                     |                                                                                         | clear `overSurface`; `settle()`                                                            |
+| T5  | `focus` (bubbled)                          | target matches `:focus-visible` (D27)                                                   | `focused`; unless `dismissed`, cancel timers and open now, source `focus`                  |
+| T6  | `blur` (bubbled)                           |                                                                                         | clear `focused`; `settle()`                                                                |
+| T7  | `pointerdown`, not touch                   |                                                                                         | cancel open; close; `dismissed`                                                            |
+| T8  | `pointerdown`, touch                       | `!hasVisibleText(anchor)`                                                               | clear `suppressClick`; remember the point; `pressTimer` for `HINT_LONG_PRESS_MS`           |
+| T9  | `pressTimer` fires                         |                                                                                         | open, source `touch`; `suppressClick`                                                      |
+| T10 | `pointermove`, touch, `pressTimer` pending | moved > `HINT_LONG_PRESS_SLOP_PX`                                                       | cancel `pressTimer`                                                                        |
+| T11 | `pointerup` / `pointercancel`, touch       |                                                                                         | cancel `pressTimer`; if open from touch, `lingerTimer` closes after `HINT_TOUCH_LINGER_MS` |
+| T12 | `click` (capture)                          | `suppressClick`                                                                         | `preventDefault`, `stopPropagation`, clear `suppressClick`                                 |
+| T13 | project `keydown` `Escape` while open      |                                                                                         | close; `dismissed`; the event keeps propagating (spec)                                     |
+| T14 | another hint opens (registry)              |                                                                                         | close at once                                                                              |
+| T15 | unmount                                    |                                                                                         | clear every timer; release the registry                                                    |
 
-`settle()`: if none of `overTrigger`, `overSurface`, `focused` holds, clear `dismissed` and, when open, close after
-`HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
+`settle()`: if neither `overTrigger` nor `overSurface` holds, clear `dismissed` (the pointer has gone, even if the
+control keeps focus: a pressed button left focused in an open flyout showed its hint again only after a blur); then,
+unless `focused`, when open, close after `HINT_CLOSE_GRACE_MS`. Closing clears `overSurface`, since the surface goes
+with it and can send no `pointerleave`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
 
 `OPEN_DELAY_MS[kind]`: `0` for a hover card, `TOOLTIP_OPEN_DELAY_MS` for a tooltip,
 `PREVIEW_OPEN_DELAY_MS` for a preview; a tooltip or a preview opens at once when `isHintWarm(kind, now)`.

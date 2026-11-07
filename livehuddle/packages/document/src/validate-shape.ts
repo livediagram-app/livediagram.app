@@ -7,6 +7,7 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor, isStageSpeakers } from './office';
+import { isPieceVariant, PIECE_VARIANT_MAX } from './piece-variants';
 import {
   CLOCK_LABEL_MAX,
   CLOCK_ZONES_MAX,
@@ -18,6 +19,7 @@ import {
 } from './office-social';
 import { isScreenUrl, SCREEN_URL_MAX } from './meeting-pieces';
 import { isPieceTimer, TIMER_MINUTES_MAX } from './timer-pieces';
+import { ARCADE_NAME_MAX, ARCADE_SCORES_MAX, isArcadeScores } from './arcade-scores';
 import { isRoomOutline, ROOM_OUTLINE_MAX, ROOM_OUTLINE_MIN } from './room-outline-field';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
@@ -268,6 +270,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   flag('stageCameras'),
   flag('doorClosed'),
+  {
+    field: 'variant',
+    valid: isPieceVariant,
+    rule: `a piece's type (1 to ${PIECE_VARIANT_MAX} lowercase letters and hyphens)`,
+  },
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   {
     field: 'noticeNotes',
@@ -285,6 +292,12 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'pieceTimer',
     valid: (v: unknown) => isPieceTimer(v, 'timer') || isPieceTimer(v, 'stopwatch'),
     rule: `a clock { running, startedAt, accumulatedMs, durationMs (0, or 1 to ${TIMER_MINUTES_MAX} minutes) }`,
+  },
+  // An Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
+  {
+    field: 'arcadeScores',
+    valid: isArcadeScores,
+    rule: `at most ${ARCADE_SCORES_MAX} scores { id, name (${ARCADE_NAME_MAX} characters), score (1 to the run's ceiling), ms, by, at }`,
   },
   // A Screen's Video Link (docs/specs/009-elements/screen-and-room-sign.md "Screen").
   {

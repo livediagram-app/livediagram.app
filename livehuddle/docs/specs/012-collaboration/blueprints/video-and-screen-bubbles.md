@@ -25,6 +25,12 @@ inside `view` grown by `BUBBLE_VIEW_MARGIN_PX`, sorted by distance, the first `M
 `MAX_SCREEN_BUBBLES` screens; nothing while `visible` is false; the maximised one always kept while it is heard and
 the tab is visible.
 
+**The view** (`components/calls/useCanvasCall.ts`, `useViewRect`): the canvas's transform is
+`scale(zoom) translate(offset)` about the wrapper's centre (`origin-center`), so the visible canvas rect is
+`computeViewportCanvasRect(size, offset, zoom)` from `@liveworkspace/workbench/lib/viewport`, the one Fit and paste
+use: centred on `size / 2 - offset`, `size / zoom` across. Each edge is then snapped to `VIEW_SNAP_PX` on its own.
+Anchoring it at `-offset` holds only at 100% and dropped the bubbles right of and below the middle when zoomed in.
+
 **Subscriptions** (`lib/calls/sfu-session.ts`): keyed by `<publisherSessionId>|<trackName>`, so one publisher can be
 heard and seen at once. `want(entries)` takes `{ locator, layer? }`; a camera entry subscribes with
 `simulcast` for its layer, and a changed layer on a held subscription queues a `layer` call (Realtime's
@@ -51,7 +57,7 @@ live and on every preview change, `adoptPreview()`: it takes each kind it may se
 (`CallVideo.adoptCamera` / `adoptScreen`, the same publish path as a toggle, no capture) and stops a preview of a kind
 the mode forbids. On teardown it clears only the own media it held and keeps the rest of `self`
 (`resetCallMedia(SELF_MEDIA_ID)`), so a preview it never took survives. `localOnly(self, media)` tells the bubble,
-the strip and the sharing bar a stream is a preview (the call's state off, the preview's on).
+the Call dock and its Screen Share group a stream is a preview (the call's state off, the preview's on).
 
 **State** (`lib/calls/calls-store.ts`): `CallPeer` gains `video` and `screen` locators. A separate media store (`calls-media-store.ts`) holds
 the streams the bubbles draw (`callMedia()`: presence id → `{ video?, screen? }`, `self` for your own), and the
@@ -122,7 +128,7 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   the lift.
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places
-  them above characters (above the talking bars, `BUBBLE_LIFT_PX`), side by side when a person has both.
+  them above characters (just over the head, `BUBBLE_LIFT_PX` = `AVATAR_HEAD_CHROME` + 8), each with its talking equaliser on its top-left corner (`BubbleBars` in `TalkingBars.tsx`; `TalkingBars` skips anyone wearing a bubble), side by side when a person has both.
 - **Close together** (`lib/calls/bubble-layout.ts`, pure): `layoutBubbles(boxes, prevOrder)` takes each person's
   bubble group as a box (`{ id, x, bottom, width, height }` in canvas px: centred on the head, bottom
   `BUBBLE_LIFT_PX` over it, `groupWidth(count)` wide, 16:9 tall) and answers each group's sideways nudge `dx`, its
@@ -141,37 +147,42 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 - **Speech clear of bubbles**: `Canvas.tsx` hands the same ref to `AvatarSpeechLayer` as `obstacles`; the layer's
   flight loop lifts each speech bubble by `speechLift` (`../packages/avatar/src/speech.ts`, the
   [avatar speech blueprint](../../008-canvas/blueprints/avatar-speech.md)).
-- `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform.
-- `components/calls/ScreenShareBar.tsx`: the "You are sharing your screen" bar, top centre, with Stop Sharing.
-- `CallClusterButton.tsx`: Camera and Share Screen segments between the microphone and Leave; **Video Paused**
-  under audio only.
+- `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform, marked
+  `data-call-maximised`. With the bubble layer (`data-call-bubbles`) it is listed in `CHROME_OVER_CANVAS`
+  (`hooks/canvas/useCanvasSurfaceGestures.ts`), so a press on it never starts a walk to the spot behind it.
+- `components/calls/ScreenShareStripGroup.tsx`: the **Screen Share** group while you share (the Sharing indicator and
+  Stop Sharing), and `useScreenSharing()`, the one boolean the Call dock (`CallDock.tsx`) reads to add it after the
+  call group behind a divider. The avatar palette no longer reads it: its look stays. It replaced the floating
+  ScreenShareBar.
+- `CallStripGroup.tsx`: Camera and Share Screen segments after the microphone (Share Screen hidden while
+  the share is on, Stop Sharing being the Screen Share group's); **Video Paused** under audio only.
 
 ## Accessibility
 
 Bubbles are buttons with `aria-label` "Maximise Sam's camera"; the panel is a dialog labelled by its title, Escape
-restores, focus moves to Restore on open and back to the bubble on close. The sharing bar is a `status` region.
+restores, focus moves to Restore on open and back to the bubble on close. The Screen Share group's Sharing indicator is a `status` region.
 `<video>` elements are muted (`muted`, `playsInline`): voices come through the audio graph.
 
 ## Testing
 
-| Rule                                                       | Test                                                      |
-| ---------------------------------------------------------- | --------------------------------------------------------- |
-| Locators held to their slot; video and screen fields       | `../packages/api-schema/src/call-voice.test.ts`           |
-| Track kinds for `cam` and `screen`                         | `../packages/api-schema/src/calls-mode.test.ts`           |
-| Publish by name and role; layer route; audio-only refusals | `apps/api/src/routes/calls.test.ts`                       |
-| Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`                 |
-| Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                       |
-| Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                   |
-| Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`             |
-| Speech lift past bubbles                                   | `../packages/avatar/src/speech.test.ts`                   |
-| Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`               |
-| Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallClusterButton.test.tsx` |
-| Preview: captures, sends nothing, stops, cancels, releases | `apps/editor/lib/calls/local-preview.test.ts`             |
-| Join adopts a preview without a second prompt; roles; mode | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Buttons offered without a room; routing; mode and tab stop | `apps/editor/lib/calls/useProximityCall.test.tsx`         |
-| Preview role per level                                     | `apps/editor/lib/share-roles.test.ts`                     |
-| Bubble, maximise, restore, Escape, sharing bar             | `apps/editor/components/calls/*.test.tsx`                 |
+| Rule                                                       | Test                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| Locators held to their slot; video and screen fields       | `../packages/api-schema/src/call-voice.test.ts`        |
+| Track kinds for `cam` and `screen`                         | `../packages/api-schema/src/calls-mode.test.ts`        |
+| Publish by name and role; layer route; audio-only refusals | `apps/api/src/routes/calls.test.ts`                    |
+| Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`              |
+| Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                    |
+| Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                |
+| Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`          |
+| Speech lift past bubbles                                   | `../packages/avatar/src/speech.test.ts`                |
+| Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`            |
+| Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`         |
+| Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallStripGroup.test.tsx` |
+| Preview: captures, sends nothing, stops, cancels, releases | `apps/editor/lib/calls/local-preview.test.ts`          |
+| Join adopts a preview without a second prompt; roles; mode | `apps/editor/lib/calls/proximity-call.test.ts`         |
+| Buttons offered without a room; routing; mode and tab stop | `apps/editor/lib/calls/useProximityCall.test.tsx`      |
+| Preview role per level                                     | `apps/editor/lib/share-roles.test.ts`                  |
+| Bubble, maximise, restore, Escape, Screen Share group      | `apps/editor/components/calls/*.test.tsx`              |
 
 ## Constants and configuration
 
@@ -180,7 +191,7 @@ restores, focus moves to Restore on open and back to the bubble on close. The sh
 | `MAX_VIDEO_BUBBLES`     | 6                                   | The card's cap: the nearest six            |
 | `MAX_SCREEN_BUBBLES`    | 2                                   | A screen is about three bubbles of traffic |
 | `BUBBLE_VIEW_MARGIN_PX` | 120                                 | An edge bubble does not flicker            |
-| `BUBBLE_WIDTH_PX`       | 120                                 | Readable at 100%, small beside a character |
+| `BUBBLE_WIDTH_PX`       | 180                                 | A face and a screen readable at 100%       |
 | `BUBBLE_GAP_PX`         | 8                                   | Between bubbles, and a person's two        |
 | `BUBBLE_SWAP_PX`        | 24                                  | Crossing needed before two bubbles swap    |
 | `BUBBLE_NUDGE_MS`       | 220                                 | A swap slides, quick enough to follow      |

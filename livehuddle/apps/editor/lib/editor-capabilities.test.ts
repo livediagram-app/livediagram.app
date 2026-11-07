@@ -22,7 +22,8 @@ describe('resolveEditorCapabilities', () => {
     const can = resolveEditorCapabilities({ level: 'view', adderKey: ME });
     const els = [sticky(), sticky({ addedBy: ME }), shape(), shape({ shape: 'mind-node' })];
     for (const [key, value] of Object.entries(can)) {
-      if (key === 'level') continue;
+      // Held walking is not a gesture: share-roles.md "Always walking" (its own test below).
+      if (key === 'level' || key === 'alwaysWalks') continue;
       if (typeof value === 'function') {
         for (const el of els) expect(value(el), key).toBe(false);
       } else expect(value, key).toBe(false);
@@ -53,12 +54,13 @@ describe('resolveEditorCapabilities', () => {
     }
   });
 
-  it('holds only a Participant in Avatar mode', () => {
+  // docs/specs/013-workspace/share-roles.md "Always walking": a Participant and a Viewer never leave; an Editor may.
+  it('holds a Participant and a Viewer in Avatar mode, never an Editor', () => {
     expect(resolveEditorCapabilities({ level: 'participate', adderKey: ME }).alwaysWalks).toBe(
       true,
     );
     expect(resolveEditorCapabilities({ level: 'edit', adderKey: null }).alwaysWalks).toBe(false);
-    expect(resolveEditorCapabilities({ level: 'view', adderKey: null }).alwaysWalks).toBe(false);
+    expect(resolveEditorCapabilities({ level: 'view', adderKey: null }).alwaysWalks).toBe(true);
   });
 });
 

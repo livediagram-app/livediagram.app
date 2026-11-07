@@ -5,7 +5,7 @@ import { CallStrip, Earshot, MicStates } from '@/components/illustrations/calls'
 export const metadata = helpMetadata({
   title: 'Proximity Audio',
   description:
-    'Talk in a livehuddle Space by walking up to people: join audio, hear whoever is near you or in your room, see who is talking further off, and walk over.',
+    'Talk in a livehuddle Space by walking up to people: hear whoever is near you or in your room, see who is talking further off, and walk over.',
   path: '/help/collaboration/proximity-audio/',
 });
 
@@ -21,34 +21,40 @@ In a Space you talk by walking up to people. Out on the open floor you hear the 
 Audio rides [Avatar mode](/help/selection-modes/avatar-mode/): only a walking character has a place on the board, so only someone walking hears or is heard. People in a Space can also turn on a camera or share a screen; see [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/).
 
 <Note>
-  Calls are not switched on everywhere yet. Where they are off, there is no **Join Audio** button,
-  and everything else in the Space works as usual.
+  You can only talk in a Space that's saved online. A Space saved only in your browser (it shows
+  **This Browser** at the top) can't have anyone else in it, there is no call there. You can still
+  try your microphone on its own: the dock's microphone (**Mic: Only You**) shows only you your own
+  talking bars and sends nothing. Save the Space online to talk with people.
 </Note>
 
-## Join Audio
+## Hear The People Near You
 
 <Step n={1}>
-  Walk into the Space: press the board's **Walk In** button, or `W`. The call's controls sit in the
-  bottom-right corner, beside the **Avatar** button.
+  Walk into the Space: a Space from the templates opens with you walking, arriving on its **Avatar
+  Pad**; otherwise press **Walk** at the start of the palette strip. The call's controls sit on the
+  **Call dock**, a small card at the bottom centre of the canvas, while you walk.
 </Step>
 
 <Step n={2}>
-  Press **Join Audio**. Your browser asks for your microphone the first time (allow it to be heard).
-  If your link lets you listen but not speak, the button says **Listen In** instead and asks for
-  nothing.
+  That is all: there is nothing to join. Walking where there is a call connects you by itself, and
+  you hear the people near you at once. If your browser held the sound back, it starts on your next
+  press or key. If your link lets you listen but not speak, you listen the same way.
 </Step>
 
 <Step n={3}>
-  You now hear the people near you. Once you are in, the strip shows your microphone, **Camera**,
-  **Share** (for Editors) and **Leave**. Press **Leave** to stop hearing and being heard: your
-  microphone is released straight away.
+  Your microphone starts **muted** and is not opened, so your browser does not ask for it yet. Press
+  **Mic** to unmute; the browser asks the first time (allow it to be heard). The Call dock also
+  shows **Camera** and **Share** (for Editors). On a computer each button is named beside its icon;
+  on a phone they are icons alone, and hovering or pressing one tells you what it does. While it
+  connects the dock reads a greyed **Connecting…**; if it cannot, **Retry** (press to try again). To
+  stop hearing people, set **Do Not Disturb**.
 </Step>
 
-<Figure caption="The call strip beside Avatar: Join Audio before you join, then your microphone, Camera, Share and Leave. The ? opens this article.">
+<Figure caption="The Call dock at the bottom centre of the canvas: your microphone muted with Camera and Share, then the microphone live.">
   <CallStrip />
 </Figure>
 
-Audio only works on a Space other people can reach. A Space saved in this browser alone has nobody to talk to, so it shows no audio controls. Leaving Avatar mode, switching to another tab or closing the page also leaves the call.
+Audio only works on a Space other people can reach. A Space saved in this browser alone has nobody to talk to, so there is no call, only a microphone preview. Leaving Avatar mode, switching to another tab or closing the page also leaves the call.
 
 ## Who you hear
 
@@ -71,17 +77,21 @@ In the **Virtual Office** template, the meeting rooms, the phone booths and the 
 
 ## Your microphone
 
-Once you are in, the first button in the strip is your microphone. Press it to mute, and again to unmute. When muted, nothing is sent at all. Its look tells you at a glance whether anyone hears you, and hovering it names the state in words:
+The first button on the Call dock is your microphone. It starts muted. Press it to unmute (the browser asks for the microphone the first time), and again to mute. Unmuted, it stays open even when you are alone. When muted, nothing is sent at all. Its look tells you at a glance whether anyone hears you, and hovering it names the state in words:
 
-<Figure caption="The microphone's states, as the strip shows them.">
+<Figure caption="The microphone's states, as the Call dock shows them.">
   <MicStates />
 </Figure>
 
-- **Live**: somebody hears you: anyone in earshot on your side of the walls. A soft ring round the button breathes with your voice.
-- **Nobody Near**: your microphone is on, but nobody hears you. People further off, or on the other side of a wall, still see that you are talking.
+On a computer the button is named beside its glyph, and on a phone it shows only its glyph. Hover it to see its state, such as **Mic: Live**.
+
+- **Live**: somebody hears you: anyone in earshot on your side of the walls. The button fills from its foot, white, as you speak, so you can see how loud you are and that you are being heard.
+- **Nobody Near**: your microphone is on, but nobody hears you (the button still fills, paler). People further off, or on the other side of a wall, still see that you are talking.
 - **Muted**: nobody hears you. Press to unmute.
-- **Mic Blocked**: your browser refused the microphone. Allow it from the address bar, then join again. You still hear everyone.
-- **Mic Off**: nobody else is on this tab, so your microphone has closed (your browser's recording light goes out). It opens again the moment somebody arrives. This happens after you have been alone on the tab for 15 seconds.
+- **Mic Blocked**: your browser refused the microphone. Allow it from the address bar, then press the button to try again. You still hear everyone.
+- **Mic Off**: you have just unmuted and the microphone is still opening.
+- **Muted** and alone on the tab for 15 seconds: the microphone is released (your browser's recording light goes out), and opens again when you unmute.
+- **Mic: Only You**: where there is no call (a Space kept in **This Browser**, or calls off), pressing the microphone opens it on your own screen only, so you can see your talking bars move. Nothing is sent.
 
 ## Seeing who is talking
 
@@ -109,12 +119,12 @@ While someone speaks from a stage, everyone else in its room (or, for a stage on
 
 In a stage's audience, the stage does not hear you, but you can ask to speak.
 
-- **Raise Hand** appears in the call strip while you are in a stage's audience. Press it and a small amber hand shows beside your character, where everyone can see it. Press **Lower Hand** to put it down.
-- **The people on the stage see how many hands are up**, as a count in their call strip. They, and any Editor, can press the hand beside your character to **Let Speak**.
+- **Raise Hand** appears on the Call dock while you are in a stage's audience. Press it and a small amber hand shows beside your character, where everyone can see it. Press **Lower Hand** to put it down.
+- **The people on the stage see how many hands are up**, as a count on their Call dock. They, and any Editor, can press the hand beside your character to **Let Speak**.
 - **Once you are let speak**, the hand turns into a green microphone and your strip reads **Speaking**: everyone in the Space hears you, as if you were on the stage. Your camera stays with the people who would see you anyway.
 - **Your turn ends** when you press **Lower Hand**, when the stage presses your microphone again (**Done**), or when you walk out of the room. Leaving audio or the Space puts your hand down too.
 
-If you stand on a stage that only lets Editors speak, a short line above the call strip says so: you are heard as the audience is, and you can raise your hand like anyone else.
+If you stand on a stage that only lets Editors speak, a short line over the Call dock says so: you are heard as the audience is, and you can raise your hand like anyone else.
 
 ## Do Not Disturb
 
@@ -122,13 +132,13 @@ Need to concentrate? Open the **Avatar** panel and set your **Status** to **Do N
 
 - **No voice reaches you**, not even from a stage, and no one's camera or screen. Other people's talking bars disappear for you.
 - **You can still be heard** if you speak, so turning to a neighbour does not need the status cleared. Your microphone keeps its own mute.
-- While you are in a call, the strip shows **Do Not Disturb**; press it to turn it off. It lasts for this visit only, like every status.
+- While you are in a call, the Call dock shows **Do Not Disturb**; press it to turn it off. It lasts for this visit only, like every status.
 
 ## Who can speak
 
 | What you can do                   | Editor | Participant  | Viewer |
 | --------------------------------- | ------ | ------------ | ------ |
-| Join and hear the people near you | Yes    | Yes          | Yes    |
+| Hear the people near you          | Yes    | Yes          | Yes    |
 | Speak from a stage                | Yes    | When allowed | No     |
 | Speak, mute and unmute            | Yes    | Yes          | No     |
 | Show your talking bars to others  | Yes    | Yes          | No     |

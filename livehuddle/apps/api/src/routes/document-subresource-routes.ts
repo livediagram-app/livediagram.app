@@ -6,13 +6,15 @@
 import { redactCommentAuthorIds } from '../comments';
 import { redactTabForCommunity } from '../community-redact';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
-import { indexFor } from '../index-service';
+import { tellConnectionLeft } from '@liveworkspace/index-app';
+import { indexAppClient, indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livehuddle/api-schema';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleSuggestionRoutes } from './suggestion-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -112,7 +114,8 @@ export async function handleDocumentSubresources(
         owner === existing.ownerId
           ? tab
           : communityVisit
-            ? redactTabForCommunity(tab)
+            ? // Nor which other item a connected tab stands for (connected-tabs.md).
+              { ...redactTabForCommunity(tab), connection: undefined }
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // docs/specs/013-workspace/explorer-home.md "Opens": the reader's own open, for their Home and Most Used, at the
@@ -150,7 +153,11 @@ export async function handleDocumentSubresources(
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      await deleteTabRow(env, id, tabId);
+      const removed = await deleteTabRow(env, id, tabId);
+      // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
+      // "Removing"), off the response path.
+      if (removed?.connection)
+        ctx.waitUntil?.(tellConnectionLeft(indexAppClient(env), id, tabId, removed.connection));
       // The links scoped to it go with it (docs/specs/013-workspace/tab-scoped-share-links.md): the index revokes
       // them and their holders leave the editor as on a revoke. Asked as the caller, off the response path; a link
       // the index keeps opens nothing here meanwhile, since the tab reads as missing.
@@ -175,6 +182,9 @@ export async function handleDocumentSubresources(
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
+  // A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
   const presence = await handleAgentPresenceRoute(ctx);
   if (presence) return presence;

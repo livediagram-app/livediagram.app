@@ -10,10 +10,11 @@ import {
   type EditorCapabilities,
 } from '@/lib/editor-capabilities';
 import { PARTICIPANT_CANVAS_TOOLS, paletteCategories } from '@/components/palette/palette-layouts';
-import { buildCanvasToolOptions } from '@/components/palette/canvas-tool-options';
 import { tilesForCategory } from '@/components/palette/palette-tile-defs';
 import { SPACE_CATEGORIES } from '@/components/palette/space-categories';
 import { avatarTourSteps } from '@/components/tour/avatar-tour-steps';
+import { stripPaletteFor } from '@/lib/avatar-palette';
+import { avatarPressOutcome } from '@/lib/avatar-click-intent';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the editor renders it: one block per row of
 // the table, one case per level. The room's half is apps/api/src/share-roles.test.ts. Each level's session is what
@@ -37,18 +38,22 @@ const canFor = (level: Level): EditorCapabilities =>
 const gatesFor = (level: Level) => roleGates(canFor(level), false);
 // A read-only session (a Participant or a Viewer) gets the participant selection modes; an Editor every tool.
 const toolsFor = (level: Level): readonly string[] => {
-  const all = buildCanvasToolOptions({}).map((o) => o.id);
+  // Every tool a role picks: the two sides of the Edit | Walk toggle, which Search and a board's buttons reach too
+  // (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"). Hand, Eraser and Format are not modes.
+  const all = CANVAS_TOOLS.map((t) => t.id);
   return level === 'edit' ? all : all.filter((id) => PARTICIPANT_CANVAS_TOOLS.includes(id));
 };
-// The palette strip: an Editor's alone, none for a Participant or a Viewer (CanvasChrome's `paletteShown`,
-// `!readOnly`; share-roles.md "A Participant walks").
+// The building palette: an Editor's alone, none for a Participant or a Viewer (CanvasChrome reads
+// `stripPaletteFor`, lib/avatar-palette; share-roles.md "A Participant walks", "Always walking").
+const stripFor = (level: Level, walking: boolean) =>
+  stripPaletteFor({ can: canFor(level), readOnly: level !== 'edit', walking });
 const paletteTileIdsFor = (level: Level): string[] => {
-  if (level !== 'edit') return [];
+  if (stripFor(level, false) !== 'build') return [];
   return paletteCategories().flatMap((c) => (c.tiles ?? []).map((t) => t.id));
 };
-// What the Walk button and the mode buttons can do for each level: EditorCanvasHost draws the Walk button where
-// `!can.alwaysWalks`, and gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds a Participant
-// in Avatar mode (`holdWalking(can.alwaysWalks)`).
+// What the Edit | Walk toggle and the mode buttons can do for each level: CanvasChrome builds the toggle where
+// `!can.alwaysWalks`, and EditorCanvasHost gives the mode buttons a press where `!can.alwaysWalks`; useCanvasTool holds
+// a Participant and a Viewer in Avatar mode (`holdWalking(can.alwaysWalks)`).
 
 const expectPerLevel = (
   name: string,
@@ -81,18 +86,14 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     { edit: true, participate: true, view: true },
   );
 
-  // An Editor and a Viewer enter and leave Avatar mode on any board through the cluster's Walk button
-  // (docs/specs/008-canvas/avatar-mode.md "The Walk button"), an Editor on its strip too. A Participant is always
-  // walking, with no way out (share-roles.md "A Participant walks"). Work Tracker #361.
+  // Only an Editor enters and leaves Avatar mode, through the Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md
+  // "The Edit | Walk toggle"). A Participant and a Viewer are always walking, with no toggle and no way out
+  // (share-roles.md "Always walking", owner 2026-11-06). CanvasChrome builds the toggle where `!can.alwaysWalks`;
+  // useCanvasTool's hold refuses every other tool where `can.alwaysWalks`.
   expectPerLevel(
     'Enter and leave Avatar mode on any board',
-    (level) => {
-      const can = canFor(level);
-      if (can.alwaysWalks) return 'always walking';
-      const picker = level === 'edit' && toolsFor(level).includes('avatar');
-      return picker ? 'walk button and picker' : 'walk button';
-    },
-    { edit: 'walk button and picker', participate: 'always walking', view: 'walk button' },
+    (level) => (canFor(level).alwaysWalks ? 'always walking' : 'edit walk toggle'),
+    { edit: 'edit walk toggle', participate: 'always walking', view: 'always walking' },
   );
 
   // useCanvasAvatar's `canSpeak` and the Avatar tour's Say Something step both read `can.takePart`.
@@ -134,8 +135,39 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
   // A portal is walked through in Avatar mode; following is the viewport, whichever mode you are in.
   expectPerLevel(
     'Go through a portal, follow and be followed',
-    (level) => ['avatar', 'pan'].every((tool) => toolsFor(level).includes(tool)),
+    (level) => toolsFor(level).includes('avatar'),
     { edit: true, participate: true, view: true },
+  );
+
+  // A walking click on a control piece (share-roles.md "Always walking", bring-focus.md "Rules"): its face has a press
+  // where the gate opens (EditorCanvasHost gives Bring Focus `onPressFocusButton` on `gates.run`, a mode button
+  // `onPressModeButton` where `!can.alwaysWalks`; TimerView draws its controls on `can.takePart`), and without one the
+  // click does nothing: never the reader, never a walk (avatarPressOutcome, owner 2026-11-06).
+  describe('Press Bring Focus', () => {
+    expectPerLevel(
+      'a walking click on it, the baton free',
+      (level) => avatarPressOutcome('focus-button', gatesFor(level).run),
+      { edit: 'press', participate: 'nothing', view: 'nothing' },
+    );
+    it('an Editor while somebody else holds the baton: nothing, no reader', () => {
+      expect(avatarPressOutcome('focus-button', roleGates(canFor('edit'), true).run)).toBe(
+        'nothing',
+      );
+    });
+  });
+  expectPerLevel(
+    'A walking click on a Selection Mode button',
+    (level) => avatarPressOutcome('mode-button', !canFor(level).alwaysWalks),
+    { edit: 'press', participate: 'nothing', view: 'nothing' },
+  );
+  expectPerLevel(
+    'A walking click on a Timer or Stopwatch',
+    (level) =>
+      [
+        avatarPressOutcome('timer', canFor(level).takePart),
+        avatarPressOutcome('stopwatch', canFor(level).takePart),
+      ] as const,
+    { edit: ['press', 'press'], participate: ['press', 'press'], view: ['nothing', 'nothing'] },
   );
 
   describe('Place, move, rename or delete Navigate elements', () => {
@@ -259,12 +291,37 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     view: false,
   });
 
-  // Every look-only tool is in every role's selection modes; export is a read, with no gate.
+  // Panning is no mode (Space-drag, the trackpad and the middle button pan in every tool), so no role's tools can
+  // withhold it; every tool a role picks is look-only; export is a read, with no gate.
   expectPerLevel(
     'Pan, zoom, export',
-    (level) => ['select', 'pan'].every((tool) => toolsFor(level).includes(tool)),
+    (level) => toolsFor(level).every((tool) => PARTICIPANT_CANVAS_TOOLS.includes(tool)),
     { edit: true, participate: true, view: true },
   );
+
+  // The avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): every role's strip while it
+  // walks, a Participant's and a Viewer's always. It has no selection-mode picker for anyone. Its call group, at its
+  // left, is where every role's call controls are: with a Participant and a Viewer always walking, no role is left
+  // without a strip to hold them.
+  describe('The avatar palette while walking, with the call controls', () => {
+    expectPerLevel('the strip while walking', (level) => stripFor(level, true), {
+      edit: 'avatar',
+      participate: 'avatar',
+      view: 'avatar',
+    });
+    expectPerLevel(
+      'the strip while not walking',
+      (level) => stripFor(level, false),
+      // A Participant and a Viewer always walk, so they never see anything else.
+      { edit: 'build', participate: 'avatar', view: 'avatar' },
+    );
+    // Say is offered where `onSendAvatarMessage` is: useCanvasAvatar's `canSpeak`, `can.takePart`.
+    expectPerLevel('its Say button', (level) => gatesFor(level).takePart, {
+      edit: true,
+      participate: true,
+      view: false,
+    });
+  });
 
   describe('Change tabs, the theme, anything on the board else', () => {
     expectPerLevel('reshape the board', (level) => gatesFor(level).shape, {
@@ -272,11 +329,15 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
       participate: false,
       view: false,
     });
-    // No tool that changes the board is in a read-only session's modes.
+    // No canvas tool changes the board: the Format Painter, the one that did, starts from the selection toolbar, an
+    // Editor's alone (CanvasSelectionToolbars passes `onFormatPainter` where `!readOnly`).
     expectPerLevel(
       'tools that change the board',
-      (level) => CANVAS_TOOLS.filter((t) => t.mutates).some((t) => toolsFor(level).includes(t.id)),
-      { edit: true, participate: false, view: false },
+      (level) => [
+        toolsFor(level).some((tool) => ['eraser', 'format'].includes(tool)),
+        stripFor(level, false) === 'build',
+      ],
+      { edit: [false, true], participate: [false, false], view: [false, false] },
     );
     expectPerLevel(
       "move, resize or remove the board's own shapes",

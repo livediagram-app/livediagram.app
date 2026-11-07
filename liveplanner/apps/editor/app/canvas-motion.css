@@ -83,7 +83,8 @@
   }
   .group:hover .lvd-vote-stepper,
   .lvd-vote-stepper:hover,
-  .lvd-vote-stepper:focus-within {
+  .lvd-vote-stepper:focus-within,
+  .lvd-vote-stepper-open {
     opacity: 1;
   }
 }

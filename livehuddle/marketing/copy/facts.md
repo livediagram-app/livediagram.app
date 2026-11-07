@@ -40,8 +40,9 @@ The unit of value is the group in the room.
   pieces to build more: rooms with real doors, walls, desks,
   chairs, sofas, meeting tables, rugs, plants, bookshelves, a water cooler, a
   coffee machine, portals between rooms and tabs, fences and Avatar Pads.
-- Avatar mode: a pixel character per person with outfits, a status (Available,
-  Focusing, In a Meeting or Away), speech bubbles, five moves (jumping jacks,
+- Avatar mode: a pixel character per person with outfits, a status worn on the
+  character (eleven, from Available and Focusing's headphones to Out to Lunch's
+  sandwich and Angry's steaming ears), speech bubbles, five moves (jumping jacks,
   wave, spin, cheer, dance) and Follow to go wherever a teammate goes.
 - Light meeting tools: the Timer and Stopwatch pieces in the palette's Meeting
   category, the facilitator baton, Bring Focus and Follow, and five bursts

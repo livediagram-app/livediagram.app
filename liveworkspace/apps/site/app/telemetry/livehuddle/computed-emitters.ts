@@ -17,11 +17,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { platformComputedEmitters } from '../platform-emitters';
 import {
+  PALETTE_TELEMETRY_TYPES,
   ALL_CTA_SOURCES,
   ALL_TIMING_TYPES,
   COMMUNITY_CATEGORIES,
   LEVEL_TELEMETRY_TYPE,
-  COMMUNITY_REPORT_REASONS,
   isValidTelemetryEvent,
 } from '@livehuddle/api-schema';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
@@ -120,7 +120,8 @@ const THEMES = ['Default', 'Plum'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label (Default for none)";
 const TEMPLATES = ['Flowchart', 'Mindmap', 'Event-storming'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
-const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
+// Every kind the palette catalogue names, a category's or a retired one's (the api schema's PALETTE_TELEMETRY_TYPES).
+const ELEMENT_KINDS = Object.values(PALETTE_TELEMETRY_TYPES).flat();
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
@@ -131,16 +132,9 @@ const API_ERRORS = [
 ];
 const API_ERROR_WHY = 'a status or kind plus the request that failed, and the worker error token';
 
-// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category and a
-// report's reason as their closed `type` tokens, and the gallery filter kinds the Community app's
-// CommunitySelection union names.
+// The Community (docs/specs/025-community/community.md "Telemetry"): a post's category as its closed `type` token.
+// The gallery's own events are liveworkspace.app's Community page's, each type literal there (platform-emitters.ts).
 const COMMUNITY_CATEGORY_TYPES = COMMUNITY_CATEGORIES.map((c) => c.type);
-const COMMUNITY_REASON_TYPES = COMMUNITY_REPORT_REASONS.map((r) => r.type);
-const COMMUNITY_SELECTIONS = tokensAfter(
-  read('community/lib/telemetry.ts'),
-  'export type CommunitySelection',
-  ';',
-);
 
 // Where a changeset came from, read off the front door's own type so the list cannot drift.
 const AGENT_FRONT_DOORS = tokensAfter(
@@ -149,7 +143,19 @@ const AGENT_FRONT_DOORS = tokensAfter(
   ';',
 );
 
+// The UI Scale slider's per-part rows (settings-catalogue.ts uiScalePartRow), each naming its token in the copy
+// it hands the helper, which builds the row's event from it.
+const UI_SCALE_PARTS = [
+  ...read('editor/components/dialogs/settings/settings-catalogue.ts').matchAll(
+    /uiScalePartRow\('[A-Za-z]+', \{[^}]*?changed: '([A-Za-z]+)'/g,
+  ),
+].map((m) => m[1]!);
+
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
+  'apps/editor/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: UI_SCALE_PARTS,
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // Someone's first time in through a link, by its level (@liveworkspace/index-app JOINED_TELEMETRY_TYPE, the
@@ -186,10 +192,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
 
-  // The Community app.
-  'apps/community/lib/telemetry.ts Community·Reported': { values: COMMUNITY_REASON_TYPES },
-  'apps/community/lib/telemetry.ts Community·Selected': { values: COMMUNITY_SELECTIONS },
-
   // Shared packages.
   'packages/telemetry-client/src/errors.ts Error·Client': {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
@@ -201,7 +203,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: SLUG_WHY,
   },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: [
+      '/',
+      '/document',
+      '/explorer/timeline',
+      '/help/canvas/links',
+      '/telemetry',
+      '/community',
+    ],
     open: 'the page path, ids and query strings stripped',
   },
 
@@ -306,6 +315,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/canvas/collab/TimerView.tsx Element·Changed': {
     values: ['TimerReset', 'StopwatchReset'],
   },
+  // A note pinned or unpinned on a piece that holds notes (docs/specs/009-elements/team-pieces.md "Telemetry"), by
+  // the piece: never the note, never who.
+  'apps/editor/components/canvas/collab/useNoteSigner.ts Element·Changed': {
+    values: ['Notice-board', 'Calendar-wall'],
+  },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
@@ -323,6 +337,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  // A piece of furniture turned by Rotate Left or Rotate Right (docs/specs/009-elements/furniture-facing.md).
+  'apps/editor/hooks/canvas/useDataShapeSetters.ts Element·Changed': {
+    values: ['Sofa', 'Chair', 'Desk', 'Lockers', 'Meeting-table', 'Vending-machine'],
+    open: 'shapeTelemetryToken of the turned piece: any furniture that turns',
+  },
   'apps/editor/hooks/canvas/useStylePreview.ts Element·Changed': {
     // The types the element menu's generic style ops pass through it (apps/editor/lib/element-style-ops.ts): the
     // accent edge, card slots and chip looks.

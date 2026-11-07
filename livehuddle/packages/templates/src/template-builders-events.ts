@@ -4,14 +4,9 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
+import { arrival } from './template-arrival';
 import { createShape, type Element } from '@livehuddle/document';
-import {
-  SPACE_BELOW,
-  SPACE_HEAD,
-  spacePlan,
-  walkIn,
-  type OfficeRoom,
-} from './template-office-parts';
+import { SPACE_BELOW, SPACE_HEAD, spacePlan, type OfficeRoom } from './template-office-parts';
 
 const ROOM_W = 1100;
 const ROOM_H = 800;
@@ -34,6 +29,8 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
       door: 's',
       pieces: [
         { kind: 'stage', x: STAGE_X, y: 40, stageCameras: true },
+        // The trainer's podium on it (docs/specs/009-elements/venue-pieces.md "In the templates").
+        { kind: 'podium', x: STAGE_X + 270, y: 62 },
         // Four tables for group work, two each side of the aisle up from the doorway, an aisle between the rows
         // (docs/specs/007-editor/templates-by-mode.md "Every Space is roomy").
         { kind: 'meeting-table', x: 100, y: 240 },
@@ -63,11 +60,12 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
     },
     [
       focus,
-      ...walkIn(
-        x0 + width,
-        y0 + SPACE_HEAD + ROOM_H + SPACE_BELOW / 2,
-        'Press Walk In (or W) and join a table. Whoever stands on the stage is heard by the whole room.',
-      ),
+      // In the middle of the room, the four tables round it and the stage ahead.
+      ...arrival({
+        x: cx,
+        y: cy - 12,
+        hint: 'You arrive on the Avatar Pad: join a table. Whoever stands on the stage is heard by the whole room.',
+      }),
     ],
   );
 }

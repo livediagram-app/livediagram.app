@@ -1,3 +1,4 @@
+import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
@@ -6,7 +7,7 @@ import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
-import type { DragPreviewPatch } from './drag-preview';
+import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 
 // ---------------------------------------------------------------------
@@ -15,8 +16,8 @@ import type { ChangesetRoomOp } from './changesets';
 
 // One participant's Avatar-mode character and its statuses (docs/specs/008-canvas/avatar-mode.md) are every
 // product's wire shapes, in @liveworkspace/api-schema/avatar; re-exported so this package's surface is unchanged.
-export { AVATAR_STATUS_IDS } from '@liveworkspace/api-schema/avatar';
-export type { AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
+export { AVATAR_STATUS_IDS, expandAvatarPacket } from '@liveworkspace/api-schema/avatar';
+export type { AvatarPacket, AvatarPresence, AvatarStatus } from '@liveworkspace/api-schema/avatar';
 
 // Room op kinds that are ephemeral signals: they mutate no document state,
 // so they relay unordered (no seq) and from any role.
@@ -308,7 +309,14 @@ export function isRoomOpRef(ref: unknown): ref is number {
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
 // `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
-export type FormatMessage = { kind: 'format'; format: number; build?: string };
+// `leanAvatars`: the room takes lean avatar packets and fills them back out for an older editor
+// (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"); an editor sends them only when it says so.
+export type FormatMessage = {
+  kind: 'format';
+  format: number;
+  build?: string;
+  leanAvatars?: boolean;
+};
 
 // Incoming WebSocket frames clients send to the room.
 // `hello` identifies the participant on connect; `op` is any local
@@ -319,11 +327,14 @@ export type ClientMessage =
   // hands the baton to this new socket. Absent on every ordinary hello.
   // `batches`: this editor takes a busy room's coalesced `batch` frames (docs/specs/015-api/api.md "A busy room
   // bounds its presence fan-out"); a room never sends one to a session that did not say so.
+  // `leanAvatars`: this editor reads lean avatar packets (AvatarPacket), filling in the costume it last saw; a room
+  // fills them back out for a session that did not say so.
   | {
       kind: 'hello';
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
+      leanAvatars?: boolean;
     }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
@@ -438,7 +449,16 @@ export type RoomOp =
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
-      tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
+      // `connection`: a connected tab's (liveworkspace/docs/specs/004-index/connected-tabs.md), as the room sends when
+      // the index adds one (the reverse tab of a connection made both ways).
+      tabs: {
+        id: string;
+        name: string;
+        orderIndex: number;
+        folder?: string;
+        outOfScope?: true;
+        connection?: TabConnectionWire;
+      }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older documents (tab duplication used to
@@ -501,9 +521,18 @@ export type RoomOp =
   // even if the pad's field changed under them mid-flight.
   | { kind: 'reaction'; tabId: string; elementId: string; reaction: string }
   // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
-  // element; `end` says the preview is over, `landed` that it was written (the real change follows as
-  // element ops, after the autosave's wait), so receivers keep drawing it until then.
-  | { kind: 'drag-preview'; tabId: string; patches?: DragPreviewPatch[]; end?: true; landed?: true }
+  // element, or for a very large move one shared offset (`ride`, in place of `patches`, so an editor that
+  // does not know it drops the op and sees the move on release); `end` says the preview is over, `landed`
+  // that it was written (the real change follows as element ops, after the autosave's wait), so receivers
+  // keep drawing it until then.
+  | {
+      kind: 'drag-preview';
+      tabId: string;
+      patches?: DragPreviewPatch[];
+      ride?: DragPreviewRide;
+      end?: true;
+      landed?: true;
+    }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no
@@ -602,6 +631,7 @@ export type RoomOutgoing =
       participant: ParticipantPresence;
       facilitatorToken?: string;
       batches?: boolean;
+      leanAvatars?: boolean;
     }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }

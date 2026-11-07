@@ -1,17 +1,17 @@
 // The Outdoor Spaces (docs/specs/012-collaboration/virtual-office-template.md "Spaces"): a Garden Retreat and a City
 // Park, open-air floors of Grass and Garden Paths with Trees and Outdoor Plants, built with spacePlan's open pieces
 // (template-office-parts.ts): the lawn and the paths lie under everything, a room (the Garden Retreat's summer house)
-// over them. With no walls round them, a Garden Fence or the trees hold the edge, and the Walk In waits under the gate
-// or the path, so walking in is walking up it.
+// over them. With no walls round them, a Garden Fence or the trees hold the edge, and the Avatar Pad waits under the
+// gate or the path, so walking in is walking up it.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
+import { arrival } from './template-arrival';
 import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -24,9 +24,6 @@ const run = (
   w: number,
   h: number,
 ): OfficePiece => ({ kind, x, y, w, h });
-
-// The Walk In's button is 104 wide: centred under `x`, its right edge is half that past it.
-const WALK_IN_HALF = 52;
 
 // --- Garden Retreat ----------------------------------------------------------------
 
@@ -99,11 +96,12 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
       subtitle:
         'Step outside: walk the paths, meet round the table in the summer house, or sit by the campfire.',
     },
-    walkIn(
-      x0 + GARDEN_W / 2 + WALK_IN_HALF,
-      y0 + SPACE_HEAD + GARDEN_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) and come in through the gate. The path leads up to the summer house.',
-    ),
+    // On the lawn beside the summer house, its door and the campfire in view.
+    arrival({
+      x: cx + 336,
+      y: cy - 4,
+      hint: 'You arrive on the Avatar Pad. Meet in the summer house, or sit by the campfire.',
+    }),
     open,
   );
 }
@@ -177,11 +175,14 @@ export function buildCityPark(cx: number, cy: number): Element[] {
       subtitle:
         'Take the meeting outside: stroll the paths, sit on a bench, or gather round the bandstand.',
     },
-    walkIn(
-      x0 + PARK_W / 2 + WALK_IN_HALF,
-      y0 + SPACE_HEAD + PARK_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) and walk up the path. A bench seats two, and the picnic table seats six.',
-    ),
+    // On the open lawn above the fountain plaza, between the north path and the trees, off the paths and the
+    // bandstand, its line under it clear of the path stones and the bench.
+    arrival({
+      x: cx + 165,
+      y: cy - 255,
+      hintW: 260,
+      hint: 'You arrive on the Avatar Pad. A bench seats two, the picnic table six.',
+    }),
     open,
   );
 }

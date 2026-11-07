@@ -68,8 +68,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     })),
-    // The Community's gallery (docs/specs/025-community/community.md "Where Community is linked from"): its own app
-    // under the same origin, whose Worker serves each post's page in /community/sitemap.xml.
+    // The Community's gallery (docs/specs/025-community/community.md "Where Community is linked from"): liveworkspace.app's
+    // page on this address, whose router lists each post's page in /community/sitemap.xml.
     {
       url: `${base}${COMMUNITY_HOME_PATH}`,
       lastModified: now,

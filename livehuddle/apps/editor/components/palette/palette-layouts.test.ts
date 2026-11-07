@@ -36,19 +36,17 @@ describe('palette layouts', () => {
     }
   });
 
-  it('is Popular; Write; the Space categories, Travel last; Stickers, Media (no Icons)', () => {
+  it('is Popular; Write; the Space categories, Travel last (no Icons, no Media; Stickers search-only)', () => {
     expect(ids()).toEqual([
       'popular',
       'write',
       'collab-rooms',
       'collab-seating',
       'collab-amenities',
-      'collab-bar',
       'collab-recreation',
       'collab-garden',
       'collab-meeting',
       'collab-travel',
-      'stickers',
     ]);
     expect(paletteLandingCategory()).toBe('popular');
     // No opener anywhere: every category is one level deep.
@@ -85,7 +83,9 @@ describe('palette layouts', () => {
       'tools:focus-button',
       'tools:avatar-pad',
       'tools:directory',
+      'tools:signpost',
       'tools:elevator',
+      'tools:stairs',
       'tools:mode-avatar',
     ]);
     expect(tileIds('collab-seating')).toEqual([
@@ -95,43 +95,121 @@ describe('palette layouts', () => {
       'tools:meeting-table',
       'tools:bean-bag',
       'tools:reading-nook',
+      'tools:hot-desk',
+      'tools:standing-desk',
     ]);
     // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
-    // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
+    // Room Builder, Corridor and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
     expect(tileIds('collab-rooms')).toEqual([
       'tools:room',
       'tools:room-builder',
+      'tools:corridor',
       'tools:wall-door',
       'tools:fence',
       'tools:stage',
+      // The Stage's curtains and podium beside it; the pillar and column after the rug
+      // (docs/specs/009-elements/venue-pieces.md "Where they live").
+      'tools:stage-curtains',
+      'tools:podium',
       'tools:office-pod',
+      'tools:phone-booth',
+      'tools:nap-pod',
+      'tools:reception-desk',
       'tools:rug',
+      'tools:pillar',
+      'tools:column',
     ]);
     const rooms = paletteCategories().find((c) => c.id === 'collab-rooms')!;
     expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
       'tools:wall-door',
     ]);
+    // Amenities in three named groups (docs/specs/009-elements/office-amenities.md "Where they live").
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',
       'tools:bookshelf',
+      'tools:printer',
+      'tools:copier',
+      'tools:lockers',
+      'tools:coat-rack',
+      'tools:umbrella-stand',
       'tools:water-cooler',
       'tools:coffee-machine',
       'tools:vending-machine',
+      'tools:kitchen-counter',
+      'tools:kitchen-sink',
+      'tools:fridge',
+      'tools:microwave',
+      'tools:kettle',
+      'tools:restroom',
+      'tools:toilet-cubicle',
+      'tools:washbasin',
+      'tools:hand-dryer',
     ]);
+    const amenities = paletteCategories().find((c) => c.id === 'collab-amenities')!;
+    expect(amenities.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
+      'tools:umbrella-stand',
+      'tools:kettle',
+    ]);
+    // Play holds the Bar, and it and Garden list their named groups
+    // (docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout"), a divider ending each.
     expect(tileIds('collab-recreation')).toEqual([
-      'tools:jukebox',
+      'tools:bar',
+      'tools:bar-stool',
+      'tools:drinks-cabinet',
+      'tools:drinks-fridge',
       'tools:ping-pong-table',
       'tools:pool-table',
       'tools:foosball-table',
       'tools:arcade-machine',
       'tools:dartboard',
+      'tools:treadmill',
+      'tools:weight-bench',
+      'tools:jukebox',
       'tools:fireplace',
+      'tools:pet-bed',
     ]);
+    const dividers = (id: string) =>
+      paletteCategories()
+        .find((c) => c.id === id)!
+        .tiles!.filter((t) => t.dividerAfter)
+        .map((t) => t.id);
+    expect(dividers('collab-recreation')).toEqual([
+      'tools:drinks-fridge',
+      'tools:dartboard',
+      'tools:weight-bench',
+    ]);
+    expect(tileIds('collab-garden')).toEqual([
+      'tools:outdoor-plant',
+      'tools:tree',
+      'tools:grass',
+      'tools:garden-path',
+      'tools:garden-fence',
+      'tools:bench',
+      'tools:picnic-table',
+      'tools:hammock',
+      'tools:garden-umbrella',
+      'tools:fountain',
+      'tools:pond',
+      'tools:swimming-pool',
+      'tools:campfire',
+      'tools:car-park',
+      'tools:bike-rack',
+    ]);
+    expect(dividers('collab-garden')).toEqual([
+      'tools:grass',
+      'tools:garden-fence',
+      'tools:garden-umbrella',
+      'tools:campfire',
+    ]);
+    expect(paletteCategoryOffered('collab-bar')).toBe(false);
     expect(tileIds('collab-meeting')).toEqual([
       'tools:screen',
       'tools:room-sign',
       'tools:notice-board',
       'tools:world-clock',
+      'tools:calendar-wall',
+      'tools:suggestion-box',
+      'tools:photo-wall',
       // docs/specs/009-elements/timer-and-stopwatch.md: placed in a room, not a cluster button.
       'tools:timer',
       'tools:stopwatch',
@@ -148,6 +226,12 @@ describe('palette layouts', () => {
       .filter((c) => c.id.startsWith('collab-'))
       .flatMap((c) => (c.tiles ?? []).map((t) => t.id));
     expect([...offered].sort()).toEqual([...pieces].sort());
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "Stickers in search only".
+  it('keeps Stickers off the strip but offered to Search', () => {
+    expect(paletteCategories().map((c) => c.id)).not.toContain('stickers');
+    expect(paletteCategoryOffered('stickers')).toBe(true);
   });
 
   it('leaves a Space category off until it holds a tile', () => {

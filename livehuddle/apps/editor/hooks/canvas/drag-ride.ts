@@ -7,8 +7,9 @@
 import { isBoxed, type ArrowElement, type Element } from '@livehuddle/document';
 import type { DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLinks } from '@/components/canvas/drag-affected-arrows';
+import { rideOffset, type RideOffset } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
-export type RideOffset = { readonly dx: number; readonly dy: number };
+export type { RideOffset } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
 // Every field but `except` holds the same value.
 function sameBut(a: Element, b: Element, except: readonly string[]): boolean {
@@ -29,7 +30,7 @@ function endOffset(
   was: ArrowElement['from'],
   rides: ReadonlyMap<string, RideOffset>,
 ): RideOffset | null {
-  if (now.kind === 'free' && was.kind === 'free') return { dx: now.x - was.x, dy: now.y - was.y };
+  if (now.kind === 'free' && was.kind === 'free') return rideOffset(now.x - was.x, now.y - was.y);
   if (now.kind === 'pinned' && was.kind === 'pinned') {
     // The same pin: the same object, as a move leaves it, or the same value.
     if (now !== was && JSON.stringify(now) !== JSON.stringify(was)) return null;
@@ -60,7 +61,7 @@ export function ridingElements(
   for (const [id, el] of overlay.changed) {
     const was = before.get(id);
     if (!was || still.has(id) || !isBoxed(el) || !isBoxed(was)) continue;
-    if (sameBut(el, was, BOX_POSITION)) rides.set(id, { dx: el.x - was.x, dy: el.y - was.y });
+    if (sameBut(el, was, BOX_POSITION)) rides.set(id, rideOffset(el.x - was.x, el.y - was.y));
   }
   if (rides.size === 0) return rides;
   // The arrows the gesture changed, and those pinned to a box that rides.

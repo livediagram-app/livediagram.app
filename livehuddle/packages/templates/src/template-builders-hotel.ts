@@ -2,10 +2,10 @@
 // floors, one tab each, joined by named Elevators.
 //
 // - Lobby (the first tab, Marble): a Lobby Bar, a Ballroom with a Stage, a Business Centre and a Library Lounge round
-//   an open lobby with a reception, sofas on rugs and the Lobby Lift; the Walk In at the front door.
-// - Suites (Carpet): six suites either side of a corridor, the Suites Lift and a Directory at its end.
-// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a long water
-//   garden, the Rooftop Lift and a Directory.
+//   an open lobby with a reception, sofas on rugs, four Columns and the Lobby Lift; the Avatar Pad at the front door.
+// - Suites (Carpet): six suites either side of a corridor, the Suites Lift, a Directory and an Avatar Pad at its end.
+// - Rooftop (Decking): a Rooftop Bar, a Spa Room of two Office Pods, a terrace of umbrellas, hammocks and a garden
+//   round a Swimming Pool, the Rooftop Lift, a Directory and an Avatar Pad.
 //
 // Indoors, every room's Door opens onto the floor's open lobby or corridor (campusPlan, IndoorRoom). Each builder is
 // pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
@@ -97,9 +97,9 @@ const LOBBY_ROOMS: IndoorRoom[] = [
 ];
 
 const LOBBY_FLOOR: OfficePiece[] = [
-  // The reception: two desks facing the front door, a plant either side.
-  { kind: 'desk', x: 980, y: 880, facing: 'n' },
-  { kind: 'desk', x: 1100, y: 880, facing: 'n' },
+  // The reception: a Reception Desk facing the front door, its bell for arrivals, a plant either side
+  // (docs/specs/009-elements/workday-pieces.md).
+  { kind: 'reception-desk', x: 1000, y: 880 },
   { kind: 'plant', x: 910, y: 890 },
   { kind: 'plant', x: 1234, y: 890 },
   // Sofas on rugs to wait on.
@@ -107,6 +107,9 @@ const LOBBY_FLOOR: OfficePiece[] = [
   { kind: 'sofa', x: 324, y: 880, facing: 'n' },
   { kind: 'rug', x: 300, y: 1080 },
   { kind: 'sofa', x: 324, y: 1100, facing: 's' },
+  // Two pairs of columns either side of the way in from the front door, past the reception
+  // (docs/specs/009-elements/venue-pieces.md "In the templates").
+  ...[700, 860, 1276, 1436].map((x) => ({ kind: 'column' as const, x, y: 1010 })),
   // The Lobby Lift, by the bar.
   lift(80, 1000, 'Lobby Lift'),
   { kind: 'plant', x: 2060, y: 1140 },
@@ -127,8 +130,13 @@ export function buildHotelLobby(cx: number, cy: number): Element[] {
       subtitle:
         'Three floors to stay on: the lobby, bar and ballroom here, the suites and the rooftop by the Lobby Lift.',
     },
-    gateAt: LOBBY_MID,
-    hint: 'Press Walk In (or W) and come in at the front door. The Lobby Lift takes you up to the suites and the rooftop.',
+    // In the lobby, before the reception desk, between the columns and the Directory.
+    arrival: {
+      dx: -68,
+      dy: 476,
+      hintW: 240,
+      hint: 'You arrive on the Avatar Pad in the lobby. The Lobby Lift takes you up to the suites and the rooftop.',
+    },
     extra: (left, top) => [
       createShape('focus-button', left + BALLROOM.x + 580, top + BALLROOM.y + 60),
     ],
@@ -180,6 +188,9 @@ const SUITES_FLOOR: OfficePiece[] = [
   // The lift at the corridor's end, the Directory beside it, and plants along the corridor.
   lift(60, 510, 'Suites Lift'),
   { kind: 'directory', x: 200, y: 520 },
+  // The floor's Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): in the corridor
+  // past the Directory, so someone who changes floor from the tab bar arrives by the lift.
+  { kind: 'avatar-pad', x: 290, y: 560 },
   { kind: 'plant', x: 2120, y: 520 },
 ];
 
@@ -233,14 +244,16 @@ const ROOF_ROOMS: IndoorRoom[] = [
     pieces: [
       { kind: 'office-pod', x: 40, y: 150 },
       { kind: 'office-pod', x: 224, y: 150 },
+      // A treadmill in the corner, which shows you as On a Break while you walk it.
+      { kind: 'treadmill', x: 416, y: 160 },
       { kind: 'plant', x: 470, y: 44 },
     ],
   },
 ];
 
 const TERRACE: OfficePiece[] = [
-  // A long water garden between the two rooms, planters at its ends.
-  { kind: 'pond', x: 700, y: 120, w: 600, h: 200 },
+  // The rooftop pool between the two rooms, planters at its ends (docs/specs/009-elements/venue-pieces.md).
+  { kind: 'swimming-pool', x: 700, y: 120, w: 600, h: 200 },
   { kind: 'outdoor-plant', x: 700, y: 360 },
   { kind: 'outdoor-plant', x: 1228, y: 360 },
   // Umbrellas and hammocks across the terrace.
@@ -252,6 +265,8 @@ const TERRACE: OfficePiece[] = [
   // The lift and the Directory beside it.
   lift(60, 880, 'Rooftop Lift'),
   { kind: 'directory', x: 200, y: 890 },
+  // The floor's Avatar Pad, past the Directory, under the Rooftop Bar.
+  { kind: 'avatar-pad', x: 300, y: 920 },
 ];
 
 export function buildHotelRooftop(cx: number, cy: number): Element[] {
@@ -264,8 +279,7 @@ export function buildHotelRooftop(cx: number, cy: number): Element[] {
       text: 'Rooftop',
       width: 180,
       sticker: 'emoji-sun',
-      subtitle:
-        'A terrace above the city: the rooftop bar, the spa room, hammocks and the water garden.',
+      subtitle: 'A terrace above the city: the rooftop bar, the spa room, hammocks and the pool.',
     },
   });
 }

@@ -37,18 +37,19 @@ Worker ([docs/ci.md](../docs/ci.md#deploys) at the repository root).
 
 ```sh
 corepack pnpm install
-cd apps/accounts
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
-cd ../..
 corepack pnpm dev:workspace           # http://localhost:3000/sign-in
 ```
+
+A fresh checkout needs nothing more. Each service's `dev` script copies its `.dev.vars.example` to `.dev.vars` when
+there is none (never over one) and applies its local migrations, and the accounts Worker's writes every app's fixed
+local OAuth client into its local database, so an app started beside it (`corepack pnpm dev:design`, ...) signs in and
+makes guests with no registration step ([docs/specs/003-accounts/sign-in.md](docs/specs/003-accounts/sign-in.md#local-clients)).
 
 `dev:workspace` runs the site on 3000 with its seven services behind it: accounts (8787), telemetry (8790),
 Community (8791), media (8792), the index (8793), status (3010) and Drive (3011). The site's dev server forwards
 each service's paths to it (`apps/site/next.config.ts`), so the pages and the APIs share one origin, as on
 liveworkspace.app. That origin, `http://localhost:3000`, is the accounts Worker's `BASE_URL` and the issuer apps
-check locally. Each service's first-time local setup (a `.dev.vars`, `db:migrate:local`) is in its spec.
+check locally.
 
 Each service with a D1 database applies its local migrations as its `dev` script starts, so a local database built
 before a migration was added catches up on its own (a database behind on accounts' `0018_livehuddle.sql` refused to

@@ -1,13 +1,26 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_TYPES, SHAPE_KINDS, type Element as CanvasElement } from '@livehuddle/document';
+import {
+  createShape,
+  turnPiece,
+  ELEMENT_TYPES,
+  SHAPE_KINDS,
+  type Element as CanvasElement,
+} from '@livehuddle/document';
+import { FENCE_REACH } from '@liveworkspace/avatar/collision';
+import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
+import { arcadeAt } from '@/components/canvas/collab/useSocialPieces';
+import { receptionAt } from '@/lib/office/useWorkdayPieces';
 import {
   AVATAR_CLICK_INTENTS,
   avatarClickIntent,
+  avatarPressOutcome,
+  NO_READER_KINDS,
   ELEMENT_KIND_ATTR,
   elementClickKind,
   isInPlacePress,
   pressPieceMain,
+  walkPointFor,
 } from './avatar-click-intent';
 
 // docs/specs/008-canvas/avatar-mode.md "Clicking a piece".
@@ -17,6 +30,7 @@ const ALL_KINDS = [...SHAPE_KINDS, ...[...ELEMENT_TYPES].filter((t) => t !== 'sh
 const IN_PLACE = [
   'directory',
   'elevator',
+  'stairs',
   'portal',
   'mode-button',
   'focus-button',
@@ -29,13 +43,18 @@ const IN_PLACE = [
   'jukebox',
   'link-card',
   'video',
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
 ];
 
 // Walked to only when arriving is the point: floor, seats, drinks, proximity, scenery, areas and marks.
 const WALK = [
   'avatar-pad',
+  'photo-wall',
   'stage',
   'room',
+  'corridor',
   'office-pod',
   'rug',
   'grass',
@@ -73,6 +92,34 @@ const WALK = [
   'foosball-table',
   'vending-machine',
   'dartboard',
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
   'lane',
   'boundary',
   'arrow',
@@ -129,6 +176,34 @@ describe('avatarClickIntent', () => {
   });
 });
 
+describe('avatarPressOutcome', () => {
+  it('presses any use piece with a main action right now', () => {
+    for (const kind of IN_PLACE) expect(avatarPressOutcome(kind, true), kind).toBe('press');
+  });
+
+  it('does nothing on a control piece with no press of yours, never the reader', () => {
+    expect([...NO_READER_KINDS].sort()).toEqual(
+      ['focus-button', 'mode-button', 'signpost', 'stopwatch', 'timer'].sort(),
+    );
+    for (const kind of NO_READER_KINDS) {
+      expect(avatarClickIntent(kind), kind).toBe('use');
+      expect(avatarPressOutcome(kind, false), kind).toBe('nothing');
+    }
+  });
+
+  it('opens every other use piece with no main action in the reader (an idle Screen, a Room Sign)', () => {
+    for (const kind of IN_PLACE.filter((k) => !NO_READER_KINDS.has(k as never)))
+      expect(avatarPressOutcome(kind, false), kind).toBe('read');
+  });
+
+  it('reads a read kind and walks a walk kind, main or not', () => {
+    expect(avatarPressOutcome('sticky', false)).toBe('read');
+    expect(avatarPressOutcome('table', true)).toBe('read');
+    expect(avatarPressOutcome('chair', false)).toBe('walk');
+    expect(avatarPressOutcome(null, false)).toBe('walk');
+  });
+});
+
 describe('isInPlacePress', () => {
   const box = (kind: string) => {
     const el = document.createElement('div');
@@ -166,5 +241,84 @@ describe('pressPieceMain', () => {
     expect(pressed).toBe(1);
     expect(pressPieceMain('nothing')).toBe(false);
     box.remove();
+  });
+});
+
+describe('walkPointFor', () => {
+  const piece = (shape: 'reception-desk' | 'arcade-machine' | 'chair', rotation = 0) =>
+    ({ ...createShape(shape, 100, 100), id: shape, rotation }) as CanvasElement & {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      shape: string;
+    };
+
+  it('walks a click anywhere on a Reception Desk or an Arcade Machine to its front, where arriving says hello', () => {
+    for (const shape of ['reception-desk', 'arcade-machine'] as const) {
+      const el = piece(shape);
+      const box = { id: el.id, x: el.x, y: el.y, width: el.width, height: el.height };
+      const foot = officeFootprint(el)!;
+      // The middle of it, its top and its back corner all walk to the floor in front, under the click.
+      for (const click of [
+        { x: el.x + el.width / 2, y: el.y + el.height / 2 },
+        { x: el.x + el.width / 2, y: el.y + 4 },
+        { x: el.x + 1, y: el.y + 1 },
+      ]) {
+        const to = walkPointFor(el, click);
+        expect(to.y).toBeGreaterThan(foot.y + foot.height + FENCE_REACH);
+        expect(to.x).toBeGreaterThan(el.x);
+        expect(to.x).toBeLessThan(el.x + el.width);
+        const at = shape === 'reception-desk' ? receptionAt(to, [box]) : arcadeAt(to, [box]);
+        expect(at).toBe(el.id);
+      }
+      expect(walkPointFor(el, { x: el.x + el.width / 2, y: el.y }).x).toBe(el.x + el.width / 2);
+      // A turned one has no front below it: the click is the walk.
+      expect(walkPointFor(piece(shape, 90), { x: 150, y: 150 })).toEqual({ x: 150, y: 150 });
+    }
+  });
+
+  it('walks a click on a turned Arcade Machine to its turned front, where its bubble shows', () => {
+    for (const chairFacing of ['e', 's', 'w'] as const) {
+      const el = turnPiece(
+        { ...createShape('arcade-machine', 100, 100), id: 'arc', chairFacing: 'n' as const },
+        chairFacing,
+      ) as CanvasElement & { x: number; y: number; width: number; height: number };
+      const foot = officeFootprint({ ...el, shape: 'arcade-machine', chairFacing })!;
+      const to = walkPointFor(el, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
+      // Never onto its base, and at its front: left of it, right of it, or behind it.
+      const onBase =
+        to.x > foot.x && to.x < foot.x + foot.width && to.y > foot.y && to.y < foot.y + foot.height;
+      expect(onBase, chairFacing).toBe(false);
+      if (chairFacing === 'e') expect(to.x).toBeLessThan(foot.x);
+      if (chairFacing === 'w') expect(to.x).toBeGreaterThan(foot.x + foot.width);
+      if (chairFacing === 's') expect(to.y).toBeLessThan(foot.y);
+      expect(arcadeAt(to, [{ ...el, chairFacing }]), chairFacing).toBe('arc');
+      // Standing below it, where the front was, shows nothing on its side.
+      if (chairFacing !== 's')
+        expect(
+          arcadeAt({ x: el.x + el.width / 2, y: el.y + el.height + 16 }, [{ ...el, chairFacing }]),
+        ).toBeNull();
+    }
+  });
+
+  it('walks a click on a turned Reception Desk to its turned front, where its Welcome shows', () => {
+    for (const chairFacing of ['e', 's', 'w'] as const) {
+      const el = turnPiece(
+        { ...createShape('reception-desk', 100, 100), id: 'rec', chairFacing: 'n' as const },
+        chairFacing,
+      ) as CanvasElement & { x: number; y: number; width: number; height: number };
+      const foot = officeFootprint({ ...el, shape: 'reception-desk', chairFacing })!;
+      const to = walkPointFor(el, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
+      const onCounter =
+        to.x > foot.x && to.x < foot.x + foot.width && to.y > foot.y && to.y < foot.y + foot.height;
+      expect(onCounter, chairFacing).toBe(false);
+      expect(receptionAt(to, [{ ...el, chairFacing }]), chairFacing).toBe('rec');
+    }
+  });
+
+  it('leaves every other click where it is', () => {
+    expect(walkPointFor(piece('chair'), { x: 120, y: 120 })).toEqual({ x: 120, y: 120 });
+    expect(walkPointFor(null, { x: 5, y: 6 })).toEqual({ x: 5, y: 6 });
   });
 });

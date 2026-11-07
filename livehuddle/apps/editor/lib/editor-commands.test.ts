@@ -11,6 +11,7 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
+    turn: vi.fn(),
     clearAnimation: vi.fn(),
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
@@ -51,7 +52,6 @@ const base: CommandContext = {
   // A drawn-on desktop canvas in Select, which is where most of these
   // assertions live; the tool commands have their own describe block.
   canvasTool: 'select',
-  canvasEmpty: false,
 };
 
 const ids = (ctx: CommandContext) => buildEditorCommands(ctx, handlers()).map((c) => c.id);
@@ -191,6 +191,15 @@ describe('buildEditorCommands — dispatch', () => {
     expect(h.deleteSelection).toHaveBeenCalledOnce();
   });
 
+  it('turns furniture a quarter either way (docs/specs/009-elements/furniture-facing.md)', () => {
+    const h = handlers();
+    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain('rotate-left');
+    const cmds = buildEditorCommands({ ...base, selectionCount: 2, selectionTurns: true }, h);
+    cmds.find((c) => c.id === 'rotate-left')!.run();
+    cmds.find((c) => c.id === 'rotate-right')!.run();
+    expect(vi.mocked(h.turn).mock.calls).toEqual([[-1], [1]]);
+  });
+
   it('Clear marker dispatches setMarker(null)', () => {
     const h = handlers();
     const cmds = buildEditorCommands(
@@ -243,17 +252,15 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {
-    // The three view verbs plus the tools that only change how you LOOK at
-    // the canvas. Nothing here writes to the document, which is the property
-    // this test exists to hold: the eraser and the format painter are
-    // withheld, and so is every command below the read-only return.
+    // The three view verbs plus the side of the Edit | Walk toggle not in force. Nothing here writes to the
+    // document, which is the property this test exists to hold: every command below the read-only return is
+    // withheld.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
       'fit-to-screen',
       'export',
-      // Reads the room, writes nothing — a viewer may ask who else is here.
+      // Reads the room, writes nothing: a viewer may ask who else is here.
       'collaborators',
-      'tool:pan',
-      // Walking writes nothing, so Avatar mode is every role's (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+      // Walking writes nothing (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle").
       'tool:avatar',
     ]);
   });
@@ -296,31 +303,37 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 });
 
-// Canvas-tool switches (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). The palette's tool dropdown
-// was the only way to reach Hand / Eraser / Avatar; the search panel offered none of them.
+// The Edit | Walk toggle's two sides as Search offers them (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk
+// toggle"): the one not in force. Hand, Eraser and Format Painter are not commands (Format Painter starts from the
+// selection toolbar).
 describe('canvas tool commands', () => {
-  it('offers every tool but the one already in force', () => {
-    const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual(['tool:pan', 'tool:avatar', 'tool:eraser', 'tool:format']);
-    // Select is the current tool, so it is not offered.
-    expect(got).not.toContain('tool:select');
-    // ...and it comes back once you are somewhere else.
-    expect(ids({ ...base, canvasTool: 'pan' })).toContain('tool:select');
+  it('offers Walk while editing and Edit while walking', () => {
+    expect(ids(base).filter((id) => id.startsWith('tool:'))).toEqual(['tool:avatar']);
+    expect(ids({ ...base, canvasTool: 'avatar' }).filter((id) => id.startsWith('tool:'))).toEqual([
+      'tool:select',
+    ]);
+  });
+
+  it('names them Edit and Walk', () => {
+    const name = (ctx: CommandContext, id: string) =>
+      buildEditorCommands(ctx, handlers()).find((c) => c.id === id)?.name;
+    expect(name(base, 'tool:avatar')).toBe('Walk');
+    expect(name({ ...base, canvasTool: 'avatar' }, 'tool:select')).toBe('Edit');
   });
 
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
     buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:eraser')!
+      .find((c) => c.id === 'tool:avatar')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('eraser');
+    expect(h.setTool).toHaveBeenCalledWith('avatar');
   });
 
-  it('drops the content-dependent tools on an empty canvas', () => {
-    const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Only Hand and Avatar survive: Select is current, and everything else acts on existing content, the same gating
-    // the tool dropdown applies. An empty board is still a place to stand in.
-    expect(got).toEqual(['tool:pan', 'tool:avatar']);
+  it('offers no Hand, Eraser or Format Painter command', () => {
+    for (const tool of ['select', 'avatar', 'pan', 'format']) {
+      const got = ids({ ...base, canvasTool: tool });
+      for (const id of ['tool:pan', 'tool:eraser', 'tool:format']) expect(got).not.toContain(id);
+    }
   });
 
   // docs/specs/002-project-scope/not-in-livehuddle.md "The presenting tools, Isometric and Zen".
@@ -334,23 +347,14 @@ describe('canvas tool commands', () => {
     expect(ids(base)).not.toContain('tool:slide-deck');
   });
 
-  it('gives a read-only visitor the looking tools but not the editing ones', () => {
-    const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:pan');
-    expect(got).toContain('tool:avatar');
-    expect(got).not.toContain('tool:eraser');
-    expect(got).not.toContain('tool:format');
-  });
-});
-
-describe('tool commands', () => {
-  it('offers the format painter', () => {
-    expect(ids(base)).toContain('tool:format');
-  });
-
   // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
   it('never offers the highlighter as a tool', () => {
     expect(ids(base)).not.toContain('tool:highlighter');
+  });
+
+  it('gives a read-only visitor both sides, as neither writes', () => {
+    expect(ids({ ...base, isReadOnly: true })).toContain('tool:avatar');
+    expect(ids({ ...base, isReadOnly: true, canvasTool: 'avatar' })).toContain('tool:select');
   });
 });
 
@@ -367,24 +371,22 @@ describe('buildEditorCommands — Renumber Steps', () => {
 // docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked tab refuses every element edit, so search
 // offers none.
 describe('buildEditorCommands — locked tab', () => {
-  it('offers no element edits, layout cleanup, Eraser or Format on a locked tab', () => {
+  it('offers no element edits or layout cleanup on a locked tab', () => {
     const got = ids({ ...base, tabLocked: true, selectionCount: 1, singleIsBoxed: true });
     expect(got).not.toContain('delete');
     expect(got).not.toContain('duplicate');
     expect(got.some((id) => id.startsWith('auto-layout'))).toBe(false);
     expect(got).not.toContain('auto-align');
-    expect(got).not.toContain('tool:eraser');
-    expect(got).not.toContain('tool:format');
     // The document and the view stay workable.
     expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
   });
 
   it('keeps them on an unlocked tab', () => {
     const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
+    expect(got).toEqual(expect.arrayContaining(['auto-align']));
   });
 
-  it('offers Avatar Mode on a locked tab, read-only or not, but not while in it (avatar-mode.md)', () => {
+  it('offers Walk on a locked tab, read-only or not, but not while walking (avatar-mode.md)', () => {
     expect(ids({ ...base, tabLocked: true })).toContain('tool:avatar');
     expect(ids({ ...base, tabLocked: true, isReadOnly: true })).toContain('tool:avatar');
     expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');

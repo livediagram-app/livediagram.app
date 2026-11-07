@@ -10,9 +10,16 @@ import type { FurnitureDrawing, FurniturePart } from './seating';
 import { allSides, ellipse, path, rect } from './furniture-parts';
 import {
   BENCH_SEATS,
+  BENCH_SEATS_BACK,
+  BENCH_SEATS_SIDE,
   HAMMOCK_SEATS,
+  HAMMOCK_SEATS_SIDE,
   PICNIC_TABLE_SEATS,
+  PICNIC_TABLE_SEATS_BACK,
+  PICNIC_TABLE_SEATS_SIDE,
   PING_PONG_SEATS,
+  PING_PONG_SEATS_BACK,
+  PING_PONG_SEATS_SIDE,
 } from '@liveworkspace/avatar/seats';
 
 // Fixed colours for what keeps its colour whatever the theme, as OFFICE_TONES: cork, wood, brick, stone, fire, water,
@@ -132,6 +139,47 @@ const JUKEBOX_VIEW: FurnitureDrawing = {
   ring: { cx: 36, cy: 100, rx: 34, ry: 8 },
 };
 
+// Its back to you: the cabinet's plain back with a vented service door, the chrome base, the lights out of sight.
+const JUKEBOX_BACK: FurnitureDrawing = {
+  width: 72,
+  height: 112,
+  parts: [
+    ellipse('shadow', 36, 109, 34, 3),
+    path('panel', 'M4 106V40C4 18 18 4 36 4C54 4 68 18 68 40V106Z', T.jukebox),
+    path('face', 'M14 98V42C14 26 24 16 36 16C48 16 58 26 58 42V98Z', T.jukeboxDeep),
+    path('rail', 'M24 36h24M22 42h28M22 48h28M22 54h28'),
+    ellipse('panel', 36, 80, 3, 3, T.chrome),
+    path('line', 'M50 98c0 6 6 6 10 8'),
+    rect('panel', 2, 100, 68, 8, 3, T.chrome),
+  ],
+  seats: [],
+  ring: { cx: 36, cy: 100, rx: 34, ry: 8 },
+};
+
+/** The lit strips a side-on jukebox shows: its arch's edge on its front and the lit tube round its side. */
+export const JUKEBOX_ARCH_SIDE =
+  'M5 60V40C5 30 7 22 11 17V60ZM18 60V30C20 22 28 16 39 15C44 15 47 18 47 24V60H43V25C43 21 41 19 39 19C30 20 24 25 22 31V60Z';
+
+// Facing left: its rounded side toward you with a lit tube round it, its front a narrow strip down the left (the
+// arch's edge, the record window, the grille), the chrome base under both.
+const JUKEBOX_SIDE: FurnitureDrawing = {
+  width: 56,
+  height: 112,
+  parts: [
+    ellipse('shadow', 28, 109, 26, 3),
+    path('panel', 'M12 106V14C18 9 28 6 40 6C48 6 53 12 53 22V106Z', T.jukebox),
+    path('panel', 'M3 106V40C3 28 6 19 12 12V106Z', T.jukebox),
+    path('panel', JUKEBOX_ARCH_SIDE, T.glow),
+    rect('panel', 5, 64, 6, 18, 2, T.chrome),
+    rect('face', 5, 86, 6, 14, 2, T.jukeboxDeep),
+    rect('face', 18, 68, 29, 30, 4, T.jukeboxDeep),
+    path('rail', 'M22 76h21M22 82h21M22 88h21'),
+    rect('panel', 1, 100, 54, 8, 3, T.chrome),
+  ],
+  seats: [],
+  ring: { cx: 28, cy: 100, rx: 26, ry: 8 },
+};
+
 /** The ping-pong table's top on its grid: the rally's ball flies over it. */
 export const PING_PONG_TOP = { x: 28, y: 30, w: 128, h: 44 } as const;
 
@@ -157,6 +205,54 @@ const PING_PONG_TABLE_VIEW: FurnitureDrawing = {
   ],
   seats: PING_PONG_SEATS.seats.map(({ u, v }) => ({ u, v })),
   ring: { cx: 92, cy: 56, rx: 88, ry: 48 },
+};
+
+// Its back to you: the table reads the same from either long side, so only the paddles change ends (the left seat's
+// red paddle now at the right, where that seat is).
+const PING_PONG_TABLE_BACK: FurnitureDrawing = {
+  ...PING_PONG_TABLE_VIEW,
+  ...PING_PONG_SEATS_BACK,
+  parts: [
+    ...PING_PONG_TABLE_VIEW.parts.slice(0, -3),
+    path('line', 'M138 46l7 6M46 58l-7 -6'),
+    ellipse('panel', 134, 43, 6.5, 5.5, T.paddleRed),
+    ellipse('panel', 50, 61, 6.5, 5.5, T.paddleDark),
+  ],
+};
+
+/** The turned table's top on its side grid: its length runs down the canvas, the game's ends top and bottom. */
+export const PING_PONG_TOP_SIDE = { x: 20, y: 30, w: 72, h: 120 } as const;
+
+// Facing left: the table's length down the canvas, its near end's edge and legs at the foot, its long side a narrow
+// strip down the left, the net standing across the middle, the left seat's red paddle at the far end.
+const PING_PONG_TABLE_SIDE: FurnitureDrawing = {
+  ...PING_PONG_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 56, 174, 48, 4),
+    path('line', 'M28 156v16M84 156v16'),
+    rect('face', 16, 32, 6, 124, 2, T.feltDeep),
+    rect(
+      'panel',
+      PING_PONG_TOP_SIDE.x,
+      PING_PONG_TOP_SIDE.y,
+      PING_PONG_TOP_SIDE.w,
+      PING_PONG_TOP_SIDE.h,
+      3,
+      T.felt,
+    ),
+    rect('mark', 23, 33, 66, 1.4, 0, T.line),
+    rect('mark', 23, 145.6, 66, 1.4, 0, T.line),
+    rect('mark', 23, 33, 1.4, 114, 0, T.line),
+    rect('mark', 87.6, 33, 1.4, 114, 0, T.line),
+    rect('mark', 55.3, 33, 1.4, 114, 0, T.line),
+    rect('face', PING_PONG_TOP_SIDE.x, 150, PING_PONG_TOP_SIDE.w, 6, 2, T.feltDeep),
+    rect('panel', 12, 84, 88, 6, 1.5, T.line),
+    path('rail', 'M16 87h80'),
+    path('line', 'M38 42l-6 -6M74 136l6 6'),
+    ellipse('panel', 42, 46, 5.5, 6.5, T.paddleRed),
+    ellipse('panel', 70, 132, 5.5, 6.5, T.paddleDark),
+  ],
+  ring: { cx: 56, cy: 92, rx: 48, ry: 84 },
 };
 
 /** The arcade machine's screen on its grid, which shimmers. */
@@ -185,6 +281,53 @@ const ARCADE_MACHINE_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 32, cy: 100, rx: 30, ry: 8 },
+};
+
+// Its back to you: the cabinet's back with its service door and vents, the control panel's ends showing either side
+// beyond it, the marquee's lit edge along the top. The screen is out of sight.
+const ARCADE_MACHINE_BACK: FurnitureDrawing = {
+  width: 64,
+  height: 112,
+  parts: [
+    ellipse('shadow', 32, 109, 30, 3),
+    path('panel', 'M2 70L6 62H58L62 70Z', T.cabinet),
+    path('panel', 'M6 108V20L14 4H50L58 20V108Z', T.cabinetDeep),
+    rect('panel', 14, 4, 36, 4, 1.5, T.glow),
+    rect('face', 12, 26, 40, 74, 3, T.cabinetDeep),
+    path('rail', 'M20 34h24M20 39h24M20 44h24M20 49h24'),
+    ellipse('panel', 44, 70, 2.5, 2.5, T.chrome),
+    path('line', 'M24 100c0 5 -4 7 -10 8'),
+  ],
+  seats: [],
+  ring: { cx: 32, cy: 100, rx: 30, ry: 8 },
+};
+
+/** The turned arcade machine's screen on its side grid: a slanted strip of the glass down its front. */
+export const ARCADE_SCREEN_SIDE = 'M17 26L23 28L20 58L13 58Z';
+
+// Facing left: the cabinet's tall side toward you in its arcade profile (the marquee jutting, the screen set back, the
+// control panel jutting again), a stripe of art on it, and its front a narrow strip down the left: the lit marquee,
+// a slice of the glowing screen, the joystick on the panel and the coin door.
+const ARCADE_MACHINE_SIDE: FurnitureDrawing = {
+  width: 60,
+  height: 112,
+  parts: [
+    ellipse('shadow', 32, 109, 28, 3),
+    path('panel', 'M18 108V76L10 72V64L22 62L26 28L18 22V8L22 4H56V108Z', T.cabinetDeep),
+    path('panel', 'M30 34L50 26V42L30 50Z', T.cabinet),
+    path('mark', 'M34 72L46 66V72L34 78Z', T.cyan),
+    rect('panel', 12, 6, 7, 15, 2, T.glow),
+    path('panel', 'M14 23L26 28L23 61L10 61Z', T.cabinet),
+    path('mark', ARCADE_SCREEN_SIDE, T.screen),
+    path('panel', 'M3 64H24V72H2Z', T.cabinet),
+    path('line', 'M9 66v-6'),
+    ellipse('panel', 9, 59, 3, 3, T.paddleRed),
+    ellipse('panel', 18, 66, 2.5, 1.6, T.yellow),
+    rect('panel', 10, 74, 9, 34, 2, T.cabinet),
+    rect('face', 11.5, 84, 6, 12, 1.5, T.cabinetDeep),
+  ],
+  seats: [],
+  ring: { cx: 32, cy: 100, rx: 28, ry: 8 },
 };
 
 /** Where a fire burns on its piece's grid: the flicker's flames stand on this base line. */
@@ -227,6 +370,63 @@ const FIREPLACE_VIEW: FurnitureDrawing = {
   ],
   seats: [],
   ring: { cx: 64, cy: 108, rx: 62, ry: 8 },
+};
+
+// Its back to you: the chimney breast's plain brick back, the mantel's top beyond it, the chimney above. The fire is
+// out of sight.
+const FIREPLACE_BACK: FurnitureDrawing = {
+  width: 128,
+  height: 120,
+  parts: [
+    ellipse('shadow', 64, 117, 62, 3),
+    rect('panel', 18, 0, 92, 22, 2, T.brickDeep),
+    rect('panel', 0, 20, 128, 9, 3, T.wood),
+    rect('face', 8, 26, 112, 86, 3, T.brick),
+    path(
+      'rail',
+      'M8 40h112M8 54h112M8 68h112M8 82h112M8 96h112M30 26v14M64 26v14M98 26v14M46 40v14M82 40v14M20 54v14M64 54v14M108 54v14M46 68v14M82 68v14M30 82v14M98 82v14M64 96v16',
+    ),
+  ],
+  seats: [],
+  ring: { cx: 64, cy: 108, rx: 62, ry: 8 },
+};
+
+/** Where the fire burns on the turned fireplace's side grid: a sliver of flame in the firebox's edge. */
+export const FIREPLACE_FLAMES_SIDE = { cx: 14, base: 86 } as const;
+
+// Facing left: the chimney breast's brick side toward you, the mantel's end and the hearth jutting left past it, and
+// its front a narrow strip down the left: the firebox's arched edge with a sliver of the fire burning in it.
+const FIREPLACE_SIDE: FurnitureDrawing = {
+  width: 48,
+  height: 120,
+  parts: [
+    ellipse('shadow', 24, 117, 22, 3),
+    rect('panel', 22, 0, 22, 22, 2, T.brickDeep),
+    rect('panel', 18, 28, 26, 72, 3, T.brick),
+    path(
+      'rail',
+      'M18 42h26M18 56h26M18 70h26M18 84h26M30 28v14M36 42v14M30 56v14M36 70v14M30 84v14',
+    ),
+    rect('panel', 8, 28, 10, 72, 2, T.brick),
+    path('rail', 'M8 42h10M8 56h4'),
+    path('panel', 'M10 98V58C10 53 12 50 16 48V98Z', T.soot),
+    path(
+      'mark',
+      `M11 ${FIREPLACE_FLAMES_SIDE.base}C11 78 13 74 15 66C16 74 18 78 17 ${FIREPLACE_FLAMES_SIDE.base}Z`,
+      T.flame,
+    ),
+    path(
+      'mark',
+      `M12.5 ${FIREPLACE_FLAMES_SIDE.base}C12.5 82 14 79 15 75C16 79 16.5 82 16.5 ${FIREPLACE_FLAMES_SIDE.base}Z`,
+      T.flameHot,
+    ),
+    rect('panel', 10, 86, 7, 7, 3, T.woodDeep),
+    rect('panel', 4, 20, 42, 10, 3, T.wood),
+    rect('panel', 2, 98, 44, 12, 3, T.stoneDeep),
+    rect('face', 2, 108, 44, 6, 2, T.stoneDeep),
+  ],
+  seats: [],
+  ring: { cx: 24, cy: 108, rx: 22, ry: 8 },
 };
 
 // Stones round a fire, back half then front half, on an ellipse round (40, 56).
@@ -283,6 +483,42 @@ const BENCH_VIEW: FurnitureDrawing = {
   ringUnder: 6,
 };
 
+// From behind: the seat beyond, the slatted back's two rails nearest you on their supports, the iron arms either end.
+const BENCH_BACK: FurnitureDrawing = {
+  ...BENCH_SEATS_BACK,
+  parts: [
+    ellipse('shadow', 68, 61, 62, 3),
+    path('line', 'M16 40v20M120 40v20'),
+    rect('panel', 4, 12, 128, 11, 3, T.wood),
+    path('rail', 'M8 17.5h120'),
+    path('line', 'M20 26v18M116 26v18'),
+    rect('face', 8, 22, 120, 8, 2, T.wood),
+    rect('face', 8, 33, 120, 8, 2, T.wood),
+    rect('panel', 0, 8, 8, 26, 3, T.iron),
+    rect('panel', 128, 8, 8, 26, 3, T.iron),
+  ],
+  ring: { cx: 68, cy: 18, rx: 64, ry: 9 },
+  ringUnder: 4,
+};
+
+// Facing left: long, its two seats one above the other down the slatted seat, the back a bar along its right, an
+// iron arm across each end and its legs under the near end.
+const BENCH_SIDE: FurnitureDrawing = {
+  ...BENCH_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 28, 160, 26, 3),
+    path('line', 'M10 148v12M42 148v12'),
+    rect('panel', 40, 6, 9, 140, 2, T.wood),
+    rect('panel', 5, 24, 34, 122, 3, T.wood),
+    path('rail', 'M22 28v114'),
+    rect('face', 5, 144, 34, 5, 2, T.wood),
+    rect('panel', 2, 18, 48, 7, 3, T.iron),
+    rect('panel', 2, 141, 48, 7, 3, T.iron),
+  ],
+  ring: { cx: 22, cy: 85, rx: 18, ry: 60 },
+  ringUnder: 6,
+};
+
 // A wooden picnic table with a bench along each side: six seats facing the table.
 const PICNIC_TABLE_VIEW: FurnitureDrawing = {
   width: PICNIC_TABLE_SEATS.width,
@@ -304,6 +540,28 @@ const PICNIC_TABLE_VIEW: FurnitureDrawing = {
   ring: { cx: 100, cy: 76, rx: 96, ry: 70 },
 };
 
+// From behind a picnic table looks as it does from the front (a bench either side of the table), but turned half way
+// round, so each seat is the one across the table from where it was drawn.
+const PICNIC_TABLE_BACK: FurnitureDrawing = { ...PICNIC_TABLE_VIEW, ...PICNIC_TABLE_SEATS_BACK };
+
+// Facing left: the table's top down the middle, a bench down each side, the near end's legs under them.
+const PICNIC_TABLE_SIDE: FurnitureDrawing = {
+  ...PICNIC_TABLE_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 72, 202, 68, 4),
+    path('line', 'M17 183v14M127 183v14'),
+    path('line', 'M52 188l-8 16M92 188l8 16'),
+    rect('panel', 8, 20, 18, 160, 3, T.wood),
+    rect('face', 8, 178, 18, 5, 2, T.wood),
+    rect('panel', 118, 20, 18, 160, 3, T.wood),
+    rect('face', 118, 178, 18, 5, 2, T.wood),
+    rect('panel', 40, 8, 64, 176, 4, T.wood),
+    path('rail', 'M61 12V180M83 12V180'),
+    rect('face', 40, 182, 64, 8, 3, T.wood),
+  ],
+  ring: { cx: 72, cy: 100, rx: 68, ry: 96 },
+};
+
 // A striped hammock slung between two posts on ropes: one seat.
 const HAMMOCK_VIEW: FurnitureDrawing = {
   width: HAMMOCK_SEATS.width,
@@ -320,6 +578,22 @@ const HAMMOCK_VIEW: FurnitureDrawing = {
   seats: HAMMOCK_SEATS.seats.map(({ u, v }) => ({ u, v })),
   ring: { cx: 76, cy: 50, rx: 46, ry: 14 },
   ringUnder: 4,
+};
+
+// Facing left: long, the sling down the canvas between its far post and its near post, its spreader bars across.
+const HAMMOCK_SIDE: FurnitureDrawing = {
+  ...HAMMOCK_SEATS_SIDE,
+  parts: [
+    ellipse('shadow', 32, 134, 9, 60),
+    rect('panel', 28, 4, 8, 62, 2, T.woodDeep),
+    path('line', 'M32 12V38'),
+    path('panel', 'M30 38C14 62 12 106 26 136H38C52 106 50 62 34 38Z', T.hammock),
+    path('panel', 'M30.5 40C24 66 23 106 30 134H34C41 106 40 66 33.5 40Z', T.hammockBand),
+    path('line', 'M23 39h18M21 135h22'),
+    rect('panel', 28, 134, 8, 62, 2, T.woodDeep),
+  ],
+  ring: { cx: 32, cy: 92, rx: 20, ry: 48 },
+  ringUnder: 3,
 };
 
 // --- Garden scenery -------------------------------------------------------------------------------------------
@@ -380,14 +654,22 @@ const FOUNTAIN_VIEW: FurnitureDrawing = {
 export const OFFICE_SOCIAL_ART = {
   'notice-board': allSides(NOTICE_BOARD_VIEW),
   'world-clock': allSides(WORLD_CLOCK_VIEW),
-  jukebox: allSides(JUKEBOX_VIEW),
-  'ping-pong-table': allSides(PING_PONG_TABLE_VIEW),
-  'arcade-machine': allSides(ARCADE_MACHINE_VIEW),
-  fireplace: allSides(FIREPLACE_VIEW),
+  jukebox: { front: JUKEBOX_VIEW, back: JUKEBOX_BACK, side: JUKEBOX_SIDE },
+  'ping-pong-table': {
+    front: PING_PONG_TABLE_VIEW,
+    back: PING_PONG_TABLE_BACK,
+    side: PING_PONG_TABLE_SIDE,
+  },
+  'arcade-machine': {
+    front: ARCADE_MACHINE_VIEW,
+    back: ARCADE_MACHINE_BACK,
+    side: ARCADE_MACHINE_SIDE,
+  },
+  fireplace: { front: FIREPLACE_VIEW, back: FIREPLACE_BACK, side: FIREPLACE_SIDE },
   campfire: allSides(CAMPFIRE_VIEW),
-  bench: allSides(BENCH_VIEW),
-  'picnic-table': allSides(PICNIC_TABLE_VIEW),
-  hammock: allSides(HAMMOCK_VIEW),
+  bench: { front: BENCH_VIEW, back: BENCH_BACK, side: BENCH_SIDE },
+  'picnic-table': { front: PICNIC_TABLE_VIEW, back: PICNIC_TABLE_BACK, side: PICNIC_TABLE_SIDE },
+  hammock: { front: HAMMOCK_VIEW, back: HAMMOCK_VIEW, side: HAMMOCK_SIDE },
   'garden-umbrella': allSides(GARDEN_UMBRELLA_VIEW),
   fountain: allSides(FOUNTAIN_VIEW),
 } as const;
@@ -471,7 +753,40 @@ export type NoticeNote = {
   // When it was pinned, epoch ms.
   at: number;
   color?: NoteColor;
+  // The day it is pinned to, on a Calendar Wall (docs/specs/009-elements/team-pieces.md "Calendar Wall"): `YYYY-MM-DD`.
+  day?: string;
 };
+
+/** The pieces whose notes are `noticeNotes`, changed by the `notice-pin` and `notice-unpin` deltas. */
+export const NOTE_PIECE_KINDS: readonly string[] = ['notice-board', 'calendar-wall'];
+export function holdsNotes(kind: string): boolean {
+  return NOTE_PIECE_KINDS.includes(kind);
+}
+
+const pad2 = (v: number) => String(v).padStart(2, '0');
+
+/** A calendar day (`YYYY-MM-DD`, years 2000 to 2100), checked against its month's length. Parsed by position. */
+export function isNoteDay(v: unknown): v is string {
+  if (typeof v !== 'string' || v.length !== 10 || v[4] !== '-' || v[7] !== '-') return false;
+  const digits = v.slice(0, 4) + v.slice(5, 7) + v.slice(8, 10);
+  for (const c of digits) if (c < '0' || c > '9') return false;
+  const year = Number(v.slice(0, 4));
+  const month = Number(v.slice(5, 7));
+  const day = Number(v.slice(8, 10));
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1) return false;
+  return day <= new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+/** The `YYYY-MM-DD` of a moment on this screen's clock. */
+export function localDay(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+/** The day a note counts on: its own, else the day it was pinned, on this screen's clock. */
+export function noteDay(note: NoticeNote): string {
+  return note.day ?? localDay(note.at);
+}
 
 export const NOTE_TITLE_MAX = 60;
 export const NOTE_TEXT_MAX = 280;
@@ -506,7 +821,8 @@ export function isNoticeNote(v: unknown): v is NoticeNote {
     n.by.length <= 128 &&
     typeof n.at === 'number' &&
     Number.isFinite(n.at) &&
-    (n.color === undefined || isNoteColor(n.color))
+    (n.color === undefined || isNoteColor(n.color)) &&
+    (n.day === undefined || isNoteDay(n.day))
   );
 }
 

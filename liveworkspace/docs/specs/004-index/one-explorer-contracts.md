@@ -237,6 +237,10 @@ holds for that person:
   `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
 
+Their rows in the team audit log ([team-audit-log.md](team-audit-log.md)) are anonymised the same way: where they
+acted, the actor is `deleted` with no name; where a team event is about them, its person is `deleted` and their name
+leaves its detail. A team that closed with the account loses its log.
+
 Their webhooks ([webhooks.md](webhooks.md)) go too: those for their own items, and those of a team that closed with
 the account, are deleted; those of a team that outlives them are paused, their creator `deleted`, for another admin
 to resume.
@@ -549,7 +553,7 @@ and in each team they are in (a newcomer sees what happened before they joined).
 by link are not on it.
 
 - The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
-  `renamed` (`from`), `moved` (`folderName`, `teamId`), `trashed`, `restored`, `shared` (`level`),
+  `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`, `shared` (`level`),
   `unshared` and `favourited` in the same batch as the change. A favourite is on its person's Timeline
   only. An empty item its app tidies away is not news. An item created with `synced: true` (kept offline in
   one browser, put back under its own id) records `synced` instead of `created`; `DELETE
@@ -587,6 +591,10 @@ by link are not on it.
   say who sees each: a team's events its team (`t:<team>`) and the people they are about, a token's its owner.
   Accounts writes each to an outbox in the batch that makes the change and sends them after the response,
   resending until the index takes them; the ids make a resend change nothing.
+- The team-level events among these (a team's own, but `team_deleted`; and on a team's items `shared`, `unshared`,
+  `moved` into, out of or between teams with `fromTeamId`, `trashed` and `restored`) are also copied, in the same
+  batch, into the team audit log its admins read, kept a year ([team-audit-log.md](team-audit-log.md)). A share
+  link's `shared` carries `public` for a Community post's. Token events never are.
 - An event about no item (a team's, a token's, images, an item taken offline) has `itemId` and `item` null and
   keeps its own `app` and `title`. Filtered to one app, a Timeline shows that app's events and the account's
   own (`liveworkspace`); All shows everything. One no scope sees any more is swept daily.

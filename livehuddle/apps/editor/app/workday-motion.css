@@ -1,0 +1,149 @@
+/* The workday pieces' motion (docs/specs/009-elements/workday-pieces.md): the treadmill's running belt, the office
+   dog's trot, wag and the heart a pat raises, and the reception bell's ring. Transform and opacity only, so the
+   compositor runs them; every one holds still under reduced motion, the OS setting or the preference (the dog then
+   stays asleep in its bed, which the face decides). */
+
+/* The belt: its stripes run toward you, one stripe's gap a loop. */
+.lh-belt-run {
+  animation: lh-belt-run 0.5s linear infinite;
+}
+@keyframes lh-belt-run {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(12px);
+  }
+}
+/* On a treadmill turned on its side the belt runs along the canvas (WorkdayFaces flips it for the other ways). */
+.lh-belt-run-along {
+  animation: lh-belt-run-along 0.5s linear infinite;
+}
+@keyframes lh-belt-run-along {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(12px);
+  }
+}
+
+/* The dog's trot to its next spot over PET_TROT_MS (3 s): the move is a transition on the dog's own transform. */
+.lh-pet-trot {
+  transition: transform 3s ease-in-out;
+}
+
+/* The tail wags; faster for a moment after a pat. */
+.lh-pet-tail {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  animation: lh-pet-wag 0.6s ease-in-out infinite alternate;
+}
+.lh-pet-tail-fast {
+  animation-duration: 0.18s;
+}
+@keyframes lh-pet-wag {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(18deg);
+  }
+}
+
+/* A sleeping dog breathes. */
+.lh-pet-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: lh-pet-breathe 3s ease-in-out infinite;
+}
+@keyframes lh-pet-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.06);
+  }
+}
+
+/* The heart a pat raises. */
+.lh-pet-heart {
+  animation: lh-pet-heart 1.5s ease-out both;
+}
+@keyframes lh-pet-heart {
+  from {
+    transform: translate(-50%, 0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -6px) scale(1.1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -26px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* The bell's ring: two waves spread from it and fade. */
+.lh-bell-wave {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: lh-bell-wave 1.2s ease-out both;
+}
+.lh-bell-wave-late {
+  animation-delay: 0.2s;
+}
+@keyframes lh-bell-wave {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* The Welcome bubble rising into place, as the arcade's Insert Coin does. */
+.lh-welcome-bubble {
+  animation: lh-welcome-bubble 0.25s ease-out both;
+}
+@keyframes lh-welcome-bubble {
+  from {
+    transform: translate(-50%, 6px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-belt-run,
+  .lh-belt-run-along,
+  .lh-pet-tail,
+  .lh-pet-breathe,
+  .lh-pet-heart,
+  .lh-bell-wave,
+  .lh-welcome-bubble {
+    animation: none !important;
+  }
+  .lh-pet-trot {
+    transition: none !important;
+  }
+}
+:root.reduce-motion .lh-belt-run,
+:root.reduce-motion .lh-belt-run-along,
+:root.reduce-motion .lh-pet-tail,
+:root.reduce-motion .lh-pet-breathe,
+:root.reduce-motion .lh-pet-heart,
+:root.reduce-motion .lh-bell-wave,
+:root.reduce-motion .lh-welcome-bubble {
+  animation: none !important;
+}
+:root.reduce-motion .lh-pet-trot {
+  transition: none !important;
+}

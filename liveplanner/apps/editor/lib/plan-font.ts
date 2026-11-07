@@ -9,7 +9,13 @@
 // liveplanner does not offer (planner-fonts.ts) sets nothing, so its boards letter their headings in the UI face.
 import type { CSSProperties } from 'react';
 import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
-import { FONTS, SKETCH_FONT_ID, isPlannerExcludedStack, type TextSize } from '@liveplanner/project';
+import {
+  FONTS,
+  SKETCH_FONT_ID,
+  isPlannerExcludedStack,
+  resolveFontStack,
+  type TextSize,
+} from '@liveplanner/project';
 
 /** The x-height the handwriting face is drawn at on a Plan surface, as a share of its font size. */
 export const PLAN_HANDWRITING_EX = 0.52;
@@ -68,6 +74,13 @@ export const planTextPx = (px: number): string => `calc(${px}px * var(--plan-tex
  *  nothing new. */
 export function planTextScaleVars(textScale: number): CSSProperties {
   return textScale !== 1 ? ({ '--plan-text-scale': String(textScale) } as CSSProperties) : {};
+}
+
+/** A data chart's root (fonts.md "On Sheet tabs and charts"): its axis numbers, values and legend in the chart's own
+ *  Font when it has one, else the UI face, never the tab's that the canvas element around it wears. */
+export function planChartFontStyle(font: string | undefined): CSSProperties {
+  const own = resolveFontStack(font);
+  return own ? { fontFamily: own } : { fontFamily: PLAN_UI_FONT, fontSizeAdjust: 'none' };
 }
 
 /** A Plan surface's root (a board, a Plan card, a plan view, a Dashboard page): the UI face at its own size, with the

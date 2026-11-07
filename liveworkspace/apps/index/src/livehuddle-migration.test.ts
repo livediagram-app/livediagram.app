@@ -139,8 +139,8 @@ describe(REBUILD_MIGRATION, () => {
     );
     // Nothing is left aside.
     expect(Object.keys(after.tables).filter((t) => /^aside_|_next$/.test(t))).toEqual([]);
-    // The same schema as a database made fresh, rows aside.
-    const fresh = snapshot(migrated(() => true));
+    // The same schema as a database made fresh up to the rebuild (later migrations add their own), rows aside.
+    const fresh = snapshot(migrated((f) => f <= REBUILD_MIGRATION));
     const shape = (s: typeof after) =>
       Object.fromEntries(
         Object.entries(s.tables).map(([t, { columns, foreignKeys, checks }]) => [

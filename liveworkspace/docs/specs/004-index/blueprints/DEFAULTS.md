@@ -31,3 +31,11 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX24 | connected-tabs  | the reverse write waits at most 5 seconds for the target app before taking the reverse back.                                                 |
 | IDX25 | connected-tabs  | Connect Again on a tab that still has a connection replaces it, deleting the old pass.                                                       |
 | IDX26 | connected-tabs  | a connected tab's name follows the target's title on open; it is not renamed by hand.                                                        |
+| IDX27 | connected-tabs  | a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.                                     |
+| IDX28 | team-audit-log  | the daily run deletes at most 5,000 audit rows past the year, the oldest first.                                                              |
+| IDX29 | team-audit-log  | a team item deleted for good by the Trash's own 30-day purge writes no audit row; its `trashed` row says who sent it there.                  |
+| IDX30 | team-audit-log  | a deleted team's audit rows stay until the year takes them; nobody can read them, as the team has no admins.                                 |
+| IDX31 | team-audit-log  | the admins' read pages 50 rows by default, at most 100; a CSV file holds at most 10,000 rows, read 2,000 a query.                            |
+| IDX32 | team-audit-log  | the read's `person` filter is who did it, not whom an event is about; `kind` takes one kind.                                                 |
+| IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |
+| IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                               |

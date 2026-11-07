@@ -9,6 +9,7 @@ import {
   type CommunityFeaturedResponse,
   type CommunityPost,
 } from '@liveworkspace/community';
+import { COMMUNITY_HOME_PATH, communityPostPath } from '@liveworkspace/community/paths';
 import { BAND_LEAD, BAND_TITLE } from '@liveworkspace/marketing-site/lib/band-classes';
 import { EYEBROW } from '@liveworkspace/marketing-site/lib/eyebrow';
 import { buttonClassName, ButtonContent, useNearViewport } from '@liveworkspace/ui';
@@ -24,10 +25,6 @@ import { CommunityPostTileSkeleton } from '../tile/CommunityPostTileSkeleton';
 // cards hold their space meanwhile (no layout shift once there are six). A Community with fewer than six to feature
 // (a young one, the service unreachable) is not shown yet, and nor is one switched off: a half-empty showcase sells it
 // short.
-
-// The gallery, and a post's page, on the app's own site (every app serves its Community at /community).
-const COMMUNITY_HOME_PATH = '/community/';
-const postPath = (id: string) => `/community/post/?id=${encodeURIComponent(id)}`;
 
 type State =
   | { status: 'loading' }
@@ -112,7 +109,7 @@ export function CommunityShowcase({
                 <li key={post.id} className="flex">
                   <CommunityPostTile
                     post={post}
-                    href={postPath(post.id)}
+                    href={communityPostPath(post.id)}
                     imageUrl={imageUrl(post.shareCode)}
                     stats={
                       <>

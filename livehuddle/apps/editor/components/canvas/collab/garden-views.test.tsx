@@ -53,6 +53,40 @@ describe('the pod, bar and garden views', () => {
     });
   });
 
+  // docs/specs/009-elements/furniture-facing.md "Live faces": the door turns with the pod.
+  it('slides a turned pod’s door in the doorway its drawing shows', () => {
+    const door = (chairFacing: 'n' | 'e' | 's' | 'w', sitters: ReturnType<typeof sitter>[]) => {
+      const { container, unmount } = render(
+        <FurnitureView
+          element={{ ...shape('office-pod'), chairFacing }}
+          stroke="#94a3b8"
+          sitters={sitters}
+        />,
+      );
+      const panel = container.querySelector('[data-pod-door] rect[rx="2"]')!;
+      const slide = (container.querySelector('.lh-pod-door') as HTMLElement).style.transform;
+      const mirrored = !!panel.closest('g[transform]');
+      const at = ['x', 'y', 'width', 'height'].map((k) => Number(panel.getAttribute(k)));
+      unmount();
+      return { at, slide, mirrored };
+    };
+    expect(door('n', [])).toEqual({
+      at: [54, 134, 68, 9],
+      slide: 'translate(68px, 0px)',
+      mirrored: false,
+    });
+    expect(door('s', []).at).toEqual([54, 7, 68, 30]);
+    expect(door('s', []).slide).toBe('translate(-68px, 0px)');
+    expect(door('e', [])).toEqual({
+      at: [0, 68, 9, 68],
+      slide: 'translate(0px, 68px)',
+      mirrored: false,
+    });
+    // Facing right is the side mirrored, the door with it.
+    expect(door('w', []).mirrored).toBe(true);
+    expect(door('e', [sitter('Ada'), sitter('Grace')]).slide).toBe('translate(0px, 0px)');
+  });
+
   it('rings a bar stool’s sitter, and on a pod only the bench seat its sitter holds', () => {
     const rings = (kind: 'bar-stool' | 'office-pod', seat?: number) => {
       const { container, unmount } = render(

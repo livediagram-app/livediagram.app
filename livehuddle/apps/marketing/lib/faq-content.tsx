@@ -323,7 +323,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             A public gallery of spaces people are proud of. Signed-in owners can publish a space
             with a title, description and tags; anyone can browse it, open it read-only, like it and
-            make their own copy in one click. <a href="/community/">Take a look</a>.
+            make their own copy in one click. <a href="/community">Take a look</a>.
           </>
         ),
         aText:

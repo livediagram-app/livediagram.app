@@ -65,10 +65,6 @@ export function StrikethroughIcon() {
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
 
-export function PanIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="pan" size={size} />;
-}
-
 // The Shape Pen (docs/specs/008-canvas/two-pens.md): its palette tile and the whiteboard dock's Path
 // tool (docs/specs/023-draw-mode/path-tool.md "Where it lives") wear this one icon, each at its size.
 export function ShapePenIcon({ size = 14 }: IconSizeProps = {}) {
@@ -98,8 +94,6 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="select" size={size} />;
 }
 
-// Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
-// baseline. The diagonal band reads as the eraser's two-tone body.
 // The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.
 // A chisel-tip marker over the band it lays down: the band is what separates it
 // from the pencil at 13px, where the two nibs are the same three strokes.
@@ -107,10 +101,6 @@ export function SelectIcon({ size = 14 }: IconSizeProps = {}) {
 // one it wore as a selection mode, kept in MODE_GLYPHS.
 export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="highlighter" size={size} />;
-}
-
-export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
-  return <ModeGlyphIcon mode="eraser" size={size} />;
 }
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
@@ -365,6 +355,15 @@ export function ElevatorIcon({ size = 14 }: IconSizeProps = {}) {
     <Glyph size={size} units={24}>
       <rect x="3.5" y="7" width="17" height="15" rx="1.5" />
       <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
+    </Glyph>
+  );
+}
+
+// Stairs (docs/specs/009-elements/stairs.md): a flight's profile rising to the right, an up arrow over its foot.
+export function StairsIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3 20.5h4.5V16H12v-4.5h4.5V7H21M6.5 11.5V3.5M4 6l2.5-2.5L9 6" />
     </Glyph>
   );
 }

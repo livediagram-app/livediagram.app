@@ -29,7 +29,7 @@ function newRoom(env: Record<string, unknown> = {}) {
     waitUntil: () => {},
   };
   const room = new DocumentRoom(state as unknown as DurableObjectState, env as never);
-  const join = (id: string, tabId: string, batches = true, role = 'view') => {
+  const join = (id: string, tabId: string, batches = true, role = 'view', lean = false) => {
     const s: Socket = {
       sent: [],
       attachment: { presenceId: id, verifiedRole: role, presence: null },
@@ -41,6 +41,7 @@ function newRoom(env: Record<string, unknown> = {}) {
         kind: 'hello',
         participant: { name: id, color: '#abc', tabId },
         ...(batches ? { batches: true } : {}),
+        ...(lean ? { leanAvatars: true } : {}),
       }),
     );
     return s;
@@ -190,6 +191,31 @@ describe('the avatar relay in the room', () => {
     expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'cursor')).toBe(true);
   });
 
+  // docs/specs/015-api/api.md "A busy room bounds its presence fan-out": "A character's costume rides only when it is
+  // needed".
+  it('sends a lean packet as it came to an editor that reads them, and filled out to one from before', () => {
+    const { room, join } = newRoom();
+    const walker = join('p0', 't1', true, 'view', true);
+    const reader = join('p1', 't1', true, 'view', true);
+    const older = join('p2', 't1');
+    const costume = { gender: 'male', clothing: 'suit', hair: 'afro', size: 'tall' };
+    const first = { x: 1, y: 2, facing: 'right', walking: true, config: costume };
+    const second = { x: 3, y: 2, facing: 'right', walking: true };
+    say(room, walker, { kind: 'avatar', tabId: 't1', avatar: first });
+    say(room, walker, { kind: 'avatar', tabId: 't1', avatar: second });
+    const avatars = (s: Socket) =>
+      s.sent
+        .flatMap(opsIn)
+        .filter((f) => f.op?.kind === 'avatar')
+        .map((f) => (f.op as unknown as { avatar: unknown }).avatar);
+    expect(avatars(reader)).toEqual([first, second]);
+    const resting = { stepFrame: 0, lift: 0, wave: null };
+    expect(avatars(older)).toEqual([
+      { ...first, ...resting },
+      { ...second, ...resting, config: costume },
+    ]);
+  });
+
   it('sends an editor that does not take batches every packet on its own, even in a busy room', () => {
     const { room, join, sockets } = newRoom();
     for (let i = 0; i < 11; i++) join(`p${i}`, 't1');
@@ -213,6 +239,30 @@ describe('the avatar relay in the room', () => {
     expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
     say(room, sameTab, voiceOp('t1', 0));
     expect(talker.sent.flatMap(opsIn).some((f) => f.op?.kind === 'avatar-voice')).toBe(false);
+  });
+
+  // A game's paddle (docs/specs/009-elements/social-pieces.md "The wire"): a sample, like the talking level.
+  it('sends a paddle only to its tab, and in a busy room only its newest sample each step', () => {
+    const { room, join, sockets } = newRoom();
+    const paddle = (tabId: string, axis: number) => ({
+      kind: 'game-input',
+      tabId,
+      pieceId: 'table',
+      seat: 0,
+      axis,
+    });
+    const player = join('p0', 't1', true, 'participate');
+    const sameTab = join('p1', 't1');
+    const otherTab = join('p2', 't2');
+    say(room, player, paddle('t1', 0.2));
+    expect(sameTab.sent.flatMap(opsIn).map((f) => f.op?.kind)).toContain('game-input');
+    expect(otherTab.sent.flatMap(opsIn).some((f) => f.op?.kind === 'game-input')).toBe(false);
+    for (let i = 3; i < 12; i++) join(`p${i}`, 't1');
+    for (const s of sockets) s.sent.length = 0;
+    for (const axis of [0.3, 0.4, 0.5]) say(room, player, paddle('t1', axis));
+    vi.advanceTimersByTime(presenceStepMs(sockets.length));
+    const seen = sameTab.sent.flatMap(opsIn).filter((f) => f.op?.kind === 'game-input');
+    expect(seen.map((f) => (f.op as { axis?: number }).axis)).toEqual([0.5]);
   });
 
   // The calls kill switch (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients").

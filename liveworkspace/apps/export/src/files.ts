@@ -4,6 +4,9 @@
 
 import type { ExportThread } from '@liveworkspace/index-app';
 import type { App } from '@liveworkspace/index-client';
+import { toCsv } from '@liveworkspace/api-kit/csv';
+
+export { toCsv };
 
 export const NAME_MAX = 80;
 
@@ -118,18 +121,6 @@ export function commentRows(
     }
   }
   return rows;
-}
-
-// A field a spreadsheet would run as a formula starts with one of these: it is opened with an apostrophe.
-const FORMULA_START = /^[=+\-@\t\r]/;
-
-function csvField(value: string): string {
-  const safe = FORMULA_START.test(value) ? `'${value}` : value;
-  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
-}
-
-export function toCsv(rows: readonly (readonly string[])[]): string {
-  return rows.map((row) => row.map(csvField).join(',')).join('\r\n') + '\r\n';
 }
 
 const iso = (at: number | null) => (at === null ? '' : new Date(at).toISOString());

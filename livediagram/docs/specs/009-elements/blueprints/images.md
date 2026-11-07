@@ -157,6 +157,35 @@ Invariants:
    the service stored it, `X-Content-Type-Options: nosniff`, `Cache-Control: private,
 max-age=86400`.
 
+### Placement claim (`POST /api/images/grants?d=<document>`)
+
+A Participant's claim on the pictures their ops place ([spec](../images.md#placement-grants)). Guards in order;
+the first failure answers.
+
+1. No media service → 503 `images_unavailable`. Pre-dispatch as an upload: a read-only token → 403, the write
+   limiter → 429.
+2. No resolved owner → 400 (`requireOwner`). A workbench session → 404 (it is the document's owner's, whose
+   images serve there without a grant).
+3. No `d` → 400. The body is not `{ ids }` of 1 to `IMAGE_GRANT_IDS_MAX` (100) gallery ids
+   (`parseImageGrantIds`, `@liveworkspace/media`) → 400.
+4. The index's grant on `d` (`resolveDocumentGrant`): its refusal answers as sent; none → 404; `view`, or a document
+   in the Trash → 403 `forbidden`.
+5. One RPC, `grantOwnImages(ids, owner)`, to the document's object: `@liveworkspace/index-app` `grantOwn` reads each
+   id's owner from `image_owners` (asking the service once for an id never met), keeps those whose owner is
+   `mediaOwner(owner)`, and inserts them into `image_grants` (`INSERT OR IGNORE`). 200 `{ granted }`.
+
+The editor (`apps/editor/app/document/[id]/tab-save-flow.ts` `relayParticipantChanges`) takes the ids from the
+save's ops (`placedImageIds`: each `add` or `update` of an image element with a gallery id), awaits
+`apiClaimPlacedImages` (`lib/api/images.ts`, over `createImageClaims`: each `(document, id)` sent until one claim
+succeeds, then never again on the page; at most 2,000 remembered; a failure swallowed), then relays the ops to
+the room it reads again (closed meanwhile: the hold is released and the save fails, so the autosave retries).
+The unload flush (`useUnloadFlush.ts`) cannot wait: for each changed tab it first calls
+`claimPlacedImagesOnUnload` (`lib/api/images.ts`) with the same ids, which builds its headers synchronously
+(`unloadHeaders` in `lib/api/tabs.ts`, the beacon's identity, share link, held grant and share password; none for a
+signed-in owner with no cached token) and sends the claim with `keepalive: true` and no grant wait, then relays the
+ops unawaited. A claim body is at most 100 ids, a few KB, inside the browser's 64 KB keepalive allowance; a
+Participant sends no beacon, so nothing else shares it.
+
 ### Delete, list, usage
 
 - `DELETE /api/images/:id`: owner only; `media.remove(mediaOwner(owner), id)`: the service

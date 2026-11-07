@@ -105,9 +105,11 @@ describe('useEditorCommands', () => {
     expect(second).toHaveBeenCalledTimes(1);
   });
 
-  it('offers the format painter once the tab has content to paint', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes": the painter starts from the
+  // selection toolbar alone, so Search has no Format Painter entry, even on a tab with content to paint.
+  it('offers no format painter, even with content to paint', () => {
     const shape = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
     ctx = editor({ activeTab: { id: 't1', elements: [shape] } });
-    expect(ids(run().result.current.commandItems)).toContain('tool:format');
+    expect(ids(run().result.current.commandItems)).not.toContain('tool:format');
   });
 });

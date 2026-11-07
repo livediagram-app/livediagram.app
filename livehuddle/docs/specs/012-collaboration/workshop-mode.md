@@ -34,7 +34,7 @@ livediagram's Workshop mode, which keeps all of it ([livediagram's Workshop mode
 
 - **The canvas, the palette and the Toolbar strip** ([Canvas and palette](../008-canvas/canvas-and-palette.md),
   [Toolbar layout](../007-editor/toolbar-layout.md)), with **the meeting palette** (below), landing on its Popular.
-- **The Timer and Stopwatch pieces** in the palette's Meeting category
+- **The Timer and Stopwatch pieces** in the palette's Meet category
   ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md)); there is no Session strip.
 - **A Spaces board opens walking** ([v1 scope](../002-project-scope/v1-scope.md) section 1); any other starts on
   Select (Hand on a phone).
@@ -54,13 +54,13 @@ them out, and a document's stored deck is kept untouched.
 
 The meeting palette is livehuddle's one palette, in order:
 
-| Band     | Categories                                                  |
-| -------- | ----------------------------------------------------------- |
-| _(none)_ | Popular                                                     |
-| Common   | Write                                                       |
-| Meet     | Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting |
-| Travel   | Travel                                                      |
-| Decorate | Stickers                                                    |
+| Band     | Categories                              |
+| -------- | --------------------------------------- |
+| _(none)_ | Popular                                 |
+| Common   | Write                                   |
+| Meet     | Rooms, Seats, Perks, Play, Garden, Meet |
+| Travel   | Travel                                  |
+| Decorate | Stickers                                |
 
 - **Popular** (the landing category), fixed: Sticky note and Text, then behind a divider Room,
   Meeting Table, Chair, Bring Focus and Avatar Pad. No openers: every category is one level deep.
@@ -68,13 +68,16 @@ The meeting palette is livehuddle's one palette, in order:
 - **The Space categories** ([The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories)),
   one per question somebody building a Space asks (owner, 2026-11-05: one Navigate category would only grow):
   - **Rooms**: a **Build** group first (Room, Room Builder, Door), then **Floor** (Fence, Stage, Office Pod, Rug).
-  - **Seating**: Chair, Desk, Sofa and Meeting Table.
-  - **Amenities**: Plant, Bookshelf, Water Cooler and Coffee Machine.
-  - **Bar**, **Recreation**, **Garden** and **Meeting**, as
-    [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories) lists them.
+  - **Seats**: Chair, Desk, Sofa, Meeting Table, Bean Bag and Reading Nook.
+  - **Perks**: Plant, Bookshelf, Water Cooler, Coffee Machine and Vending Machine.
+  - **Play**: **Bar** (Bar, Bar Stool, Drinks Cabinet, Drinks Fridge), **Games** (Ping-Pong Table, Pool
+    Table, Foosball Table, Arcade Machine, Dartboard), **Lounge** (Jukebox, Fireplace). There is no Bar category (owner, 2026-11-06).
+  - **Garden**: **Plants** (Outdoor Plant, Tree, Grass), **Paths and Fences** (Garden Path, Garden Fence),
+    **Furniture** (Bench, Picnic Table, Hammock, Garden Umbrella), **Features** (Fountain, Pond, Campfire).
+  - **Meet**, as [The Space categories](../010-palette/palette-top-level-categories.md#the-space-categories) lists it.
   - **Travel**, in a band of its own: Portal, Bring Focus, Avatar Pad, Directory, Elevator and the Avatar Button.
-- **No Selection Mode category.** The Avatar [Selection Mode button](../009-elements/mode-button.md) (the Spaces'
-  **Walk In**) is in Travel; the Select, Hand, Eraser and Format buttons are gone, and so are Reaction Pads and the
+- **No Selection Mode category.** The Avatar [Selection Mode button](../009-elements/mode-button.md) (once the Spaces'
+  **Walk In**, which an Avatar Pad replaced) is in Travel; the Select, Hand, Eraser and Format buttons are gone, and so are Reaction Pads and the
   Laser, Spotlight and Isometric buttons (owner, 2026-11-05).
 - **Stickers**, for decoration, as livediagram has them. No Icons category (owner, 2026-11-05:
   [Icons](../002-project-scope/not-in-livehuddle.md#icons)); a stored icon still draws and edits.
@@ -82,10 +85,11 @@ The meeting palette is livehuddle's one palette, in order:
   or dropped on the canvas is refused. A stored image or link card still draws, moves and deletes.
 - **No** Shapes, My shapes, Draw (pencil, highlighter, arrow, line), Frame, Layout, Data, Components, Ask, Tools, Record or React (owner, 2026-11-05: no frames in livehuddle). A connector or a flowchart shape is a diagram tool: livediagram's.
 - **On the strip, the category bar** ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)) shows
-  **Write | Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting | Travel | Stickers**, a divider
+  **Write | Rooms, Seats, Perks, Play, Garden, Meet | Travel | Stickers**, a divider
   between each band ([The strip's order](../010-palette/palette-top-level-categories.md#the-strips-order)): no
   Popular, no Session category, no Selection Mode category. Each Space category's flyout is one block of its tiles,
-  with no group headings, but Rooms, which opens on its Build group.
+  with no group headings, but Rooms, which opens on its Build group, and Play and Garden, which list their
+  groups ([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 - The Toolbar strip's **Search** finds only what the palette offers: an element livehuddle no longer offers is not
   placed from anywhere ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets no palette at all, and is always walking ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks), owner 2026-11-05).
@@ -102,7 +106,7 @@ vote had left before it ([Vote](../002-project-scope/not-in-livehuddle.md#the-vo
 The catalogue is **Blank Space** and eighteen Spaces in the Campus, Office, Events, Outdoor and Recreation categories
 ([Virtual Office template](virtual-office-template.md), [Templates by mode](../007-editor/templates-by-mode.md)).
 Every template opens on a meeting board. The Spaces use only what stays: the office, bar and garden pieces,
-furniture, a Walk In button, Bring Focus, sticky notes, text and a sticker.
+furniture, an Avatar Pad, Bring Focus, sticky notes, text and a sticker.
 
 The retrospectives, the workshop boards, the planning and strategy boards and the quizzes and games leave
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)); a link, an agent or a seed naming one is answered

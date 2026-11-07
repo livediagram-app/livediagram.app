@@ -3,8 +3,9 @@ import {
   test,
   expectNoPageErrors,
   openStartBlank,
-  pageOwnerHeaders,
   paletteTile,
+  seedTab,
+  startBlankDocument,
 } from './fixtures';
 
 // The viewport on tab entry (docs/specs/008-canvas/canvas-and-palette.md "Fit-to-screen"): a tab is framed
@@ -39,31 +40,13 @@ test.describe('Viewport on add', () => {
   });
 
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    await openStartBlank(page);
-    const canvas = page.locator(CANVAS);
-    // Dropped at the far corner, so only a fit would bring it back to the middle.
-    const box = (await canvas.boundingBox())!;
-    await (
-      await paletteTile(page, 'Add Sticky Note')
-    ).dragTo(canvas, { targetPosition: { x: 80, y: box.height - 80 } });
-    await page.keyboard.press('Escape');
-    // Let the autosave land before reloading.
-    await expect
-      .poll(async () => {
-        const headers = await pageOwnerHeaders(page);
-        return page.evaluate(async (headers) => {
-          const id = location.pathname.split('/').filter(Boolean).pop();
-          const tabId = new URLSearchParams(location.hash.slice(1)).get('t');
-          const res = await fetch(`/api/documents/${id}/tabs/${tabId}`, { headers });
-          if (!res.ok) return 0;
-          const got = (await res.json()) as { tab?: { elements?: unknown[] } };
-          return got.tab?.elements?.length ?? 0;
-        }, headers);
-      })
-      .toBe(1);
-    await page.reload();
-    const square = page.locator(CANVAS).getByRole('img', { name: 'Sticky note', exact: true });
-    await expect(square).toHaveCount(1);
+    await startBlankDocument(page);
+    // A shape far from the origin and no way to walk (no pad, no Avatar button), so the tab opens on its entry fit
+    // rather than walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"); seedTab reloads.
+    await seedTab(page, [
+      { id: 'far', type: 'shape', shape: 'square', x: 3000, y: 2000, width: 100, height: 100 },
+    ]);
+    const square = page.locator('[data-element-id="far"]').first();
     await expect(async () => {
       const after = (await page.locator(CANVAS).boundingBox())!;
       const at = centre((await square.boundingBox())!);

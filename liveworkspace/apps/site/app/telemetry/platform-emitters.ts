@@ -18,6 +18,10 @@
 //   events each app's own Explorer always sent. Its types are the Explorer's closed list
 //   (@liveworkspace/telemetry EXPLORER_TELEMETRY_EVENTS), declared here once as computed values for
 //   every app's checks. A team move names the item by its app's noun, so an app sees only its own.
+// - The Community page (apps/site/lib/community/telemetry.ts), shown on each app's address, reports in
+//   the name of that app: a post opened, liked, unliked or copied, a report's reason, a search, a
+//   filter chosen and a help link followed, the events each app's own Community app always sent. Every
+//   type is literal there.
 //
 // An app sees only the events its own vocabulary takes (the service stores nothing else for it), so a
 // revoked pass counts as liveplanner's Project·Removed and as the others' Document·Removed.
@@ -36,6 +40,7 @@ const MONOREPO = resolve(__dirname, '../../../../..');
 export const PLATFORM_ROOTS = [
   'liveworkspace/apps/accounts/src',
   'liveworkspace/apps/site/lib/explorer',
+  'liveworkspace/apps/site/lib/community',
 ];
 
 // The Explorer's emitter on liveworkspace.app.
@@ -94,6 +99,20 @@ export function sharedClientEmitters(): Emit[] {
     (e) => typeof e.category === 'string' && typeof e.action === 'string',
   );
   return clientCached;
+}
+
+// Avatar mode (@liveworkspace/avatar) sends through the bound `track` of the editor that mounts it
+// (`avatarBindings.track(...)`): a character's customisations, its status, its speech bubbles and its arrival on
+// an Avatar Pad. Only livediagram and livehuddle mount it, so only their scans add these.
+export const AVATAR_ROOTS = ['packages/avatar/src'];
+
+let avatarCached: Emit[] | undefined;
+
+export function avatarEmitters(): Emit[] {
+  avatarCached ??= scanEmitters(MONOREPO, AVATAR_ROOTS, '').filter(
+    (e) => typeof e.category === 'string' && typeof e.action === 'string',
+  );
+  return avatarCached;
 }
 
 // The values each of the Explorer's computed emit sites can send, by the scan's site key

@@ -513,6 +513,7 @@ function BoxedElementViewImpl({
         votableInVote={votableInVote}
         voteReviewActive={voteReviewActive}
         isVoteFocus={isVoteFocus}
+        box={element}
         onRetractVote={onRetractVote}
         onCastVote={onCastVote}
       />

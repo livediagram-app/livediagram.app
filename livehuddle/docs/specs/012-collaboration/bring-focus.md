@@ -122,6 +122,13 @@ renamed participant's invitation reads correctly.
   present, and erring that way is the harmless direction.
 - **You never invite yourself.** The presser's own view does not move; they are
   already looking at it.
+- **Below an Editor it is a sign, not a button** (owner, 2026-11-06: "Participants / Viewers shouldn't be able to
+  click bring focus to open it in a modal, thats pointless"). Whoever may not press it (a Participant or a Viewer,
+  who always walk, and an Editor while somebody else holds the baton) gets nothing from a click: the face has no
+  press, a walking click on it opens no [reader](../008-canvas/avatar-mode.md#the-reader) (the reader of a button
+  is the same button, larger, still not pressable) and walks nowhere, and the target keeps the plain arrow cursor.
+  Hovering (or long-pressing) the target shows a hover card saying why: **Bring Focus**, "An Editor presses this to
+  ask everyone to look here. While someone facilitates, only they can."
 
 ## The element
 
@@ -132,7 +139,7 @@ defaults to "Bring Focus" and is edited like any label, so a canvas can have
 
 Surfaces that cannot ask anyone to look (the export, the minimap) render the
 face inert rather than hiding it; a Participant or Viewer session sees the face
-without its press (see Rules). In an export that means the chip, the target and the label, drawn by
+without its press, and a click on it does nothing (see Rules). In an export that means the chip, the target and the label, drawn by
 `svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture
 of the canvas shows the button rather than an empty box with a word in it
 ([Export fidelity](../020-import-export/export-fidelity.md)). The press states are the one thing left

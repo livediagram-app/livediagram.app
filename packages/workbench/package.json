@@ -12,6 +12,7 @@
     "./components/canvas/CanvasLiveRegion": "./src/components/canvas/CanvasLiveRegion.tsx",
     "./components/canvas/CanvasZoomContext": "./src/components/canvas/CanvasZoomContext.tsx",
     "./components/canvas/ClusterPopoverButton": "./src/components/canvas/ClusterPopoverButton.tsx",
+    "./components/canvas/TurnButtons": "./src/components/canvas/TurnButtons.tsx",
     "./components/canvas/CollaborateClusterButton": "./src/components/canvas/CollaborateClusterButton.tsx",
     "./components/canvas/CommentBadgesContext": "./src/components/canvas/CommentBadgesContext.tsx",
     "./components/canvas/ContentsClusterSegment": "./src/components/canvas/ContentsClusterSegment.tsx",
@@ -56,6 +57,7 @@
     "./components/canvas/useFontEpoch": "./src/components/canvas/useFontEpoch.ts",
     "./components/canvas/useTraceDashes": "./src/components/canvas/useTraceDashes.ts",
     "./components/canvas/useWithheldExplorerCloses": "./src/components/canvas/useWithheldExplorerCloses.ts",
+    "./components/canvas/vote-badge": "./src/components/canvas/vote-badge.ts",
     "./components/chrome/ApiErrorPage": "./src/components/chrome/ApiErrorPage.tsx",
     "./components/chrome/AuthLines": "./src/components/chrome/AuthLines.tsx",
     "./components/chrome/AuthPitch": "./src/components/chrome/AuthPitch.tsx",
@@ -206,6 +208,7 @@
     "./hooks/canvas/useCanvasClientOrigin": "./src/hooks/canvas/useCanvasClientOrigin.ts",
     "./hooks/canvas/useCanvasLongTaskLog": "./src/hooks/canvas/useCanvasLongTaskLog.ts",
     "./hooks/canvas/useCanvasSelectHandlers": "./src/hooks/canvas/useCanvasSelectHandlers.ts",
+    "./hooks/canvas/usePlacingTurnKeys": "./src/hooks/canvas/usePlacingTurnKeys.ts",
     "./hooks/canvas/useChartHover": "./src/hooks/canvas/useChartHover.ts",
     "./hooks/canvas/useCursorsNearPointer": "./src/hooks/canvas/useCursorsNearPointer.ts",
     "./hooks/canvas/useFillPress": "./src/hooks/canvas/useFillPress.ts",
@@ -296,6 +299,7 @@
     "./lib/crc32": "./src/lib/crc32.ts",
     "./lib/cursor-hover": "./src/lib/cursor-hover.ts",
     "./lib/debug-log": "./src/lib/debug-log.ts",
+    "./lib/drag-ride-dom": "./src/lib/drag-ride-dom.ts",
     "./lib/dedupe": "./src/lib/dedupe.ts",
     "./lib/dialog-handle": "./src/lib/dialog-handle.ts",
     "./lib/dom-hit-test": "./src/lib/dom-hit-test.ts",
@@ -342,9 +346,11 @@
     "./lib/page-image-tone": "./src/lib/page-image-tone.ts",
     "./lib/page-step": "./src/lib/page-step.ts",
     "./lib/page-viewport": "./src/lib/page-viewport.ts",
+    "./lib/palette-carry": "./src/lib/palette-carry.ts",
     "./lib/palette-drop": "./src/lib/palette-drop.ts",
     "./lib/palette-popover-open": "./src/lib/palette-popover-open.ts",
     "./lib/panel-presence": "./src/lib/panel-presence.ts",
+    "./lib/placing-facing": "./src/lib/placing-facing.ts",
     "./lib/png-encode": "./src/lib/png-encode.ts",
     "./lib/presenting-position": "./src/lib/presenting-position.ts",
     "./lib/press-gestures": "./src/lib/press-gestures.ts",
@@ -407,6 +413,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
@@ -420,7 +427,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "jsdom": "^30.1.2",
@@ -429,6 +436,6 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   }
 }

@@ -28,15 +28,13 @@ function makeEnv() {
   const live = mockFetcher();
   const api = mockFetcher();
   const help = mockFetcher();
-  const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     EDITOR: live.fetcher,
     API: api.fetcher,
     HELP: help.fetcher,
-    COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, help, community };
+  return { env, marketing, live, api, help };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -124,25 +122,11 @@ describe('production dispatch (service bindings)', () => {
     });
     expect(res.status).toBe(307);
     expect(res.headers.get('Location')).toBe('/help/explorer/folders/');
-    const post = await dispatch('/community/post?id=X', {
-      ...env,
-      COMMUNITY: redirecting('/post/?id=X'),
-    });
-    expect(post.headers.get('Location')).toBe('/community/post/?id=X');
     // An absolute one, or one already under the prefix, is left as it is.
     const abs = await dispatch('/help/x', { ...env, HELP: redirecting('https://elsewhere.test/') });
     expect(abs.headers.get('Location')).toBe('https://elsewhere.test/');
     const kept = await dispatch('/help/x', { ...env, HELP: redirecting('/help/y/') });
     expect(kept.headers.get('Location')).toBe('/help/y/');
-  });
-
-  it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
-    const { env, community, marketing } = makeEnv();
-    await dispatch('/community/post/?id=ABCDEFGH23', env);
-    expect(community.urls).toEqual(['https://www.livehuddle.app/post/?id=ABCDEFGH23']);
-    await dispatch('/community', env);
-    expect(community.urls[1]).toBe('https://www.livehuddle.app/');
-    expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
@@ -389,9 +373,8 @@ describe('the caching rules', () => {
       MARKETING: answering('<html></html>', html),
       EDITOR: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
-      COMMUNITY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/new', '/help/canvas/', '/community']) {
+    for (const page of ['/', '/new', '/help/canvas/']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {
@@ -701,6 +684,66 @@ describe('the bare domain', () => {
       for (const e of [env, staging]) {
         expect(REDIRECTS.has((await on(host, '/new', e)).status), host).toBe(false);
       }
+    }
+  });
+});
+
+describe("liveworkspace's Community page under this address (@liveworkspace/community-site/router)", () => {
+  it("serves /community and its posts from liveworkspace.app, the head made livehuddle's own", async () => {
+    const urlOf = (req: Request | string) => (typeof req === 'string' ? req : req.url);
+    const fetchMock = vi.fn((req: Request | string) =>
+      Promise.resolve(
+        new URL(urlOf(req)).pathname.startsWith('/api/community')
+          ? new Response('', { status: 503 })
+          : new Response('<!doctype html><title>Community</title>', {
+              headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal(
+      'HTMLRewriter',
+      class {
+        on() {
+          return this;
+        }
+        transform(res: Response) {
+          return res;
+        }
+      },
+    );
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { env, marketing } = makeEnv();
+      for (const path of ['/community', '/community/post?id=p1', '/community.txt?_rsc=x']) {
+        const res = await dispatch(path, env);
+        expect(res.status, path).toBe(200);
+        if (path === '/community') expect(res.headers.get('Cache-Control')).toBe('no-store');
+        const asked = fetchMock.mock.calls.map(([req]) => urlOf(req));
+        expect(asked, path).toContain(`https://www.liveworkspace.app${path}`);
+      }
+      expect(marketing.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("answers the Community's sitemap itself, from the service, for livehuddle's posts", async () => {
+    const fetchMock = vi.fn((_req: string) =>
+      Promise.resolve(Response.json({ posts: [{ id: 'p1', updatedAt: 0 }] })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env } = makeEnv();
+      const res = await dispatch('/community/sitemap.xml', env);
+      expect(await res.text()).toContain(
+        '<loc>https://www.livehuddle.app/community/post?id=p1</loc>',
+      );
+      const asked = fetchMock.mock.calls[0]![0];
+      expect(asked).toBe('https://www.liveworkspace.app/api/community/sitemap?app=livehuddle.app');
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 });

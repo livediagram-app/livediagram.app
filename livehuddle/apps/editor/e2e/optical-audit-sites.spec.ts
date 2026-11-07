@@ -3,8 +3,9 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
-// help centre, the Community and the marketing site. The e2e stack serves their static builds (help and
-// the Community under their basePath on this origin, marketing on its own port); against a dev stack,
+// help centre, the Community and the marketing site. The e2e stack serves their static builds (help under its
+// basePath on this origin, the Community from liveworkspace's site at /community as the router serves it, marketing
+// on its own port); against a dev stack,
 // point E2E_HELP_URL / E2E_COMMUNITY_URL / E2E_MARKETING_URL at the dev servers. The telemetry dashboard
 // is liveworkspace's now (docs/specs/017-telemetry/telemetry.md), audited there.
 
@@ -27,7 +28,7 @@ async function open(page: Page, url: string, build: string): Promise<void> {
   const res = await page.goto(url);
   expect(
     res?.status(),
-    `${url} did not load: build it (pnpm --filter @livehuddle/${build} build)`,
+    `${url} did not load: build it (pnpm --filter ${build === 'community' ? '@liveworkspace/site' : `@livehuddle/${build}`} build)`,
   ).toBe(200);
   // Measure the settled page: an illustration still loading moves what sits beside it by a fraction of a pixel, which
   // snaps its text to a different row (the feature page's call to action read -1.49px on some runs, 0 on others).
@@ -76,8 +77,8 @@ test.describe('Optical alignment audit, other sites', () => {
   });
 
   test('the Community', async ({ page, pageErrors, baseURL }) => {
-    // The gallery (docs/specs/025-community/community.md), as a visitor with nothing shared yet sees it on a fresh
-    // stack: its header, search box and controls, and the empty state. The stack's api has no Community service key,
+    // The gallery (liveworkspace/docs/specs/007-community/community.md), as a visitor with nothing shared yet
+    // sees it on a fresh stack: its header, search box and controls, and the empty state. The stack's api has no Community service key,
     // so its capabilities say the Community is off and the gate would leave for the home page once they answer; the
     // audit measures the gallery, so it hears the Community is on. The posts live on the liveworkspace Community
     // service (production's, from this origin), so the gallery is answered empty here, never from a live service.
@@ -94,7 +95,7 @@ test.describe('Optical alignment audit, other sites', () => {
     await page.route('**/api/community/facets?*', (route) =>
       route.fulfill({ json: { total: 0, categories: {}, tags: [] } }),
     );
-    await open(page, `${site('community', baseURL!)}/`, 'community');
+    await open(page, site('community', baseURL!), 'community');
     await expect(page.getByRole('searchbox')).toBeVisible();
     await page.waitForLoadState('networkidle');
     await expectCentred(page, 'community gallery');

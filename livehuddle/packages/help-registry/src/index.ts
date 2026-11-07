@@ -116,10 +116,10 @@ export const categories: Category[] = [
   },
   {
     slug: 'selection-modes',
-    title: 'Selection Modes',
+    title: 'Edit or Walk',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Avatar, Eraser and Format Painter.',
-    articleCount: 6,
+      'The Edit | Walk toggle at the start of the palette: build the board, or walk it as your character, and the Format Painter.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 15,
+    articleCount: 16,
     kind: 'feature',
     groups: ['Everyday Elements', 'Meeting Kits', 'Palette Settings'],
   },
@@ -363,9 +363,9 @@ export const articles: Article[] = [
     slug: 'command-palette',
     title: 'The Palette',
     description:
-      'Pick a selection mode and add sticky notes, text, icons and more from the palette strip.',
+      'Switch between Edit and Walk and add sticky notes, text, rooms and more from the palette strip.',
     keywords:
-      'quick add search elements toolbar strip launcher categories dropdown popular selection mode tiles bands',
+      'quick add search elements toolbar strip launcher categories dropdown popular edit walk toggle tiles bands',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -711,37 +711,24 @@ export const articles: Article[] = [
     categorySlug: 'canvas',
     group: 'Basics',
   },
-  // ---- Selection Modes (own feature category, extracted from Palette) ----
+  // ---- Edit or Walk (the selection-modes category: the palette's Edit | Walk toggle) ----
   {
     slug: 'select',
-    title: 'Select',
-    description: 'The default pointer for selecting, moving, and editing elements.',
-    keywords: 'pointer cursor arrow tool default mode click marquee picker shift',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'hand',
-    title: 'Hand',
-    description: 'Pan the canvas with a plain drag on empty space.',
-    keywords: 'pan drag move canvas grab scroll navigate space middle click hand tool',
-    category: 'Selection Modes',
-    categorySlug: 'selection-modes',
-  },
-  {
-    slug: 'eraser',
-    title: 'Eraser',
-    description: 'Click or drag across elements to delete them quickly.',
-    keywords: 'delete remove rub out erase clear wipe brush size filter drawings arrows sweep tap',
-    category: 'Selection Modes',
+    title: 'Edit and Walk',
+    description:
+      'The Edit | Walk toggle: select and build in Edit, walk as your character in Walk.',
+    keywords:
+      'edit walk toggle switch pointer cursor arrow select default mode click marquee shift build footprints avatar character pan hand space drag trackpad middle click delete remove erase eraser backspace selection mode tool picker',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
     slug: 'format-painter',
     title: 'Format Painter',
-    description: "Copy one element's style and paint it onto others.",
-    keywords: 'copy style clone look paste formatting appearance brush',
-    category: 'Selection Modes',
+    description: "Copy one element's style from the selection toolbar and paint it onto others.",
+    keywords:
+      'copy style clone look paste formatting appearance brush selection toolbar paint match',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
@@ -749,8 +736,8 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb change tab switch tab leave avatar mode',
-    category: 'Selection Modes',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb need help question lunch sandwich angry steam ears celebrating party hat confetti thinking thought bubble sick ice pack mood change tab switch tab leave avatar mode',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
   {
@@ -760,7 +747,7 @@ export const articles: Article[] = [
       'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
     keywords:
       'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
-    category: 'Selection Modes',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes/avatar-mode',
     parentSlug: 'avatar-mode',
   },
@@ -770,7 +757,7 @@ export const articles: Article[] = [
     description: "Everyone on a shared space sees everyone else's walking character.",
     keywords:
       'multiplayer together shared collaborate collaboration peers others everyone realtime real-time avatars characters names colour color presence document',
-    category: 'Selection Modes',
+    category: 'Edit or Walk',
     categorySlug: 'selection-modes',
     parentSlug: 'avatar-mode',
   },
@@ -846,6 +833,16 @@ export const articles: Article[] = [
     group: 'Meeting Kits',
   },
   {
+    slug: 'stairs',
+    title: 'Stairs',
+    description: "A flight between a space's tabs: climb to the floor above or below.",
+    keywords:
+      'stairs staircase stairway steps flight upstairs downstairs up down climb walk floor floors level levels tab tabs building travel go between tabs automatic avatar navigate behaviour',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Meeting Kits',
+  },
+  {
     slug: 'screen',
     title: 'Screen',
     description:
@@ -870,9 +867,9 @@ export const articles: Article[] = [
     slug: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms of any shape with doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a notice board, world clocks, plants, shelves, drinks and rugs for Avatar mode.',
+      'Rooms of any shape, room types, corridors, sliding, revolving and locked doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a kitchenette, a restroom, a printer, a copier, lockers, a coat rack, a notice board, world clocks, a calendar wall, a suggestion box, a team photo wall, a signpost, stage curtains and a podium, a phone booth, a nap pod, a reception desk with a bell, hot desks, standing desks, a treadmill, a weight bench, an office dog, pillars and columns, a swimming pool, a car park, a bike rack, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks bean bag beanbag reading nook armchair lamp breakout arcade game recreation team avatar walk sit navigate',
+      'virtual office room rooms room types presets boardroom open plan lounge corridor corridors hallway hall junction crossroads sliding door revolving door double door locked door padlock persian kilim runner doormat striped rug round rug room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -881,7 +878,7 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Meeting Elements',
     description:
-      'The elements a Space is built from: the Travel, Seating, Rooms and Amenities pieces people walk round, Bring Focus and the Avatar button.',
+      'The elements a Space is built from: the Travel, Seats, Rooms and Perks pieces people walk round, Bring Focus and the Avatar button.',
     keywords:
       'behaviour behavior behaviours behaviors interactive button portal mode switch walk in chair seat desk sofa couch fence barrier link card bookmark bring focus look here attention gather meeting travel seating rooms amenities navigate selection mode',
     category: 'Palette',
@@ -1515,6 +1512,16 @@ export const articles: Article[] = [
     categorySlug: 'palette/virtual-office',
     parentSlug: 'virtual-office',
   },
+  {
+    slug: 'turning-furniture',
+    title: 'Turning Furniture',
+    description: 'Face a sofa, a desk or lockers down, left, up or right; its seats turn with it.',
+    keywords:
+      'turn turning rotate rotation rotating face facing direction orientation orient spin flip left right up down sideways side wall sofa desk chair lockers furniture piece quarter space bar spacebar shift place placing drop seats sit',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
+  },
 
   // ---- Sub-articles: Selecting and Grouping ----
   {
@@ -1570,6 +1577,17 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Teams ----
+  {
+    slug: 'audit-log',
+    title: 'Audit Log',
+    description:
+      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+    keywords:
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/teams',
+    parentSlug: 'teams',
+  },
   {
     slug: 'roles-and-invites',
     title: 'Roles and Invites',

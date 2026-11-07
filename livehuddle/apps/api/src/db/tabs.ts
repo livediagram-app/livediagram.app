@@ -2,7 +2,13 @@
 // by `document_tabs`. Runs only inside the document's Durable Object, on `env.DOCUMENT_DB`
 // (@liveworkspace/index-app item-db.ts).
 
-import { shareLeaveStatements } from '@liveworkspace/index-app';
+import {
+  shareLeaveStatements,
+  storedTabConnection,
+  tabConnectionOf,
+  tabConnectionStatement,
+} from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import { capElementActions, drawnCount, type Tab } from '@livehuddle/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
@@ -28,7 +34,7 @@ export async function getTab(
 ): Promise<TabDTO | null> {
   // Resolve via the document_tabs link, which carries the tab's place in the document.
   const row = await env.DOCUMENT_DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN document_tabs dt ON dt.tab_id = t.id
       WHERE t.id = ? AND dt.document_id = ?`,
@@ -61,7 +67,7 @@ export async function tabBodiesInOrder(
   limit: number,
 ): Promise<TabDTO[]> {
   const { results } = await env.DOCUMENT_DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN document_tabs dt ON dt.tab_id = t.id
       WHERE dt.document_id = ?
@@ -168,7 +174,9 @@ export function tabWriteStatements(
   // Action panel lists are bounded here, the one place every tab write
   // meets (docs/specs/012-collaboration/action-panel.md "The data").
   const tab = { ...input, elements: capElementActions(input.elements) };
-  const { id, name, ...rest } = tab;
+  // A connected tab's connection is its own column (tabConnectionStatement), set only by the editor's save and the
+  // index's reverse write: never part of the body, and never written by a body write.
+  const { id, name, connection: _connection, ...rest } = tab as Tab & { connection?: unknown };
   const data = JSON.stringify(rest);
   assertTabDataFits(id, data, 'upsertTab');
   const advance = 'advance' in revision;
@@ -233,16 +241,20 @@ export async function upsertTab(
 
 // A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
 // `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
+// `connection`: the editor's save of a connected tab (routes/tab-put-route.ts) sets it in the same batch; left out,
+// the stored connection stays as it is.
 export async function upsertTabAtRev(
   env: DocumentEnv,
   documentId: string,
   input: Tab,
   orderIndex: number,
   expectedRev: number,
+  connection?: TabConnection,
 ): Promise<number> {
-  const results = await env.DOCUMENT_DB.batch(
-    tabWriteStatements(env, documentId, input, orderIndex, { expected: expectedRev }),
-  );
+  const results = await env.DOCUMENT_DB.batch([
+    ...tabWriteStatements(env, documentId, input, orderIndex, { expected: expectedRev }),
+    ...(connection ? [tabConnectionStatement(env.DOCUMENT_DB, input.id, connection)] : []),
+  ]);
   return revFromBatch(results);
 }
 
@@ -279,11 +291,18 @@ export async function seedTabs(
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
   // Every tab measured before any is written: a create seeds all or none.
-  for (const { id, name: _name, ...rest } of capped) {
+  // A connected tab a create carries (an Offline Mode sync's, an import's) keeps exactly `{ id, app, itemId }` in its
+  // column, never in its body (connected-tabs.md "Copies carry nothing"): the index opens it only in its own host and
+  // tab, so anywhere else it offers Connect Again. A token's create never gets here with one (routes/documents.ts).
+  const bodies = capped.map(
+    ({ connection: _connection, ...tab }: Tab & { connection?: unknown }) => tab,
+  );
+  for (const { id, name: _name, ...rest } of bodies) {
     assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
   }
-  const stmts = capped.flatMap((tab, idx) => {
+  const stmts = bodies.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
+    const connection = tabConnectionOf(capped[idx]);
     const data = JSON.stringify(rest);
     return [
       env.DOCUMENT_DB.prepare(
@@ -302,6 +321,7 @@ export async function seedTabs(
          ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
       ).bind(documentId, id, idx, now),
       tabStatsStatement(env, id, tabStatsOf(rest, data), now),
+      ...(connection ? [tabConnectionStatement(env.DOCUMENT_DB, id, connection)] : []),
     ];
   });
   stmts.push(
@@ -324,16 +344,21 @@ export async function seedTabs(
 //
 // Answers the tab's stored body as it was removed (null when this document did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this document's feed with it.
+// delete: the caller retracts the tab's comment events from this document's feed with it. And its
+// connection, when it was a connected tab: the caller tells the index it has left
+// (connected-tabs.md "Removing").
+export type DeletedTab = { data: string; connection: TabConnection | null };
+
 export async function deleteTabRow(
   env: DocumentEnv,
   documentId: string,
   tabId: string,
-): Promise<string | null> {
+): Promise<DeletedTab | null> {
   const [unlinked] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
       `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data,
+                  (SELECT t.connection FROM tabs t WHERE t.id = document_tabs.tab_id) AS connection`,
     ).bind(documentId, tabId),
     // A shared tab (document-room/tab-shares.ts): every other holder hears that this document left, and nothing
     // else it owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
@@ -341,9 +366,17 @@ export async function deleteTabRow(
     env.DOCUMENT_DB.prepare(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM document_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),
+    // Its Suggestion Boxes' notes go with it (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+    env.DOCUMENT_DB.prepare('DELETE FROM suggestions WHERE document_id = ? AND tab_id = ?').bind(
+      documentId,
+      tabId,
+    ),
   ]);
-  const row = (unlinked as { results?: { data?: string | null }[] } | undefined)?.results?.[0];
-  return row?.data ?? null;
+  const row = (
+    unlinked as { results?: { data?: string | null; connection?: string | null }[] } | undefined
+  )?.results?.[0];
+  if (row?.data == null) return null;
+  return { data: row.data, connection: storedTabConnection(row.connection) };
 }
 
 // One position in a reorder request: the tab id plus its per-document

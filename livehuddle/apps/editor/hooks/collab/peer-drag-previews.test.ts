@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livehuddle/document';
+import { createArrow, createPinnedArrow, createShape } from '@livehuddle/document';
 import { resetDragPreviewForTests, subscribeDragPreview } from '@/lib/drag-preview';
 import { renderHook } from '@testing-library/react';
 import { useDragPreview } from '@/lib/drag-preview';
@@ -84,6 +84,64 @@ describe("a collaborator's drag preview", () => {
     off();
     expect(changes).toBe(0);
     expect(drawn()).toBeNull();
+  });
+});
+
+describe("a collaborator's very large move (a ride)", () => {
+  const b = createShape('square', 300, 0);
+  const free = createArrow(10, 10, 60, 60);
+  const pinned = createPinnedArrow(a.id, 'e', b.id, 'w');
+  const board = [a, b, free, pinned];
+  const shown = () => renderHook(() => useDragPreview('t', board)).result.current;
+  const ride = (dx: number, ids?: string[], patches: unknown[] = []) =>
+    ({ kind: 'drag-preview', tabId: 't', ride: { dx, dy: 1, ids, patches } }) as never;
+
+  it("moves every named element by the offset: a box's place, an arrow's free ends", () => {
+    receivePeerDragPreview('p1', ride(5, [a.id, free.id, pinned.id]), role('edit'));
+    const o = shown()!;
+    expect(o.changed.get(a.id)).toMatchObject({ x: 5, y: 1 });
+    expect(o.changed.get(free.id)).toMatchObject({
+      from: { kind: 'free', x: 15, y: 11 },
+      to: { kind: 'free', x: 65, y: 61 },
+    });
+    // A pinned end follows its box, so it is left as it is.
+    expect((o.changed.get(pinned.id) as typeof pinned).from).toBe(pinned.from);
+    expect(o.changed.has(b.id)).toBe(false);
+  });
+
+  it('moves the ids last named when a message leaves them out, and applies its patches over them', () => {
+    receivePeerDragPreview('p1', ride(5, [a.id]), role('edit'));
+    receivePeerDragPreview('p1', ride(8, undefined, [{ id: b.id, width: 99 }]), role('edit'));
+    const o = shown()!;
+    expect(o.changed.get(a.id)).toMatchObject({ x: 8 });
+    expect(o.changed.get(b.id)).toMatchObject({ width: 99, x: 300 });
+  });
+
+  it('moves nothing until the ids arrive, and forgets them on another tab', () => {
+    receivePeerDragPreview('p1', ride(5), role('edit'));
+    expect(shown()).toBeNull();
+    receivePeerDragPreview('p1', ride(5, [a.id]), role('edit'));
+    receivePeerDragPreview(
+      'p1',
+      { kind: 'drag-preview', tabId: 'u', ride: { dx: 1, dy: 1, patches: [] } } as never,
+      role('edit'),
+    );
+    receivePeerDragPreview(
+      'p1',
+      { kind: 'drag-preview', tabId: 't', ride: { dx: 1, dy: 1, patches: [] } } as never,
+      role('edit'),
+    );
+    expect(shown()).toBeNull();
+  });
+
+  it('drops a malformed ride whole', () => {
+    receivePeerDragPreview('p1', ride(5, [a.id]), role('edit'));
+    receivePeerDragPreview(
+      'p1',
+      { kind: 'drag-preview', tabId: 't', ride: { dx: 'far', dy: 1 } } as never,
+      role('edit'),
+    );
+    expect(shown()!.changed.get(a.id)).toMatchObject({ x: 5 });
   });
 });
 

@@ -153,10 +153,19 @@ const SLIDE_DECK_PANEL_EVENTS = new Set([
   'UI|View|PagesTourStepSlideShowSettings',
 ]);
 
+// The in-page layout card (removed with Work Tracker #172, livedocuments docs/specs/007-editor/pages-mode.md "Layouts";
+// retired here by #242): hiding the Start From a Layout card on an empty page, and Choose a Layout on a page too small
+// on screen for it. Their explanation sentences went too. livediagram and livedesign still send both.
+const EMPTY_PAGE_LAYOUT_EVENTS = new Set([
+  'UI|Closed|EmptyPageLayouts',
+  'UI|Opened|EmptyPageInvite',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredTabWindow(category, action, type)) return true;
   if (isRetiredLinksAndNotes(category, action, type)) return true;
   if (SLIDE_DECK_PANEL_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (EMPTY_PAGE_LAYOUT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (
     (category === 'Help' || (category === 'UI' && action === 'Opened')) &&

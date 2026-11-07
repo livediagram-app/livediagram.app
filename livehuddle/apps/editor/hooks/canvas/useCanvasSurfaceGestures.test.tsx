@@ -303,7 +303,7 @@ describe('Avatar mode presses', () => {
     return face;
   };
 
-  it.each(['directory', 'elevator', 'notice-board', 'world-clock', 'portal'])(
+  it.each(['directory', 'elevator', 'stairs', 'notice-board', 'world-clock', 'portal'])(
     'opens a %s in place: no walk, and the press kept from the element',
     (kind) => {
       for (const pointer of ['mouse', 'touch']) {
@@ -315,6 +315,31 @@ describe('Avatar mode presses', () => {
       }
     },
   );
+
+  // What floats over the canvas with presses of its own (docs/specs/012-collaboration/proximity-audio.md "The talking
+  // equaliser", video-and-screen-bubbles.md "Maximise"): a press on it is never a walk to the spot behind it.
+  it.each(['data-talking-bars', 'data-call-bubbles', 'data-call-maximised'])(
+    'a press inside [%s] is not a walk, and is left to the control',
+    (attr) => {
+      for (const pointer of ['mouse', 'touch']) {
+        const { press, walkTo, setPan, stopPropagation } = avatarSetup();
+        const host = document.createElement('div');
+        host.setAttribute(attr, 'p1');
+        const inner = document.createElement('button');
+        host.appendChild(inner);
+        press(pointer, inner);
+        expect(walkTo).not.toHaveBeenCalled();
+        expect(setPan).not.toHaveBeenCalled();
+        expect(stopPropagation).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it('walks on a mouse press on the bare surface, outside the call chrome', () => {
+    const { press, walkTo } = avatarSetup();
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledTimes(1);
+  });
 
   // A door centred on the press point (120, 240), across a horizontal wall.
   const door = { id: 'door', type: 'shape', shape: 'door', x: 72, y: 228, width: 96, height: 24 };
@@ -372,6 +397,7 @@ describe('Avatar mode presses', () => {
   it.each([
     'directory',
     'elevator',
+    'stairs',
     'portal',
     'mode-button',
     'focus-button',
@@ -415,6 +441,22 @@ describe('Avatar mode presses', () => {
     expect(walkTo).not.toHaveBeenCalled();
   });
 
+  // docs/specs/013-workspace/share-roles.md "Always walking": a control that is not yours to press (Bring Focus for a
+  // Participant or a Viewer) is a sign: no reader, no walk.
+  it.each(['focus-button', 'mode-button', 'timer', 'stopwatch'])(
+    'does nothing on a %s with no main action of yours: no reader, no walk',
+    (kind) => {
+      const onReadElement = vi.fn();
+      const { press, walkTo } = avatarSetup([], {
+        elements: [pieceAt('shape', 'room'), pieceAt('shape', kind)],
+        onReadElement,
+      });
+      press('mouse');
+      expect(onReadElement).not.toHaveBeenCalled();
+      expect(walkTo).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     ['sticky', undefined],
     ['text', undefined],
@@ -430,7 +472,7 @@ describe('Avatar mode presses', () => {
     expect(walkTo).not.toHaveBeenCalled();
   });
 
-  it.each(['chair', 'room', 'tree', 'arcade-machine', 'water-cooler', 'avatar-pad'])(
+  it.each(['chair', 'room', 'tree', 'water-cooler', 'avatar-pad'])(
     'walks onto a %s under the press',
     (kind) => {
       const onReadElement = vi.fn();
@@ -441,6 +483,16 @@ describe('Avatar mode presses', () => {
       press('mouse');
       expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
       expect(onReadElement).not.toHaveBeenCalled();
+    },
+  );
+
+  // docs/specs/009-elements/workday-pieces.md "Reception Desk": a click on the counter walks to its front, never behind.
+  it.each(['arcade-machine', 'reception-desk'])(
+    'walks to the front of a %s under the press',
+    (kind) => {
+      const { press, walkTo } = avatarSetup([], { elements: [pieceAt('shape', kind)] });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 296 });
     },
   );
 

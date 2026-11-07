@@ -1,6 +1,7 @@
-// The pure half of the Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md): a space's
-// places (its Rooms, Office Pods and Stages, per tab, named and ordered), where a walk approaches each and where a jump
-// lands, who is in which from presence, and the floors an Elevator serves. No React, no DOM.
+// The pure half of the Directory, the Elevator and the Stairs (docs/specs/009-elements/directory.md, elevator.md,
+// stairs.md): a space's places (its Rooms, Office Pods and Stages, per tab, named and ordered), where a walk approaches
+// each and where a jump lands, who is in which from presence, the floors an Elevator serves and the flights a Stairs
+// climbs. No React, no DOM.
 import {
   callStages,
   DEFAULT_ROOM_DOOR,
@@ -11,17 +12,20 @@ import {
   roomDoorSpan,
   roomInterior,
   roomZones,
+  pieceFacing,
+  STAIRS_ENDS,
   stageAt,
   stageTop,
   zoneAt,
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { podInterior } from '@liveworkspace/avatar/pod';
+import { podDoorway } from '@liveworkspace/avatar/pod';
 import { doorLine, pointInPolygon } from '@liveworkspace/avatar/room-outline';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { avatarSpawnBelow } from '@liveworkspace/avatar/walk';
+import { avatarScale, type AvatarConfig } from '@liveworkspace/avatar/config';
+import { AVATAR_SPAWN_GAP, avatarPortraitBox, avatarSpawnBelow } from '@liveworkspace/avatar/walk';
+import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
 
 export type WayPoint = { x: number; y: number };
 export type WayBox = { x: number; y: number; width: number; height: number };
@@ -135,11 +139,13 @@ export function placePoints(
       arrival: centre(top),
     };
   }
+  // Through its doorway, wherever the pod faces (docs/specs/009-elements/furniture-facing.md "A turn").
   if (el.shape === 'office-pod') {
-    const inner = podInterior(el);
-    const front = inner.y + inner.height;
-    const x = inner.x + inner.width / 2;
-    return { approach: { x, y: front + POD_OUT }, arrival: { x, y: front - POD_IN } };
+    const { at, out } = podDoorway(el);
+    return {
+      approach: { x: at.x + out.x * POD_OUT, y: at.y + out.y * POD_OUT },
+      arrival: { x: at.x - out.x * POD_IN, y: at.y - out.y * POD_IN },
+    };
   }
   if (isRoomOutline(el.roomOutline)) {
     const outline = el.roomOutline.map((p) => ({
@@ -286,7 +292,6 @@ function middleOf(elements: readonly Element[]): WayPoint {
   return Number.isFinite(x0) ? { x: (x0 + x1) / 2, y: (y0 + y1) / 2 } : { x: 0, y: 0 };
 }
 
-/** The space's floors (its tabs, in order) and the Elevators on each. */
 /**
  * A floor's Elevators in reading order, each named (elevator.md "Names"): its label, else "Elevator n" by position
  * among the unnamed on that floor.
@@ -310,23 +315,26 @@ export function elevatorName(elements: readonly Element[], id: string): string |
   return floorElevators(elements).find((e) => e.id === id)?.name ?? null;
 }
 
+/** The space's floors (its tabs, in order) and the Elevators on each. */
 export function spaceFloors(tabs: readonly WayTab[]): SpaceFloor[] {
-  return tabs.map((tab) => {
-    const elevators = floorElevators(tab.elements);
-    const pad = tab.elements.find(
-      (el): el is ShapeElement => el.type === 'shape' && el.shape === 'avatar-pad',
-    );
-    const arrival = elevators[0]?.exit ?? (pad ? avatarPadCore(pad) : middleOf(tab.elements));
-    const arrivesAt = elevators[0] ? 'elevator' : pad ? 'pad' : 'middle';
-    return {
-      tabId: tab.id,
-      name: tab.name,
-      elevators,
-      arrival,
-      arrivesAt,
-      loading: tab.loaded === false,
-    };
-  });
+  return tabs.map(spaceFloor);
+}
+
+function spaceFloor(tab: WayTab): SpaceFloor {
+  const elevators = floorElevators(tab.elements);
+  const pad = tab.elements.find(
+    (el): el is ShapeElement => el.type === 'shape' && el.shape === 'avatar-pad',
+  );
+  const arrival = elevators[0]?.exit ?? (pad ? avatarPadCore(pad) : middleOf(tab.elements));
+  const arrivesAt = elevators[0] ? 'elevator' : pad ? 'pad' : 'middle';
+  return {
+    tabId: tab.id,
+    name: tab.name,
+    elevators,
+    arrival,
+    arrivesAt,
+    loading: tab.loaded === false,
+  };
 }
 
 // --- Who is where --------------------------------------------------------------------------------------------
@@ -339,11 +347,18 @@ export type WayPerson = {
   /** The place they stand in on the current tab; null for Around (or another tab, where it is not known). */
   placeId: string | null;
   self?: boolean;
+  /** The character they walk as, when this screen has seen it (the Team Photo Wall's portraits). */
+  config?: AvatarConfig;
 };
+
+const lookKey = (c: AvatarConfig | undefined) =>
+  c ? `${c.gender}.${c.clothing}.${c.hair}.${c.hairColour ?? ''}` : '';
 
 /** A by-value key for a people list: what the Directory shows, so a walk inside one room changes nothing. */
 export function peopleKey(people: readonly WayPerson[]): string {
-  return people.map((p) => `${p.id}|${p.tabId}|${p.placeId ?? ''}|${p.name}|${p.color}`).join('\n');
+  return people
+    .map((p) => `${p.id}|${p.tabId}|${p.placeId ?? ''}|${p.name}|${p.color}|${lookKey(p.config)}`)
+    .join('\n');
 }
 
 /**
@@ -354,8 +369,14 @@ export function peopleKey(people: readonly WayPerson[]): string {
 export function whoIsWhere(input: {
   activeTabId: string;
   findPlace: (at: WayPoint) => string | null;
-  self: { id: string; name: string; color: string; feet: WayPoint | null };
-  peers: readonly { id: string; name: string; color: string; feet: WayPoint }[];
+  self: { id: string; name: string; color: string; feet: WayPoint | null; config?: AvatarConfig };
+  peers: readonly {
+    id: string;
+    name: string;
+    color: string;
+    feet: WayPoint;
+    config?: AvatarConfig;
+  }[];
   byTab: ReadonlyMap<string, readonly { id: string; name: string; color: string }[]>;
 }): WayPerson[] {
   const { activeTabId, findPlace, self, peers, byTab } = input;
@@ -368,12 +389,20 @@ export function whoIsWhere(input: {
     tabId: activeTabId,
     placeId: self.feet ? findPlace(self.feet) : null,
     self: true,
+    ...(self.config ? { config: self.config } : null),
   });
   seen.add(self.id);
   for (const peer of peers) {
     if (seen.has(peer.id)) continue;
     seen.add(peer.id);
-    out.push({ ...peer, tabId: activeTabId, placeId: findPlace(peer.feet) });
+    out.push({
+      id: peer.id,
+      name: peer.name,
+      color: peer.color,
+      tabId: activeTabId,
+      placeId: findPlace(peer.feet),
+      ...(peer.config ? { config: peer.config } : null),
+    });
   }
   for (const [tabId, people] of byTab) {
     for (const p of people) {
@@ -383,4 +412,156 @@ export function whoIsWhere(input: {
     }
   }
   return out;
+}
+
+// --- The Signpost --------------------------------------------------------------------------------------------
+
+/** One board of a Signpost: the place it names and the way its arrow points. */
+export type SignpostBoard = { place: SpacePlace; dir: 'left' | 'right' };
+
+/** Where a Signpost stands: the foot of its post, the middle of its blocking footprint (office-geometry). */
+export function signpostFoot(el: WayBox): WayPoint {
+  return { x: el.x + el.width / 2, y: el.y + (el.height * 132) / 144 };
+}
+
+/**
+ * A Signpost's boards (docs/specs/009-elements/team-pieces.md "Signpost"): the `max` places whose arrival is nearest
+ * its foot, nearest first (ties in the Directory's reading order), each pointing right when its arrival lies right of
+ * the post. One pass that keeps the best `max`, so a tab of many rooms costs a scan, never a sort.
+ */
+export function signpostBoards(
+  places: readonly SpacePlace[],
+  foot: WayPoint,
+  max: number,
+): SignpostBoard[] {
+  if (max <= 0) return [];
+  const best: { place: SpacePlace; d: number }[] = [];
+  for (const place of places) {
+    const d = (place.arrival.x - foot.x) ** 2 + (place.arrival.y - foot.y) ** 2;
+    if (best.length === max && d >= best[max - 1]!.d) continue;
+    let i = best.length;
+    while (i > 0 && best[i - 1]!.d > d) i -= 1;
+    best.splice(i, 0, { place, d });
+    if (best.length > max) best.pop();
+  }
+  return best.map(({ place }) => ({
+    place,
+    dir: place.arrival.x > foot.x ? 'right' : 'left',
+  }));
+}
+
+// --- The Stairs ----------------------------------------------------------------------------------------------
+
+/** A Stairs as its ends read it: its box and its facing (furniture-facing.md), the flight climbing away from its foot. */
+export type StairsBox = WayBox & { chairFacing?: SeatFacing };
+
+// The drawing a Stairs shows at its facing (Down when unset), and whether it is the side mirrored.
+const stairsView = (el: StairsBox) =>
+  facingView(pieceFacing({ shape: 'stairs', chairFacing: el.chairFacing }));
+
+/**
+ * Where a climb ends (docs/specs/009-elements/stairs.md "Taking them", "Turned"): the feet on the flight's top step,
+ * wherever the flight climbs to on the drawing its facing shows.
+ */
+export function stairsTopPoint(el: StairsBox): WayPoint {
+  const { view, mirrored } = stairsView(el);
+  const { u, v } = STAIRS_ENDS[view].top;
+  return { x: el.x + el.width * (mirrored ? 1 - u : u), y: el.y + el.height * v };
+}
+
+/**
+ * Where the walk off the Stairs ends: in front of their foot, clear of the piece. Facing down the foot is below it,
+ * facing up above it, on its side beside it (left, or right when mirrored), level with the flight's middle.
+ */
+export function stairsFootPoint(el: StairsBox): WayPoint {
+  const scale = avatarScale('regular');
+  const { view, mirrored } = stairsView(el);
+  const ends = STAIRS_ENDS[view];
+  if (ends.foot === 'below') return avatarSpawnBelow(el, scale);
+  if (ends.foot === 'above') return { x: el.x + el.width / 2, y: el.y - AVATAR_SPAWN_GAP };
+  const clear = AVATAR_SPAWN_GAP + avatarPortraitBox(scale).width / 2;
+  return {
+    x: mirrored ? el.x + el.width + clear : el.x - clear,
+    y: el.y + el.height * ends.v,
+  };
+}
+
+/** Where a flight lands on its floor: the Stairs there (their top step and foot), else the floor's arrival. */
+export type StairsLanding =
+  | { at: 'stairs'; id: string; top: WayPoint; foot: WayPoint }
+  | { at: 'elevator'; id: string; top: null; foot: WayPoint }
+  | { at: 'pad' | 'middle'; id?: undefined; top: null; foot: WayPoint };
+
+export type StairsFlight = {
+  tabId: string;
+  /** The floor's number, from 1 in tab order, as the Elevator panel numbers floors. */
+  number: number;
+  name: string;
+  landing: StairsLanding;
+  /** Its tab not fetched yet: its Stairs are not known. */
+  loading: boolean;
+};
+
+export type StairsFloors = {
+  /** This floor's number and name; null when the active tab is not among the tabs. */
+  here: { number: number; name: string } | null;
+  count: number;
+  up: StairsFlight | null;
+  down: StairsFlight | null;
+};
+
+const isStairs = (el: Element): el is ShapeElement => el.type === 'shape' && el.shape === 'stairs';
+
+/**
+ * Where a climb from `from` lands on one floor (docs/specs/009-elements/stairs.md "Floors"): its Stairs nearest
+ * `from` by centre (ties in reading order), else where an Elevator ride with nothing picked arrives.
+ */
+export function stairsLanding(tab: WayTab, from: WayBox): StairsLanding {
+  const fx = from.x + from.width / 2;
+  const fy = from.y + from.height / 2;
+  let best: ShapeElement | null = null;
+  let bestD = Infinity;
+  for (const el of tab.elements) {
+    if (!isStairs(el)) continue;
+    const d = (el.x + el.width / 2 - fx) ** 2 + (el.y + el.height / 2 - fy) ** 2;
+    if (d < bestD || (d === bestD && best && byPosition(el, best) < 0)) {
+      best = el;
+      bestD = d;
+    }
+  }
+  if (best)
+    return { at: 'stairs', id: best.id, top: stairsTopPoint(best), foot: stairsFootPoint(best) };
+  const floor = spaceFloor(tab);
+  const lift = floor.elevators[0];
+  if (lift) return { at: 'elevator', id: lift.id, top: null, foot: floor.arrival };
+  return { at: floor.arrivesAt === 'pad' ? 'pad' : 'middle', top: null, foot: floor.arrival };
+}
+
+/**
+ * The floors a Stairs climbs to (docs/specs/009-elements/stairs.md "Floors"): the tab after the active one (Up) and
+ * the tab before it (Down), each with where it lands. Reads only those two tabs.
+ */
+export function stairsFlights(
+  tabs: readonly WayTab[],
+  activeTabId: string,
+  from: WayBox,
+): StairsFloors {
+  const i = tabs.findIndex((t) => t.id === activeTabId);
+  const flight = (j: number): StairsFlight | null => {
+    const tab = i < 0 || j < 0 ? undefined : tabs[j];
+    if (!tab) return null;
+    return {
+      tabId: tab.id,
+      number: j + 1,
+      name: tab.name,
+      landing: stairsLanding(tab, from),
+      loading: tab.loaded === false,
+    };
+  };
+  return {
+    here: i < 0 ? null : { number: i + 1, name: tabs[i]!.name },
+    count: tabs.length,
+    up: flight(i + 1),
+    down: flight(i - 1),
+  };
 }

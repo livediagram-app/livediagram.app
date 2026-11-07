@@ -141,6 +141,37 @@ describe('createIndexClient', () => {
   });
 });
 
+describe('createIndexClient connected tabs', () => {
+  it("sends the host's grant to each door, never a token in its place", async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.method === 'DELETE' ? new Response(null, { status: 204 }) : Response.json({ ok: true }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await client.makeConnection('h/1', { targetId: 't1', tabId: 'tab1', both: true }, 'g1');
+    await client.openConnection('cn_abc', 'g2');
+    await client.takeBackConnection('cn_abc', 'g3');
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'POST /api/index/items/h%2F1/connections',
+      'GET /api/index/connections/cn_abc',
+      'DELETE /api/index/connections/cn_abc',
+    ]);
+    expect(seen.map((s) => s.headers.get('X-Index-Grant'))).toEqual(['g1', 'g2', 'g3']);
+    expect(seen[0]!.headers.get('Authorization')).toBe('Bearer tok');
+    expect(seen[0]!.body).toEqual({ targetId: 't1', tabId: 'tab1', both: true });
+  });
+
+  it('throws why a connection opens nothing', async () => {
+    const { doFetch } = fakeFetch(() =>
+      Response.json({ error: 'connection_link_removed' }, { status: 410 }),
+    );
+    const client = createIndexClient({ getToken: () => null, fetch: doFetch });
+    await expect(client.openConnection('cn_x', 'g')).rejects.toMatchObject({
+      status: 410,
+      code: 'connection_link_removed',
+    });
+  });
+});
+
 describe('createIndexClient reads', () => {
   it('pages folders and passes a signal through, so a superseded read is cancelled', async () => {
     const signals: (AbortSignal | null | undefined)[] = [];
@@ -162,6 +193,40 @@ describe('createIndexClient reads', () => {
       client.listItems({ q: 'road' }, { signal: controller.signal }),
     ).rejects.toMatchObject({ name: 'AbortError' });
     expect(signals[1]).toBe(controller.signal);
+  });
+
+  it("reads a team's audit log as pages and as CSV, with where the next file starts", async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.url.includes('format=csv')
+        ? new Response('Time,Kind\r\n', { headers: { 'X-Next-Cursor': 'c2' } })
+        : Response.json({ events: [], nextCursor: null }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    expect(await client.teamAudit({ team: 't1', kind: 'shared', limit: 20 })).toEqual({
+      events: [],
+      nextCursor: null,
+    });
+    expect(seen[0]!.url).toBe('/api/index/team-audit?team=t1&kind=shared&limit=20');
+    expect(await client.teamAuditCsv({ team: 't1', from: 5 })).toEqual({
+      csv: 'Time,Kind\r\n',
+      nextCursor: 'c2',
+    });
+    expect(seen[1]!.url).toBe('/api/index/team-audit?team=t1&from=5&format=csv');
+  });
+
+  it("refuses a CSV read as any other, with the index's code or `unknown`", async () => {
+    let answer = Response.json({ error: 'not_team_admin' }, { status: 403 });
+    const doFetch = (async () => answer) as typeof fetch;
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await expect(client.teamAuditCsv({ team: 't1' })).rejects.toMatchObject({
+      status: 403,
+      code: 'not_team_admin',
+    });
+    answer = new Response('down', { status: 502 });
+    await expect(client.teamAuditCsv({ team: 't1' })).rejects.toMatchObject({
+      status: 502,
+      code: 'unknown',
+    });
   });
 });
 
@@ -192,5 +257,23 @@ describe('createIndexAppClient', () => {
     const app = createIndexAppClient({ app: 'livediagram', key: 'k', fetch: doFetch });
     await expect(app.pushSummary('i1', {}, 1)).rejects.toMatchObject({ code: 'wrong_app' });
     expect(seen[0]!.url).toBe('https://www.liveworkspace.app/api/index/app/items/i1/summary');
+  });
+  it("confirms and removes a connected tab with the app's key", async () => {
+    const { seen, doFetch } = fakeFetch(() => new Response(null, { status: 204 }));
+    const app = createIndexAppClient({ app: 'livedesign', key: 'k', fetch: doFetch });
+    await app.confirmConnection('h1', 'cn_1', 'tab 1');
+    await app.removeConnection('h1', 'cn_1', 'tab 1');
+    expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
+      'PUT https://www.liveworkspace.app/api/index/app/items/h1/connections/cn_1?tab=tab%201',
+      'DELETE https://www.liveworkspace.app/api/index/app/items/h1/connections/cn_1?tab=tab%201',
+    ]);
+    expect(seen[1]!.headers.get('Authorization')).toBe('Bearer k');
+    expect(seen[1]!.headers.get('X-Index-App')).toBe('livedesign');
+  });
+
+  it('throws a refused connection door', async () => {
+    const { doFetch } = fakeFetch(() => Response.json({ error: 'unauthorized' }, { status: 401 }));
+    const app = createIndexAppClient({ app: 'livedesign', key: 'k', fetch: doFetch });
+    await expect(app.removeConnection('h1', 'cn_1', 't')).rejects.toMatchObject({ status: 401 });
   });
 });

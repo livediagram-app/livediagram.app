@@ -28,6 +28,7 @@ import {
   type Level,
   type ShareAccess,
 } from '@liveworkspace/index-client';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The two settings every app on the index has: the index's origin and the app's key there (a secret).
 export type IndexEnv = { INDEX_ORIGIN?: string; INDEX_KEY?: string };
@@ -93,7 +94,7 @@ export function itemGrantOf(
 
 // The index's API root, or null when this deployment has no index (every item door then answers as missing).
 export function indexApiUrl(env: Pick<IndexEnv, 'INDEX_ORIGIN'>): string | null {
-  const origin = env.INDEX_ORIGIN?.trim().replace(/\/+$/, '');
+  const origin = withoutTrailingSlashes(env.INDEX_ORIGIN?.trim() ?? '');
   return origin ? `${origin}${INDEX_API_PATH}` : null;
 }
 

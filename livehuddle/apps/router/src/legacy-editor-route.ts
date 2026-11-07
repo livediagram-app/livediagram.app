@@ -38,6 +38,10 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // The Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
 // links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
+  // Hand and the Eraser left as modes with the Selection Mode picker (owner, 2026-11-06; livehuddle/docs/specs/
+  // 002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes").
+  'selection-modes/hand': 'canvas/the-canvas/pan-and-zoom',
+  'selection-modes/eraser': 'selection-modes/select',
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
   'collaboration/teams/team-shared-diagrams': 'collaboration/teams/team-shared-documents',

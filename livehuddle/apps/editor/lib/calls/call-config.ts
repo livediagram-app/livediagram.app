@@ -5,6 +5,8 @@ import {
   CALL_SCREEN_TRACK_NAME,
   CALL_VIDEO_TRACK_NAME,
   type CallTrackLocator,
+  type GameEventOp,
+  type GameInputOp,
   type VoiceLevel,
 } from '@livehuddle/api-schema';
 import type { CallsCaller } from '@/lib/api/calls';
@@ -40,10 +42,7 @@ export {
   SCREEN_MAX_FPS,
 } from './media-constraints';
 
-export const MIC_CONSTRAINTS: MediaStreamConstraints = {
-  audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-  video: false,
-};
+export { MIC_CONSTRAINTS } from './media-constraints';
 
 /** Which bubble a received track fills; the microphone's is none (it goes to the audio graph). */
 export const MEDIA_OF: Readonly<Record<string, CallMedia | undefined>> = {
@@ -69,7 +68,12 @@ export type CallSignal =
   | { kind: 'call-stop-share'; targetId: string }
   // A knock on a room, and the answer to one (docs/specs/012-collaboration/knock.md "The wire").
   | { kind: 'avatar-knock'; roomId: string }
-  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' };
+  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' }
+  // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire").
+  | { kind: 'avatar-bell'; deskId: string }
+  // A game at a piece: a player's paddle, or a moment of the game (docs/specs/009-elements/social-pieces.md "The wire").
+  | Omit<GameInputOp, 'tabId'>
+  | Omit<GameEventOp, 'tabId'>;
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the

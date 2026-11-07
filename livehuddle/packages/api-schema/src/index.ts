@@ -14,6 +14,7 @@
 
 import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
+import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { EditorMode, Tab } from '@livehuddle/document';
 import type { CreationTabKind, TemplateFamilyOrNone } from './placement-defaults';
 import type { CallsMode } from './calls-mode';
@@ -154,6 +155,9 @@ export type TabSummary = {
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md): the item it stands for, in any app. Kept in
+  // its own column beside the name, never in the tab's body; dropped with the name outside a visitor's scope.
+  connection?: TabConnectionWire;
 };
 
 // Full tab payload returned by `GET /api/documents/:id/tabs/:tabId`:
@@ -165,6 +169,8 @@ export type TabSummary = {
 // `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write
 // of the tab: an editor save, a changeset, a revert, a rename. The read also carries it as a weak ETag.
 export type TabRecord = Tab & {
+  // A connected tab's connection, as on its summary.
+  connection?: TabConnectionWire;
   rev: number;
   documentId: string;
   orderIndex: number;
@@ -287,6 +293,12 @@ export * from './call-hand';
 export * from './call-control';
 // Knock (docs/specs/012-collaboration/knock.md).
 export * from './knock';
+// The reception bell (docs/specs/009-elements/workday-pieces.md "The wire").
+export * from './bell';
+// A game at a piece, the Ping-Pong Table's first (docs/specs/009-elements/social-pieces.md "The wire").
+export * from './table-game';
+// A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "The wire").
+export * from './suggestions';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

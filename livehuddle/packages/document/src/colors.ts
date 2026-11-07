@@ -27,6 +27,7 @@ import {
   GRASS_FILL_DARK,
 } from './office-garden';
 import { POND_FILL, POND_FILL_DARK } from './office-social';
+import { POOL_FILL, POOL_FILL_DARK } from './office-venue';
 import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -229,16 +230,28 @@ const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
 // The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
 const FLOOR_FILLS: Record<
-  'room' | 'rug' | 'stage' | 'garden-path' | 'grass' | 'door' | 'pond',
+  | 'room'
+  | 'corridor'
+  | 'rug'
+  | 'stage'
+  | 'garden-path'
+  | 'grass'
+  | 'door'
+  | 'pond'
+  | 'swimming-pool',
   readonly [string, string]
 > = {
   // A pond's water (docs/specs/009-elements/social-pieces.md "Pond").
   pond: [POND_FILL, POND_FILL_DARK],
+  // A swimming pool's water (docs/specs/009-elements/venue-pieces.md "Swimming Pool").
+  'swimming-pool': [POOL_FILL, POOL_FILL_DARK],
   // A door paints the gap it cuts in a wall in the room's floor (docs/specs/009-elements/room-builder.md "Door").
   door: [ROOM_FLOOR, '#292524'],
   'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
   grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
+  // A corridor's floor is a room's (docs/specs/009-elements/corridor.md).
+  corridor: [ROOM_FLOOR, '#292524'],
   rug: [RUG_FILL, '#713f12'],
   stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
 };
@@ -261,12 +274,14 @@ function behaviourSkin(
   // furniture's.
   if (
     kind === 'room' ||
+    kind === 'corridor' ||
     kind === 'rug' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
     kind === 'grass' ||
     kind === 'door' ||
-    kind === 'pond'
+    kind === 'pond' ||
+    kind === 'swimming-pool'
   ) {
     const fill = FLOOR_FILLS[kind][surface === 'dark' ? 1 : 0];
     return surface === 'dark'
@@ -595,6 +610,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'avatar-pad',
   // The office pieces (docs/specs/009-elements/office.md) draw themselves, the room its own floor.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md) draws its floor and walls.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',
@@ -632,9 +649,45 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'vending-machine',
   'bean-bag',
   'reading-nook',
+  'printer',
+  'copier',
+  'lockers',
+  'coat-rack',
+  'umbrella-stand',
+  'kitchen-counter',
+  'kitchen-sink',
+  'fridge',
+  'microwave',
+  'kettle',
+  'toilet-cubicle',
+  'washbasin',
+  'hand-dryer',
+  'pillar',
+  'column',
+  'car-park',
+  'bike-rack',
+  'swimming-pool',
+  'stage-curtains',
+  'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
   'directory',
   'elevator',
+  // Stairs (docs/specs/009-elements/stairs.md) draw themselves.
+  'stairs',
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) draw themselves.
   'screen',
   'room-sign',

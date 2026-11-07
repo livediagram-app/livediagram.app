@@ -17,7 +17,7 @@ import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileCaption } from './tile-caption';
-import { tileDragStart } from './palette-tile-drag';
+import { tileCarryStart, tileDragStart } from './palette-tile-drag';
 import { tileActive, tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { PointerWords } from '@liveworkspace/workbench/components/palette/PointerWords';
 
@@ -66,6 +66,8 @@ export function PaletteToolRow({
       // stickers alike, including the rows a search turns up (the Toolbar strip's More popover).
       draggable={dragStart !== undefined}
       onDragStart={dragStart}
+      // A piece that turns is carried by the pointer, so Space turns it on its way.
+      onPointerDown={dragStart ? tileCarryStart(def.action) : undefined}
       // Clearing the preview is NOT optional: it is what removes the canvas
       // ghost. Without it every dragged row left its placemarker behind after
       // the element landed, on the drop AND on a cancelled drag.

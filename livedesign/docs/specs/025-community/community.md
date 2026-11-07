@@ -2,8 +2,8 @@
 
 **Community** is livedesign's public gallery of designs people are proud of. A signed-in owner **publishes** a design to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
-post's design read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
-`/community`, and in the landing page's **From the Community** section.
+post's design read-only, like it, and make their own copy of it. Its pages are liveworkspace.app's one Community page, served at
+livedesign's `/community` by livedesign's router, and it shows in the landing page's **From the Community** section.
 
 ## Where it lives
 
@@ -12,8 +12,8 @@ The **listings** (posts, tags, likes, copies, reports, hidden) are kept by livew
 [liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md), which also sets what every
 app's Community has in common and the shared pieces it is built from. livedesign keeps the **designs**: who owns one,
 whether it may be published, its community link, and the link's doors (the read-only view, the card image and
-copying). Its pages read the gallery, posts, likes and reports straight from the service, for `livedesign.app` posts
-only; its api publishes, edits and removes a post on the owner's behalf, answers My Shares, and tells the service
+copying). The Community pages are liveworkspace.app's, served under livedesign's address (see "The gallery" below); they
+read the gallery, posts, likes and reports straight from the service, `livedesign.app` posts by default; livedesign's api publishes, edits and removes a post on the owner's behalf, answers My Shares, and tells the service
 where each published design stands (public, closed, away or gone) right after a change and from the design's own room
 every ten minutes. A post hidden after reports closes its link here within those ten minutes.
 
@@ -26,7 +26,7 @@ A logo, a wireframe or an edited photo someone is proud of has nowhere to be see
 
 ## Terms
 
-- **Community**: the feature as a whole; the app at `/community`. Its name in copy is always Community. The
+- **Community**: the feature as a whole; the page at `/community`. Its name in copy is always Community. The
   **gallery** is its browsing page, the landing page **showcases** it and invites people to **Explore the
   Community**.
 - **Post**: one design published to Community. A design has at most one post.
@@ -95,21 +95,33 @@ viewer does not stream changes. The publish dialog says so plainly.
 
 ## The gallery
 
-`apps/community` is a static export (`basePath: '/community'`), a thin shell on the shared Community pages
-(`@liveworkspace/community-site`). It behaves as every app's gallery does, as livediagram's
-[Community app](../../../../livediagram/docs/specs/025-community/community.md#the-community-app) describes, in
-livedesign's words:
+livedesign keeps no Community pages of its own. `/community` and everything under it is liveworkspace.app's one
+Community page (`liveworkspace/apps/site`), which livedesign's router hands to liveworkspace.app with the address bar
+unchanged, the same way as the Explorer (`@liveworkspace/sites/workspace-proxy` `COMMUNITY_ROUTE`, no cookies
+forwarded). On livedesign's address it is livedesign's: its posts by default, its words, its colours, its session for My
+Shares, its telemetry and its help centre, as liveworkspace's
+[Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app) and
+[Site](../../../../liveworkspace/docs/specs/010-site/site.md#the-community) describe, and as livediagram's
+[Community page](../../../../livediagram/docs/specs/025-community/community.md#the-community-page) details:
 
-- **Gallery** (`/community/`): the welcome header with **Share Your Own** into Explorer Home; one search box holding
+- **Header and scope**: the header reads `liveworkspace | livedesign` (the Explorer's header). A switch beside the search
+  reads **livedesign** and **All Apps** (the Explorer's switch), starting on livedesign; All Apps lists every app's posts, and
+  My Shares is offered only on livedesign's side. On liveworkspace.app the page shows every app's posts, with no switch.
+  A post always opens on its own app's address.
+- **Gallery** (`/community`): the welcome header with **Share Your Own** into Explorer Home; one search box holding
   the whole query in words (`#tag`, `category:<id>`, `sort:loved|copied`, `is:mine`) with Category, Tags, Sort and
   My Shares inside its right edge; a grid of cards (the post's live image, title, category, up to three tags, the
   author, when it was shared, likes and copies) that cascade in; Load More (24 per page); the query in the URL;
   skeleton, empty and error states.
-- **Post** (`/community/post/?id=<postId>`): an interactive read-only preview of the design (its embed), the title
+- **Post** (`/community/post?id=<postId>`): an interactive read-only preview of the design (its embed), the title
   block, and the actions: **Make a Copy** and **Open Design** side by side, then Like, the copy count and Report;
   **More Like This** below. A missing, removed or hidden post shows a friendly not-found.
-- **Search engines**: the small Worker in front of the pages gives each post's page its own title, description,
-  canonical and JSON-LD, answers a missing post 404, and serves `/community/sitemap.xml`.
+- **Search engines**: the router's Community step (`routeCommunity` from `@liveworkspace/community-site/router`)
+  makes the gallery's head livedesign's (`Community | livedesign`, canonical `https://www.livedesign.app/community`), gives each
+  post's page its own title, description, canonical and JSON-LD, answers a missing post 404, and serves
+  `/community/sitemap.xml` from the service.
+- **Addresses** have no trailing slash: `/community/` and `/community/post/?id=` answer one redirect that stays on
+  livedesign.
 
 ## Viewing a post's design
 
@@ -154,7 +166,7 @@ fewer than six to show (a young Community, or the service unreachable), the sect
 
 ## Where Community is linked from
 
-- The Explorer panel's footer row of links, the shared site footer and the marketing sitemap (`/community/`).
+- The Explorer panel's footer row of links, the shared site footer and the marketing sitemap (`/community`).
 - The Share dialog's **Community** tab, and the help articles **Sharing to the Community** and **Finding Designs in
   the Community** under Collaboration, Sharing.
 
@@ -162,20 +174,24 @@ fewer than six to show (a young Community, or the service unreachable), the sect
 
 Category `Community`, as livediagram's: `Community·Shared|Changed·<Category>` and `Community·Removed·Post` from the
 Share dialog; `Community·Opened|Liked|Unliked|Copied·Post`, `Community·Reported·<Reason>`,
-`Community·Searched·Query` and `Community·Selected·<Category|Tag|Sort|Mine>` from the gallery. `<Category>` is the
-category's type (its id in PascalCase).
+`Community·Searched·Query` and `Community·Selected·<Category|Tag|Sort|Mine>` from the gallery, sent in livedesign's
+name by liveworkspace.app's page while it is on livedesign's address (`liveworkspace/apps/site/lib/community/telemetry.ts`;
+on liveworkspace.app it sends nothing). `<Category>` is the category's type (its id in PascalCase).
 
 ## Turning the Community off
 
 Setting the api Worker's `COMMUNITY_ENABLED` to `false` (or `0`, `off`) switches it off with no redeploy:
 `GET /api/capabilities` reports `communityEnabled: false`, every Community route and community link answers 404, and
 it disappears from every interface (the footer links, the landing section, the Share dialog's tab, the Public
-badge). Nothing is deleted. Until the capabilities answer, the pages assume it is on.
+badge). Visiting `/community` sends you to the home page (the page's gate asks livedesign's `/api/capabilities`).
+Nothing is deleted. Until the capabilities answer, the pages assume it is on.
 
 ## Configuration
 
 The api Worker needs `COMMUNITY_KEY` (the same value as the service's `COMMUNITY_KEY_LIVEDESIGN`) and
-`COMMUNITY_URL`; the pages `NEXT_PUBLIC_COMMUNITY_API`. Without the key, livedesign has no Community.
+`COMMUNITY_URL`; the pages `NEXT_PUBLIC_COMMUNITY_API`; the router a `COMMUNITY_URL` var for the gallery's and a
+post's head and the sitemap (local `http://localhost:3000/api/community`, staging
+`https://staging.liveworkspace.app/api/community`, production the default). Without the key, livedesign has no Community.
 
 ## Out of scope
 

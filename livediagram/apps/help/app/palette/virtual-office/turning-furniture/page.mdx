@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TurnASofa } from '@/components/illustrations/turning-furniture';
+
+export const metadata = helpMetadata({
+  title: 'Turning Furniture',
+  description:
+    'Turn a chair, a sofa, a meeting table or a bookshelf to face down, left, up or right in a virtual office. Its seats and what blocks walking turn with it.',
+  path: '/help/palette/virtual-office/turning-furniture/',
+});
+
+<ArticleLayout
+  title="Turning Furniture"
+  description="Face a sofa into the room or a bookshelf along a wall: chairs, desks, sofas and the office pieces turn four ways."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Virtual Office', slug: 'virtual-office' }}
+  subArticles={getSubArticles('virtual-office').filter((a) => a.slug !== 'turning-furniture')}
+>
+
+A virtual office is built along walls. A sofa against the left wall should face right, into the room, and a bookshelf on a side wall should face across the room rather than at the wall. The [Chair, Desk and Sofa](/help/palette/chairs/), and the Meeting Table, Bookshelf, Water Cooler, Coffee Machine and Rug from the [Virtual Office](/help/palette/virtual-office/), each turn to face **down**, **left**, **up** or **right**.
+
+<Figure caption="Rotate Right on a selected sofa: it now faces left, seen from the side, its two cushions one above the other.">
+  <TurnASofa />
+</Figure>
+
+## Turning a piece
+
+- **Rotate Left and Rotate Right.** Select a piece and press **Rotate Left** (↺) or **Rotate Right** (↻) on its toolbar, after More and Edit Text. Each turns it a quarter. Select several pieces and the same pair turns each one where it stands.
+- **The element menu.** Right-click a piece and open its section (**Sofa**, **Bookshelf**) to pick **Down**, **Left**, **Up** or **Right** outright.
+- **Search.** Type "rotate" in search for **Rotate Left** and **Rotate Right**.
+- **While placing it.** With a piece's tile pressed, or while you drag the tile onto the canvas, press **Space** to turn it a quarter clockwise, or **Shift+Space** to turn it back. While you drag, the outline under your pointer takes the turned piece's shape, and the piece lands the way it was turned. Place several in a row and each faces the same way. Press **Escape** to put a dragged tile down without placing it. On a touch screen, place the piece and turn it with its toolbar.
+
+A locked piece doesn't turn: its Rotate buttons show greyed out until you unlock it.
+
+## What turns with it
+
+Furniture is always drawn upright, from the room's point of view. Turning a piece shows it from another side rather than tipping it over: facing you, you see its front; facing away, its back; facing left or right, its side.
+
+- **Its seats.** Somebody sitting on a turned sofa or at a turned meeting table faces the way their seat now faces, on the same cushion. If someone is sitting in it while you turn it, they stay seated and turn with it.
+- **What blocks walking.** A bookshelf turned onto a side wall blocks along that wall, not across the room.
+- **The machines.** A turned Water Cooler still bubbles when it pours, and a Coffee Machine drips wherever you can see its carafe.
+- **Its size.** A piece keeps its centre and its scale. A sofa or a bookshelf changes shape as it turns side on; a chair turns in place.
+
+## What doesn't turn
+
+The **Plant** looks the same from every side, so it has nothing to turn. A **Room** keeps its own control: right-click it and open **Room** to move its doorway. Fences rotate like any other element.
+
+Furniture has no free rotation: a piece always stands square to the room.
+
+</ArticleLayout>

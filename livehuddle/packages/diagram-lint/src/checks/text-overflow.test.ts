@@ -56,6 +56,21 @@ describe('text-overflow', () => {
     expect(found[0]!.refs).toEqual(expect.arrayContaining(['low', 'under']));
   });
 
+  it('reads right-aligned text at the right of its box', () => {
+    const right = text('right', 0, 0, 'Note', { width: 400, textAlignX: 'right' });
+    // Inside the box's left, clear of its ink: nothing prints over.
+    expect(
+      of(lint(tabOf(right, text('left', 0, 0, 'Hi', { width: 60 }))), 'text-overflow'),
+    ).toEqual([]);
+    // At its right, where the ink is: they print over each other.
+    const found = of(
+      lint(tabOf(right, text('over', 340, 0, 'Hi', { width: 60 }))),
+      'text-overflow',
+    );
+    expect(found).toHaveLength(1);
+    expect(found[0]!.refs).toEqual(expect.arrayContaining(['right', 'over']));
+  });
+
   it('leaves text on a curve out, drawn along its arc, not in its box', () => {
     const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
     const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });

@@ -1,24 +1,37 @@
 'use client';
 
+import type { ReactNode } from 'react';
+import { facingView, type SeatFacing } from '@liveworkspace/avatar/facing';
 import {
   ARCADE_SCREEN,
+  ARCADE_SCREEN_SIDE,
   CAMPFIRE_FLAMES,
   FIREPLACE_FLAMES,
+  FIREPLACE_FLAMES_SIDE,
   FOUNTAIN_SPOUT,
   FOUNTAIN_WATER,
   glowsAtNight,
   JUKEBOX_ARCH,
-  NIGHT_GLOW,
+  JUKEBOX_ARCH_SIDE,
+  nightGlowIn,
+  OFFICE_ART,
   PING_PONG_TOP,
+  PING_PONG_TOP_SIDE,
   SOCIAL_TONES,
 } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useJukeboxPlaying } from '@/lib/jukebox-listening';
+import { useGameOn } from '@/lib/table-games/table-game-scene';
 
 // The live parts of the social pieces (docs/specs/009-elements/social-pieces.md), drawn over a piece's art inside
 // FurnitureView's own grid: a ping-pong rally, the arcade's screen, a fire's flicker, the fountain's water, the
 // jukebox's lights, and the glow a lit piece throws on dark paper. Every loop is CSS on transform or opacity (app/social-motion.css), so nothing runs per frame in
 // JavaScript, and every one holds still under reduced motion (the `lh-social-anim` class).
+//
+// A turned piece (docs/specs/009-elements/furniture-facing.md "Live faces") draws its live parts on the drawing its
+// facing shows: what is on top (the rally) from every side, what is on its front (the screen, the flames, the lights)
+// on the front and on the side's strip of front, and nothing from behind. FurnitureView draws this outside the art's
+// mirrored frame, so facing right mirrors the side's parts here (none of them is text).
 
 const T = SOCIAL_TONES;
 
@@ -35,14 +48,46 @@ export function hasSocialArt(kind: string): boolean {
   );
 }
 
-export function SocialArt({ kind, id, sitters }: { kind: string; id: string; sitters: number }) {
+export function SocialArt({
+  kind,
+  id,
+  sitters,
+  facing = 'n',
+}: {
+  kind: string;
+  id: string;
+  sitters: number;
+  // The piece's facing (pieceFacing): which of its drawings the live parts lie on.
+  facing?: SeatFacing;
+}) {
+  const { view, mirrored } = facingView(facing);
+  const side = view === 'side';
+  // The side drawing's parts, mirrored about its grid for facing right.
+  const onSide = (node: ReactNode) => {
+    if (!mirrored) return node;
+    const width = OFFICE_ART[kind as keyof typeof OFFICE_ART].side.width;
+    return <g transform={`translate(${width} 0) scale(-1 1)`}>{node}</g>;
+  };
   switch (kind) {
     case 'ping-pong-table':
-      return sitters >= 2 ? <Rally /> : null;
+      if (sitters < 2) return null;
+      return side ? onSide(<RestingRally id={id} down />) : <RestingRally id={id} />;
     case 'arcade-machine':
-      return <ArcadeScreen />;
+      if (view === 'back') return null;
+      return side ? onSide(<ArcadeScreenSide />) : <ArcadeScreen />;
     case 'fireplace':
-      return (
+      if (view === 'back') return null;
+      return side ? (
+        onSide(
+          <Flicker
+            cx={FIREPLACE_FLAMES_SIDE.cx}
+            base={FIREPLACE_FLAMES_SIDE.base}
+            tall={20}
+            glowY={104}
+            narrow
+          />,
+        )
+      ) : (
         <Flicker cx={FIREPLACE_FLAMES.cx} base={FIREPLACE_FLAMES.base} tall={30} glowY={104} />
       );
     case 'campfire':
@@ -50,32 +95,42 @@ export function SocialArt({ kind, id, sitters }: { kind: string; id: string; sit
     case 'fountain':
       return <FountainWater />;
     case 'jukebox':
-      return <JukeboxLights id={id} />;
+      if (view === 'back') return null;
+      return side ? onSide(<JukeboxLights id={id} side />) : <JukeboxLights id={id} />;
     case 'vending-machine':
-    case 'reading-nook':
-      return <NightGlow kind={kind} />;
+    case 'reading-nook': {
+      const glow = nightGlowIn(kind, view);
+      return glow ? onSide(<NightGlow kind={kind} glow={glow} />) : null;
+    }
     default:
       return null;
   }
 }
 
-// A ball crossing the net and back, bouncing once on each half: two nested loops, across and up.
-function Rally() {
-  const { x, y, w, h } = PING_PONG_TOP;
+// The resting rally plays while both seats are taken and no game is on; a game draws its own ball (PingPongGame).
+function RestingRally({ id, down = false }: { id: string; down?: boolean }) {
+  return useGameOn(id) ? null : <Rally down={down} />;
+}
+
+// A ball crossing the net and back, bouncing once on each half: two nested loops, across (or, on a table turned onto
+// its side, down the canvas) and up.
+function Rally({ down }: { down: boolean }) {
+  const { x, y, w, h } = down ? PING_PONG_TOP_SIDE : PING_PONG_TOP;
   const cx = x + w / 2;
   const cy = y + h / 2 - 2;
+  const travel = down ? 'lh-rally-down' : 'lh-rally-x';
   return (
-    <g aria-hidden data-rally="">
+    <g aria-hidden data-rally={down ? 'down' : 'across'}>
       <ellipse
         cx={cx}
-        cy={y + h - 6}
+        cy={down ? y + h / 2 + 4 : y + h - 6}
         rx={3}
         ry={1.2}
         fill="#0f172a"
         opacity={0.18}
-        className="lh-social-anim lh-rally-x"
+        className={`lh-social-anim ${travel}`}
       />
-      <g className="lh-social-anim lh-rally-x">
+      <g className={`lh-social-anim ${travel}`}>
         <g className="lh-social-anim lh-rally-y">
           <circle cx={cx} cy={cy} r={2.8} fill="#ffffff" stroke="#f59e0b" strokeWidth={1} />
         </g>
@@ -128,23 +183,51 @@ function ArcadeScreen() {
   );
 }
 
-// Two flame layers out of step over the drawn fire, and a glow breathing on the ground.
+// The turned machine's sliver of screen down its front strip: the same shimmer, too narrow for the invader.
+function ArcadeScreenSide() {
+  return (
+    <g aria-hidden data-arcade-screen="side">
+      <path
+        d={ARCADE_SCREEN_SIDE}
+        fill="url(#lh-arcade-sheen-side)"
+        className="lh-social-anim lh-arcade-glow"
+      />
+      <defs>
+        <linearGradient id="lh-arcade-sheen-side" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#22d3ee" stopOpacity={0.55} />
+          <stop offset="0.5" stopColor="#a855f7" stopOpacity={0.35} />
+          <stop offset="1" stopColor="#f472b6" stopOpacity={0.55} />
+        </linearGradient>
+      </defs>
+    </g>
+  );
+}
+
+// Two flame layers out of step over the drawn fire, and a glow breathing on the ground. `narrow` is the sliver of fire
+// a turned fireplace shows down its front's edge.
 function Flicker({
   cx,
   base,
   tall,
   glowY,
+  narrow = false,
 }: {
   cx: number;
   base: number;
   tall: number;
   glowY: number;
+  narrow?: boolean;
 }) {
-  const flame = (t: number, w: number) =>
-    `M${cx - w} ${base}C${cx - w} ${base - t * 0.5} ${cx - w * 0.3} ${base - t * 0.62} ${cx} ${base - t}` +
-    `C${cx + w * 0.3} ${base - t * 0.62} ${cx + w} ${base - t * 0.5} ${cx + w} ${base}Z`;
+  const thin = narrow ? 0.45 : 1;
+  const flame = (t: number, w0: number) => {
+    const w = w0 * thin;
+    return (
+      `M${cx - w} ${base}C${cx - w} ${base - t * 0.5} ${cx - w * 0.3} ${base - t * 0.62} ${cx} ${base - t}` +
+      `C${cx + w * 0.3} ${base - t * 0.62} ${cx + w} ${base - t * 0.5} ${cx + w} ${base}Z`
+    );
+  };
   return (
-    <g aria-hidden>
+    <g aria-hidden data-flicker={narrow ? 'side' : 'front'}>
       <ellipse
         cx={cx}
         cy={glowY}
@@ -195,7 +278,7 @@ function FountainWater() {
 }
 
 // While this jukebox plays for you: its arch lights pulse and notes drift up out of it.
-function JukeboxLights({ id }: { id: string }) {
+function JukeboxLights({ id, side = false }: { id: string; side?: boolean }) {
   const playing = useJukeboxPlaying(id);
   if (!playing) return null;
   const note = (x: number, cls: string) => (
@@ -205,11 +288,15 @@ function JukeboxLights({ id }: { id: string }) {
     </g>
   );
   return (
-    <g aria-hidden data-jukebox-playing="">
-      <path d={JUKEBOX_ARCH} fill="#fff7ed" className="lh-social-anim lh-jukebox-lights" />
-      {note(18, 'lh-note-a')}
-      {note(36, 'lh-note-b')}
-      {note(52, 'lh-note-c')}
+    <g aria-hidden data-jukebox-playing={side ? 'side' : 'front'}>
+      <path
+        d={side ? JUKEBOX_ARCH_SIDE : JUKEBOX_ARCH}
+        fill="#fff7ed"
+        className="lh-social-anim lh-jukebox-lights"
+      />
+      {note(side ? 10 : 18, 'lh-note-a')}
+      {note(side ? 26 : 36, 'lh-note-b')}
+      {note(side ? 40 : 52, 'lh-note-c')}
     </g>
   );
 }
@@ -217,10 +304,16 @@ function JukeboxLights({ id }: { id: string }) {
 // On dark paper only (docs/specs/009-elements/social-pieces.md "Vending Machine", "Reading Nook"): a pool of light on the
 // floor and a halo round what is lit, each a radial fade in the light's colour. Static, so reduced motion changes
 // nothing; the gradient ids are per kind, the same on every copy, as the arcade's sheen is.
-function NightGlow({ kind }: { kind: 'vending-machine' | 'reading-nook' }) {
+function NightGlow({
+  kind,
+  glow,
+}: {
+  kind: 'vending-machine' | 'reading-nook';
+  glow: NonNullable<ReturnType<typeof nightGlowIn>>;
+}) {
   const surface = useCanvasSurface();
   if (surface !== 'dark') return null;
-  const { color, pool, halo } = NIGHT_GLOW[kind];
+  const { color, pool, halo } = glow;
   const id = `lh-night-glow-${kind}`;
   return (
     <g aria-hidden data-night-glow="">

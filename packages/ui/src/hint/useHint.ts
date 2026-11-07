@@ -21,6 +21,7 @@ type HintOpenSource = 'pointer' | 'focus' | 'touch';
 export type HintTriggerProps = {
   onPointerEnter: (e: React.PointerEvent) => void;
   onPointerLeave: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
   onPointerDownCapture: (e: React.PointerEvent) => void;
   onPointerMoveCapture: (e: React.PointerEvent) => void;
   onPointerUpCapture: (e: React.PointerEvent) => void;
@@ -129,6 +130,9 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
   const close = useCallback(() => {
     const m = machine.current;
     clearTimers(m, 'openTimer', 'closeTimer', 'lingerTimer');
+    // The surface goes with the hint, so the pointer is no longer over it: left set, `settle()` would never get
+    // past it again and a press's dismissal (T7) would outlive the pointer leaving.
+    m.overSurface = false;
     if (!m.open) return;
     m.open = false;
     m.source = null;
@@ -152,10 +156,13 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
 
   // Nothing holds the hint any more: forget a dismissal and close after the
   // grace, which gives the pointer time to cross onto the hint (D1, D2).
+  // The pointer having gone ends a press's dismissal even while the control keeps focus (T2): a control pressed and
+  // left focused (a flyout's button that keeps its popover open) otherwise never showed its hint again until it blurred.
   const settle = useCallback(() => {
     const m = machine.current;
-    if (m.overTrigger || m.overSurface || m.focused) return;
+    if (m.overTrigger || m.overSurface) return;
     m.dismissed = false;
+    if (m.focused) return;
     clearTimers(m, 'openTimer', 'closeTimer');
     if (m.open) m.closeTimer = setTimeout(close, HINT_CLOSE_GRACE_MS);
   }, [close]);
@@ -178,16 +185,25 @@ export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}):
     return wrapper?.firstElementChild ?? wrapper;
   }, []);
 
+  // T1: a mouse or pen arrived over the trigger.
+  const enter = (e: React.PointerEvent) => {
+    if (e.pointerType === 'touch' || touchedRecently(Date.now())) return;
+    const m = machine.current;
+    m.overTrigger = true;
+    clearTimers(m, 'closeTimer');
+    if (m.open || m.dismissed || m.openTimer !== null) return;
+    const delay = OPEN_DELAY_MS[kind];
+    if (delay === 0 || isHintWarm(kind, Date.now())) show('pointer');
+    else m.openTimer = setTimeout(() => show('pointer'), delay);
+  };
+
   const triggerProps: HintTriggerProps = {
-    onPointerEnter: (e) => {
-      if (e.pointerType === 'touch' || touchedRecently(Date.now())) return;
-      const m = machine.current;
-      m.overTrigger = true;
-      clearTimers(m, 'closeTimer');
-      if (m.open || m.dismissed || m.openTimer !== null) return;
-      const delay = OPEN_DELAY_MS[kind];
-      if (delay === 0 || isHintWarm(kind, Date.now())) show('pointer');
-      else m.openTimer = setTimeout(() => show('pointer'), delay);
+    onPointerEnter: enter,
+    // T1b: a pointer already resting where the trigger mounted (a popover's body re-rendered under it, a list
+    // re-keyed) gets no `pointerenter` in every engine; its first move over the trigger counts as one. Free while
+    // the pointer is known to be over it.
+    onPointerMove: (e) => {
+      if (!machine.current.overTrigger) enter(e);
     },
     onPointerLeave: (e) => {
       if (e.pointerType === 'touch') return;

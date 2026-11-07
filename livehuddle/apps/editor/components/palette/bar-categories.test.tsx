@@ -15,24 +15,20 @@ describe('the category bar’s categories', () => {
       'collab-rooms',
       'collab-seating',
       'collab-amenities',
-      'collab-bar',
       'collab-recreation',
       'collab-garden',
       'collab-meeting',
       'collab-travel',
-      'stickers',
     ]);
     expect(cats.map((c) => c.label)).toEqual([
       'Write',
       'Rooms',
-      'Seating',
-      'Amenities',
-      'Bar',
-      'Recreation',
+      'Seats',
+      'Perks',
+      'Play',
       'Garden',
-      'Meeting',
+      'Meet',
       'Travel',
-      'Stickers',
     ]);
   });
 
@@ -41,13 +37,13 @@ describe('the category bar’s categories', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "The strip's order": a divider wherever the band changes,
-  // so Write | Rooms..Meeting | Travel | Stickers.
-  it('keeps the bands: Write, the Space furnishing, Travel apart, then the decoration', () => {
-    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 6, 6, 6, 7, 2]);
+  // so Write | Rooms..Meet | Travel (Stickers is search-only).
+  it('keeps the bands: Write, the Space furnishing, Travel apart', () => {
+    expect(bar().map((c) => c.group)).toEqual([0, 6, 6, 6, 6, 6, 6, 7]);
     const cats = bar();
     const dividedBefore = cats
       .filter((c, i) => i > 0 && cats[i - 1]!.group !== c.group)
       .map((c) => c.label);
-    expect(dividedBefore).toEqual(['Rooms', 'Travel', 'Stickers']);
+    expect(dividedBefore).toEqual(['Rooms', 'Travel']);
   });
 });

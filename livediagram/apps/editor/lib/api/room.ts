@@ -29,6 +29,7 @@ import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { startEditorTiming } from '../timing';
 import { wsUrl } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { createAvatarPacker } from '@liveworkspace/avatar/relay';
 
 export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
@@ -185,6 +186,10 @@ export function connectRoom(
   let closed = false; // the caller called close() — never reconnect after that
   let opened = false; // we've had at least one successful session (→ reconnects sync)
   let attempts = 0;
+  // Lean avatar packets (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is needed"): sent only
+  // once this socket's room said it takes them in its `format` frame, so a room from before keeps getting full ones.
+  let leanAvatars = false;
+  const avatarPacker = createAvatarPacker();
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   // Out of attempts and waiting for the network or the tab to come back (see MAX_RECONNECT_ATTEMPTS).
   let parked = false;
@@ -270,6 +275,9 @@ export function connectRoom(
       }
     };
     socket.addEventListener('open', () => {
+      // A new socket: full packets until its room says otherwise, and the next one carries the costume.
+      leanAvatars = false;
+      avatarPacker.reset();
       socketOpened = true;
       lastHeard = Date.now();
       keepalive = setInterval(checkAlive, ROOM_KEEPALIVE_TICK_MS);
@@ -284,6 +292,8 @@ export function connectRoom(
           // A busy room may coalesce our samples into one `batch` frame a step (docs/specs/015-api/api.md "A busy
           // room bounds its presence fan-out"); saying so is what lets it.
           batches: true,
+          // We read lean avatar packets, keeping each peer's last costume; the room fills them out for older editors.
+          leanAvatars: true,
           ...(facilitatorToken ? { facilitatorToken } : {}),
         } satisfies RoomOutgoing),
       );
@@ -331,6 +341,8 @@ export function connectRoom(
           settleTimings(true);
           const frame = splitPresenceFrame(msg);
           handlers.onPresence(frame.participants, frame.agents);
+          // Someone new is due our costume on the next packet.
+          avatarPacker.noteRoster(frame.participants.map((p) => p.id));
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
@@ -338,6 +350,7 @@ export function connectRoom(
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);
           noteServerBuild(msg.build);
+          leanAvatars = msg.leanAvatars === true;
         } else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'grant-renew') {
           const asking = socket;
@@ -490,6 +503,15 @@ export function connectRoom(
     // State, not events: only the latest of each counts, so it is kept to say again on the next socket.
     if (msg.kind === 'op' && (msg.op.kind === 'select' || msg.op.kind === 'tab-focus')) {
       lastSaid.set(msg.op.kind, msg);
+    }
+    if (msg.kind === 'op' && msg.op.kind === 'avatar') {
+      // Leaving the mode: whatever comes next is new to everyone, costume and all.
+      if (msg.op.avatar === null) avatarPacker.reset();
+      else if (leanAvatars && ws && isOpen()) {
+        const avatar = avatarPacker.pack(msg.op.tabId, msg.op.avatar);
+        ws.send(JSON.stringify({ ...msg, op: { ...msg.op, avatar } }));
+        return;
+      }
     }
     if (ws && isOpen()) ws.send(JSON.stringify(msg));
     else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);

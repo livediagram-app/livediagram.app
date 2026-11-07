@@ -182,14 +182,17 @@ const GARDEN: OfficePiece[] = [
   { kind: 'bench', x: 980, y: 840 },
   { kind: 'bench', x: MID + PLAZA_D / 2 + 14, y: 840 },
   { kind: 'tree', x: 1640, y: 690, w: 96 },
-  // Below it, left: a picnic table and a pond; right: a garden umbrella, a hammock and a tree.
+  // Below it, left: a picnic table and a pond; right: a garden umbrella and a hammock.
   { kind: 'picnic-table', x: 790, y: 1040 },
   { kind: 'pond', x: 800, y: 1230, w: 200, h: 100 },
-  { kind: 'tree', x: 1040, y: 1190, w: 80 },
+  { kind: 'tree', x: 1010, y: 1090, w: 80 },
   { kind: 'garden-umbrella', x: 1460, y: 1020 },
   { kind: 'hammock', x: 1620, y: 1040 },
-  { kind: 'tree', x: 1600, y: 1200, w: 96 },
-  { kind: 'outdoor-plant', x: 1460, y: 1250 },
+  // By the gate: a car park of two (one row) to its right, a bike rack the other side of the main path
+  // (docs/specs/009-elements/venue-pieces.md "In the templates").
+  { kind: 'car-park', x: 1430, y: 1200 },
+  { kind: 'car-park', x: 1670, y: 1200 },
+  { kind: 'bike-rack', x: MID - PATH / 2 - 148, y: 1250 },
   // A tree in each top corner between the columns and the auditorium.
   { kind: 'tree', x: 600, y: 60, w: 96 },
   { kind: 'tree', x: 1850, y: 60, w: 96 },
@@ -210,8 +213,13 @@ export function buildCompanyCampus(cx: number, cy: number): Element[] {
       subtitle:
         'The whole company on one site: offices, an auditorium, a bar and a games room, joined by a garden.',
     },
-    gateAt: MID,
-    hint: 'Press Walk In (or W) and come in through the gate. The Directory by it walks you to any room.',
+    // In the Auditorium, the company's meeting place, in the aisle between its first two rows, facing the stage.
+    arrival: {
+      dx: 0,
+      dy: -246,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in the Auditorium. The Directory by the gate walks you to any room.',
+    },
     // The presenter's Bring Focus, beside the stage.
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 730, top + HALL.y + 64)],
   });

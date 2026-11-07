@@ -233,6 +233,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ArcadeScore": {
+    "additionalProperties": false,
+    "description": "One score on a machine's table.",
+    "properties": {
+      "at": {
+        "description": "When it was posted, epoch ms.",
+        "type": "number"
+      },
+      "by": {
+        "description": "The poster's adder key (an Editor without one writes their participant key).",
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "ms": {
+        "description": "How long the run played, paused time not counted.",
+        "type": "number"
+      },
+      "name": {
+        "description": "The player's display name in the Space, cut to ARCADE_NAME_MAX; \"Guest\" with none.",
+        "type": "string"
+      },
+      "score": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "score",
+      "ms",
+      "by",
+      "at"
+    ],
+    "type": "object"
+  },
   "ArrowElement": {
     "additionalProperties": false,
     "properties": {
@@ -1223,6 +1260,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityApp": {
+    "enum": [
+      "livediagram.app",
+      "liveplanner.app",
+      "livedocuments.app",
+      "livedesign.app",
+      "livehuddle.app"
+    ],
+    "type": "string"
+  },
   "CommunityAuthor": {
     "additionalProperties": false,
     "properties": {
@@ -1292,6 +1339,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "anonymous": {
         "type": "boolean"
       },
+      "app": {
+        "$ref": "#/components/schemas/CommunityApp"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -1340,6 +1390,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "anonymous",
+      "app",
       "author",
       "category",
       "copyCount",
@@ -1409,6 +1460,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "anonymous": {
         "type": "boolean"
       },
+      "app": {
+        "$ref": "#/components/schemas/CommunityApp"
+      },
       "author": {
         "$ref": "#/components/schemas/CommunityAuthor"
       },
@@ -1454,6 +1508,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "anonymous",
+      "app",
       "author",
       "category",
       "copyCount",
@@ -3723,6 +3778,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "$ref": "#/components/schemas/NoteColor"
       },
+      "day": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
@@ -4766,7 +4824,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "SeatFacing": {
-    "description": "Where a piece's back is: 'n' at the top, so its sitter faces down the canvas.",
+    "description": "Where a piece's back is: 'n' at the top, so its front (and its sitter) faces down the canvas.",
     "enum": [
       "n",
       "e",
@@ -4825,6 +4883,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "arcadeScores": {
+        "items": {
+          "$ref": "#/components/schemas/ArcadeScore"
+        },
+        "type": "array"
       },
       "aspectLocked": {
         "type": "boolean"
@@ -5271,6 +5335,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": "shape",
         "type": "string"
       },
+      "variant": {
+        "type": "string"
+      },
       "width": {
         "type": "number"
       },
@@ -5323,6 +5390,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "desk",
       "sofa",
       "room",
+      "corridor",
       "meeting-table",
       "plant",
       "bookshelf",
@@ -5359,9 +5427,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "vending-machine",
       "bean-bag",
       "reading-nook",
+      "printer",
+      "copier",
+      "lockers",
+      "coat-rack",
+      "umbrella-stand",
+      "kitchen-counter",
+      "kitchen-sink",
+      "fridge",
+      "microwave",
+      "kettle",
+      "toilet-cubicle",
+      "washbasin",
+      "hand-dryer",
+      "pillar",
+      "column",
+      "car-park",
+      "bike-rack",
+      "swimming-pool",
+      "stage-curtains",
+      "podium",
+      "nap-pod",
+      "treadmill",
+      "weight-bench",
+      "phone-booth",
+      "standing-desk",
+      "hot-desk",
+      "pet-bed",
+      "reception-desk",
+      "calendar-wall",
+      "suggestion-box",
+      "signpost",
+      "photo-wall",
       "door",
       "directory",
       "elevator",
+      "stairs",
       "screen",
       "room-sign",
       "timer",
@@ -5919,6 +6020,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "Suggestion": {
+    "additionalProperties": false,
+    "description": "One note in a Suggestion Box.",
+    "properties": {
+      "day": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "day"
+    ],
+    "type": "object"
+  },
+  "SuggestionsResponse": {
+    "additionalProperties": false,
+    "description": "`GET /api/documents/:id/tabs/:tabId/suggestions?elementId=`: the box's notes, newest first.",
+    "properties": {
+      "suggestions": {
+        "items": {
+          "$ref": "#/components/schemas/Suggestion"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "suggestions"
+    ],
+    "type": "object"
+  },
   "Tab": {
     "additionalProperties": false,
     "properties": {
@@ -5999,6 +6137,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TabConnectionApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "livehuddle"
+    ],
+    "type": "string"
+  },
+  "TabConnectionWire": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/TabConnectionApp"
+      },
+      "id": {
+        "type": "string"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "app",
+      "itemId"
+    ],
+    "type": "object"
+  },
   "TabId": {
     "type": "string"
   },
@@ -6023,6 +6191,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "backgroundPatternScale": {
         "type": "number"
+      },
+      "connection": {
+        "$ref": "#/components/schemas/TabConnectionWire"
       },
       "customColours": {
         "items": {
@@ -6105,6 +6276,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
+      "connection": {
+        "$ref": "#/components/schemas/TabConnectionWire"
+      },
       "documentId": {
         "type": "string"
       },

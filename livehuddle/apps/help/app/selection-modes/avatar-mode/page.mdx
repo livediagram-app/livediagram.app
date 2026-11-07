@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { AvatarMode } from '@/components/illustrations/palette-modes';
+import { EditWalkToggleScene } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Avatar Mode',
@@ -13,14 +14,22 @@ export const metadata = helpMetadata({
 <ArticleLayout
   title="Avatar Mode"
   description="Walk a little character around the canvas while you talk through it."
-  categoryTitle="Selection Modes"
+  categoryTitle="Edit or Walk"
   categorySlug="selection-modes"
   subArticles={getSubArticles("avatar-mode")}
 >
 
-Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Pick **Avatar** from the Selection Mode menu, just below Hand, or press a [Selection Mode button](/help/palette/behaviour/mode-buttons/) set to Avatar on the board. Search finds it too: type "avatar". It has no keyboard shortcut, since the arrow keys belong to the walk. A space made from a Spaces template (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) opens with you already walking, standing just below its **Walk In** button, clear of its label. While you walk the Selection Mode menu shows **Avatar**, so you can see where you are and pick another mode to leave.
+Avatar mode drops a small pixel character onto the canvas and lets you walk it around. Instead of waving a cursor at the part of the canvas you are describing, you walk over to it, so the room follows a character moving between places. Press **Walk** on the Edit | Walk toggle at the very start of the palette strip, or press `W` while you are editing. A [Selection Mode button](/help/palette/behaviour/mode-buttons/) on the board starts it too, and so does typing "walk" in Search. A space made from a Spaces template (Virtual Office, Coworking Space, Team Pod, All-Hands Hall and the rest) opens with you already walking, arriving on its [Avatar Pad](/help/palette/avatar-pads/), in the middle of the Space.
 
-If the board has an [Avatar Pad](/help/palette/avatar-pads/), you start on the pad, beamed in, instead of beside the button.
+## The Edit | Walk toggle
+
+If you can edit a space, the toggle at the start of the strip is Avatar mode's switch. While you build, **Edit** is on; press **Walk** and the strip becomes the avatar palette, with the same toggle at its very start, Walk on. Press **Edit** there (or `E`, `V` or `Esc`) and the building palette comes back. While **Start a Space** is open, Walk is greyed out: pick a template, or close Start a Space, to walk. See [Edit and Walk](/help/selection-modes/select/).
+
+<Figure caption="The toggle at the start of the strip: Edit on while you build, Walk on while you walk.">
+  <EditWalkToggleScene />
+</Figure>
+
+Every Space from the templates has an Avatar Pad, and so does every blank tab you start (Blank Space, or closing **Start a Space**). Whenever the board has one, you start on the pad, beamed in.
 
 ## Walking
 
@@ -28,11 +37,11 @@ If the board has an [Avatar Pad](/help/palette/avatar-pads/), you start on the p
 
 **The arrow keys steer it directly**: hold one and the character walks that way for as long as you hold it, and holding two walks a diagonal. Release and it stops where it stands. On a touchscreen, tapping is the way to move it.
 
-**Changing tab ends Avatar mode.** The character belongs to the board you are walking round, so switching to another tab (from the tab bar, the Explorer, a portal or by following someone) puts you back in the tool you had before you started walking, and the character disappears for everyone. Press the board's Avatar button again to walk on the new tab.
+**Changing tab ends Avatar mode.** The character belongs to the board you are walking round, so switching to another tab (from the tab bar, the Explorer, a portal or by following someone) puts you back in Edit, and the character disappears for everyone. Press **Walk** again to walk on the new tab. Participants and view-only visitors are always walking, so they keep walking on the new tab.
 
 When the character ends up standing on an element, that element gets a soft ring around it, so your audience can see exactly which box you have arrived at. The canvas scrolls to follow the character when it gets close to the edge of the view, and the zoom is left alone.
 
-<Figure caption="The Selection Mode menu showing Avatar while you walk; the character has walked over to the shape being discussed, which is ringed.">
+<Figure caption="Walking: the character has walked over to the shape being discussed, which is ringed.">
   <AvatarMode />
 </Figure>
 
@@ -44,30 +53,36 @@ One press is one hop: holding the key down will not pogo, and pressing again mid
 
 While you walk you are in the room rather than editing it, so **Undo**, **Redo** and **Tab Style** step out of the bottom-right corner, and Cmd/Ctrl+Z does nothing. Leave Avatar mode and they come straight back.
 
+## Talk, show your camera, share your screen
+
+The call's buttons sit on the **Call dock**, a small card at the **bottom centre** of the canvas, shown while the avatar palette is: your microphone (muted until you press it; you join the call by walking, so there is no Join or Leave), **Camera** and **Share**. On a computer each is named beside its icon; on a phone they are icons alone, one row above the buttons at the bottom right. See [Proximity Audio](/help/collaboration/proximity-audio/) and [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/).
+
 ## Make the character yours
 
-Whenever Avatar mode is on, an **Avatar** button sits in the bottom-right corner. Press it to open the Avatar panel: a character sheet with a portrait of your character and four choices, each one a row you expand:
+While you walk, **the palette at the top of the screen dresses your character** instead of building the board. Its buttons on the left are your look, each opening a panel of pictures of your own character wearing each choice:
 
-- **Gender**: male or female.
-- **Clothing**: sixteen outfits: T-shirt, stripes, jumper, hoodie, vest, suit, dress, skirt, polo, flannel, overalls, lab coat, Hawaiian, varsity, turtleneck, or apron.
-- **Hair**: fourteen styles: short, buzz, curly, long, ponytail, bun, mohawk, bald, pigtails, afro, spiky, bob, braid, or top knot.
-- **Size**: small, regular, or tall.
+- **Gender**: a large portrait of your character, a **Randomise** button for a whole new look, and **Male** or **Female**.
+- **Clothes**: sixteen outfits: T-shirt, stripes, jumper, hoodie, vest, suit, dress, skirt, polo, flannel, overalls, lab coat, Hawaiian, varsity, turtleneck, or apron.
+- **Hair**: fourteen styles: short, buzz, curly, long, ponytail, bun, mohawk, bald, pigtails, afro, spiky, bob, braid, or top knot. At the bottom, **Hair Colour** has a row of swatches: black, dark brown, brown, auburn, ginger, blonde, platinum, grey and white, plus blue, pink, purple and green for something bolder. The styles above are drawn in the colour you pick.
+- **Status**: how you are (see below), and your **Jukebox Music** switch.
 
-Each row shows what it is currently set to, so a collapsed panel still reads as a summary of your character; open one and the options appear. Pick anything and the character on the canvas changes as you go. In the corner of the portrait is a **Randomise** button: one click for a whole new character, keeping the size you chose.
+While you [share your screen](/help/collaboration/cameras-and-screen-sharing/), **Gender**, **Clothes** and **Hair** step aside to make room for **Sharing** and **Stop Sharing**, and come back when the share ends.
 
-**The first time you use the mode you get a random character** (a random gender, outfit and hairstyle, at the regular size), so you are not the same figure as everyone else by default. From then on it is yours: **your choices are remembered in this browser**, so the character you build is the one waiting the next time you enter the mode, in this space or any other.
+Point at a button (or tap it) to open its panel, and pick anything: the character on the canvas changes as you go, and the panel stays open so you can try the next. Stop walking and the usual palette comes straight back.
 
-Press the button again, press anywhere outside the panel, or press `Esc` to close it. The button is there on a phone too, and for view-only visitors.
+**The first time you use the mode you get a random character** (a random gender, outfit, hairstyle and natural hair colour, at the regular size), so you are not the same figure as everyone else by default. From then on it is yours: **your choices are remembered in this browser**, so the character you build is the one waiting the next time you enter the mode, in this space or any other.
 
-**Right-clicking the character** on the canvas is a shortcut for switching gender without opening the panel. Right-clicking anywhere else does nothing while you are in this mode (the usual context menus stay shut so a menu cannot interrupt a walkthrough).
+Press anywhere outside a panel, or press `Esc`, to close it. The avatar palette is there on a phone too (swipe it sideways; its buttons are always named there), and for everyone who walks, view-only visitors included.
 
-There is no colour choice, on purpose: the character's shirt takes **your participant colour** (the same colour as your cursor and your name in the tab bar), so on a shared space it is always obvious which character is yours.
+**Right-clicking the character** on the canvas is a shortcut for switching gender without opening the palette. Right-clicking anywhere else does nothing while you are in this mode (the usual context menus stay shut so a menu cannot interrupt a walkthrough).
 
-## Behaviour and Reactions
+There is no shirt colour choice, on purpose: the character's shirt takes **your participant colour** (the same colour as your cursor and your name in the tab bar), so on a shared space it is always obvious which character is yours.
 
-Under the customisation rows are two more rows you expand, each a list of one-click actions.
+## Actions and React
 
-**Behaviour** makes the character perform on the spot:
+On the right of the avatar palette are two more buttons, each a panel of one-click actions.
+
+**Actions** makes the character perform on the spot:
 
 - **Jumping jacks**: five of them.
 - **Wave**: a raised hand, waving.
@@ -77,25 +92,40 @@ Under the customisation rows are two more rows you expand, each a list of one-cl
 
 They are quick on purpose (a gesture, not a cutscene), and everyone else on a shared space sees the performance too. Starting one stops whatever walk was in progress, so the character performs where it stands.
 
-**Reactions** throws a burst around your character: **Confetti**, **Sparkles**, **Hearts**, **Applause** or **Fireworks**. The burst plays on your own screen.
+**React** throws a burst around your character: **Confetti**, **Sparkles**, **Hearts**, **Applause** or **Fireworks**. The burst plays on your own screen.
 
-On a keyboard, each action is a single key, so you can perform without opening the panel. Each button shows its key:
+On a keyboard, each action is a single key, so you can perform without opening the palette. Each action shows its key:
 
-- **Behaviour**: `J` for jumping jacks, `W` to wave, `S` to spin, `C` to cheer and `D` to dance.
-- **Reactions**: `1` to `5` throw Confetti, Sparkles, Hearts, Applause and Fireworks, in the panel's order.
+- **Actions**: `J` for jumping jacks, `W` to wave, `S` to spin, `C` to cheer and `D` to dance.
+- **React**: `1` to `5` throw Confetti, Sparkles, Hearts, Applause and Fireworks, in the palette's order.
 
-The keys do nothing while you are typing a message or anything else, and `V`, `H`, `K`, `I`, `Z` and `Escape` still take you out of Avatar mode.
+The keys do nothing while you are typing a message or anything else. `W` waves here, rather than starting a walk, and `E`, `V` and `Escape` still take you out of Avatar mode.
 
 ## Show your status
 
-Open the Avatar panel and pick a **Status** to let people know how you are, without a word:
+Open **Status** on the avatar palette and pick one to let people know how you are, without a word. Each status shows on your character too, the way headphones go on when you're focusing. Point at one to try it on in the big preview beside the menu before you pick it.
 
-- **Available**: a green dot over your head.
-- **Focusing**: your character puts on headphones.
-- **In a Meeting**: a red dot over your head.
+**Availability**
+
+- **Available**: a green sparkle twinkles by your head.
+- **Need Help**: a yellow question mark bobs over your head, so people know to come over.
 - **Away**: your character fades and a little "Zz" floats up.
+- **Do Not Disturb**: a red no-entry sign by your head. No voices or speech bubbles reach you, and you can still be heard if you speak.
 
-Everyone on the tab sees it, next to your name. It lasts until you change it or leave Avatar mode, and it is never saved.
+**Activity**
+
+- **Focusing**: your character puts on headphones.
+- **In a Meeting**: a headset with a microphone.
+- **Out to Lunch**: a sandwich in your hand, with a bite every few seconds.
+
+**Mood**
+
+- **Angry**: steam puffs out of your ears, your face goes red and your brows come down.
+- **Celebrating**: a party hat, with confetti falling around you.
+- **Thinking**: a thought bubble, its dots lighting up one by one.
+- **Feeling Sick**: a green face, an ice pack on your head and a bead of sweat.
+
+Everyone on the space sees it, next to your name. It lasts until you change it or leave walking, and it is never saved. If you've turned on reduced motion, the steam, sparkle and the rest hold still.
 
 ## Say something
 
@@ -105,7 +135,7 @@ Everyone on the tab sees your bubble float up from where you were standing. Each
 
 You can keep walking while you type: the bubble follows your character until you send it. There's a short pause of a second and a half between one message and the next.
 
-On a phone, or if you'd rather not use the keyboard, open the Avatar panel and press **Send a Message** at the bottom: type in the box and press **Send**.
+On a phone, or if you'd rather not use the keyboard, press **Say** at the right end of the avatar palette: type in the box and press **Send**.
 
 Messages aren't saved anywhere. Once a bubble has floated away it's gone, for everyone.
 
@@ -115,13 +145,13 @@ Speaking is for people who can edit or take part in the space. Someone with a vi
 
 Every click means "walk over there", so nothing on the canvas can be selected, moved, resized, or edited while Avatar mode is on, and the element shortcuts stay dormant. That is deliberate: you can click around the canvas freely mid-presentation without any chance of nudging a shape out of place.
 
-**Reaching for the palette lets you edit again.** Pick any palette tile, or drag one onto the canvas, and Avatar mode steps aside, back to whichever tool you were using before, and the element drops as normal. You do not have to leave the mode by hand first.
+**To edit again, stop walking.** Press **Edit** at the start of the avatar palette, and the building palette comes back. Press `E`, `V` or **`Esc`** to put the character away too.
 
-Press **`Esc`** (or pick another mode) to put the character away. Panning still works the usual ways while walking: middle-mouse drag, a two-finger trackpad scroll, or the zoom controls.
+Panning still works the usual ways while walking: hold `Space` and drag, middle-mouse drag, a two-finger trackpad scroll, or the zoom controls.
 
 ## Availability
 
-Avatar mode is available on desktop and touch, and to view-only visitors, since it changes nothing: anyone can pick it or press a board's Avatar button. Everyone also has a **Walk** button in the bottom-right corner: press it to start walking on any board, and press it again to stop. It is the only way in for a view-only visitor, who has no palette. A space with a Walk In button or an Avatar Pad opens walking once each visit, for everyone; leave the mode and it stays left until you come back. An embedded space never opens walking.
+Avatar mode is available on desktop and touch. If you can edit a space, the Edit | Walk toggle at the start of the strip is its switch: press **Walk** to start walking on any board, and **Edit** to stop. A board's Avatar button, or searching for **Walk**, starts it too. **Participants and view-only visitors are always walking**: their space opens with their character on it, they never see the toggle, and nothing takes them out of the mode. A space with an Avatar Pad (or an Avatar Button) opens walking once each visit, for everyone, unless the pad is all it holds yet: a blank tab opens on your usual tool, so you can build; an editor who leaves the mode stays out until they come back. An embedded space never opens walking.
 
 While you walk as an avatar, press Start Avatar Tour in the bar along the bottom of the editor, just left of **Search**, for a short [Avatar Tour](/help/selection-modes/avatar-mode/avatar-tour/) of all this.
 
@@ -131,10 +161,10 @@ While you walk as an avatar, press Start Avatar Tour in the bar along the bottom
 </Tip>
 
 To make a board a place to walk round, drop an **Avatar Button** on the canvas (the palette's **Travel**
-category; the Spaces templates call theirs **Walk In**). It reads "Switch to Avatar", so one click puts a visitor in
+category; Spaces made before the Avatar Pads carry one called **Walk In**). It reads "Switch to Avatar", so one click puts a visitor in
 the mode, and the character appears right at the button they pressed, or on the board's
 [Avatar Pad](/help/palette/avatar-pads/) when it has one. Pressing it again while in the
-mode hands them back the tool they were using. See [Selection Mode Buttons](/help/palette/behaviour/mode-buttons/).
+mode puts them back in Edit. See [Selection Mode Buttons](/help/palette/behaviour/mode-buttons/).
 
 Portals work here too: walk your character into a [Portal](/help/palette/tools/portals/) and you come
 out of the one it is linked to, even on another tab.

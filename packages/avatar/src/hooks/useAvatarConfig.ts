@@ -1,5 +1,5 @@
 // The Avatar-mode character's customisation state (docs/specs/008-canvas/avatar-mode.md): gender,
-// clothing, hair, and size, loaded from and written back to per-browser
+// clothing, hair, hair colour and size, loaded from and written back to per-browser
 // storage so the character you built is the one waiting next time you enter
 // the mode.
 //
@@ -56,7 +56,9 @@ export function useAvatarConfig({ active }: { active: boolean }) {
             ? 'AvatarClothing'
             : changed === 'hair'
               ? 'AvatarHair'
-              : 'AvatarSize',
+              : changed === 'hairColour'
+                ? 'AvatarHairColour'
+                : 'AvatarSize',
       );
     }
   };

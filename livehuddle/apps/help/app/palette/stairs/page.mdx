@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Stairs',
+  description:
+    "A flight between a space's tabs, its floors. Click it or walk on, pick Up or Down, and climb to the Stairs on the next floor.",
+  path: '/help/palette/stairs/',
+});
+
+<ArticleLayout
+  title="Stairs"
+  description="Put Stairs on each floor and walk up or down one, with nothing to link."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("stairs")}
+>
+
+**Stairs** take people between the tabs of a space, one floor at a time. Like the [Elevator](/help/palette/elevator/), they treat each tab as a floor, in tab order: the first tab is the ground floor, **Up** is the next tab and **Down** the one before.
+
+They live in the palette's **Travel** category, one of the [meeting elements](/help/palette/behaviour/), after the Elevator, and search adds them too.
+
+## Setting them up
+
+1. Add Stairs to the first tab.
+2. Add Stairs to the next tab, in about the same place, and so on up the building.
+3. Click any of them, or walk your character on, and pick **Up** or **Down**.
+
+There is nothing to link: you land on the Stairs on that floor nearest the ones you took. A floor with no Stairs still works: you land at its [Elevator](/help/palette/elevator/), else its [Avatar Pad](/help/palette/avatar-pads/), else the middle of the tab.
+
+## Climbing
+
+- In [Avatar mode](/help/selection-modes/avatar-mode/), your character walks up the flight, then steps off the Stairs on the next floor and keeps walking from there. Start from farther away and it goes straight there.
+- Not walking, the view moves to the Stairs on that floor.
+- With **reduced motion** turned on, there is no walk: you arrive just in front of the Stairs.
+- The top floor has no Up and the ground floor no Down.
+
+## Who can do what
+
+- **Editors** place, move and delete Stairs.
+- **Everyone**, Editors, Participants and Viewers, can climb them.
+
+## The look
+
+A flight of stone steps between two walls with a handrail on each, the landing opening onto the floor above, and a small sign with an up and a down arrow. Otherwise it is an ordinary element: move, rotate, lock, copy and export.
+
+</ArticleLayout>

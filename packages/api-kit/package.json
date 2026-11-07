@@ -9,6 +9,7 @@
     "./api-token": "./src/api-token.ts",
     "./bytes": "./src/bytes.ts",
     "./client-ip": "./src/client-ip.ts",
+    "./csv": "./src/csv.ts",
     "./d1-compound": "./src/d1-compound.ts",
     "./d1-compound-guard": "./src/d1-compound-guard.ts",
     "./image-refs": "./src/image-refs.ts",
@@ -42,16 +43,17 @@
   },
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/media": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261023.1",
+    "@cloudflare/workers-types": "^5.20261104.1",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   }
 }

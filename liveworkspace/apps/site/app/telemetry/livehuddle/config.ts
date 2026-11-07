@@ -34,17 +34,16 @@ import {
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
   COMMUNITY_ENGAGEMENT,
-  DATA_MODELS,
   CALLS,
   DISCUSSION,
   DOCUMENTS_CREATED,
   DOCUMENT_ACTIONS,
-  DRAW_TOUR,
   DRY_HELP_SEARCHES,
   EDITOR_CHROME,
   EDITOR_SEARCH,
   EDITOR_TIMING_CHARTS,
   ELEMENTS_ADDED,
+  IN_THE_SPACE,
   ELEMENT_EDITING,
   ELEMENT_TOURS,
   EMAILS_SENT,
@@ -70,7 +69,6 @@ import {
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
   PANELS_OPENED,
-  PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
   SERVER_CRASHES,
@@ -91,9 +89,8 @@ import {
   TRASH,
   UNDO_AND_REDO,
   WEB_VITAL_CHARTS,
-  WELCOME_TOUR,
-  WHITEBOARDS,
-  WORKSHOP_TOUR,
+  WELCOME_DIALOG_CLOSED,
+  WHITEBOARD_RECOGNITION,
 } from './metric-catalogue';
 import { isNonThemePick, PALETTE_TYPE_ALIASES, SELECTION_MODES } from './palette-types';
 import { isRetiredEvent } from './retired-events';
@@ -225,7 +222,15 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
     },
     {
       title: 'Features',
-      metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+      metrics: [
+        WHITEBOARD_RECOGNITION,
+        IN_THE_SPACE,
+        PALETTE_USE,
+        CANVAS_MODES,
+        LOOK_AND_FEEL,
+        PANELS_OPENED,
+        OFFLINE_MODE,
+      ],
     },
     // Live Together is the only stack that counts two people on one canvas at
     // the same moment; the rest of Collaboration counts invitations to be there,
@@ -238,7 +243,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         JOINING,
         SHARING_AND_JOINING,
         TIMELINE_AND_ACTIVITY,
-        PRESENTATIONS,
         COMMUNITY_ENGAGEMENT,
       ],
     },
@@ -267,7 +271,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
           UNDO_AND_REDO,
           EXPORT_AND_IMPORT,
           TABLES,
-          DATA_MODELS,
           SIDE_BY_SIDE,
           EDITOR_SEARCH,
           EDITOR_CHROME,
@@ -275,25 +278,71 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         ],
       },
     ],
-    exportFormats:
-      'Which formats Spaces leave in: PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw',
+    exportFormats: 'Which formats Spaces leave in: PNG, SVG, PDF, JSON, Markdown',
     aiOptIn: true,
   },
   palette: {
     tabs: PALETTE_TELEMETRY_TYPES,
     aliases: PALETTE_TYPE_ALIASES,
-    subtitles: {
-      shapes: 'Boxes, circles, flowchart symbols and other primitives',
-      collaborate:
-        'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls',
-      devices: 'Device frames: browser, phone, laptop and friends',
-    },
+    // livehuddle's palette categories, in the category bar's order (docs/specs/010-palette/
+    // palette-top-level-categories.md "The strip's order"). Kinds no category offers are counted only in Elements
+    // Added's Other Elements Added.
+    cards: [
+      {
+        tab: 'write',
+        title: 'Write',
+        subtitle: 'Text, sticky notes and stickers',
+        empty: 'No text or notes were added in this window yet.',
+      },
+      {
+        tab: 'rooms',
+        title: 'Rooms',
+        subtitle: 'Rooms and doors, and what lays out the floor',
+        empty: 'No rooms were added in this window yet.',
+      },
+      {
+        tab: 'seats',
+        title: 'Seats',
+        subtitle: 'Chairs, desks, sofas and meeting tables',
+        empty: 'No seats were added in this window yet.',
+      },
+      {
+        tab: 'perks',
+        title: 'Perks',
+        subtitle: 'The office, kitchen and restroom pieces',
+        empty: 'No perks were added in this window yet.',
+      },
+      {
+        tab: 'play',
+        title: 'Play',
+        subtitle: 'The bar, the games, the gym and the lounge',
+        empty: 'Nothing to play with was added in this window yet.',
+      },
+      {
+        tab: 'garden',
+        title: 'Garden',
+        subtitle: 'Plants, paths, garden furniture, water and parking',
+        empty: 'No garden pieces were added in this window yet.',
+      },
+      {
+        tab: 'meet',
+        title: 'Meet',
+        subtitle: 'Screens, signs, boards, clocks and timers',
+        empty: 'No meeting pieces were added in this window yet.',
+      },
+      {
+        tab: 'travel',
+        title: 'Travel',
+        subtitle: 'Portals, Bring Focus, Avatar Pads, directories, elevators and stairs',
+        empty: 'No travel pieces were added in this window yet.',
+      },
+    ],
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Eraser, format painter, avatar',
-    option: /^(Eraser|Format)/,
-    optionsSubtitle: 'Settings inside a mode: eraser size and target, format painter copies',
+    selectionSubtitle: 'Format painter, avatar',
+    option: /^Format/,
+    optionsSubtitle: 'Settings inside a mode: what the format painter copies',
   },
   settings: [
     { title: 'All categories', metrics: [SETTINGS_CHANGED] },
@@ -333,9 +382,9 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [WELCOME_TOUR, WORKSHOP_TOUR, DRAW_TOUR, AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
-    { title: 'Prompts', metrics: [NEW_VERSION_PROMPT] },
+    { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],
   exceptions: {
     groups: [

@@ -9,12 +9,14 @@ const FRAME = 'rgb(148 163 184)';
 const STICKY = 'rgb(254 240 138)';
 const STICKY_EDGE = 'rgb(234 179 8)';
 const TIMER = 'rgb(14 165 233)';
+const PAD_LIGHT = 'rgb(34 211 238)';
 
 export function templatePreviewGroup17(kind: TemplateKind): ReactElement | null {
   switch (kind) {
     case 'blank-session':
-      // Blank Space: an empty canvas framed like the other blanks, a timer ring at the top right
-      // and two sticky notes waiting for the room. Hover story: the timer runs down.
+      // Blank Space: an empty canvas framed like the other blanks, a timer ring at the top right,
+      // two sticky notes waiting for the room, and the Avatar Pad people arrive on below the middle
+      // (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"). Hover story: the timer runs down.
       return (
         <svg width="72" height="40" viewBox="0 0 80 44" aria-hidden>
           <rect
@@ -63,6 +65,25 @@ export function templatePreviewGroup17(kind: TemplateKind): ReactElement | null 
             style={pv({ '--pv-at': '200ms', '--pv-dur': '1400ms' })}
           />
           <path d="M63 17 L63 13 M63 17 L66 17" stroke="rgb(15 23 42)" strokeWidth="1" />
+          {/* The Avatar Pad: a round platform, its ring of light in the avatar's cyan. */}
+          <ellipse
+            cx="62"
+            cy="34"
+            rx="8"
+            ry="3.2"
+            fill="rgb(226 232 240)"
+            stroke={FRAME}
+            strokeWidth="0.8"
+          />
+          <ellipse
+            cx="62"
+            cy="33.6"
+            rx="5"
+            ry="1.8"
+            fill="none"
+            stroke={PAD_LIGHT}
+            strokeWidth="1"
+          />
         </svg>
       );
     default:

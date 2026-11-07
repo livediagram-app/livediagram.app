@@ -1,7 +1,14 @@
 import { useSyncExternalStore } from 'react';
-import type { WayBox, WayPerson, WayPoint, WayTab } from '@/lib/wayfinding';
+import type {
+  StairsBox,
+  StairsFlight,
+  WayBox,
+  WayPerson,
+  WayPoint,
+  WayTab,
+} from '@/lib/wayfinding';
 
-// The Directory's and the Elevator's view of the space (docs/specs/009-elements/blueprints/wayfinding.md "Store"):
+// The Directory's, the Elevator's and the Stairs' view of the space (docs/specs/009-elements/blueprints/wayfinding.md "Store"):
 // one store per canvas, filled by useWayfinding and read by the faces through selectors, so a face re-renders only
 // when what it shows changes, and a walk inside one room re-renders nothing.
 
@@ -9,10 +16,10 @@ export type WayfindingState = {
   tabs: readonly WayTab[];
   activeTabId: string;
   people: readonly WayPerson[];
-  /** The Elevator whose floor panel a walk-in opened, or null. */
-  openElevatorId: string | null;
+  /** The Elevator or Stairs whose panel a walk-in opened, or null. */
+  openPanelId: string | null;
   /** The Elevator a ride just arrived at, and a fresh number per ride, for its doors. */
-  arrivalElevatorId: string | null;
+  arrivalId: string | null;
   arrivalSeq: number;
 };
 
@@ -27,8 +34,8 @@ export function createWayfindingStore(): WayfindingStore {
     tabs: [],
     activeTabId: '',
     people: [],
-    openElevatorId: null,
-    arrivalElevatorId: null,
+    openPanelId: null,
+    arrivalId: null,
     arrivalSeq: 0,
   };
   const listeners = new Set<() => void>();
@@ -70,12 +77,17 @@ export type WalkTarget = {
 export type WayfindingActions = {
   /** Walk your character to a place on this tab (entering Avatar mode first when needed). */
   walkThere: (place: WalkTarget) => void;
-  /** Jump to a point on a tab, like a Portal; `ignoreId` is an Elevator to step out of without calling it. */
-  go: (to: { tabId: string; point: WayPoint; ignoreId?: string }) => void;
+  /**
+   * Jump to a point on a tab, like a Portal; `ignoreId` is a piece to step out of without calling it, and `then` a
+   * point the character walks to once it stands on that tab (off the Stairs it landed on).
+   */
+  go: (to: { tabId: string; point: WayPoint; ignoreId?: string; then?: WayPoint }) => void;
+  /** Take a flight of Stairs (docs/specs/009-elements/stairs.md "Taking them"): climb `from`, travel, walk off. */
+  climb: (to: { from: StairsBox & { id: string }; flight: StairsFlight }) => void;
   /** Fetch the floors (tabs) not loaded yet, so the Elevator panel knows their Elevators (elevator.md "The panel"). */
   loadFloors: () => void;
   /** Close a panel a walk-in opened. */
-  closeElevator: () => void;
+  closePanel: () => void;
 };
 
 export type Wayfinding = { store: WayfindingStore; actions: WayfindingActions };

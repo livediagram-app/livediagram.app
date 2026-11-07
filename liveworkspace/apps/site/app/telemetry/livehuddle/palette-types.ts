@@ -30,16 +30,20 @@ export const canonicalElementType = (type: string | null): string =>
 
 export type PaletteTab = keyof typeof PALETTE_TELEMETRY_TYPES;
 
-/** Every kind the palette catalogue lists, across its tabs. */
+/** Every kind a palette category offers today: the catalogue's tabs but `retired`, the kinds livehuddle no longer
+ *  offers (counted under Other Elements Added). */
 export const PALETTE_KINDS: ReadonlySet<string> = new Set(
-  Object.values(PALETTE_TELEMETRY_TYPES).flat(),
+  Object.entries(PALETTE_TELEMETRY_TYPES)
+    .filter(([tab]) => tab !== 'retired')
+    .flatMap(([, kinds]) => kinds),
 );
 
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
 // Canvas·Used events are not modes a person selects: InsertBetween is a drag
 // gesture and FollowMe is pinning your view to a peer's (it has its own card
 // on the Collaboration tab), so the ranking names the modes it counts.
-export const SELECTION_MODES: readonly string[] = ['Eraser', 'FormatPainter', 'AvatarMode'];
+// The Eraser left as a mode with the Selection Mode picker (owner, 2026-11-06; retired-events.ts).
+export const SELECTION_MODES: readonly string[] = ['FormatPainter', 'AvatarMode'];
 
 // The Theme·Changed types that are not a theme pick, for its Themes chart and ranking
 // (../_shared/look-feel-types.ts says why `Unknown` differs between the apps).

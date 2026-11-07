@@ -19,6 +19,8 @@ import type {
   SharedTabCopy,
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 // The source side of a copy, and whether it went through the document's open Community post's link.
@@ -45,6 +47,8 @@ export type DocumentRoomClient = {
   exportComments(): Promise<ExportCommentsResult>;
   // Whether the document holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
+  // The index's reverse write of a connected tab (document-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
@@ -92,6 +96,7 @@ export function documentRoom(
     importFile: (file) => room.importFile(documentId, file),
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
@@ -118,6 +123,7 @@ export type DocumentRoomRpc = {
   importFile(documentId: string, file: DocumentFileImport): Promise<void>;
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(
     documentId: string,

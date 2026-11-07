@@ -7,8 +7,9 @@ import { SizedPieceView } from './RoomView';
 
 const NOBODY: StageStander[] = [];
 
-// A stage (docs/specs/009-elements/office.md "Stage"): a raised platform, its top in the element's fill with two
-// plank lines, the front edge's face shaded, and a plate on it where the element's own label (its name) sits. Drawn
+// A stage (docs/specs/009-elements/office.md "Stage"): a raised platform, its top in the element's fill laid in boards,
+// a nosing along its lip, the front edge's stained skirt with footlights (docs/specs/009-elements/venue-pieces.md "The
+// stronger Stage"), and a plate on it where the element's own label (its name) sits. Drawn
 // at its own size like a room, so the edge keeps its height however wide the stage. Whoever stands on it is heard by
 // the whole tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage"; lib/calls/stage.ts), and the
 // stage shows who that is, to everyone ("The stage shows who is on it"): a spotlight on its top and an On Stage badge.

@@ -2,6 +2,7 @@
 // size and the signed link, or failed, pointing to Settings to try again. An account message: it can't be turned off.
 import { EXPORT_LINK_TTL_MS } from '@liveworkspace/data-export';
 import { button, escapeHtml, frame, paragraph, workspaceBrand } from '../email-layout.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 /** A size as people read it: `840 KB`, `12.4 MB`, `1.2 GB`. */
 export function readableSize(bytes: number): string {
@@ -22,7 +23,7 @@ export type ExportEmail =
 export function exportEmail(baseUrl: string, email: ExportEmail) {
   const brand = workspaceBrand({ BASE_URL: baseUrl });
   const whose = email.teamName ? `${email.teamName}’s` : 'Your';
-  const settings = `${baseUrl.replace(/\/+$/, '')}/explorer?settings=data`;
+  const settings = `${withoutTrailingSlashes(baseUrl)}/explorer?settings=data`;
   if (email.status === 'failed') {
     const subject = `${whose} liveworkspace data couldn’t be downloaded`;
     const lead = `Something went wrong while we put together ${email.teamName ? `${email.teamName}’s` : 'your'} data, so there is nothing to download this time. Nothing of yours has changed.`;

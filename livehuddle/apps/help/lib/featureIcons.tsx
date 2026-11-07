@@ -76,8 +76,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 9h18M8 4v5" />
     </Glyph>
   ),
-  // Palette → Selection Modes.
-  // Selection-mode guides. Two of these are people, and the set already has five
+  // Edit or Walk (the selection-modes category).
+  // Its guides. Two of these are people, and the set already has five
   // person glyphs (`chairs`, `roll-calls`, `search-teams`, `profile`,
   // `done-checks`) — every one of them a head-and-shoulders bust. So these two are
   // whole figures mid-stride, which is also what the feature is: walking.
@@ -96,17 +96,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   select: (
     <Glyph>
       <path d="M5 3l6 16 2.5-6.5L20 10 5 3z" />
-    </Glyph>
-  ),
-  hand: (
-    <Glyph>
-      <path d="M8 11V5.5a1.5 1.5 0 013 0V10m0-.5V4.5a1.5 1.5 0 013 0V10m0-.5V6a1.5 1.5 0 013 0v6a7 7 0 01-7 7h-1a6 6 0 01-5-3l-2.5-4a1.6 1.6 0 012.7-1.7L8 13" />
-    </Glyph>
-  ),
-  eraser: (
-    <Glyph>
-      <path d="M4 14l6-6 7 7-4 4H8l-4-4a1 1 0 010-1.4z" />
-      <path d="M10 8l6 6M9 19h11" />
     </Glyph>
   ),
   'format-painter': (
@@ -164,6 +153,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
     </Glyph>
   ),
+  // A flight's profile rising to the right, an up arrow over its foot (the palette's Stairs tile).
+  stairs: (
+    <Glyph>
+      <path d="M3 20.5h4.5V16H12v-4.5h4.5V7H21M6.5 11.5V3.5M4 6l2.5-2.5L9 6" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>
@@ -194,6 +189,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M2 17v3.5h20V17" />
       <rect x="10.25" y="2.5" width="3.5" height="5.5" rx="1.75" />
       <path d="M12 8v5.5" />
+    </Glyph>
+  ),
+  // Turning Furniture: an armchair seen from its side, with the quarter-turn arrow Rotate Right draws over it.
+  'turning-furniture': (
+    <Glyph>
+      <path d="M5 21v-2M14 21v-2" />
+      <rect x="3" y="13" width="13" height="6" rx="2" />
+      <path d="M13 13V8.5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2V19" />
+      <path d="M8 4.5a6 6 0 0 1 11.5 1.5" />
+      <path d="M20 3v3.2h-3.2" />
     </Glyph>
   ),
   // A pressable pill with the pointer arriving from outside it: every Behaviour
@@ -356,6 +361,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 10v3.5l2.5 1.5" />
       <path d="M10 3h4M12 3v3" />
       <path d="M18.5 6.5l1.5-1.5" />
+    </Glyph>
+  ),
+  // A shield with a list on it: the record the team's admins look back on.
+  'audit-log': (
+    <Glyph>
+      <path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z" />
+      <path d="M9 10h6M9 13h6M9 16h3.5" />
     </Glyph>
   ),
   // An envelope with the invitee on it, which is how a role reaches someone.
@@ -1050,7 +1062,7 @@ export const FEATURE_CATEGORY_ICONS: Record<string, ReactNode> = {
       <path d="M9.9 12.4L12 14.5" />
     </Glyph>
   ),
-  // A marquee with a pointer: choosing things is the whole category.
+  // A marquee with a pointer: Edit, the side of the toggle you build on.
   'selection-modes': (
     <Glyph>
       <path d="M4 7V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V7M20 15v3.5a1.5 1.5 0 01-1.5 1.5H16" />

@@ -21,7 +21,7 @@ export function ScreenReaderBody({ element }: { element: ShapeElement }) {
   const actions = useCallActions();
   const screen = selfScreen(self);
   const live = self.phase === 'live';
-  // The call control's own rule for showing its Share button (CallClusterButton).
+  // The call control's own rule for showing its Share button (CallStripGroup).
   const mayShare =
     !!actions && ((live && self.canShare) || self.canPreviewScreen || screen !== 'off');
   const maySetLink =

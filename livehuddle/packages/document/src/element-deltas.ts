@@ -23,7 +23,8 @@ import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
-import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { holdsNotes, isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { arcadeTableWith, type ArcadeScore } from './arcade-scores';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
@@ -61,14 +62,19 @@ export type ElementDelta =
       name: string;
       on: boolean;
     }
-  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): pin one, or take one down by id.
+  // A Notice Board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"), and a Calendar Wall's, each
+  // pinned to a day (team-pieces.md): pin one, or take one down by id.
   // An unpin names the note's signer too, and removes the note only while that is still its `by`: the room lets a
   // Participant send only its own key there, so it can unpin only what it pinned.
   | { kind: 'notice-pin'; note: NoticeNote }
   | { kind: 'notice-unpin'; noteId: string; by: string }
   // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "How a change travels"): the whole
   // new state, so the last press in the room's order wins on every screen. Names nobody: anyone who takes part runs it.
-  | { kind: 'piece-timer'; state: PieceTimer };
+  | { kind: 'piece-timer'; state: PieceTimer }
+  // An Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores"): post one score, put in
+  // its place and the table cut to ten where it is applied, or empty the table (an Editor's).
+  | { kind: 'arcade-score'; score: ArcadeScore }
+  | { kind: 'arcade-clear' };
 
 export function isComment(value: unknown): value is Comment {
   if (!value || typeof value !== 'object') return false;
@@ -98,9 +104,10 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
   return (thread ? { ...rest, commentThread: thread } : rest) as Element;
 }
 
-// A notice board that takes note changes: a locked board refuses them, on every screen alike.
-function openNoticeBoard(el: Element): ShapeElement | null {
-  return el.type === 'shape' && el.shape === 'notice-board' && el.locked !== true ? el : null;
+// A piece that takes note changes (a Notice Board, a Calendar Wall: docs/specs/009-elements/team-pieces.md): a locked
+// one refuses them, on every screen alike.
+function openNotePiece(el: Element): ShapeElement | null {
+  return el.type === 'shape' && holdsNotes(el.shape) && el.locked !== true ? el : null;
 }
 
 // The board with its notes set, the field dropped when none are left.
@@ -190,7 +197,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       return changed ? withThread(el, { ...thread, comments }) : el;
     }
     case 'notice-pin': {
-      const board = openNoticeBoard(el);
+      const board = openNotePiece(el);
       if (!board || !isNoticeNote(delta.note)) return el;
       const notes = board.noticeNotes ?? [];
       // A replay, or a board already full: the note does not land (two pins racing for the last place settle in
@@ -199,7 +206,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       return withNotes(board, [...notes, delta.note]);
     }
     case 'notice-unpin': {
-      const board = openNoticeBoard(el);
+      const board = openNotePiece(el);
       if (!board || typeof delta.noteId !== 'string' || typeof delta.by !== 'string') return el;
       const notes = board.noticeNotes ?? [];
       const at = notes.findIndex((n) => n.id === delta.noteId && n.by === delta.by);
@@ -216,6 +223,16 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       if (el.pieceTimer && samePieceTimer(el.pieceTimer, delta.state)) return el;
       const { running, startedAt, accumulatedMs, durationMs } = delta.state;
       return { ...el, pieceTimer: { running, startedAt, accumulatedMs, durationMs } };
+    }
+    case 'arcade-score': {
+      // Locked or not: a lock fixes where the machine stands, as a Timer's does.
+      if (el.type !== 'shape' || el.shape !== 'arcade-machine') return el;
+      const table = arcadeTableWith(el.arcadeScores, delta.score);
+      return table ? { ...el, arcadeScores: table } : el;
+    }
+    case 'arcade-clear': {
+      if (el.type !== 'shape' || el.shape !== 'arcade-machine' || !el.arcadeScores) return el;
+      return withoutArcadeScores(el);
     }
     default:
       return el;
@@ -263,12 +280,23 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
     if (local.pieceTimer !== next.pieceTimer) {
       next = local.pieceTimer ? { ...next, pieceTimer: local.pieceTimer } : withoutPieceTimer(next);
     }
+    // An Arcade Machine's High Scores likewise: every score reached us as a delta.
+    if (local.arcadeScores !== next.arcadeScores) {
+      next = local.arcadeScores
+        ? { ...next, arcadeScores: local.arcadeScores }
+        : withoutArcadeScores(next);
+    }
   }
   return next;
 }
 
 function withoutPieceTimer(el: ShapeElement): ShapeElement {
   const { pieceTimer: _drop, ...rest } = el;
+  return rest;
+}
+
+function withoutArcadeScores(el: ShapeElement): ShapeElement {
+  const { arcadeScores: _drop, ...rest } = el;
   return rest;
 }
 
@@ -281,7 +309,13 @@ function withoutNotes(el: ShapeElement): ShapeElement {
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const { checklistItems, noticeNotes: _n, pieceTimer: _p, ...shape } = rest as ShapeElement;
+  const {
+    checklistItems,
+    noticeNotes: _n,
+    pieceTimer: _p,
+    arcadeScores: _a,
+    ...shape
+  } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;

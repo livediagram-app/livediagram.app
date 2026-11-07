@@ -27,6 +27,7 @@ import type { AvatarStatus } from '../status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '../reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { padEntry } from '../pad';
+import { seatPoints } from '../seats';
 import { newSeatClaim, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import { buildNavGrid, findWalkPath, type NavGrid } from '../pathing';
@@ -54,6 +55,8 @@ import {
 // Canvas px of travel per leg swing. Tuned against AVATAR_SPEED so the
 // cadence reads as a walk rather than a shuffle (~6 steps/second at speed).
 const STEP_LENGTH = 22;
+// How far, in canvas px, a seat may sit from our feet before we are moved onto it (a turned or moved piece).
+const SEAT_FOLLOW_EPSILON = 0.5;
 
 // What a peer needs to draw someone else's character (docs/specs/008-canvas/avatar-mode.md). Deliberately
 // tiny: it rides the presence channel at cursor rates.
@@ -502,6 +505,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
+    // A move performed, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
+    avatarBindings.track('Canvas', 'Used', 'AvatarAction');
   };
 
   // Chair (docs/specs/009-elements/chair.md): sit down. Snaps the feet to the seat point (so the
@@ -523,6 +528,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setFacing(seatFacing);
     seatedRef.current = chairId;
     setSeatedOn(chairId);
+    // Sitting down, never where (docs/specs/009-elements/chair.md "Telemetry").
+    avatarBindings.track('Canvas', 'Used', 'Sit');
     const claim = newSeatClaim(index);
     claimRef.current = claim;
     setSeatClaim(claim);
@@ -913,6 +920,44 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     peersBeforeRef.current = peers;
     if (active && peers !== undefined && peers > (before ?? 0)) heartbeat(true);
   }, [active, peers]);
+
+  // A piece turned or moved while we sit in it carries us (livehuddle's docs/specs/009-elements/furniture-facing.md
+  // "Somebody sitting in it is carried round"): our feet go to the seat we hold, at its new place, facing its new way,
+  // and we stay seated. Read off the board on every change of it; a piece that is gone, or no longer seats anyone,
+  // leaves us where we are. Only the sitter's own machine moves them, as with every move, so the room sees it in our
+  // presence rather than working it out itself.
+  const followSeat = useEffectEvent(() => {
+    const id = seatedRef.current;
+    const from = posRef.current;
+    if (!id || !from) return;
+    const el = elements.find((e) => e.id === id);
+    if (!el || !isSceneShape(el) || !seatsACharacter(el.shape) || !hasSceneBox(el)) return;
+    const seat = seatPoints({ ...el, shape: el.shape })[claimRef.current?.index ?? 0];
+    if (!seat) return;
+    const at = clearOfFences(
+      { x: seat.x, y: seat.y },
+      fences,
+      fenceReachFor(avatarScale(config.size)),
+    );
+    if (
+      Math.abs(at.x - from.x) < SEAT_FOLLOW_EPSILON &&
+      Math.abs(at.y - from.y) < SEAT_FOLLOW_EPSILON
+    ) {
+      if (seat.facing !== facing) {
+        setFacing(seat.facing);
+        publishIdle(from, seat.facing);
+      }
+      return;
+    }
+    posRef.current = at;
+    setPos(at);
+    setFacing(seat.facing);
+    lastUnderFeetRef.current = id;
+    publishIdle(at, seat.facing);
+  });
+  useEffect(() => {
+    if (active) followSeat();
+  }, [active, elements]);
 
   // Portals (docs/specs/009-elements/portal-element.md): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than

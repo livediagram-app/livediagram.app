@@ -22,7 +22,7 @@ Scope, by file:
 | `packages/document/src/svg-render.ts`                       | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
 | `packages/api-schema/src/room-messages.ts`                  | `AvatarPresence.seatedOn`                                                |
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
-| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in **Seating** (`tileGroup: 'seating'`)                    |
+| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in **Seats** (`tileGroup: 'seating'`)                      |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn(seatFor)`; `chairSitters` from presence       |
 | `../packages/avatar/src/hooks/useAvatarWalk.ts`             | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
@@ -33,13 +33,13 @@ Scope, by file:
 
 Desk and sofa (spec "Desk and sofa") add:
 
-| File                                                     | Role                                                                                                                                                                                                                       |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/seating.ts`                       | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame`, `turnedSeatingBox`; re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
-| `packages/document/src/shape-factory.ts`                 | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                            |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                      |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                         |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                             |
+| File                                                     | Role                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/seating.ts`                       | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame` (a turn is `turnPiece`, [Turning furniture](furniture-facing.md)); re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
+| `packages/document/src/shape-factory.ts`                 | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                                                                          |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                                                                    |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                                                                       |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                                                                           |
 
 ## Domain and naming
 
@@ -213,7 +213,7 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
   `#94a3b8`, label `#0f172a`; dark paper stroke `#64748b`, label `#ffffff`. The export follows
   this, and so does the canvas: `FurnitureView` takes `defaultStrokeColor(element, surface)`.
 - **Label:** under the chair (`textAlignY: 'bottom'`), on the canvas and in the export.
-- **Palette:** tile `tools:chair` ("Add Chair") in the **Seating** category (the Meet band).
+- **Palette:** tile `tools:chair` ("Add Chair") in the **Seats** category (the Meet band).
 - **Occupied:** a 3 px ring (opacity 0.85) painted inside the drawing's frame (so a mirrored side
   mirrors it) before `parts[ringUnder]`: on the seat, under whatever stands nearer the camera (a
   backrest's back, the desk and its monitor, a sofa's arms). A one-seat drawing uses its own `ring`

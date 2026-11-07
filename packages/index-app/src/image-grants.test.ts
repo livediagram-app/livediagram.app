@@ -128,6 +128,20 @@ describe('grants', () => {
     expect(granted()).toEqual(['a', 'b']);
   });
 
+  it("grants a claimant's own images only, named as the service names them (a Participant's claim)", async () => {
+    owners.set('bobs', 'user_bob').set('guests', 'h:guest-1').set('adas', 'user_ada');
+    const g = createImageGrants(deps);
+    expect(await g.grantOwn(sql(), [], 'user_bob', 1)).toBe(0);
+    expect(await g.grantOwn(sql(), ['bobs', 'adas', 'nope'], 'user_bob', 1)).toBe(1);
+    expect(await g.grantOwn(sql(), ['guests'], 'guest-1', 1)).toBe(1);
+    expect(granted()).toEqual(['bobs', 'guests']);
+    // Kept once Bob's tie to the item ends: no edit key, no team.
+    expect([...(await g.servableImageIds(sql(), ada, ['bobs', 'guests'], []))]).toEqual([
+      'bobs',
+      'guests',
+    ]);
+  });
+
   it('reads the people edit keys name', () => {
     expect(editorsOfKeys(['user_bob@1', 'a@b@2', '@3'])).toEqual(['user_bob', 'a@b']);
   });

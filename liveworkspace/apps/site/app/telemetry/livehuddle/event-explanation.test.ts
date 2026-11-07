@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import {
+  isValidTelemetryEvent,
+  TELEMETRY_ACTIONS,
+  TELEMETRY_CATEGORIES,
+} from '@livehuddle/api-schema';
 import { REPO, SCAN_ROOTS, SKIP } from './scan-roots';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { avatarEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
 import { LIVEHUDDLE as APP } from './config';
+import { isInheritedEvent } from './retired-events';
 
 const eventExplanation = APP.explain;
 
@@ -17,6 +23,8 @@ const eventExplanation = APP.explain;
 const EMITS = [
   ...scanEmitters(REPO, SCAN_ROOTS, SKIP),
   ...sharedClientEmitters(),
+  // Avatar mode's events, sent through this editor's bound track.
+  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
@@ -47,6 +55,30 @@ describe('eventExplanation', () => {
         );
     }
     expect([...missing]).toEqual([]);
+  });
+
+  // livehuddle forked livediagram's sentences (Work Tracker #586): one for an event its vocabulary would refuse at
+  // ingest (Layer, Plan, Sheet and Form events, Drive's mirror, votes) can never be read, so none is kept.
+  it('explains only events the vocabulary accepts', () => {
+    const categories: readonly string[] = TELEMETRY_CATEGORIES;
+    const actions: readonly string[] = TELEMETRY_ACTIONS;
+    const refused = Object.keys(EXACT).filter((key) => {
+      const [category = '', action = '', type = ''] = key.split('|');
+      return !isValidTelemetryEvent({ category, action, type: type || null });
+    });
+    const refusedActions = Object.keys(BY_ACTION).filter((key) => {
+      const [category = '', action = ''] = key.split('|');
+      return !categories.includes(category) || !actions.includes(action);
+    });
+    expect([...refused, ...refusedActions]).toEqual([]);
+  });
+
+  it('keeps no sentence for what livehuddle inherited from livediagram and never had', () => {
+    const inherited = Object.keys(EXACT).filter((key) => {
+      const [category = '', action = '', type = ''] = key.split('|');
+      return isInheritedEvent(category, action, type || null);
+    });
+    expect(inherited).toEqual([]);
   });
 
   it('keeps the copy free of jargon and code names', () => {

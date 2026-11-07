@@ -43,8 +43,6 @@ import { readElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
-import { EraserBrushRing } from '@liveworkspace/workbench/components/canvas/EraserBrushRing';
-import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
 import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
@@ -258,9 +256,7 @@ function CanvasView(props: CanvasProps) {
     ),
   );
 
-  const { eraserPos, handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
-    canvasTool,
-    mainRef,
+  const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
     onCanvasPointerMove,
     wrapperRef,
     viewportZoom,
@@ -280,6 +276,7 @@ function CanvasView(props: CanvasProps) {
     setAvatarBurst,
     setAvatarStatus,
     sittersOf,
+    sitsDown,
     speech,
     speechBubbles,
   } = useCanvasAvatar({
@@ -387,7 +384,6 @@ function CanvasView(props: CanvasProps) {
     onReadElement: elementReader.open,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: (e) => pathTool.beginEditPress(e),
-    onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
     // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target). On the bare board a
@@ -626,7 +622,7 @@ function CanvasView(props: CanvasProps) {
                 stepFrame={peer.avatar.stepFrame}
                 lift={peer.avatar.lift}
                 wave={peer.avatar.wave}
-                seated={!!peer.avatar.seatedOn}
+                seated={sitsDown(peer.avatar.seatedOn)}
                 // Parsed, not trusted: anything but a known drink draws an empty hand.
                 holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
                 status={parseAvatarStatus(peer.avatar.status)}
@@ -672,7 +668,7 @@ function CanvasView(props: CanvasProps) {
                 lift={avatar.lift}
                 wave={avatar.wave}
                 pose={avatar.pose}
-                seated={avatar.seatedOn !== null}
+                seated={sitsDown(avatar.seatedOn)}
                 holding={avatar.holding}
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}
@@ -719,16 +715,6 @@ function CanvasView(props: CanvasProps) {
             ) : null}
           </div>
 
-          {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): screen space, so it does not pan
-          or zoom with the canvas, and it never takes a pointer event. */}
-          {canvasTool === 'eraser' ? (
-            <EraserBrushRing
-              pos={eraserPos}
-              radius={eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)}
-              filtered={(props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'}
-            />
-          ) : null}
-
           <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
           {pathTool.toolbar ? (
             <PathEditToolbar
@@ -753,8 +739,6 @@ function CanvasView(props: CanvasProps) {
             mainSize={mainSize}
             avatarConfig={avatarLook.config}
             onChangeAvatarField={avatarLook.setField}
-            eraserConfig={props.eraserConfig}
-            onChangeEraserField={props.onChangeEraserField}
             formatConfig={props.formatConfig}
             onToggleFormatGroup={props.onToggleFormatGroup}
             onSetFormatMode={props.onSetFormatMode}
@@ -762,9 +746,6 @@ function CanvasView(props: CanvasProps) {
             formatPanelPosition={props.formatPanelPosition}
             onMoveFormatPanel={props.onMoveFormatPanel}
             onResetFormatPanel={props.onResetFormatPanel}
-            eraserPanelPosition={props.eraserPanelPosition}
-            onMoveEraserPanel={props.onMoveEraserPanel}
-            onResetEraserPanel={props.onResetEraserPanel}
             onRandomiseAvatar={avatarLook.randomise}
             avatarStatus={avatarStatus}
             onSetAvatarStatus={setAvatarStatus}

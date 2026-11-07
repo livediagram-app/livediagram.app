@@ -53,6 +53,7 @@ import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { reportSignIn } from '../auth/session-telemetry';
 import { json, notFound, rateLimited } from '../responses';
 import type { Env } from '../types';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const COOKIE_PATH = '/api/auth';
 const PKCE_COOKIE = 'ld_pkce';
@@ -111,7 +112,7 @@ export function configured(env: Env): Configured | null {
 // worker the request as the browser sent it); AUTH_ORIGIN for local dev, where the router proxies
 // to localhost:8687 and the request no longer carries the address the browser is on.
 function appOrigin(env: Env, request: Request): string {
-  return env.AUTH_ORIGIN?.replace(/\/+$/, '') || new URL(request.url).origin;
+  return withoutTrailingSlashes(env.AUTH_ORIGIN ?? '') || new URL(request.url).origin;
 }
 
 const callbackUrl = (env: Env, request: Request) => `${appOrigin(env, request)}/api/auth/callback`;

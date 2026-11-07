@@ -6,13 +6,8 @@
 
 import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import {
-  officePlan,
-  walkIn,
-  WALK_IN_BUTTON_W,
-  type OfficePiece,
-  type OfficeRoom,
-} from './template-office-parts';
+import { arrival } from './template-arrival';
+import { officePlan, type OfficePiece, type OfficeRoom } from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
@@ -84,8 +79,9 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
         { kind: 'bookshelf', x: 720, y: 46 },
       ],
     },
-    // Two phone booths along the right, for a call without the room. Their doors face the open floor: a door in a
-    // booth's front wall opened onto a 40 px strip by the room's own wall, too narrow to walk.
+    // Two phone booths along the right, for a call without the room, each a Phone Booth piece in a booth room
+    // (docs/specs/009-elements/workday-pieces.md). Their doors face the open floor: a door in a booth's front wall
+    // opened onto a 40 px strip by the room's own wall, too narrow to walk.
     {
       name: 'Booth 1',
       x: 860,
@@ -93,7 +89,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
+      pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
     {
       name: 'Booth 2',
@@ -102,7 +98,7 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
       w: 200,
       h: 220,
       door: 'w',
-      pieces: [{ kind: 'chair', x: 100, y: 90, facing: 's' }],
+      pieces: [{ kind: 'phone-booth', x: 90, y: 44 }],
     },
   ];
   return plan(
@@ -114,11 +110,13 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
     360,
     'emoji-desktop',
     'Grab any desk, take calls in a booth, and meet at the coffee bar. Everyone is welcome to work here.',
-    walkIn(
-      x0 + width,
-      y0 + HEAD + COWORK_H + BELOW / 2,
-      'Press Walk In (or W) to come in. Sit at any desk, step into a booth for a call, and say hello with Enter.',
-    ),
+    // On the open floor between the desks and the lounge, the coffee bar and the booths in view.
+    arrival({
+      x: cx - 184,
+      y: cy - 4,
+      hintW: 160,
+      hint: 'You arrive on the Avatar Pad. Take any desk, or a booth for a call.',
+    }),
   );
 }
 
@@ -156,7 +154,6 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   // The team's board on the wall beside the pod: four stickies to fill in together.
   const bx = x0 + POD_W + BOARD_GAP;
   const by = y0 + HEAD;
-  const boardBottom = by + 44 + 2 * 154 - 8;
   const board: Element[] = [
     {
       ...createText(bx, by),
@@ -184,16 +181,13 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
-      // Under the board, beside the pod (docs/specs/012-collaboration/virtual-office-template.md "Spaces"), not under
-      // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
-      // the bottom-right cluster floats, and a button under the pod sat under the cluster. Here it is level with the
-      // pod's lower half, with open floor under it and a short walk round to the door.
-      ...walkIn(
-        x0 + width,
-        (boardBottom + y0 + HEAD + POD_H) / 2,
-        'Press Walk In (or W), take a desk, and meet at the table for the stand-up.',
-        BOARD_W - WALK_IN_BUTTON_W - 20,
-      ),
+      // In the middle of the pod, between the desks and the table.
+      ...arrival({
+        x: cx - 168,
+        y: cy + 52,
+        hintW: 320,
+        hint: 'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
+      }),
     ],
   );
 }
@@ -229,6 +223,10 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
         // The stage, and rows of chairs facing it either side of an aisle. Whoever speaks from it is heard by the
         // whole hall, and seen: the hall exists for a presenter everyone watches.
         { kind: 'stage', x: STAGE_X, y: 48, w: STAGE_W, h: STAGE_H, stageCameras: true },
+        // Its curtains framing it from the back wall, and the presenter's podium right of the middle
+        // (docs/specs/009-elements/venue-pieces.md "In the templates").
+        { kind: 'stage-curtains', x: STAGE_X - 10, y: 30, w: STAGE_W + 20 },
+        { kind: 'podium', x: STAGE_X + 290, y: 82 },
         ...ROW_YS.flatMap((y) =>
           SEAT_XS.map((x) => ({ kind: 'chair' as const, x, y, facing: 's' as const })),
         ),
@@ -252,11 +250,13 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
       focus,
-      ...walkIn(
-        x0 + width,
-        y0 + HEAD + HALL_H + BELOW / 2,
-        'Press Walk In (or W) and take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
-      ),
+      // In the centre aisle, among the rows, facing the stage: the line under it is a narrow sign down the aisle.
+      ...arrival({
+        x: cx,
+        y: cy + 76,
+        hintW: 140,
+        hint: 'You arrive on the Avatar Pad: take a seat, and Wave to raise a hand.',
+      }),
     ],
   );
 }

@@ -18,7 +18,9 @@ import type {
   ShareAnswer,
   ShareMessage,
   SharedTabCopy,
+  ConnectedTabOutcome,
 } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { Env } from './types';
 
@@ -46,12 +48,16 @@ export type DesignRoomClient = {
   exportComments(): Promise<ExportCommentsResult>;
   // Whether the design holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
+  // The index's reverse write of a connected tab (design-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // Of `ids`, the photo blobs this tab holds, with what they are: the source side of an adoption into another
   // design (routes/photo-blob-routes.ts). The caller has checked the reader's grant on this design.
   heldBlobs(tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   // Whether the design places image `imageId` (on `onlyTabId`, for a tab-scoped reader) and may serve it
   // (db/image-grants.ts designServesImage). The caller has checked the reader's grant on this design.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
+  // A Participant's placement claim: grants the images of `ids` that `personId` uploaded; answers how many.
+  grantOwnImages(ids: string[], personId: string): Promise<number>;
   // A copy's two halves (design-content.ts): the source as `copier` may take it (anyone but the owner takes the
   // comments without other people's author ids), and whether it went through the design's open Community post's link.
   exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
@@ -93,8 +99,10 @@ export function designRoom(env: Pick<Env, 'DESIGN_ROOM'>, designId: string): Des
     importFile: (file) => room.importFile(designId, file),
     exportComments: () => room.exportComments(designId),
     hasTab: (tabId) => room.hasTab(designId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(designId, write),
     heldBlobs: (tabId, ids) => room.heldBlobs(designId, tabId, ids),
     servesImage: (imageId, onlyTabId) => room.servesImage(designId, imageId, onlyTabId),
+    grantOwnImages: (ids, personId) => room.grantOwnImages(designId, ids, personId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(designId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(designId, copy),
     importMigrated: (payload) => room.importMigrated(designId, payload),
@@ -120,8 +128,10 @@ export type DesignRoomRpc = {
   importFile(designId: string, file: DesignFileImport): Promise<void>;
   exportComments(designId: string): Promise<ExportCommentsResult>;
   hasTab(designId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(designId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]>;
   servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
+  grantOwnImages(designId: string, ids: string[], personId: string): Promise<number>;
   exportCopy(
     designId: string,
     onlyTabId: string | null,

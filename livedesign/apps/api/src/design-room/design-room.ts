@@ -17,7 +17,7 @@ import {
 } from '@liveworkspace/index-app';
 import { indexService } from '../index-service';
 import { DurableObject } from 'cloudflare:workers';
-import { designServesImage } from '../db/image-grants';
+import { designServesImage, grantOwnImages } from '../db/image-grants';
 import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
@@ -122,6 +122,9 @@ import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
+import { addConnectedDesignTab, connectedTabArrival } from './connected-tab';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDesignComments } from './design-comments';
 import { importMigratedDesign } from './design-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -701,6 +704,21 @@ export class DesignRoom extends DurableObject<Env> {
     await importDesignFile(this.requireEnv(), designId, file);
   }
 
+  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
+  // with the design open sees it arrive, as an ordered system op a blipped socket replays.
+  async addConnectedTab(designId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
+    this.bindDesign(designId);
+    const sql = this.state.storage.sql;
+    if (!hasDesignSchema((q) => sql.exec(q))) return 'not_found';
+    const env = this.requireEnv();
+    const outcome = await addConnectedDesignTab(env, designId, write);
+    if (typeof outcome === 'object' && outcome.made) {
+      const op = await connectedTabArrival(env, designId);
+      if (op) this.sequenceMutation('system', op);
+    }
+    return outcome;
+  }
+
   async hasTab(designId: string, tabId: string): Promise<boolean> {
     this.bindDesign(designId);
     return designHasTab(this.requireEnv(), designId, tabId);
@@ -709,6 +727,13 @@ export class DesignRoom extends DurableObject<Env> {
   async servesImage(designId: string, imageId: string, onlyTabId: string | null): Promise<boolean> {
     this.bindDesign(designId);
     return designServesImage(this.requireEnv(), designId, imageId, onlyTabId);
+  }
+
+  // A Participant's placement claim (routes/images.ts checked the caller may add to the design): the images of `ids`
+  // that `personId` uploaded are granted here (db/image-grants.ts grantOwnImages). Answers how many.
+  async grantOwnImages(designId: string, ids: string[], personId: string): Promise<number> {
+    this.bindDesign(designId);
+    return grantOwnImages(this.requireEnv(), ids, personId, Date.now());
   }
 
   async heldBlobs(designId: string, tabId: string, ids: string[]): Promise<PhotoBlobMeta[]> {

@@ -37,10 +37,12 @@
     "./signed-in-hint": "./src/signed-in-hint.ts",
     "./snapshot-svg": "./src/snapshot-svg.ts",
     "./tab-size": "./src/tab-size.ts",
+    "./tab-connection": "./src/tab-connection.ts",
     "./teams": "./src/teams.ts",
     "./title-case": "./src/title-case.ts",
     "./trash": "./src/trash.ts",
     "./untitled-names": "./src/untitled-names.ts",
+    "./url-slashes": "./src/url-slashes.ts",
     "./within-reach": "./src/within-reach.ts"
   },
   "scripts": {
@@ -56,9 +58,9 @@
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   }
 }

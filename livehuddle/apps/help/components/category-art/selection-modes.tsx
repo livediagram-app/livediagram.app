@@ -1,40 +1,38 @@
 import type { ReactNode } from 'react';
 import { Label, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
+import { Character } from './character';
 
 const ICON = 'fill-none stroke-current';
 
-// The picker's rows: each mode's glyph, drawn about its centre, and its name.
+// The Edit | Walk toggle's two sides, stacked: each one's glyph, drawn about its centre, and its name.
 const MODES: { name: string; glyph: ReactNode }[] = [
   {
-    name: 'Select',
+    name: 'Edit',
     glyph: (
       <path d="M-4 -7 v13 l3.4 -3.1 2.2 4.6 2.2 -1 -2.1 -4.4 4.4 -0.3 Z" className="fill-current" />
     ),
   },
   {
-    name: 'Hand',
+    name: 'Walk',
+    // Footprints (lucide's, at half scale), Avatar mode's glyph everywhere.
     glyph: (
-      <path
-        d="M-4 6 c-2 -2 -4 -5 -4 -7 0 -1.2 1.6 -1.6 2.4 -0.4 L-4 1 V-6 a1.3 1.3 0 0 1 2.6 0 V-1 V-7.5 a1.3 1.3 0 0 1 2.6 0 V-1 V-6.5 a1.3 1.3 0 0 1 2.6 0 V0 V-4 a1.3 1.3 0 0 1 2.6 0 V2 c0 3 -2 5.5 -5 5.5 Z"
+      <g
+        transform="translate(-6 -6) scale(0.5)"
         className={ICON}
-        strokeWidth={1.3}
+        strokeWidth={2.6}
+        strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    ),
-  },
-  {
-    name: 'Eraser',
-    glyph: (
-      <g transform="rotate(-40)">
-        <rect x={-7} y={-4} width={14} height={8} rx={2} className={ICON} strokeWidth={1.5} />
-        <line x1={-1} y1={-4} x2={-1} y2={4} className="stroke-current" strokeWidth={1.5} />
+      >
+        <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z" />
+        <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z" />
+        <path d="M16 17h4M4 13h4" />
       </g>
     ),
   },
 ];
 
-// Selection Modes: the mode picker open with Select chosen, and a marquee sweeping up two shapes.
+// Edit or Walk: the toggle with Edit on over a character waiting to walk, and a marquee sweeping up two shapes.
 export function SelectionModesArt() {
   return (
     <Stage>
@@ -73,6 +71,16 @@ export function SelectionModesArt() {
             </g>
           );
         })}
+        {/* Below the toggle, a character and the trail it will walk once Walk is on. */}
+        <path
+          d="M46 182 q30 -40 74 -52"
+          className="stroke-brand-300"
+          strokeWidth={1.5}
+          fill="none"
+          strokeDasharray="3 4"
+          strokeLinecap="round"
+        />
+        <Character x={46} y={176} shirt="fill-brand-500" />
       </Card>
 
       {/* A marquee drag catching two shapes. */}

@@ -17,8 +17,14 @@ export const GRASS = 'rgb(155 210 122)';
 export const PATH = 'rgb(231 220 196)';
 const TREE = 'rgb(34 197 94)';
 export const PICKET = 'rgb(255 255 255)';
-export const STAGE_TOP = 'rgb(253 230 138)';
-export const STAGE_FRONT = 'rgb(217 119 6)';
+// The stage's honey boards and stained front edge (docs/specs/009-elements/venue-pieces.md "The stronger Stage").
+export const STAGE_TOP = 'rgb(236 201 143)';
+export const STAGE_FRONT = 'rgb(124 74 42)';
+// The venue pieces' velvet, steel and tarmac, and a pool's water.
+export const VELVET = 'rgb(185 28 28)';
+export const TARMAC = 'rgb(82 90 102)';
+export const POOL = 'rgb(56 189 248)';
+export const DECK = 'rgb(212 193 156)';
 const CAN = 'rgb(239 68 68)';
 
 // Someone walking in from below, ending at (x, y).
@@ -142,6 +148,8 @@ export function templatePreviewGroup24(kind: TemplateKind): ReactElement | null 
           <Room x={3} y={3} w={74} h={44} door="bottom" />
           <rect x={28} y={6} width="24" height="6" rx="1" fill={STAGE_TOP} />
           <rect x={28} y={11} width="24" height="2.2" rx="0.6" fill={STAGE_FRONT} />
+          {/* The trainer's podium on the stage. */}
+          <rect x={45} y={7.4} width="2.4" height="3.4" rx="0.4" fill={WOOD} />
           <rect x={55} y={7} width="7" height="5" rx="1" fill="rgb(129 140 248)" />
           <Table x={9} y={21} />
           <Table x={56} y={21} />

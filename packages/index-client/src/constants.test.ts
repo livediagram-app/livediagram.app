@@ -4,7 +4,9 @@ import {
   APP_LINK_LEVELS,
   APPS,
   RETIRED_PLACEMENT_KEYS,
+  TEAM_AUDIT_EVENT_TYPES,
   foldRetiredDefaults,
+  isTeamAuditEventType,
   linkLevelOffered,
   placementDefaultKeysFor,
   retiredKeysClearedWith,
@@ -107,5 +109,19 @@ describe('the levels each app offers a new link', () => {
 
   it("every app's default is one it offers", () => {
     for (const app of APPS) expect(linkLevelOffered(app, APP_DEFAULT_LINK_LEVEL[app])).toBe(true);
+  });
+});
+
+describe('TEAM_AUDIT_EVENT_TYPES', () => {
+  it("keeps a team's events and never an API token's or a team's deletion", () => {
+    expect(TEAM_AUDIT_EVENT_TYPES.filter((t) => t.startsWith('token_'))).toEqual([]);
+    expect(TEAM_AUDIT_EVENT_TYPES).not.toContain('team_deleted');
+    expect(new Set(TEAM_AUDIT_EVENT_TYPES).size).toBe(TEAM_AUDIT_EVENT_TYPES.length);
+  });
+
+  it('tells a kind the log keeps from one it never does', () => {
+    expect(isTeamAuditEventType('webhook_added')).toBe(true);
+    expect(isTeamAuditEventType('token_created')).toBe(false);
+    expect(isTeamAuditEventType(1)).toBe(false);
   });
 });

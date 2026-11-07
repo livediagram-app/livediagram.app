@@ -17,6 +17,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
+import { TurnButtons } from '@liveworkspace/workbench/components/canvas/TurnButtons';
 import type { Rect } from '@livediagram/document';
 
 // A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
@@ -47,6 +48,9 @@ type SelectionPopoverProps = {
   hasText?: boolean;
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
+  // Turn a piece of furniture a quarter (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"): a piece
+  // that turns only. Disabled, still in its place, while the piece is locked.
+  onTurn?: (quarters: 1 | -1) => void;
   // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
   // The same actions as Tab / Enter and the "+" ring, given a one-click home
   // on the toolbar. Passed only for an editable, unlocked mind node.
@@ -108,6 +112,7 @@ export function SelectionPopover({
   onEditText,
   hasText = true,
   onEditPoints,
+  onTurn,
   onAddMindChild,
   flowchartStep,
   cardinality,
@@ -224,6 +229,13 @@ export function SelectionPopover({
               >
                 <EditPointsIcon />
               </PopoverButton>
+              <Divider />
+            </>
+          ) : null}
+
+          {onTurn ? (
+            <>
+              <TurnButtons onTurn={onTurn} locked={locked} />
               <Divider />
             </>
           ) : null}

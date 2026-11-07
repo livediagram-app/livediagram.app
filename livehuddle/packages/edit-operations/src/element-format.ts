@@ -9,6 +9,7 @@ import {
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   THEMES,
+  TURNING_SHAPES,
   type Element,
   withArticle,
 } from '@livehuddle/document';
@@ -135,18 +136,22 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'site-header': ['navLinks'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
-  chair: ['chairFacing'],
-  desk: ['chairFacing'],
-  sofa: ['chairFacing'],
+  // docs/specs/009-elements/furniture-facing.md: every piece of furniture that turns takes a facing.
+  ...Object.fromEntries(TURNING_SHAPES.map((kind) => [kind, ['chairFacing']])),
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
   room: ['roomDoor'],
   // docs/specs/009-elements/room-builder.md "Opening and closing": whether a door is shut.
-  door: ['doorClosed'],
+  door: ['doorClosed', 'variant'],
+  // docs/specs/009-elements/office.md "Rug types", corridor.md: a rug's pattern and a corridor's shape.
+  rug: ['variant'],
+  // office.md "Long Table": a Meeting Table's type.
+  'meeting-table': ['variant'],
+  corridor: ['variant'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],
   // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
   'world-clock': ['clockZones'],
-  jukebox: ['jukeboxSource'],
+  jukebox: ['jukeboxSource', 'chairFacing'],
   portal: ['portalTarget'],
   // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link.
   screen: ['screenUrl'],

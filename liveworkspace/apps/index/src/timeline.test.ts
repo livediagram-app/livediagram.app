@@ -749,7 +749,13 @@ describe('the bound', () => {
     console.info(
       `[timeline] 100 account events in one call in ${ms.toFixed(1)} ms of CPU, ${statements.mock.calls.at(-1)![0].length} statements`,
     );
-    expect(statements.mock.calls.at(-1)![0]).toHaveLength(3);
+    // Three for the Timeline and one for the team audit log, whatever the count.
+    expect(statements.mock.calls.at(-1)![0]).toHaveLength(4);
+    expect(
+      h.db.sql
+        .prepare("SELECT COUNT(*) AS n FROM team_audit_events WHERE team_id = 'team_w'")
+        .get(),
+    ).toEqual({ n: 100 });
     expect(ms).toBeLessThan(cpuBudgetMs(250));
     statements.mockRestore();
   });

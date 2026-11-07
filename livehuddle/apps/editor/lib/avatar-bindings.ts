@@ -10,7 +10,7 @@ import { track } from './telemetry';
 export const AVATAR_STORAGE_PREFIX = 'livehuddle:v2:';
 
 export function bindAvatar(): void {
-  // No Size choice in livehuddle (docs/specs/008-canvas/avatar-mode.md "Avatar Panel"): everyone stands at Regular, so
+  // No Size choice in livehuddle (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): everyone stands at Regular, so
   // a room's seats, doorways and calls read the same for everybody.
   configureAvatar({
     track,

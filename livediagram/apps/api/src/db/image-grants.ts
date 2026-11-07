@@ -86,6 +86,17 @@ export async function documentMayServeImage(
   return (await servableImageIds(env, documentId, [imageId])).has(imageId);
 }
 
+// A Participant's placement claim (routes/images.ts, which checked they may add to the canvas): grant each of `ids`
+// that `personId` uploaded. Answers how many it granted.
+export async function grantOwnImages(
+  env: DocumentEnv,
+  ids: readonly string[],
+  personId: string,
+  now: number,
+): Promise<number> {
+  return grantsFor(env).grantOwn(sqlOf(env), ids, personId, now);
+}
+
 // As the canvas pushes the images it places (document-outbox.ts): grant each one whose owner is entitled to place
 // it here right now (a teammate, or someone who wrote to it since the last push: `editorKeys`).
 export async function grantPlacedImages(

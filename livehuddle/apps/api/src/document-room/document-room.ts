@@ -84,6 +84,7 @@ import {
 } from '../room-session';
 
 import {
+  BELL_THROTTLE_MS,
   CHANGESET_RETENTION_MS,
   createKnockThrottle,
   type CommunityAuthor,
@@ -133,6 +134,9 @@ import {
 } from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentComments } from './document-comments';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
+import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import {
@@ -231,8 +235,13 @@ const MAINTENANCE_KEY = 'maintenance-at';
 // The sample streams this room relays and coalesces (docs/specs/015-api/api.md "A busy room bounds its presence
 // fan-out"): the walking characters and cursors, plus proximity audio's talking level
 // (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds bytes to frames the
-// walkers already cause, never frames.
-const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([...RELAYED_SAMPLE_KINDS, 'avatar-voice']);
+// walkers already cause, never frames; and a game's paddle (docs/specs/009-elements/social-pieces.md "The wire"),
+// which only its tab can see.
+const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([
+  ...RELAYED_SAMPLE_KINDS,
+  'avatar-voice',
+  'game-input',
+]);
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -766,6 +775,23 @@ export class DocumentRoom extends DurableObject<Env> {
     await importDocumentFile(this.requireEnv(), documentId, file);
   }
 
+  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
+  // with the Space open sees it arrive, as an ordered system op a blipped socket replays.
+  async addConnectedTab(
+    documentId: string,
+    write: ConnectedTabWrite,
+  ): Promise<ConnectedTabOutcome> {
+    this.bindDocument(documentId);
+    if (!this.hasSchema()) return 'not_found';
+    const env = this.requireEnv();
+    const outcome = await addConnectedDocumentTab(env, documentId, write);
+    if (typeof outcome === 'object' && outcome.made) {
+      const op = await connectedTabArrival(env, documentId);
+      if (op) this.sequenceMutation('system', op);
+    }
+    return outcome;
+  }
+
   async hasTab(documentId: string, tabId: string): Promise<boolean> {
     this.bindDocument(documentId);
     return documentHasTab(this.requireEnv(), documentId, tabId);
@@ -1207,6 +1233,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // meeting-rooms-and-stage.md "Trust"; calls/room-calls.ts): what the mint route asks before a subscription.
   // Knocks pass one per sender per window (docs/specs/012-collaboration/knock.md "The wire"): memory only.
   private readonly knocks = createKnockThrottle();
+  // Rings of a Reception Desk's bell pass one per sender per 5 seconds (docs/specs/009-elements/workday-pieces.md "The
+  // wire"), the knock's throttle with its own window: memory only.
+  private readonly bells = createKnockThrottle(BELL_THROTTLE_MS);
   private readonly calls = new RoomCalls({
     now: () => Date.now(),
     sessions: () => this.callSessions(),
@@ -1426,7 +1455,8 @@ export class DocumentRoom extends DurableObject<Env> {
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
       const batches = (msg as { batches?: unknown }).batches === true;
-      const hello = { ...session, presence, batches } satisfies SessionAttachment;
+      const leanAvatars = (msg as { leanAvatars?: unknown }).leanAvatars === true;
+      const hello = { ...session, presence, batches, leanAvatars } satisfies SessionAttachment;
       ws.serializeAttachment(hello);
       this.presenceRelay.noteSession(ws, relaySessionOf(hello));
       // Where the ordered stream stands as this session joins, so a later
@@ -1435,7 +1465,13 @@ export class DocumentRoom extends DurableObject<Env> {
       // The server's document format number (docs/specs/016-platform/new-version-prompt.md): an editor
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.roomEnv?.BUILD_ID);
-      this.sendTo(ws, { kind: 'format', format: DOCUMENT_FORMAT, ...(build ? { build } : {}) });
+      // `leanAvatars`: this room fills lean avatar packets back out for an older editor, so a new one may send them.
+      this.sendTo(ws, {
+        kind: 'format',
+        format: DOCUMENT_FORMAT,
+        ...(build ? { build } : {}),
+        leanAvatars: true,
+      });
       this.broadcastPresence();
       this.noteMultiplayer();
       this.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
@@ -1557,6 +1593,8 @@ export class DocumentRoom extends DurableObject<Env> {
         // A knock (docs/specs/012-collaboration/knock.md): one per sender per 10 seconds, then broadcast below; each
         // receiver checks it stands in the room. Its answer is addressed to the knocker, as a shove is.
         if (opKind === 'avatar-knock' && !this.knocks.allow(sender.id, Date.now())) return;
+        // A ring of the bell, likewise one per sender per 5 seconds, then broadcast; each receiver checks its earshot.
+        if (opKind === 'avatar-bell' && !this.bells.allow(sender.id, Date.now())) return;
         if (
           opKind === 'avatar-push' ||
           opKind === 'avatar-let-speak' ||
@@ -1773,6 +1811,7 @@ export class DocumentRoom extends DurableObject<Env> {
     if (presenceId) {
       this.calls.forget(presenceId);
       this.knocks.forget(presenceId);
+      this.bells.forget(presenceId);
       this.baton.startGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});
     }
@@ -1917,7 +1956,8 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 }
 
-// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
+// What the presence relay reads of a session: its tab, the other pane of a split, whether it batches, and whether it
+// reads lean avatar packets.
 function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
   const presence = session?.presence;
   if (!presence) return null;
@@ -1925,5 +1965,6 @@ function relaySessionOf(session: SessionAttachment | null): RelaySession | null 
     ...(presence.tabId ? { tabId: presence.tabId } : {}),
     ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
     batches: session.batches === true,
+    leanAvatars: session.leanAvatars === true,
   };
 }

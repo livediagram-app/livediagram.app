@@ -86,6 +86,9 @@ export function useElementHelpers(opts: {
       style?: <E extends BoxedElement>(el: E) => E;
       // false: added without selecting it on the canvas (a chart that sits in a Sheet, selected there instead).
       select?: boolean;
+      // The tile's creation-time variant: a room preset's pieces come with its Room (docs/specs/009-elements/
+      // office-amenities.md "The Restroom preset").
+      variant?: string;
     },
   ) => {
     placeBoxed(
@@ -95,6 +98,7 @@ export function useElementHelpers(opts: {
       opts?.edit === true,
       opts?.style,
       opts?.select !== false,
+      opts?.variant,
     );
   };
 
@@ -105,6 +109,7 @@ export function useElementHelpers(opts: {
     edit = false,
     style: <E extends BoxedElement>(el: E) => E = (el) => el,
     select = true,
+    variant?: string,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -150,8 +155,9 @@ export function useElementHelpers(opts: {
     // furniture already there, and any dropped on it later, stands on it.
     const onFloor = el.type === 'shape' && isFloorShape(el.shape);
     // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), in front of the
-    // room so a click lands on it; the room keeps the selection, and one commit makes both one undo step.
-    const [placed, ...companions] = withDoorPiece(el);
+    // room so a click lands on it, and a room preset's pieces after it (office-amenities.md "The Restroom preset"); the
+    // room keeps the selection, and one commit makes them all one undo step.
+    const [placed, ...companions] = withDoorPiece(el, variant);
     const after = onFloor
       ? [placed!, ...before, ...companions]
       : [...before, placed!, ...companions];

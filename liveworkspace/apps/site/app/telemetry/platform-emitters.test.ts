@@ -52,6 +52,25 @@ describe('platform emitters', () => {
     expect(Object.keys(computed).length).toBeGreaterThan(10);
   });
 
+  it("see the Community page's events, each type literal, under each app's name", () => {
+    const community = platformEmitters().filter(
+      (e) => e.path === 'liveworkspace/apps/site/lib/community/telemetry.ts',
+    );
+    const seen = new Set(
+      community.map((e) => `${String(e.category)}·${String(e.action)}·${String(e.type)}`),
+    );
+    for (const event of [
+      'Community·Opened·Post',
+      'Community·Liked·Post',
+      'Community·Copied·Post',
+      'Community·Reported·PersonalInfo',
+      'Community·Searched·Query',
+      'Community·Selected·Mine',
+      'UI·Opened·finding-community-documents',
+    ])
+      expect(seen).toContain(event);
+  });
+
   it('give each app only what its vocabulary takes: a revoked pass under its own noun', () => {
     const planner = platformEmitters(isLiveplannerEvent);
     const diagram = platformEmitters(isLivediagramEvent);

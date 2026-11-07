@@ -110,7 +110,7 @@ the repo can set it.
 
 The switch is not a share-role act: no Editor, Participant or Viewer can see or change it, and it applies to every
 role alike. Only someone with access to the Cloudflare account flips it. Every role sees the same calm "Calls Paused"
-state while it is off (an Editor's and a Participant's Join Audio, a Viewer's Listen In), and the same refusal.
+state while it is off (the automatic join of an Editor, a Participant or a Viewer), and the same refusal.
 
 ## Wired in
 
@@ -176,10 +176,10 @@ switch while a call is under way in it:
 Pausing is never an error. While the mode is `off` (from `/api/capabilities` when the page opens, from the room's
 push, or from a refused mint):
 
-- The audio control beside Avatar reads **Calls Paused**, with a pause icon, in the cluster's calm resting colour,
+- The audio control, first on the [Call dock](../008-canvas/avatar-mode.md#the-call-dock), reads **Calls Paused** (named beside its glyph on a desktop, the glyph alone on a phone), with a pause icon, in the dock's calm resting colour,
   never amber or red. Its hover card says "Calls are paused for now. Everything else in the Space carries on. Press
   to try again."
-- Pressing it tries to join: if calls are back on, you join, as Join Audio would; if not, it stays paused.
+- Pressing it tries to join: if calls are back on, you join (muted, as walking in does); if not, it stays paused. Nothing retries by itself.
 - A call that was live when the pause arrived ends quietly into that state, and a screen reader hears "Calls are
   paused".
 - Text, avatars, the equaliser bars already on screen and the Space carry on.

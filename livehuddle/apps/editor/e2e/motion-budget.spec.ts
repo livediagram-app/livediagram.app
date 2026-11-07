@@ -94,7 +94,6 @@ async function tourTheChrome(page: Page): Promise<void> {
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
-  await toggle(page, 'Selection mode');
   // A category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The category bar").
   await openAndClose(page, () =>
     page.locator('[data-category-bar-button][aria-label="Rooms"]').click(),
@@ -142,6 +141,91 @@ test.describe('Motion budget', () => {
       .filter((m) => m.delay + m.active > CEILING_MS)
       .map((m) => `${m.name} ${m.delay}+${m.active}ms on ${m.target}`);
     expect(slow, `chrome motion past ${CEILING_MS}ms:\n${slow.join('\n')}`).toEqual([]);
+    expectNoPageErrors(pageErrors);
+  });
+
+  // docs/specs/007-editor/toolbar-layout.md "Switching morphs the strip": the Edit | Walk morph is script-driven
+  // (Web Animations), which the animationstart recorder above never hears, so it is read off the strip itself: every
+  // piece settles within the ceiling, and on every frame the toggle sits at the bar's start edge, the bar resizing
+  // without a jump.
+  test('the Edit | Walk morph settles within 250ms, the toggle riding the bar', async ({
+    page,
+    pageErrors,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
+    await startBlank(page);
+    const start = page.getByRole('region', { name: /^Start a Space$/ });
+    if (await start.isVisible()) {
+      await start.getByRole('button', { name: 'Close' }).click();
+      await start.waitFor({ state: 'detached' });
+    }
+    const toggle = page.getByRole('group', { name: 'Edit or Walk' });
+    for (const side of ['Walk', 'Edit'] as const) {
+      const frames = await page.evaluate(async (name) => {
+        const shown = () =>
+          [...document.querySelectorAll<HTMLElement>('[data-toolbar-palette]')].find(
+            (r) => r.getClientRects().length > 0,
+          )!;
+        const button = [...shown().querySelectorAll<HTMLElement>('[data-edit-walk]')].find(
+          (b) => b.getAttribute('aria-label') === name,
+        )!;
+        button.click();
+        const out: { budget: number[]; edge: number; width: number; surface: boolean }[] = [];
+        const t0 = performance.now();
+        await new Promise<void>((done) => {
+          const step = () =>
+            setTimeout(() => {
+              const root = shown();
+              const card = root.querySelector<HTMLElement>('[data-tour-id="palette"]')!;
+              const bar = root.querySelector<HTMLElement>('[data-strip-morph-surface]');
+              const tog = card.querySelector<HTMLElement>(':scope > [data-edit-walk-toggle]')!;
+              const box = (bar ?? card).getBoundingClientRect();
+              out.push({
+                // Ambient loops (a talking bar) are not chrome motion: finite ones only.
+                budget: root
+                  .getAnimations({ subtree: true })
+                  .map((a) => {
+                    const t = a.effect!.getComputedTiming();
+                    return Number(t.delay ?? 0) + Number(t.activeDuration ?? 0);
+                  })
+                  .filter(Number.isFinite),
+                edge: tog.getBoundingClientRect().left - box.left,
+                width: box.width,
+                surface: bar !== null,
+              });
+              // Sample until the bar has come and gone. The morph starts only once the incoming strip has
+              // rendered, which a loaded CI runner can hold back 200 ms, so a fixed window from the click caught
+              // its end too early (#1392). The 2 s cap still fails a morph that never ends.
+              const seen = out.some((f) => f.surface);
+              if (performance.now() - t0 < 2000 && (!seen || bar !== null))
+                requestAnimationFrame(step);
+              else done();
+            }, 0);
+          requestAnimationFrame(step);
+        });
+        return out;
+      }, side);
+      await expect(toggle.getByRole('button', { name: side, exact: true })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      // The morph ran, and ended.
+      expect(frames.some((f) => f.surface)).toBe(true);
+      expect(frames.at(-1)!.surface).toBe(false);
+      const slow = frames.flatMap((f) => f.budget).filter((ms) => ms > CEILING_MS);
+      expect(slow, `strip motion past ${CEILING_MS}ms`).toEqual([]);
+      // The toggle never leaves the bar's start edge (a pixel for rounding).
+      const edges = frames.map((f) => f.edge);
+      expect(Math.max(...edges) - Math.min(...edges)).toBeLessThanOrEqual(1);
+      // No jump: the bar's width moves monotonically from one strip's to the other's.
+      const widths = frames.map((f) => f.width);
+      const rising = widths.at(-1)! >= widths[0]!;
+      for (let i = 1; i < widths.length; i++)
+        expect(
+          rising ? widths[i]! - widths[i - 1]! : widths[i - 1]! - widths[i]!,
+        ).toBeGreaterThanOrEqual(-1);
+      await page.waitForTimeout(300);
+    }
     expectNoPageErrors(pageErrors);
   });
 

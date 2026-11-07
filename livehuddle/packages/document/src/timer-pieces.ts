@@ -1,5 +1,5 @@
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): a meeting room's clock, placed in
-// the Meeting category. What is stored (`pieceTimer`), its bounds, the pure verbs every press runs, the time every
+// the Meet category. What is stored (`pieceTimer`), its bounds, the pure verbs every press runs, the time every
 // screen works out from its own clock, and the drawings both renderers share (the editor's TimerView and the export's
 // svg-render-timers). Pure: no React, no DOM, no clock of its own (every caller passes `now`).
 

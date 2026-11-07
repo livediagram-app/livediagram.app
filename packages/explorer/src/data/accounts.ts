@@ -5,6 +5,7 @@
 // elsewhere passes its own `ExplorerAccounts`, or none, and the Explorer goes without.
 
 import { profilePictureOf } from '@liveworkspace/sites/picture';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 /** A person as the accounts API names them: their display name, and their published Google picture (null with none,
  *  with their switch off, or when the reader is a guest, who is never sent one). */
@@ -31,7 +32,7 @@ export function createExplorerAccounts({
   baseUrl = '/api/account',
   fetch: doFetch,
 }: { baseUrl?: string; fetch?: typeof fetch } = {}): ExplorerAccounts {
-  const base = baseUrl.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl);
   async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
     const res = await (doFetch ?? fetch)(`${base}${path}`, {
       credentials: 'same-origin',

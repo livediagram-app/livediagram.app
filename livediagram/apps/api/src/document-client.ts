@@ -18,6 +18,8 @@ import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
 import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 // What the canvas's action-assigned and mention emails are told (email/notifications.ts): all but the canvas,
@@ -53,6 +55,8 @@ export type DocumentRoomClient = {
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
+  // A Participant's placement claim: grants the images of `ids` that `personId` uploaded; answers how many.
+  grantOwnImages(ids: string[], personId: string): Promise<number>;
   // A copy's two halves (document-content.ts): the source as `copier` may take it, and whether it went through the
   // canvas's open Community post's link.
   exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
@@ -79,6 +83,8 @@ export type DocumentRoomClient = {
   // action's phone notification skips an assignee already there). False for a canvas not started.
   notifyAction(input: ActionNotice): Promise<boolean>;
   notifyMention(input: MentionNotice): Promise<boolean>;
+  // The index's reverse write of a connected tab (document-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
   // join recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -102,7 +108,9 @@ export function documentRoom(
     importFile: (file) => room.importFile(documentId, file),
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
+    grantOwnImages: (ids, personId) => room.grantOwnImages(documentId, ids, personId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
     importMigrated: (payload) => room.importMigrated(documentId, payload),
@@ -130,7 +138,9 @@ export type DocumentRoomRpc = {
   importFile(documentId: string, file: DocumentFileImport): Promise<void>;
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
+  grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number>;
   exportCopy(
     documentId: string,
     onlyTabId: string | null,

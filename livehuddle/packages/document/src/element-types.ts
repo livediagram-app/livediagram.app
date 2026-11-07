@@ -6,6 +6,7 @@
 import type { RoomDoor, StageSpeakers } from './office';
 import type { ClockZone, NoticeNote } from './office-social';
 import type { PieceTimer } from './timer-pieces';
+import type { ArcadeScore } from './arcade-scores';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -254,6 +255,10 @@ export type ShapeElement = {
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
   // is open, so every door starts open.
   doorClosed?: boolean;
+  // A piece's type within its kind (docs/specs/009-elements/room-builder.md "Door types"): a Door's (Double, Sliding,
+  // Revolving), a Rug's pattern (office.md "Rug types"), a Corridor's shape (corridor.md). Absent is the kind's first
+  // type; a value its kind does not take draws as the first (piece-variants.ts).
+  variant?: string;
   // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
   noticeNotes?: NoticeNote[];
   // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
@@ -263,6 +268,9 @@ export type ShapeElement = {
   // Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "The state"): its live clock, changed only by
   // `piece-timer` deltas; absent = idle at the default (a Timer at 5 minutes, a Stopwatch at 0).
   pieceTimer?: PieceTimer;
+  // Arcade Machine (docs/specs/009-elements/social-pieces.md "High Scores"): its table, best first, at most ten,
+  // changed only by `arcade-score` and `arcade-clear` deltas; absent = no scores.
+  arcadeScores?: ArcadeScore[];
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;
@@ -1323,6 +1331,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'mode-button',
   // The Directory (docs/specs/009-elements/directory.md) carries no label; an Elevator's label is its name.
   'directory',
+  // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+  'stairs',
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) carry no label.
   'screen',
   'room-sign',

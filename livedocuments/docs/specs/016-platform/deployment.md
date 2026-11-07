@@ -15,7 +15,7 @@ covers what they do for livedocuments. [Staging environment](staging-environment
 | `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
 | `apps/api`       | `livedocuments-api`       | Worker (Durable Objects; no database, no bucket).                             |
 | `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other four sites and the api).                |
+| `apps/router`    | `livedocuments-router`    | Worker (service bindings to marketing, editor, help and api).                 |
 
 `apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
 MCP Registry listing is manual too (by hand, or the root `mcp-registry.yml` workflow started by hand,
@@ -78,8 +78,8 @@ as `*.test.ts`.
 `main` (and only for `main`'s tip), and `deploy-production.yml` by hand, **Deploy Production** in the Actions tab or
 `gh workflow run deploy-production.yml`. Production ships what staging runs unless given a `ref`.
 
-- **Only what changed.** The deploy compares the commit with the environment's last full deploy (the
-  `deployed/staging` or `deployed/production` tag), asks Turborepo which workspaces that reaches (`ci-plan.mjs`,
+- **Only what changed.** The deploy compares the commit with the environment's last full deploy (its
+  deploy record, a GitHub deployment with the task `record`), asks Turborepo which workspaces that reaches (`ci-plan.mjs`,
   `PLAN_MODE=deploy`) and deploys the ones with a `wrangler.toml`. A livedocuments Worker none of whose files or
   dependencies changed is left as it is.
 - **Order.** Three tiers, each waiting for the one before: the apis (`livedocuments-api`), then the sites and MCP

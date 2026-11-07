@@ -19,7 +19,7 @@ import {
 } from '@liveworkspace/index-client';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { appOrigin, type Env } from '../env';
-import type { AdminTeams } from './access';
+import type { AdminTeams } from '../accounts-access';
 import { parseWebhookUrl, resolvesPublic, type Resolve } from './address';
 import {
   ACCESS_RETRY_MS,

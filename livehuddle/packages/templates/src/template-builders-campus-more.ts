@@ -102,6 +102,9 @@ const CV_ROOMS: CampusRoom[] = [
     door: { side: 's', at: 560, sign: 1, reach: CV_PLAZA_Y - CV_PLAZA_IN - TOP_WALL - PATH / 2 },
     pieces: [
       { kind: 'stage', x: 320, y: 48, w: 480, h: 150, stageCameras: true },
+      // Its curtains and the speaker's podium (docs/specs/009-elements/venue-pieces.md "In the templates").
+      { kind: 'stage-curtains', x: 320, y: 14, w: 480 },
+      { kind: 'podium', x: 680, y: 80 },
       { kind: 'screen', x: 60, y: 44, w: 176 },
       { kind: 'screen', x: 960, y: 44, w: 140 },
       // Two rows of five either side of a 160 px aisle up from the door, 120 px between the rows.
@@ -194,8 +197,13 @@ export function buildConferenceVenue(cx: number, cy: number): Element[] {
       subtitle:
         'A day of talks: the keynote in the main hall, sessions in the breakouts, and the foyer bar and courtyard between.',
     },
-    gateAt: CV_MID,
-    hint: 'Press Walk In (or W) and come in through the gate. The Directory by it walks you to any room.',
+    // In the Main Hall, where the keynote is, in the aisle between its first two rows, facing the stage.
+    arrival: {
+      dx: 0,
+      dy: -308,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in the Main Hall. The Directory by the gate walks you to any room.',
+    },
     extra: (left, top) => [createShape('focus-button', left + 500 + 820, top + 40 + 64)],
   });
 }
@@ -230,7 +238,13 @@ const HQ_ROOMS: CampusRoom[] = [
     pieces: [
       // Two islands of desks, 120 px apart, and the studio's shelf, coffee and team board along the front.
       ...island(30, 60),
-      ...island(406, 60),
+      // The second island's back row stands, at two Standing Desks level with the desks they back onto, and the
+      // office dog's bed lies in the aisle between the islands (docs/specs/009-elements/workday-pieces.md).
+      { kind: 'standing-desk', x: 406, y: 68 },
+      { kind: 'standing-desk', x: 534, y: 68 },
+      { kind: 'desk', x: 406, y: 172, facing: 's' },
+      { kind: 'desk', x: 542, y: 172, facing: 's' },
+      { kind: 'pet-bed', x: 306, y: 260 },
       { kind: 'bookshelf', x: 30, y: 330 },
       { kind: 'coffee-machine', x: 180, y: 360 },
       { kind: 'notice-board', x: 470, y: 330 },
@@ -316,6 +330,8 @@ const HQ_GARDEN: OfficePiece[] = [
   { kind: 'hammock', x: 480, y: 1210 },
   { kind: 'outdoor-plant', x: 960, y: 1040 },
   { kind: 'outdoor-plant', x: 1290, y: 870 },
+  // A bike rack by the gate (docs/specs/009-elements/venue-pieces.md "In the templates").
+  { kind: 'bike-rack', x: HQ_GATE - PATH / 2 - 190, y: 1222 },
   // Beside the games room: a garden umbrella.
   { kind: 'garden-umbrella', x: 1920, y: 880 },
   { kind: 'outdoor-plant', x: 1940, y: 1060 },
@@ -336,8 +352,13 @@ export function buildStartupHq(cx: number, cy: number): Element[] {
       subtitle:
         'Build it together: desks in the studio, the Friday demo in the town hall, and a garden to take calls in.',
     },
-    gateAt: HQ_GATE,
-    hint: 'Press Walk In (or W) and come in through the gate. Step into an Office Pod on the lawn for a call.',
+    // In the Town Hall, where the Friday demo is, in the aisle between its first two rows, facing the stage.
+    arrival: {
+      dx: 150,
+      dy: -238,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in the Town Hall. Step into an Office Pod on the lawn for a call.',
+    },
     extra: (left, top) => [createShape('focus-button', left + 820 + 580, top + 60 + 60)],
   });
 }

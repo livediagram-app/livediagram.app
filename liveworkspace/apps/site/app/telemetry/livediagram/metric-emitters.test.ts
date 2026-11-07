@@ -4,7 +4,12 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livediagram/api-schema';
-import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  platformEmitters,
+  avatarEmitters,
+  sharedClientEmitters,
+  sharedSiteEmitters,
+} from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -63,6 +68,8 @@ const EMITS = [
   ...platformEmitters(isValidTelemetryEvent, 'Document'),
   // Every app's client errors and timings, sent through the shared browser client.
   ...sharedClientEmitters(),
+  // Avatar mode's events, sent through this editor's bound track.
+  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
@@ -139,9 +146,9 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
-    // siteTrack called by name, through the Community app's wrapper object.
+    // The Community page on liveworkspace.app, reporting in this app's name with each type literal.
     expect(has('Community', 'Liked', 'Post')).toBe(true);
-    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
+    expect(has('Community', 'Reported', 'PersonalInfo')).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
       true,

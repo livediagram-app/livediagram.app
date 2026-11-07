@@ -46,15 +46,8 @@ const settingsStack = (title: string, blurb: string, members: Metric[]): MetricS
 
 export const EDITOR_SETTINGS = settingsStack(
   'Editor Settings',
-  'How the canvas behaves while you draw.',
+  'How the canvas behaves while you build a Space.',
   [
-    toggle(
-      'UI',
-      'QuickAddHoverOn',
-      'QuickAddHoverOff',
-      'Quick-Add on Hover',
-      'Hover handles that add a connected shape.',
-    ),
     changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
     toggle(
       'UI',
@@ -62,18 +55,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'AlignmentGuidesOff',
       'Alignment Guides',
       'Snap guides while dragging.',
-    ),
-    toggle(
-      'UI',
-      'AutoRebindOn',
-      'AutoRebindOff',
-      'Auto-Attach Arrows',
-      'Arrows re-attaching to the nearest shape.',
-    ),
-    changed(
-      'WhiteboardDockPosition',
-      'Whiteboard Dock Position',
-      'A whiteboard dock moved to the top or the bottom.',
     ),
   ],
 );
@@ -87,7 +68,6 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   toggle(
     'UI',
@@ -143,39 +123,35 @@ export const KEYBOARD_SETTINGS = settingsStack(
   ],
 );
 
-export const PANELS_SETTINGS = settingsStack(
-  'Panels Settings',
-  'What the Layers and minimap panels show.',
+export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minimap shows.', [
+  toggle(
+    'UI',
+    'MapDimOn',
+    'MapDimOff',
+    'Dim Outside the View',
+    'The minimap dimming what is off screen.',
+  ),
+  changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
+]);
+
+export const COLLABORATE_SETTINGS = settingsStack(
+  'Collaborate Settings',
+  'The Collaborate panel and seeing other people\u2019s cursors.',
   [
     toggle(
       'UI',
-      'LayerPreviewOn',
-      'LayerPreviewOff',
-      'Layer Thumbnails',
-      'Thumbnails in the Layers panel.',
+      'CollaboratePanelOn',
+      'CollaboratePanelOff',
+      'Collaborate Panel',
+      'The Collaborate panel switched on or off.',
     ),
     toggle(
       'UI',
-      'LayerCountOn',
-      'LayerCountOff',
-      'Layer Element Counts',
-      'Element counts on each layer.',
+      'HideCursorsOn',
+      'HideCursorsOff',
+      'Hide Participant Cursors',
+      'Other people\u2019s cursors hidden or shown, for this device.',
     ),
-    toggle(
-      'UI',
-      'LayerHoverPreviewOn',
-      'LayerHoverPreviewOff',
-      'Preview Layer on Hover',
-      'Highlighting a layer\u2019s elements on hover.',
-    ),
-    toggle(
-      'UI',
-      'MapDimOn',
-      'MapDimOff',
-      'Dim Outside the View',
-      'The minimap dimming what is off screen.',
-    ),
-    changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
   ],
 );
 
@@ -250,29 +226,8 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
 // Tutorials before). Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Tours Settings',
-  'The Diagram, Workshop, Draw and Avatar tours switched back on or off.',
+  'The Avatar tour switched back on or off.',
   [
-    toggle(
-      'UI',
-      'TourSeenOff',
-      'TourSeenOn',
-      'Diagram Tour',
-      'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'WorkshopTourSeenOff',
-      'WorkshopTourSeenOn',
-      'Workshop Tour',
-      'The Workshop tour switched back on or off.',
-    ),
-    toggle(
-      'UI',
-      'DrawTourSeenOff',
-      'DrawTourSeenOn',
-      'Draw Tour',
-      'The Draw tour switched back on or off.',
-    ),
     toggle(
       'UI',
       'AvatarTourSeenOff',
@@ -280,6 +235,16 @@ export const TOURS_SETTINGS = settingsStack(
       'Avatar Tour',
       'The Avatar tour switched back on or off.',
     ),
+    // Every other tour's switch: the Show Me tours' own (one over them all, one per toured kind) and any tour
+    // of a single element, so a switch with no chart of its own above still counts.
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) => /^(?!(?:Avatar)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(type ?? ''),
+      title: 'Show Me Tours',
+      blurb: 'The Show Me tours switched back on or off, all at once or one element\u2019s.',
+      rising: 'neutral',
+    },
   ],
 );
 
@@ -303,6 +268,7 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   CONTROLS_SETTINGS,
   KEYBOARD_SETTINGS,
   PANELS_SETTINGS,
+  COLLABORATE_SETTINGS,
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,

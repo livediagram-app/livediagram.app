@@ -114,7 +114,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Rooms to meet in',
         title: 'Spaces that open walking',
         description:
-          'Open a Space and you are already on your feet: the board puts you in Avatar mode, standing on its Avatar Pad and arriving in a beam of light. Press Walk In to come back after you leave, or pick any other tool and carry on as you were.',
+          'Open a Space and you are already on your feet: the board puts you in Avatar mode, standing on its Avatar Pad and arriving in a beam of light. Press Walk to come back after you leave, or pick any other tool and carry on as you were.',
       },
       {
         art: <FurnitureArt />,
@@ -146,7 +146,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Say hello',
         title: 'Status at a glance',
         description:
-          'Say how you are without a word: Available, Focusing (headphones on), In a Meeting or Away, shown above your head while you walk. It lasts for the session only, so yesterday’s In a Meeting never greets anyone today.',
+          'Say how you are without a word: Available, Focusing (headphones on), Out to Lunch, Angry (steam from the ears), Celebrating and more, shown on your character and above your head while you walk. It lasts for the session only, so yesterday’s In a Meeting never greets anyone today.',
       },
       {
         art: <BubbleArt />,

@@ -3,7 +3,7 @@
 Status: **gone from livehuddle** (owner, 2026-11-05: "The Timer button should be removed, and instead have elements we
 can place in rooms that are Timer or Stopwatches"). livehuddle has no Session strip and no tab timer. A meeting's clock
 is a placed piece now: the [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md), one per room, in the
-palette's Meeting category. livediagram keeps its Session strip, Timer and the rest of this spec's twin
+palette's Meet category. livediagram keeps its Session strip, Timer and the rest of this spec's twin
 ([livediagram's Session tools](../../../../livediagram/docs/specs/012-collaboration/session-tools.md)), which stays the
 one to read and change for it. The record is [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer).
 

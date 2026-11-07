@@ -70,6 +70,7 @@ Doors by level (server):
 | Q&A: add a note, upvote; room `poll-answer` and `reaction`                                 | participate                       |
 | Room: `vote`; `el-delta` `response` or `idea`                                              | participate                       |
 | Room: `el` (`add`, `update`, `remove`) through the participant rule                        | participate                       |
+| Placement claim (`POST /api/images/grants`): the caller's own pictures                     | participate                       |
 | Tab PUT, tab DELETE, document PUT; room `tab`, `tab-meta`, `document-meta`, `el` `reorder` | edit                              |
 | Room: `el-delta` `check`, `comment-*`; `poll-start`, `poll-end`; `drag-preview`            | edit                              |
 | Facilitator baton                                                                          | edit (`canHold`, unchanged)       |

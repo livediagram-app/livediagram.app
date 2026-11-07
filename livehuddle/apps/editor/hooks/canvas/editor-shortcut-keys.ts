@@ -50,11 +50,9 @@ export type EditorKeyboardShortcutsDeps = {
   undo: () => void;
   redo: () => void;
   copySelection: () => void;
-  // Canvas tool setter. V / H switch between select and pan. Mirrors the in-canvas tool picker so a keyboard user
-  // can switch tools without leaving home position. View-role
-  // visitors still get this (panning doesn't mutate
-  // anything; selecting is harmless because the popover hides for
-  // view-role).
+  // Canvas tool setter: E / V edit and W walks, the Edit | Walk toggle's keys (docs/specs/008-canvas/avatar-mode.md
+  // "The Edit | Walk toggle"). Before the read-only gate, so an Editor on a locked tab has them too; a session held
+  // walking is refused every tool but Avatar by useCanvasTool's hold.
   setCanvasTool: (t: CanvasTool) => void;
   // Active canvas tool. Read by the Escape handler so Escape exits the
   // persistent Format tool (back to Select) from either phase.
@@ -139,6 +137,8 @@ export type EditorKeyboardShortcutsDeps = {
 export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
+  // Edit (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"): E, and V as the drawing tools have it.
+  e: (l) => l.setCanvasTool('select'),
   v: (l) => l.setCanvasTool('select'),
   // Opens the Toolbar strip's Search where there is one (docs/specs/007-editor/toolbar-layout.md
   // "Search: every element type"); elsewhere still the legacy Select alias (pre-`V` standard).
@@ -146,17 +146,15 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
     if (!requestToolbarSearch()) l.setCanvasTool('select');
   },
   '1': (l) => l.setCanvasTool('select'),
-  h: (l) => l.setCanvasTool('pan'),
-  // No key enters Avatar mode (docs/specs/008-canvas/avatar-mode.md "Where it lives"): a Selection Mode button on
-  // the board is its one way in. In the mode, W is the Wave (avatar-action-keys).
+  // Walk. Only from editing: walking, W is the Wave (avatar-action-keys), which the listener plays first. No H: Hand
+  // is not a mode (Space-drag, the trackpad and the middle button pan).
+  w: (l) => l.setCanvasTool('avatar'),
 };
 
-// The meeting palette's keys (docs/specs/012-collaboration/workshop-mode.md "The palette"): the eraser, text and the
-// sticky note. The diagram tools' keys (R, O, D, C, G, A, P and 2 to 7) left with those tools (Work Tracker #423), and
+// The meeting palette's keys (docs/specs/012-collaboration/workshop-mode.md "The palette"): text and the sticky note.
+// No eraser: livehuddle has none (docs/specs/002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes"). The diagram tools' keys (R, O, D, C, G, A, P and 2 to 7) left with those tools (Work Tracker #423), and
 // F with the Frame (docs/specs/002-project-scope/not-in-livehuddle.md "The Frame"); a press of one does nothing.
 export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  e: (l) => l.setCanvasTool('eraser'),
-  '0': (l) => l.setCanvasTool('eraser'),
   t: (l) => l.addText(),
   '8': (l) => l.addText(),
   n: (l) => l.addSticky(),

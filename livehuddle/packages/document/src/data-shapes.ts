@@ -207,6 +207,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'water-cooler' ||
     kind === 'coffee-machine' ||
     kind === 'rug' ||
+    // A corridor (docs/specs/009-elements/corridor.md) is floor and walls, with nothing to write on.
+    kind === 'corridor' ||
     // The bar and the garden (office.md): scenery and machines likewise; a pod and a stool keep theirs.
     kind === 'bar' ||
     kind === 'drinks-cabinet' ||
@@ -236,10 +238,45 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'vending-machine' ||
     kind === 'bean-bag' ||
     kind === 'reading-nook' ||
+    kind === 'printer' ||
+    kind === 'copier' ||
+    kind === 'lockers' ||
+    kind === 'coat-rack' ||
+    kind === 'umbrella-stand' ||
+    kind === 'kitchen-counter' ||
+    kind === 'kitchen-sink' ||
+    kind === 'fridge' ||
+    kind === 'microwave' ||
+    kind === 'kettle' ||
+    kind === 'toilet-cubicle' ||
+    kind === 'washbasin' ||
+    kind === 'hand-dryer' ||
+    kind === 'pillar' ||
+    kind === 'column' ||
+    kind === 'car-park' ||
+    kind === 'bike-rack' ||
+    kind === 'swimming-pool' ||
+    kind === 'stage-curtains' ||
+    kind === 'podium' ||
+    kind === 'nap-pod' ||
+    kind === 'treadmill' ||
+    kind === 'weight-bench' ||
+    kind === 'phone-booth' ||
+    kind === 'standing-desk' ||
+    kind === 'hot-desk' ||
+    kind === 'pet-bed' ||
+    kind === 'reception-desk' ||
+    // The team pieces (docs/specs/009-elements/team-pieces.md).
+    kind === 'calendar-wall' ||
+    kind === 'suggestion-box' ||
+    kind === 'signpost' ||
+    kind === 'photo-wall' ||
     // A door (docs/specs/009-elements/room-builder.md) is a doorway, with nothing to write on.
     kind === 'door' ||
     // The Directory (docs/specs/009-elements/directory.md) draws its own words; an Elevator keeps its name.
     kind === 'directory' ||
+    // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+    kind === 'stairs' ||
     // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): a sign's name is its room's.
     kind === 'screen' ||
     kind === 'room-sign' ||

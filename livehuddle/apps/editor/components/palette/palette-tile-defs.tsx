@@ -1,4 +1,10 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
+import {
+  CORRIDOR_PRESET_TILES,
+  DOOR_PRESET_TILES,
+  ROOM_PRESET_TILES,
+  RUG_PRESET_TILES,
+} from './palette-floor-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
 import { badgePresetFace } from '@livehuddle/document';
 import type { EmbedProvider } from '@livehuddle/document';
@@ -12,6 +18,7 @@ import {
   AvatarPadIcon,
   DirectoryIcon,
   ElevatorIcon,
+  StairsIcon,
   RoomIcon,
   RoomBuilderIcon,
   DoorIcon,
@@ -40,6 +47,47 @@ import {
   TreeIcon,
 } from './palette-icons-garden';
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
+import {
+  CalendarWallIcon,
+  PhotoWallIcon,
+  SignpostIcon,
+  SuggestionBoxIcon,
+} from './palette-icons-team';
+import {
+  HotDeskIcon,
+  NapPodIcon,
+  PetBedIcon,
+  PhoneBoothIcon,
+  ReceptionDeskIcon,
+  StandingDeskIcon,
+  TreadmillIcon,
+  WeightBenchIcon,
+} from './palette-icons-workday';
+import {
+  BikeRackIcon,
+  CarParkIcon,
+  ColumnIcon,
+  PillarIcon,
+  PodiumIcon,
+  StageCurtainsIcon,
+  SwimmingPoolIcon,
+} from './palette-icons-venue';
+import {
+  CoatRackIcon,
+  CopierIcon,
+  FridgeIcon,
+  HandDryerIcon,
+  KettleIcon,
+  KitchenCounterIcon,
+  KitchenSinkIcon,
+  LockersIcon,
+  MicrowaveIcon,
+  PrinterIcon,
+  RestroomIcon,
+  ToiletCubicleIcon,
+  UmbrellaStandIcon,
+  WashbasinIcon,
+} from './palette-icons-amenities';
 import {
   ArcadeMachineIcon,
   BeanBagIcon,
@@ -722,6 +770,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <DirectoryIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Team pieces (docs/specs/009-elements/team-pieces.md): arrows to the nearest rooms, each a Walk There.
+    id: 'tools:signpost',
+    tileGroup: 'travel',
+    blurb: 'Arrows to the nearest rooms',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Signpost',
+    caption: 'Signpost',
+    description:
+      'A wooden signpost whose arrows name the three nearest rooms, pods and stages. Click an arrow to walk there.',
+    filled: true,
+    action: { type: 'shape', kind: 'signpost' },
+    icon: <SignpostIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Elevator (docs/specs/009-elements/elevator.md): a lift between the space's tabs, its floors.
     id: 'tools:elevator',
     tileGroup: 'travel',
@@ -735,6 +798,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'elevator' },
     icon: <ElevatorIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Stairs (docs/specs/009-elements/stairs.md): a flight to the floor (tab) above or below.
+    id: 'tools:stairs',
+    tileGroup: 'travel',
+    blurb: 'Walk up or down a floor (tab)',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stairs',
+    caption: 'Stairs',
+    description:
+      "A flight between this space's tabs. Click it, or walk your character on, pick Up or Down and climb to the Stairs on the next floor.",
+    filled: true,
+    action: { type: 'shape', kind: 'stairs' },
+    icon: <StairsIcon size={TILE_GLYPH_PX} />,
   },
   {
     // The Avatar Selection Mode button (docs/specs/009-elements/mode-button.md "Only Avatar"): the one mode button
@@ -751,7 +829,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A button that switches whoever presses it into Avatar mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
     filled: true,
     action: { type: 'shape', kind: 'mode-button', mode: 'avatar' },
-    // Avatar's OWN glyph, the one the canvas-tool popover shows for it (buildCanvasToolOptions).
+    // Avatar's OWN glyph, the one the Edit | Walk toggle's Walk and Search's Walk show for it.
     icon: <AvatarModeIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -767,6 +845,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A room for a virtual office: walls Avatar-mode characters walk round, a doorway they walk through, and its name on the back wall. It goes in behind everything, so furniture stands on its floor.',
     filled: true,
     action: { type: 'shape', kind: 'room' },
+    // Room presets (docs/specs/009-elements/office.md "Room presets"): six rooms to start from.
+    variants: ROOM_PRESET_TILES,
+    variantsHint: 'Start from a room, then resize, rename or recolour it.',
     icon: <RoomIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -785,6 +866,27 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <RoomBuilderIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // The Corridor (docs/specs/009-elements/corridor.md): a passage between rooms, its types as presets.
+    id: 'tools:corridor',
+    tileGroup: 'rooms',
+    blurb: 'A passage between rooms',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Corridor',
+    caption: 'Corridor',
+    description:
+      'A corridor to join rooms: walls down its sides that Avatar-mode characters walk between, open ends, and doors that snap onto its walls. It goes in behind everything, like a room.',
+    filled: true,
+    action: { type: 'shape', kind: 'corridor' },
+    variants: CORRIDOR_PRESET_TILES,
+    variantsHint: 'Pick a shape, then resize or rotate it to fit.',
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        <path d="M4 2v18h18M10 2v12h12" />
+      </Glyph>
+    ),
+  },
+  {
     // Door (docs/specs/009-elements/room-builder.md "Door"): snaps onto any wall and lets characters through. Not
     // 'tools:door': the Portal tile kept that id.
     id: 'tools:wall-door',
@@ -795,9 +897,12 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Door',
     caption: 'Door',
     description:
-      'A door for any room wall, at any angle: drop it on a wall and it snaps on and turns to match, and Avatar-mode characters walk through it. Drag it along the wall to move it.',
+      'A door for any room or corridor wall, at any angle: drop it on a wall and it snaps on and turns to match, and Avatar-mode characters walk through it. Drag it along the wall to move it.',
     filled: true,
     action: { type: 'shape', kind: 'door' },
+    // Door types (docs/specs/009-elements/room-builder.md "Door types"): a swing, double, sliding or revolving door.
+    variants: DOOR_PRESET_TILES,
+    variantsHint: 'Pick a door, then drop it on any wall. Lock it to keep it as it is.',
     icon: <DoorIcon size={TILE_GLYPH_PX} />,
   },
   {
@@ -814,6 +919,36 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'stage' },
     icon: <StageIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:stage-curtains',
+    tileGroup: 'rooms',
+    blurb: 'Velvet drapes to frame a stage',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stage Curtains',
+    caption: 'Stage Curtains',
+    description:
+      'Red velvet drapes and a pelmet to hang over a stage, open in the middle. Characters walk between and in front of them.',
+    filled: true,
+    action: { type: 'shape', kind: 'stage-curtains' },
+    icon: <StageCurtainsIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:podium',
+    tileGroup: 'rooms',
+    blurb: 'A lectern to speak from',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Podium',
+    caption: 'Podium',
+    description:
+      'A wooden lectern with a microphone, to stand on a stage. Characters walk round its foot.',
+    filled: true,
+    action: { type: 'shape', kind: 'podium' },
+    icon: <PodiumIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Meeting Table (docs/specs/009-elements/office.md).
@@ -860,6 +995,34 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <ReadingNookIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:hot-desk',
+    tileGroup: 'seating',
+    blurb: 'Your name while you sit',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Hot Desk',
+    caption: 'Hot Desk',
+    description: 'A desk anyone can take: sit at it and its card shows your name until you get up.',
+    filled: true,
+    action: { type: 'shape', kind: 'hot-desk' },
+    icon: <HotDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:standing-desk',
+    tileGroup: 'seating',
+    blurb: 'Work on your feet',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Standing Desk',
+    caption: 'Standing Desk',
+    description: 'A tall desk with a monitor. Walk up to it to work standing.',
+    filled: true,
+    action: { type: 'shape', kind: 'standing-desk' },
+    icon: <StandingDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Plant (docs/specs/009-elements/office.md).
     id: 'tools:plant',
     tileGroup: 'amenities',
@@ -888,6 +1051,82 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'bookshelf' },
     icon: <BookshelfIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:printer',
+    tileGroup: 'amenities',
+    blurb: 'A desktop printer on a cabinet',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Printer',
+    caption: 'Printer',
+    description:
+      'A desktop printer on a small cabinet, a printed page in its tray. Characters walk round its cabinet.',
+    filled: true,
+    action: { type: 'shape', kind: 'printer' },
+    icon: <PrinterIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:copier',
+    tileGroup: 'amenities',
+    blurb: 'A floor-standing copier',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Copier',
+    caption: 'Copier',
+    description:
+      'A copier with paper trays, a lit touch screen and a stack of copies. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'copier' },
+    icon: <CopierIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:lockers',
+    tileGroup: 'amenities',
+    blurb: 'A bank of four lockers',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Lockers',
+    caption: 'Lockers',
+    description:
+      'A bank of four lockers for an entrance, a gym or a hot-desk floor. Stand it against a wall: characters walk along in front of it.',
+    filled: true,
+    action: { type: 'shape', kind: 'lockers' },
+    icon: <LockersIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:coat-rack',
+    tileGroup: 'amenities',
+    blurb: 'A coat stand by the door',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Coat Rack',
+    caption: 'Coat Rack',
+    description:
+      'A wooden coat stand with two coats, a scarf and a hat, for an entrance. Characters walk round its foot.',
+    filled: true,
+    action: { type: 'shape', kind: 'coat-rack' },
+    icon: <CoatRackIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:umbrella-stand',
+    tileGroup: 'amenities',
+    blurb: 'A stand of umbrellas',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Umbrella Stand',
+    caption: 'Umbrella Stand',
+    description:
+      'A round stand of three furled umbrellas, for beside the door. Characters walk round it.',
+    filled: true,
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'umbrella-stand' },
+    icon: <UmbrellaStandIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Water Cooler (docs/specs/009-elements/office.md).
@@ -935,6 +1174,140 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <VendingMachineIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kitchen-counter',
+    tileGroup: 'amenities',
+    blurb: 'A kitchen unit with a worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kitchen Counter',
+    caption: 'Kitchen Counter',
+    description:
+      'A base unit with an oak worktop and a tiled splashback. Place units side by side for a run; a Microwave or a Kettle stands on its worktop.',
+    filled: true,
+    action: { type: 'shape', kind: 'kitchen-counter' },
+    icon: <KitchenCounterIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kitchen-sink',
+    tileGroup: 'amenities',
+    blurb: 'A kitchen unit with a sink',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kitchen Sink',
+    caption: 'Kitchen Sink',
+    description:
+      'A base unit with a steel sink and a tap, the same height as a Kitchen Counter so the two make one run.',
+    filled: true,
+    action: { type: 'shape', kind: 'kitchen-sink' },
+    icon: <KitchenSinkIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:fridge',
+    tileGroup: 'amenities',
+    blurb: 'A tall fridge-freezer',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Fridge',
+    caption: 'Fridge',
+    description:
+      'A fridge-freezer with a drawing and a note on its door. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'fridge' },
+    icon: <FridgeIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:microwave',
+    tileGroup: 'amenities',
+    blurb: 'A microwave for the worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Microwave',
+    caption: 'Microwave',
+    description:
+      'A microwave to stand on a Kitchen Counter. Place it over the worktop; characters never bump into it.',
+    filled: true,
+    action: { type: 'shape', kind: 'microwave' },
+    icon: <MicrowaveIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:kettle',
+    tileGroup: 'amenities',
+    blurb: 'A kettle for the worktop',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Kettle',
+    caption: 'Kettle',
+    description:
+      'A red electric kettle to stand on a Kitchen Counter. Place it over the worktop; characters never bump into it.',
+    filled: true,
+    dividerAfter: true,
+    action: { type: 'shape', kind: 'kettle' },
+    icon: <KettleIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:restroom',
+    tileGroup: 'amenities',
+    blurb: 'A furnished restroom with its sign',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Restroom',
+    caption: 'Restroom',
+    description:
+      'A room named Restroom, with its door, two toilet cubicles, a hand dryer, two washbasins and a sign outside that says when it is in use.',
+    filled: true,
+    action: { type: 'shape', kind: 'room', variant: 'restroom' },
+    icon: <RestroomIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:toilet-cubicle',
+    tileGroup: 'amenities',
+    blurb: 'A toilet cubicle',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Toilet Cubicle',
+    caption: 'Toilet Cubicle',
+    description:
+      'A toilet cubicle with its door open. Place several side by side for a row; characters walk along in front of them.',
+    filled: true,
+    action: { type: 'shape', kind: 'toilet-cubicle' },
+    icon: <ToiletCubicleIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:washbasin',
+    tileGroup: 'amenities',
+    blurb: 'A basin under a mirror',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Washbasin',
+    caption: 'Washbasin',
+    description: 'A washbasin on a pedestal under a mirror. Characters walk round its pedestal.',
+    filled: true,
+    action: { type: 'shape', kind: 'washbasin' },
+    icon: <WashbasinIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Office amenities (docs/specs/009-elements/office-amenities.md).
+    id: 'tools:hand-dryer',
+    tileGroup: 'amenities',
+    blurb: 'A dryer for the wall',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Hand Dryer',
+    caption: 'Hand Dryer',
+    description: 'A hand dryer to hang on a wall. Characters walk past it.',
+    filled: true,
+    action: { type: 'shape', kind: 'hand-dryer' },
+    icon: <HandDryerIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Office Pod (docs/specs/009-elements/office.md).
     id: 'tools:office-pod',
     tileGroup: 'rooms',
@@ -950,9 +1323,55 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <OfficePodIcon size={TILE_GLYPH_PX} />,
   },
   {
-    // Bar (docs/specs/009-elements/office.md).
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:phone-booth',
+    tileGroup: 'rooms',
+    blurb: 'One seat, out of the room',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Phone Booth',
+    caption: 'Phone Booth',
+    description:
+      "A booth for one in Avatar mode: sit in it to step out of the room's call, and its lamp shows Busy until you leave.",
+    filled: true,
+    action: { type: 'shape', kind: 'phone-booth' },
+    icon: <PhoneBoothIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:nap-pod',
+    tileGroup: 'rooms',
+    blurb: 'Lie back, shown as Focusing',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Nap Pod',
+    caption: 'Nap Pod',
+    description:
+      'A cocoon lounger for a quiet moment. Walk in to lie back; while you rest, people see you as Focusing.',
+    filled: true,
+    action: { type: 'shape', kind: 'nap-pod' },
+    icon: <NapPodIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:reception-desk',
+    tileGroup: 'rooms',
+    blurb: 'A counter with a bell',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Reception Desk',
+    caption: 'Reception Desk',
+    description:
+      'A front desk with a bell. Stand at it to see Welcome and ring the bell, and everyone in the room hears it.',
+    filled: true,
+    action: { type: 'shape', kind: 'reception-desk' },
+    icon: <ReceptionDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Bar (docs/specs/009-elements/office.md). The bar pieces are Play's Bar group
+    // (docs/specs/010-palette/palette-top-level-categories.md "Play holds the Bar").
     id: 'tools:bar',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'A counter to gather at',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -967,7 +1386,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Bar Stool (docs/specs/009-elements/office.md).
     id: 'tools:bar-stool',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'A seat at the bar',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -982,7 +1401,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Drinks Cabinet (docs/specs/009-elements/office.md).
     id: 'tools:drinks-cabinet',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'Walk up for a juice',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -997,7 +1416,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Drinks Fridge (docs/specs/009-elements/office.md).
     id: 'tools:drinks-fridge',
-    tileGroup: 'bar',
+    tileGroup: 'recreation',
     blurb: 'Walk up for a soda',
     section: 'tools',
     toolGroup: 'behaviour',
@@ -1109,7 +1528,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Ping-Pong Table',
     caption: 'Ping-Pong Table',
     description:
-      'Two seats, one at each end. When both are taken, a little rally plays between them.',
+      'A game for two: sit at each end and play a rally to 11, moving your paddle with the mouse, a finger or W and S.',
     filled: true,
     action: { type: 'shape', kind: 'ping-pong-table' },
     icon: <PingPongTableIcon size={TILE_GLYPH_PX} />,
@@ -1186,6 +1605,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'fireplace' },
     icon: <FireplaceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:treadmill',
+    tileGroup: 'recreation',
+    blurb: 'Walk on, shown On a Break',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Treadmill',
+    caption: 'Treadmill',
+    description:
+      'A treadmill whose belt runs while you walk on it; while you do, people see you as On a Break.',
+    filled: true,
+    action: { type: 'shape', kind: 'treadmill' },
+    icon: <TreadmillIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:weight-bench',
+    tileGroup: 'recreation',
+    blurb: 'Lift, shown On a Break',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Weight Bench',
+    caption: 'Weight Bench',
+    description:
+      'A bench with a barbell on its rack. Sit to lift; while you do, people see you as On a Break.',
+    filled: true,
+    action: { type: 'shape', kind: 'weight-bench' },
+    icon: <WeightBenchIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:pet-bed',
+    tileGroup: 'recreation',
+    blurb: 'An office dog',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Pet Bed',
+    caption: 'Pet Bed',
+    description:
+      'A dog bed with a bone, and the office dog that naps in it and wanders the room. Click the dog to pat it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pet-bed' },
+    icon: <PetBedIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Social pieces (docs/specs/009-elements/social-pieces.md).
@@ -1274,6 +1738,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <PondIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:swimming-pool',
+    tileGroup: 'garden',
+    blurb: 'A pool with lanes',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Swimming Pool',
+    caption: 'Swimming Pool',
+    description:
+      'A swimming pool with lanes and a ladder. Stretch it to any size; characters stop at the water and walk round on its deck.',
+    filled: true,
+    action: { type: 'shape', kind: 'swimming-pool' },
+    icon: <SwimmingPoolIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Social pieces (docs/specs/009-elements/social-pieces.md).
     id: 'tools:campfire',
     tileGroup: 'garden',
@@ -1287,6 +1766,35 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'campfire' },
     icon: <CampfireIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:car-park',
+    tileGroup: 'garden',
+    blurb: 'Bays with parked cars',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Car Park',
+    caption: 'Car Park',
+    description:
+      'Three parking bays, two cars parked, for a campus gate. Place several side by side for a longer row; characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'car-park' },
+    icon: <CarParkIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:bike-rack',
+    tileGroup: 'garden',
+    blurb: 'Two bikes at their stands',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Bike Rack',
+    caption: 'Bike Rack',
+    description: 'Two hoop stands with a bike locked to each. Characters walk round it.',
+    filled: true,
+    action: { type: 'shape', kind: 'bike-rack' },
+    icon: <BikeRackIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen").
@@ -1349,6 +1857,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <WorldClockIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:calendar-wall',
+    tileGroup: 'meeting',
+    blurb: 'A month with notes on its days',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Calendar Wall',
+    caption: 'Calendar Wall',
+    description:
+      'A month planner for the wall. Editors and participants pin notes to its days; it shows each viewer this month, with today circled.',
+    filled: true,
+    action: { type: 'shape', kind: 'calendar-wall' },
+    icon: <CalendarWallIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:suggestion-box',
+    tileGroup: 'meeting',
+    blurb: 'Anonymous ideas, read by Editors',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Suggestion Box',
+    caption: 'Suggestion Box',
+    description:
+      'A box anyone taking part drops an idea into, with no name on it. Only Editors read them, and never who wrote them.',
+    filled: true,
+    action: { type: 'shape', kind: 'suggestion-box' },
+    icon: <SuggestionBoxIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Team pieces (docs/specs/009-elements/team-pieces.md).
+    id: 'tools:photo-wall',
+    tileGroup: 'meeting',
+    blurb: 'Portraits of who is here',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Team Photo Wall',
+    caption: 'Team Photo Wall',
+    description:
+      'A wall of eight frames showing the characters of the people in this Space right now, you first.',
+    filled: true,
+    action: { type: 'shape', kind: 'photo-wall' },
+    icon: <PhotoWallIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Timer (docs/specs/009-elements/timer-and-stopwatch.md).
     id: 'tools:timer',
     tileGroup: 'meeting',
@@ -1391,7 +1944,40 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       'A rug that lies on the floor under the furniture, to mark out a lounge or a reception.',
     filled: true,
     action: { type: 'shape', kind: 'rug' },
+    // Rug types (docs/specs/009-elements/office.md "Rug types"): eight shapes, sizes and patterns.
+    variants: RUG_PRESET_TILES,
+    variantsHint: 'Pick a rug, then resize or recolour it; its pattern stays.',
     icon: <RugIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:pillar',
+    tileGroup: 'rooms',
+    blurb: 'A square pillar',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Pillar',
+    caption: 'Pillar',
+    description:
+      'A plain square pillar to give a hall or a lobby its structure. Characters walk round its base.',
+    filled: true,
+    action: { type: 'shape', kind: 'pillar' },
+    icon: <PillarIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Venue pieces (docs/specs/009-elements/venue-pieces.md).
+    id: 'tools:column',
+    tileGroup: 'rooms',
+    blurb: 'A classical stone column',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Column',
+    caption: 'Column',
+    description:
+      'A fluted stone column with a scrolled capital, for a grand lobby. Characters walk round its plinth.',
+    filled: true,
+    action: { type: 'shape', kind: 'column' },
+    icon: <ColumnIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:checklist',

@@ -4,7 +4,7 @@ Status: **approved** (owner, 2026-11-05: "The Timer button should be removed, an
 rooms that are Timer or Stopwatches"). Two placed pieces for a Space's meeting rooms: a **Timer** that counts down from
 a length you set, and a **Stopwatch** that counts up. They replace the Session strip's Timer button, which left
 livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-session-strips-timer)). Both are placed
-pieces in the palette's **Meeting** category, after the World Clock, and their state is shared live with everyone on
+pieces in the palette's **Meet** category, after the World Clock, and their state is shared live with everyone on
 the tab.
 
 ## Why
@@ -56,7 +56,8 @@ Avatar mode included, so a meeting run while walking works its clock from the fa
   **25 min**, a minutes field with − and + (1 to 120 minutes), and **Set Timer**. Setting a length resets the Timer to
   it (idle, not running): a new length is a new round. Escape or a press outside closes it.
 - **Who sees them**: anyone who may operate it (see Share roles). A Viewer sees the face and its time, with no
-  buttons. In a placement preview the face shows its idle time and no buttons.
+  buttons, and a walking click on the piece does nothing (no reader: a still copy of a running clock would show a
+  stale time; [Always walking](../013-workspace/share-roles.md#always-walking)). In a placement preview the face shows its idle time and no buttons.
 - **Keyboard**: each control is a real button, in the tab order after the piece; Enter and Space press it. Each has
   an accessible name ("Start Timer", "Pause Stopwatch", "Reset Timer", "Set Timer Length"), and the face is an image
   named by its piece and time ("Timer, 4:12 left, Running"). The time is not a live region: a screen reader reads it

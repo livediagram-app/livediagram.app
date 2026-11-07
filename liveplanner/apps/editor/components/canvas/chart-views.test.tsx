@@ -5,6 +5,8 @@ import { createShape, type ShapeElement } from '@liveplanner/project';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';
 import { PieChartView } from './PieChartView';
+import { DataChartView } from './DataChartView';
+import { PLAN_UI_FONT } from '@/lib/plan-font';
 
 // Each chart type on the canvas (docs/specs/009-elements/pie-chart.md "Chart types"), drawn from the same marks the
 // export draws.
@@ -56,6 +58,29 @@ describe('chart views', () => {
     expect(paths.length).toBe(3);
     fireEvent.pointerEnter(paths[0]!);
     expect(container.textContent).toContain('40');
+  });
+
+  // Axis numbers, values and the legend in the UI face, or the chart's own Font, never the tab's the element wears
+  // (docs/specs/004-interface-design/fonts.md "On Sheet tabs and charts").
+  it('letters every chart type in the UI face or the chart’s own Font', () => {
+    for (const kind of ['pie-chart', 'bar-chart', 'line-chart'] as const) {
+      const plain = render(
+        <div style={{ fontFamily: 'Caveat, cursive' }}>
+          <DataChartView
+            element={el(kind, { chartAxis: true, chartValues: true, chartLegend: true })}
+            textColor="#000"
+          />
+        </div>,
+      ).container;
+      const root = plain.firstElementChild!.firstElementChild as HTMLElement;
+      expect(root.style.fontFamily).toBe(PLAN_UI_FONT);
+      expect(plain.querySelector('svg')).not.toBeNull();
+      // Nothing inside sets a face of its own, so every label inherits the root's.
+      expect(plain.querySelector('[font-family]')).toBeNull();
+      const own = render(<DataChartView element={el(kind, { font: 'lora' })} textColor="#000" />)
+        .container.firstElementChild as HTMLElement;
+      expect(own.style.fontFamily).toContain('Lora');
+    }
   });
 
   it('draws a whole pie as a circle, a whole doughnut as a ring', () => {

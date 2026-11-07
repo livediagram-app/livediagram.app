@@ -62,6 +62,8 @@ function near(at: CallPoint): CallPoint[] {
   return OFFSETS.map(([dx, dy]) => ({
     x: at.x + dx * EDGE_MARGIN_PX,
     y: at.y + dy * EDGE_MARGIN_PX,
+    // The seat goes with the feet: a Phone Booth's call is only its sitter's.
+    seatedOn: at.seatedOn ?? null,
   }));
 }
 

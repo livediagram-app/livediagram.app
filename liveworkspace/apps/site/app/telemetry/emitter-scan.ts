@@ -20,6 +20,9 @@
 //     and of a returned closure, through the calls made on the variable it is
 //     stored in (`const schedule = useDebouncedCanvasTelemetry(); schedule('k',
 //     'BackgroundColor')`), in any file;
+//   - a shared package's bound `track` called on its bindings (`avatarBindings.track('UI', 'Changed',
+//     'AvatarStatus')`), when its category is written out: a member call whose category is a variable is a
+//     binding's own pass-through (`emitter.track(category, action, type)`), scanned where its events start;
 //   - objects handed to `insertTelemetryEvents` (the api worker's own writes);
 //   - Settings catalogue rows (emitter-scan-settings.ts).
 // Anything else is COMPUTED: the triple is known to exist but its value is not
@@ -40,6 +43,7 @@ import {
   isNonNullExpression,
   isObjectLiteralExpression,
   isParenthesizedExpression,
+  isPropertyAccessExpression,
   isPropertyAssignment,
   isReturnStatement,
   isSatisfiesExpression,
@@ -354,6 +358,16 @@ function emitsIn(scan: FileScan): Emit[] {
           });
         }
       }
+    }
+    // A shared package's bound track (`avatarBindings.track('UI', 'Changed', 'AvatarStatus')`).
+    if (
+      isCallExpression(node) &&
+      isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'track' &&
+      node.arguments.length >= 2 &&
+      isStringLiteral(node.arguments[0]!)
+    ) {
+      add(node, [node.arguments[0], node.arguments[1], node.arguments[2]]);
     }
     if (isObjectLiteralExpression(node)) out.push(...settingsRowEmits(scan.path, node));
     node.forEachChild(visit);

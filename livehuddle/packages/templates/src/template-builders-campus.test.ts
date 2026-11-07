@@ -16,7 +16,7 @@ import { TEMPLATES, type TemplateKind } from './templates';
 // docs/specs/012-collaboration/virtual-office-template.md "Campus Spaces" and "Spaces with floors": whole sites of rooms,
 // in a fenced garden or a building's floors. Every room is closed and has one Door on its walls with a way out in front
 // of it (a Garden Path outdoors, open floor indoors) and a Room Sign beside it, a Directory waits at the arrival point
-// (above the Walk In, or by a floor's Elevator), and every aisle is roomy.
+// (above the Avatar Pad, or by a floor's Elevator), and every aisle is roomy.
 
 type Shape = Extract<Element, { type: 'shape' }>;
 type Box = { x: number; y: number; width: number; height: number };
@@ -105,14 +105,17 @@ describe.each(CAMPUS)('the %s campus', (kind: TemplateKind) => {
     expect(all.filter((e) => e.shape === 'grass')).toHaveLength(site.lawn ? 1 : 0);
   });
 
-  it('puts the Directory just inside the gate, above the Walk In', () => {
+  // The Directory waits just inside the gate (or the front door), in the plan's bottom middle; the Avatar Pad is in
+  // the middle of the action, never down there (docs/specs/009-elements/avatar-pad.md "Where a Space's pad stands").
+  it('puts the Directory just inside the gate, and the Avatar Pad up in the site, away from it', () => {
     const [directory] = all.filter((e) => e.shape === 'directory');
-    const walk = all.find((e) => e.shape === 'mode-button')!;
+    const walk = all.find((e) => e.shape === 'avatar-pad')!;
     expect(directory).toBeDefined();
-    const dx = Math.abs(directory!.x + directory!.width / 2 - (walk.x + walk.width / 2));
-    expect(dx).toBeLessThan(160);
-    expect(directory!.y).toBeLessThan(walk.y);
-    expect(walk.y - directory!.y).toBeLessThan(400);
+    const bottom = Math.max(...all.filter((e) => e !== walk).map((e) => e.y + e.height));
+    // Built round (0, 0): the plan's middle is x 0.
+    expect(Math.abs(directory!.x + directory!.width / 2)).toBeLessThan(200);
+    expect(bottom - (directory!.y + directory!.height)).toBeLessThan(200);
+    expect(directory!.y).toBeGreaterThan(walk.y);
   });
 });
 
@@ -196,7 +199,7 @@ describe.each(TABS)('the %s site', (_name, _kind, els, first) => {
     for (const room of rooms) expect(read, room.label).toContain(room.id);
   });
 
-  it('names every Elevator, and stands a Directory beside one on a floor arrived at by lift', () => {
+  it('names every Elevator, and stands a Directory and an Avatar Pad beside one on a floor arrived at by lift', () => {
     const lifts = all.filter((e) => e.shape === 'elevator');
     for (const lift of lifts) expect(lift.label?.trim(), `${lift.x}`).toBeTruthy();
     if (first) return;
@@ -205,6 +208,11 @@ describe.each(TABS)('the %s site', (_name, _kind, els, first) => {
     expect(directory).toBeDefined();
     const near = lifts.some((l) => Math.hypot(l.x - directory.x, l.y - directory.y) < 300);
     expect(near).toBe(true);
+    // Changing floor from the tab bar arrives on the pad, by the lifts (docs/specs/009-elements/avatar-pad.md "Every
+    // Space and blank tab has one").
+    const pad = all.find((e) => e.shape === 'avatar-pad')!;
+    expect(pad).toBeDefined();
+    expect(lifts.some((l) => Math.hypot(l.x - pad.x, l.y - pad.y) < 300)).toBe(true);
   });
 
   // docs/specs/007-editor/templates-by-mode.md "Every Space is roomy": seats side by side are one row or an aisle

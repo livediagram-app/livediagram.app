@@ -2,8 +2,9 @@
 
 **Community** is liveplanner's public gallery of plans people are proud of. A signed-in owner **publishes** a plan to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
-post's plan read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
-`/community`, and in the landing page's **From the Community** section.
+post's plan read-only, like it, and make their own copy of it. Its pages will be liveworkspace.app's shared Community
+page, served at liveplanner's `/community` by liveplanner's router once its Community is built, and it shows in the
+landing page's **From the Community** section.
 
 ## Where it lives
 
@@ -98,10 +99,12 @@ viewer does not stream changes. The publish dialog says so plainly.
 
 ## The gallery
 
-`apps/community` is a static export (`basePath: '/community'`), a thin shell on the shared Community pages
-(`@liveworkspace/community-site`). It behaves as every app's gallery does, as livediagram's
-[Community app](../../../../livediagram/docs/specs/025-community/community.md#the-community-app) describes, in
-liveplanner's words:
+liveplanner will keep no Community pages of its own: once its Community is built, `/community` will be
+liveworkspace.app's shared Community page served by liveplanner's router
+([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app));
+until then its router leaves `/community` to liveplanner's own site. It behaves as every app's gallery does, as
+livediagram's [Community page](../../../../livediagram/docs/specs/025-community/community.md#the-community-page)
+describes, in liveplanner's words:
 
 - **Gallery** (`/community/`): the welcome header with **Share Your Own** into Explorer Home; one search box holding
   the whole query in words (`#tag`, `category:<id>`, `sort:loved|copied`, `is:mine`) with Category, Tags, Sort and

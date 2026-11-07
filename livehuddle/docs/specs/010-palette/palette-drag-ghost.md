@@ -71,6 +71,19 @@ Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **th
   selection's size is not inherited (a placed piece has one size).
 - Over a panel or the strip, or off the canvas, the preview hides. It is `pointer-events-none`, listens to the
   pointer only while a placed piece is being added, and moves at most once a frame.
+- **The preview is inert** (`inert`), the controls its art draws included: a Pet Bed's sleeping dog (its Pat the
+  Dog button lies across the bed's middle, right under the pointer), a Jukebox's or a Notice Board's pill. So the
+  press that places the piece always reaches the canvas, never the preview's own control, and nothing in the
+  preview takes focus.
+- **Space turns a piece that turns** while it is placed, armed or carried, and the preview turns under the pointer;
+  **Shift+Space** turns it back ([Turning furniture](../009-elements/furniture-facing.md) "Turning while placing").
+  The snap and guides measure the turned piece.
+- **A tile of a piece that turns is carried, not dragged.** A browser's own drag hears no keys, so for a mouse or a
+  pen the tile is carried by the pointer (`apps/editor/lib/palette-carry.ts`): past four pixels of movement it publishes the same
+  drag preview (marked `carried`), the copy cursor shows everywhere, the snap follows pointer moves rather than
+  dragovers, and a release over the canvas lands it through the same drop as a dropped tile (`usePaletteDrop`). A
+  release over a panel, the palette or off the canvas places nothing, and **Escape** puts it down. The click the
+  release makes is the carry's. A touch keeps the browser's drag.
 - The Door keeps its wall snap: its preview sits on the wall it would land on
   ([Room Builder and Door](../009-elements/room-builder.md) "Door").
 - **Placed pieces are not resized.** Once on the canvas a placed piece shows no resize handles (rotation and moving

@@ -2,8 +2,8 @@
 
 **Community** is the public gallery of documents people are proud of. A signed-in owner **publishes** a document to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
-post's document read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
-`/community`.
+post's document read-only, like it, and make their own copy of it. Its pages are liveworkspace.app's one Community
+page, served at livediagram's `/community` by livediagram's router.
 
 ## Where it lives
 
@@ -11,8 +11,9 @@ The **listings** (posts, tags, likes, copies, reports, hidden) are kept by livew
 `liveworkspace.app/api/community` with its own database, shared by every liveworkspace app with a Community and
 described in [liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md). livediagram keeps the
 **documents**: who owns one, whether it may be published, its community link, and the link's doors (the read-only
-view, the card image and copying). Its pages read the gallery, posts, likes and reports straight from the service,
-for `livediagram.app` posts only; its api publishes, edits and removes a post on the owner's behalf, answers My
+view, the card image and copying). The Community pages are liveworkspace.app's, built once in its site
+(`liveworkspace/apps/site`) and served under livediagram's address (see "The Community page" below); they read the
+gallery, posts, likes and reports straight from the service, `livediagram.app` posts by default; livediagram's api publishes, edits and removes a post on the owner's behalf, answers My
 Shares, and tells the service where each published document stands (public, closed, away or gone) right after a
 change and from each published document's own alarm every ten minutes. A post hidden after reports closes its
 link here within those ten minutes.
@@ -127,13 +128,30 @@ hyphen, any character other than `a-z`, `0-9` and `-` is dropped, repeated and e
 it is 2 to 24 characters, or it is rejected. Duplicates on one post collapse. The same function runs in the editor (as you
 type) and on the worker (authoritative).
 
-## The Community app
+## The Community page
 
-`apps/community` is a static export (`basePath: '/community'`) like Help and Telemetry, a thin shell on every app's
-Community pages (`@liveworkspace/community-site`). It talks to the api at
-`/api/community/*` from the browser. Browsing needs no sign-in: the app asks for the session only for My Shares (below). Pages:
+livediagram keeps no Community pages of its own. `/community` and everything under it is liveworkspace.app's one
+Community page (`liveworkspace/apps/site`, `app/community/` and `components/community/`), which livediagram's router
+hands to liveworkspace.app with the address bar unchanged, the same way as the Explorer
+(`@liveworkspace/sites/workspace-proxy` `COMMUNITY_ROUTE`, no cookies forwarded). On livediagram's address the page is
+livediagram's: its posts by default, its words, its colours, its session for My Shares, its telemetry and its help
+centre. How the page works out where it is, and how it is served on every app, is in liveworkspace's
+[Community](../../../../liveworkspace/docs/specs/007-community/community.md) ("One page for every app", "An app's
+Community pages") and [Site](../../../../liveworkspace/docs/specs/010-site/site.md) ("The Community").
 
-### Gallery (`/community/`)
+- **The header** reads `liveworkspace | livediagram`, the Explorer's header; livediagram's logo leads back to the app.
+- **Which posts**: a switch beside the search reads **livediagram** and **All Apps**, the Explorer's switch
+  (`@liveworkspace/ui` `AppScopeToggle`). It starts on livediagram every time the page opens. **All Apps** lists every
+  app's posts with every app's categories; **My Shares** is offered only on livediagram's side. On liveworkspace.app
+  the page shows every app's posts, with no switch.
+- **A post always opens on its own app's address**: a livediagram card opens in place, another app's card is a full
+  link to that app's `/community/post?id=`.
+- Addresses have no trailing slash: `/community/` and `/community/post/?id=` answer one redirect that stays on
+  livediagram.
+
+Browsing needs no sign-in: the page asks for livediagram's session only for My Shares (below). Pages:
+
+### Gallery (`/community`)
 
 - A welcoming header: the heading, one line on what Community is, and a **Share Your Own** call to action into
   Explorer Home (`/explorer/home`), where the person's documents are: sharing starts from a document they already have.
@@ -164,7 +182,7 @@ Community pages (`@liveworkspace/community-site`). It talks to the api at
 - States: a skeleton grid while loading; an empty state per cause (nothing published yet, inviting the person to share one from Explorer Home; no match for these filters
   with a Clear Filters button); an error state with Try Again.
 
-### Post (`/community/post/?id=<postId>`)
+### Post (`/community/post?id=<postId>`)
 
 - An **interactive preview** of the document (the read-only [embed](../013-workspace/embeds.md) in a frame, so it pans,
   zooms and switches tabs). If the frame has not loaded after 15 seconds, the card image shows instead.
@@ -182,18 +200,21 @@ Community pages (`@liveworkspace/community-site`). It talks to the api at
 - The page names its own address as canonical, filled in before it reaches the browser (see "Search engines" below)
   and again once the post loads. The static shell, shared by every post, carries none, and its Open Graph block has no
   `og:url`, so a link preview never folds a post into the gallery.
-- The gallery's metadata (canonical, Open Graph and Twitter card with the brand card) comes from the shared
-  `pageMetadata` in `@livediagram/ui`, with `og:type` `website` ([Marketing site](../019-marketing/marketing-site.md)
-  "SEO and metadata").
+- The gallery's metadata is liveworkspace.app's static head, made livediagram's by the router before it leaves (see
+  "Search engines" below).
 
 ### Search engines
 
 Posts are the Community's long tail of search traffic: each is a real diagram with its own title and description. The
-app is a static export with one shell for every post, so a small worker script in front of its assets
-(`apps/community/worker/`) makes each post findable and previewable without running the page's script. It runs for
-only two paths; everything else is served straight from the assets.
+page is one static export with one shell for every post, so the router's Community step (`routeCommunity` from
+`@liveworkspace/community-site/router`, run before everything else in [the router](../016-platform/router-app.md))
+makes the gallery livediagram's and each post findable and previewable without running the page's script. It acts on
+only three things; everything else under `/community` is forwarded to liveworkspace.app as it is.
 
-- **A post's page** (`/community/post/?id=<postId>`): the worker reads the post from the api and rewrites the shell's
+- **The gallery** (`/community`): the step rewrites liveworkspace.app's head to livediagram's own: the title
+  `Community | livediagram`, livediagram's description, and the canonical and `og:url` `https://www.livediagram.app/community`
+  with `og:site_name` `livediagram Community`.
+- **A post's page** (`/community/post?id=<postId>`): the step reads the post from the Community service and rewrites the shell's
   head with the post's own title (`<Title> | livediagram Community`, as the page sets once it loads), a description
   (the post's, cut at a whole word to 160 characters; a sentence naming the post when it has none), a canonical and
   `og:url` at its own address, the Open Graph and Twitter title and description, and JSON-LD: a `CreativeWork` (name,
@@ -205,10 +226,10 @@ only two paths; everything else is served straight from the assets.
 - **The sitemap** (`/community/sitemap.xml`, listed in the origin's robots.txt beside the marketing and help ones):
   every public post at its canonical address with its last-updated date, newest first, from the Community service's
   sitemap, which reads only ids and dates and caps the list at `COMMUNITY_SITEMAP_MAX` (5,000; one sitemap may hold
-  50,000). The worker answers it with an hour's caching; switched off, the sitemap is empty.
+  50,000). The step answers it with an hour's caching; switched off, the sitemap is empty.
 - **When the service cannot answer** (an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
   post page is the shell exactly as built and the sitemap answers 503 with `Retry-After`. Nothing about the page
-  depends on the worker: it only adds what crawlers read.
+  depends on the step: it only adds what crawlers read.
 - **Cost**: each post page view makes one extra Community service read (one post's metadata) before the HTML is sent,
   since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow service can
   add.
@@ -270,7 +291,8 @@ API), the link closes and answers 404, never a password prompt, and the next che
 
 ## Likes
 
-One like per browser per post, keyed by a random **community key** the Community app keeps in the browser. It is not the
+One like per browser per post, keyed by a random **community key** the Community page keeps in the browser on livediagram's origin
+(`livediagram:v2:community-key`, the key livediagram's own Community app kept, so hearts carry over). It is not the
 guest owner id: liking must never put an owner credential on the wire from a public page. Liking again is idempotent;
 unliking removes it.
 
@@ -314,8 +336,9 @@ A signed-in author can narrow the gallery to their own posts, to review them and
   nothing shared yet, **You haven't shared anything yet.** with Share Your Own.
 - If sign-in has not loaded after 10 seconds (a blocked script, a network failure), it says **We couldn't load the
   Community.** with **Try Again**, which reloads the page.
-- The rest of the Community needs no identity, so the Community app asks for the editor's session only once My Shares is
-  on. The api answers `GET /api/community/mine` (signed-in session
+- The rest of the Community needs no identity, so the page asks for livediagram's session only once My Shares is on
+  (`liveworkspace/apps/site/lib/explorer/app-session.ts` `appAccount`, which asks `POST /api/auth/token` only when
+  livediagram's signed-in hint is set). The api answers `GET /api/community/mine` (signed-in session
   required, never cached); the public list ignores `is:mine`.
 - Turning it on is tracked as `Community·Selected·Mine`.
 
@@ -335,7 +358,7 @@ for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 ## Where Community is linked from
 
 - The Explorer panel's footer row of links (Home, Explorer, **Community**, Help).
-- The shared site footer, and the marketing sitemap (`/community/`).
+- The shared site footer, and the marketing sitemap (`/community`).
 - The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
   Community** and **Finding Canvases in the Community** under Collaboration, Sharing and Embeds.
 
@@ -369,10 +392,11 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 
 - Editor: `Community·Shared·<Category>` on publish, `Community·Changed·<Category>` on Edit Listing,
   `Community·Removed·Post` on Remove From Community.
-- Community app: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
+- The Community page: `Community·Opened·Post`, `Community·Liked·Post`, `Community·Unliked·Post`, `Community·Copied·Post`,
   `Community·Reported·<Reason>`, `Community·Searched·Query`, `Community·Selected·<Category|Tag|Sort|Mine>`
-  (Category, Tag, Sort and Mine from the four controls inside the search box). There are no operator or moderation events.
-- Page views for the Community app as for any other app, under app `Community`.
+  (Category, Tag, Sort and Mine from the four controls inside the search box), sent in livediagram's name by
+  liveworkspace.app's page while it is on livediagram's address (`liveworkspace/apps/site/lib/community/telemetry.ts`);
+  on liveworkspace.app it sends nothing. There are no operator or moderation events.
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
   (publishing, engagement, discovery, reports).
 
@@ -392,7 +416,7 @@ While it is off:
   turning it back on restores everything as it was.
 - It disappears from every interface: the **Community** link in the Explorer footer row and the site footer, the landing page's
   section, the Community section of the Share dialog and the editor's Public badge. Visiting `/community` sends
-  you to the home page. A listed post does not stand in the way of a share password.
+  you to the home page (the page's gate asks livediagram's `/api/capabilities`). A listed post does not stand in the way of a share password.
 - The apps learn it from the capabilities endpoint after they load, so a Community link can show for a moment before
   it goes. Until the endpoint answers (or if it cannot be reached) they assume the Community is on: only an explicit
   `false` hides it.
@@ -402,13 +426,14 @@ While it is off:
 
 Community needs liveworkspace's Community service, which holds the listings: an api without `COMMUNITY_KEY` reports
 the Community off, and `COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` point at the service
-(`liveworkspace/apps/community`). The snapshot cache renders images, the app is static
-behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
-out, the pages are served exactly as built). Nothing is published until someone publishes. Publishing and My Shares need sign-in, which
+(`liveworkspace/apps/community`). The snapshot cache renders images. The pages are liveworkspace.app's; livediagram's
+router reads the service at its `COMMUNITY_URL` var for the gallery's and a post's head and the sitemap (local
+`http://localhost:3000/api/community`, staging `https://staging.liveworkspace.app/api/community`, production the
+default); unreachable, the pages are served exactly as built. Nothing is published until someone publishes. Publishing and My Shares need sign-in, which
 every build offers.
 
 ## Out of scope
 
 - Hand-picked featured posts (staff picks); author profile pages; comments on posts; following authors.
 - Publishing a single tab; frozen snapshots.
-- A sign-in form inside the Community app (My Shares links to the editor's `/sign-in/`).
+- A sign-in form inside the Community page (My Shares links to the editor's `/sign-in/`).

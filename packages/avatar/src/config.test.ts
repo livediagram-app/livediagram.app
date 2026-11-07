@@ -2,14 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   AVATAR_CLOTHING,
   AVATAR_HAIR,
+  AVATAR_HAIR_COLOURS,
   avatarScale,
-  BARE_ARM_CLOTHING,
+  hairColourHex,
   BARE_LEG_CLOTHING,
   DEFAULT_AVATAR_CONFIG,
   parseAvatarConfig,
   randomAvatarConfig,
   type AvatarConfig,
 } from './config';
+import { AVATAR_PALETTE } from './palette';
 
 describe('parseAvatarConfig', () => {
   const full: AvatarConfig = {
@@ -17,6 +19,7 @@ describe('parseAvatarConfig', () => {
     clothing: 'hoodie',
     hair: 'ponytail',
     size: 'tall',
+    hairColour: 'auburn',
   };
 
   it('round-trips a complete config, from an object or its JSON', () => {
@@ -38,6 +41,14 @@ describe('parseAvatarConfig', () => {
     expect(parsed.gender).toBe('female');
     expect(parsed.hair).toBe('ponytail');
     expect(parsed.size).toBe('tall');
+  });
+
+  it('draws Brown, the hair every character had before, for a config or packet without a hair colour', () => {
+    const { hairColour: _, ...older } = full;
+    expect(parseAvatarConfig(older).hairColour).toBe('brown');
+    expect(parseAvatarConfig({ ...full, hairColour: 'tartan' }).hairColour).toBe('brown');
+    expect(hairColourHex(undefined)).toBe(AVATAR_PALETTE.hair);
+    expect(hairColourHex('brown')).toBe(AVATAR_PALETTE.hair);
   });
 
   it('defaults missing fields, so a config written by an older build still loads', () => {
@@ -70,6 +81,13 @@ describe('randomAvatarConfig', () => {
     }
   });
 
+  it('rolls a natural hair colour, never a bold one', () => {
+    const natural = new Set(AVATAR_HAIR_COLOURS.filter((c) => c.natural).map((c) => c.id));
+    for (let i = 0; i < 40; i += 1) {
+      expect(natural.has(randomAvatarConfig().hairColour!)).toBe(true);
+    }
+  });
+
   it('leaves size at Regular — it changes how much canvas the character covers', () => {
     for (let i = 0; i < 20; i += 1) {
       expect(randomAvatarConfig().size).toBe('regular');
@@ -88,6 +106,27 @@ describe('randomAvatarConfig', () => {
 });
 
 describe('the option catalogues', () => {
+  it('offer nine natural hair colours then four bold ones, each a distinct hex', () => {
+    expect(AVATAR_HAIR_COLOURS.map((c) => c.label)).toEqual([
+      'Black',
+      'Dark Brown',
+      'Brown',
+      'Auburn',
+      'Ginger',
+      'Blonde',
+      'Platinum',
+      'Grey',
+      'White',
+      'Blue',
+      'Pink',
+      'Purple',
+      'Green',
+    ]);
+    expect(AVATAR_HAIR_COLOURS.filter((c) => c.natural)).toHaveLength(9);
+    expect(new Set(AVATAR_HAIR_COLOURS.map((c) => c.hex)).size).toBe(AVATAR_HAIR_COLOURS.length);
+    for (const c of AVATAR_HAIR_COLOURS) expect(c.hex).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
   it('offer every clothing and hair token the type allows', () => {
     // The panel renders from these arrays, so a token added to the union but
     // not the catalogue would be unreachable in the UI (and unparseable).
@@ -129,6 +168,5 @@ describe('the option catalogues', () => {
 
   it('marks the outfits that change the silhouette', () => {
     expect([...BARE_LEG_CLOTHING].sort()).toEqual(['dress', 'skirt']);
-    expect([...BARE_ARM_CLOTHING].sort()).toEqual(['hawaiian', 'vest']);
   });
 });

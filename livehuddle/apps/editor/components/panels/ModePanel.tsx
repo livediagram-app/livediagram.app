@@ -6,7 +6,7 @@ import type {
 } from '@/components/primitives/MovablePanel.types';
 import type { HelpArticleKey } from '@/lib/help-articles';
 
-// The chrome every MODE panel wears: Avatar, Eraser, Format.
+// The chrome every MODE panel wears: the Format panel (the Avatar and Eraser panels are retired).
 //
 // These three are the panels that exist only while their tool does (docs/specs/008-canvas/avatar-mode.md for
 // Avatar, and the same shape for the rest). They are

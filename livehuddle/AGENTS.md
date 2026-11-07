@@ -197,7 +197,6 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   editor/       # the diagram editor app (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
-  community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
   router/       # Cloudflare Worker stitching the apps under one hostname
 packages/

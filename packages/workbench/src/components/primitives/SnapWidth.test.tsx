@@ -60,4 +60,10 @@ describe('SnapWidth', () => {
     measureAs(61.39, 1440);
     expect(snapped({ matchParentParity: true })).toBe('62px');
   });
+
+  it('keeps its width while it is not drawn, rather than snapping to zero', () => {
+    // display: none (a strip hidden while another stands in) measures 0 with no boxes.
+    measureAs(0, 0);
+    expect(snapped({ matchParentParity: true })).toBe('');
+  });
 });

@@ -6,7 +6,7 @@ import type { AccessLevel } from '@livehuddle/api-schema';
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md): the title bar's pill (docs/specs/007-editor/editor-app.md#role-pill). It
-// steps the local preview (Editing, Participating, Viewing, back to Editing) when `onToggle` is given, i.e. when your
+// steps the local preview (Editing, Participating, back to Editing) when `onToggle` is given, i.e. when your
 // role allows editing. A Participant's pill is static, as a Viewer's.
 
 export type Role = AccessLevel;
@@ -16,10 +16,10 @@ const ROLE_WORD: Record<Role, string> = {
   participate: 'Participating',
   view: 'Viewing',
 };
-// What a press does, for someone whose role allows editing: the next step of Editing, Participating, Viewing.
+// What a press does, for someone whose role allows editing: Editing and Participating swap (no Viewing step).
 const TOGGLE_HINT: Record<Role, string> = {
   edit: 'Switch to participating (as a Participant sees it)',
-  participate: 'Switch to viewing (read-only)',
+  participate: 'Switch to editing',
   view: 'Switch to editing',
 };
 

@@ -23,7 +23,6 @@ import {
   pascalToken,
   isValidTelemetryEvent,
   COMMUNITY_CATEGORY_TYPES,
-  COMMUNITY_REPORT_REASONS,
 } from '@livedesign/api-schema';
 import { countedVerbs } from '@livedesign/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedesign/agent-verbs/mcp';
@@ -216,7 +215,19 @@ const AGENT_FRONT_DOORS = tokensAfter(
   ';',
 );
 
+// The UI Scale slider's per-part rows (settings-catalogue.ts uiScalePartRow), each naming its token in the copy
+// it hands the helper, which builds the row's event from it.
+const UI_SCALE_PARTS = [
+  ...read('live/components/dialogs/settings/settings-catalogue.ts').matchAll(
+    /uiScalePartRow\('[A-Za-z]+', \{[^}]*?changed: '([A-Za-z]+)'/g,
+  ),
+].map((m) => m[1]!);
+
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: UI_SCALE_PARTS,
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.
@@ -336,14 +347,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/lib/community-share-host.tsx Community·Shared': { values: COMMUNITY_CATEGORY_TYPES },
   'apps/live/lib/community-share-host.tsx Community·Changed': {
     values: COMMUNITY_CATEGORY_TYPES,
-  },
-  // The Community app (docs/specs/025-community/community.md "Telemetry"): a report's reason as its closed type, and
-  // the gallery filter kinds its CommunitySelection union names.
-  'apps/community/lib/telemetry.ts Community·Reported': {
-    values: COMMUNITY_REPORT_REASONS.map((r) => r.type),
-  },
-  'apps/community/lib/telemetry.ts Community·Selected': {
-    values: tokensAfter(read('community/lib/telemetry.ts'), 'export type CommunitySelection', ';'),
   },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },

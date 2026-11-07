@@ -195,6 +195,63 @@ export const TIMELINE_DISMISS_MAX = 100;
 // The sidebar's Timeline count stops here and reads "99+".
 export const TIMELINE_NEW_CAP = 99;
 
+// The team audit log (liveworkspace/docs/specs/004-index/team-audit-log.md): what a team's admins can look back on.
+// Team-level events only, never a document's content: a team's own (but team_deleted), a team item's shares, moves
+// across teams, trashes, restores and permanent deletes, and the team's webhooks added or removed. Never an API
+// token's: a token is its owner's.
+export const TEAM_AUDIT_ACCOUNT_TYPES = [
+  'team_invite_sent',
+  'team_joined',
+  'team_declined',
+  'team_role_changed',
+  'team_member_removed',
+  'team_renamed',
+] as const satisfies readonly AccountTimelineEventType[];
+export const TEAM_AUDIT_ITEM_TYPES = [
+  'shared',
+  'unshared',
+  'moved',
+  'trashed',
+  'restored',
+] as const satisfies readonly TimelineEventType[];
+// Kinds with no Timeline event of their own: a team item deleted for good, a team webhook added or removed.
+export const TEAM_AUDIT_OWN_TYPES = ['deleted', 'webhook_added', 'webhook_removed'] as const;
+export const TEAM_AUDIT_EVENT_TYPES = [
+  ...TEAM_AUDIT_ACCOUNT_TYPES,
+  ...TEAM_AUDIT_ITEM_TYPES,
+  ...TEAM_AUDIT_OWN_TYPES,
+] as const;
+export type TeamAuditEventType = (typeof TEAM_AUDIT_EVENT_TYPES)[number];
+// How long a row is kept, from when it happened.
+export const TEAM_AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
+// The admins' read (`GET /team-audit`): rows a page by default and at most, and rows one CSV file holds at most.
+export const TEAM_AUDIT_PAGE = 50;
+export const TEAM_AUDIT_LIMIT_MAX = 100;
+export const TEAM_AUDIT_CSV_MAX = 10_000;
+// The response header naming where the next CSV file starts, when more rows match than one holds.
+export const TEAM_AUDIT_NEXT_CURSOR_HEADER = 'X-Next-Cursor';
+
+/** Each kind as the team's Activity and its CSV name it. */
+export const TEAM_AUDIT_EVENT_LABELS: Record<TeamAuditEventType, string> = {
+  team_invite_sent: 'Invitation Sent',
+  team_joined: 'Joined',
+  team_declined: 'Invitation Declined',
+  team_role_changed: 'Role Changed',
+  team_member_removed: 'Removed or Left',
+  team_renamed: 'Team Renamed',
+  shared: 'Share Link Made',
+  unshared: 'Share Link Removed',
+  moved: 'Moved',
+  trashed: 'Moved to the Trash',
+  restored: 'Restored',
+  deleted: 'Deleted for Good',
+  webhook_added: 'Webhook Added',
+  webhook_removed: 'Webhook Removed',
+};
+
+export const isTeamAuditEventType = (value: unknown): value is TeamAuditEventType =>
+  (TEAM_AUDIT_EVENT_TYPES as readonly unknown[]).includes(value);
+
 // Share links, as the apps have them today: a lifetime chosen when made, `never` by default.
 export const SHARE_LINK_EXPIRIES = ['never', 'week', 'month', 'sixMonths'] as const;
 export type ShareLinkExpiry = (typeof SHARE_LINK_EXPIRIES)[number];
@@ -278,6 +335,8 @@ export const INDEX_ERRORS = [
   'webhooks_unavailable',
   'webhooks_need_account',
   'not_team_admin',
+  // The team audit log's read (team-audit-log.md): accounts can't say who runs the team.
+  'team_audit_unavailable',
   'invalid_moves',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
@@ -291,6 +350,11 @@ export const INDEX_ERRORS = [
   'password_invalid',
   'never_expires',
   'share_link_limit',
+  // Connected tabs (connected-tabs.md): an item connected to itself, a host's 51st, and why one opens nothing.
+  'connection_self',
+  'connection_limit',
+  'connection_target_gone',
+  'connection_link_removed',
   'wrong_app',
   'copy_failed',
   'grants_unavailable',

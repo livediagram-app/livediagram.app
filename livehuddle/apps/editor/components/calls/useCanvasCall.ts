@@ -6,6 +6,7 @@
 // Raised hands sit beside them, each a Let Speak button for whoever may press it, and Do Not Disturb hides others'
 // bars (meeting-rooms-and-stage.md "Raise hand", "Do Not Disturb").
 import { useMemo } from 'react';
+import { computeViewportCanvasRect } from '@liveworkspace/workbench/lib/viewport';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { CanvasTool } from '@/components/palette/palette.types';
@@ -24,6 +25,7 @@ import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import { useTimerEarshot } from '@/lib/office/timer-earshot';
 import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
+import { useReceptionBell } from '@/lib/office/reception-bell';
 import type { TalkingBarsPeer } from './TalkingBars';
 
 type WalkingSelf = {
@@ -56,7 +58,8 @@ export function useCanvasCall(deps: {
         id: p.id,
         name: p.name,
         color: p.color,
-        at: { x: p.avatar.x, y: p.avatar.y },
+        // The seat too: only a seated character is in a Phone Booth's call (workday-pieces.md "Phone Booth").
+        at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
         scale: avatarScale(parseAvatarConfig(p.avatar.config).size),
         glideMs: p.glideMs,
         walking: p.avatar.walking,
@@ -77,6 +80,11 @@ export function useCanvasCall(deps: {
   }, [props.elements]);
 
   const self = inMode ? avatar.pos : null;
+  const selfSeat = avatar.seatedOn ?? null;
+  const seatedSelf = useMemo(
+    () => (self ? { ...self, seatedOn: selfSeat } : null),
+    [self, selfSeat],
+  );
   // The Screens' and Room Signs' rooms, Knock (docs/specs/009-elements/screen-and-room-sign.md,
   // docs/specs/012-collaboration/knock.md).
   useMeetingPieces({
@@ -89,13 +97,26 @@ export function useCanvasCall(deps: {
     doNotDisturb: deps.doNotDisturb === true,
     send: props.onCallSignal,
     standUp: avatar.standUp,
+    selfPerson: props.selfParticipant,
+    walkTo: avatar.walkTo,
   });
   // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
   useTimerEarshot({ elements: props.elements, zones, inMode, self });
+  // Who hears a Reception Desk's bell, and ringing it (docs/specs/009-elements/workday-pieces.md "Reception Desk").
+  useReceptionBell({
+    elements: props.elements,
+    zones,
+    inMode,
+    self,
+    walkers: props.remoteAvatars,
+    doNotDisturb: deps.doNotDisturb === true,
+    send: props.onCallSignal,
+  });
   const view = useViewRect(deps.viewport);
   const toast = useToast();
   useProximityCall({
     inMode,
+    // Your feet with your seat, so sitting in a Phone Booth takes you into its call and walking across it does not.
     caller,
     // `can.takePart`, never read-only (Avatar mode makes the canvas read-only for everyone): a Viewer only listens.
     canSpeak: !!props.takePart,
@@ -104,7 +125,7 @@ export function useCanvasCall(deps: {
     view,
     send: props.onCallSignal,
     tabId: props.activeTabId ?? '',
-    self,
+    self: seatedSelf,
     walkers: peers,
     zones,
     stages,
@@ -172,12 +193,18 @@ function useViewRect(
   viewport: { offset: Point; zoom: number; width: number; height: number } | undefined,
 ): ViewRect | null {
   const measured = !!viewport && viewport.width > 0 && viewport.height > 0 && viewport.zoom > 0;
+  // The canvas zooms about the screen's middle (Canvas.tsx's `origin-center`), so the area on screen is centred on it
+  // at any zoom: the same rect Fit and paste use. Anchored at `-offset` it was right only at 100%, and zoomed in it
+  // left everyone right of and below the middle unreceived (video-and-screen-bubbles.md "Who sees what").
+  const area = measured
+    ? computeViewportCanvasRect(viewport, viewport.offset, viewport.zoom)
+    : { x: 0, y: 0, width: 0, height: 0 };
   // Each edge is snapped on its own (#503), not the size: a snapped size could put the right or bottom edge up to half a
   // step past the screen's, and the bubbles kept inside it would run off by that much.
-  const x = measured ? snap(-viewport.offset.x) : 0;
-  const y = measured ? snap(-viewport.offset.y) : 0;
-  const width = measured ? snap(-viewport.offset.x + viewport.width / viewport.zoom) - x : 0;
-  const height = measured ? snap(-viewport.offset.y + viewport.height / viewport.zoom) - y : 0;
+  const x = snap(area.x);
+  const y = snap(area.y);
+  const width = snap(area.x + area.width) - x;
+  const height = snap(area.y + area.height) - y;
   return useMemo(
     () => (measured ? { x, y, width, height } : null),
     [measured, x, y, width, height],

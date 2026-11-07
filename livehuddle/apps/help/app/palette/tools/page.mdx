@@ -6,13 +6,13 @@ import { CommandPalette } from '@/components/illustrations/tips';
 export const metadata = helpMetadata({
   title: 'Palette Tools',
   description:
-    'Where each element lives in the palette: Popular, Write, Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting, Travel and Stickers.',
+    'Where each element lives in the palette: Popular, Write, Rooms, Seats, Perks, Play, Garden, Meet and Travel, with Stickers in Search.',
   path: '/help/palette/tools/',
 });
 
 <ArticleLayout
   title="Where each tool lives"
-  description="A map of the palette's categories: Write, Rooms, Seating, Amenities, Bar, Recreation, Garden, Meeting, Travel and Stickers, and where each tool lives."
+  description="A map of the palette's categories: Write, Rooms, Seats, Perks, Play, Garden, Meet and Travel, where each tool lives, and Stickers in Search."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("tools")}
@@ -20,9 +20,9 @@ export const metadata = helpMetadata({
 
 The palette's tools are grouped into **categories**, each one press away on the palette strip. This page is a map of where each tool lives.
 
-The categories sit along the strip by name, with a thin line between each group: **Write**; then **Rooms**, **Seating**, **Amenities**, **Bar**, **Recreation**, **Garden** and **Meeting**; then **Travel** on its own; then **Stickers**. Rest on one, or click it, to see its elements.
+The categories sit along the strip by name, with a thin line between each group: **Write**; then **Rooms**, **Seats**, **Perks**, **Play**, **Garden** and **Meet**; then **Travel** on its own. Rest on one, or click it, to see its elements.
 
-<Figure caption="The palette strip: the selection mode, the categories by name, and Search.">
+<Figure caption="The palette strip: the Edit | Walk toggle, the categories by name, and Search.">
   <CommandPalette />
 </Figure>
 
@@ -36,17 +36,21 @@ Anything you cannot see is still one search away: the strip's Search and the [se
 
 **Write** holds the wordy elements: **Text** drops a free-standing label (`T`) and **Note** is a coloured sticky note card (`N`). See [Write Elements](/help/palette/write/).
 
-**Rooms** holds what a floor is laid out with. It opens on **Build**: the [Room](/help/palette/virtual-office/), the Room Builder and the Door, the pieces a room is made with. Under **Floor** come the [Fence](/help/palette/fences/), the Stage, the Office Pod and the Rug.
+**Rooms** holds what a floor is laid out with. It opens on **Build**: the [Room](/help/palette/virtual-office/), the Room Builder, the Corridor and the Door, the pieces a room is made with. The Room, Corridor and Door each open their types beside the panel, and so does the Rug. Under **Floor** come the [Fence](/help/palette/fences/), the Stage, the Office Pod and the Rug.
 
-**Seating** holds what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Meeting Table](/help/palette/virtual-office/).
+**Seats** holds what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Meeting Table, Bean Bag and Reading Nook](/help/palette/virtual-office/).
 
-**Amenities** holds what makes a Space feel like a place: the [Plant, Bookshelf, Water Cooler and Coffee Machine](/help/palette/virtual-office/).
+**Perks** holds what makes a Space feel like a place: the [Plant, Bookshelf, Water Cooler, Coffee Machine and Vending Machine](/help/palette/virtual-office/).
 
-**Bar**, **Recreation**, **Garden** and **Meeting** hold the bar and its stools, the games and the fireplace, the outdoor pieces, and what a meeting room needs on its walls.
+**Play** holds somewhere to unwind, in three groups: **Bar** (the Bar, Bar Stool, Drinks Cabinet and Drinks Fridge), **Games** (the Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine and Dartboard) and **Lounge** (the Jukebox and Fireplace). See [Virtual Office Elements](/help/palette/virtual-office/).
 
-**Travel**, set apart on the strip, holds what takes people somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/), the Directory, the Elevator and the Avatar Button.
+**Garden** holds the outdoor pieces, in four groups: **Plants** (the Outdoor Plant, Tree and Grass), **Paths and Fences** (the Garden Path and Garden Fence), **Furniture** (the Bench, Picnic Table, Hammock and Garden Umbrella) and **Features** (the Fountain, Pond and Campfire).
 
-**Stickers** are for decoration: die-cut colour emoji and word badges. See [Stickers](/help/palette/stickers/).
+**Meet** holds what a meeting room needs on its walls.
+
+**Travel**, set apart on the strip, holds what takes people somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/), the Directory, the Signpost, the Elevator, the Stairs and the Avatar Button.
+
+**Stickers** are for decoration: die-cut colour emoji and word badges. They aren't on the strip: open **Search** (press **S**) and type a name, like "heart" or "approved". See [Stickers](/help/palette/stickers/).
 
 There is no **Media** category: a Space does not add pictures or link cards. One already in a Space still shows, moves and deletes, and double-clicking it still changes its picture or address.
 
@@ -64,6 +68,6 @@ Several tools have their own walkthroughs, listed below and linked here:
 
 - [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short notes.
 - [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
-- [Meeting Elements](/help/palette/behaviour/) covers the Travel, Seating, Rooms and Amenities categories: Bring Focus, the furniture and the Avatar button.
+- [Meeting Elements](/help/palette/behaviour/) covers the Travel, Seats, Rooms and Perks categories: Bring Focus, the furniture and the Avatar button.
 
 </ArticleLayout>

@@ -19,7 +19,8 @@ export const BARS_FADE_END_PX = 1500;
 export const BARS_FAR_OPACITY_NEAR = 0.9;
 export const BARS_FAR_OPACITY_MIN = 0.3;
 
-export type Point = { x: number; y: number };
+// A walker's feet, and the seat they sit on (a Phone Booth's call is only its sitter's: call-geometry's CallPoint).
+export type Point = { x: number; y: number; seatedOn?: string | null };
 
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 

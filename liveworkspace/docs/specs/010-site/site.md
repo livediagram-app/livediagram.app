@@ -34,7 +34,8 @@ The APIs are Workers on more specific routes of the same origin, so the pages ca
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps and Telemetry, each with its icon, and the account
+(the current site highlighted), links to Our Apps, Community (`/community`, every app's posts) and Telemetry, each
+with its icon, and the account
 control. On a phone the wordmark and the account control show; the footer has the rest. The
 Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
 address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the
@@ -138,7 +139,7 @@ moves between them, and the one account that joins them.
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
-   comparisons, the telemetry dashboard and Status) and Legal (the
+   comparisons, the Community, every app's posts together, the telemetry dashboard and Status) and Legal (the
    privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
    security policy on GitHub (`SECURITY_POLICY_URL`,
    [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md)). Every footer, here and in each app, labels the
@@ -152,8 +153,17 @@ ambient motion (the current along the lines, drifting cursors, the cards settlin
 
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
-feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions) says which;
-Google Drive sync and Offline Mode are every app's. Every app is MIT-licensed, and the terms say so app by app. Wherever
+feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions, livehuddle's calls,
+the MCP servers every app but livehuddle has) says which; Google Drive sync and Offline Mode are every app's. The
+privacy policy covers each platform feature that keeps or sends personal data: the account and its Google picture
+([accounts.md "Profile pictures"](../003-accounts/accounts.md#profile-pictures)), teams and their invitations' 28-day
+expiry, phone notifications ([push.md](../003-accounts/push.md)), webhooks
+([webhooks.md](../004-index/webhooks.md)), Download Your Data ([data-export.md](../003-accounts/data-export.md)), the
+Community, telemetry and Drive. livehuddle's part says what its calls do: microphone, camera and screen only on the
+person's own press, relayed by Cloudflare Realtime and never recorded, who hears and sees whom, and that avatar
+presence is never stored ([livehuddle proximity-audio.md](../../../../livehuddle/docs/specs/012-collaboration/proximity-audio.md)).
+The terms have a Calls section saying the same in a sentence, and that calls may be limited to audio or paused (the
+[calls kill switch](../../../../livehuddle/docs/specs/016-platform/calls-kill-switch.md)). Every app is MIT-licensed, and the terms say so app by app. Wherever
 either page names all the apps (each page's description, the terms' opening and The software), it names every listed
 app, five today (livediagram, liveplanner, livedocuments, livedesign and livehuddle), and so do the site's own
 description (`app/layout.tsx`) and its install manifest; `app/app-lists.test.ts` fails when a listed app is missing from
@@ -456,6 +466,30 @@ pages are `noindex`. Cmd/Ctrl+K and Cmd/Ctrl+. open the Search panel (`useSearch
 `@liveworkspace/explorer/search-shortcut`), the same two chords as the editors' command palette. They stand aside while
 the person is typing (a text field, a text area, a select or editable text) and while a dialog is open (anything
 marked `aria-modal`, the Search panel itself included), so a chord typed into a field or a dialog stays there.
+
+### The Community (`/community`, `/community/post`)
+
+What people made with the apps, built once here and served at each app's own `/community` by its router, as the
+Explorer is ([007-community](../007-community/community.md) "One page for every app" has the whole of it). Its parts
+are `app/community/`, `components/community/` and `lib/community/`.
+
+- **Which posts.** On an app's address, that app's posts, with **All Apps** a click away: the switch beside the
+  search reads the app's own name and **All Apps**, each with its logo, the Explorer's switch
+  (`@liveworkspace/ui` `AppScopeToggle`). It starts on the app every time the page opens. On liveworkspace.app (the
+  footer's **Community**) every app's posts, with no switch. My Shares is the app's, on its address only.
+- **The header.** The Explorer's (`components/AppPageHeader.tsx`, shared): the liveworkspace logo with the site
+  switcher, the slanted hairline and the app's logo, which leads back to the app; the account control on the right
+  (the app's session on its address). No search in the middle: the gallery's own search box is the page's. The
+  switcher leads each site to its Community ([site-switcher.md](site-switcher.md#on-a-community-page)).
+- **Its look.** The page wears the colours of the app whose address it is on (`data-community-app`, the same ramps
+  as the Explorer's, `app/app-colours.css`), liveworkspace's slate here; the hero's wash takes the app's colour too.
+  The rail (Appearance) and this site's footer follow, the footer's links leading to liveworkspace.app in full on
+  an app's address.
+- **A post** opens on its own app's address; a link to one here moves there.
+- **Search engines.** The gallery is indexable (`Community · liveworkspace`, canonical `/community`, in the
+  sitemap). On an app's address the router makes its head the app's own, and fills each post's.
+
+Its styles are in their own stylesheet, `app/community/community.css`, so the other pages don't carry them.
 
 ### Your account (`/account/…`)
 

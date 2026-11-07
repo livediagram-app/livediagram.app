@@ -30,7 +30,7 @@ three-line leaves with thousand-line screens.
 
 `apps/editor/hooks/`
 
-- `canvas/`: drag, eraser, marquee, element style, keyboard shortcuts.
+- `canvas/`: drag, marquee, element style, keyboard shortcuts.
 - `collab/`: room connection, presence.
 - `editor/`: editor-wide state (modes, the default tool).
 - `persistence/`: documents, capabilities, share links, the Community post.

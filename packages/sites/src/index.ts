@@ -1,3 +1,4 @@
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 // liveworkspace's sites (liveworkspace/docs/specs/010-site/site-switcher.md): the platform first, then each app. Every
 // app's logo switcher lists them in this order, so a new app is one row here.
 
@@ -399,10 +400,7 @@ function explorerHasView(site: Site, section: string): boolean {
  *  at the same view: the path and the query kept, arrival-only query dropped, Home where the site lacks the view.
  *  Null off the Explorer, where the switcher links each site's home. */
 export function explorerSwitchHref(pathname: string, search = ''): ((site: Site) => string) | null {
-  // Trailing slashes trimmed by hand: /\/+$/ is polynomial on a long run of slashes (CodeQL js/polynomial-redos).
-  let end = pathname.length;
-  while (end > 0 && pathname[end - 1] === '/') end -= 1;
-  const path = pathname.slice(0, end);
+  const path = withoutTrailingSlashes(pathname);
   if (path !== EXPLORER_PATH && !path.startsWith(`${EXPLORER_PATH}/`)) return null;
   const section = path.slice(EXPLORER_PATH.length + 1);
   const params = new URLSearchParams(search.replace(/^\?/, ''));

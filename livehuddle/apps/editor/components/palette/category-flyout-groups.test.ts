@@ -51,8 +51,8 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('shows each Space category but Rooms as one block, unheaded', () => {
-    for (const id of ['collab-travel', 'collab-seating', 'collab-amenities']) {
+  it('shows each Space category but Rooms, Perks, Play and Garden as one block, unheaded', () => {
+    for (const id of ['collab-travel', 'collab-seating', 'collab-meeting']) {
       const groups = flyoutGroups(id, tiles(id));
       expect(groups, id).toHaveLength(1);
       expect(groups[0]!.title, id).toBeNull();
@@ -60,14 +60,61 @@ describe('a flyout’s groups', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
-  it('opens Rooms on its Build group (Room, Room Builder, Door), then Floor', () => {
+  it('opens Rooms on its Build group (Room, Room Builder, Corridor, Door), then Floor', () => {
     const groups = flyoutGroups('collab-rooms', tiles('collab-rooms'));
     expect(groups.map((g) => g.title)).toEqual(['Build', 'Floor']);
     expect(groups[0]!.tiles.map((t) => t.id)).toEqual([
       'tools:room',
       'tools:room-builder',
+      'tools:corridor',
       'tools:wall-door',
     ]);
+  });
+
+  // docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout".
+  it('splits Play into Bar, Games, Gym and Lounge', () => {
+    const groups = flyoutGroups('collab-recreation', tiles('collab-recreation'));
+    expect(groups.map((g) => [g.title, g.tiles.map((t) => t.id)])).toEqual([
+      ['Bar', ['tools:bar', 'tools:bar-stool', 'tools:drinks-cabinet', 'tools:drinks-fridge']],
+      [
+        'Games',
+        [
+          'tools:ping-pong-table',
+          'tools:pool-table',
+          'tools:foosball-table',
+          'tools:arcade-machine',
+          'tools:dartboard',
+        ],
+      ],
+      ['Gym', ['tools:treadmill', 'tools:weight-bench']],
+      ['Lounge', ['tools:jukebox', 'tools:fireplace', 'tools:pet-bed']],
+    ]);
+  });
+
+  it('splits Garden into Plants, Paths and Fences, Furniture, Features and Parking', () => {
+    const groups = flyoutGroups('collab-garden', tiles('collab-garden'));
+    expect(groups.map((g) => [g.title, g.tiles.map((t) => t.id)])).toEqual([
+      ['Plants', ['tools:outdoor-plant', 'tools:tree', 'tools:grass']],
+      ['Paths and Fences', ['tools:garden-path', 'tools:garden-fence']],
+      [
+        'Furniture',
+        ['tools:bench', 'tools:picnic-table', 'tools:hammock', 'tools:garden-umbrella'],
+      ],
+      ['Features', ['tools:fountain', 'tools:pond', 'tools:swimming-pool', 'tools:campfire']],
+      ['Parking', ['tools:car-park', 'tools:bike-rack']],
+    ]);
+  });
+
+  // docs/specs/009-elements/office-amenities.md "Where they live".
+  it('splits Perks into Office, Kitchen and Restroom', () => {
+    const groups = flyoutGroups('collab-amenities', tiles('collab-amenities'));
+    expect(groups.map((g) => g.title)).toEqual(['Office', 'Kitchen', 'Restroom']);
+    expect(groups.map((g) => g.tiles[0]!.id)).toEqual([
+      'tools:plant',
+      'tools:water-cooler',
+      'tools:restroom',
+    ]);
+    expect(groups.map((g) => g.tiles.length)).toEqual([7, 8, 4]);
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {

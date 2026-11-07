@@ -47,6 +47,7 @@ const WIDTH_CLASS: Readonly<Record<number, string>> = {
   [CARD_COLUMN_PX]: 'w-[19rem]',
 };
 const widthPx = (c: FlyoutCategory) => {
+  if (c.width) return c.width;
   // A catalogue (Stickers) browses as two panes, its groups down the side.
   if (!c.tiles) return RAIL_PX;
   if (!c.tiles || flyoutLayout(c.id) !== 'cards') return GRID_PX;
@@ -125,14 +126,14 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
     },
     /** The mouse came onto the flyout: it stays. */
     hoverFlyout: clearTimer,
-    /** The mouse left a button or the flyout: close after a grace, unless it was opened by a press, a tile is being
-     *  dragged out, or a search has been typed into (the pointer drifting off would throw the query away). */
+    /** The mouse left a button or the flyout: close after a grace, unless it was opened by a press or a tile is
+     *  being dragged out. */
     leave: () => {
       clearTimer();
       if (pinned.current) return;
       timer.current = window.setTimeout(() => {
         timer.current = null;
-        if (dragging.current || typedSearch()) return;
+        if (dragging.current) return;
         popover.setOpen(false);
       }, HOVER_CLOSE_MS);
     },
@@ -150,16 +151,6 @@ export function useCategoryBar(rootRef: RefObject<HTMLElement | null>) {
   };
 }
 
-// The flyout's search field (Stickers) holds a query the person typed.
-function typedSearch(): boolean {
-  const field = document.activeElement;
-  return (
-    field instanceof HTMLInputElement &&
-    !!field.closest('[data-category-flyout], [data-category-flyout-side]') &&
-    field.value.trim() !== ''
-  );
-}
-
 type CategoryBarState = ReturnType<typeof useCategoryBar>;
 
 /** The bar's buttons, a divider between the bands (Popular, then Common, Structure, Decorate). */
@@ -168,6 +159,7 @@ export function CategoryBarButtons({
   categories,
   labels,
   scrollable = false,
+  ariaLabel = 'Palette categories',
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
@@ -176,6 +168,8 @@ export function CategoryBarButtons({
   // A phone's strip: the bar is the part that gives way and swipes sideways, as the tile rail does, so the
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
+  // The toolbar's name: two bars on one strip (the avatar palette's look and actions) each name their own.
+  ariaLabel?: string;
 }) {
   // What pressed a bar button last (mouse, touch, pen), read by its click: the click alone doesn't say.
   const pressedBy = useRef<string | null>(null);
@@ -197,7 +191,7 @@ export function CategoryBarButtons({
   return (
     <div
       role="toolbar"
-      aria-label="Palette categories"
+      aria-label={ariaLabel}
       {...(scrollable ? { 'data-strip-rail': '' } : {})}
       className={`flex items-center ${scrollable ? STRIP_RAIL_SCROLL : ''}`}
     >
