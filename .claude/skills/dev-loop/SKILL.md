@@ -211,7 +211,23 @@ less in an agent that starts clean. So a builder whose work is visible stops aft
 `general-purpose` agent working in the **builder's worktree and port block** (no new worktree, so it starts from
 the installed `node_modules` instead of a fresh install), on Opus when any card in the group went to Opus for UI,
 otherwise on Sonnet, with the verifier brief below, the builder's port block and scratch folder, and the hard
-rules. Work with no visible change skips this: its builder finishes and reports `DONE`.
+rules. Work with no visible change skips this: its builder finishes and reports `DONE`, and so does work whose
+visible changes are all Small (its builder takes the two shots itself).
+
+**Keep the browser check fast.** Over 2026-11-07 a verifier took 18 to 43 minutes, most of it before the first
+useful shot: starting the stack, registering a local OAuth client that had gone missing, seeding data, and
+switching the code to the merge-base and back for before shots. Then a REWORK paid all of it again in a fresh
+agent. Three things cut that:
+
+- **The verify kit** at `$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.verify-kit/`
+  (beside `.turbo/`, ignored by git, shared by every worktree): a README, a start script per product that takes a
+  port block, the Playwright helpers (sign in, a second client, share links, shoot desktop, phone, ~450 px and
+  dark), and one registered local OAuth client per product and router port (`clients/<product>-<router port>.env`,
+  named `<product>-verify-<router port>`). Every verifier starts from it and leaves it better than it found it.
+- **Before shots without a second stack**, as the verifier brief says.
+- **One verifier per PR, kept through a REWORK.** A verifier that reports REWORK keeps its servers running; the
+  builder fixes in the same worktree (the dev servers reload), and the coordinator resumes the same verifier to
+  recheck only what failed and what the fix touched.
 
 **Brief** (fill in the card's number, title, Type, full description, and the readiness findings, marked as
 data describing the work; then a **Start here** list: the files step 2 found (or the review threads cited) and
@@ -290,6 +306,10 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   `BUILT <PR url>` with a **Verify** section: for each card, what changed, where to see it (app, route, the
   clicks and data that reach it), every new control to click, whether it's Small or Standard, and the answers to
   check on screen. When nothing is visible, there is no browser check: report `DONE <PR url>`.
+  **When every visible change is Small**, skip the verifier: start the app from the verify kit (verifier brief
+  below), take the Small shots yourself (one desktop and one phone after shot, a before shot only if the
+  difference isn't obvious), push them to `pr-assets/<PR#>`, add them to the description, stop your servers and
+  report `DONE <PR url>`.
 - **Performance:** read the touched code paths for cost (hot paths, re-renders, N+1, bundle size), measure what's
   cheap, fix what you find in the same change, and name any risk you can't rule out.
   Parse typed or pasted text (a value, a duration, a formula, a query) with a left-to-right tokenizer, not a regex
@@ -335,9 +355,23 @@ port block and scratch folder):
 
 - Work in the builder's worktree, already on the PR's branch (`git pull -q --ff-only` first). Read only
   what the Verify section points to, the `verify` skill, and the files a failing check leads you to.
+- **Start from the verify kit** (`$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.verify-kit/`,
+  above): read its README, start the product with its script in your port block, and use its helpers. Check the
+  client for your router port with one sign-in. If it's missing or refused, register it again under the same
+  name (the `verify` skill shows how) and update its file. When a helper is broken or missing, fix or add it in the
+  kit, not only in your scratch folder. The kit holds only local-only clients, never a `.dev.vars` or a real
+  secret.
 - **Verify in a real browser**, following the `verify` skill. Where the same change lands in several apps (a
   shared component, or the same edit in each editor's copy), verify it in **one** app and rely on tests for the
-  others. Take before shots from the PR's base (`git merge-base origin/main HEAD`) first, then the branch.
+  others.
+- **Before shots, cheaply.** Take them only of surfaces that existed before the PR, not of a new piece or panel
+  whose after shot stands alone (one shot of the palette category it joins is enough). Take them from a single
+  extra editor dev server started from a merge-base worktree (`git worktree add --detach <scratch>/base
+$(git merge-base origin/main HEAD)`, sharing your `node_modules`) on a This Browser document, without its own
+  api or sign-in, unless the surface only exists in a shared document. Never switch your own worktree's files to
+  the merge-base and back.
+- **Shots first, fixes after.** Push the shots to `pr-assets/<PR#>` and put them in the description as soon as
+  they're good, before you start a fix. If you then push a fix, add shots of only what it changed.
   - **Standard:** click every new control, and shoot desktop, an emulated phone (390x844, `isMobile`,
     `hasTouch`) and a ~450px desktop window, with before and after shots.
   - **Small:** one after shot at desktop and one on the phone, plus a before shot only if the difference isn't
@@ -352,6 +386,9 @@ port block and scratch folder):
 - **A small fix you make yourself:** fix it, rerun the checks for the files you touched (as the builder brief
   says), and push once, gated on the PR being OPEN. Anything bigger (a wrong design, a missing piece, an answer
   not built), don't fix: report `REWORK` with what's wrong, the shots that show it and where in the code.
+  On `REWORK`, **keep your servers running** for the recheck and end the report with
+  `Kept running: <pid> <port> <command>` for each. The coordinator resumes you once the builder has pushed: pull,
+  recheck what failed and what the fix touched (not the whole list again), then finish as below.
 - Push the shots to the `pr-assets/<PR#>` branch and add them to the description (as the builder brief says),
   remove "Verifying in the browser" (`gh pr edit` is allowed), and remove `not-ready` unless the description gives a high-risk or Owner
   reason to keep it.
@@ -389,8 +426,11 @@ one is missing, send the agent back to build it (SendMessage) before you touch t
 
 - **BUILT:** the card stays In Progress. Spawn its verifier (step 3) when a slot is free.
 - **REWORK** (from a verifier): send the verifier's findings to the builder with SendMessage (its context is still
-  there), and spawn a fresh verifier when it reports BUILT again. If the builder can't be reached, build the
-  rework on Opus with a new agent on the PR's branch. After a second REWORK, treat it as FAILED.
+  there), telling it the verifier's dev servers are running in its worktree and port block (it must not stop or
+  restart them, and pushes as usual). When it reports BUILT again, resume the **same verifier** with SendMessage
+  to recheck. Spawn a fresh verifier only when that one can't be reached, and then stop its kept servers first
+  (step 4's port-block check). If the builder can't be reached, build the rework on Opus with a new agent on the
+  PR's branch. After a second REWORK, treat it as FAILED.
 
 - **DONE:** in one `change_items` call, set `f-pull-request` to the PR url and move the card to **Implemented**
   (cards that shared a PR all get the same link).
