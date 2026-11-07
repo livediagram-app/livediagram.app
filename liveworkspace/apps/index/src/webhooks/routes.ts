@@ -40,7 +40,7 @@ import {
   notFound,
   readObject,
 } from '../http';
-import { accountsAdminTeams, type AdminTeams } from './access';
+import { accountsAdminTeams, type AdminTeams } from '../accounts-access';
 import { dohResolve, parseWebhookUrl, resolvesPublic, type Resolve } from './address';
 import { secretContext, urlContext } from './dispatch';
 import { cardMovesStatement, pingStatement } from './outbox';
