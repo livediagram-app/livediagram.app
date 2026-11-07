@@ -13,7 +13,7 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | 2    | The index: the `connections` table, `POST /items/:id/connections`, `GET /connections/:id`, the take-back, the app's confirm and removal doors, the sweep, purges, the pass's mark in `GET /items/:id/share`, the error codes, the index-client calls              | on main |
 | 3    | Each app (livediagram, liveplanner, livedocuments, livedesign, livehuddle) keeps a connected tab: the `tabs.connection` column, its summaries and reads, the internal door for the reverse tab, telling the index on removal, scope redaction, copies and exports | on main |
 | 4    | The shared UI, not yet mounted: the connected tab in `packages/workbench`'s tab strip, the Connect picker (Recent across apps, the role, both ways), the opening states and the Share dialog's "Connected from", in `packages/workbench` and `packages/explorer`  | on main |
-| 5    | Every editor mounts it: connected tabs in the tab bar, Connect liveworkspace File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                             | planned |
+| 5    | Every editor mounts it: connected tabs in the tab bar, Connect liveworkspace File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                             | on main |
 
 ## Scope, by file
 
@@ -32,6 +32,8 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | `packages/workbench/src/components/chrome/ConnectedTab.tsx` | the tab: the target app's logo and name        | 4    |
 | `packages/workbench/src/components/connect/`                | the tab's page, the Connect list, their calls  | 4    |
 | `packages/explorer/src/dialogs/share/ActivePass.tsx`        | "Connected from <host>" on a pass              | 4    |
+| `packages/workbench/src/components/connect/` (part 5 files) | mounting: the page, the list, the store, doors | 5    |
+| `<app>/apps/<editor>/components/connect/`                   | each editor's thin doors: host, start entry    | 5    |
 
 ## Domain and naming
 
@@ -227,6 +229,55 @@ state; Editor, Participant and Viewer), `ConnectPicker.test.tsx` (loading, empty
 role, both ways, the filter, busy, a failure on the row, Connected going to its tab), and in `packages/explorer`
 the Share dialog's "Connected from" line.
 
+### The editors (part 5)
+
+Every editor mounts the shared UI through thin doors of its own; the shared parts are in `packages/workbench`
+`components/connect/`, each a subpath.
+
+- **`tab-connection.ts`**: the connection rides on an editor's own tab object as the wire carries it (`TabRecord` and
+  `TabSummary` `connection`, the outline op's), so a whole-tab save sends it back untouched and no document package
+  changes. `connectionOf(tab)` reads exactly `{ id, app, itemId }` (`readTabConnection`), `withConnection` puts one
+  on, `carryConnection(tab, summary)` brings a summary's onto a placeholder or a local tab (a summary without one, an
+  agent's rename relay, leaves the tab's own), `connectedTargets(tabs)` is the Connect list's Connected map.
+- **`connected-tab-store.ts`**: one page-wide store. `pickConnectedTab(tabId)` records a person's press on a connected
+  tab (`ConnectedTab` calls it before the bar's select, so pressing the open tab opens it again); a page acts on a
+  press it has not seen, or on one made under `CONNECTED_PICK_FRESH_MS` (10 s) before it mounted (its code loads on the
+  first one). `setConnectedTabBroken(connectionId, broken)` holds what the last open found, for the tab's amber dot
+  (`ConnectedTab` reads it when no `broken` is passed) and its menu's Connect Again (`connectedTabBroken`).
+- **`ConnectedTabPage.tsx`**: in the canvas's place while the open tab is connected. Starts `ready` (Open), or
+  `opening` for a fresh press, or `offline` for a This Browser host. Each open aborts the one before, asks the host's
+  grant, runs `openConnectedTab`, marks the tab broken or mended, shows the answer's view and, for an Editor
+  (`canEdit`: may change the tabs), renames the tab to the answered name (IDX26). Keyed by tab and connection id, so
+  Connect Again starts it afresh. `Tab·Opened·Connected` per open.
+- **`ConnectFilePanel.tsx`**: the start panel's content once Connect liveworkspace File is chosen: a heading over
+  `ConnectPicker`, painted with the start palette (`accent` the palette's chosen label colour). Mounted only then, so
+  the one `listItems` waits for the choice. `useTickingNow` (one `setInterval`, `CONNECT_CLOCK_MS` 60 s, cleared on
+  unmount) keeps "Opened 2 minutes ago" true. A press: the host's grant, a tab id from the editor, `connectFile` with
+  the editor's add, `Tab·Added·Connected` or `·ConnectedBoth`, then `onConnected`.
+- **`ConnectRailEntry.tsx`**: the rail's last row, stuck to its bottom under a hairline (`sm:sticky sm:bottom-0
+  sm:mt-auto` inside the rail's scroller), the other apps' logos fanned at its end; on a phone, the last chip.
+- **`useConnectedTabActions.ts`**: the doors every editor shares, generic over its tab type: `grant` (stable), the
+  `connected` map, `addConnectedTab(made, tabId, replacing?)` (the app's whole-tab save awaited, then one commit
+  appending the tab and dropping the empty start tab `replacing` unless it is the only one), `showConnected` (the new
+  tab opens, ready; an `unreached` reverse is a toast, `reverseUnreachedWords`), `connectAgainTab(tabId)`
+  (`connect-again.ts`: the target app's default role, one way, the save, a success or `connectErrorWords` toast,
+  `Tab·Added·ConnectedAgain`) and `goTo`.
+- **Each editor** (`<editor>/components/connect/`): `ConnectedTabHost` (the page through `next/dynamic`, from the
+  editor's context: `canEdit` is `!isStructureReadOnly`, Remove is its tab delete, the rename its tab rename) and
+  `useConnectStart` (the start panel's `connect` render through `next/dynamic`, or nothing when the person is a guest,
+  the item is a This Browser one, or the session may not change its tabs: a viewer, a tab-scoped link, an embed, a
+  workbench). `hostManaged` is a session with no share link (its owner or a team member). Its editor state adds
+  `activeTabConnected` (an edit blocker beside the tab lock) and `connectedTabs`; its view shows `ConnectedTabHost` in
+  the canvas's place; its start screens stand down on a connected tab; its placeholders and outline op carry the
+  connection; its tab pill draws `ConnectedTab`; its tab menu's connected mode keeps Remove Tab, Organise in Tab Folder
+  and Connect Again (when broken); its Duplicate refuses a connected tab.
+
+Part 5's tests: the shared modules' (`tab-connection.test.ts`, `connected-tab-store.test.ts`,
+`ConnectedTabPage.test.tsx`: ready, a fresh and a stale press, the rename for an Editor only, broken and mended,
+offline, `ConnectFilePanel.test.tsx`, `ConnectRailEntry.test.tsx`, `useConnectedTabActions.test.tsx`: the add, the
+replace, the toast, Connect Again and its failure) and each editor's (the outline op keeps and carries a connection,
+the tab menu's connected mode for an Editor, nothing for a Viewer).
+
 ## Data and persistence
 
 | Table         | Key  | Columns                                                                                                                                                                                | Indexes                                                                                                                                                                                                                 |
@@ -313,5 +364,8 @@ staging 2109). No new secret: the reverse write uses each app's `INDEX_KEY`, as 
 - `IDX25`: Connect Again on a tab that still has a connection replaces it, deleting the old pass.
 - `IDX26`: a connected tab's name follows the target's title on open; it is not renamed by hand.
 - `IDX27`: a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.
+- `IDX36`: a connected tab opens its file only on a person's press (its tab, or Open on its page); shown any other
+  way it waits, ready.
+- `IDX37`: connecting from an empty tab's start screen replaces that tab, unless it is the item's only tab.
 - `IDX35`: the Connect list shows the person's 40 most recent items across every app (`CONNECT_RECENT_LIMIT`,
   `packages/workbench` `connect/useRecentFiles.ts`), enough to fill the start panel twice without paging.
