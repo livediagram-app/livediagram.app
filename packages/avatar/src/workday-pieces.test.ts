@@ -8,7 +8,8 @@ import {
   seatsACharacter,
 } from './office-geometry';
 import { pieceStatusOf, shownStatus } from './seat-status';
-import { seatPoints } from './seats';
+import { SEAT_VIEWS, seatPoints } from './seats';
+import { facingView } from './facing';
 
 // livehuddle's docs/specs/009-elements/workday-pieces.md "How each one walks" and "Statuses a piece sets".
 const SEATS = [
@@ -66,6 +67,58 @@ describe('the workday pieces', () => {
       expect(inside.x).toBeGreaterThan(box.x);
       expect(inside.y + inside.height).toBeLessThan(box.y + box.height);
     }
+  });
+
+  // furniture-facing.md "A turn": each seat turns with its piece, on the drawing its facing shows.
+  it('seats one in each turned piece, inside its box, facing the turned way', () => {
+    const turn = { down: { n: 'down', e: 'left', s: 'up', w: 'right' } } as const;
+    for (const [shape] of SEATS) {
+      const views = SEAT_VIEWS[shape];
+      // The way its sitter faces in its front drawing: down, for the treadmill and the desks too.
+      expect(views.facings, shape).toEqual(['down']);
+      for (const chairFacing of ['n', 'e', 's', 'w'] as const) {
+        const grid = views[facingView(chairFacing).view];
+        const box = { x: 100, y: 50, width: grid.width, height: grid.height };
+        const seats = seatPoints({ shape, chairFacing, ...box });
+        expect(seats, `${shape} ${chairFacing}`).toHaveLength(1);
+        const seat = seats[0]!;
+        expect(seat.facing, `${shape} ${chairFacing}`).toBe(turn.down[chairFacing]);
+        expect(seat.x > box.x && seat.x < box.x + box.width, `${shape} ${chairFacing}`).toBe(true);
+        expect(seat.y > box.y && seat.y < box.y + box.height, `${shape} ${chairFacing}`).toBe(true);
+      }
+    }
+    // Unset, the treadmill and the desks still face up at what they use, on their drawing from behind.
+    for (const shape of ['treadmill', 'standing-desk', 'hot-desk'] as const) {
+      const { width, height } = SEAT_VIEWS[shape].back;
+      expect(seatPoints({ shape, x: 0, y: 0, width, height })[0]!.facing, shape).toBe('up');
+    }
+    // Facing right is the side mirrored: the seat at its mirrored spot.
+    const side = SEAT_VIEWS['hot-desk'].side;
+    const box = { x: 0, y: 0, width: side.width, height: side.height };
+    const e = seatPoints({ shape: 'hot-desk', chairFacing: 'e', ...box })[0]!;
+    const w = seatPoints({ shape: 'hot-desk', chairFacing: 'w', ...box })[0]!;
+    expect(w.x).toBeCloseTo(side.width - e.x);
+    expect(w.y).toBeCloseTo(e.y);
+  });
+
+  it("keeps a turned phone booth's call on its floor, round its seat", () => {
+    for (const chairFacing of ['n', 'e', 's', 'w'] as const) {
+      const box = { x: 40, y: 20, width: 80, height: 136 };
+      const inside = boothInterior(box, chairFacing);
+      expect(inside, chairFacing).toEqual(boothInterior(box));
+      const seat = seatPoints({ shape: 'phone-booth', chairFacing, ...box })[0]!;
+      expect(seat.x > inside.x && seat.x < inside.x + inside.width, chairFacing).toBe(true);
+      expect(seat.y > inside.y && seat.y < inside.y + inside.height, chairFacing).toBe(true);
+    }
+  });
+
+  it('blocks with a turned reception desk down its length', () => {
+    const el = { shape: 'reception-desk', x: 0, y: 0, width: 112, height: 200 };
+    const left = officeFootprint({ ...el, chairFacing: 'e' })!;
+    const right = officeFootprint({ ...el, chairFacing: 'w' })!;
+    expect(left.height).toBeGreaterThan(140);
+    expect(left.width).toBeLessThan(left.height);
+    expect(right.x).toBeCloseTo(112 - left.x - left.width);
   });
 });
 

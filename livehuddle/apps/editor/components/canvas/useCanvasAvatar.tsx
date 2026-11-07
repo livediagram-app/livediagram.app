@@ -1,6 +1,7 @@
 'use client';
 
 import { answerMachine } from '@/lib/machine-answer';
+import { usePieceMoments } from '@/components/canvas/collab/usePieceMoments';
 import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
 import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
 import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
@@ -196,6 +197,9 @@ export function useCanvasAvatar({
   // The social pieces (docs/specs/009-elements/social-pieces.md): the jukebox whose area you stand in plays for you,
   // and the arcade machine you stand at asks for a coin.
   useSocialPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
+  // Piece moments (docs/specs/009-elements/piece-moments.md): a tree, a pond or a fire you walk right up to now and
+  // then plays a small moment, on your screen alone.
+  usePieceMoments({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
   // The workday pieces (docs/specs/009-elements/workday-pieces.md): the reception desk you stand at welcomes you.
   useWorkdayPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
   if (avatar.seatedOn !== statusSeat) setStatusSeat(avatar.seatedOn);
@@ -218,6 +222,8 @@ export function useCanvasAvatar({
   const playAvatarBurst = (reaction: Reaction) => {
     avatarBurstSeq.current += 1;
     setAvatarBurst({ reaction, seed: avatarBurstSeq.current });
+    // A burst played, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
+    track('Canvas', 'Used', 'AvatarReaction');
   };
   // The palette's Actions and React on the keyboard (docs/specs/008-canvas/avatar-mode.md "Keyboard actions").
   useAvatarActionKeys({

@@ -1,6 +1,7 @@
 # Each product keeps its own .gitignore for what's particular to it.
 node_modules/
 .turbo/
+.verify-kit/
 .wrangler/
 dist/
 coverage/

@@ -869,7 +869,7 @@ export const articles: Article[] = [
     description:
       'Rooms of any shape with doors, a stage, an office pod, a meeting table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a kitchenette, a restroom, a printer, a copier, lockers, a coat rack, a notice board, world clocks, a calendar wall, a suggestion box, a team photo wall, a signpost, stage curtains and a podium, a phone booth, a nap pod, a reception desk with a bell, hot desks, standing desks, a treadmill, a weight bench, an office dog, pillars and columns, a swimming pool, a car park, a bike rack, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
+      'virtual office room rooms room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -1508,6 +1508,16 @@ export const articles: Article[] = [
     description: 'A platform whoever stands on is heard by everyone on the tab, for an all-hands.',
     keywords:
       'stage platform podium all-hands all hands town hall keynote presenter presenting speaker speak talk heard everyone broadcast audience raise hand who can speak editors participants show cameras video call calls audio',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
+  },
+  {
+    slug: 'turning-furniture',
+    title: 'Turning Furniture',
+    description: 'Face a sofa, a desk or lockers down, left, up or right; its seats turn with it.',
+    keywords:
+      'turn turning rotate rotation rotating face facing direction orientation orient spin flip left right up down sideways side wall sofa desk chair lockers furniture piece quarter space bar spacebar shift place placing drop seats sit',
     category: 'Palette',
     categorySlug: 'palette/virtual-office',
     parentSlug: 'virtual-office',

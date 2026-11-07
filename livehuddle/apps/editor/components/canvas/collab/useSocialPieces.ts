@@ -8,7 +8,8 @@
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
-import { roomInterior, type Element } from '@livehuddle/document';
+import { pieceFacing, roomInterior, type Element } from '@livehuddle/document';
+import type { SeatFacing } from '@liveworkspace/avatar/facing';
 import { setJukeboxArea } from '@/lib/jukebox-listening';
 
 /** How far round a jukebox standing in no room it is heard, from its base. */
@@ -18,6 +19,7 @@ export const ARCADE_REACH = 24;
 
 type Box = { id: string; x: number; y: number; width: number; height: number };
 type Jukebox = Box & { source?: string };
+type Arcade = Box & { chairFacing?: SeatFacing };
 type Point = { x: number; y: number };
 
 let nearArcade: string | null = null;
@@ -101,17 +103,32 @@ export function jukeboxAt(
   return best;
 }
 
-/** The arcade machine whose front `feet` stand at, or null. */
-export function arcadeAt(feet: Point, arcades: readonly Box[]): string | null {
-  for (const a of arcades) {
-    const front = {
-      x: a.x - ARCADE_REACH,
-      y: a.y + a.height * 0.6,
-      width: a.width + 2 * ARCADE_REACH,
-      height: a.height * 0.4 + ARCADE_REACH,
-    };
-    if (inside(feet, front)) return a.id;
+// The floor in front of an arcade machine at its facing (docs/specs/009-elements/furniture-facing.md): below it facing
+// down, just behind its base facing up, and beside its base on the side its front faces.
+function arcadeFront(a: Arcade): Box {
+  const facing = pieceFacing({ shape: 'arcade-machine', chairFacing: a.chairFacing });
+  const base = { id: a.id, y: a.y + a.height * 0.6, height: a.height * 0.4 + ARCADE_REACH };
+  switch (facing) {
+    case 'e':
+      return { ...base, x: a.x - ARCADE_REACH, width: a.width * 0.3 + ARCADE_REACH };
+    case 'w':
+      return { ...base, x: a.x + a.width * 0.7, width: a.width * 0.3 + ARCADE_REACH };
+    case 's':
+      return {
+        id: a.id,
+        x: a.x - ARCADE_REACH,
+        y: a.y + a.height * 0.4,
+        width: a.width + 2 * ARCADE_REACH,
+        height: a.height * 0.4,
+      };
+    default:
+      return { ...base, x: a.x - ARCADE_REACH, width: a.width + 2 * ARCADE_REACH };
   }
+}
+
+/** The arcade machine whose front `feet` stand at, or null. */
+export function arcadeAt(feet: Point, arcades: readonly Arcade[]): string | null {
+  for (const a of arcades) if (inside(feet, arcadeFront(a))) return a.id;
   return null;
 }
 
@@ -127,7 +144,7 @@ export function useSocialPieces({
 }): void {
   const pieces = useMemo(() => {
     const jukeboxes: Jukebox[] = [];
-    const arcades: Box[] = [];
+    const arcades: Arcade[] = [];
     const rooms: Box[] = [];
     for (const el of elements) {
       if (el.type !== 'shape') continue;

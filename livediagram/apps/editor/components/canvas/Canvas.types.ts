@@ -779,6 +779,9 @@ export type CanvasProps = {
   // selection within its own band, never between layers.
   onBringSelectedToFront: () => void;
   onSendSelectedToBack: () => void;
+  // A quarter turn of every piece of furniture in the selection (docs/specs/009-elements/furniture-facing.md "Turning
+  // a placed piece"): +1 clockwise, -1 anticlockwise.
+  onTurnSelected?: (quarters: 1 | -1) => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
   // Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). While the active tab's content is being
   // fetched ('loading') or after that fetch failed ('error'), Canvas

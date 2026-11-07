@@ -160,6 +160,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
     "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+  'Canvas|Used|AvatarAction':
+    "Someone's character performed a move from the Avatar panel's Behaviour (a wave, a spin, a cheer, a dance or jumping jacks). Which move is never recorded.",
+  'Canvas|Used|AvatarReaction':
+    "Someone played a burst round their character from the Avatar panel's Reactions (confetti, sparkles, hearts, applause or fireworks). Which burst is never recorded.",
+  'Canvas|Used|Sit':
+    'Someone\u2019s character sat down on a seat. Which seat, and where, is never recorded.',
   'Canvas|Used|AvatarPadArrival':
     'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':

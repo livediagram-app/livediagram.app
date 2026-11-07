@@ -50,9 +50,15 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it. Walking up to one rings nothing.
+- **Turned**, each blocks with the ground under its turned drawing: from behind where it does from the front; on its
+  side the base along its length (a bank of Lockers blocks along the wall it stands against), and a Kitchen Counter's,
+  a Kitchen Sink's and a Toilet Cubicle's whole length, so a run of them turned onto a side wall is one barrier.
 - **On a counter**: the Microwave and the Kettle are drawn to stand on a Kitchen Counter's worktop when placed over
   its top edge (their base level with the worktop's middle). They have no footprint and are never what you stand on,
   exactly as a wall piece, so a click on one walks you to the clicked point, as a click on the counter does.
+- A Microwave or a Kettle turned the same way as the counter under it stands on its worktop too: from behind its base
+  is on the same line as from the front, and on its side its base is centred across the worktop (`counterSideX`),
+  wherever it is placed along the run.
 - **Wall pieces** (the Hand Dryer) are walked past, not to.
 - Nobody sits in any of them; none gives a drink.
 
@@ -67,6 +73,11 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
   small feet.
 - Their bodies take the theme (the piece's own colour, else a wash of its stroke, as every office piece), so they sit
   pale on light paper and soft grey on dark; the paper is always white and the screens always lit.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Printer shows its plain back with vents and a
+  socket, the sheet rising beyond it, and the Copier its plain back with a vent grille over its trays' backs. Turned to
+  face left, the Printer's top is seen from above with the printed sheet in its tray, its screen and light on a strip
+  down the left and its cabinet's two drawers below; the Copier's lid carries the originals, its control panel and
+  lit screen are cheated toward you at the front, and its output bay and three trays run down the left on its feet.
 
 ### Lockers, Coat Rack, Umbrella Stand
 
@@ -75,6 +86,11 @@ Shape kinds: `printer`, `copier`, `kitchen-counter`, `kitchen-sink`, `fridge`, `
 - **Coat Rack**: a wooden coat stand on a cross foot, a navy coat and a camel coat on its hooks, a striped scarf and
   a hat on top.
 - **Umbrella Stand**: a round stand with three furled umbrellas (red, navy and yellow), their hooked handles up.
+- **Turned**: from behind, the Lockers are a plain back panel with the seams between the four lockers, on the plinth.
+  Turned to face left they are narrow and long: the bank's top from above, its four lockers one above the other, a
+  tall plain end panel nearest you, the plinth at the foot, and the four doors (alternating blues, vents, number plates,
+  handles) one above the other down the left. Faced right against a left wall, the doors face into the room. The Coat
+  Rack and the Umbrella Stand read the same from every side and do not turn.
 
 ### Kitchenette
 
@@ -90,6 +106,16 @@ A run of units along a wall, the way a small office kitchen is built.
 - **Kettle**: a red electric kettle on its base, with a water window.
 - The units' colours are their own (sage, oak, white tile, steel, red); the Fridge's, Microwave's and appliances' bodies
   take the theme.
+- **Turned**: from behind, a Counter or a Sink shows its worktop at the same line as from the front and the carcass's
+  plain back, the Sink's basin and tap beyond; the Fridge its plain back, the condenser's coil and the compressor; the
+  Microwave its back with vent slits; the Kettle its handle on the left and no water window. Turned to face left, a
+  Counter or a Sink is the unit's length down the canvas: the tiles against the wall on the right, the oak worktop the
+  whole length, the drawers and doors cheated toward you down the left over the plinth, and nothing closing either end,
+  so units turned the same way and placed end to end are one run down a wall with one worktop line. The Sink's basin
+  is in the worktop with the tap reaching over it and the tea towel on the nearer door. The Fridge is tall and deep,
+  its top seen from above, its side panel nearest you and its two doors with their handles down the left. The
+  Microwave's top is seen from above with its door and controls down the left; the Kettle turns its handle toward you
+  and its window to the left.
 
 ### Restroom
 
@@ -99,6 +125,14 @@ A run of units along a wall, the way a small office kitchen is built.
 - **Washbasin**: a white wall-hung basin on a pedestal with a tap and a soap dispenser, under a framed mirror with a
   glint across its glass.
 - **Hand Dryer**: a wall-mounted dryer with a grille, a nozzle under it and a green ready light.
+- **Turned**: from behind, a Toilet Cubicle is its laminate back between its side panels under the head rail, and a
+  Washbasin shows its mirror's plain back on its wire and the basin from behind. Turned to face left, a cubicle is seen
+  from above: its tiled floor between the far and near partitions, the toilet under its cistern against the wall on the
+  right, the paper on the far partition, the door open against the near one with its Vacant indicator and the head
+  rail down the left over its open front; cubicles turned the same way and placed end to end make a row down a side
+  wall. A Washbasin turned to face left has its mirror on the side wall to the right, seen edge on and cheated toward
+  you so its glass still shows, the basin from above with the tap reaching over it, the soap pump nearest you and the
+  pedestal below. The Hand Dryer hangs on the back wall and does not turn.
 
 ### The Restroom preset
 

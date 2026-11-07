@@ -134,7 +134,7 @@ describe('the pod, the bar and the garden', () => {
     expect(isFloorShape('garden-fence')).toBe(false);
   });
 
-  it('seats a character in a pod and on a bar stool, which never turn', () => {
+  it('seats a character in a pod and on a bar stool, apart from the seating drawn per facing', () => {
     expect(isFixedSeatShape('office-pod')).toBe(true);
     expect(isFixedSeatShape('bar-stool')).toBe(true);
     expect(isFixedSeatShape('chair')).toBe(false);
@@ -169,6 +169,64 @@ describe('the pod, the bar and the garden', () => {
     for (const kind of ['plant', 'bookshelf', 'bar', 'outdoor-plant', 'tree'])
       expect(isSceneryShape(kind)).toBe(true);
     expect(isSceneryShape('drinks-fridge')).toBe(false);
+  });
+
+  // livehuddle's docs/specs/009-elements/furniture-facing.md "A turn": what blocks turns with it.
+  it('turns the bar’s counter and the bookshelf’s base with them', () => {
+    // From behind, the counter is beyond the back shelf: it blocks up top and the shelf nearest you does not.
+    const back = officeFootprint({
+      shape: 'bar',
+      chairFacing: 's',
+      x: 0,
+      y: 0,
+      width: 240,
+      height: 120,
+    })!;
+    expect(back.y).toBeCloseTo(14);
+    expect(back.y + back.height).toBeCloseTo(54);
+    // On its side, long and narrow: the counter down the left facing left, down the right facing right.
+    const left = officeFootprint({
+      shape: 'bar',
+      chairFacing: 'e',
+      x: 0,
+      y: 0,
+      width: 104,
+      height: 232,
+    })!;
+    expect(left.x).toBeCloseTo(2);
+    expect(left.width).toBeCloseTo(44);
+    expect(left.height).toBeGreaterThan(150);
+    const right = officeFootprint({
+      shape: 'bar',
+      chairFacing: 'w',
+      x: 0,
+      y: 0,
+      width: 104,
+      height: 232,
+    })!;
+    expect(right.x + right.width).toBeCloseTo(102);
+    // The bookshelf on its side blocks along its length; from behind, where its front does.
+    const shelf = officeFootprint({
+      shape: 'bookshelf',
+      chairFacing: 'e',
+      x: 0,
+      y: 0,
+      width: 52,
+      height: 196,
+    })!;
+    expect(shelf.y).toBeCloseTo(120);
+    expect(shelf.height).toBeCloseTo(70);
+    const front = officeFootprint({ shape: 'bookshelf', x: 0, y: 0, width: 120, height: 132 });
+    expect(
+      officeFootprint({
+        shape: 'bookshelf',
+        chairFacing: 's',
+        x: 0,
+        y: 0,
+        width: 120,
+        height: 132,
+      }),
+    ).toEqual(front);
   });
 });
 

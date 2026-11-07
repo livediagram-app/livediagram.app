@@ -193,17 +193,6 @@ export const TABS_FILED: Metric = {
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
 };
 
-export const DOCUMENTS_FILED: Metric = {
-  category: 'Document',
-  action: 'Moved',
-  // The Offline Mode conversions and the retired parts moved to the other apps are
-  // Document·Moved too, charted in Offline Mode (Taken Offline, Saved to Cloud,
-  // Retired Parts Moved).
-  typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud' && type !== 'RetiredParts',
-  title: 'Documents Filed',
-  blurb: 'A document moved into a folder, or back to the top level.',
-};
-
 export const NOTES: MetricStack = {
   stack: true,
   title: 'Notes',
@@ -229,20 +218,6 @@ export const ASSIGNED_ACTIONS: MetricStack = {
   ],
   headline: ACTIONS_ASSIGNED,
 };
-
-// The Explorer sidebar and the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md):
-// UI·Selected·Sidebar.<Row> / ExplorerPanel.<Row>, one per row activated, by kind (never a name).
-export const EXPLORER_SIDEBAR_PICKS = chart(
-  'UI',
-  'Selected',
-  'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
-  {
-    typeIn: (type) =>
-      (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
-    rising: 'neutral',
-  },
-);
 
 // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"):
 // Explorer·Selected·<Facet>, one per filter that gained a value, by kind (never what was picked).
@@ -281,11 +256,9 @@ export const ORGANISATION: MetricStack = {
     FOLDERS_RE_PARENTED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
-    DOCUMENTS_FILED,
     FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
-    EXPLORER_SIDEBAR_PICKS,
     EXPLORER_FILTERS_PICKED,
     DEFAULT_FOLDERS_SET,
     DEFAULT_FOLDERS_CLEARED,
@@ -408,6 +381,16 @@ export const PING_PONG_GAMES = chart(
   { types: ['PingPong'] },
 );
 
+// A Moon Mail run ended at an Arcade Machine, by Game Over or by closing its panel mid-run
+// (docs/specs/009-elements/social-pieces.md "Telemetry"), from the player's screen. Never the score or the name.
+export const ARCADE_RUNS = chart(
+  'Canvas',
+  'Used',
+  'Moon Mail Runs',
+  'A run of Moon Mail played on an Arcade Machine in a Space, to Game Over or closed mid-run.',
+  { types: ['Arcade'] },
+);
+
 // A Door swung open or shut (docs/specs/009-elements/room-builder.md).
 export const DOORS_SWUNG = chart(
   'Canvas',
@@ -446,21 +429,58 @@ export const AVATAR_MESSAGES = chart(
   { types: ['AvatarMessage', 'AvatarMessagePanel'] },
 );
 
+// What people do in a Space with their characters (docs/specs/008-canvas/avatar-mode.md, docs/specs/009-elements/
+// chair.md, office.md, social-pieces.md, workday-pieces.md, room-builder.md, screen-and-room-sign.md): never who,
+// never where, never which.
+export const AVATAR_ACTIONS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Actions',
+  'A move performed from the Avatar palette\u2019s Actions or its keys: a wave, a spin, a cheer, a dance or jumping jacks.',
+  { types: ['AvatarAction'] },
+);
+
+export const AVATAR_REACTIONS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Reactions',
+  'A burst played round the character from the Avatar palette\u2019s React: confetti, sparkles, hearts, applause or fireworks.',
+  { types: ['AvatarReaction'] },
+);
+
+export const SITS = chart(
+  'Canvas',
+  'Used',
+  'Sat Down',
+  'A character sat on a seat: a chair, a sofa, a desk, a bench or any other piece with a seat.',
+  { types: ['Sit'] },
+);
+
+export const IN_THE_SPACE: MetricStack = {
+  stack: true,
+  title: 'In the Space',
+  blurb:
+    'What people do in a Space with their characters: arrive, talk, move, sit, get a drink, play and open the room\u2019s pieces.',
+  members: [
+    AVATAR_PAD_ARRIVALS,
+    AVATAR_MESSAGES,
+    AVATAR_ACTIONS,
+    AVATAR_REACTIONS,
+    SITS,
+    OFFICE_DRINKS,
+    WORKDAY_PIECES_USED,
+    PING_PONG_GAMES,
+    ARCADE_RUNS,
+    DOORS_SWUNG,
+    SCREENS_OPENED,
+  ],
+};
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [
-    ...MODE_METRICS,
-    OFFICE_DRINKS,
-    WORKDAY_PIECES_USED,
-    PING_PONG_GAMES,
-    DOORS_SWUNG,
-    SCREENS_OPENED,
-    AVATAR_PAD_ARRIVALS,
-    AVATAR_MESSAGES,
-    MODE_OPTIONS,
-  ],
+  members: [...MODE_METRICS, MODE_OPTIONS],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },
@@ -473,11 +493,6 @@ export const CANVAS_ZOOMS = chart(
   'Canvas Zooms',
   'Zoomed in or out, to fit, to a preset, or on a double-tapped spot.',
 );
-
-export const ZEN_MODE = chart('UI', 'Toggled', 'Zen Mode', 'Zen mode switched on or off.', {
-  types: ['ZenModeOn', 'ZenModeOff'],
-  rising: 'neutral',
-});
 
 export const LANDSCAPE_BARS = chart(
   'UI',
@@ -508,7 +523,7 @@ export const EDITOR_CHROME: MetricStack = {
   title: 'Editor Chrome',
   blurb:
     'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
+  members: [CANVAS_ZOOMS, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.
@@ -555,13 +570,6 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-// Edit Outline (docs/specs/009-elements/mind-node.md): how often a mind map is opened as text.
-export const MIND_OUTLINE_OPENED = opened(
-  'Mind Map Outline Opened',
-  "A mind map's outline opened to edit it as text.",
-  (t) => t === 'MindOutline',
-);
-
 // The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
 export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
@@ -585,12 +593,6 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
-);
-
 export const EXPLORER_REASONS_OPENED = opened(
   'Explorer Banner: Learn More',
   'The Explorer\u2019s sign-in banner: Learn more opened the reasons to sign in.',
@@ -601,26 +603,6 @@ export const EDITOR_REASONS_OPENED = opened(
   'Editor Banner: Learn More',
   'The editor\u2019s sign-in banner (shown after about five minutes of drawing as a guest): Learn more opened the reasons.',
   (t) => t === 'SignInReasonsEditor',
-);
-
-// The Session strip's buttons in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md
-// "The Session strip"), each opening its tool: the set-up while idle, the live tool while running.
-export const SESSION_TIMER_OPENED = opened(
-  'Timer Button Opened',
-  'The Timer button in the bottom bar opened, to start a timer or to drive the one running.',
-  (t) => t === 'SessionTimer',
-);
-
-export const SESSION_VOTE_OPENED = opened(
-  'Vote Button Opened',
-  'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
-  (t) => t === 'SessionVote',
-);
-
-export const SESSION_POLL_OPENED = opened(
-  'Poll Button Opened',
-  'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
-  (t) => t === 'SessionPoll',
 );
 
 // The Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
@@ -674,7 +656,6 @@ export const PANELS_OPENED: MetricStack = {
     PICKERS_OPENED,
     HELP_FROM_EDITOR,
     SHORTCUTS_OPENED,
-    MIND_OUTLINE_OPENED,
     OTHER_OPENED,
   ],
   seeAlso: { section: 'editing', label: 'See Each Dialog in Features › Editing' },
@@ -686,16 +667,6 @@ export const TEMPLATES_USED = chart(
   'Used',
   'Templates Used',
   'A template picked to start a document or seed a tab.',
-);
-
-// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
-// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
-export const TEMPLATES_FROM_OTHER_MODES = chart(
-  'UI',
-  'Used',
-  'Templates From Other Modes',
-  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
-  { types: ['StartOtherMode'] },
 );
 
 export const THEMES_CHOSEN = chart(
@@ -759,7 +730,6 @@ export const LOOK_AND_FEEL: MetricStack = {
     "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles and their own swatches. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
   members: [
     TEMPLATES_USED,
-    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,

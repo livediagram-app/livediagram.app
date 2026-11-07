@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The avatar palette (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): the strip while walking, its look
-// on the left and actions on the right, the call group first, no selection-mode picker, Say for whoever may speak, and
+// on the left and actions on the right, no call group (it is the Call dock's), no selection-mode picker, Say for whoever may speak, and
 // its flyouts applying a choice at once.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -22,6 +22,11 @@ import { getAvatarPreview, setAvatarPreview } from '@/lib/avatar-preview';
 
 bindAvatar();
 
+const mobile = vi.hoisted(() => ({ value: false }));
+vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
+  useIsMobileViewport: () => mobile.value,
+}));
+
 beforeAll(() => {
   globalThis.ResizeObserver ??= class {
     observe() {}
@@ -31,6 +36,7 @@ beforeAll(() => {
 });
 afterEach(() => {
   cleanup();
+  mobile.value = false;
   act(() => {
     setCallActions(null);
     resetCallSelf();
@@ -45,6 +51,15 @@ const actions = (): AvatarPaletteActions => ({
   onBurst: vi.fn(),
   status: null,
   onSetStatus: vi.fn(),
+});
+
+const callActions = () => ({
+  join: vi.fn(),
+  toggleMute: vi.fn(),
+  toggleCamera: vi.fn(),
+  toggleScreen: vi.fn(),
+  raiseHand: vi.fn(),
+  lowerHand: vi.fn(),
 });
 
 const strip = (over: Partial<AvatarPaletteProps> = {}) => {
@@ -82,29 +97,18 @@ describe('the strip', () => {
     expect(screen.queryByRole('button', { name: /Selection mode/ })).toBeNull();
   });
 
-  // Owner, 2026-11-06: "Put the camera / audio / share buttons on the left of the palette items, rather than at the
-  // bottom" (docs/specs/008-canvas/avatar-mode.md "The avatar palette").
-  it('opens with the call group, a divider, then the look', () => {
+  // Owner, 2026-11-07: the call's buttons left the palette for the Call dock, bottom centre (docs/specs/008-canvas/
+  // avatar-mode.md "The Call dock").
+  it('holds no call group, even with a call on offer: the look comes first', () => {
     strip();
     act(() => {
-      setCallActions({
-        join: vi.fn(),
-        leave: vi.fn(),
-        toggleMute: vi.fn(),
-        toggleCamera: vi.fn(),
-        toggleScreen: vi.fn(),
-        raiseHand: vi.fn(),
-        lowerHand: vi.fn(),
-      });
-      setCallSelf({ available: true, canSpeak: true });
+      setCallActions(callActions());
+      setCallSelf({ available: true, canSpeak: true, phase: 'live', mic: 'open' });
     });
-    const call = screen.getByRole('group', { name: 'Call' });
+    expect(screen.queryByRole('group', { name: 'Call' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Mute' })).toBeNull();
     const card = document.querySelector('[data-tour-id="palette"]')!;
-    expect(card.firstElementChild).toBe(call);
-    expect(call.nextElementSibling?.hasAttribute('data-strip-divider')).toBe(true);
-    expect(within(call).getByRole('button', { name: 'Join Audio' })).toBeTruthy();
-    const look = screen.getByRole('toolbar', { name: 'Your Look' });
-    expect(call.compareDocumentPosition(look) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(card.firstElementChild?.hasAttribute('data-strip-divider')).toBe(false);
   });
 
   it('draws no call group and no stray divider with no call and nothing to preview', () => {
@@ -114,83 +118,39 @@ describe('the strip', () => {
     expect(card.firstElementChild?.hasAttribute('data-strip-divider')).toBe(false);
   });
 
-  it('shows Do Not Disturb in the call group, and clearing it clears the status', () => {
-    const props = strip({ status: 'dnd' });
+  it('leaves Do Not Disturb to the Call dock', () => {
+    strip({ status: 'dnd' });
     act(() => {
-      setCallActions({
-        join: vi.fn(),
-        leave: vi.fn(),
-        toggleMute: vi.fn(),
-        toggleCamera: vi.fn(),
-        toggleScreen: vi.fn(),
-        raiseHand: vi.fn(),
-        lowerHand: vi.fn(),
-      });
+      setCallActions(callActions());
       setCallSelf({ available: true, canSpeak: true, phase: 'live', mic: 'open' });
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Turn Off Do Not Disturb' }));
-    expect(props.onSetStatus).toHaveBeenCalledWith(null);
+    expect(screen.queryByRole('button', { name: 'Turn Off Do Not Disturb' })).toBeNull();
   });
 
-  // Owner, 2026-11-06: "When I am sharing my screen, remove the customisation option for my character and use the
-  // space it frees up to move the sharing controls into the palette" (video-and-screen-bubbles.md "The screen share").
-  it('while you share: Gender, Clothes and Hair give way to the Screen Share group; Status stays', () => {
-    const toggleScreen = vi.fn();
+  // The Screen Share group sits on the Call dock now, so sharing changes nothing in the strip.
+  it('while you share: the look stays whole, an open look flyout stays open, and no Screen Share group', () => {
     strip();
     act(() => {
-      setCallActions({
-        join: vi.fn(),
-        leave: vi.fn(),
-        toggleMute: vi.fn(),
-        toggleCamera: vi.fn(),
-        toggleScreen,
-        raiseHand: vi.fn(),
-        lowerHand: vi.fn(),
-      });
+      setCallActions(callActions());
       setCallSelf({ available: true, canSpeak: true, phase: 'live', mic: 'open', canShare: true });
     });
-    // A look flyout open when the share starts closes.
     fireEvent.click(screen.getByRole('button', { name: 'Hair' }));
     expect(document.querySelector('[data-category-flyout]')).not.toBeNull();
     act(() => setCallSelf({ screen: 'on' }));
-    expect(document.querySelector('[data-category-flyout]')).toBeNull();
-    const lookNames = () =>
+    expect(document.querySelector('[data-category-flyout]')).not.toBeNull();
+    expect(
       within(screen.getByRole('toolbar', { name: 'Your Look' }))
         .getAllByRole('button')
-        .map((b) => b.getAttribute('aria-label'));
-    expect(lookNames()).toEqual(['Status']);
-    const share = screen.getByRole('group', { name: 'Screen Share' });
-    // Right after the call group, ahead of the look.
-    const call = screen.getByRole('group', { name: 'Call' });
-    expect(call.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(
-      share.compareDocumentPosition(screen.getByRole('toolbar', { name: 'Your Look' })) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    // One Stop Sharing, the group's; no floating bar.
-    const stops = screen.getAllByRole('button', { name: 'Stop Sharing' });
-    expect(stops).toHaveLength(1);
-    expect(share.contains(stops[0]!)).toBe(true);
-    fireEvent.click(stops[0]!);
-    expect(toggleScreen).toHaveBeenCalledTimes(1);
-    // The share ends: the look comes back.
-    act(() => setCallSelf({ screen: 'off' }));
+        .map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Gender', 'Clothes', 'Hair', 'Status']);
     expect(screen.queryByRole('group', { name: 'Screen Share' })).toBeNull();
-    expect(lookNames()).toEqual(['Gender', 'Clothes', 'Hair', 'Status']);
+    expect(screen.queryByRole('button', { name: 'Stop Sharing' })).toBeNull();
   });
 
   it('turning the camera on changes nothing else in the strip (it has no controls of its own)', () => {
     strip();
     act(() => {
-      setCallActions({
-        join: vi.fn(),
-        leave: vi.fn(),
-        toggleMute: vi.fn(),
-        toggleCamera: vi.fn(),
-        toggleScreen: vi.fn(),
-        raiseHand: vi.fn(),
-        lowerHand: vi.fn(),
-      });
+      setCallActions(callActions());
       setCallSelf({ available: true, canSpeak: true, phase: 'live', mic: 'open', camera: 'on' });
     });
     expect(screen.queryByRole('group', { name: 'Screen Share' })).toBeNull();
@@ -270,6 +230,23 @@ describe('the strip', () => {
     // A press on it keeps the flyout open.
     fireEvent.pointerDown(card!);
     expect(document.querySelector('[data-category-flyout]')).not.toBeNull();
+  });
+
+  // Owner, 2026-11-07: "it scrolls so its not an issue that they don't all fit on screen".
+  it('names the look, the actions and Say on a phone row, where they swipe', () => {
+    mobile.value = true;
+    strip({ leading: null });
+    const look = screen.getByRole('toolbar', { name: 'Your Look' });
+    expect(within(look).getByRole('button', { name: 'Gender' }).textContent).toContain('Gender');
+    expect(screen.getByRole('button', { name: 'React' }).textContent).toContain('React');
+    expect(screen.getByRole('button', { name: 'Say something' }).textContent).toBe('Say');
+  });
+
+  it('shows glyphs alone on a phone outside the row', () => {
+    mobile.value = true;
+    strip();
+    expect(screen.getByRole('button', { name: 'Gender' }).textContent).not.toContain('Gender');
+    expect(screen.getByRole('button', { name: 'Say something' }).textContent).toBe('');
   });
 
   it('hides, not unmounts, with the chrome away', () => {

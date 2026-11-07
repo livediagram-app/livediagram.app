@@ -386,6 +386,7 @@ export * from '@liveworkspace/avatar/pad-art';
 export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
+export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
 export * from './room-snap';
@@ -592,6 +593,8 @@ export * from './tab-folders';
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
 export * from './timer-pieces';
+// The Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
+export * from './arcade-scores';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import

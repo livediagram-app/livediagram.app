@@ -165,6 +165,18 @@ function makeCall(
   return { call, sent, proved, mic, camera, display, getUserMedia, getDisplayMedia };
 }
 
+// Let the microphone's open and publish settle (a resolved capture, then the publish).
+async function settle() {
+  for (let i = 0; i < 10; i++) await Promise.resolve();
+}
+
+// Join, then the first unmute: the microphone opens and is published (call-mic.ts).
+async function speak(call: ProximityCall) {
+  await call.start();
+  call.toggleMute();
+  await settle();
+}
+
 const scene = (walkers: [string, number][], tabId = 't1') => ({
   tabId,
   self: { x: 0, y: 0 },
@@ -186,17 +198,71 @@ afterEach(() => {
 
 // docs/specs/012-collaboration/proximity-audio.md.
 describe('ProximityCall', () => {
-  it('joins as a speaker: mints, opens the microphone, publishes and tells the room where it is', async () => {
-    const { call, sent } = makeCall();
+  // Owner, 2026-11-07: "your mic stays muted by default when joining".
+  it('joins as a speaker muted, the microphone unopened, so walking in never asks for it', async () => {
+    const { call, sent, getUserMedia } = makeCall();
     await call.start();
-    expect(callSelf()).toMatchObject({ phase: 'live', mic: 'open' });
+    expect(callSelf()).toMatchObject({ phase: 'live', mic: 'closed', muted: true });
+    expect(getUserMedia).not.toHaveBeenCalled();
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    expect(sent).toEqual([]);
+    // Somebody arriving opens nothing while muted.
+    call.update(scene([['p1', 10]]));
+    await settle();
+    expect(getUserMedia).not.toHaveBeenCalled();
+    call.stop();
+    expect(callSelf()).toMatchObject({ phase: 'off', muted: true });
+  });
+
+  it('opens, publishes and tells the room where it is on the first unmute', async () => {
+    const { call, sent, mic, getUserMedia } = makeCall();
+    await speak(call);
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    expect(callSelf()).toMatchObject({ phase: 'live', mic: 'open', muted: false });
+    expect(mic.track.enabled).toBe(true);
     expect(sfu.instances[0]!.publish).toHaveBeenCalledTimes(1);
     expect(sent).toEqual([
       { kind: 'call-track', track: { sessionId: 'me', trackName: 'mic', token: 'tt' } },
     ]);
     call.stop();
     expect(sent.at(-1)).toEqual({ kind: 'call-track', track: null });
-    expect(callSelf().phase).toBe('off');
+    expect(callSelf()).toMatchObject({ phase: 'off', muted: true, mic: 'closed' });
+  });
+
+  it('leaving with a release due clears it', async () => {
+    const { call, mic } = makeCall();
+    await speak(call);
+    call.toggleMute();
+    call.update(scene([]));
+    call.stop();
+    expect(mic.track.stop).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS);
+    expect(mic.track.stop).toHaveBeenCalledTimes(1);
+    expect(callSelf().mic).toBe('closed');
+  });
+
+  it('leaving while the microphone opens on an unmute releases it, never published', async () => {
+    const { stream, track } = micStream();
+    let open: (s: MediaStream) => void = () => {};
+    const { call } = makeCall({ getUserMedia: () => new Promise((r) => (open = r)) });
+    await call.start();
+    call.toggleMute();
+    call.stop();
+    open(stream);
+    await settle();
+    expect(track.stop).toHaveBeenCalled();
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    expect(callSelf().mic).toBe('closed');
+  });
+
+  it('a listener’s unmute opens nothing', async () => {
+    const { call, getUserMedia } = makeCall({ canSpeak: false });
+    await call.start();
+    call.toggleMute();
+    await settle();
+    expect(getUserMedia).not.toHaveBeenCalled();
+    expect(callSelf().mic).toBe('closed');
+    call.stop();
   });
 
   // The server hearing check (meeting-rooms-and-stage.md "Trust", #483).
@@ -263,7 +329,7 @@ describe('ProximityCall', () => {
 
   it('sends its talking level, and nothing once muted', async () => {
     const { call, sent, mic } = makeCall();
-    await call.start();
+    await speak(call);
     vi.advanceTimersByTime(60);
     expect(sent.some((s) => s.kind === 'avatar-voice' && s.level > 0)).toBe(true);
     call.toggleMute();
@@ -278,23 +344,74 @@ describe('ProximityCall', () => {
     call.stop();
   });
 
-  it('closes the microphone after 15 s alone and opens it when somebody arrives', async () => {
-    const { call, mic, getUserMedia } = makeCall();
-    await call.start();
+  it('keeps the microphone open while unmuted, alone or not', async () => {
+    const { call, mic } = makeCall();
+    await speak(call);
     call.update(scene([]));
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS * 2);
+    expect(mic.track.stop).not.toHaveBeenCalled();
+    expect(callSelf().mic).toBe('open');
+    call.stop();
+  });
+
+  it('releases a muted microphone after 15 s alone, keeps it with company, and swaps it back in on an unmute', async () => {
+    const { call, mic, getUserMedia } = makeCall();
+    await speak(call);
+    call.update(scene([['p1', 1000]]));
+    call.toggleMute();
+    // Muted with somebody on the tab: kept.
     vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS);
+    expect(callSelf().mic).toBe('open');
+    call.update(scene([]));
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS - 1);
+    expect(callSelf().mic).toBe('open');
+    // Somebody passing through stops the clock; leaving again starts it afresh.
+    call.update(scene([['p1', 1000]]));
+    call.update(scene([]));
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS - 1);
+    expect(callSelf().mic).toBe('open');
+    vi.advanceTimersByTime(1);
     expect(mic.track.stop).toHaveBeenCalled();
     expect(callSelf().mic).toBe('closed');
+    // Somebody arriving while muted asks for nothing.
     call.update(scene([['p1', 1000]]));
-    await vi.waitFor(() => expect(callSelf().mic).toBe('open'));
-    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+    // The unmute opens it again, swapped in place rather than published afresh.
+    call.toggleMute();
+    await settle();
+    expect(callSelf()).toMatchObject({ mic: 'open', muted: false });
     expect(sfu.instances[0]!.replaceMic).toHaveBeenCalled();
+    expect(sfu.instances[0]!.publish).toHaveBeenCalledTimes(1);
     call.stop();
+  });
+
+  // An unmute opens the released microphone and keepFor would open it again before the capture lands: open() takes one
+  // capture at a time, so the browser is asked once and no stream is left running.
+  it('asks for a released microphone once on an unmute, and stops every stream it took', async () => {
+    const streams: ReturnType<typeof micStream>[] = [];
+    const getUserMedia = vi.fn(async () => {
+      const m = micStream();
+      streams.push(m);
+      return m.stream;
+    });
+    const { call } = makeCall({ getUserMedia });
+    await speak(call);
+    call.update(scene([['p1', 1000]]));
+    call.toggleMute();
+    call.update(scene([]));
+    vi.advanceTimersByTime(MIC_IDLE_CLOSE_MS);
+    call.update(scene([['p1', 1000]]));
+    call.toggleMute();
+    await settle();
+    call.stop();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    for (const m of streams) expect(m.track.stop).toHaveBeenCalled();
   });
 
   it('resends its locator for a new walker, at most once a second', async () => {
     const { call, sent } = makeCall();
-    await call.start();
+    await speak(call);
     call.update(scene([['p1', 1000]]));
     call.update(
       scene([
@@ -309,10 +426,23 @@ describe('ProximityCall', () => {
     call.stop();
   });
 
-  it('a refused microphone joins as a listener with the indicator blocked', async () => {
-    const { call } = makeCall({ getUserMedia: () => Promise.reject(new Error('NotAllowed')) });
-    await call.start();
+  it('a refused microphone stays in the call as a listener, blocked, and a press asks again', async () => {
+    const { stream } = micStream();
+    const getUserMedia = vi
+      .fn<(c: MediaStreamConstraints) => Promise<MediaStream>>()
+      .mockRejectedValueOnce(new Error('NotAllowed'))
+      .mockResolvedValue(stream);
+    const { call } = makeCall({ getUserMedia });
+    await speak(call);
     expect(callSelf()).toMatchObject({ phase: 'live', mic: 'blocked' });
+    expect(sfu.instances[0]!.publish).not.toHaveBeenCalled();
+    // Mic Blocked pressed: unmuted, asked again, and open this time.
+    call.toggleMute();
+    expect(callSelf()).toMatchObject({ muted: false });
+    await settle();
+    expect(getUserMedia).toHaveBeenCalledTimes(2);
+    expect(callSelf()).toMatchObject({ phase: 'live', mic: 'open', muted: false });
+    expect(sfu.instances[0]!.publish).toHaveBeenCalledTimes(1);
     call.stop();
   });
 
@@ -347,7 +477,7 @@ describe('ProximityCall', () => {
   describe('the kill switch', () => {
     it('ends a live call quietly into Calls Paused when the room says calls are off', async () => {
       const { call, sent, mic } = makeCall();
-      await call.start();
+      await speak(call);
       call.update(scene([['p1', 100]]));
       expect(callSelf().phase).toBe('live');
       // Audio only leaves an audio call alone.
@@ -412,9 +542,8 @@ describe('ProximityCall video and screens', () => {
       const s = sfu.instances[0]!;
       expect(s.publish).toHaveBeenCalledWith(cam.track, 'cam', CAMERA_ENCODINGS);
       expect(s.publish).toHaveBeenCalledWith(screen.track, 'screen', expect.any(Array));
-      // The call asked the browser for the microphone alone; the preview asked once for each.
-      expect(getUserMedia).toHaveBeenCalledTimes(1);
-      expect(getUserMedia).toHaveBeenCalledWith(expect.objectContaining({ video: false }));
+      // The call asked the browser for nothing (the microphone waits for an unmute); the preview asked once for each.
+      expect(getUserMedia).not.toHaveBeenCalled();
       expect(getDisplayMedia).not.toHaveBeenCalled();
       expect(capture.getUserMedia).toHaveBeenCalledTimes(1);
       expect(callSelf()).toMatchObject({
@@ -489,7 +618,7 @@ describe('ProximityCall video and screens', () => {
 
   it('turns the camera on in two layers, shows it to you, tells the room, and off again', async () => {
     const { call, sent, camera, getUserMedia } = makeCall();
-    await call.start();
+    await speak(call);
     await call.toggleCamera();
     const s = sfu.instances[0]!;
     expect(getUserMedia).toHaveBeenLastCalledWith(expect.objectContaining({ audio: false }));
@@ -567,7 +696,7 @@ describe('ProximityCall video and screens', () => {
 
   it('shares a screen for an Editor, capped and tuned for text, and stops from either control', async () => {
     const { call, sent, display, getDisplayMedia } = makeCall({ canShare: true });
-    await call.start();
+    await speak(call);
     await call.toggleScreen();
     const s = sfu.instances[0]!;
     expect(getDisplayMedia).toHaveBeenCalledWith(SCREEN_CONSTRAINTS);
@@ -600,7 +729,7 @@ describe('ProximityCall video and screens', () => {
     ]);
     const onShareStopped = vi.fn();
     const { call, sent } = makeCall({ canShare: true, onShareStopped });
-    await call.start();
+    await speak(call);
     await call.toggleScreen();
     const stop = { kind: 'call-stop-share', tabId: 't1', targetId: 'me' };
     receiveStopShare('pt', stop);
@@ -1098,7 +1227,7 @@ describe('ProximityCall with a stage', () => {
   it('hears nobody under Do Not Disturb, the stage included, and keeps publishing', async () => {
     setCallLevels([{ id: 'speaker', role: 'edit' }]);
     const { call, sent } = makeCall();
-    await call.start();
+    await speak(call);
     publish('speaker');
     call.update(hallScene({ x: 320, y: 600 }, [['speaker', 600, 120]]));
     expect(callSelf().heard).toEqual(new Set(['speaker']));
@@ -1121,7 +1250,7 @@ describe('ProximityCall in a silent room', () => {
     // Nobody talks: the microphone hears nothing, so no level goes to the room.
     graph.micLevel.mockReturnValue(0);
     const { call, sent } = makeCall();
-    await call.start();
+    await speak(call);
     call.update(scene([['p1', 100]]));
     // The locator goes out again for the new walker, a second after the first.
     vi.advanceTimersByTime(LOCATOR_RESEND_MS);
@@ -1144,7 +1273,7 @@ describe('ProximityCall in a silent room', () => {
   it('sends no check while its levels reach the room, and none from a listener', async () => {
     graph.micLevel.mockReturnValue(0.05);
     const { call, sent } = makeCall();
-    await call.start();
+    await speak(call);
     // Talking: a level goes at least every few seconds, and each one lets the room read the switch on its own.
     vi.advanceTimersByTime(CALLS_CHECK_MS * 3);
     expect(sent.some((s) => s.kind === 'avatar-voice')).toBe(true);

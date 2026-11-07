@@ -3,11 +3,13 @@
 Follow the references below only as needed; never upfront.
 
 - ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note
+- ./furniture-facing.md - when implementing or changing turning furniture: the facing arithmetic, the drawings per view, seats and footprints per facing, the Rotate buttons, Space while placing and the palette carry
 - ./chair.md - when implementing or changing the chair, desk or sofa, their facing, seating or the Stand press
 - ./office.md - when implementing or changing the office pieces: their drawings, a room's walls and doorway, footprints, the meeting table's seats, drinks and the held cup
 - ./office-amenities.md - when implementing or changing the office amenities: their drawings, footprints, counter-top pieces, the Perks groups and the Restroom preset
 - ./team-pieces.md - when implementing or changing the team pieces: the calendar's note day and month grid, the suggestion store and its three routes, the signpost's nearest places, the photo wall's frames
 - ./workday-pieces.md - when implementing or changing the workday pieces: their seats and standing seats, the status a piece sets, the booth's call zone, the hot desk's card, the dog's legs, and the reception bell's wire and earshot
+- ./piece-moments.md - when implementing or changing the piece moments: the moment kinds, the reach, the trigger (chance, third-time rule, rests), the store, the one-shot art and its CSS
 - ./venue-pieces.md - when implementing or changing the venue pieces: their drawings, footprints, the pool's rim, the curtains as a hanging piece, the stage's boards and footlights, and their template placements
 - ./screen-and-room-sign.md - when implementing or changing the Screen or the Room Sign: their rooms, the live store, the faces, the Video Link and the Meet category
 - ./wayfinding.md - when implementing or changing the Directory, the Elevator or the Stairs: places, names, approach points, who is where, Walk There, Go, rides and re-entry

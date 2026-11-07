@@ -21,9 +21,14 @@ link.
   landing at the top opening onto the floor above, and a small sign over it with an up and a down arrow. One
   drawing for the canvas, the placement preview and an export (`office-wayfinding.ts`). Outlines follow the theme's
   stroke on light and dark paper; the stone of the steps, the landing's dark and the sign keep their colours.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind (facing up), the flight climbs down the
+  canvas: the landing's dark opening is nearest you, the treads step away from it to the foot at the top (their risers
+  face away), the newel caps at the far foot, the sign over the landing. Turned to face left, the flight climbs to the
+  right: its foot on the left, each step a rise higher than the last, the landing at the top on the right, the near
+  side wall's face rising with it and its handrail along it; facing right, mirrored, it climbs to the left.
 - **It carries no name.** Its hover card and panel say where it leads. No settings `…`. Proportions locked.
 - **It never blocks**: walking onto it is how you take it.
-- Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
+- Otherwise an ordinary element: move, resize, turn, lock, copy, delete, export.
 
 ## Floors
 
@@ -64,7 +69,8 @@ Choosing Up or Down travels like an Elevator ride ([Elevator](elevator.md) "Ridi
    walk across the room first: the floor changes at once.
 2. **Switches tab as travel**: Avatar mode stays on ([Avatar mode](../008-canvas/avatar-mode.md) "Changing tab").
 3. **The walk off.** On the new floor your character stands on the top step of the Stairs it landed on, and walks
-   down off them to just in front of their foot. Those Stairs are **ignored until it steps off them**, so landing
+   down off them to just in front of their foot: below them facing down, above them facing up, beside them on the
+   foot's side when turned onto their side. Those Stairs are **ignored until it steps off them**, so landing
    never reopens the panel. Landing at an Elevator steps out of it as a ride does.
 4. **Centres the camera** on the landing, at the walk's zoom, once the floor shows.
 

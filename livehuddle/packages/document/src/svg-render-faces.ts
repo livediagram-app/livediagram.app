@@ -30,7 +30,6 @@ import {
   FURNITURE_SHADOW,
   furnitureFrame,
   isSeatingShape,
-  seatingFacing,
   type FurniturePart,
 } from './seating';
 import {
@@ -64,6 +63,7 @@ import { timerPieceSvg } from './svg-render-timers';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';
 import { borderOf } from './svg-render-border';
 import { text, type Face } from './svg-render-face-kit';
+import { pieceFacing } from './furniture-facing';
 import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@liveworkspace/icons';
 import { MODE_GLYPHS } from './mode-glyphs';
 import type { CanvasSurface } from './colors';
@@ -505,7 +505,7 @@ function avatarPadArt(el: Face, stroke: string): string {
   );
 }
 
-// A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"), from the FURNITURE_ART table
+// A piece of furniture (docs/specs/009-elements/furniture-facing.md "The camera"), from the FURNITURE_ART table
 // FurnitureView draws: the drawing for its facing, mirrored for facing right, exactly as the canvas.
 function furnitureArt(el: Face, seat: string, stroke: string): string {
   const art = isSeatingShape(el.shape)
@@ -514,10 +514,8 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
       ? OFFICE_ART[el.shape]
       : null;
   if (!art) return '';
-  const facing = isSeatingShape(el.shape)
-    ? seatingFacing({ shape: el.shape, chairFacing: el.chairFacing })
-    : 'n';
-  const frame = furnitureFrame(art, facing);
+  // Every piece at its facing (docs/specs/009-elements/furniture-facing.md), as the canvas draws it.
+  const frame = furnitureFrame(art, pieceFacing(el));
   const parts = frame.view.parts
     .map((p) => furniturePart(p, xmlEscape(seat), xmlEscape(stroke)))
     .join('');

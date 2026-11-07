@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_AVATAR_CONFIG } from '../config';
 import type { SeatClaim, SeatHolder } from '../seat-claims';
+import { seatPoints } from '../seats';
 import { useAvatarWalk } from './useAvatarWalk';
 import { useSeatYield } from './useSeatYield';
 
@@ -24,22 +25,28 @@ afterEach(() => {
 const rug = { id: 'rug', type: 'shape', shape: 'rug', x: 0, y: 0, width: 400, height: 400 };
 // A sofa on the rug, frontmost, to sit on and click again.
 const sofa = { id: 'sofa', type: 'shape', shape: 'sofa', x: 200, y: 200, width: 120, height: 60 };
+// Its two cushions, where sitting on it puts your feet.
+const [left, right] = seatPoints({ ...sofa, shape: 'sofa' }).map(({ x, y }) => ({ x, y }));
 
-function setup() {
+function setup(
+  initial: readonly ({ id: string; type: string } & Record<string, unknown>)[] = [rug, sofa],
+) {
   const onPresence = vi.fn();
-  const hook = renderHook(() =>
-    useAvatarWalk({
-      active: true,
-      config: DEFAULT_AVATAR_CONFIG,
-      onToggleGender: vi.fn(),
-      elements: [rug, sofa],
-      mainRef: { current: null },
-      wrapperRef: { current: null },
-      viewportOffset: { x: 0, y: 0 },
-      viewportZoom: 1,
-      setViewportOffset: vi.fn(),
-      onPresence,
-    }),
+  const hook = renderHook(
+    ({ elements }) =>
+      useAvatarWalk({
+        active: true,
+        config: DEFAULT_AVATAR_CONFIG,
+        onToggleGender: vi.fn(),
+        elements,
+        mainRef: { current: null },
+        wrapperRef: { current: null },
+        viewportOffset: { x: 0, y: 0 },
+        viewportZoom: 1,
+        setViewportOffset: vi.fn(),
+        onPresence,
+      }),
+    { initialProps: { elements: initial } },
   );
   act(() => hook.result.current.teleportTo({ x: 40, y: 60 }));
   onPresence.mockClear();
@@ -49,13 +56,72 @@ function setup() {
 describe('useAvatarWalk seats', () => {
   it('tells the room at once which seat it sat on, when, and the tiebreak', () => {
     const { result, onPresence } = setup();
-    act(() => result.current.sitOn('sofa', { x: 50, y: 70 }, 'down', 1));
+    act(() => result.current.sitOn('sofa', right!, 'down', 1));
     const claim = { index: 1, at: 1_000, tie: 0.25 };
     expect(result.current.seatedOn).toBe('sofa');
     expect(result.current.seatClaim).toEqual(claim);
     expect(onPresence).toHaveBeenLastCalledWith(
-      expect.objectContaining({ x: 50, y: 70, facing: 'down', seatedOn: 'sofa', seat: claim }),
+      expect.objectContaining({ ...right, facing: 'down', seatedOn: 'sofa', seat: claim }),
     );
+  });
+
+  // livehuddle's docs/specs/009-elements/furniture-facing.md "Somebody sitting in it is carried round".
+  it('carries a sitter round when the piece they sit in turns, and keeps them seated', () => {
+    const { result, rerender, onPresence } = setup();
+    act(() => result.current.sitOn('sofa', right!, 'down', 1));
+    onPresence.mockClear();
+    // Turned to face left, its box swapped about its centre: the right cushion is now one of the two down its side.
+    const turned = { ...sofa, x: 230, y: 170, width: 60, height: 120, chairFacing: 'e' as const };
+    rerender({ elements: [rug, turned] });
+    const seat = seatPoints({ ...turned, shape: 'sofa' })[1]!;
+    expect(result.current.seatedOn).toBe('sofa');
+    expect(result.current.pos).toEqual({ x: seat.x, y: seat.y });
+    expect(result.current.facing).toBe('left');
+    expect(onPresence).toHaveBeenLastCalledWith(
+      expect.objectContaining({ x: seat.x, y: seat.y, facing: 'left', seatedOn: 'sofa' }),
+    );
+  });
+
+  it('turns a sitter in place when only the way their seat faces changes', () => {
+    const chair = {
+      id: 'chair',
+      type: 'shape',
+      shape: 'chair',
+      x: 100,
+      y: 100,
+      width: 64,
+      height: 72,
+    };
+    const { result, rerender } = setup([rug, chair]);
+    const [seat] = seatPoints({ ...chair, shape: 'chair' });
+    act(() => result.current.sitOn('chair', seat!, 'down'));
+    // A chair's back drawing seats its sitter on another spot; the same spot with only the facing changed is a
+    // piece whose seat stays where it is: a bar stool, drawn the same from every side.
+    const stool = {
+      id: 'chair',
+      type: 'shape',
+      shape: 'bar-stool',
+      x: 0,
+      y: 0,
+      width: 44,
+      height: 64,
+    };
+    const [stoolSeat] = seatPoints({ ...stool, shape: 'bar-stool' });
+    rerender({ elements: [rug, stool] });
+    expect(result.current.pos).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
+    expect(result.current.facing).toBe('up');
+    rerender({ elements: [rug, { ...stool, chairFacing: 'e' as const }] });
+    expect(result.current.pos).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
+    expect(result.current.facing).toBe('left');
+  });
+
+  it('leaves a sitter where they are when the piece is gone or no longer seats anyone', () => {
+    const { result, rerender } = setup();
+    act(() => result.current.sitOn('sofa', left!, 'down'));
+    rerender({ elements: [rug] });
+    expect(result.current.pos).toEqual(left);
+    rerender({ elements: [rug, { ...sofa, shape: 'plant' }] });
+    expect(result.current.pos).toEqual(left);
   });
 
   it('claims the first seat of a one-seat piece', () => {
@@ -115,14 +181,14 @@ describe('useAvatarWalk seats', () => {
 
   it('a walk onto the piece you sit on keeps you in it', () => {
     const { result, onPresence } = setup();
-    act(() => result.current.sitOn('sofa', { x: 230, y: 230 }, 'down'));
+    act(() => result.current.sitOn('sofa', left!, 'down'));
     onPresence.mockClear();
     act(() => result.current.walkTo({ x: 300, y: 240 }));
     act(() => {
       vi.advanceTimersByTime(500);
     });
     expect(result.current.seatedOn).toBe('sofa');
-    expect(result.current.pos).toEqual({ x: 230, y: 230 });
+    expect(result.current.pos).toEqual(left);
     expect(onPresence).not.toHaveBeenCalledWith(expect.objectContaining({ seatedOn: null }));
   });
 

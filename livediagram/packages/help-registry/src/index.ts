@@ -1103,6 +1103,17 @@ export const articles: Article[] = [
     group: 'Workshop Kits',
   },
   {
+    slug: 'turning-furniture',
+    title: 'Turning Furniture',
+    description:
+      'Face a chair, a sofa or a bookshelf down, left, up or right; its seats turn with it.',
+    keywords:
+      'turn turning rotate rotation rotating face facing direction orientation orient spin flip left right up down sideways side wall sofa desk chair meeting table bookshelf water cooler coffee machine rug furniture piece quarter space bar spacebar shift place placing drop seats sit',
+    category: 'Palette',
+    categorySlug: 'palette/virtual-office',
+    parentSlug: 'virtual-office',
+  },
+  {
     slug: 'cards-and-callouts',
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',

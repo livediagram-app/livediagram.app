@@ -14,6 +14,7 @@ import {
   withVariantColours,
   snapDoorToWall,
 } from '@livehuddle/document';
+import { withPlacingFacing } from '@/lib/placing-facing';
 import { buildDrawnBoxed } from '@/lib/draw-commit';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
@@ -249,14 +250,17 @@ export function useElementCreation(opts: {
     addBoxedAt(
       canvasX,
       canvasY,
-      (x, y) => ({
-        // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
-        ...applyShapeVariant(createShape(kind, x, y), art?.choice),
-        // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
-        // /135). Applied by the kind that owns the field, so one payload
-        // serves all four without the drop path knowing which is which.
-        ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
-      }),
+      (x, y) =>
+        // A piece that turns lands the way Space turned it while it was dragged
+        // (docs/specs/009-elements/furniture-facing.md "Turning while placing").
+        withPlacingFacing({
+          // A creation-time variant (the Callout card, a Funnel) applies to its own kind only.
+          ...applyShapeVariant(createShape(kind, x, y), art?.choice),
+          // The dragged tile's creation-time choice (docs/specs/009-elements/mode-button.md, /105, /123,
+          // /135). Applied by the kind that owns the field, so one payload
+          // serves all four without the drop path knowing which is which.
+          ...(art?.choice && kind === 'mode-button' ? { mode: art.choice as SelectionMode } : {}),
+        }),
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, reaction pads, ...). A preset's own colour (the Warning badge's
       // rose) is put back after the theme and the remembered style.

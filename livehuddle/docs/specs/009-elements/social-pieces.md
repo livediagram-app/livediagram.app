@@ -60,7 +60,7 @@ Shape kinds: `notice-board`, `world-clock`, `jukebox`, `ping-pong-table`, `arcad
 
 - **Seats** follow the [Chair](chair.md) rules exactly: walk onto the piece to sit on the free seat nearest where you
   arrived, one sitter a seat, a full piece stops you beside it; who sits is presence, never stored, a piece with more than
-  one seat rings each taken seat in its sitter's colour, and the piece names its sitters in a pill above their heads. None of them turns.
+  one seat rings each taken seat in its sitter's colour, and the piece names its sitters in a pill above their heads. Each turns four ways, its seats with it ([Turning furniture](furniture-facing.md)).
 - **Scenery** blocks as the [Plant](office.md#plant-bookshelf) does: a solid footprint, a character inside one walks
   out of it and never deeper in. The drawing above the footprint never blocks; a character in front of it is drawn in
   front of it.
@@ -152,6 +152,10 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 - **A stream that fails** (an address that does not load, or refuses to play) shows **Can't Play** on the face for
   you; the music never retries in a loop.
 - Calls are unaffected: the music plays under call audio at its low volume.
+- **Turned** ([Turning furniture](furniture-facing.md)): to face left, its rounded side is toward you with a lit tube
+  round it, its front a narrow strip down its left (the arch's lit edge, the record window, the grille), and playing
+  lights the tube and the arch's edge; from behind, its plain back with a vented service door, the lights out of
+  sight. The **Play** button sits under it at every facing.
 
 ## Ping-Pong Table
 
@@ -160,6 +164,12 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   Table).
 - **It is playable** (Work Tracker #528): the two people sitting at it play a game of table tennis, seen from above,
   each moving the paddle at their own end. Everyone else sees the same rally and the same score.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind it is the same table with its two seats at swapped
+  ends (the left seat at the right end, its red paddle with it). Turned to face left, its length runs down the canvas:
+  the left seat at the far end (the top), the right seat at the near end (the bottom), the net across the middle, the
+  near end's edge and legs at the foot and its long side a narrow strip down the left. The game plays on the turned
+  table, its ends at the top and the bottom, and the score sits beside the table at the net, each player's points
+  nearest their own end (above the table, as before, facing down or up).
 
 ### A game
 
@@ -203,6 +213,11 @@ Only while you sit at the table, and only for your own paddle:
 - **Keyboard**: **W** and **S**, or **Arrow Up** and **Arrow Down**, move the paddle while a game runs at your table.
   They are the paddle's then, an exception to the Chair rule that any arrow key stands you up and to `W` waving:
   **Arrow Left**, **Arrow Right**, a click elsewhere or any other walk still stands you up, ending your side.
+- **At a table turned onto its side** (facing left or right), whose ends are its top and bottom, the paddles move
+  across the canvas: the pointer's or your finger's position across the table moves yours (the pointer there is a
+  left-and-right arrow), and **A** and **D**, or **Arrow Left** and **Arrow Right**, move it. They are the paddle's
+  then and stand nobody up; **Arrow Up**, **Arrow Down** and any other walk still stand you up. A table seen from
+  behind plays as one facing down: **W** and **S**, **Arrow Up** and **Arrow Down**, and the pointer's height.
 - Your paddle moves on your screen at once, never waiting for the room.
 
 ### Reduced motion
@@ -248,14 +263,122 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
 
 ## Arcade Machine
 
-## Arcade Machine
-
 - An upright cabinet with a glowing screen (a slow colour shimmer and a blinking cursor, in CSS) and a joystick and
   two buttons on its panel. Under reduced motion the screen holds still.
 - Walking up to it (your character's feet within 24 px of its front) shows an **Insert Coin** bubble above it for you,
-  for as long as you stand there. Nothing else happens, and nobody else sees your bubble.
+  for as long as you stand there; nobody else sees your bubble. With a score on the machine's table the bubble adds
+  its best below: **Best 1,240 · Ann**.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
-  `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen; a turned cabinet's click is the walk.
+  `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen. A cabinet turned to face another
+  way ([Turning furniture](furniture-facing.md)) has its front there: a click walks you 16 px beyond its base on
+  that side (beside its base when it faces left or right), and standing there shows the bubble.
+- **Turned**: to face left, the cabinet's tall side is toward you in its arcade profile (the marquee jutting, the
+  screen set back, the control panel jutting again) with a stripe of art on it, and its front is a narrow strip down
+  its left: the lit marquee, a slice of the shimmering screen, the joystick and the coin door. From behind, its back
+  with a vented service door, the control panel's ends either side and the marquee's lit edge; the screen is out of
+  sight. The **Insert Coin** bubble shows above it at every facing.
+- **It is playable** (Work Tracker #529): a press on the cabinet while you stand at it (its Insert Coin bubble showing)
+  opens its game, **Moon Mail**, in a panel over the canvas, for you alone. Everyone in the Space shares the
+  machine's **High Scores**.
+
+### Moon Mail
+
+Our own game, made for this machine: a mail run round a small moon.
+
+- **The screen** is square: a small grey moon in the middle and three orbits round it, drawn as faint dotted rings.
+  Your mail ship flies round the middle orbit on its own, clockwise, a little faster every second (from a lap in
+  about 5.7 seconds to one in about 2.4, reached after 100 seconds).
+- **Letters** (small envelopes) wait on the orbits. Flying through one collects it: 10 points times your
+  **streak**. Three wait when a run starts; another appears at most every 0.9 seconds while fewer than five wait,
+  always on the far side of the moon from you.
+- **Space rocks** drift round the orbits the other way, from the far side of the moon, more often as the run goes on
+  (one every 2.6 seconds at first, down to one every 0.8). Flying into one costs one of your three **shields** and
+  ends your streak; for 1.5 seconds after, your ship blinks and nothing can hit it. A rock that has drifted for 9
+  seconds fades away.
+- **Hopping**: you choose only your orbit, one hop at a time, outward or inward; the ship never stops. From the outer
+  orbit there is no further out, from the inner none further in.
+- **The streak**: every five letters collected in a row raises it by one, from ×1 to at most ×5 (letters 1 to 5 score
+  ×1, 6 to 10 ×2, and from the 21st ×5). A hit sets it back to ×1.
+- **The run ends** when the last shield goes: the screen reads **Game Over** with the score, and a score that makes
+  the table is posted to it (see [High Scores](#high-scores)). **Play Again** starts a new run.
+- **The strip** under the screen shows the score (tabular figures), the streak (`×3`) and the shields left (three
+  small shield marks).
+
+### The panel
+
+- **Opening**: a press on the cabinet while you stand at it, or **Enter** or **Space** while your Insert Coin bubble
+  shows. It loads the game the first time it opens (the game's code is never part of the Space's first load) and
+  shows **Loading…** in the panel until it is ready.
+- **Its place**: centred over the dimmed canvas, as every [reader](../008-canvas/avatar-mode.md) is, 360 px wide (on a
+  phone, the screen's width less 12 px each side), never over the bottom-right controls. Its header reads **Moon
+  Mail** with a **Close** button (an X, with its tooltip). The square screen fills the panel's width; under it the
+  strip, then the High Scores, which scroll with the panel on a short screen.
+- **Before a run**: the screen shows the moon and orbits at rest with **Press Space or Tap to Start**, and below it
+  the machine's [High Scores](#high-scores). **Start**, Space, Enter or a tap on the screen starts a run.
+- **Playing**: the panel holds the keys, so walking stops while it is open (see Controls). The ship, letters and
+  rocks move on the screen; the strip counts.
+- **Pausing**: **P**, Space, or the **Pause** button pauses a run and shows **Paused** with **Resume**. A run pauses
+  by itself when the tab or the window is hidden or loses focus, and never resumes by itself.
+- **Closing**: **Escape**, the **Close** button, a press on the dimmed canvas outside the panel (except during a run,
+  when that press pauses it instead, so a stray tap never ends a run), or the panel's tab being left. Closing during a
+  run ends it, and its score counts as at Game Over (posted if it makes the table). Your character stays where it
+  stood.
+- **Game Over** shows the score large, then where it landed (**New High Score!** or **You Placed #4**; nothing more
+  when it did not make the table), and **Play Again**. The new row is lit in the High Scores below.
+- **A Viewer's press** opens the same panel on the High Scores alone, with no Start and the line **Viewers See the
+  Scores**.
+- **Pressing the cabinet**: while your Insert Coin bubble shows, the whole cabinet (and the bubble) is one press, with
+  the pointer cursor; away from it a click on the cabinet walks you to its front as before. Enter and Space open it
+  only while the bubble shows, nothing else holds the keyboard (a field, a dialog, a focused button) and the panel is
+  shut; they then neither jump nor open the message box.
+
+### Controls
+
+- **Keyboard**: **Arrow Up** or **W** hops out, **Arrow Down** or **S** hops in; **Space** or **Enter** starts; **P**
+  or Space pauses and resumes; **Escape** closes. While the panel is open these keys are the game's and never walk,
+  wave or spin your character ([key claims](../008-canvas/avatar-mode.md)).
+- **Touch, mouse or pen**: a tap on the screen outside your ship's orbit hops out, inside it hops in. A tap before a
+  run starts it. The screen takes the press: it never pans, selects or walks.
+- A hop shows at once on your screen; nothing about a run goes over the wire while it plays.
+
+### Reduced motion
+
+The game is played by moving things, so it still plays under reduced motion (the system setting), with nothing that
+moves only for show: the stars behind the moon hold still, a hop jumps to its orbit instead of gliding, a hit dims the
+ship steadily instead of blinking, and nothing flashes or shakes.
+
+### High Scores
+
+- **One table per machine**, shared by everyone in the Space: its ten best scores, best first, each its rank, the
+  player's name, the score and the day it was set ("5 Nov"). An empty table reads **No Scores Yet**. Your own rows
+  are marked (**You** beside the name).
+- **The name** is the person's display name in the Space (the name their character carries), cut to 24 characters;
+  with none it is **Guest**. There is nothing to type.
+- **Posting**: a run's score is posted when it ends, if it is at least 1 and would make the table (fewer than ten
+  scores on it, or better than its tenth). A tie keeps the earlier score above. One person may hold several places.
+  The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
+- **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
+- **Clearing**: an Editor's element menu has an **Arcade Machine** section with **Clear High Scores**, which asks
+  first ("Clear all 10 scores? This can't be undone.") and empties the table for everyone.
+- **Stored on the element** (`ShapeElement.arcadeScores`, best first, at most ten): each `{ id, name, score, ms, by,
+at }`, where `ms` is how long the run played (paused time not counted), `by` the poster's adder key (an Editor
+  without one writes their participant key) and `at` the epoch ms it was posted.
+- **Scores travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
+  whole-element update: a posted score is one `arcade-score` delta carrying it; a clear is one `arcade-clear`. A
+  whole-element update keeps every receiver's own table, so an Editor moving the machine never carries an old table
+  over a new score. Where the delta is applied, on every screen and in the store alike, the table is put in order
+  and cut to ten: a score that does not make it, a replay of an id the table holds, or one that fails the checks
+  below changes nothing. A locked machine still takes scores (a lock fixes where it stands, as a Timer's does).
+- **Trust**: the game runs on the player's screen alone, so a score is that screen's word, held to what a run could
+  score. A score is a whole number from 1 to the run's ceiling: letters appear at most one every 0.9 seconds after
+  the three a run starts with, each worth at most 50 (×5), so a run of `ms` scores at most
+  `(3 + floor(ms / 900)) × 50`; a run plays at most 2 hours. A name is at most 24 characters. The room relays a
+  Participant's `arcade-score` only when its `by` is the sender's server-verified adder key (so a Participant posts
+  as itself), drops a Participant's `arcade-clear` and drops a Viewer's either. The room writes a Participant's
+  scores into the stored machine itself, as it writes its notes. A hand-made score inside those bounds is still
+  possible; the table holds ten, and an Editor clears it.
+- **Not undoable**: a posted score and a clear are the room's, like a pinned note; one person's undo never takes
+  them back.
 
 ## Fireplace, Campfire
 
@@ -265,6 +388,11 @@ Gathering spots with a fire that flickers.
   with flames, for the Garden.
 - **The flames flicker** (a CSS scale and opacity loop on two flame layers, out of step) and a soft glow breathes on
   the ground. Under reduced motion they hold still, lit.
+- **A turned Fireplace** ([Turning furniture](furniture-facing.md)): to face left, its chimney breast's brick side is
+  toward you, the mantel's end and the hearth jutting left past it, and its front a narrow strip down the left: the
+  firebox's arched edge with a sliver of fire flickering in it. From behind, the breast's plain brick back under the
+  chimney, the mantel's top beyond it, the fire out of sight. The Campfire reads the same from every side and does not
+  turn.
 
 ## Pool Table, Foosball Table, Dartboard
 
@@ -276,6 +404,12 @@ is a follow-up, built on the Ping-Pong Table's [wire](#the-wire)).
 - **Foosball Table**: a wooden cabinet round a green pitch with a white halfway line and centre circle, a goal at each
   end, four rods across it, each with its little players (red and blue, rod by rod) and a handle at the front, and the
   ball on the centre spot.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Pool Table is the same table with its cloth
+  turned round (the rack on the left, the cue ball on the right), and the Foosball Table the same cabinet with each
+  team's rods at the other end. Turned to face left, each is long and narrow, its length down the canvas: the pool
+  cloth with the cue ball and head string at the far end and the rack nearest you, the sights along the far rail on
+  the right and a pedestal under the near end; the foosball pitch with a goal at its top and foot, the rods across it
+  with their handles out to the left, and two legs under the near end. Each blocks along its length.
 - **Dartboard**: a round board on a wooden backboard, hung from a nail: twenty black and cream segments, the red and
   green double and treble rings, the bull, and three darts stuck in it. A wall piece: a click on it while walking walks
   to the floor in front, and standing there rings nothing.
@@ -291,22 +425,39 @@ A social spot like the Water Cooler, for a break room or the games corner.
   loop, so reduced motion changes nothing). An export draws the art, without the glow.
 - Scenery, like the Jukebox: its base blocks and walking up to it rings nothing. It does not give a drink (the Drinks
   Fridge and the Water Cooler do); a snack in the hand is a follow-up.
+- **Turned** ([Turning furniture](furniture-facing.md)): to face left, the cabinet's tall side is toward you with a
+  stripe down it, and its front a narrow strip down its left: the sign's lit edge, the glass with a column of cans
+  behind it and the pickup flap; on dark paper its light spills to the left. From behind, its plain back with a vented
+  panel and its power cord, the sign's lit edge along the top, and no glow.
 
 ## Bean Bag, Reading Nook
 
 Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) rules, as every seat here does.
 
 - **Bean Bag**: a slouchy coral bean bag, one seat, the sitter facing down the canvas. Place several for a corner.
+  **Turned**: from behind, its raised back nearest you and the hollow beyond it, its sitter facing up; to face left,
+  the hollow toward the left and its back rising on the right, its sitter facing left.
 - **Reading Nook**: a set in one piece: a mustard wingback armchair on a round rug, a side table with a stack of books,
   and a floor lamp whose shade is lit. One seat, in the armchair, facing down the canvas. **On dark paper** the lamp
   throws a warm pool of light on the rug and a halo round its shade (drawn as the Vending Machine's glow is).
-- Neither turns; their seat colours are their own (no fill from the theme).
+  **Turned** ([Turning furniture](furniture-facing.md)): from behind, the set mirrored (the lamp on the left, the side
+  table on the right) and the armchair's wingback back nearest you, its sitter facing up; to face left, the armchair in
+  the middle of the rug seen from its side (the cushion between its arms, the wingback a tall bar along its right),
+  the side table with its books beyond it and the lamp nearer you, its sitter facing left. The lamp glows on dark
+  paper at every facing.
+- Their seat colours are their own (no fill from the theme).
 
 ## Bench, Picnic Table, Hammock
 
 - **Bench**: a wooden garden bench with a back, two seats.
 - **Picnic Table**: a wooden table with a bench along each side, six seats facing the table, three each side.
 - **Hammock**: a striped hammock slung between two posts, one seat.
+- **Turned** ([Turning furniture](furniture-facing.md)): from behind, the Bench's slatted back is nearest you over its
+  seat, its two sitters facing up, the left seat now on the right; the Picnic Table looks as it does from the front,
+  each seat now the one across the table. Turned to face left, each is long: the Bench's seat down the canvas with its
+  two seats one above the other, its back a bar along its right and an iron arm across each end; the Picnic Table's
+  top down the middle with a bench down each side, its diners facing it; the Hammock's sling down the canvas between
+  its far post and its near one. The Hammock reads the same from behind.
 
 ## Garden Umbrella, Fountain, Pond
 
@@ -325,15 +476,21 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 - **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; plays ping-pong;
   walks, sits and uses everything like everyone; the participant palette does not offer the pieces.
 - **Viewer**: reads the notes; watches a ping-pong game but never plays (the room drops its `game-input` and
-  `game-event`, and a Viewer on a seat counts as no player); walks, sits and listens like everyone (all of it is
-  presence or local).
+  `game-event`, and a Viewer on a seat counts as no player); sees an Arcade Machine's High Scores but never plays
+  or posts (the room drops its `arcade-score`); walks, sits and listens like everyone (all of it is presence or
+  local).
+- An **Editor** also clears an Arcade Machine's High Scores; a **Participant** plays Moon Mail and posts its own
+  scores, signed with its adder key, which the room checks.
 
-| Piece                     | Editor | Participant | Viewer |
-| ------------------------- | ------ | ----------- | ------ |
-| Ping-Pong Table: play     | Yes    | Yes         | No     |
-| Ping-Pong Table: watch    | Yes    | Yes         | Yes    |
-| Notice Board: pin a note  | Yes    | Yes (own)   | No     |
-| World Clock, Jukebox: set | Yes    | No          | No     |
+| Piece                                 | Editor | Participant | Viewer |
+| ------------------------------------- | ------ | ----------- | ------ |
+| Ping-Pong Table: play                 | Yes    | Yes         | No     |
+| Ping-Pong Table: watch                | Yes    | Yes         | Yes    |
+| Arcade Machine: play, post a score    | Yes    | Yes (own)   | No     |
+| Arcade Machine: see the High Scores   | Yes    | Yes         | Yes    |
+| Arcade Machine: clear the High Scores | Yes    | No          | No     |
+| Notice Board: pin a note              | Yes    | Yes (own)   | No     |
+| World Clock, Jukebox: set             | Yes    | No          | No     |
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
@@ -344,10 +501,14 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
   source set: `Element · Changed · Jukebox`. Never the note's words, the zones or the address.
 - A ping-pong game played to its end: `Canvas · Used · PingPong`, sent by the left player's screen alone, so a game
   counts once. Never the score or who played.
+- A Moon Mail run ended (Game Over or closed mid-run): `Canvas · Used · Arcade`, from the player's screen. High
+  Scores cleared: `Element · Changed · Arcade-machine`. Never the score or the name.
 
 ## Not in scope
 
-- Playing pool, foosball, darts or an arcade game (follow-ups: a mini-game per piece, on the ping-pong wire).
+- Playing pool, foosball or darts (follow-ups: a mini-game per piece, on the ping-pong wire).
+- Watching someone else's Moon Mail run, more than one game on a machine, typing initials, sound, and a high-score
+  table across Spaces.
 - Ping-pong against the computer, doubles, a stored score or a leaderboard, sound, and spin.
 - A snack or a can from the Vending Machine.
 - A built-in jukebox playlist, queueing songs, or volume control beyond mute.

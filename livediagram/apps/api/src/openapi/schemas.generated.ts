@@ -5165,7 +5165,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "SeatFacing": {
-    "description": "Where a piece's back is: 'n' at the top, so its sitter faces down the canvas.",
+    "description": "Where a piece's back is: 'n' at the top, so its front (and its sitter) faces down the canvas.",
     "enum": [
       "n",
       "e",

@@ -9,10 +9,13 @@ import {
   setCallMedia,
   setCallSelf,
 } from '@/lib/calls/calls-store';
-import { CallBubbles, useCallBubbleRects } from './CallBubbles';
+import { AVATAR_HEAD_CHROME } from '@liveworkspace/avatar/walk';
+import { receiveCallOp, resetCallPeers } from '@/lib/calls/calls-store';
+import { BUBBLE_GAP_PX } from '@/lib/calls/bubble-layout';
+import { BUBBLE_LIFT_PX, CallBubbles, useCallBubbleRects } from './CallBubbles';
 import { renderHook } from '@testing-library/react';
 import type { BubbleRect } from '@/lib/calls/bubble-layout';
-import { mediaTitle } from './MediaBubble';
+import { BUBBLE_WIDTH_PX, mediaTitle } from './MediaBubble';
 
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => telemetry);
@@ -37,7 +40,9 @@ afterEach(() => {
   act(() => {
     resetCallMedia();
     resetCallSelf();
+    resetCallPeers();
   });
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -290,9 +295,41 @@ describe('CallBubbles', () => {
     const tail = (id: string) =>
       container.querySelector<HTMLElement>(`[data-call-bubbles="${id}"] [data-call-bubble-tail]`)!;
     expect(row('p1').style.transform).toMatch(/, 0px\)$/);
-    expect(row('p3').style.transform).toMatch(/, -75\.5px\)$/);
+    // Lifted a bubble's height (16:9 of its width) and a gap onto the row above.
+    const lift = (BUBBLE_WIDTH_PX * 9) / 16 + BUBBLE_GAP_PX;
+    expect(row('p3').style.transform.endsWith(`, -${lift}px)`)).toBe(true);
     expect(tail('p1').hidden).toBe(false);
     expect(tail('p3').hidden).toBe(true);
+  });
+
+  // Owner, 2026-11-07: "Make the bubble bigger", "bring it slightly closer to their body".
+  it('is 180 px wide and sits just over the head chrome', () => {
+    expect(BUBBLE_WIDTH_PX).toBe(180);
+    expect(BUBBLE_LIFT_PX).toBe(AVATAR_HEAD_CHROME + 8);
+  });
+
+  // Someone wearing a bubble talks on it (TalkingBars' BubbleBars), not over their head.
+  it('shows the talking equaliser on the bubble while its person talks, and yours while unmuted', () => {
+    vi.useFakeTimers();
+    const { container } = render(<CallBubbles peers={[peer('p1', 'Sam', 100)]} self={self} />);
+    act(() => {
+      setCallMedia('p1', 'video', stream('a'));
+      setCallMedia('self', 'video', stream('c'));
+    });
+    const bars = (id: string) =>
+      container.querySelector(`[data-call-bubbles="${id}"] [data-bubble-bars="${id}"]`);
+    expect(bars('p1')).toBeNull();
+    expect(bars('self')).toBeNull();
+    act(() => {
+      receiveCallOp('p1', { kind: 'avatar-voice', tabId: 't1', level: 3 });
+      setCallSelf({ muted: false, level: 2 });
+      // Peers' levels reach the screen on the store's short batch.
+      vi.advanceTimersByTime(100);
+    });
+    expect(bars('p1')).not.toBeNull();
+    expect(bars('self')).not.toBeNull();
+    act(() => setCallSelf({ muted: true }));
+    expect(bars('self')).toBeNull();
   });
 
   it('names a bubble for its person, or yours', () => {

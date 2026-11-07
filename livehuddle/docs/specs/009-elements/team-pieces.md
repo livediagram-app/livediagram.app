@@ -62,6 +62,11 @@ A large wall planner: a red header band hung from two binder rings, a white shee
 
 A wooden box on a post, a slot in its lid with a note half posted, a lightbulb on its front.
 
+**Turned** ([Turning furniture](furniture-facing.md)): from behind, its plain back with the door it is emptied by and
+a brass lock, the note still standing in the slot; to face left, its lid down the canvas with the slot along it, its
+end toward you and a strip of its front with the lightbulb down the left. The **Suggest** button stays under the box,
+centred and never mirrored, at every facing.
+
 - **Dropping a note**: the face's **Suggest** button (a walking click anywhere on it) opens the box: a text box (up to
   500 characters, with a live counter) and **Drop It In**. A dropped note leaves no name, no colour and no title; the
   box thanks you (**Dropped in. Only Editors read these, and never who wrote them.**) and is ready for another.

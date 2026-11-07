@@ -150,8 +150,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
-  'Canvas|Used|AddNextNote':
-    'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -165,6 +163,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|PatPet': 'Someone patted the office dog that wanders round a Pet Bed.',
   'Canvas|Used|PingPong':
     "Two people sitting at a Ping-Pong Table played a game to its end; the left player's screen counts it.",
+  'Canvas|Used|Arcade':
+    "Someone played a run of Moon Mail on an Arcade Machine, to Game Over or closing its panel mid-run; the player's screen counts it.",
   'Canvas|Used|Door': 'Someone swung a Door in a Space open or shut.',
   'Canvas|Used|ScreenOpen':
     'Someone opened a Screen in a meeting room large, to read what it shows.',
@@ -189,12 +189,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
   'Canvas|Used|AvatarMessagePanel':
     "Someone said something in Avatar mode from the Avatar panel's Send a Message. Never the words.",
+  'Canvas|Used|AvatarAction':
+    "Someone's character performed a move from the Avatar palette's Actions (a wave, a spin, a cheer, a dance or jumping jacks). Which move is never recorded.",
+  'Canvas|Used|AvatarReaction':
+    "Someone played a burst round their character from the Avatar palette's React (confetti, sparkles, hearts, applause or fireworks). Which burst is never recorded.",
+  'Canvas|Used|Sit':
+    'Someone\u2019s character sat down on a seat. Which seat, and where, is never recorded.',
   'Canvas|Used|AvatarPadArrival':
     'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
-  'Canvas|Used|ChangeNoteKind':
-    'Someone changed what kind of note a sticky is on an event-storming board, say from a domain event to a hotspot.',
   'Canvas|Used|Dock':
     'Someone dragged a note onto a compatible face on an event-storming board and it docked there. No longer recorded.',
   'Canvas|Used|DockAdd':
@@ -207,12 +211,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
   'Canvas|Used|Highlighter':
     'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
-  'Canvas|Used|InsertBetween':
-    'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
     'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
-  'Canvas|Used|LanesSettled':
-    'An older event-storming board was opened by someone who can edit it, and its notes that sat between lanes were lined up on the lanes in one undoable step. Once per board.',
   'Canvas|Used|TimelineLanesOff':
     'Someone turned timeline lanes off for an event-storming board. No longer recorded: lanes are always on now.',
   'Canvas|Used|TimelineLanesOn':
@@ -386,8 +386,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone edited a Decision element: its status, its date, or the factors driving it.',
   'Element|Changed|DoneCheck':
     'Someone pressed a done-check element to mark it done, or cleared it.',
-  'Element|Changed|Entity':
-    "Someone edited an Entity element's fields, on an entity-relationship diagram.",
   'Element|Changed|Estimate':
     'Someone submitted, revealed, or cleared a response on an Estimate card during a planning-poker round.',
   'Element|Changed|FillColor': "Someone changed a selected element's fill colour.",
@@ -561,9 +559,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
   'Element|Created|RelatedEntity':
     "Someone added an entity from another entity's ring, already joined to it by a foreign key.",
-  'Element|Added|EntityField':
-    "Someone started a new field on an entity from its ring's Add Field.",
-  'Element|Changed|Cardinality': "Someone picked a relationship's cardinality from its toolbar.",
   'Element|Created|MirrorTwin':
     'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
   'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
@@ -1117,14 +1112,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|MapSizeTall': 'Someone set the minimap to its tall size, in Settings > Editor.',
   'UI|Changed|PaletteFavourite':
     'Someone reordered their palette Favourites by dragging, or reset the list back to its default tiles. No longer recorded: Favourites is gone.',
-  'UI|Changed|PanelLayout':
-    "Someone changed the editor's panel layout, in Settings > Editor. An earlier version of this event, before it recorded which layout was chosen. No longer recorded.",
-  'UI|Changed|PanelLayoutFloating':
-    "Someone switched the editor's panel layout to Floating, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
-  'UI|Changed|PanelLayoutMinimal':
-    "Someone switched the editor's panel layout to Minimal, in Settings > Editor. No longer recorded: the Minimal layout was removed.",
-  'UI|Changed|PanelLayoutToolbar':
-    "Someone switched the editor's panel layout to Toolbar, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
   'UI|Changed|PanelOpacity':
     'Someone adjusted how see-through the panels are, on the Panel Opacity slider in Settings > Editor.',
   'UI|Changed|UiScale':
@@ -1143,8 +1130,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
   'UI|Changed|LooksSeasonal':
     "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
-  'UI|Changed|SlideNotes':
-    'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|ToolbarCategory':
     "Someone opened a category on the palette's category bar across the top of the canvas.",
   'UI|Changed|ContentsPlacementButton':
@@ -1155,10 +1140,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dragged Pages mode's Contents sidebar to the canvas's right edge.",
   'UI|Changed|ContentsPlacementSidebar':
     "Someone docked Pages mode's Contents as a sidebar down the canvas's left, from its popover or in Settings > Editor.",
-  'UI|Changed|WhiteboardDockPositionBottom':
-    'Someone put their whiteboard dock at the bottom of the canvas, in Settings > Editor.',
-  'UI|Changed|WhiteboardDockPositionTop':
-    'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
   'UI|Opened|EmptyPageInvite':
     'Someone pressed Choose a Layout on an empty page too small on screen for its layout card (a phone, or zoomed out).',
   'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
@@ -1166,7 +1147,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
-  'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
   'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
@@ -1313,18 +1293,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights, or the board or sheet it was showing was deleted.',
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
-  'UI|Moved|Slide':
-    'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
-  'UI|Opened|SessionTimer':
-    'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
-  'UI|Opened|SessionVote':
-    'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
-  'UI|Opened|SessionPoll':
-    'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|TidyUp':
     'Someone opened the Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.',
   'UI|Opened|BehaviourGroup':
@@ -1336,9 +1308,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Collaborators':
     "Someone opened the Collaborators dialog, either from a tab's presence stack or from a command.",
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
-  'UI|Opened|MindOutline': "Someone opened a mind map's outline to edit it as text.",
-  'UI|Opened|PresentationSettings':
-    "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
   'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
   'UI|Opened|Settings': 'Someone opened the Settings dialog.',
   'UI|Opened|SettingsAccessibility':
@@ -1374,8 +1343,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone dragged a page to a new place in Pages mode's Contents list.",
   'UI|Added|AllPageSlides':
     "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
-  'UI|Opened|SlideDeck':
-    "Someone opened the deck-building panel: the Slide Deck tool, or a Pages tab's Slides button.",
   'UI|Opened|SlideElementDetail':
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
@@ -1495,7 +1462,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Sign in" on the guest sign-in banner shown in the editor.',
   'UI|Selected|SignInBannerExplorer':
     'Someone clicked "Sign in" on the guest sign-in banner shown in the Explorer.',
-  'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|SlideTour':
     "Someone pressed Show Me in a slide page's panel, starting its tour of layouts, backgrounds, the deck and presenting.",
   'UI|Started|InfographicTour':
@@ -1566,8 +1532,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off the alignment guides that appear while dragging elements, in Settings > Editor.',
   'UI|Toggled|AlignmentGuidesOn':
     'Someone turned on the alignment guides that appear while dragging elements, in Settings > Editor.',
-  'UI|Toggled|AutoRebindOff': 'Someone turned off auto-attach for arrows, in Settings > Editor.',
-  'UI|Toggled|AutoRebindOn': 'Someone turned on auto-attach for arrows, in Settings > Editor.',
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
   'UI|Toggled|ExplorerViewCard':
     'Someone switched the Explorer to Card view, showing a large preview of each document.',
@@ -1579,18 +1543,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on including hidden layers when exporting an image.',
   'UI|Toggled|IsometricExport':
     'Someone turned on tilting an exported image into the isometric projection.',
-  'UI|Toggled|LayerCountOff':
-    'Someone turned off the element-count badge on each layer, in Settings > Panels.',
-  'UI|Toggled|LayerCountOn':
-    'Someone turned on the element-count badge on each layer, in Settings > Panels.',
-  'UI|Toggled|LayerHoverPreviewOff':
-    "Someone turned off previewing a layer's contents on hover, in Settings > Panels.",
-  'UI|Toggled|LayerHoverPreviewOn':
-    "Someone turned on previewing a layer's contents on hover, in Settings > Panels.",
-  'UI|Toggled|LayerPreviewOff':
-    'Someone turned off layer thumbnails in the Layers panel, in Settings > Panels.',
-  'UI|Toggled|LayerPreviewOn':
-    'Someone turned on layer thumbnails in the Layers panel, in Settings > Panels.',
   'UI|Toggled|Light': "Someone set the editor's appearance to Light.",
   'UI|Toggled|MapDimOff':
     'Someone turned off dimming the part of the minimap outside the current view.',
@@ -1654,10 +1606,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone entered reordering or editing mode for their palette Favourites. No longer recorded: Favourites is gone.',
   'UI|Toggled|PatternExport':
     "Someone turned on painting the tab's background pattern into an exported image.",
-  'UI|Toggled|QuickAddHoverOff':
-    'Someone turned off quick-add on hover in the palette, in Settings > Editor.',
-  'UI|Toggled|QuickAddHoverOn':
-    'Someone turned on quick-add on hover in the palette, in Settings > Editor.',
   'UI|Toggled|PagesModeOff':
     'Someone turned off Pages mode, in Settings > Experimental. No longer recorded: Pages mode is always offered.',
   'UI|Toggled|PagesModeOn':
@@ -1678,10 +1626,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
   'UI|Toggled|SkipLocationStepOn':
     'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
-  'UI|Toggled|SlideHidden':
-    'Someone hid a slide from the presentation run, without deleting it, in the Slide Deck panel.',
-  'UI|Toggled|SlideShown':
-    'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
   'UI|Toggled|TemplateModeAll':
     'Someone set the New Document template filter back to Everything, showing templates for every mode.',
@@ -1839,9 +1783,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone folded the header and the tab bar away again from the handle on a phone held sideways, giving the canvas the whole screen.',
   'UI|Toggled|LandscapeBarsOn':
     'Someone showed the header and the tab bar from the handle on a phone held sideways, where they fold away so the canvas fills the screen.',
-  'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
-  'UI|Toggled|ZenModeOn':
-    "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|JustDraw':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|StartOtherMode':

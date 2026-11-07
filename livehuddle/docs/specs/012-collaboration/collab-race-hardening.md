@@ -85,6 +85,12 @@ applied by the sender and every receiver through the same pure
   still its signer, which is how a Participant, whose `by` the room checks, removes only its own. Before, an Editor
   moving the board while somebody pinned sent the old list in a whole-element update and the new note vanished.
   The ledger records each pin and unpin, and a Participant's are written into the stored board with its answers.
+- `arcade-score` / `arcade-clear`: one score posted to an Arcade Machine's High Scores, or the table emptied
+  ([Social pieces](../009-elements/social-pieces.md) "High Scores"). The table is put in order and cut to ten where
+  the delta is applied, so a score that does not make it, a replay of an id the table holds or one past its run's
+  ceiling changes nothing, and two scores posted at once both land in their places. The ledger keeps the latest
+  clear and the scores after it, cut to the ten best (a score cut there would be cut on the machine too), and a
+  Participant's are written into the stored machine with its answers.
 
 Every delta is idempotent or order-free, so concurrent presses commute, and
 a malformed frame is dropped rather than applied.

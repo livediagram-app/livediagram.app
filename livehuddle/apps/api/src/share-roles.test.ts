@@ -412,6 +412,50 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     TAKING_PART,
   );
 
+  // docs/specs/009-elements/social-pieces.md "High Scores": a Participant plays and posts its own score, signed with its
+  // adder key; an Editor posts and clears; a Viewer sees the table and posts nothing. Every screen and the stored
+  // machine apply a relayed score through element-deltas (arcade-score-deltas.test.ts in packages/document).
+  describe("Play the Arcade Machine, post your own score; clear an Arcade Machine's High Scores", () => {
+    const score = (id: string, by: string, points = 40) => ({
+      id,
+      name: 'Sam',
+      score: points,
+      ms: 30_000,
+      by,
+      at: 1,
+    });
+    const machine = shape('arcade', 'arcade-machine', {
+      arcadeScores: [score('t1', 'b'.repeat(32), 90)],
+    });
+    const does = (d: ElementDelta, level: Level) => {
+      const gate = gateClientOp(
+        { kind: 'el-delta', tabId: 't', elementId: 'arcade', delta: d },
+        { role: level, tabScope: null, key: ME, adderKey: ADDER },
+      );
+      if (gate.kind !== 'relay') return 'dropped';
+      const next = applyElementDelta(machine as never, d) as { arcadeScores?: { id: string }[] };
+      return (next.arcadeScores ?? []).map((s) => s.id).join(',');
+    };
+    const postMine = { kind: 'arcade-score', score: score('m1', ADDER) } as ElementDelta;
+    const postAsOther = {
+      kind: 'arcade-score',
+      score: score('x1', 'b'.repeat(32)),
+    } as ElementDelta;
+    const clear: ElementDelta = { kind: 'arcade-clear' };
+    it('edit: posts as anyone and clears', () => {
+      expect(does(postAsOther, 'edit')).toBe('t1,x1');
+      expect(does(clear, 'edit')).toBe('');
+    });
+    it('participate: posts as itself, never as another, never clears', () => {
+      expect(does(postMine, 'participate')).toBe('t1,m1');
+      expect(does(postAsOther, 'participate')).toBe('dropped');
+      expect(does(clear, 'participate')).toBe('dropped');
+    });
+    it('view: posts and clears nothing', () => {
+      for (const d of [postMine, clear]) expect(does(d, 'view')).toBe('dropped');
+    });
+  });
+
   // A Participant comments through the comment routes (gateParticipate, routes/comment-routes.test.ts: a
   // Participant link comments, a view link is refused), which write the tab and tell the room; in the room the
   // comment deltas are an Editor's, whose save carries them, and a comment's reaction is whoever may comment's.

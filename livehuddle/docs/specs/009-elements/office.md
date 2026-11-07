@@ -103,7 +103,10 @@ A table with six chairs round it, every seat facing the table.
 - Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
   (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
   "Occupancy is presence").
-- It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
+- **It turns** ([Turning furniture](furniture-facing.md)), its chairs with it. From behind it reads the same, each
+  sitter now facing the other way. Turned to face left it is a tall table: the two chairs that were beyond sit down its
+  right facing left, the two in front down its left facing right, and the end chairs at its top and its foot.
+  Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
 
@@ -112,7 +115,8 @@ Scenery that **blocks**: a character walks round them, not through.
 - **Plant**: a potted plant, leaves above a pot. Default 56 × 88. Its **footprint** (the pot, at the bottom of the
   drawing) blocks.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
-  blocks, so it stands against a wall and you walk along in front of it.
+  blocks, so it stands against a wall and you walk along in front of it. Turned to face left it is narrow and long, its
+  books end on down its left and its base blocking along its length; from behind, its plain back's boards.
 - A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
   walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
   what stands up from the floor, and a character in front of it is drawn in front of it.
@@ -124,12 +128,15 @@ Walk up to one and your character **gets a drink**.
 
 - **Water Cooler**: a blue water bottle on a white cooler with a tap. Default 56 × 112.
 - **Coffee Machine**: a coffee machine with a carafe, on a little counter. Default 72 × 96.
+- **Turned**: the cooler shows its vent from behind and, facing left, its taps and drip tray down its left; the coffee
+  machine shows its vents from behind and, facing left, its screen and carafe down its left, its mug at the near end.
 - **Using it**: walking a character onto it (the same arrival as a chair or a portal) gives it a cup, **water** or
   **coffee**, held in its hand for **60 seconds**. Every 8 seconds it takes a sip (the arm lifts the cup for a
   moment). A coffee steams. Using it again, or the other machine, swaps or refreshes the cup. Sitting keeps the
   cup: coffee at your desk.
 - The machine **answers** on your screen: bubbles rise in the cooler's bottle, the coffee machine drips into the
-  carafe, for a second and a half.
+  carafe, for a second and a half, on the drawing its facing shows: the bubbles from every side, the drip wherever the
+  carafe shows (not from behind).
 - **Everyone sees your cup**: what you hold rides your avatar presence (`holding: 'water' | 'coffee'`), like
   sitting. Nothing is written to the document; leaving the mode puts the cup down.
 - Neither blocks, so you can walk right up to it; standing on it is standing in front of it.
@@ -139,7 +146,8 @@ Walk up to one and your character **gets a drink**.
 A floor rug: an oval with a border, in the element's fill. Decoration that never blocks and is never a destination;
 placed **behind everything** like a room, so it lies on the floor under the furniture. Rooms and rugs paint as
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
-room's floor, and a room never covers what stands in it. Default 200 × 120.
+room's floor, and a room never covers what stands in it. Default 200 × 120. Turned, it is the same flat pattern from
+behind and lies the other way round on its side, its box's sides swapped.
 
 ## Stage
 
@@ -183,7 +191,12 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)): the two inside hear each
   other and nobody outside hears them, door open or shut. A pod in a room is the innermost call, so it is private
   from the room around it.
-- It does not turn. Aspect locked. Default 176 × 144.
+- **It turns**, and its walls, doorway, door, floor and seats turn with it: the doorway is always in the wall its front
+  faces. From behind the doorway is in the far wall, through its face, the benches swapped and the window wall nearest
+  you; turned to face left the doorway is down its left wall (the right wall facing right), the far wall's face along
+  its top and the benches across it, one under the far wall facing you and one against the near wall, its back to you.
+  The door slides behind the wall beside the doorway, and the strip where you knock is outside the doorway wherever it
+  faces. Aspect locked. Default 176 × 144.
 - A call for one is the [Phone Booth](workday-pieces.md#phone-booth): one seat, no invite, a call of its own that
   shows Busy.
 
@@ -194,10 +207,14 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   and walk round its ends.
 - **Bar Stool**: a round padded seat on a tall stem, with a foot ring. **One seat**, its sitter facing up the canvas
   (their back to you, toward a bar placed above the stools). Seat rules as the [Chair](chair.md): walk onto it to sit,
-  one sitter, a ring in the sitter's colour and their name above it. It reads the same from every side and does not
-  turn. Aspect locked. Default 44 × 64. A stool tucked under the counter seats its sitter in the counter's footprint;
+  one sitter, a ring in the sitter's colour and their name above it. It reads the same from every side, so it keeps its
+  one drawing and turning it turns its sitter (Up, toward a bar above it, is its default). Aspect locked. Default 44 × 64. A stool tucked under the counter seats its sitter in the counter's footprint;
   standing up there, the character walks out of the counter toward its nearer side, never deeper in, so it is never
   stuck in the bar ([Fence](fence.md#blocking)).
+- **The bar turns**: from behind, the bartender's side, its counter beyond with glasses under it and the back shelf
+  nearest you, its bottles' necks over its top, the counter blocking; turned to face left it is long and narrow, the
+  counter and foot rail down its left (blocking down its length) and the back shelf down its right, its bottles toward
+  the counter.
 - Neither has a settings `…`; the stool's sitters, like every seat's, are presence.
 
 ## Drinks Cabinet, Drinks Fridge
@@ -209,6 +226,9 @@ Machine](#water-cooler-coffee-machine).
   (an orange cup). Default 88 × 120.
 - **Drinks Fridge**: a tall glass-fronted fridge of coloured cans. Walking onto it gives a **soda** (a red cup).
   Default 72 × 128.
+- **Turned**, each shows its plain back from behind (the fridge's cooling grille low down) and, facing left, is tall and
+  narrow, its front cheated down its left: the cabinet's glass doors and bottles over its drawers, the fridge's glass
+  and cans under its lit header.
 - The drink is held, sipped and seen by everyone exactly as water or coffee (`holding: 'juice' | 'soda'`), for the
   same minute; it never steams.
 - Neither blocks, so you walk right up to one; neither plays an answer.

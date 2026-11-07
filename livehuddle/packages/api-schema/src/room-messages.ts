@@ -195,7 +195,8 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, and the room writes a
 // Participant's reactions as it writes its answers; and a notice board pin or unpin
 // (docs/specs/009-elements/social-pieces.md "Notice Board"), which the room writes the same way, and a Timer's or
-// Stopwatch's press (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"). A Participant's
+// Stopwatch's press (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"), and an Arcade Machine score
+// (docs/specs/009-elements/social-pieces.md "High Scores"; its clear is an Editor's). A Participant's
 // socket may send these beside presence; every other mutation from it is dropped, except an `el` op, which the room
 // applies through the participant content rule instead of relaying.
 const PARTICIPATION_DELTA_KINDS = [
@@ -203,6 +204,7 @@ const PARTICIPATION_DELTA_KINDS = [
   'notice-pin',
   'notice-unpin',
   'piece-timer',
+  'arcade-score',
 ] as const;
 
 export function isParticipationOp(op: unknown): boolean {

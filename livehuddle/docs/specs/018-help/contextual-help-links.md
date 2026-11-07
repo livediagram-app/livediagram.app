@@ -112,7 +112,7 @@ Grouped by priority; each links the keyed article.
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
-- The call group at the left of the avatar palette carries **no** help link (removed 2026-11-05 at the owner's request: the
+- The call group on the Call dock (bottom centre; first on the avatar palette until 2026-11-07) carries **no** help link (removed 2026-11-05 at the owner's request: the
   `?` segment made the strip longer for little use). The Proximity Audio article is reached from the help centre and
   search.
 

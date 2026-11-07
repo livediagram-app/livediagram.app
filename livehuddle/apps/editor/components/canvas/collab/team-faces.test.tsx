@@ -253,6 +253,20 @@ describe('the Suggestion Box', () => {
     expect(document.querySelector('[data-suggestion-reader]')).not.toBeNull();
   });
 
+  // furniture-facing.md "Live faces": a control stays reachable at every facing, its words never mirrored.
+  it('keeps its Suggest button reachable and unmirrored at every facing', () => {
+    for (const chairFacing of ['n', 'e', 's', 'w'] as const) {
+      const { unmount } = render(<TeamFace element={box({ chairFacing })} />);
+      const button = screen.getByRole('button', { name: 'Open the Suggestion Box' });
+      expect(button.textContent, chairFacing).toContain('Suggest');
+      for (let el: HTMLElement | null = button; el; el = el.parentElement)
+        expect(el.getAttribute('style') ?? '', chairFacing).not.toMatch(/scale\(-1/);
+      fireEvent.click(button);
+      expect(screen.getByLabelText('Suggestion'), chairFacing).toBeTruthy();
+      unmount();
+    }
+  });
+
   it('lets a Participant drop a note with nothing but its words, and never read any', async () => {
     api.apiDropSuggestion.mockResolvedValue(undefined);
     render(<SuggestionBoxPanel element={box()} size="popover" />);

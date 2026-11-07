@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOutlinedRoom } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
+import { resetPlacingFacing } from '@/lib/placing-facing';
 import {
   PlacementPreview,
   placementLanding,
@@ -180,6 +181,44 @@ describe('DoorPlacementPreview', () => {
     const left = el!.style.left;
     move('pointermove', 500, 300);
     expect((preview() as HTMLElement).style.left).not.toBe(left);
+  });
+
+  // docs/specs/009-elements/furniture-facing.md "Turning while placing".
+  it('turns an armed sofa on Space, about the pointer, and lands it turned', () => {
+    render(
+      <PlacementPreview
+        pendingDraw={{ type: 'shape', kind: 'sofa' }}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 400, 300);
+    const box = () => {
+      const s = (preview() as HTMLElement).style;
+      return {
+        l: parseFloat(s.left),
+        t: parseFloat(s.top),
+        w: parseFloat(s.width),
+        h: parseFloat(s.height),
+      };
+    };
+    const flat = box();
+    expect(flat.w).toBeGreaterThan(flat.h);
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { code: 'Space', key: ' ', cancelable: true }),
+      );
+    });
+    const turned = box();
+    // A sofa on its side is tall, still centred on the pointer.
+    expect(turned.h).toBeGreaterThan(turned.w);
+    expect(turned.l + turned.w / 2).toBeCloseTo(400);
+    expect(turned.t + turned.h / 2).toBeCloseTo(300);
+    const { piece } = placementLanding('sofa', { x: 400, y: 300 }, [], 'e');
+    expect(piece).toMatchObject({ chairFacing: 'e', width: turned.w, height: turned.h });
+    resetPlacingFacing();
   });
 
   it('draws an armed Room itself at its default size under the pointer', () => {

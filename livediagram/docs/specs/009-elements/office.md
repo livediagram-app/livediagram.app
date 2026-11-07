@@ -17,8 +17,9 @@ places, so an office is drawn with the same tools as a diagram.
 Shape kinds in the palette's **Collaborate** category under **Navigate**, after the chair, desk, sofa and fence:
 `room`, `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`,
 `rug`. Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
-pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
-theme, export. None has a settings `…`; a room's one setting and a table's are in the element menu.
+pots on the ground, a contact shadow below. Every piece but the Room and the Plant turns to face four ways, its own
+drawing at each ([Turning furniture](furniture-facing.md)); none rotates at an angle. Each is an ordinary element
+otherwise: move, resize, group, lock, copy, theme, export. None has a settings `…`; a room's one setting and a table's are in the element menu.
 
 ## Room
 
@@ -53,16 +54,20 @@ A table with six chairs round it, every seat facing the table.
 - Who is sitting is presence, as for every seat: the table rings each taken chair in its sitter's colour
   (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
   "Occupancy is presence").
-- It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
+- **It turns** ([Turning furniture](furniture-facing.md)), its chairs with it. From behind it reads the same, each
+  sitter now facing the other way. Turned to face left it is a tall table: the two chairs that were beyond sit down its
+  right facing left, the two in front down its left facing right, and the end chairs at its top and its foot.
+  Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf
 
 Scenery that **blocks**: a character walks round them, not through.
 
 - **Plant**: a potted plant, leaves above a pot. Default 56 × 88. Its **footprint** (the pot, at the bottom of the
-  drawing) blocks.
+  drawing) blocks. It reads the same from every side, so it does not turn.
 - **Bookshelf**: shelves of coloured book spines. Default 120 × 132. Its footprint (the bottom quarter, full width)
-  blocks, so it stands against a wall and you walk along in front of it.
+  blocks, so it stands against a wall and you walk along in front of it. Turned to face left it is narrow and long, its
+  books end on down its left and its base blocking along its length; from behind, its plain back's boards.
 - A footprint blocks as a fence round its edge does (same reach, same slide). It is solid: a character inside one
   walks out of it and never deeper in ([Fence](fence.md#blocking)). The upper part of the drawing never blocks: it is
   what stands up from the floor, and a character in front of it is drawn in front of it.
@@ -74,12 +79,15 @@ Walk up to one and your character **gets a drink**.
 
 - **Water Cooler**: a blue water bottle on a white cooler with a tap. Default 56 × 112.
 - **Coffee Machine**: a coffee machine with a carafe, on a little counter. Default 72 × 96.
+- **Turned**: the cooler shows its vent from behind and, facing left, its taps and drip tray down its left; the coffee
+  machine shows its vents from behind and, facing left, its screen and carafe down its left, its mug at the near end.
 - **Using it**: walking a character onto it (the same arrival as a chair or a portal) gives it a cup, **water** or
   **coffee**, held in its hand for **60 seconds**. Every 8 seconds it takes a sip (the arm lifts the cup for a
   moment). A coffee steams. Using it again, or the other machine, swaps or refreshes the cup. Sitting keeps the
   cup: coffee at your desk.
 - The machine **answers** on your screen: bubbles rise in the cooler's bottle, the coffee machine drips into the
-  carafe, for a second and a half.
+  carafe, for a second and a half, on the drawing its facing shows: the bubbles from every side, the drip wherever the
+  carafe shows (not from behind).
 - **Everyone sees your cup**: what you hold rides your avatar presence (`holding: 'water' | 'coffee'`), like
   sitting. Nothing is written to the document; leaving the mode puts the cup down.
 - Neither blocks, so you can walk right up to it; standing on it is standing in front of it.
@@ -89,11 +97,12 @@ Walk up to one and your character **gets a drink**.
 A floor rug: an oval with a border, in the element's fill. Decoration that never blocks and is never a destination;
 placed **behind everything** like a room, so it lies on the floor under the furniture. Rooms and rugs paint as
 backdrops, the larger first, however they arrive (placed, drawn to size, pasted, written by an agent): a rug lies on its
-room's floor, and a room never covers what stands in it. Default 200 × 120.
+room's floor, and a room never covers what stands in it. Default 200 × 120. Turned, it is the same flat pattern from
+behind and lies the other way round on its side, its box's sides swapped.
 
 ## Share roles
 
-- **Editor**: places, moves, renames, recolours and deletes every piece; sets a room's doorway.
+- **Editor**: places, moves, renames, recolours, turns and deletes every piece; sets a room's doorway.
 - **Participant**: the participant palette does not offer them; walks, sits and drinks like everyone.
 - **Viewer**: walks, sits and drinks like everyone (all of it is presence, which a Viewer has).
 
@@ -102,6 +111,7 @@ room's floor, and a room never covers what stands in it. Default 200 × 120.
 - Placing one: `Element · Added · <Kind>` (`Room`, `Meeting-table`, `Plant`, `Bookshelf`, `Water-cooler`,
   `Coffee-machine`, `Rug`: a hyphenated kind keeps its hyphen, as every element's token does).
 - A room's doorway changed: `Element · Changed · Room`.
+- A piece turned: `Element · Changed · <Kind>` ([Turning furniture](furniture-facing.md)).
 - Getting a drink: `Canvas · Used · WaterCooler` or `CoffeeMachine`. Never who, never how often in a session.
 
 ## Not in scope

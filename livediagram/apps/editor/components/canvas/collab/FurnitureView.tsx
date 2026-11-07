@@ -17,12 +17,15 @@ import {
   FURNITURE_SHADOW,
   furnitureFrame,
   isSeatingShape,
+  facingView,
+  MACHINE_ANSWER_AT,
   OFFICE_ART,
   OFFICE_TONES,
+  pieceFacing,
   RUG_FILL,
-  seatingFacing,
   type FurniturePart,
-  type OfficeKind,
+  type GridOfficeKind,
+  type MachineAnswerSpot,
   type SeatingKind,
   type ShapeElement,
 } from '@livediagram/document';
@@ -45,7 +48,7 @@ export type ChairSitter = Sitter;
 // The plant, the bookshelf, the machines, the meeting table and the rug (docs/specs/009-elements/office.md) are
 // drawn the same way, from OFFICE_ART: one drawing for every side.
 
-const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
+const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   chair: 'Chair',
   desk: 'Desk',
   sofa: 'Sofa',
@@ -79,9 +82,11 @@ export function FurnitureView({
   const kind = element.shape;
   if (!isFurnitureViewShape(kind)) return null;
   const seating = isSeatingShape(kind);
-  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as Exclude<OfficeKind, 'room'>];
-  const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
+  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as GridOfficeKind];
+  // The drawing its facing shows (docs/specs/009-elements/furniture-facing.md "The camera").
+  const facing = pieceFacing(element);
   const frame = furnitureFrame(art, facing);
+  const drawing = facingView(facing).view;
   const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);
   const occupied = seating && sitters.length > 0;
   const ringColor = sitters[0]?.color ?? stroke;
@@ -129,10 +134,12 @@ export function FurnitureView({
             <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
           ])}
           {ringUnder >= parts.length ? ringView : null}
+          {/* Inside the drawing's frame, on the drawing its facing shows: no text, so mirroring is safe. */}
+          {(kind === 'water-cooler' || kind === 'coffee-machine') &&
+          MACHINE_ANSWER_AT[kind][drawing] ? (
+            <MachineAnswer kind={kind} id={element.id} spots={MACHINE_ANSWER_AT[kind][drawing]} />
+          ) : null}
         </g>
-        {kind === 'water-cooler' || kind === 'coffee-machine' ? (
-          <MachineAnswer kind={kind} id={element.id} />
-        ) : null}
       </svg>
       {occupied ? (
         <span
@@ -151,7 +158,15 @@ export function FurnitureView({
 // bottle, or coffee dripping into the carafe, for a moment. Played with the Web Animations API on each bump of
 // its count (lib/machine-answer.ts), so it costs nothing until somebody gets a drink, and not at all under reduced
 // motion. A count it already had when it mounted (a tab switched back to) does not play again.
-function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; id: string }) {
+function MachineAnswer({
+  kind,
+  id,
+  spots,
+}: {
+  kind: 'water-cooler' | 'coffee-machine';
+  id: string;
+  spots: readonly MachineAnswerSpot[];
+}) {
   const answered = useMachineAnswered(id);
   const ref = useRef<SVGGElement>(null);
   const seen = useRef(answered);
@@ -179,14 +194,14 @@ function MachineAnswer({ kind, id }: { kind: 'water-cooler' | 'coffee-machine'; 
   }, [answered, kind]);
   return kind === 'water-cooler' ? (
     <g ref={ref} aria-hidden>
-      {[20, 28, 35].map((x, i) => (
-        <circle key={x} cx={x} cy={30 - i * 2} r={2 + (i % 2)} fill="#ffffff" opacity={0} />
+      {spots.map(({ x, y }, i) => (
+        <circle key={i} cx={x} cy={y} r={2 + (i % 2)} fill="#ffffff" opacity={0} />
       ))}
     </g>
   ) : (
     <g ref={ref} aria-hidden>
-      {[0, 1, 2].map((i) => (
-        <ellipse key={i} cx={36} cy={38} rx={1.4} ry={2.2} fill={OFFICE_TONES.coffee} opacity={0} />
+      {spots.map(({ x, y }, i) => (
+        <ellipse key={i} cx={x} cy={y} rx={1.4} ry={2.2} fill={OFFICE_TONES.coffee} opacity={0} />
       ))}
     </g>
   );
@@ -210,6 +225,9 @@ function FurniturePartView({
         return { fill: part.fill ?? seat, stroke, strokeWidth: FURNITURE_PANEL_STROKE };
       case 'floor':
         return { fill: seat };
+      // A small unstroked mark in its own colour.
+      case 'mark':
+        return { fill: part.fill ?? stroke };
       case 'line':
         return {
           fill: 'none',

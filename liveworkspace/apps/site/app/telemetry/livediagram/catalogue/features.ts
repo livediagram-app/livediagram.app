@@ -608,11 +608,46 @@ export const AVATAR_MESSAGES = chart(
   { types: ['AvatarMessage', 'AvatarMessagePanel'] },
 );
 
+// What a character does in Avatar mode (docs/specs/008-canvas/avatar-mode.md, docs/specs/009-elements/chair.md):
+// a move from the Behaviour panel, a Reactions burst, sitting on a chair. Never which, never where.
+export const AVATAR_ACTIONS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Actions',
+  'A move performed from the Avatar panel\u2019s Behaviour or its keys: a wave, a spin, a cheer, a dance or jumping jacks.',
+  { types: ['AvatarAction'] },
+);
+
+export const AVATAR_REACTIONS = chart(
+  'Canvas',
+  'Used',
+  'Avatar Reactions',
+  'A burst played round the character from the Avatar panel\u2019s Reactions: confetti, sparkles, hearts, applause or fireworks.',
+  { types: ['AvatarReaction'] },
+);
+
+export const SITS = chart(
+  'Canvas',
+  'Used',
+  'Sat Down',
+  'A character sat on a chair, a sofa or another piece with a seat.',
+  { types: ['Sit'] },
+);
+
 export const CANVAS_MODES: MetricStack = {
   stack: true,
   title: 'Canvas Modes',
   blurb: 'Ways of working on the canvas picked from the palette, and the options set inside them.',
-  members: [...MODE_METRICS, OFFICE_DRINKS, AVATAR_PAD_ARRIVALS, AVATAR_MESSAGES, MODE_OPTIONS],
+  members: [
+    ...MODE_METRICS,
+    OFFICE_DRINKS,
+    AVATAR_PAD_ARRIVALS,
+    AVATAR_MESSAGES,
+    AVATAR_ACTIONS,
+    AVATAR_REACTIONS,
+    SITS,
+    MODE_OPTIONS,
+  ],
   // Modes switched into; tweaking an option inside one is not another use.
   headline: [...MODE_METRICS],
   seeAlso: { section: 'modes', label: 'See Each Mode in Features › Modes' },

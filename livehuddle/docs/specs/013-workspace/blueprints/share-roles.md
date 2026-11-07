@@ -194,7 +194,7 @@ Viewer's, `resolveEditorCapabilities`; [Always walking](../share-roles.md#always
 `useCanvasTool`'s `holdWalking` reports `'avatar'` and refuses every other tool, from an editing key, Search, a
 Selection Mode button, an Avatar Pad, the palette reach and a change of tab alike; the Edit | Walk toggle is not
 drawn for it (`walkToggle` false), and a Selection Mode button's face is inert. `stripPaletteFor` gives it the avatar
-palette, whose call group (`CallStripGroup`) holds its call controls.
+palette, and the Call dock (`CallDock`, whose call group is `CallStripGroup`) holds its call controls.
 
 Invariants:
 

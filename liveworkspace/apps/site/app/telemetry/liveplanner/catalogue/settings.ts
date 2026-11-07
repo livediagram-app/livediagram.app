@@ -174,6 +174,27 @@ export const PANELS_SETTINGS = settingsStack(
   ],
 );
 
+export const COLLABORATE_SETTINGS = settingsStack(
+  'Collaborate Settings',
+  'The Collaborate panel and seeing other people\u2019s cursors.',
+  [
+    toggle(
+      'UI',
+      'CollaboratePanelOn',
+      'CollaboratePanelOff',
+      'Collaborate Panel',
+      'The Collaborate panel switched on or off.',
+    ),
+    toggle(
+      'UI',
+      'HideCursorsOn',
+      'HideCursorsOff',
+      'Hide Participant Cursors',
+      'Other people\u2019s cursors hidden or shown, for this device.',
+    ),
+  ],
+);
+
 export const NOTIFICATION_SETTINGS = settingsStack(
   'Notification Settings',
   'In-editor notifications and each email opt-out.',
@@ -282,6 +303,19 @@ export const TOURS_SETTINGS = settingsStack(
       'Dashboards Tour',
       "The Plan tour's dashboards track switched back on or off.",
     ),
+    // Every other tour's switch: the Show Me tours' own (one over them all, one per toured kind) and any tour
+    // of a single element, so a switch with no chart of its own above still counts.
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) =>
+        /^(?!(?:Plan|Boards|Sheets|Dashboards)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(
+          type ?? '',
+        ),
+      title: 'Show Me Tours',
+      blurb: 'The Show Me tours switched back on or off, all at once or one element\u2019s.',
+      rising: 'neutral',
+    },
   ],
 );
 
@@ -305,6 +339,7 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   CONTROLS_SETTINGS,
   KEYBOARD_SETTINGS,
   PANELS_SETTINGS,
+  COLLABORATE_SETTINGS,
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,

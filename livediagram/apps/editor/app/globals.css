@@ -1035,3 +1035,12 @@ html {
   animation-duration: var(--transition-duration-short);
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* A palette tile carried onto the canvas by the pointer (lib/palette-carry.ts, docs/specs/009-elements/
+ * furniture-facing.md "Turning while placing") shows the copy cursor a browser's own drag does, everywhere it goes,
+ * and selects no text on its way. */
+:root[data-palette-carry],
+:root[data-palette-carry] * {
+  cursor: copy !important;
+  user-select: none;
+}

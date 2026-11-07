@@ -252,6 +252,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 13v-3M16 10h3" />
     </Glyph>
   ),
+  // Turning Furniture: an armchair seen from its side, with the quarter-turn arrow Rotate Right draws over it.
+  'turning-furniture': (
+    <Glyph>
+      <path d="M5 21v-2M14 21v-2" />
+      <rect x="3" y="13" width="13" height="6" rx="2" />
+      <path d="M13 13V8.5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2V19" />
+      <path d="M8 4.5a6 6 0 0 1 11.5 1.5" />
+      <path d="M20 3v3.2h-3.2" />
+    </Glyph>
+  ),
   lanes: (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />

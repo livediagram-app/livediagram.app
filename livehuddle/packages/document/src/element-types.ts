@@ -6,6 +6,7 @@
 import type { RoomDoor, StageSpeakers } from './office';
 import type { ClockZone, NoticeNote } from './office-social';
 import type { PieceTimer } from './timer-pieces';
+import type { ArcadeScore } from './arcade-scores';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
@@ -263,6 +264,9 @@ export type ShapeElement = {
   // Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md "The state"): its live clock, changed only by
   // `piece-timer` deltas; absent = idle at the default (a Timer at 5 minutes, a Stopwatch at 0).
   pieceTimer?: PieceTimer;
+  // Arcade Machine (docs/specs/009-elements/social-pieces.md "High Scores"): its table, best first, at most ten,
+  // changed only by `arcade-score` and `arcade-clear` deltas; absent = no scores.
+  arcadeScores?: ArcadeScore[];
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;

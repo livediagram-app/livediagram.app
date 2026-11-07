@@ -56,13 +56,17 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Hold the facilitator baton                                | Yes    | No          | No     | [Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)                            |
 | Add, write, arrange or delete stickies and text           | Yes    | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
 | A building palette, Undo / Redo, paste, duplicate, delete | Yes¹   | No          | No     | [A Participant walks](#a-participant-walks)                                                                   |
-| The avatar palette while walking, with the call controls  | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md#the-avatar-palette)                                                |
+| The avatar palette while walking                          | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md#the-avatar-palette)                                                |
+| The Call dock (call controls) while walking               | Yes    | Yes         | Yes    | [The Call dock](../008-canvas/avatar-mode.md#the-call-dock)                                                   |
 | Leave Avatar mode, the Edit \| Walk toggle                | Yes    | No          | No     | [Always walking](#always-walking)                                                                             |
 | Pin a note on a Notice Board, unpin your own              | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#notice-board)                                                |
 | Pin a note on a Calendar Wall, unpin your own             | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#calendar-wall)                                                   |
 | Drop a note in a Suggestion Box                           | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                                  |
 | Read and remove a Suggestion Box's notes                  | Yes    | No          | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                                  |
 | Start, pause, reset or set a Timer or Stopwatch           | Yes    | Yes         | No     | [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)                                     |
+| Play the Arcade Machine, post your own score              | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
+| See an Arcade Machine's High Scores                       | Yes    | Yes         | Yes    | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
+| Clear an Arcade Machine's High Scores                     | Yes    | No          | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
 | Open or close a Door                                      | Yes    | Yes         | No     | [Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)                                  |
 | Comment, reply, resolve                                   | Yes    | Yes         | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
 | Pan, zoom, export                                         | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
@@ -79,11 +83,11 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
   walking, and alone on a locked tab), so a board with no pad, Avatar button or opening walk still lets it walk. `W`
   and `E`, Search's **Walk** and **Edit**, and a Selection Mode button set to Avatar are its other ways in and out
   (owner, 2026-11-06: the Selection Mode picker and the cluster's Walk button gave way to the toggle).
-- **The call controls** (Join Audio or the microphone, the camera, Share Screen) sit at the left of the avatar palette
-  for every role ([The avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette)), gated as
+- **The call controls** (the microphone, the camera, Share Screen; the call itself joins by walking, a Viewer listening automatically) sit on the Call dock at the bottom
+  centre for every role ([The Call dock](../008-canvas/avatar-mode.md#the-call-dock)), gated as
   [Proximity audio](../012-collaboration/proximity-audio.md#share-roles) and
   [Video and screen bubbles](../012-collaboration/video-and-screen-bubbles.md#share-roles) say. Every role that may
-  join a call walks while it does, so there is no role without a strip to hold them.
+  join a call walks while it does, so there is no role without a dock to hold them.
 - **Every gate reads the session's `can`, never `isReadOnly` alone.** Avatar mode makes the canvas read-only for
   everyone in it, so `isReadOnly` cannot tell a Viewer from a walking Editor.
 - **The room enforces what the client hides**: it drops a Viewer's `avatar-say`, reaction and answer, and checks an
@@ -111,7 +115,8 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   unpinning its own ([Social pieces](../009-elements/social-pieces.md#notice-board), [Team
   pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, opening and closing a Door that is not locked
   ([Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)), a Timer or Stopwatch
-  ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Jukebox, knocking, sitting,
+  ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Arcade Machine and posting its
+  own scores ([Social pieces](../009-elements/social-pieces.md#high-scores)), playing the Jukebox, knocking, sitting,
   drinks, reactions, speech bubbles, comments and session-tool answers, as the table says.
 - **Its earlier stickies and text stay as they are.** A Space that holds stickies or text a Participant added before
   this change loads and draws them unchanged, still signed with that Participant's adder key. The Participant can no
@@ -135,7 +140,7 @@ true for both, false for an Editor alone.
   starts with the call; a Selection Mode button draws its face but does not press; an Avatar Pad does not
   toggle the walk off; the editing keys (`E`, `V`), `Escape`, Search's tool entries and every programmatic switch
   (`useCanvasTool`'s hold refuses any tool but Avatar) leave it where it is.
-- **Its strip is the avatar palette**, always: the call controls on the left, then the look and the actions, and Say
+- **Its strip is the avatar palette**, always: the look and the actions, and Say
   for a Participant (a Viewer may not speak, so it has no Say).
 - **A host's control is a sign to them.** A walking click on a piece that is only a control (a Bring Focus button,
   a Selection Mode button, a Timer or a Stopwatch), when the control is not theirs to press, does nothing: no
