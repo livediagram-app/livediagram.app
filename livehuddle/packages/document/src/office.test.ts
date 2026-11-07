@@ -49,6 +49,7 @@ describe('the office pieces', () => {
       'grass',
       'garden-fence',
       'door',
+      'window',
       'directory',
       'elevator',
       'stairs',
@@ -116,6 +117,7 @@ describe('the office pieces', () => {
       'grass',
       'garden-fence',
       'door',
+      'window',
       'pond',
       'swimming-pool',
     ];

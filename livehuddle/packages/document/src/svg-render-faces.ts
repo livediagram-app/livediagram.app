@@ -48,7 +48,8 @@ import {
 } from './office';
 import { chairSeatFill } from './shape-geometry';
 import { outlinedRoomPaths } from './room-builder';
-import { corridorSvg, doorSvg } from './svg-render-doors';
+import { corridorSvg, doorSvg, glassRoomSvg, windowSvg } from './svg-render-doors';
+import { isGlassRoom } from './glass-walls';
 import { rugDrawnToSize, rugParts } from './rug-art';
 import {
   GARDEN_PATH_FILL,
@@ -180,6 +181,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'signpost',
   'photo-wall',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',
@@ -368,9 +370,15 @@ export function svgBehaviourFace(
     case 'corridor':
       return corridorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'room':
-      return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+      // A glass-walled room (office.md "Glass walls") draws its walls as panes.
+      return isGlassRoom(el)
+        ? glassRoomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface)
+        : roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
     case 'door':
       return doorSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+    // A Window (room-builder.md "Window"): its frame and pane in the wall, its light inside.
+    case 'window':
+      return windowSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke, surface);
     case 'stage':
       return sizedSvg(
         el,
