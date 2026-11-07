@@ -332,6 +332,8 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       const incomingTabs: Tab[] | null = Array.isArray(body.tabs)
         ? body.tabs.map((tab) => ({
             ...tab,
+            // An agent's or the API's tab write keeps no connection (connected-tabs.md "Agents and the CLI").
+            ...(ctx.token ? { connection: undefined } : {}),
             name: capStoredName(
               tab.name,
               clash?.tabs.find((t) => t.id === tab.id)?.name ?? null,

@@ -98,6 +98,9 @@ export function handleInternalItems(
         return documentRoom(env, payload.id).importMigrated(payload);
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
+      // connected tab at the end of the document's tab bar.
+      connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted; through the document's Community post's link, without its

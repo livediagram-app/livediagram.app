@@ -1,7 +1,13 @@
 // tabs — one row per tab in the design's own SQLite (docs/specs/015-api/api.md "Storage"), placed in the design by
 // `design_tabs`. Runs only inside the design's Durable Object, on `env.DESIGN_DB` (design-room/design-db.ts).
 
-import { shareLeaveStatements } from '@liveworkspace/index-app';
+import {
+  shareLeaveStatements,
+  storedTabConnection,
+  tabConnectionOf,
+  tabConnectionStatement,
+} from '@liveworkspace/index-app';
+import type { TabConnection } from '@liveworkspace/index-client';
 import {
   capElementActions,
   componentRefIds,
@@ -45,7 +51,7 @@ export async function getTab(
   // also carries the per-design order_index, so the returned summary's
   // position is correct for whichever design the caller asked about.
   const row = await env.DESIGN_DB.prepare(
-    `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN design_tabs dt ON dt.tab_id = t.id
       WHERE t.id = ? AND dt.design_id = ?`,
@@ -78,7 +84,7 @@ export async function tabBodiesInOrder(
   limit: number,
 ): Promise<TabDTO[]> {
   const { results } = await env.DESIGN_DB.prepare(
-    `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.design_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder, t.connection
        FROM tabs t
        JOIN design_tabs dt ON dt.tab_id = t.id
       WHERE dt.design_id = ?
@@ -172,7 +178,9 @@ export function tabWriteStatements(
   // Action panel lists are bounded here, the one place every tab write
   // meets (docs/specs/012-collaboration/assigned-actions.md).
   const tab = { ...input, elements: capElementActions(input.elements) };
-  const { id, name, ...rest } = tab;
+  // A connected tab's connection is its own column (tabConnectionStatement), set only by the editor's save and the
+  // index's reverse write: never part of the body, and never written by a body write.
+  const { id, name, connection: _connection, ...rest } = tab as Tab & { connection?: unknown };
   const data = JSON.stringify(rest);
   assertTabDataFits(id, data, 'upsertTab');
   const advance = 'advance' in revision;
@@ -238,16 +246,20 @@ export async function upsertTab(
 
 // A tab write at the revision the caller read: lands as `expectedRev + 1`, or throws
 // `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
+// `connection`: the editor's save of a connected tab (routes/tab-put-route.ts) sets it in the same batch; left out,
+// the stored connection stays as it is.
 export async function upsertTabAtRev(
   env: DesignEnv,
   designId: string,
   input: Tab,
   orderIndex: number,
   expectedRev: number,
+  connection?: TabConnection,
 ): Promise<number> {
-  const results = await env.DESIGN_DB.batch(
-    tabWriteStatements(env, designId, input, orderIndex, { expected: expectedRev }),
-  );
+  const results = await env.DESIGN_DB.batch([
+    ...tabWriteStatements(env, designId, input, orderIndex, { expected: expectedRev }),
+    ...(connection ? [tabConnectionStatement(env.DESIGN_DB, input.id, connection)] : []),
+  ]);
   return revFromBatch(results);
 }
 
@@ -284,11 +296,18 @@ export async function seedTabs(
   const now = Date.now();
   const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
   // Every tab measured before any is written: a create seeds all or none.
-  for (const { id, name: _name, ...rest } of capped) {
+  // A connected tab a create carries (an Offline Mode sync's, an import's) keeps exactly `{ id, app, itemId }` in its
+  // column, never in its body (connected-tabs.md "Copies carry nothing"): the index opens it only in its own host and
+  // tab, so anywhere else it offers Connect Again. A token's create never gets here with one (routes/designs.ts).
+  const bodies = capped.map(
+    ({ connection: _connection, ...tab }: Tab & { connection?: unknown }) => tab,
+  );
+  for (const { id, name: _name, ...rest } of bodies) {
     assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
   }
-  const stmts = capped.flatMap((tab, idx) => {
+  const stmts = bodies.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
+    const connection = tabConnectionOf(capped[idx]);
     const data = JSON.stringify(rest);
     return [
       env.DESIGN_DB.prepare(
@@ -307,6 +326,7 @@ export async function seedTabs(
          ON CONFLICT (design_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
       ).bind(designId, id, idx, now),
       tabStatsStatement(env, id, tabStatsOf(rest, data), now),
+      ...(connection ? [tabConnectionStatement(env.DESIGN_DB, id, connection)] : []),
     ];
   });
   stmts.push(
@@ -329,16 +349,21 @@ export async function seedTabs(
 //
 // Answers the tab's stored body as it was removed (null when this design did not hold it), read
 // by the delete itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this design's feed with it.
+// delete: the caller retracts the tab's comment events from this design's feed with it. And its
+// connection, when it was a connected tab: the caller tells the index it has left
+// (connected-tabs.md "Removing").
+export type DeletedTab = { data: string; connection: TabConnection | null };
+
 export async function deleteTabRow(
   env: DesignEnv,
   designId: string,
   tabId: string,
-): Promise<string | null> {
+): Promise<DeletedTab | null> {
   const [unlinked] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
       `DELETE FROM design_tabs WHERE design_id = ? AND tab_id = ?
-        RETURNING (SELECT t.data FROM tabs t WHERE t.id = design_tabs.tab_id) AS data`,
+        RETURNING (SELECT t.data FROM tabs t WHERE t.id = design_tabs.tab_id) AS data,
+                  (SELECT t.connection FROM tabs t WHERE t.id = design_tabs.tab_id) AS connection`,
     ).bind(designId, tabId),
     // The tab's image and photo references go with it (no foreign key cascades them); the outbox triggers tell
     // the media service the design no longer shows its images (design-room/design-outbox.ts).
@@ -350,8 +375,11 @@ export async function deleteTabRow(
     ...shareLeaveStatements(env.DESIGN_DB, tabId),
     env.DESIGN_DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
   ]);
-  const row = (unlinked as { results?: { data?: string | null }[] } | undefined)?.results?.[0];
-  return row?.data ?? null;
+  const row = (
+    unlinked as { results?: { data?: string | null; connection?: string | null }[] } | undefined
+  )?.results?.[0];
+  if (row?.data == null) return null;
+  return { data: row.data, connection: storedTabConnection(row.connection) };
 }
 
 // One position in a reorder request: the tab id plus its per-design

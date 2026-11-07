@@ -51,6 +51,8 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   directory:
     'directory kiosk map wayfinding rooms who is where people find go walk there sign lobby',
   elevator: 'elevator lift floor floors tab tabs stairs up down travel go building level',
+  stairs:
+    'stairs staircase stairway steps flight floor floors upstairs downstairs up down climb tab tabs travel building level',
   room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office boardroom open plan l-shaped octagon preset',
   corridor:
     'corridor hallway hall passage walkway junction corner crossroads tee walls open ends join rooms',

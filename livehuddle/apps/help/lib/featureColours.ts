@@ -62,6 +62,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'avatar-pads': '#0ea5e9',
   directory: '#2563eb',
   elevator: '#64748b',
+  stairs: '#78716c',
   'virtual-office': '#0f766e',
   screen: '#334155',
   'room-sign': '#16a34a',

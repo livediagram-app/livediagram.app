@@ -1,6 +1,7 @@
-// The pure half of the Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md): a space's
-// places (its Rooms, Office Pods and Stages, per tab, named and ordered), where a walk approaches each and where a jump
-// lands, who is in which from presence, and the floors an Elevator serves. No React, no DOM.
+// The pure half of the Directory, the Elevator and the Stairs (docs/specs/009-elements/directory.md, elevator.md,
+// stairs.md): a space's places (its Rooms, Office Pods and Stages, per tab, named and ordered), where a walk approaches
+// each and where a jump lands, who is in which from presence, the floors an Elevator serves and the flights a Stairs
+// climbs. No React, no DOM.
 import {
   callStages,
   DEFAULT_ROOM_DOOR,
@@ -11,6 +12,7 @@ import {
   roomDoorSpan,
   roomInterior,
   roomZones,
+  STAIRS_TOP_SHARE,
   stageAt,
   stageTop,
   zoneAt,
@@ -286,7 +288,6 @@ function middleOf(elements: readonly Element[]): WayPoint {
   return Number.isFinite(x0) ? { x: (x0 + x1) / 2, y: (y0 + y1) / 2 } : { x: 0, y: 0 };
 }
 
-/** The space's floors (its tabs, in order) and the Elevators on each. */
 /**
  * A floor's Elevators in reading order, each named (elevator.md "Names"): its label, else "Elevator n" by position
  * among the unnamed on that floor.
@@ -310,23 +311,26 @@ export function elevatorName(elements: readonly Element[], id: string): string |
   return floorElevators(elements).find((e) => e.id === id)?.name ?? null;
 }
 
+/** The space's floors (its tabs, in order) and the Elevators on each. */
 export function spaceFloors(tabs: readonly WayTab[]): SpaceFloor[] {
-  return tabs.map((tab) => {
-    const elevators = floorElevators(tab.elements);
-    const pad = tab.elements.find(
-      (el): el is ShapeElement => el.type === 'shape' && el.shape === 'avatar-pad',
-    );
-    const arrival = elevators[0]?.exit ?? (pad ? avatarPadCore(pad) : middleOf(tab.elements));
-    const arrivesAt = elevators[0] ? 'elevator' : pad ? 'pad' : 'middle';
-    return {
-      tabId: tab.id,
-      name: tab.name,
-      elevators,
-      arrival,
-      arrivesAt,
-      loading: tab.loaded === false,
-    };
-  });
+  return tabs.map(spaceFloor);
+}
+
+function spaceFloor(tab: WayTab): SpaceFloor {
+  const elevators = floorElevators(tab.elements);
+  const pad = tab.elements.find(
+    (el): el is ShapeElement => el.type === 'shape' && el.shape === 'avatar-pad',
+  );
+  const arrival = elevators[0]?.exit ?? (pad ? avatarPadCore(pad) : middleOf(tab.elements));
+  const arrivesAt = elevators[0] ? 'elevator' : pad ? 'pad' : 'middle';
+  return {
+    tabId: tab.id,
+    name: tab.name,
+    elevators,
+    arrival,
+    arrivesAt,
+    loading: tab.loaded === false,
+  };
 }
 
 // --- Who is where --------------------------------------------------------------------------------------------
@@ -440,4 +444,96 @@ export function signpostBoards(
     place,
     dir: place.arrival.x > foot.x ? 'right' : 'left',
   }));
+}
+
+// --- The Stairs ----------------------------------------------------------------------------------------------
+
+/** Where a climb ends (docs/specs/009-elements/stairs.md "Taking them"): the feet on the flight's top step. */
+export function stairsTopPoint(el: WayBox): WayPoint {
+  return { x: el.x + el.width / 2, y: el.y + el.height * STAIRS_TOP_SHARE };
+}
+
+/** Where the walk off the Stairs ends: centred in front of their foot, the whole figure below the piece. */
+export function stairsFootPoint(el: WayBox): WayPoint {
+  return avatarSpawnBelow(el, avatarScale('regular'));
+}
+
+/** Where a flight lands on its floor: the Stairs there (their top step and foot), else the floor's arrival. */
+export type StairsLanding =
+  | { at: 'stairs'; id: string; top: WayPoint; foot: WayPoint }
+  | { at: 'elevator'; id: string; top: null; foot: WayPoint }
+  | { at: 'pad' | 'middle'; id?: undefined; top: null; foot: WayPoint };
+
+export type StairsFlight = {
+  tabId: string;
+  /** The floor's number, from 1 in tab order, as the Elevator panel numbers floors. */
+  number: number;
+  name: string;
+  landing: StairsLanding;
+  /** Its tab not fetched yet: its Stairs are not known. */
+  loading: boolean;
+};
+
+export type StairsFloors = {
+  /** This floor's number and name; null when the active tab is not among the tabs. */
+  here: { number: number; name: string } | null;
+  count: number;
+  up: StairsFlight | null;
+  down: StairsFlight | null;
+};
+
+const isStairs = (el: Element): el is ShapeElement => el.type === 'shape' && el.shape === 'stairs';
+
+/**
+ * Where a climb from `from` lands on one floor (docs/specs/009-elements/stairs.md "Floors"): its Stairs nearest
+ * `from` by centre (ties in reading order), else where an Elevator ride with nothing picked arrives.
+ */
+export function stairsLanding(tab: WayTab, from: WayBox): StairsLanding {
+  const fx = from.x + from.width / 2;
+  const fy = from.y + from.height / 2;
+  let best: ShapeElement | null = null;
+  let bestD = Infinity;
+  for (const el of tab.elements) {
+    if (!isStairs(el)) continue;
+    const d = (el.x + el.width / 2 - fx) ** 2 + (el.y + el.height / 2 - fy) ** 2;
+    if (d < bestD || (d === bestD && best && byPosition(el, best) < 0)) {
+      best = el;
+      bestD = d;
+    }
+  }
+  if (best)
+    return { at: 'stairs', id: best.id, top: stairsTopPoint(best), foot: stairsFootPoint(best) };
+  const floor = spaceFloor(tab);
+  const lift = floor.elevators[0];
+  if (lift) return { at: 'elevator', id: lift.id, top: null, foot: floor.arrival };
+  return { at: floor.arrivesAt === 'pad' ? 'pad' : 'middle', top: null, foot: floor.arrival };
+}
+
+/**
+ * The floors a Stairs climbs to (docs/specs/009-elements/stairs.md "Floors"): the tab after the active one (Up) and
+ * the tab before it (Down), each with where it lands. Reads only those two tabs.
+ */
+export function stairsFlights(
+  tabs: readonly WayTab[],
+  activeTabId: string,
+  from: WayBox,
+): StairsFloors {
+  const i = tabs.findIndex((t) => t.id === activeTabId);
+  const flight = (j: number): StairsFlight | null => {
+    const tab = i < 0 || j < 0 ? undefined : tabs[j];
+    if (!tab) return null;
+    return {
+      tabId: tab.id,
+      number: j + 1,
+      name: tab.name,
+      landing: stairsLanding(tab, from),
+      loading: tab.loaded === false,
+    };
+  };
+  return {
+    here: i < 0 ? null : { number: i + 1, name: tabs[i]!.name },
+    count: tabs.length,
+    up: flight(i + 1),
+    down: flight(i - 1),
+  };
 }

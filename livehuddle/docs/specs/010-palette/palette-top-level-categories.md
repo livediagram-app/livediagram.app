@@ -29,7 +29,7 @@ question somebody building a Space asks, in the Meet band (Travel in a band of i
 | **Play**   | `collab-recreation` | **Bar**: Bar, Bar Stool, Drinks Cabinet, Drinks Fridge; **Games**: Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine, Dartboard; **Gym**: Treadmill, Weight Bench; **Lounge**: Jukebox, Fireplace, Pet Bed                                                                                                                                                | Where do people unwind?          |
 | **Garden** | `collab-garden`     | **Plants**: Outdoor Plant, Tree, Grass; **Paths and Fences**: Garden Path, Garden Fence; **Furniture**: Bench, Picnic Table, Hammock, Garden Umbrella; **Features**: Fountain, Pond, Swimming Pool, Campfire; **Parking**: Car Park, Bike Rack                                                                                                                      | Can we take it outside?          |
 | **Meet**   | `collab-meeting`    | Screen, Room Sign, Notice Board, World Clock, Calendar Wall, Suggestion Box, Team Photo Wall, Timer, Stopwatch ([Team pieces](../009-elements/team-pieces.md#where-they-live))                                                                                                                                                                                      | What does a meeting room need?   |
-| **Travel** | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Signpost, Elevator, Avatar Button                                                                                                                                                                                                                                                                                       | How do people get somewhere?     |
+| **Travel** | `collab-travel`     | Portal, Bring Focus, Avatar Pad, Directory, Signpost, Elevator, Stairs, Avatar Button                                                                                                                                                                                                                                                                               | How do people get somewhere?     |
 
 - **Data, not special cases.** Each tile names its category through its `tileGroup` (`travel`, `seating`, `rooms`,
   `amenities`, `recreation`, `garden`, `meeting`), and `COLLABORATE_CATEGORY_GROUPS` maps each category id to its
@@ -106,7 +106,7 @@ Write | Rooms Seats Perks Play Garden Meet | Travel
 - **Write** first: a note or a word is what anybody reaches for first.
 - **Then building the Space**, floor first: Rooms (the floor plan), then what goes in it (Seats, Perks,
   Play, Garden) and the meeting room's own pieces (Meet).
-- **Travel apart**: its pieces (Portal, Bring Focus, Avatar Pad, Directory, Elevator, the Avatar Button) take people
+- **Travel apart**: its pieces (Portal, Bring Focus, Avatar Pad, Directory, Elevator, Stairs, the Avatar Button) take people
   somewhere rather than furnish a place, so it stands alone between two dividers.
 - **No Stickers on the strip**: the decoration is found through Search, not a category button
   ([Stickers in search only](#stickers-in-search-only)). No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)).

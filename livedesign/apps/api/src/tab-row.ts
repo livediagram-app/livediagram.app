@@ -1,4 +1,5 @@
 import { migrateStoredTab, type Tab } from '@livedesign/design';
+import { storedTabConnection } from '@liveworkspace/index-app';
 import type { TabDTO, TabSummaryDTO } from './types';
 
 // tabs row shape as read from D1. The `data` column is the
@@ -20,7 +21,16 @@ export type TabRow = {
   // for folder (none today) leave it undefined, which maps the same
   // as NULL.
   folder?: string | null;
+  // A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
+  // `{ id, app, itemId }`, or NULL for every other tab. Read sites that don't select it leave it undefined.
+  connection?: string | null;
 };
+
+// The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
+function connectionField(row: TabRow) {
+  const connection = storedTabConnection(row.connection);
+  return connection ? { connection } : {};
+}
 
 // Pure mapper from D1 tab row to wire-format DTO. Pulled out of db.ts
 // so the JSON.parse + camelCase reassembly contract has a test surface
@@ -54,6 +64,9 @@ export function rowToTab(row: TabRow): TabDTO {
     // stale `folder` a forged data blob might carry (the client
     // strips it before persisting, so it should never be in `data`).
     folder: row.folder ?? undefined,
+    // Link metadata too: a connection lives in its column, never in `data`.
+    connection: undefined,
+    ...connectionField(row),
   };
 }
 
@@ -68,5 +81,6 @@ export function rowToTabSummary(row: TabRow): TabSummaryDTO {
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     folder: row.folder ?? undefined,
+    ...connectionField(row),
   };
 }

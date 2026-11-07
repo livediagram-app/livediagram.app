@@ -117,7 +117,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'travel',
     label: 'Travel',
     description:
-      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory, a signpost and an elevator.',
+      'What takes people somewhere: a portal, a bring-focus button, an avatar pad, a directory, a signpost, an elevator and stairs.',
     tagline: 'What takes people somewhere.',
     icon: <MoveGroupIcon />,
     // Its own band, so the category bar sets it apart between two dividers.

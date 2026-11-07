@@ -4,6 +4,8 @@
 import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { redactCommentAuthorIds } from '../comments';
 import { deleteTabRow, getDesign, getDesignForSave, getTab } from '../db';
+import { tellConnectionLeft } from '@liveworkspace/index-app';
+import { indexAppClient } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { tabEtag } from '@livedesign/api-schema';
 import { handlePhotoBlobRoutes } from './photo-blob-routes';
@@ -121,7 +123,8 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
         owner === existing.ownerId
           ? tab
           : grant.community
-            ? redactTabForCommunity(tab)
+            ? // Nor which other item a connected tab stands for (connected-tabs.md).
+              { ...redactTabForCommunity(tab), connection: undefined }
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
       if (view) return answerTabView(ctx, view, existing, safe, owner);
       // The revision as a weak ETag too (docs/specs/024-agents/agent-changesets.md "The tab
@@ -144,7 +147,11 @@ export async function handleDesignSubresources(ctx: DesignRouteContext): Promise
       // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
       // the other in one save can reach here first.
       if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
-      await deleteTabRow(env, id, tabId);
+      const removed = await deleteTabRow(env, id, tabId);
+      // A connected tab has left its host: the index deletes its connection and its pass (connected-tabs.md
+      // "Removing"), off the response path.
+      if (removed?.connection)
+        ctx.waitUntil?.(tellConnectionLeft(indexAppClient(env), id, tabId, removed.connection));
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }

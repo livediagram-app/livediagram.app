@@ -5,7 +5,8 @@ import { createShape, type BoxedElement, type Element } from '@livehuddle/docume
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
 import { DirectoryList } from './DirectoryFace';
-import { ElevatorPanel, FLOOR_WAIT_MS } from './ElevatorFace';
+import { ElevatorPanel } from './ElevatorFace';
+import { FLOOR_WAIT_MS } from './useFloorsOnOpen';
 import { WayfindingPopover } from './WayfindingPopover';
 import { elevatorExitPoint } from '@/lib/wayfinding';
 
@@ -24,7 +25,7 @@ function makeWayfinding(): Wayfinding & {
   const go = vi.fn();
   return {
     store,
-    actions: { walkThere, go, loadFloors: vi.fn(), closeElevator: vi.fn() },
+    actions: { walkThere, go, loadFloors: vi.fn(), closePanel: vi.fn(), climb: vi.fn() },
     walkThere,
     go,
   };
@@ -281,7 +282,7 @@ describe('every role may press them', () => {
     w.store.set({ tabs, activeTabId: 'a' });
     faceFor('elevator', true, w);
     expect(screen.queryByRole('dialog', { name: 'Elevator' })).toBeNull();
-    act(() => w.store.set({ openElevatorId: 'elevator-1' }));
+    act(() => w.store.set({ openPanelId: 'elevator-1' }));
     expect(screen.getByRole('dialog', { name: 'Elevator' })).toBeTruthy();
   });
 });

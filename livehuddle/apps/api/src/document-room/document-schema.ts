@@ -11,7 +11,12 @@
 // Made on first use, never on construction (@liveworkspace/index-app item-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
-import { migrationSchema, outboxRetrySchema, tabSharesSchema } from '@liveworkspace/index-app';
+import {
+  TAB_CONNECTION_SCHEMA,
+  migrationSchema,
+  outboxRetrySchema,
+  tabSharesSchema,
+} from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -277,7 +282,12 @@ CREATE TABLE IF NOT EXISTS suggestions (
 CREATE INDEX IF NOT EXISTS suggestions_by_box ON suggestions (document_id, tab_id, element_id);
 `;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
+// A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
+// `{ id, app, itemId }` beside the tab's name, never in its body. A plain ALTER, run once by the version row; every
+// tab already there reads as not connected.
+const V6 = TAB_CONNECTION_SCHEMA;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

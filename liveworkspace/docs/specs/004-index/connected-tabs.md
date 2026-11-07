@@ -126,7 +126,11 @@ connected tab then offers Connect Again.
   A public (Community) link's grant opens no connection; a tab-scoped grant opens only a connection in its tab.
 - **Copies carry nothing.** A tab copied into another item keeps `{id, app, itemId}`, and the index refuses that id
   anywhere but its own host and tab. A tab forged by hand (an edited export, say) holds ids that open nothing, and
-  its address is built from the registry, so it cannot lead elsewhere.
+  its address is built from the registry, so it cannot lead elsewhere. A copy through a Community link keeps no
+  connection, and a Community visitor reads none: a stranger is told of no other item.
+- **A connected tab stays in its host.** It is never shared into another item (a tab shared between items), and a
+  tab of content is never turned into one: only a new tab, or one already connected (Connect Again), takes a
+  connection.
 - **The cross-app write is narrow.** The only write into another app's item is the reverse tab: the index calls the
   target app's internal door with that app's own key (`INDEX_KEY`, as for revocations), carrying one connected tab and
   nothing else. The app appends it at the end of the tab bar, never replaces or edits an existing tab, refuses a
@@ -152,6 +156,8 @@ connected tab then offers Connect Again.
 
 Agents and the CLI read connected tabs (their app and name, never a code) and cannot make them: making a connection
 mints a share link, which an agent does through Share, on purpose. The index refuses an app acting for a person (an
-API token's, the Drive mirror, the data export) at both the make and the open door. Only two writes put a `connection` on a tab: the
-editor's add after the index made the connection, and the index's reverse write. An agent's or the API's tab write
-keeps none, and a well-formed one is read as exactly `{id, app, itemId}`, anything else in it dropped.
+API token's, the Drive mirror, the data export) at both the make and the open door. Only two writes put a new `connection` on a tab: the
+editor's add after the index made the connection, and the index's reverse write. A copy, the Drive file and an
+editor's create (an Offline Mode sync) carry the one a tab already had. An agent's or the API's tab write (a
+changeset, a token's create) keeps none, and a well-formed one is read as exactly `{id, app, itemId}`, anything else
+in it dropped.

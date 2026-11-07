@@ -122,6 +122,9 @@ import { notifyDesignJoin } from '../email/notifications';
 import { anonymiseDesign } from './design-anonymise';
 import { DESIGN_OUTBOX, drainOutbox } from './design-outbox';
 import { exportDesignFile, importDesignFile, type DesignFileImport } from './design-file';
+import { addConnectedDesignTab, connectedTabArrival } from './connected-tab';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportDesignComments } from './design-comments';
 import { importMigratedDesign } from './design-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -699,6 +702,21 @@ export class DesignRoom extends DurableObject<Env> {
   async importFile(designId: string, file: DesignFileImport): Promise<void> {
     this.bindDesign(designId);
     await importDesignFile(this.requireEnv(), designId, file);
+  }
+
+  // The index's reverse write of a connected tab (connected-tab.ts): appended at the end of the tab bar, and everyone
+  // with the design open sees it arrive, as an ordered system op a blipped socket replays.
+  async addConnectedTab(designId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome> {
+    this.bindDesign(designId);
+    const sql = this.state.storage.sql;
+    if (!hasDesignSchema((q) => sql.exec(q))) return 'not_found';
+    const env = this.requireEnv();
+    const outcome = await addConnectedDesignTab(env, designId, write);
+    if (typeof outcome === 'object' && outcome.made) {
+      const op = await connectedTabArrival(env, designId);
+      if (op) this.sequenceMutation('system', op);
+    }
+    return outcome;
   }
 
   async hasTab(designId: string, tabId: string): Promise<boolean> {

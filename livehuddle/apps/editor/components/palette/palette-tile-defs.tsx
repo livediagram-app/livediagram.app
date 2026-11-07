@@ -18,6 +18,7 @@ import {
   AvatarPadIcon,
   DirectoryIcon,
   ElevatorIcon,
+  StairsIcon,
   RoomIcon,
   RoomBuilderIcon,
   DoorIcon,
@@ -799,6 +800,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <ElevatorIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Stairs (docs/specs/009-elements/stairs.md): a flight to the floor (tab) above or below.
+    id: 'tools:stairs',
+    tileGroup: 'travel',
+    blurb: 'Walk up or down a floor (tab)',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stairs',
+    caption: 'Stairs',
+    description:
+      "A flight between this space's tabs. Click it, or walk your character on, pick Up or Down and climb to the Stairs on the next floor.",
+    filled: true,
+    action: { type: 'shape', kind: 'stairs' },
+    icon: <StairsIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // The Avatar Selection Mode button (docs/specs/009-elements/mode-button.md "Only Avatar"): the one mode button
     // livehuddle keeps, in Travel after the Avatar Pad because it is how people walk into a Space. The id is unchanged:
     // palette layouts and search address tiles by it.
@@ -1512,7 +1528,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Ping-Pong Table',
     caption: 'Ping-Pong Table',
     description:
-      'Two seats, one at each end. When both are taken, a little rally plays between them.',
+      'A game for two: sit at each end and play a rally to 11, moving your paddle with the mouse, a finger or W and S.',
     filled: true,
     action: { type: 'shape', kind: 'ping-pong-table' },
     icon: <PingPongTableIcon size={TILE_GLYPH_PX} />,

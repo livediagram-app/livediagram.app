@@ -225,6 +225,13 @@ describe('buildRemoteAvatarRows', () => {
     ]);
   });
 
+  // docs/specs/009-elements/social-pieces.md "A game": a game piece plays only an Editor or a Participant.
+  it('carries the peer’s share role when the room stamped one', () => {
+    const peer = p('peer', { role: 'participate' });
+    const rows = buildRemoteAvatarRows(new Map([['peer', entry('t1')]]), byId(peer), 'me', 't1');
+    expect(rows[0]?.role).toBe('participate');
+  });
+
   // docs/specs/008-canvas/avatar-mode.md "A busy room"
   it('glides a busy room’s characters over one step, and nobody else’s', () => {
     const crowd = Array.from({ length: 11 }, (_, i) => p(`p${i}`));

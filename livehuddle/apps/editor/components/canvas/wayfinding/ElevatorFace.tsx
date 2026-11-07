@@ -7,6 +7,7 @@ import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-prefer
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { elevatorName, spaceFloors, type WayPoint } from '@/lib/wayfinding';
 import { createWayfindingStore, useWayfindingSelect, type Wayfinding } from './wayfinding-store';
+import { useFloorsOnOpen } from './useFloorsOnOpen';
 import { RowAction, WayfindingHeader, WayfindingPopover } from './WayfindingPopover';
 
 // The Elevator's face (docs/specs/009-elements/elevator.md): a button over the drawing (FurnitureView paints the
@@ -92,11 +93,11 @@ function ElevatorPanelHost({
   pressed: boolean;
   onClosePressed: () => void;
 }) {
-  const walkedIn = useWayfindingSelect(wayfinding.store, (s) => s.openElevatorId === elementId);
+  const walkedIn = useWayfindingSelect(wayfinding.store, (s) => s.openPanelId === elementId);
   if (!pressed && !walkedIn) return null;
   const close = () => {
     onClosePressed();
-    if (walkedIn) wayfinding.actions.closeElevator();
+    if (walkedIn) wayfinding.actions.closePanel();
   };
   return (
     <WayfindingPopover elementId={elementId} label={name} width={288} onClose={close}>
@@ -104,9 +105,6 @@ function ElevatorPanelHost({
     </WayfindingPopover>
   );
 }
-
-// How long the panel shows a floor as loading before giving up on it (a failed fetch): its arrival row then.
-export const FLOOR_WAIT_MS = 8000;
 
 /**
  * Every Elevator in the space (elevator.md "The panel"): the others on this floor first (travel without changing
@@ -126,17 +124,12 @@ export function ElevatorPanel({
   const tabs = useWayfindingSelect(wayfinding.store, (s) => s.tabs);
   const activeTabId = useWayfindingSelect(wayfinding.store, (s) => s.activeTabId);
   const floors = useMemo(() => spaceFloors(tabs), [tabs]);
-  // Floors nobody has opened yet are fetched on opening the panel, once (elevator.md "Floors not opened yet"); a
-  // floor still not here after FLOOR_WAIT_MS (a failed fetch) shows its arrival row instead of loading forever.
-  // Read once, at opening: the fetch skips loaded tabs and dedupes one in flight, so one ask per opening is enough.
-  const loadingAtOpen = useRef(floors.some((f) => f.loading));
-  const [waited, setWaited] = useState(false);
-  useEffect(() => {
-    if (!loadingAtOpen.current) return;
-    wayfinding.actions.loadFloors();
-    const t = setTimeout(() => setWaited(true), FLOOR_WAIT_MS);
-    return () => clearTimeout(t);
-  }, [wayfinding]);
+  // Floors nobody has opened yet are fetched on opening (elevator.md "Floors not opened yet"); a floor still not here
+  // after FLOOR_WAIT_MS (a failed fetch) shows its arrival row instead of loading forever.
+  const waited = useFloorsOnOpen(
+    floors.some((f) => f.loading),
+    wayfinding,
+  );
   const ride = (tabId: string, point: WayPoint, ignoreId?: string) => {
     onDone();
     wayfinding.actions.go({ tabId, point, ignoreId });
@@ -276,7 +269,7 @@ function LiftRow({
 // slide apart and close again. Drawn only for an arrival, and not at all under reduced motion.
 function ElevatorDoors({ elementId, wayfinding }: { elementId: string; wayfinding: Wayfinding }) {
   const seq = useWayfindingSelect(wayfinding.store, (s) =>
-    s.arrivalElevatorId === elementId ? s.arrivalSeq : 0,
+    s.arrivalId === elementId ? s.arrivalSeq : 0,
   );
   const leftRef = useRef<HTMLSpanElement>(null);
   const rightRef = useRef<HTMLSpanElement>(null);

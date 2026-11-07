@@ -14,6 +14,7 @@ import {
 } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useJukeboxPlaying } from '@/lib/jukebox-listening';
+import { useGameOn } from '@/lib/table-games/table-game-scene';
 
 // The live parts of the social pieces (docs/specs/009-elements/social-pieces.md), drawn over a piece's art inside
 // FurnitureView's own grid: a ping-pong rally, the arcade's screen, a fire's flicker, the fountain's water, the
@@ -38,7 +39,7 @@ export function hasSocialArt(kind: string): boolean {
 export function SocialArt({ kind, id, sitters }: { kind: string; id: string; sitters: number }) {
   switch (kind) {
     case 'ping-pong-table':
-      return sitters >= 2 ? <Rally /> : null;
+      return sitters >= 2 ? <RestingRally id={id} /> : null;
     case 'arcade-machine':
       return <ArcadeScreen />;
     case 'fireplace':
@@ -57,6 +58,11 @@ export function SocialArt({ kind, id, sitters }: { kind: string; id: string; sit
     default:
       return null;
   }
+}
+
+// The resting rally plays while both seats are taken and no game is on; a game draws its own ball (PingPongGame).
+function RestingRally({ id }: { id: string }) {
+  return useGameOn(id) ? null : <Rally />;
 }
 
 // A ball crossing the net and back, bouncing once on each half: two nested loops, across and up.

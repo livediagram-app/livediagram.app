@@ -107,6 +107,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): pressed, or walked into, to go somewhere.
   'directory',
   'elevator',
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a Screen pressed to open large, a Room
   // Sign knocked on.
   'screen',

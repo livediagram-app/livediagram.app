@@ -180,6 +180,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'door',
   'directory',
   'elevator',
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',
@@ -270,6 +271,7 @@ export function svgBehaviourFace(
     case 'tree':
     case 'directory':
     case 'elevator':
+    case 'stairs':
     case 'notice-board':
     case 'world-clock':
     case 'jukebox':

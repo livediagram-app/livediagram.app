@@ -21,6 +21,8 @@ import type {
   SharedTabCopy,
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
+import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
+import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export type PlanRoomClient = {
@@ -41,6 +43,8 @@ export type PlanRoomClient = {
   exportComments(): Promise<ExportCommentsResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
+  // The index's reverse write of a connected tab (plan-room/connected-tab.ts).
+  addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // One card, by id (a mention email reads the comment from the card itself).
   item(itemId: string): Promise<Item | null>;
   // Image fields (plan-room/image-grants.ts): a picture uploaded for this plan recorded as one it may serve, and
@@ -88,6 +92,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     exportTables: () => room.exportTables(planId),
     exportComments: () => room.exportComments(planId),
     hasTab: (tabId) => room.hasTab(planId, tabId),
+    addConnectedTab: (write) => room.addConnectedTab(planId, write),
     item: (itemId) => room.item(planId, itemId),
     grantImage: (imageId) => room.grantImage(planId, imageId),
     servesImage: (imageId, tabScope) => room.servesImage(planId, imageId, tabScope),
@@ -117,6 +122,7 @@ export type PlanRoomRpc = {
   exportTables(planId: string): Promise<ExportTablesResult>;
   exportComments(planId: string): Promise<ExportCommentsResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
+  addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   item(planId: string, itemId: string): Promise<Item | null>;
   grantImage(planId: string, imageId: string): Promise<void>;
   servesImage(planId: string, imageId: string, tabScope: string | null): Promise<boolean>;

@@ -189,6 +189,7 @@ const WORDLESS_SHAPES = new Set<string>([
   'door',
   'directory',
   'elevator',
+  'stairs',
   'screen',
   'room-sign',
   // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md).

@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 15,
+    articleCount: 16,
     kind: 'feature',
     groups: ['Everyday Elements', 'Meeting Kits', 'Palette Settings'],
   },
@@ -828,6 +828,16 @@ export const articles: Article[] = [
     description: "A lift between a space's tabs: pick a floor and step out of its Elevator.",
     keywords:
       'elevator lift floor floors level levels tab tabs building up down ride travel go between tabs portal automatic avatar navigate behaviour',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Meeting Kits',
+  },
+  {
+    slug: 'stairs',
+    title: 'Stairs',
+    description: "A flight between a space's tabs: climb to the floor above or below.",
+    keywords:
+      'stairs staircase stairway steps flight upstairs downstairs up down climb walk floor floors level levels tab tabs building travel go between tabs automatic avatar navigate behaviour',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',

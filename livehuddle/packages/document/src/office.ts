@@ -58,6 +58,7 @@ export type OfficeKind =
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   | 'directory'
   | 'elevator'
+  | 'stairs'
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   | 'notice-board'
   | 'world-clock'
@@ -139,6 +140,7 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'door',
   'directory',
   'elevator',
+  'stairs',
   'notice-board',
   'world-clock',
   'jukebox',

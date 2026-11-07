@@ -85,6 +85,7 @@ describe('palette layouts', () => {
       'tools:directory',
       'tools:signpost',
       'tools:elevator',
+      'tools:stairs',
       'tools:mode-avatar',
     ]);
     expect(tileIds('collab-seating')).toEqual([

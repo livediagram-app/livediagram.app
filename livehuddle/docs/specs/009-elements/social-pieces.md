@@ -170,15 +170,20 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
   a screen from before games), the table plays its decorative rally as before: a ball arcing from end to end every 1.2
   seconds in CSS, no score. Under reduced motion the ball rests on the net line.
 - **Starting**: a game starts once both seats hold a player whose screen can play (motion not reduced, see below).
-  The scoreboard reads **Ready** for a second, then the left player serves. Nobody presses anything to start.
+  A player's screen says it can play by sending its paddle as soon as both seats are held (see [The wire](#the-wire)).
+  Once both have said so, every screen's scoreboard reads **Ready** for a second, then the left player serves. Nobody
+  presses anything to start.
 - **Playing**: the ball crosses the table, bounces off the two long sides, and is struck back by a paddle that
   meets it at that player's end. Where it meets the paddle sets its angle (the paddle's middle sends it straight,
   its tips send it steeply). Each strike speeds it up a little, to a cap. A ball that passes a paddle is a point to
-  the other player.
+  the other player. Between a point and the next serve the ball rests at the server's paddle, riding up and down with
+  it, for a second.
 - **Scoring**: first to 11, by two clear points (at 10 all, play on until one leads by two). Service changes every
   two points, and every point from 10 all; the left player serves first. The score is shown above the table, left
-  player's points on the left, for everyone on the tab, in a small pill in each player's colour. A won game shows
-  **<Name> Wins** for five seconds, then a new game starts at 0 all if both are still sitting.
+  player's points on the left, for everyone on the tab, in a small pill in each player's colour, in the middle above
+  the table (clear of the two players' heads at its ends). A won game shows **<Name> Wins** in the winner's colour
+  (**You Win** on the winner's own screen) for five seconds, then a new game starts at 0 all if both are still
+  sitting.
 - **Leaving ends your side**: standing up (or leaving Avatar mode, or the tab, or the document) ends the game at
   once for everyone; the table goes back to its resting state and the score is gone. Nothing about a game is
   stored: it lives on the screens of the people looking at the table, like a walking character.
@@ -191,7 +196,8 @@ A rounded, lit jukebox that plays a shared background stream to the people stand
 Only while you sit at the table, and only for your own paddle:
 
 - **Mouse or pen**: the paddle follows the pointer's height over the table (no press needed) while the pointer is over
-  the table or within its piece's box.
+  the table or within its piece's box. The pointer there is an up-and-down arrow, and a press on it is the paddle's:
+  it never walks, selects or stands you up.
 - **Touch**: drag anywhere on the table; the paddle follows your finger's height. A press on the piece you sit on
   keeps you in it ([Chair](chair.md)), so playing never stands you up.
 - **Keyboard**: **W** and **S**, or **Arrow Up** and **Arrow Down**, move the paddle while a game runs at your table.
@@ -213,7 +219,9 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
 
 - **`game-input`** `{ tabId, pieceId, seat, axis }`: one player's control, a number from 0 (the top of the play area)
   to 1 (its bottom). Sent on change, at most every 50 ms (20 a second), only while sitting at the piece with a game
-  to play; nothing is sent while the paddle is still. It is a sample: the room sends it to the sender's tab only and,
+  to play (both seats held, your motion not reduced). It also says your screen can play: one goes out as soon as both
+  seats are held, one after a game ends, and one a second while no game is on, so a word lost to a dropped connection
+  is said again. While a game is on nothing is sent while the paddle is still. It is a sample: the room sends it to the sender's tab only and,
   in a busy room, coalesces it with the walkers' ([A busy room bounds its presence
   fan-out](../015-api/api.md)). Receivers ease the paddle toward the newest sample.
 - **`game-event`** `{ tabId, pieceId, seat, game: 'ping-pong', match, seq, event, ball?, score }`: one moment of the

@@ -11,6 +11,7 @@ const PURE = [
   'collision',
   'config',
   'fence',
+  'key-claims',
   'office-geometry',
   'pad',
   'pad-art',

@@ -28,6 +28,7 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   // Use: the piece's main action from anywhere on its footprint (data-piece-main), or the reader when it has none.
   directory: U,
   elevator: U,
+  stairs: U,
   portal: U,
   'mode-button': U,
   'focus-button': U,

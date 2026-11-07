@@ -275,6 +275,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'door' ||
     // The Directory (docs/specs/009-elements/directory.md) draws its own words; an Elevator keeps its name.
     kind === 'directory' ||
+    // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+    kind === 'stairs' ||
     // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md): a sign's name is its room's.
     kind === 'screen' ||
     kind === 'room-sign' ||

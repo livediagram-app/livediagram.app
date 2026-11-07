@@ -70,6 +70,7 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   tree: 'Tree',
   directory: 'Directory',
   elevator: 'Elevator',
+  stairs: 'Stairs',
   // The social pieces (docs/specs/009-elements/social-pieces.md).
   'notice-board': 'Notice board',
   'world-clock': 'World clock',

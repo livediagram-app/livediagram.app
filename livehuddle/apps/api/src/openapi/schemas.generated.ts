@@ -5419,6 +5419,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "door",
       "directory",
       "elevator",
+      "stairs",
       "screen",
       "room-sign",
       "timer",
@@ -6093,6 +6094,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TabConnectionApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "livehuddle"
+    ],
+    "type": "string"
+  },
+  "TabConnectionWire": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/TabConnectionApp"
+      },
+      "id": {
+        "type": "string"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "app",
+      "itemId"
+    ],
+    "type": "object"
+  },
   "TabId": {
     "type": "string"
   },
@@ -6117,6 +6148,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "backgroundPatternScale": {
         "type": "number"
+      },
+      "connection": {
+        "$ref": "#/components/schemas/TabConnectionWire"
       },
       "customColours": {
         "items": {
@@ -6199,6 +6233,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabSummary": {
     "additionalProperties": false,
     "properties": {
+      "connection": {
+        "$ref": "#/components/schemas/TabConnectionWire"
+      },
       "documentId": {
         "type": "string"
       },

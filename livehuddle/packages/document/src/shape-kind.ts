@@ -159,9 +159,11 @@ export type ShapeKind =
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in
-  // each, and a lift between the space's tabs (its floors).
+  // each, and a lift between the space's tabs (its floors); and Stairs (docs/specs/009-elements/stairs.md), a flight
+  // to the floor above or below.
   | 'directory'
   | 'elevator'
+  | 'stairs'
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen showing a share from someone in
   // its room, and a sign by a room's door saying whether it is free.
   | 'screen'
