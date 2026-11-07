@@ -172,4 +172,29 @@ describe('the office dog', () => {
     const { container } = dogIn();
     expect(container.querySelector('[data-pet]')?.getAttribute('data-pet')).toBe('asleep');
   });
+
+  it('goes back to its bed the moment reduced motion is turned on, and wakes when it is off', async () => {
+    // Leg 4 trots (every fourth naps), so the switch is what puts it to bed.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(PET_LEG_MS * 4);
+    const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
+    setPetAreas(new Map([[bed.id, area]]));
+    const { container, unmount } = dogIn();
+    const state = () => container.querySelector('[data-pet]')?.getAttribute('data-pet');
+    expect(state()).toBe('awake');
+    // The in-app preference: its class on <html>, which the dog watches.
+    reduced.on = true;
+    await act(async () => {
+      document.documentElement.classList.add('reduce-motion');
+      await Promise.resolve();
+    });
+    expect(state()).toBe('asleep');
+    reduced.on = false;
+    await act(async () => {
+      document.documentElement.classList.remove('reduce-motion');
+      await Promise.resolve();
+    });
+    expect(state()).toBe('awake');
+    unmount();
+  });
 });
