@@ -272,6 +272,32 @@ describe('share roles in the editor (docs/specs/013-workspace/share-roles.md)', 
     );
   });
 
+  // Images (docs/specs/009-elements/images.md "Share roles"): an Editor adds one from Write's Image tile (or a pasted
+  // or dropped picture, useClipboard.drop.test.tsx), and alone changes one; everyone sees them.
+  describe("Add an image: Write's Image tile, paste or drop", () => {
+    expectPerLevel(
+      "Write's Image tile on the palette",
+      (level) =>
+        paletteCategories()
+          .filter(() => stripFor(level, false) === 'build')
+          .some((c) => c.id === 'write' && (c.tiles ?? []).some((t) => t.id === 'tools:image')),
+      { edit: true, participate: false, view: false },
+    );
+    const image = { id: 'i', type: 'image', ...box, imageId: 'img-1' } as Element;
+    expectPerLevel(
+      'add, move, resize or delete an image',
+      (level) => {
+        const can = canFor(level);
+        return [can.addContent, can.move(image), can.resize(image), can.remove(image)];
+      },
+      {
+        edit: [true, true, true, true],
+        participate: [false, false, false, false],
+        view: [false, false, false, false],
+      },
+    );
+  });
+
   // The pieces a Participant keeps (share-roles.md "A Participant walks"): a Door's swing, one saved locked too.
   // Pinning its own notes on a Notice Board goes through the board's popover (NoticeBoardPopover, its adder key).
   expectPerLevel(

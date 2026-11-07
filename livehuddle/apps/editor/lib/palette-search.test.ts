@@ -62,13 +62,14 @@ describe('buildPaletteSearchItems', () => {
       expect(ids).not.toContain(id);
   });
 
-  it('offers no Image or Link card, image support or not (not-in-livehuddle.md "Media")', () => {
-    for (const hasImage of [true, false]) {
-      const ids = buildPaletteSearchItems({ hasImage }).map((i) => i.id);
-      expect(ids).not.toContain('tile:tools:image');
-      expect(ids).not.toContain('tile:tools:link-card');
-    }
-    expect(OFFERED.filter((t) => t.needsImage)).toEqual([]);
+  // not-in-livehuddle.md "Media", "Images are back": Search offers Write's Image where uploads work, and no Link card.
+  it('offers the Image only with image support, and never a Link card', () => {
+    const idsWith = (hasImage: boolean) => buildPaletteSearchItems({ hasImage }).map((i) => i.id);
+    expect(idsWith(true)).toContain('tile:tools:image');
+    expect(idsWith(false)).not.toContain('tile:tools:image');
+    for (const hasImage of [true, false])
+      expect(idsWith(hasImage)).not.toContain('tile:tools:link-card');
+    expect(OFFERED.filter((t) => t.needsImage).map((t) => t.id)).toEqual(['tools:image']);
   });
 
   it('covers the element types the palette added most recently', () => {

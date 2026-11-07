@@ -1,8 +1,8 @@
 # Image element + per-owner gallery
 
-> **Gone from livehuddle** ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): nothing in livehuddle adds one now (no palette tile,
-> no `9` key, no picture pasted or dropped on the canvas). A stored one still loads, draws, moves, edits and deletes as
-> below. livediagram keeps the feature, and [its spec](../../../../livediagram/docs/specs/009-elements/images.md) is the one to change.
+> **Back in livehuddle, under Write** ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back), owner
+> 2026-11-07): the Image tile, a picture pasted or dropped on the canvas, and the picker. No `9` key and no Media
+> category. An Editor adds one; everyone sees it ([Share roles](#share-roles)).
 
 Users can drop an image element on the canvas, upload the bytes, and reuse anything they've previously uploaded from a per-owner gallery. Images live in liveworkspace's media service ([liveworkspace/docs/specs/006-media/media.md](../../../../liveworkspace/docs/specs/006-media/media.md)), which keeps every app's uploads, so a person's gallery follows them across the suite; this api keeps who may see what and serves the bytes. See [Document structure](../006-document/document-structure.md) for the broader element model and [API app](../015-api/api.md) for the API conventions this spec extends.
 
@@ -92,7 +92,42 @@ Extends the routes in [API app](../015-api/api.md). All JSON except where noted.
 
 ### Palette
 
-The **Image** entry (`tools:image`) in the Palette's **Media** section (see [Canvas and palette](../008-canvas/canvas-and-palette.md)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it. The new image lands selected as its empty placeholder; no picker opens on its own. Its **Select Image** button, or a double-click, opens the picker when the person is ready (below).
+The **Image** entry (`tools:image`) in the palette's **Write** category, after Text and the Sticky note (see
+[Workshop mode](../012-collaboration/workshop-mode.md#the-palette)). Like the other draw-capable tools, picking it arms the draw-to-size gesture: a tap drops a default-size `ImageElement` (`imageId: null`) and a drag sizes it. The new image lands selected as its empty placeholder; no picker opens on its own. Its **Select Image** button, or a double-click, opens the picker when the person is ready (below).
+
+### Paste and drop
+
+A picture pasted (`Cmd/Ctrl+V` with an image on the system clipboard: a screenshot, an image copied from a page) or
+dropped on the canvas lands as an image element without the picker (`useClipboard`, over
+`hooks/canvas/image-file-place.ts`):
+
+1. **Which file.** A paste takes its first `image/*` file, or Safari's image item when `files` is empty; a drop takes
+   the dropped file when it is `image/*`. Any other file is refused with one notice ("The canvas takes pictures, not
+   other files."), and never falls through to the element clipboard; a livehuddle tab's JSON dropped there points at
+   Import instead.
+2. **Its name.** A pasted screenshot arrives named `""` or `image.png`; it is renamed `pasted-<ms>.<ext>` so the Image
+   Gallery can tell pastes apart.
+3. **The upload.** Through the same pipeline as the picker's Upload tab (`addImageFileForDocument`): the media service
+   for a synced Space, a data-URI embed for a This Browser one. The upload code loads only now (a dynamic import), so it
+   stays out of the editor's first load. A refused upload (too large, the wrong type, a full gallery) says why in an
+   error toast and lands nothing.
+4. **The element.** Its own aspect ratio, the larger side 240 px (`PLACED_IMAGE_MAX_PX`), centred where a drop was
+   released or in the middle of the screen for a paste, with `naturalWidth` / `naturalHeight` and the file name as its
+   alt text. It lands selected, as one undo step, and sends `Element Added Image`.
+
+Only an Editor pastes or drops one, and not in an embed (uploads stay off there, as the picker does); a Participant and
+a Viewer have no paste or drop on the canvas ([Share roles](#share-roles)).
+
+### Share roles
+
+| Feature                                              | Editor | Participant | Viewer |
+| ---------------------------------------------------- | ------ | ----------- | ------ |
+| See an image                                         | Yes    | Yes         | Yes    |
+| Add one: Write's Image tile, paste or drop a picture | Yes    | No          | No     |
+| Change, resize, move or delete one, open its picker  | Yes    | No          | No     |
+
+[Share roles](../013-workspace/share-roles.md#feature-by-feature-v1) holds the same row. The room enforces it: the
+participant content rule refuses every add from a Participant, and a Viewer sends no element ops.
 
 ### Placeholder rendering
 

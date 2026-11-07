@@ -37,6 +37,8 @@ function harness(editingId: string | null) {
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
       toast: { error: vi.fn() } as never,
+      ownerId: 'owner',
+      documentId: null,
     }),
   );
   return { elements: () => elements, setEditingId };

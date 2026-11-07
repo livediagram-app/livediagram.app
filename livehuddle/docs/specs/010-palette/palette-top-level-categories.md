@@ -6,7 +6,8 @@ Play, Garden, Meet; Travel. Stickers is search-only ([Stickers in search only](#
 **Meet**; Travel is a band of its own (**Travel**, band 7), so the strip sets it apart between two dividers
 ([The strip's order](#the-strips-order)). The Icons category is gone from livehuddle
 ([Icons](../002-project-scope/not-in-livehuddle.md#icons)): Stickers is the palette's decoration. So is the Media
-category, with adding an Image or a Link card anywhere ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)). The Frame category (and then the Frame itself, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)), Reaction Pads, and the Laser, Spotlight and Isometric mode buttons,
+category, with adding a Link card anywhere ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)); the
+Image is in **Write** ([Images are back](../002-project-scope/not-in-livehuddle.md#images-are-back)). The Frame category (and then the Frame itself, [The Frame](../002-project-scope/not-in-livehuddle.md#the-frame)), Reaction Pads, and the Laser, Spotlight and Isometric mode buttons,
 are gone from livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), so there is no React category.
 The **Selection Mode** category (bar name "Modes") is gone too: its Select, Hand, Eraser and Format buttons left
 livehuddle, and the Avatar one moved to Travel ([Selection Mode button](../009-elements/mode-button.md#only-avatar)).
@@ -103,13 +104,14 @@ Play on 2026-11-06, [Play holds the Bar](#the-space-categories)):
 Write | Rooms Seats Perks Play Garden Meet | Travel
 ```
 
-- **Write** first: a note or a word is what anybody reaches for first.
+- **Write** first: a note or a word is what anybody reaches for first, and a picture (a logo, a team photo) beside
+  them.
 - **Then building the Space**, floor first: Rooms (the floor plan), then what goes in it (Seats, Perks,
   Play, Garden) and the meeting room's own pieces (Meet).
 - **Travel apart**: its pieces (Portal, Bring Focus, Avatar Pad, Directory, Elevator, Stairs, the Avatar Button) take people
   somewhere rather than furnish a place, so it stands alone between two dividers.
 - **No Stickers on the strip**: the decoration is found through Search, not a category button
-  ([Stickers in search only](#stickers-in-search-only)). No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)).
+  ([Stickers in search only](#stickers-in-search-only)). No Media ([Media](../002-project-scope/not-in-livehuddle.md#media-image-and-link-card)): the Image is Write's.
 - **The mechanism is the bands.** The bar draws its divider wherever two neighbours' bands differ (`CategoryBar`'s
   band change), so Travel's divider is its band: `SPACE_CATEGORIES` gives Travel `band: 7`, the rest of the Space
   categories take the Meet band (6). `SPACE_CATEGORIES` is in this order, so the meeting layout, the flyouts and the

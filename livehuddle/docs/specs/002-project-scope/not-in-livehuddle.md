@@ -36,8 +36,9 @@ to change.
   Timer](#the-session-strips-timer)), and so did the Vote ([Vote](#the-vote)). The laser, the spotlight and the Reaction Pads went later
   ([The presenting tools](#the-presenting-tools-isometric-and-zen)); the Avatar panel's Reactions (a burst around your
   own character, keys `1` to `5`) stay.
-- **Light content**: sticky notes, text and stickers. The Frame went later ([The Frame](#the-frame)), and so did
-  the Icons category ([Icons](#icons)) and adding images and link cards ([Media](#media-image-and-link-card)).
+- **Light content**: sticky notes, text, images and stickers. The Frame went later ([The Frame](#the-frame)), and so
+  did the Icons category ([Icons](#icons)) and adding link cards ([Media](#media-image-and-link-card)). Images went
+  with the link cards and came back, under **Write** ([Images are back](#images-are-back)).
 - **Talking without a call**: speech bubbles, comments with mentions, comment reactions, and assigned actions from
   any element's menu with the Collaborate Panel.
 - **Every platform feature** ([v1 scope](v1-scope.md) section 7) but the MCP server, the CLI and workbenches
@@ -354,42 +355,58 @@ controls, the Jukebox, knocking), speech, reactions, comments and session answer
 ## Media: Image and Link card
 
 The owner (2026-11-05): "remove the Media category, Image and Link from livehuddle". A Space is furnished from its
-rooms and pieces and written on with stickies, text and stickers; pinning pictures and bookmark cards to the floor is
-a board's habit, not a meeting place's. livediagram keeps both, and its specs are the ones to read:
-[Images](../../../../livediagram/docs/specs/009-elements/images.md),
-[Image search](../../../../livediagram/docs/specs/009-elements/image-search.md) and
-[Link cards](../../../../livediagram/docs/specs/009-elements/link-cards.md). Those pages in this tree carry a
-**Gone from livehuddle** banner.
+rooms and pieces and written on with stickies, text and stickers; pinning bookmark cards to the floor is a board's
+habit, not a meeting place's. livediagram keeps link cards, and its spec is the one to read:
+[Link cards](../../../../livediagram/docs/specs/009-elements/link-cards.md). That page in this tree carries a
+**Gone from livehuddle** banner. Images came back two days later ([Images are back](#images-are-back)).
 
 - **Gone from every surface**:
-  - the palette: the **Media** category (its Image and Link card tiles), the Image and Link card in **Popular**, the
-    Link card in **Travel**, and the Image in a Participant's **Participate** category (a Participant has no palette
-    now, [A Participant walks](../013-workspace/share-roles.md#a-participant-walks));
-  - the strip's Search and the search panel's Add to Canvas (they list only what the palette offers, so neither names
-    an Image or a Link card);
-  - the `9` key (Image) and its row in the keyboard reference;
-  - **pasting or dropping a picture file onto the canvas**: it used to upload the file and land an image element.
-    Now a file pasted or dropped on the canvas is refused like any other file the canvas does not take, with one
-    notice ("The canvas does not take files."); a livehuddle tab's JSON dropped there still points at Import;
-  - the help articles (Images, Link Cards; their old addresses redirect to the nearest article that stays) and the
-    marketing copy.
+  - the palette: the **Media** category (its Link card tile, and the Image, which now lives in **Write**), the Link
+    card in **Popular** and in **Travel**, and the Image in a Participant's **Participate** category (a Participant
+    has no palette now, [A Participant walks](../013-workspace/share-roles.md#a-participant-walks));
+  - the strip's Search and the search panel's Add to Canvas name no Link card (they list only what the palette
+    offers);
+  - the `9` key (Image) and its row in the keyboard reference: the Image is back, its key is not;
+  - the help article Link Cards (its old address redirects to the nearest article that stays) and the marketing
+    copy.
 - **Not this part, so they stay**: the **Screen** piece and the video links it plays, a **Notice Board**'s notes, an
   element's **link** (Add Link: a URL or a tab an element opens), the account's **Image Gallery** in the Explorer
   (uploads and where each is used; it now lists only what older Spaces hold) and a profile picture. Tab and Export pictures (PNG, the live image) are pictures of a tab, not image
   elements.
-- **A stored image or link card stays.** Both are ordinary elements: a Space that already holds one draws it (an
-  image shows its picture, a link card its unfurled preview), and it selects, moves, resizes, copies, restyles and
-  deletes as before. Double-clicking a stored image still opens its picker to swap the picture, and a link card's URL
-  can still be changed, so a stored one is never stuck half set up. Nothing migrates.
+- **A stored link card stays.** It is an ordinary element: a Space that already holds one draws its unfurled
+  preview, and it selects, moves, resizes, copies, restyles and deletes as before, and its URL can still be changed,
+  so a stored one is never stuck half set up. Nothing migrates.
 - **Agents are not this part.** The api's and MCP's image tools (`list_images`, an element's `imageId`) and a
   `link-card` element in a changeset are the agent tools' (Work Tracker #459) and stay until that part decides them.
-- **Telemetry**: `Element Added Image` and `Element Added LinkCard` are no longer sent from the editor. Both types stay
-  in the allowlist: livediagram and agents still add them.
+- **Telemetry**: `Element Added LinkCard` is no longer sent from the editor; the type stays in the allowlist, since
+  livediagram and agents still add link cards. `Element Added Image` is sent again ([Images are back](#images-are-back)).
 - **The code.** The Media entry leaves the meeting layout, the Image and Link card tiles leave Popular and Participate,
-  and the Link card tile leaves Travel (its `tileGroup` goes; it files under `media` with the Image). The tile
-  definitions stay in the catalogue, like the diagram tools' ([What stays](#the-diagram-tools-still-in-livehuddles-ui)),
-  so a stored element still finds its name and glyph; nothing offers them. The paste and drop image upload
-  (`pasteImageFile`, `addImageFromGallery`) and the `9` key are deleted.
+  and the Link card tile leaves Travel (its `tileGroup` goes; it files under `media` with the Image). The Link card's
+  definition stays in the catalogue, like the diagram tools' ([What stays](#the-diagram-tools-still-in-livehuddles-ui)),
+  so a stored one still finds its name and glyph; nothing offers it. The `9` key is deleted. (The Image tile and the
+  paste and drop upload came back: [Images are back](#images-are-back).)
+
+### Images are back
+
+The owner (2026-11-07): "Let me add images to the space, via the Write category. We did take them away, but they
+are useful for adding branding and stuff. So I want them back". A logo on the reception wall or a team photo by the
+door makes a Space a place of its own. livehuddle's [Images](../009-elements/images.md) spec is the one to read again.
+
+- **The Image tile is in Write**, after Text and the Sticky note ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)),
+  and so in the strip's Search and the search panel's Add to Canvas. It arms the draw-to-size gesture; the new image
+  lands as its empty placeholder and its picker (Upload, Gallery, Search) fills it.
+- **A picture pasted or dropped on the canvas lands as an image element**, uploaded to the person's gallery through
+  liveworkspace's media service (a This Browser Space embeds it instead), as in livediagram. Any other file is still
+  refused, with one notice ("The canvas takes pictures, not other files."); a livehuddle tab's JSON dropped there
+  still points at Import.
+- **An Editor's alone.** A Participant and a Viewer have no palette and paste or drop nothing; they see every image
+  ([Share roles](../013-workspace/share-roles.md#feature-by-feature-v1)).
+- **Not back**: the Media category (Write holds the one tile), the Link card, the Image in Popular, and the `9` key.
+- **The code.** `tools:image` joins Write's tiles in the meeting layout (`palette-layouts.ts`). The paste and the drop
+  run in `useClipboard` over `hooks/canvas/image-file-place.ts` (which picture a paste carries, the pasted name, the
+  upload, the placed element), and load the upload code (`lib/upload-image.ts`) only when a picture arrives.
+- **The help**: the Write Elements article names the Image; the Images article and its redirect are not restored
+  (the Write article covers adding one).
 
 ## The diagram canvas patterns
 

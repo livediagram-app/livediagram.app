@@ -2020,9 +2020,9 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     blurb: 'Place an uploaded picture',
     section: 'media',
     label: 'Add Image',
-    // Offered by no category (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card"), and no
-    // `9` key: kept so a stored image still finds its name and glyph.
-    description: 'Drop an image placeholder + pick / upload a file.',
+    // Write's third tile (docs/specs/002-project-scope/not-in-livehuddle.md "Images are back"), only where uploads work
+    // (`needsImage`). No `9` key.
+    description: 'Place a frame, then upload a picture or pick one from your gallery.',
     noTint: true,
     needsImage: true,
     action: { type: 'image' },

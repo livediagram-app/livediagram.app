@@ -21,13 +21,13 @@
 // it is the one another window could have written since.
 //
 // Three sources compete on paste, in this order: a file on the system clipboard
-// (refused: livehuddle adds no picture, docs/specs/002-project-scope/not-in-livehuddle.md
-// "Media: Image and Link card"), our own serialised elements, then the in-app
-// buffer. Ordinary text is left to the browser.
+// (a picture lands as an image element through the media service, any other
+// file is refused; docs/specs/009-elements/images.md "Paste and drop"), our own
+// serialised elements, then the in-app buffer. Ordinary text is left to the browser.
 //
 // Only `copySelection` is returned — it's wired into the keyboard
 // shortcut hook. Paste is driven entirely by the native `paste` event
-// the hook registers, so `pasteFromClipboard` stays internal.
+// the hook registers, so `pasteFromClipboard` and `pasteImageFile` stay internal.
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
@@ -49,6 +49,15 @@ import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
 import { DROP_NOT_TAKEN, dropImportHint } from '@/lib/drop-import-hint';
+import {
+  isImageFile,
+  namedPastedFile,
+  pastedImageFile,
+  pasteHoldsFile,
+  placedImage,
+  uploadImageFile,
+  type UploadedImage,
+} from './image-file-place';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // Whether a paste carries something for the canvas rather than words: a file, or elements copied here (their JSON
@@ -79,6 +88,13 @@ type ClipboardDeps = {
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
   getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
+  // Who uploads a pasted or dropped picture (the gallery's owner) and into which Space: a This Browser Space embeds it
+  // instead (docs/specs/009-elements/images.md "Paste and drop").
+  ownerId: string;
+  documentId: string | null;
+  // An embed adds no picture: uploads authorise by owner, and inside a partitioned iframe that is a throwaway guest
+  // (useEditorImages).
+  embedMode?: boolean;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -94,6 +110,9 @@ export function useClipboard(deps: ClipboardDeps) {
     setMultiSelectedIds,
     toast,
     getViewportCanvasRect,
+    ownerId,
+    documentId,
+    embedMode = false,
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
@@ -199,18 +218,45 @@ export function useClipboard(deps: ClipboardDeps) {
     trackDuplicated(newElements);
   };
 
-  // A file dropped on the canvas: a file Import reads is pointed at Import; anything else, a picture too, is not
-  // something the canvas takes, and says so (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and
-  // Link card", "Imports from other tools").
-  const dropBoardFile = (file: File) => {
+  // A file pasted or dropped that the canvas does not take: said, so it neither lands nor (a paste) falls through to
+  // the element clipboard.
+  const refusePastedFile = () => toast.info(DROP_NOT_TAKEN);
+
+  // A picture pasted or dropped on the canvas (docs/specs/009-elements/images.md "Paste and drop"): uploaded to the
+  // person's gallery through the media service (a This Browser Space embeds it), then landed as an image element of
+  // its own shape, selected, centred on `at` (where a drop was released) or the middle of the screen (a paste). An
+  // Editor's alone: read-only sessions (a Participant, a Viewer) never get here.
+  const pasteImageFile = async (file: File, at?: { x: number; y: number }) => {
     if (isReadOnly) return;
+    if (embedMode) return refusePastedFile();
+    if (refuseCreate()) return;
+    let image: UploadedImage;
+    try {
+      image = await uploadImageFile(ownerId, documentId, namedPastedFile(file));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not add the picture.');
+      return;
+    }
+    const rect = getViewportCanvasRect?.() ?? null;
+    const centre =
+      at ?? (rect ? { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 } : { x: 0, y: 0 });
+    const placed = placedImage(image, centre);
+    commit((els) => [...els, placed]);
+    setSelectedId(placed.id);
+    setMultiSelectedIds(new Set());
+    track('Element', 'Added', 'Image');
+  };
+
+  // A file dropped on the canvas, at its canvas point: a picture lands there as a pasted one does; a file Import
+  // reads is pointed at Import; anything else is not something the canvas takes, and says so
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "Imports from other tools").
+  const dropBoardFile = (file: File, at?: { x: number; y: number }) => {
+    if (isReadOnly) return;
+    if (isImageFile(file)) return void pasteImageFile(file, at);
     // A livehuddle JSON file replaces the tab through Import, and is told so.
     const importHint = dropImportHint(file);
     toast.info(importHint ?? DROP_NOT_TAKEN);
   };
-  // A file pasted on the canvas: refused as a dropped one is, so it neither lands nor falls through to the element
-  // clipboard.
-  const refusePastedFile = () => toast.info(DROP_NOT_TAKEN);
 
   // Single mutable ref holding the latest paste functions. The paste
   // event listener is only re-registered when isReadOnly/editingId
@@ -226,6 +272,7 @@ export function useClipboard(deps: ClipboardDeps) {
   const pasteRef = useLatest({
     pasteFromClipboard,
     pasteInAppCopy,
+    pasteImageFile,
     refusePastedFile,
   });
 
@@ -245,9 +292,9 @@ export function useClipboard(deps: ClipboardDeps) {
 
   // System-clipboard paste handler. Cmd/Ctrl+V triggers the browser's
   // native `paste` event, which carries whatever the OS clipboard
-  // holds (text, files, images). A file (a screenshot, a copied
-  // picture) is refused with a notice: livehuddle adds no picture.
-  // Otherwise fall back to the element clipboard so pasting copied
+  // holds (text, files, images). A picture (a screenshot, a copied
+  // image) lands as an image element; any other file is refused with a
+  // notice. Otherwise fall back to the element clipboard so pasting copied
   // canvas elements still works. Text-input focus
   // is left to the browser's default (let users paste text into a
   // label / comment composer the normal way).
@@ -274,16 +321,15 @@ export function useClipboard(deps: ClipboardDeps) {
       }
       if (isReadOnly) return;
       if (editingId !== null) return;
-      // A file on the system clipboard is refused rather than falling through to the element clipboard, which would
-      // paste previously copied elements the person did not mean. `files` is the authoritative list; `items` also
-      // catches Safari's image item with an empty `files`.
-      const data = e.clipboardData;
-      const holdsFile =
-        (data?.files.length ?? 0) > 0 ||
-        Array.from(data?.items ?? []).some((item) => item.kind === 'file');
-      if (holdsFile) {
+      // A file on the system clipboard never falls through to the element clipboard, which would paste previously
+      // copied elements the person did not mean: a picture lands, anything else is refused. `files` is the
+      // authoritative list; `items` also catches Safari's image item with an empty `files`.
+      const data = e.clipboardData ?? null;
+      if (pasteHoldsFile(data)) {
         e.preventDefault();
-        pasteRef.current.refusePastedFile();
+        const picture = pastedImageFile(data);
+        if (picture) void pasteRef.current.pasteImageFile(picture);
+        else pasteRef.current.refusePastedFile();
         return;
       }
       // No file on the system clipboard. Our own serialised elements next

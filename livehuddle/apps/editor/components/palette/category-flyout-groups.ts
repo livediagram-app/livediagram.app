@@ -48,7 +48,7 @@ export function flyoutCardColumns(tileCount: number): 1 | 2 {
 const TAGLINES: Readonly<Record<string, string>> = {
   popular: 'What a Space is most often furnished with.',
   shapes: 'The basics, the flowchart vocabulary and more.',
-  write: 'Words on the canvas: text and sticky notes.',
+  write: 'Words, notes and pictures.',
   draw: 'Sketch, outline and connect by hand.',
   build: 'Structures that grow as you type.',
   diagrams: 'Structures that grow as you type.',

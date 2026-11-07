@@ -61,7 +61,8 @@ const MEETING: PaletteLayout = {
   categories: [
     {
       // What a Space is most often furnished with: a note and words, then, behind a divider, the pieces a meeting
-      // place is built from. No Image or Link card (docs/specs/002-project-scope/not-in-livehuddle.md "Media").
+      // place is built from. No Image (Write's) or Link card (docs/specs/002-project-scope/not-in-livehuddle.md
+      // "Media", "Images are back").
       id: 'popular',
       description: 'What a Space is most often furnished with, from across the palette.',
       tiles: [
@@ -75,13 +76,19 @@ const MEETING: PaletteLayout = {
         'tools:avatar-pad',
       ],
     },
-    // Words and notes. No Pointer note, Table, Checklist, Page or Annotation.
-    { id: 'write', description: 'Text and sticky notes.', tiles: ['tools:text', 'tools:sticky'] },
+    // Words, notes and pictures (owner, 2026-11-07: images are back, for branding;
+    // docs/specs/002-project-scope/not-in-livehuddle.md "Images are back"). No Pointer note, Table, Checklist, Page or
+    // Annotation. The Image shows only where uploads work (`needsImage`: not in an embed, not read-only).
+    {
+      id: 'write',
+      description: 'Text, sticky notes and images.',
+      tiles: ['tools:text', 'tools:sticky', 'tools:image'],
+    },
     // Each Space category holds its group's tiles, in catalogue order or its named groups' order; one with none yet
     // is left off. Their order, and Travel's band of its own, are SPACE_CATEGORIES'
     // (docs/specs/010-palette/palette-top-level-categories.md "The strip's order").
     ...SPACE_CATEGORIES.map((c) => spaceCategoryEntry(c.id)),
-    // Decoration: Stickers, search-only (never on the strip). No Icons and no Media
+    // Decoration: Stickers, search-only (never on the strip). No Icons and no Media category
     // (docs/specs/002-project-scope/not-in-livehuddle.md "Icons", "Media: Image and Link card").
     { id: 'stickers', searchOnly: true },
   ],
