@@ -61,7 +61,23 @@ test.describe('Optical alignment audit, other sites', () => {
 
   test('the Community', async ({ page, pageErrors, baseURL }) => {
     // The gallery (liveworkspace/docs/specs/007-community/community.md), as a visitor with nothing shared yet
-    // sees it on a fresh stack: its header, search box and controls, and the empty state.
+    // sees it on a fresh stack: its header, search box and controls, and the empty state. The stack's api has no Community service key,
+    // so its capabilities say the Community is off and the gate would leave for the home page once they answer; the
+    // audit measures the gallery, so it hears the Community is on. The posts live on the liveworkspace Community
+    // service (production's, from this origin), so the gallery is answered empty here, never from a live service.
+    await page.route('**/api/capabilities', async (route) => {
+      const res = await route.fetch();
+      await route.fulfill({
+        response: res,
+        json: { ...(await res.json()), communityEnabled: true },
+      });
+    });
+    await page.route('**/api/community/posts?*', (route) =>
+      route.fulfill({ json: { posts: [], nextOffset: null } }),
+    );
+    await page.route('**/api/community/facets?*', (route) =>
+      route.fulfill({ json: { total: 0, categories: {}, tags: [] } }),
+    );
     await open(page, site('community', baseURL!), 'community');
     await expect(page.getByRole('searchbox')).toBeVisible();
     await page.waitForLoadState('networkidle');
