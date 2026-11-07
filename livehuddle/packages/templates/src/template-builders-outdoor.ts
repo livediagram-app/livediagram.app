@@ -99,7 +99,7 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
     // On the lawn beside the summer house, its door and the campfire in view.
     arrival({
       x: cx + 336,
-      y: cy + 12,
+      y: cy - 4,
       hint: 'You arrive on the Avatar Pad. Meet in the summer house, or sit by the campfire.',
     }),
     open,
@@ -175,12 +175,13 @@ export function buildCityPark(cx: number, cy: number): Element[] {
       subtitle:
         'Take the meeting outside: stroll the paths, sit on a bench, or gather round the bandstand.',
     },
-    // On the lawn above the fountain plaza, between the benches, off the paths and the bandstand.
+    // On the open lawn above the fountain plaza, between the north path and the trees, off the paths and the
+    // bandstand, its line under it clear of the path stones and the bench.
     arrival({
-      x: cx - 196,
-      y: cy - 224,
-      side: 'right',
-      hint: 'You arrive on the Avatar Pad by the fountain. A bench seats two, and the picnic table seats six.',
+      x: cx + 165,
+      y: cy - 255,
+      hintW: 260,
+      hint: 'You arrive on the Avatar Pad. A bench seats two, the picnic table six.',
     }),
     open,
   );

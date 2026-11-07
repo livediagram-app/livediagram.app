@@ -91,26 +91,26 @@ away when joining, for example in the middle of a key room, or the centre of a c
 - **Inside the plan**: never in the margin under it or in its bottom-right quarter, where the bottom-right cluster
   floats. A building's other floors keep theirs by the Elevators.
 
-| Space            | Where everyone arrives                                                                  | How-to line |
-| ---------------- | --------------------------------------------------------------------------------------- | ----------- |
-| Virtual Office   | The middle of the corridor every room opens onto, between the Desks' and Lounge's doors | Under       |
-| Coworking Space  | The open floor between the desk clusters and the lounge                                 | Right       |
-| Team Pod         | The middle of the pod, between the desks and the table                                  | Under       |
-| All-Hands Hall   | The aisle among the rows, facing the stage                                              | Left        |
-| Focus Library    | The open floor between the two rows of desks                                            | Left        |
-| Training Room    | The middle of the room, the four tables round it and the stage ahead                    | Under       |
-| Rooftop Bar      | The middle of the terrace, the bar ahead and a sofa either side                         | Under       |
-| Cafe             | The middle of the cafe, the counter, coffee machine and tables round it                 | Under       |
-| Garden Retreat   | The lawn beside the summer house, its door and the campfire in view                     | Under       |
-| City Park        | The lawn above the fountain plaza, between the benches                                  | Right       |
-| Company Campus   | The Auditorium, in the aisle between its rows                                           | Left        |
-| Conference Venue | The Main Hall, in the aisle between its rows                                            | Left        |
-| Startup HQ       | The Town Hall, in the aisle between its rows                                            | Left        |
-| School Quad      | The Lecture Hall, in the aisle between its rows                                         | Left        |
-| Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             | Under       |
-| Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | Under       |
-| Expo Hall        | The aisle facing the stage, between its rows, the booths either side                    | Left        |
-| Beach Offsite    | The sand between the huts' walk and the campfire                                        | Under       |
+| Space            | Where everyone arrives                                                                  | How-to line      |
+| ---------------- | --------------------------------------------------------------------------------------- | ---------------- |
+| Virtual Office   | The middle of the corridor every room opens onto, between the Desks' and Lounge's doors | Under            |
+| Coworking Space  | The open floor between the desk clusters and the lounge                                 | Right            |
+| Team Pod         | The middle of the pod, between the desks and the table                                  | Under            |
+| All-Hands Hall   | The aisle among the rows, facing the stage                                              | Left             |
+| Focus Library    | The open floor between the two rows of desks                                            | Left             |
+| Training Room    | The middle of the room, the four tables round it and the stage ahead                    | Under            |
+| Rooftop Bar      | The middle of the terrace, the bar ahead and a sofa either side                         | Under            |
+| Cafe             | The middle of the cafe, the counter, coffee machine and tables round it                 | Under            |
+| Garden Retreat   | The lawn beside the summer house, its door and the campfire in view                     | Under            |
+| City Park        | The lawn above the fountain plaza, between the north path and the trees                 | Under (260 wide) |
+| Company Campus   | The Auditorium, in the aisle between its rows                                           | Left             |
+| Conference Venue | The Main Hall, in the aisle between its rows                                            | Left             |
+| Startup HQ       | The Town Hall, in the aisle between its rows                                            | Left             |
+| School Quad      | The Lecture Hall, in the aisle between its rows                                         | Left             |
+| Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             | Under            |
+| Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | Under            |
+| Expo Hall        | The aisle facing the stage, between its rows, the booths either side                    | Left             |
+| Beach Offsite    | The sand between the huts' walk and the campfire                                        | Under            |
 
 A campus lands you in its main hall, where the all-company moments happen; its Directory stays just inside the gate.
 
