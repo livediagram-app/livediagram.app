@@ -323,14 +323,14 @@ export function CanvasPaletteOverview() {
 
 // --- Selecting many ----------------------------------------------------------------------------
 
-/** A multi-selection with its floating toolbar: More, Filter Selection, Duplicate, Export,
- *  Lock and Delete, over the union of the selected elements. */
+/** A multi-selection with its floating toolbar: More, Filter Selection, Duplicate, Export
+ *  and Delete, over the union of the selected elements. */
 export function MultiSelectionBar() {
   const bx = 104;
   const by = 46;
   const ink = 'fill-none stroke-slate-500';
   // The toolbar's buttons are icon-only: More, Filter Selection (the funnel), Duplicate,
-  // Export, Lock and Delete, in that order.
+  // Export and Delete, in that order.
   const icons: ReactNode[] = [
     <g key="more" className="fill-slate-500">
       <circle cx={-5} cy={0} r={1.6} />
@@ -356,10 +356,6 @@ export function MultiSelectionBar() {
       strokeLinecap="round"
       strokeLinejoin="round"
     />,
-    <g key="lock" className={ink} strokeWidth={1.5}>
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} />
-      <path d="M-3 -1 V-3.5 a3 3 0 0 1 6 0 V-1" />
-    </g>,
     <path
       key="delete"
       d="M-6 -4 H6 M-2 -4 V-6 H2 V-4 M-4.5 -4 L-3.5 6 H3.5 L4.5 -4"
@@ -390,7 +386,7 @@ export function MultiSelectionBar() {
           strokeWidth={1.8}
         />
       ))}
-      <Panel x={bx} y={by} w={216} h={36}>
+      <Panel x={bx} y={by} w={181} h={36}>
         {icons.map((icon, i) => (
           <g key={i} transform={`translate(${bx + 20 + i * 35} ${by + 18})`}>
             {icon}
