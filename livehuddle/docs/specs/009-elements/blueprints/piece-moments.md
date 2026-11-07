@@ -10,6 +10,7 @@ Derived from [Piece moments](../piece-moments.md).
 | `apps/editor/lib/piece-moment-motions.ts`                   | Pure data: which of a piece's own front parts move in its moment (`PART_MOTIONS`), and the whole-drawing motion (`wholeMotionOf`) |
 | `apps/editor/components/canvas/collab/usePieceMoments.ts`   | Picks the moment pieces out of the board, feeds each step of your feet to the trigger, plays every piece it answers               |
 | `apps/editor/components/canvas/collab/PieceMoments.tsx`     | `MomentDrawing` (the keyed wrapper that moves the drawing and its parts), `PieceMoment` (the drawn-over parts), `PondMoment`      |
+| `apps/editor/components/canvas/collab/moment-kit.tsx`       | The shared drawn-over parts: falling, thrown and splashing bits, the sparkle, and `useFreshMoment`                                |
 | `apps/editor/components/canvas/collab/OfficeMoments.tsx`    | The drawn-over parts of the static office, amenity, venue and team pieces, and `PoolMoment`                                       |
 | `apps/editor/app/piece-moments.css`                         | The garden and fire keyframes; reduced motion for every moment                                                                    |
 | `apps/editor/app/piece-moments-office.css`                  | The office, amenity, venue and team keyframes                                                                                     |
@@ -59,7 +60,8 @@ Derived from [Piece moments](../piece-moments.md).
 
 ## Interfaces and contracts
 
-- `inMomentReach(feet: Point, piece: MomentPiece): boolean`, `MomentPiece = Box & { id, kind }`.
+- `inMomentReach(feet: Point, piece: MomentPiece): boolean`, `MomentPiece = Box & { id, kind, left, top, right, bottom }`,
+  each reach box worked out once by `momentPiece(piece: Box & { id, kind }): MomentPiece` when the board changes.
 - `createMomentTrigger(opts?: { now?: () => number }): { step(feet: Point, pieces: readonly MomentPiece[]): readonly MomentHit[]; reset(): void }`, `MomentHit = { id: string; side: -1 | 1 }`.
 - `playMoment(id: string, side: -1 | 1): void`; `usePieceMoment(id: string): PieceMomentPlay | null`;
   `resetPieceMoments(): void` (tests).
@@ -92,7 +94,9 @@ Local only: no input from anyone else reaches it.
 
 - Per step: one `inside` test per moment piece, no allocation (the hit array is reused). Budget test: 1000 steps among
   2000 moment pieces of every kind, with the pieces packed so each step arrives somewhere, inside `cpuBudgetMs(120)`
-  (`apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`).
+  (`apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`). Measured on 2026-11-07, 1000 steps, best
+  of 7: 0.46 ms among 200 pieces, 1.46 ms among 500 and 7.63 ms among 2000, against 2.25, 5.43 and 26.13 ms for the
+  trigger it replaces, because each reach box is worked out once by `momentPiece`.
 - At rest: no loop, no timer, no rAF, and no wrapper node (the part wrappers mount only while a moment plays). A
   moment: one keyed SVG group of at most 12 drawn-over nodes plus at most 12 wrapped parts, one-shot CSS on transform
   and opacity, under 3 s.
@@ -122,20 +126,20 @@ linear but a thrown thing's travel across. A swing peaks at its `--swing` and da
 | Copier          | The display's two lines wink                                                      | A light bar sweeping under the lid; a copy onto the top tray  | 2 s    |
 | Lockers         | Whole drawing rattles                                                             | A folded note falling from the nearest locker's vent          | 2.5 s  |
 | Coat Rack       | Coats and scarf swing 4 degrees on the hooks (28, 22); the hat hops 2 px          | Nothing                                                       | 1.9 s  |
-| Umbrella Stand  | Each umbrella swings 6 degrees on its foot, in a wave from you                    | A raindrop down the stand and a ring on the floor             | 1.7 s  |
+| Umbrella Stand  | Each umbrella swings 6 degrees on its foot, in a wave from you                    | A raindrop down the stand and a ring on the floor             | 2.7 s  |
 | Kitchen Counter | The nearest cupboard door, its panel line and handle, opens to 60 % and shuts     | Nothing                                                       | 1.3 s  |
-| Kitchen Sink    | The tea towel swings 5 degrees on the door (78, 33)                               | Three drops from the tap, a ring each                         | 1.9 s  |
+| Kitchen Sink    | The tea towel swings 5 degrees on the door (78, 33)                               | Three drops from the tap, a ring each                         | 2.8 s  |
 | Fridge          | The photo and the note on the door swing on their magnets                         | Three puffs of cold air from the door seal                    | 1.8 s  |
 | Microwave       | The display winks                                                                 | A warm glow over the window; a sparkle at the corner          | 1.8 s  |
 | Kettle          | The lid jiggles 1.5 px                                                            | Three puffs of steam from the spout                           | 1.9 s  |
 | Toilet Cubicle  | The cistern button dips 1 px                                                      | Two blue rings swirling in to the bowl's middle               | 1.5 s  |
-| Washbasin       | Nothing                                                                           | Two drops from the tap, a ring; a light band across the glass | 1.7 s  |
+| Washbasin       | Nothing                                                                           | Two drops from the tap, a ring; a light band across the glass | 2.4 s  |
 | Hand Dryer      | Whole drawing hums; the light winks                                               | Three lines of air down from the nozzle                       | 1.3 s  |
 | Car Park        | Nothing                                                                           | Two flashes of the nearest car's headlights                   | 1.3 s  |
 | Bike Rack       | The nearest bike's front-wheel spokes spin one and a half turns and slow          | A sparkle at its bell                                         | 1.7 s  |
 | Swimming Pool   | Nothing (drawn to size)                                                           | A rubber duck bobbing on your side, two rings                 | 2.5 s  |
 | Stage Curtains  | Each drape, with its tie-back and tassel, swings 2 degrees from the rail          | Nothing                                                       | 1.9 s  |
-| Podium          | The microphone bobs; its red light winks                                          | Three sound rings out of the microphone                       | 1.7 s  |
+| Podium          | The microphone bobs; its red light winks                                          | Three sound rings out of the microphone                       | 2.0 s  |
 | Team Photo Wall | Nothing                                                                           | A camera flash over the board; a sparkle on the plate         | 1.1 s  |
 | Pillar          | Nothing                                                                           | A band of light down the shaft (clipped to it)                | 1.5 s  |
 | Column          | Nothing                                                                           | A sparrow landing on the capital, hopping and flying off      | 2.5 s  |
