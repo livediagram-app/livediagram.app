@@ -316,6 +316,31 @@ describe('Avatar mode presses', () => {
     },
   );
 
+  // What floats over the canvas with presses of its own (docs/specs/012-collaboration/proximity-audio.md "The talking
+  // equaliser", video-and-screen-bubbles.md "Maximise"): a press on it is never a walk to the spot behind it.
+  it.each(['data-talking-bars', 'data-call-bubbles', 'data-call-maximised'])(
+    'a press inside [%s] is not a walk, and is left to the control',
+    (attr) => {
+      for (const pointer of ['mouse', 'touch']) {
+        const { press, walkTo, setPan, stopPropagation } = avatarSetup();
+        const host = document.createElement('div');
+        host.setAttribute(attr, 'p1');
+        const inner = document.createElement('button');
+        host.appendChild(inner);
+        press(pointer, inner);
+        expect(walkTo).not.toHaveBeenCalled();
+        expect(setPan).not.toHaveBeenCalled();
+        expect(stopPropagation).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it('walks on a mouse press on the bare surface, outside the call chrome', () => {
+    const { press, walkTo } = avatarSetup();
+    press('mouse');
+    expect(walkTo).toHaveBeenCalledTimes(1);
+  });
+
   // A door centred on the press point (120, 240), across a horizontal wall.
   const door = { id: 'door', type: 'shape', shape: 'door', x: 72, y: 228, width: 96, height: 24 };
 

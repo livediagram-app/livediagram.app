@@ -3,12 +3,16 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   receiveCallOp,
+  resetCallMedia,
   resetCallPeers,
   resetCallSelf,
+  setCallMedia,
   setCallSelf,
   VOICE_STALE_MS,
 } from '@/lib/calls/calls-store';
-import { barHeight, TalkingBars, type TalkingBarsPeer } from './TalkingBars';
+import { barHeight, BubbleBars, TalkingBars, type TalkingBarsPeer } from './TalkingBars';
+
+const stream = { id: 's' } as unknown as MediaStream;
 
 const sam: TalkingBarsPeer = {
   id: 'p1',
@@ -34,6 +38,7 @@ afterEach(() => {
   act(() => {
     resetCallPeers();
     resetCallSelf();
+    resetCallMedia();
   });
   vi.useRealTimers();
 });
@@ -82,6 +87,50 @@ describe('TalkingBars', () => {
     expect(container.querySelector('[data-talking-bars="self"]')).toBeTruthy();
     act(() => setCallSelf({ muted: true }));
     expect(container.querySelector('[data-talking-bars="self"]')).toBeNull();
+  });
+
+  // Someone wearing a camera or screen bubble talks on the bubble (BubbleBars), so not over their head as well.
+  it('skips a talker, and you, while wearing a bubble', () => {
+    const { container } = render(
+      <TalkingBars peers={[sam, kit]} self={{ at: { x: 0, y: 0 }, scale: 1, color: '#00f' }} />,
+    );
+    talk('p1', 3);
+    talk('p2', 3);
+    act(() => setCallSelf({ muted: false, level: 2 }));
+    expect(container.querySelector('[data-talking-bars="p1"]')).toBeTruthy();
+    expect(container.querySelector('[data-talking-bars="self"]')).toBeTruthy();
+    act(() => {
+      setCallMedia('p1', 'video', stream);
+      setCallMedia('self', 'screen', stream);
+    });
+    expect(container.querySelector('[data-talking-bars="p1"]')).toBeNull();
+    expect(container.querySelector('[data-talking-bars="p2"]')).toBeTruthy();
+    expect(container.querySelector('[data-talking-bars="self"]')).toBeNull();
+    // Nobody left talking without a bubble: nothing at all.
+    act(() => setCallMedia('p2', 'video', stream));
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('shows the bars on a bubble while its person talks, yours while unmuted, and drops a stale level', () => {
+    const { container } = render(
+      <>
+        <BubbleBars id="p1" color="#f00" />
+        <BubbleBars id="self" color="#00f" />
+      </>,
+    );
+    const bars = (id: string) => container.querySelector(`[data-bubble-bars="${id}"]`);
+    expect(bars('p1')).toBeNull();
+    expect(bars('self')).toBeNull();
+    talk('p1', 2);
+    expect(bars('p1')).toBeTruthy();
+    act(() => setCallSelf({ muted: false, level: 3 }));
+    expect(bars('self')).toBeTruthy();
+    act(() => setCallSelf({ muted: true }));
+    expect(bars('self')).toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(VOICE_STALE_MS + 100);
+    });
+    expect(bars('p1')).toBeNull();
   });
 
   it('sizes the bars by level', () => {

@@ -35,7 +35,7 @@ export type DoorArtPart = (
   lock?: true;
 };
 
-/** How dark a locked door's shaded parts are: the stroke at this opacity over them (DEFAULTS.md D218). */
+/** How dark a locked door's shaded parts are: the stroke at this opacity over them (DEFAULTS.md D222). */
 export const LOCKED_DOOR_SHADE = 0.45;
 
 /** Where a locked door's padlock sits, in the door's px: the middle of its doorway. */
@@ -45,7 +45,7 @@ export function doorLockCentre(width: number, height: number): { x: number; y: n
 
 const r2 = (v: number) => Math.round(v * 100) / 100;
 const STILL: DoorPose = { rotate: 0, dx: 0 };
-// The padlock's size and its disc's radius (DEFAULTS.md D218).
+// The padlock's size and its disc's radius (DEFAULTS.md D222).
 const LOCK_W = 9;
 const LOCK_BODY_H = 7;
 const LOCK_PLATE_R = 10;

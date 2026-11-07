@@ -35,7 +35,7 @@ export const RESTROOM_LAYOUT: readonly PresetPiece[] = [
 
 /**
  * Each furnished preset's pieces, in drawing order (a rug first, so its sofas stand on it), laid out clear of its Door's
- * swing and inside its walls (DEFAULTS.md D222). A seat faces its kind's default (a desk `s`, its sitter at the
+ * swing and inside its walls (DEFAULTS.md D226). A seat faces its kind's default (a desk `s`, its sitter at the
  * monitor; a sofa `n`) unless it says; one on its side (`e`, `w`) takes its turned box, whose top-left is the `x`, `y` given.
  */
 export const ROOM_PRESET_LAYOUTS: Readonly<Record<string, readonly PresetPiece[]>> = {

@@ -29,20 +29,21 @@ flyout of its tiles:
 - **Far right: Search** (a magnifier), on every strip (see "Search: every element type").
 
 **While walking** the strip is the [avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette) instead, in the
-same place and built from the same parts: **the call controls first, on the left** (Join Audio or the microphone, the
-camera, Share Screen, Leave; owner 2026-11-06, moved there from the bottom-right cluster), a divider, the character's
-look, Actions and React on the right, and Say where Search sits. An Editor's avatar palette starts with the
-same Edit | Walk toggle, Walk on, ahead of the call group, so the way back to building is where it was; a
+same place and built from the same parts: the character's look, Actions and React on the right, and Say where Search
+sits. The **call controls are not on it**: they sit on the **Call dock**, a card at the bottom centre of the canvas
+(the microphone, the camera, Share Screen; the call joins by walking, no Join or Leave; owner 2026-11-07: "Audio, Camera and Share buttons
+should be moved from the palette and put as buttons in the bottom, but for livehuddle, center them"). An Editor's
+avatar palette starts with the same Edit | Walk toggle, Walk on, ahead of the look, so the way back to building is where it was; a
 Participant's and a Viewer's has none ([Always walking](../013-workspace/share-roles.md#always-walking)). The building
-strip comes back, as it was, when the walk ends. Join Audio, the microphone, the camera and Share Screen are square
-glyph buttons, their name and state in the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space
-kept in This Browser) Join Audio stays, greyed, saying why. The building strip carries no call controls: a call rides Avatar
+strip comes back, as it was, when the walk ends. The dock's buttons are named beside
+their glyph on a desktop (Mic, Camera, Share) and glyphs alone on a phone, their full name and state in
+the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space kept in This Browser) the microphone stays as a local preview, titled Only You ([The Call dock](../008-canvas/avatar-mode.md#the-call-dock)). The building strip carries no call controls: a call rides Avatar
 mode, so there is none to control while building
 ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
 
 ```
  ┌────────────────────────────────────────────────────────────────────────────────────────────────┐
- │ [↖ Edit|👣 Walk] │ [🎙 Join Audio] [📷] [🖥] │ Character Clothes Hair Status │ Behaviour Reactions │ [Say] │
+ │ [↖ Edit|👣 Walk] │ Gender Clothes Hair Status │ Actions React │ [Say] │
  └────────────────────────────────────────────────────────────────────────────────────────────────┘
    (an Editor's only)
 ```
@@ -122,8 +123,9 @@ under the pointer as a category is switched.
   (`useBarLabels`). Measured, not estimated: the menu card is wider with a long tab name, and an
   estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs
   need more than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
-  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
-  sideways while the Edit | Walk toggle and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the names (owner, 2026-11-07: "On mobile, in the palette, always include labels for the buttons and
+  categories, it scrolls so its not an issue that they don't all fit on screen"), 44 px apart, and the bar swipes
+  sideways while the Edit | Walk toggle and Search (both glyphs alone) stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
   icon; an edge with nothing beyond it stays sharp.
@@ -431,10 +433,11 @@ its bottom-row button. What changes to fit the width:
   other category's tiles, and Icons and Stickers their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
-- **The avatar palette's toggle and call group stay put** with Say, while the look and action buttons swipe between them
-  ([The avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette)), so Mute or Leave is always one tap away.
-  Its buttons are the strip's 44px phone buttons; Share Screen is not offered on a phone (no screen picker), so a
-  live call's group is the microphone, the camera and Leave.
+- **The avatar palette's toggle stays put** with Say, while the look and action buttons swipe between them, all
+  named ([The avatar palette](../008-canvas/avatar-mode.md#the-avatar-palette)). The call's buttons are on the
+  [Call dock](../008-canvas/avatar-mode.md#the-call-dock), glyphs alone, one row above the bottom-right cluster, so Mute
+  is always one tap away. Share Screen is not offered on a phone (no screen picker), so a live call's group
+  is the microphone and the camera.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Editor app](editor-app.md)). Fit
   stays.
 - **The top corner stacks start below the strip** (68px down rather than

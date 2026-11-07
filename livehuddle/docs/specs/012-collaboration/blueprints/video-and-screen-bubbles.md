@@ -57,7 +57,7 @@ live and on every preview change, `adoptPreview()`: it takes each kind it may se
 (`CallVideo.adoptCamera` / `adoptScreen`, the same publish path as a toggle, no capture) and stops a preview of a kind
 the mode forbids. On teardown it clears only the own media it held and keeps the rest of `self`
 (`resetCallMedia(SELF_MEDIA_ID)`), so a preview it never took survives. `localOnly(self, media)` tells the bubble,
-the strip and its Screen Share group a stream is a preview (the call's state off, the preview's on).
+the Call dock and its Screen Share group a stream is a preview (the call's state off, the preview's on).
 
 **State** (`lib/calls/calls-store.ts`): `CallPeer` gains `video` and `screen` locators. A separate media store (`calls-media-store.ts`) holds
 the streams the bubbles draw (`callMedia()`: presence id → `{ video?, screen? }`, `self` for your own), and the
@@ -128,7 +128,7 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   the lift.
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places
-  them above characters (above the talking bars, `BUBBLE_LIFT_PX`), side by side when a person has both.
+  them above characters (just over the head, `BUBBLE_LIFT_PX` = `AVATAR_HEAD_CHROME` + 8), each with its talking equaliser on its top-left corner (`BubbleBars` in `TalkingBars.tsx`; `TalkingBars` skips anyone wearing a bubble), side by side when a person has both.
 - **Close together** (`lib/calls/bubble-layout.ts`, pure): `layoutBubbles(boxes, prevOrder)` takes each person's
   bubble group as a box (`{ id, x, bottom, width, height }` in canvas px: centred on the head, bottom
   `BUBBLE_LIFT_PX` over it, `groupWidth(count)` wide, 16:9 tall) and answers each group's sideways nudge `dx`, its
@@ -147,12 +147,14 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 - **Speech clear of bubbles**: `Canvas.tsx` hands the same ref to `AvatarSpeechLayer` as `obstacles`; the layer's
   flight loop lifts each speech bubble by `speechLift` (`../packages/avatar/src/speech.ts`, the
   [avatar speech blueprint](../../008-canvas/blueprints/avatar-speech.md)).
-- `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform.
-- `components/calls/ScreenShareStripGroup.tsx`: the avatar palette's **Screen Share** group while you share (the
-  Sharing indicator and Stop Sharing), and `useScreenSharing()`, the one boolean the palette reads to swap the look's
-  Gender, Clothes and Hair out for it (`AvatarPalette.tsx`, which also closes a look flyout left open). It replaced
-  the floating ScreenShareBar.
-- `CallStripGroup.tsx`: Camera and Share Screen segments between the microphone and Leave (Share Screen hidden while
+- `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform, marked
+  `data-call-maximised`. With the bubble layer (`data-call-bubbles`) it is listed in `CHROME_OVER_CANVAS`
+  (`hooks/canvas/useCanvasSurfaceGestures.ts`), so a press on it never starts a walk to the spot behind it.
+- `components/calls/ScreenShareStripGroup.tsx`: the **Screen Share** group while you share (the Sharing indicator and
+  Stop Sharing), and `useScreenSharing()`, the one boolean the Call dock (`CallDock.tsx`) reads to add it after the
+  call group behind a divider. The avatar palette no longer reads it: its look stays. It replaced the floating
+  ScreenShareBar.
+- `CallStripGroup.tsx`: Camera and Share Screen segments after the microphone (Share Screen hidden while
   the share is on, Stop Sharing being the Screen Share group's); **Video Paused** under audio only.
 
 ## Accessibility
@@ -189,7 +191,7 @@ restores, focus moves to Restore on open and back to the bubble on close. The Sc
 | `MAX_VIDEO_BUBBLES`     | 6                                   | The card's cap: the nearest six            |
 | `MAX_SCREEN_BUBBLES`    | 2                                   | A screen is about three bubbles of traffic |
 | `BUBBLE_VIEW_MARGIN_PX` | 120                                 | An edge bubble does not flicker            |
-| `BUBBLE_WIDTH_PX`       | 120                                 | Readable at 100%, small beside a character |
+| `BUBBLE_WIDTH_PX`       | 180                                 | A face and a screen readable at 100%       |
 | `BUBBLE_GAP_PX`         | 8                                   | Between bubbles, and a person's two        |
 | `BUBBLE_SWAP_PX`        | 24                                  | Crossing needed before two bubbles swap    |
 | `BUBBLE_NUDGE_MS`       | 220                                 | A swap slides, quick enough to follow      |

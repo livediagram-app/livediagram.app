@@ -1,21 +1,21 @@
 'use client';
 
-// The call group: proximity audio's controls, first on the avatar palette, at the strip's left (docs/specs/008-canvas/
-// avatar-mode.md "The avatar palette"; docs/specs/012-collaboration/proximity-audio.md "Who is in a call" and "The
-// microphone"; owner 2026-11-06, moved there from the bottom-right cluster). Before you join: one button, Join Audio
-// (Listen In for a Viewer). Once in: the microphone, which mutes and unmutes and shows at a glance whether anyone
-// hears you, and Leave Audio. While the calls kill switch pauses calls: Calls Paused, calm, never an error, and a press tries
-// again (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). Nothing at all while calls are off or there is
-// nobody to talk to. Once in, the camera and Share Screen sit beside the microphone (docs/specs/012-collaboration/
-// video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. The strip carries no help
-// link (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the
-// count of raised hands for its speakers) and, on a stage you may not speak from, a line under the group; Do Not
-// Disturb adds a segment that clears it (meeting-rooms-and-stage.md "Raise hand", "The stage line", "Do Not Disturb").
-// With no call to offer, or before joining, the camera and Share Screen still show where the browser can capture, as a
-// local preview only you see (video-and-screen-bubbles.md "Local preview"). While a share is on, its controls are the
-// Screen Share group's (ScreenShareStripGroup), not this group's.
+// The call group: proximity audio's controls, on the Call dock at the bottom centre (CallDock; docs/specs/008-canvas/
+// avatar-mode.md "The Call dock"; docs/specs/012-collaboration/proximity-audio.md "Who is in a call" and "The
+// microphone"; owner 2026-11-07, moved there from the avatar palette). Each is named beside its glyph with a short label
+// on a desktop (Mic, Camera, Share), a glyph alone on a phone. There is no Join or Leave (owner, 2026-11-07: "Joining
+// audio and leaving audio ... is friction"): walking where there is a call joins it, hearing the people near you, and
+// the microphone starts muted, unmuted with a press. While it connects: Connecting, greyed. While the calls kill switch
+// pauses calls: Calls Paused, calm, never an error, and a press tries again (docs/specs/016-platform/calls-kill-switch.md
+// "Calls Paused"); a failure reads Retry. The camera and Share Screen sit beside the microphone (docs/specs/
+// 012-collaboration/video-and-screen-bubbles.md), reading Video Paused while the switch allows audio alone. The dock
+// carries no help link (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the count of raised
+// hands for its speakers) and, on a stage you may not speak from, a line over the group; Do Not Disturb adds a segment
+// that clears it (meeting-rooms-and-stage.md "Raise hand", "The stage line", "Do Not Disturb"). With no call to offer
+// (This Browser, no calls on the server, calls paused), the microphone, the camera and Share Screen still show where
+// the browser can capture, as a local preview only you see (proximity-audio.md and video-and-screen-bubbles.md "Local
+// preview"). While a share is on, its controls are the Screen Share group's (ScreenShareStripGroup), not this group's.
 import {
-  lucideHeadphoneOff,
   lucideHeadphones,
   lucideMic,
   lucideMicOff,
@@ -27,10 +27,8 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { callsModeAllows } from '@livehuddle/api-schema';
 import { lucideGlyph } from '@livehuddle/ui';
-import { useSyncExternalStore, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
-  callSelf,
-  onCallSelf,
   useCallActions,
   useCallSelf,
   type CallActions,
@@ -43,19 +41,11 @@ import { DoNotDisturbSegment, HandSegment, StageLine } from './StageSegments';
 const MicIcon = lucideGlyph(lucideMic, 16);
 const MicOffIcon = lucideGlyph(lucideMicOff, 16);
 const HeadphonesIcon = lucideGlyph(lucideHeadphones, 16);
-const LeaveIcon = lucideGlyph(lucideHeadphoneOff, 16);
 const PauseIcon = lucideGlyph(lucidePause, 16);
 const VideoIcon = lucideGlyph(lucideVideo, 16);
 const VideoOffIcon = lucideGlyph(lucideVideoOff, 16);
 const ScreenIcon = lucideGlyph(lucideScreenShare, 16);
 const ScreenOffIcon = lucideGlyph(lucideScreenShareOff, 16);
-
-/** Why Join Audio is greyed while walking offers no call (proximity-audio.md "No call here"). */
-export const NO_CALL_REASON: Record<'unsynced' | 'off', string> = {
-  unsynced:
-    'This space is only saved in your browser, so nobody else can join. Save it online to talk with people.',
-  off: 'Calls are not available on this server.',
-};
 
 /** What a screen reader hears when the kill switch pauses calls (an `aria-live` region beside the control). */
 export const CALLS_PAUSED_ANNOUNCEMENT = 'Calls are paused';
@@ -71,6 +61,16 @@ export function micIndicator(self: CallSelf): MicIndicator {
   return self.someoneNear ? 'live' : 'nobody-near';
 }
 
+/** The microphone's short label beside its glyph on a desktop (the Call dock); the hover card carries the rest. */
+const INDICATOR_NAME: Record<MicIndicator, string> = {
+  live: 'Mic',
+  'nobody-near': 'Mic',
+  muted: 'Muted',
+  blocked: 'Blocked',
+  closed: 'Mic Off',
+  listening: 'Listening',
+};
+
 const INDICATOR_TEXT: Record<MicIndicator, { title: string; description: string }> = {
   live: { title: 'Mic: Live', description: 'The people near you hear you. Press to mute.' },
   'nobody-near': {
@@ -81,12 +81,11 @@ const INDICATOR_TEXT: Record<MicIndicator, { title: string; description: string 
   blocked: {
     title: 'Mic: Blocked',
     description:
-      'Your browser refused the microphone. Allow it from the address bar, then join again. You still hear everyone.',
+      'Your browser refused the microphone. Allow it from the address bar, then press to try again. You still hear everyone.',
   },
   closed: {
     title: 'Mic: Off',
-    description:
-      'Nobody else is on this tab, so your microphone is off. It opens when somebody arrives.',
+    description: 'Your microphone is opening. Press to mute.',
   },
   listening: {
     title: 'Mic: Listening',
@@ -94,19 +93,30 @@ const INDICATOR_TEXT: Record<MicIndicator, { title: string; description: string 
   },
 };
 
-// A soft ring round the microphone while somebody hears you, breathing with your own level.
-function LiveRing({ level }: { level: number }) {
+/**
+ * Your voice in the microphone button as you speak (owner, 2026-11-07: "show my voice volume etc in the mic button as
+ * I speak so I can see how loud it is etc and see when I am transmitting"): a fill rising from the button's foot with
+ * your level, 0 to 4, gliding between steps. Drawn while the microphone is open and unmuted, a call's or the local
+ * preview's, so it moving means your voice is being picked up; the button's solid brand says somebody hears it.
+ */
+export function MicMeter({ level, onSolid }: { level: number; onSolid: boolean }) {
   return (
     <span
       aria-hidden
-      // On the solid brand of a live mic, so drawn in white.
-      className="pointer-events-none absolute inset-0.5 rounded-[5px] ring-2 ring-white/70 ring-inset transition-[box-shadow,opacity] duration-150"
-      style={{ opacity: 0.45 + level * 0.14 }}
-    />
+      data-mic-meter={level}
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+    >
+      <span
+        className={`absolute inset-x-0 bottom-0 transition-[height] duration-150 ease-out motion-reduce:transition-none ${
+          onSolid ? 'bg-white/30' : 'bg-brand-500/25 dark:bg-brand-400/30'
+        }`}
+        style={{ height: `${(Math.min(4, Math.max(0, level)) / 4) * 100}%` }}
+      />
+    </span>
   );
 }
 
-// The group's frame: its buttons side by side, as the strip's others are, the stage line hung under it.
+// The group's frame: its buttons side by side, the stage line hung over it.
 function CallGroup({ children }: { children: ReactNode }) {
   return (
     <div
@@ -119,33 +129,6 @@ function CallGroup({ children }: { children: ReactNode }) {
       {children}
     </div>
   );
-}
-
-/**
- * What the group shows, coarsely (which kind of control, and the segments that come and go), so the strip measures
- * its named width afresh when the group grows or shrinks (useBarLabels' key) without re-measuring on every change of
- * the microphone's state as you walk.
- */
-export function callGroupShape(self: CallSelf, doNotDisturb: boolean): string {
-  if (!self.available)
-    return `preview:${self.canSpeak && (self.canPreviewCamera || self.canPreviewScreen)}:${self.canSpeak ? self.unavailableReason : null}`;
-  return [
-    self.mode,
-    self.phase === 'live' ? 'live' : 'join',
-    self.canSpeak,
-    self.canShare,
-    doNotDisturb,
-    self.hand,
-    self.stage,
-    self.handsUp > 0,
-  ].join(':');
-}
-
-/** The group's shape, subscribed to alone: a string, so the strip re-renders only when the shape changes, never on
- *  the microphone level ticking as you talk (the group itself re-renders for that). */
-export function useCallGroupShape(doNotDisturb: boolean): string {
-  const shape = () => callGroupShape(callSelf(), doNotDisturb);
-  return useSyncExternalStore(onCallSelf, shape, shape);
 }
 
 export function CallStripGroup({
@@ -163,25 +146,14 @@ export function CallStripGroup({
   const actions = useCallActions();
   if (!actions) return null;
   if (!self.available) {
-    // No call here (no room, calls off): Join Audio greyed with the reason (proximity-audio.md "No call here"), then the
-    // camera and screen as a local preview.
-    const reason = self.canSpeak ? self.unavailableReason : null;
-    if (!reason && (!self.canSpeak || !(self.canPreviewCamera || self.canPreviewScreen)))
+    // No call here (no room, calls off): the microphone, the camera and the screen as a local preview only you see
+    // (proximity-audio.md "No call here", "Local preview"), the microphone's hover card saying why nothing is sent.
+    if (!self.canSpeak || !(self.canPreviewMic || self.canPreviewCamera || self.canPreviewScreen))
       return null;
     return (
       <>
         <CallGroup>
-          {reason ? (
-            <Segment
-              label="Join Audio"
-              name="Join Audio"
-              title="Join Audio"
-              description={NO_CALL_REASON[reason]}
-              icon={<MicIcon />}
-              unavailable
-              glyphOnly
-            />
-          ) : null}
+          <PreviewMicSegment self={self} actions={actions} />
           <MediaSegments self={self} actions={actions} />
         </CallGroup>
         {after}
@@ -235,32 +207,45 @@ function CallControl({
           onClick={actions.join}
           disabled={trying}
         />
+        <PreviewMicSegment self={self} actions={actions} />
         <MediaSegments self={self} actions={actions} />
       </>
     );
   }
 
-  if (self.phase === 'off' || self.phase === 'joining' || self.phase === 'error') {
-    const joining = self.phase === 'joining';
-    const name = self.canSpeak ? 'Join Audio' : 'Listen In';
+  if (self.phase === 'error') {
     return (
       <>
         <Segment
-          label={name}
-          name={joining ? 'Joining…' : name}
-          title={self.phase === 'error' ? 'Audio Unavailable' : name}
-          description={
-            self.phase === 'error'
-              ? 'Audio could not start. Press to try again.'
-              : self.canSpeak
-                ? 'Talk with the people near your character. Walk away to leave a conversation.'
-                : 'Hear the people near your character. Your link lets you listen, not speak.'
-          }
-          icon={self.canSpeak ? <MicIcon /> : <HeadphonesIcon />}
-          glyphOnly
+          label="Retry Audio"
+          name="Retry"
+          title="Audio Unavailable"
+          description="Audio could not start. Press to try again."
+          icon={self.canSpeak ? <MicOffIcon /> : <HeadphonesIcon />}
           onClick={actions.join}
-          disabled={joining}
-          tone={self.phase === 'error' ? 'warn' : 'rest'}
+          tone="warn"
+        />
+        <PreviewMicSegment self={self} actions={actions} />
+        <MediaSegments self={self} actions={actions} />
+      </>
+    );
+  }
+
+  // On its way in: walking joins by itself, muted (proximity-audio.md "Who is in a call").
+  if (self.phase === 'off' || self.phase === 'joining') {
+    return (
+      <>
+        <Segment
+          label="Connecting audio"
+          name="Connecting…"
+          title="Connecting Audio"
+          description={
+            self.canSpeak
+              ? 'Joining the people near your character, your microphone muted.'
+              : 'Joining the people near your character. Your link lets you listen, not speak.'
+          }
+          icon={self.canSpeak ? <MicOffIcon /> : <HeadphonesIcon />}
+          disabled
         />
         <MediaSegments self={self} actions={actions} />
       </>
@@ -269,13 +254,14 @@ function CallControl({
 
   const indicator = micIndicator(self);
   const text = INDICATOR_TEXT[indicator];
-  const mutable = indicator !== 'listening' && indicator !== 'blocked';
+  // Mic Blocked is pressed to ask the browser again (call-mic.ts).
+  const mutable = indicator !== 'listening';
   return (
     <>
       <StageLine barredBy={self.barredBy} onStage={self.stage === 'speaker'} />
       <Segment
         label={self.muted ? 'Unmute' : indicator === 'listening' ? 'Listening' : 'Mute'}
-        name={text.title}
+        name={INDICATOR_NAME[indicator]}
         title={text.title}
         description={text.description}
         icon={
@@ -287,7 +273,6 @@ function CallControl({
             <MicIcon />
           )
         }
-        glyphOnly
         onClick={mutable ? actions.toggleMute : undefined}
         pressed={mutable ? self.muted : undefined}
         tone={
@@ -300,20 +285,54 @@ function CallControl({
                 : 'rest'
         }
       >
-        {indicator === 'live' ? <LiveRing level={self.level} /> : null}
+        {indicator === 'live' || indicator === 'nobody-near' ? (
+          <MicMeter level={self.level} onSolid={indicator === 'live'} />
+        ) : null}
       </Segment>
       {doNotDisturb ? <DoNotDisturbSegment onClear={onClearDoNotDisturb} /> : null}
       <HandSegment self={self} actions={actions} />
       <MediaSegments self={self} actions={actions} />
-      <Segment
-        label="Leave Audio"
-        name="Leave"
-        title="Leave Audio"
-        description="Stop hearing and being heard. Your microphone is released."
-        icon={<LeaveIcon />}
-        onClick={actions.leave}
-      />
     </>
+  );
+}
+
+/**
+ * A local preview's hover cards, one short line each (owner, 2026-11-07: "shorten the tooltips when local, its way to
+ * long"): the title says Only You, so the line says only what a press does.
+ */
+export const PREVIEW_TEXT = {
+  micOn: 'Nothing is sent. Press to mute.',
+  micOff: 'Try your mic. Nothing is sent.',
+  cameraOn: 'Nothing is sent. Press to turn off.',
+  cameraOff: 'Try your camera. Nothing is sent.',
+  screenOn: 'Nothing is sent. Press to stop.',
+  screenOff: 'Try sharing. Nothing is sent.',
+  blocked: 'Allow it in the address bar, then press again.',
+  noShare: 'Your link lets you preview, not share.',
+} as const;
+
+function PreviewMicSegment({ self, actions }: { self: CallSelf; actions: CallActions }) {
+  if (!self.canSpeak || !self.canPreviewMic) return null;
+  const state = self.previewMic;
+  const on = state === 'on';
+  return (
+    <Segment
+      label={on ? 'Mute' : 'Unmute'}
+      name={
+        state === 'starting' ? 'Starting…' : on ? 'Mic' : state === 'blocked' ? 'Blocked' : 'Muted'
+      }
+      title={on ? 'Mic: Only You' : state === 'blocked' ? 'Mic: Blocked' : 'Mic: Muted'}
+      description={
+        on ? PREVIEW_TEXT.micOn : state === 'blocked' ? PREVIEW_TEXT.blocked : PREVIEW_TEXT.micOff
+      }
+      icon={on ? <MicIcon /> : <MicOffIcon />}
+      onClick={actions.toggleMute}
+      disabled={state === 'starting'}
+      pressed={!on}
+      tone={on ? 'live' : state === 'blocked' ? 'warn' : 'muted'}
+    >
+      {on ? <MicMeter level={self.level} onSolid /> : null}
+    </Segment>
   );
 }
 
@@ -338,26 +357,24 @@ const CAMERA_TEXT: Record<'on' | 'blocked' | 'off', MediaText> = {
   },
 };
 
-// Why a preview is yours alone, ending each preview hover card (video-and-screen-bubbles.md "Local preview").
-function previewWhy(self: CallSelf): string {
-  return self.available ? 'until you join audio' : 'here: this Space has no call to send it on';
-}
-
 function cameraText(self: CallSelf, live: boolean): MediaText {
   const camera = selfCamera(self);
   if (localOnly(self, 'video')) {
     return {
       label: 'Turn Off Camera',
-      title: 'Camera: Preview',
-      description: `Nothing is sent: only you see it ${previewWhy(self)}. Press to turn it off.`,
+      title: 'Camera: Only You',
+      description: PREVIEW_TEXT.cameraOn,
     };
   }
   if (!live && camera === 'off') {
     return {
       label: 'Turn On Camera',
       title: 'Camera: Off',
-      description: `Preview your camera in a bubble above your head. Only you see it ${previewWhy(self)}.`,
+      description: PREVIEW_TEXT.cameraOff,
     };
+  }
+  if (!live && camera === 'blocked') {
+    return { label: 'Turn On Camera', title: 'Camera: Blocked', description: PREVIEW_TEXT.blocked };
   }
   return CAMERA_TEXT[camera === 'on' || camera === 'blocked' ? camera : 'off'];
 }
@@ -365,15 +382,11 @@ function cameraText(self: CallSelf, live: boolean): MediaText {
 function screenText(self: CallSelf, live: boolean): MediaText {
   const sending = self.screen === 'on';
   // A Participant previews a screen even in a call: sharing one is an Editor's.
-  const why = live || self.canShare ? previewWhy(self) : 'here';
   if (localOnly(self, 'screen')) {
     return {
       label: 'Stop Sharing',
-      title: 'Share Screen: Preview',
-      description:
-        live && !self.canShare
-          ? 'Nothing is sent: your link lets you preview a screen, not share it. Press to stop.'
-          : `Nothing is sent: only you see it ${why}. Press to stop.`,
+      title: 'Share Screen: Only You',
+      description: live && !self.canShare ? PREVIEW_TEXT.noShare : PREVIEW_TEXT.screenOn,
     };
   }
   if (sending) {
@@ -394,15 +407,12 @@ function screenText(self: CallSelf, live: boolean): MediaText {
   return {
     label: 'Share Screen',
     title: 'Share Screen: Off',
-    description:
-      live && !self.canShare
-        ? 'Preview a screen, window or tab above your head. Only you see it: your link lets you preview a screen, not share it.'
-        : `Preview a screen, window or tab in a bubble above your head. Only you see it ${why}.`,
+    description: live && !self.canShare ? PREVIEW_TEXT.noShare : PREVIEW_TEXT.screenOff,
   };
 }
 
 // The camera and Share Screen (video-and-screen-bubbles.md "The camera", "The screen share", "Local preview", "The
-// kill switch"): between the microphone and Leave once in, beside Join Audio before, and alone with no call. A Viewer
+// kill switch"): beside the microphone, in a call or as a local preview with none. A Viewer
 // has neither; in a call Share Screen sends for an Editor and previews for a Participant; under audio only in a call
 // both give way to one calm Video Paused.
 function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions }) {
@@ -423,7 +433,8 @@ function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions
   const screen = selfScreen(self);
   const showCamera = live || self.canPreviewCamera || camera !== 'off';
   // While the share is on, Stop Sharing is the Screen Share group's, which takes the look's place in the strip
-  // (ScreenShareStripGroup; video-and-screen-bubbles.md "The screen share"), so this button gives way to it.
+  // (ScreenShareStripGroup, after this group on the Call dock; video-and-screen-bubbles.md "The screen share"), so this
+  // button gives way to it.
   const showScreen =
     screen !== 'on' && ((live && self.canShare) || self.canPreviewScreen || screen !== 'off');
   const camText = cameraText(self, live);
@@ -438,7 +449,6 @@ function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions
           title={camText.title}
           description={camText.description}
           icon={camera === 'on' ? <VideoIcon /> : <VideoOffIcon />}
-          glyphOnly
           onClick={actions.toggleCamera}
           disabled={camera === 'starting'}
           pressed={camera === 'on'}
@@ -452,7 +462,6 @@ function MediaSegments({ self, actions }: { self: CallSelf; actions: CallActions
           title={scrText.title}
           description={scrText.description}
           icon={on ? <ScreenOffIcon /> : <ScreenIcon />}
-          glyphOnly
           onClick={actions.toggleScreen}
           disabled={screen === 'starting'}
           pressed={on}

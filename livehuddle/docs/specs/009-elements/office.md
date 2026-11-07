@@ -117,7 +117,7 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
 - Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
   the room's stroke: one change, one undo, the room selected.
 - Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
-  (DEFAULTS.md D222):
+  (DEFAULTS.md D226):
 
   | Preset    | Furnishings                                                                                                                                         |
   | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |

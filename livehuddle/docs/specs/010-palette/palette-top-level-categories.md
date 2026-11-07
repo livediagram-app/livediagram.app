@@ -115,7 +115,9 @@ Write | Rooms Seats Perks Play Garden Meet | Travel
   categories take the Meet band (6). `SPACE_CATEGORIES` is in this order, so the meeting layout, the flyouts and the
   search read it as they always have.
 - **On a phone** the bar is the strip's swipeable rail (`scrollable`), so the longer row swipes sideways and the
-  Edit | Walk toggle and Search beside it stay in reach; between a phone and a wide window the names drop to glyphs when
+  Edit | Walk toggle and Search beside it (glyphs alone) stay in reach. The categories are **always named** there
+  (owner, 2026-11-07: "On mobile, in the palette, always include labels for the buttons and categories, it scrolls so
+  its not an issue that they don't all fit on screen"); between a phone and a wide window the names drop to glyphs when
   the named bar does not fit (`useBarLabels`), as before.
 
 ## No Selection Mode picker

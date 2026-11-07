@@ -29,10 +29,14 @@ graph or a bubble, and their placing. The store is three modules behind one door
 call, the kill-switch mode), which re-exports `calls-hands-store.ts` (hands, let-speaks, stamped levels) and
 `calls-media-store.ts` (the bubbles' streams and the maximised one).
 
-**Call phase** (`lib/calls/calls-store.ts`): `off` → (Join Audio) `joining` → `live`; `joining` → `error` on a refused
-session or a failed connection; `live`/`error` → (Leave Audio, leaving the mode, changing tab, unmount) `off`.
-`micState`: `closed` (no other walker for `MIC_IDLE_CLOSE_MS`, or a listener), `open`, `blocked` (getUserMedia
-refused); `muted` is separate and survives the microphone closing.
+**Call phase** (`lib/calls/calls-store.ts`): `off` → (walking where there is a call; `useProximityCall` joins by itself) `joining` → `live`; `joining` → `error` on a
+refused session or a failed connection; `live`/`error` → (leaving the mode, the room, changing tab, unmount) `off`. A
+failure or a pause does not retry: the dock's Retry or Calls Paused press does. There is no leave action.
+`micState`: `closed` (not yet opened: muted by default, no browser prompt until the first unmute; or released after
+`MIC_IDLE_CLOSE_MS` muted and alone; or a listener), `open`, `blocked` (getUserMedia refused; a press asks again);
+`muted` (true at the start) is separate and survives the microphone closing. With no call, `CallSelf.canPreviewMic` and
+`previewMic` (`off` / `starting` / `on` / `blocked`) drive `LocalMic` (`lib/calls/local-mic.ts`), which opens the
+microphone for your own equaliser and sends nothing.
 
 **Hearing** (`lib/calls/hearing.ts`, pure): rooms first ([Meeting rooms and the stage](meeting-rooms-and-stage.md)
 blueprint: `nextHeard`'s optional `zoning` hears a shared room whole and never across zones). In the open,
@@ -106,12 +110,12 @@ held frames for one step. The editor's store is memory only and empties on leavi
   the call re-sends `call-session`. Every other `errorCode` is still a refusal never asked for again.
 
 - Calls off, or no shared room: no controls; the store stays `off`.
-- Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Audio Unavailable**;
+- Session refused (`calls_off` after capabilities said on): phase `error`, the button reads **Retry** (title Audio Unavailable);
   with reason `paused` it is no error: phase `off`, mode `off`, the button reads **Calls Paused**.
-- The kill switch pauses calls mid-call (the room's `calls-mode` op, or a `paused` refusal): the call ends as Leave
-  Audio does, into **Calls Paused**.
-- Microphone refused: `micState: 'blocked'`, joined as a listener; the button says how to allow it.
-- Connection fails (`iceconnectionstate` `failed`): phase `error`, Leave and Join again start fresh.
+- The kill switch pauses calls mid-call (the room's `calls-mode` op, or a `paused` refusal): the call ends as leaving
+  the mode does, into **Calls Paused**.
+- Microphone refused (on the first unmute): `micState: 'blocked'`, still hearing; the button says how to allow it and a press asks the browser again.
+- Connection fails (`iceconnectionstate` `failed`): phase `error`, the Retry press starts fresh.
 - A locator for a session that ended: the subscribe's per-track error is ignored; the peer is retried only when it
   sends a new locator.
 - A peer who walks out of range mid-subscribe: the queue's reconciliation closes it on the next run.
@@ -141,21 +145,25 @@ held frames for one step. The editor's store is memory only and empties on leavi
   a locator Realtime refuses is never asked for again in a loop.
 - The hearing check runs on each change of `remoteAvatars` (at most once a frame), linear in walkers.
 - Bars animate in CSS from a level custom property; a level change re-renders one bar group.
-- The calls code loads only when someone presses Join Audio (`loadProximityCall`), so the canvas chunk gains only the
-  store, the bars and the button.
+- The calls code loads when walking first joins a call (`loadProximityCall`), not on a press, so the canvas chunk gains
+  only the store, the bars, `LocalMic` (store, constraints and voice detector only) and the buttons. Walking in opens no
+  microphone, so it costs no prompt; a join made without a press starts its audio suspended and resumes on the next
+  press or key.
 
 ## Presentation and UX
 
-- The call group, first on the avatar palette (`components/calls/CallStripGroup.tsx`, placed by `AvatarPalette.tsx`):
-  **Join Audio** (mic; Viewer: **Listen In**, headphones), then **Mute**/**Unmute** (mic, struck mic when muted, amber
-  struck mic when blocked) with the indicator, and **Leave Audio** (headphones struck). Say's tinted strip buttons
-  (`STRIP_TINT_BUTTON` on `TOOLBAR_TRIGGER_TONE`, 36 px, 44 px wide on a phone; a live mic solid brand), named beside the icon while the bar shows names (`useBarLabels`, through `CallNamesContext`),
-  icon alone otherwise.
+- The call group, on the Call dock at the bottom centre (`components/calls/CallStripGroup.tsx`, placed by `CallDock.tsx`; no longer on `AvatarPalette.tsx`):
+  while connecting a greyed **Connecting…**, on failure a warn **Retry** (title Audio Unavailable), otherwise
+  **Mute**/**Unmute** (mic, struck mic when muted, amber struck mic when blocked) with the indicator; no Join or Leave.
+  With no call, `PreviewMicSegment` (Muted, then Mic: Only You; the dock gives no reason why there is no call); the mic button's level fill (0 to 4, gliding) replaced the live ring. Say's tinted strip buttons
+  (`STRIP_TINT_BUTTON` on `TOOLBAR_TRIGGER_TONE`, 36 px, 44 px wide on a phone; a live mic solid brand), named beside the icon with a short label on a desktop (Mic / Muted / Blocked / Mic Off / Listening, Connecting…,
+  Retry, Camera, Share: `INDICATOR_NAME` for the microphone; `CallNames` is provided as `!isMobile` by `CallDock`), icon
+  alone on a phone.
 - Bars: three 3 px rounded bars, 2 px apart, 12 px tall at most, the speaker's colour, 6 px above the name chip
   (`components/calls/TalkingBars.tsx`). They live in the canvas layer and zoom with the characters and their chips,
   and slide with a walking character's glide (`avatarGlides`), landing at once on a jump.
-- The microphone's resting state when nobody else is on the tab reads **Mic Off** ("it opens when somebody
-  arrives"); a Viewer's reads **Listening**.
+- The microphone starts **Muted**; **Mic Off** is only the moment while an unmuted microphone opens ("Your microphone
+  is opening"); a Viewer's reads **Listening**.
 
 ## Accessibility
 

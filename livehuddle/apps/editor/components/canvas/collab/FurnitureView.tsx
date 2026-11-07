@@ -1,10 +1,12 @@
 'use client';
 
 import { seatPillBottom, seatRing, type Sitter } from '@liveworkspace/avatar/chair-sitters';
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
+import { hasMoment, swaysOnMoment } from '@/lib/piece-moments';
+import { MomentSway, PieceMoment } from './PieceMoments';
 import { hasSocialArt, SocialArt } from './SocialArt';
 import { hasWorkdayArt, WorkdayArt } from './WorkdayFaces';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
@@ -200,16 +202,20 @@ export function FurnitureView({
         }
       >
         {/* The ring rides inside the drawing's own frame, so a mirrored side mirrors it too. */}
-        <g transform={frame.transform || undefined}>
-          {parts.map((p, i) => [
-            i === ringUnder ? ringView : null,
-            <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
-          ])}
-          {ringUnder >= parts.length ? ringView : null}
-          {kind === 'office-pod' ? (
-            <PodDoor closed={podClosed(sitters.length)} stroke={stroke} />
-          ) : null}
-        </g>
+        {withSway(
+          kind,
+          element.id,
+          <g transform={frame.transform || undefined}>
+            {parts.map((p, i) => [
+              i === ringUnder ? ringView : null,
+              <FurniturePartView key={i} part={p} seat={seat} stroke={stroke} />,
+            ])}
+            {ringUnder >= parts.length ? ringView : null}
+            {kind === 'office-pod' ? (
+              <PodDoor closed={podClosed(sitters.length)} stroke={stroke} />
+            ) : null}
+          </g>,
+        )}
         {hasSocialArt(kind) ? (
           <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
         ) : null}
@@ -225,6 +231,7 @@ export function FurnitureView({
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
         ) : null}
+        {hasMoment(kind) ? <PieceMoment kind={kind} id={element.id} /> : null}
       </svg>
       {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
       {occupied && kind !== 'hot-desk' ? (
@@ -237,6 +244,17 @@ export function FurnitureView({
         </span>
       ) : null}
     </div>
+  );
+}
+
+// A tree's or a plant's drawing rocks in its moment (docs/specs/009-elements/piece-moments.md); only those subscribe.
+function withSway(kind: string, id: string, drawing: ReactNode): ReactNode {
+  return swaysOnMoment(kind) ? (
+    <MomentSway kind={kind} id={id}>
+      {drawing}
+    </MomentSway>
+  ) : (
+    drawing
   );
 }
 

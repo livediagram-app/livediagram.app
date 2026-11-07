@@ -40,6 +40,9 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
+/** What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode). */
+const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call-maximised]';
+
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
 // intercepts (spotlight grow / shrink, middle-mouse pan,
@@ -49,6 +52,7 @@ const inCornerCluster = (target: EventTarget | null): boolean =>
 // returned handlers verbatim; every piece of state they drive stays
 // owned by its existing hook (pan / marquee, spotlight, iso camera,
 // the draw gesture).
+
 export function useCanvasSurfaceGestures({
   canvasTool,
   middleMousePan,
@@ -240,8 +244,10 @@ export function useCanvasSurfaceGestures({
         return;
       }
       // A talker's bars are a button of their own (docs/specs/012-collaboration/proximity-audio.md): its press walks
-      // over, so it is not a walk to the spot under it.
-      if (e.target instanceof Element && e.target.closest('[data-talking-bars]')) return;
+      // over, so it is not a walk to the spot under it. A camera or screen bubble, and the maximised one, are buttons of
+      // their own too (docs/specs/012-collaboration/video-and-screen-bubbles.md "Maximise"): pressing one opens it or
+      // stops a share, never a walk to the spot behind it (owner, 2026-11-07).
+      if (e.target instanceof Element && e.target.closest(CHROME_OVER_CANVAS)) return;
       // A piece with something to do in place (a Directory, an Elevator, a Notice Board): its own press opens it,
       // and the character stays put (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"). Its click still
       // reaches the face; only the press is kept from the element, which would select or drag it.

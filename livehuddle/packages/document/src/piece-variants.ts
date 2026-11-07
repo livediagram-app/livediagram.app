@@ -68,7 +68,7 @@ export function isPieceVariant(v: unknown): v is string {
   return true;
 }
 
-/** Each type's size where it is not its kind's default (DEFAULTS.md D217, D219, D221). */
+/** Each type's size where it is not its kind's default (DEFAULTS.md D221, D223, D225). */
 export const PIECE_VARIANT_SIZES: Readonly<
   Record<string, Readonly<Record<string, { width: number; height: number }>>>
 > = {

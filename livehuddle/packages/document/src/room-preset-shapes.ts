@@ -20,7 +20,7 @@ type RoomPreset = {
 const OCT = 430 / (2 + Math.SQRT2);
 const oct = (v: number) => Math.round(v * 100) / 100;
 
-/** The Room presets after the plain Room (no variant), in palette order (DEFAULTS.md D220). */
+/** The Room presets after the plain Room (no variant), in palette order (DEFAULTS.md D224). */
 export const ROOM_PRESETS: Readonly<Record<string, RoomPreset>> = {
   office: { label: 'Office', width: 360, height: 240 },
   boardroom: { label: 'Boardroom', width: 800, height: 400 },

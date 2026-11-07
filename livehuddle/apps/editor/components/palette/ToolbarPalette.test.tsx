@@ -47,6 +47,7 @@ function show({
   ...props
 }: {
   hidden?: boolean;
+  leading?: ReactNode;
   tabElements?: Element[];
   editWalk?: ReactNode;
 } = {}) {
@@ -72,6 +73,22 @@ const openFlyout = (name: string) => {
 };
 
 describe('ToolbarPalette', () => {
+  // docs/specs/007-editor/toolbar-layout.md "On a phone" (owner, 2026-11-07: "it scrolls so its not an issue that they
+  // don't all fit"): the phone row's bar swipes, so it names its categories always.
+  it('names its categories on a phone row, and shows glyphs alone on a phone outside it', () => {
+    mobile.value = true;
+    show();
+    const named = () =>
+      [...document.querySelectorAll('[data-category-bar-button]')].filter(
+        (b) => b.textContent === b.getAttribute('aria-label'),
+      ).length;
+    expect(barNames().length).toBeGreaterThan(0);
+    expect(named()).toBe(0);
+    cleanup();
+    show({ leading: null });
+    expect(named()).toBe(barNames().length);
+  });
+
   // docs/specs/012-collaboration/workshop-mode.md "The palette": the meeting palette's bar, no Popular, no Session.
   it('shows the meeting palette on the strip, with Search, and no category picker or selection mode', () => {
     show();
