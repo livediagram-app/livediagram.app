@@ -5460,6 +5460,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "signpost",
       "photo-wall",
       "door",
+      "window",
       "directory",
       "elevator",
       "stairs",

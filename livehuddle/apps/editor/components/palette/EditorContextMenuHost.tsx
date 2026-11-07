@@ -118,6 +118,7 @@ export function EditorContextMenuHost() {
     setHeroCaptionSelected,
     setChairFacingSelected,
     setRoomDoorSelected,
+    setRoomWallsSelected,
     setStageSelected,
     setScreenUrlSelected,
     setClockZonesSelected,
@@ -296,6 +297,7 @@ export function EditorContextMenuHost() {
       onSetHeroCaption={setHeroCaptionSelected}
       onSetChairFacing={setChairFacingSelected}
       onSetRoomDoor={setRoomDoorSelected}
+      onSetRoomWalls={setRoomWallsSelected}
       onSetStage={setStageSelected}
       onSetScreenUrl={setScreenUrlSelected}
       onSetClockZones={setClockZonesSelected}

@@ -56,6 +56,8 @@ export type OfficeKind =
   | 'garden-fence'
   // The Door (docs/specs/009-elements/room-builder.md "Door").
   | 'door'
+  // The Window (docs/specs/009-elements/room-builder.md "Window").
+  | 'window'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   | 'directory'
   | 'elevator'
@@ -139,6 +141,7 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'grass',
   'garden-fence',
   'door',
+  'window',
   'directory',
   'elevator',
   'stairs',
@@ -204,6 +207,7 @@ export type SizedOfficeKind =
   | 'grass'
   | 'garden-fence'
   | 'door'
+  | 'window'
   | 'pond'
   | 'swimming-pool';
 const SIZED_OFFICE_KINDS: readonly string[] = [
@@ -215,6 +219,8 @@ const SIZED_OFFICE_KINDS: readonly string[] = [
   'grass',
   'garden-fence',
   'door',
+  // The Window (room-builder.md "Window"): its light falls past its box, drawn to its size.
+  'window',
   // The pond (docs/specs/009-elements/social-pieces.md "Pond"): resizable, drawn to its size like grass.
   'pond',
   // The Swimming Pool (docs/specs/009-elements/venue-pieces.md "Swimming Pool"): resizable, drawn to its size like the pond.

@@ -237,6 +237,7 @@ const FLOOR_FILLS: Record<
   | 'garden-path'
   | 'grass'
   | 'door'
+  | 'window'
   | 'pond'
   | 'swimming-pool',
   readonly [string, string]
@@ -247,6 +248,8 @@ const FLOOR_FILLS: Record<
   'swimming-pool': [POOL_FILL, POOL_FILL_DARK],
   // A door paints the gap it cuts in a wall in the room's floor (docs/specs/009-elements/room-builder.md "Door").
   door: [ROOM_FLOOR, '#292524'],
+  // A window's frame is the wall's band in the room's floor (room-builder.md "Window").
+  window: [ROOM_FLOOR, '#292524'],
   'garden-path': [GARDEN_PATH_FILL, GARDEN_PATH_FILL_DARK],
   grass: [GRASS_FILL, GRASS_FILL_DARK],
   room: [ROOM_FLOOR, '#292524'],
@@ -280,6 +283,7 @@ function behaviourSkin(
     kind === 'garden-path' ||
     kind === 'grass' ||
     kind === 'door' ||
+    kind === 'window' ||
     kind === 'pond' ||
     kind === 'swimming-pool'
   ) {
@@ -696,6 +700,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'stopwatch',
   // A Door (docs/specs/009-elements/room-builder.md "Door") draws its jambs, leaf and swing: no border of its own.
   'door',
+  // A Window (room-builder.md "Window") draws its frame, pane and light.
+  'window',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.

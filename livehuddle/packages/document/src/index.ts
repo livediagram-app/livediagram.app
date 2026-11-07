@@ -253,6 +253,8 @@ export * from './concept-timeline';
 export * from './shape-variants';
 export * from './piece-variants';
 export * from './door-art';
+export * from './window-art';
+export * from './glass-walls';
 export * from './rug-art';
 export * from './room-preset-shapes';
 export * from '@liveworkspace/model-core/title-caption';
