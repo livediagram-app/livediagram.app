@@ -59,7 +59,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'rooms',
     label: 'Rooms',
     description:
-      'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage, rugs and an office pod.',
+      'What a floor is laid out with: a fence, rooms, the Room Builder, doors, a stage with curtains and a podium, rugs, an office pod, pillars and columns.',
     tagline: 'Lay out the floor: rooms, walls and a stage.',
     icon: lucide(lucidePanelsTopLeft),
   },
@@ -104,7 +104,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     tileGroup: 'garden',
     label: 'Garden',
     description:
-      'The outdoors: plants, trees, paths, grass, low fences, benches, a picnic table, a hammock, a parasol, a fountain, a pond and a campfire.',
+      'The outdoors: plants, trees, paths, grass, low fences, benches, a picnic table, a hammock, a parasol, a fountain, a pond, a swimming pool, a campfire, a car park and a bike rack.',
     tagline: 'Take the meeting outside.',
     icon: lucide(lucideTreePine),
   },

@@ -16,6 +16,7 @@ import {
   STAGE_SPEAKER_LABELS,
   STAGE_SPEAKERS,
   stageParts,
+  STAGE_TONES,
   stageTop,
 } from './office';
 import { isValidElement } from './validate';
@@ -80,8 +81,25 @@ describe('the office pieces', () => {
       'toilet-cubicle',
       'washbasin',
       'hand-dryer',
+      // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+      'pillar',
+      'column',
+      'car-park',
+      'bike-rack',
+      'swimming-pool',
+      'stage-curtains',
+      'podium',
     ]);
-    const sized = ['room', 'stage', 'garden-path', 'grass', 'garden-fence', 'door', 'pond'];
+    const sized = [
+      'room',
+      'stage',
+      'garden-path',
+      'grass',
+      'garden-fence',
+      'door',
+      'pond',
+      'swimming-pool',
+    ];
     for (const kind of OFFICE_KINDS) {
       expect(isOfficeShape(kind)).toBe(true);
       const el = createShape(kind, 0, 0);
@@ -163,12 +181,30 @@ describe('the stage', () => {
     expect(isValidElement({ ...stage, stageCameras: 'yes' })).toBe(false);
   });
 
-  it('is drawn at its own size: a top with planks, a front face and a plate on it', () => {
+  it('is drawn at its own size: a top laid in boards, a nosing, a stained front face and a plate on it', () => {
     const parts = stageParts(360, 140);
     expect(parts[0]).toMatchObject({ tag: 'rect', role: 'panel', x: 0, y: 0, w: 360 });
-    expect(parts.filter((p) => p.role === 'rail')).toHaveLength(2);
+    // The boards are one path: plank lines across the top and their joints (docs/specs/009-elements/venue-pieces.md
+    // "The stronger Stage").
+    const boards = parts.filter((p) => p.role === 'rail');
+    expect(boards).toHaveLength(1);
+    const d = boards[0]!.tag === 'path' ? boards[0]!.d : '';
+    expect(d.match(/H/g)!.length).toBeGreaterThanOrEqual(3);
+    expect(d.match(/V/g)!.length).toBeGreaterThanOrEqual(6);
+    expect(parts).toContainEqual(
+      expect.objectContaining({
+        role: 'panel',
+        fill: STAGE_TONES.nosing,
+        y: 140 - STAGE_FRONT - 5,
+      }),
+    );
     const face = parts.find((p) => p.role === 'face');
-    expect(face).toMatchObject({ y: 140 - STAGE_FRONT, h: STAGE_FRONT, w: 360 });
+    expect(face).toMatchObject({
+      y: 140 - STAGE_FRONT,
+      h: STAGE_FRONT,
+      w: 360,
+      fill: STAGE_TONES.skirt,
+    });
     const plate = parts.at(-1)!;
     expect(plate).toMatchObject({ tag: 'rect', role: 'panel', w: 144 });
     expect(plate.tag === 'rect' && plate.x).toBe(108);
@@ -194,6 +230,24 @@ describe('the stage', () => {
       for (const p of stageParts(w, h)) if (p.tag === 'rect') expect(p.w > 0 && p.h > 0).toBe(true);
     }
     expect(stageParts(10, 140).some((p) => p.role === 'rail')).toBe(false);
+  });
+
+  it('lights its front edge with footlights clear of the plate, and caps its boards however tall', () => {
+    const lamps = (w: number) => {
+      const p = stageParts(w, 140).find((q) => q.role === 'mark' && q.fill === STAGE_TONES.lamp);
+      return p && p.tag === 'path'
+        ? [...p.d.matchAll(/M(-?[\d.]+) /g)].map((m) => Number(m[1]) + 3.5)
+        : [];
+    };
+    const xs = lamps(360);
+    expect(xs.length).toBeGreaterThanOrEqual(4);
+    const plate = stageParts(360, 140).at(-1)!;
+    if (plate.tag === 'rect')
+      for (const x of xs) expect(x < plate.x || x > plate.x + plate.w).toBe(true);
+    // Too narrow for a lamp beside the plate: none.
+    expect(lamps(40)).toEqual([]);
+    const tall = stageParts(360, 2000).find((p) => p.role === 'rail')!;
+    expect(tall.tag === 'path' && tall.d.match(/H/g)!.length).toBeLessThanOrEqual(7);
   });
 
   it('is stood on above its front edge', () => {

@@ -132,6 +132,14 @@ export type ShapeKind =
   | 'toilet-cubicle'
   | 'washbasin'
   | 'hand-dryer'
+  // The venue pieces (docs/specs/009-elements/venue-pieces.md).
+  | 'pillar'
+  | 'column'
+  | 'car-park'
+  | 'bike-rack'
+  | 'swimming-pool'
+  | 'stage-curtains'
+  | 'podium'
   // A Door (docs/specs/009-elements/room-builder.md "Door"): a doorway that snaps onto any room wall and cuts it.
   | 'door'
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a stand listing the space's rooms and who is in

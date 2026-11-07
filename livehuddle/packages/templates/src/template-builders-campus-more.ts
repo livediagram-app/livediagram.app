@@ -102,6 +102,9 @@ const CV_ROOMS: CampusRoom[] = [
     door: { side: 's', at: 560, sign: 1, reach: CV_PLAZA_Y - CV_PLAZA_IN - TOP_WALL - PATH / 2 },
     pieces: [
       { kind: 'stage', x: 320, y: 48, w: 480, h: 150, stageCameras: true },
+      // Its curtains and the speaker's podium (docs/specs/009-elements/venue-pieces.md "In the templates").
+      { kind: 'stage-curtains', x: 320, y: 14, w: 480 },
+      { kind: 'podium', x: 680, y: 80 },
       { kind: 'screen', x: 60, y: 44, w: 176 },
       { kind: 'screen', x: 960, y: 44, w: 140 },
       // Two rows of five either side of a 160 px aisle up from the door, 120 px between the rows.
@@ -316,6 +319,8 @@ const HQ_GARDEN: OfficePiece[] = [
   { kind: 'hammock', x: 480, y: 1210 },
   { kind: 'outdoor-plant', x: 960, y: 1040 },
   { kind: 'outdoor-plant', x: 1290, y: 870 },
+  // A bike rack by the gate (docs/specs/009-elements/venue-pieces.md "In the templates").
+  { kind: 'bike-rack', x: HQ_GATE - PATH / 2 - 190, y: 1222 },
   // Beside the games room: a garden umbrella.
   { kind: 'garden-umbrella', x: 1920, y: 880 },
   { kind: 'outdoor-plant', x: 1940, y: 1060 },
