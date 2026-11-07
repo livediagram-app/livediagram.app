@@ -13,6 +13,7 @@ import {
   type ShapeKind,
 } from '@livehuddle/document';
 import { heading } from './template-session-parts';
+import { doorOnWall, type WallWindow } from './template-wall-pieces';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
 export type OfficePiece = {
@@ -38,8 +39,11 @@ export type OfficeRoom = {
   h: number;
   door: RoomDoor;
   pieces: OfficePiece[];
-  // Glass walls (docs/specs/009-elements/office.md "Glass walls"): you see who is in the room without walking in.
+  // Glass walls (docs/specs/009-elements/office.md "Glass walls"): you see who is in the room without walking in. Its
+  // Door is a sliding glass one.
   glass?: boolean;
+  // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window"), each on a wall, `at` along it.
+  windows?: readonly WallWindow[];
 };
 
 // A piece's size: its own `w` and `h`, or one of them with the other kept to the drawing's proportion (the drawings
@@ -101,7 +105,12 @@ export function furnishRooms(
       ...(room.glass ? { variant: 'glass' } : {}),
     });
     walls.push(el);
-    if (door) doors.push(door);
+    // A glass room's doorway is a sliding glass Door, in the middle of the same wall.
+    if (door && room.glass && room.door !== 'none') {
+      const along = room.door === 'n' || room.door === 's' ? room.w : room.h;
+      doors.push(doorOnWall(el, room.door, along / 2, 'door', 'sliding'));
+    } else if (door) doors.push(door);
+    for (const w of room.windows ?? []) doors.push(doorOnWall(el, w.side, w.at, 'window'));
     for (const p of room.pieces) {
       (isFloorShape(p.kind) ? floor : furniture).push(placePiece(p, rx + p.x, ry + p.y));
     }

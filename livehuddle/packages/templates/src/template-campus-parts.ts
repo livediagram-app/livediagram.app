@@ -7,16 +7,7 @@
 //
 // Pure: campusPlan takes the site's top left and returns a fresh Element[], floors first.
 
-import {
-  createShape,
-  PIECE_VARIANT_SIZES,
-  snapDoorToWall,
-  type DOOR_VARIANTS,
-  type Element,
-  type ShapeElement,
-} from '@livehuddle/document';
-
-type DoorVariant = (typeof DOOR_VARIANTS)[number];
+import type { Element, ShapeElement } from '@livehuddle/document';
 import { arrival, type Arrival } from './template-arrival';
 import {
   SPACE_BELOW,
@@ -25,8 +16,9 @@ import {
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
+import { doorOnWall, type DoorSide, type DoorVariant } from './template-wall-pieces';
 
-export type DoorSide = 'n' | 'e' | 's' | 'w';
+export type { DoorSide } from './template-wall-pieces';
 
 /** A room on a campus: an office room with no doorway of its own, one Door on its walls and a sign by it. */
 export type CampusRoom = Omit<OfficeRoom, 'door'> & {
@@ -35,14 +27,7 @@ export type CampusRoom = Omit<OfficeRoom, 'door'> & {
   // wall the walk its path joins starts (REACH_SIDE for a side wall, REACH_END for the top or bottom).
   // `variant` is the Door's type (docs/specs/009-elements/room-builder.md "Door types"): a glass room's sliding door.
   door: { side: DoorSide; at: number; sign: -1 | 1; reach?: number; variant?: DoorVariant };
-  // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window"), each on a wall, `at` along it.
-  windows?: readonly { side: DoorSide; at: number }[];
 };
-
-// A Room's wall centre lines sit half a wall (5 px) inside its box, the back wall at its back face (36 px down):
-// @liveworkspace/avatar/office-geometry's ROOM_WALL and ROOM_BACK_FACE.
-const HALF_WALL = 5;
-const BACK_FACE = 36;
 
 // The Room Sign at a campus size: 88 wide (aspect locked, 136 x 72 drawn, so about 47 high). It stands SIDE_GAP off a
 // side wall (its middle then 52 px out of the wall, 62 from the room's floor, inside the 64 px a sign reaches for its
@@ -107,42 +92,6 @@ export function fencedLawn(
     run('garden-fence', 0, height - FENCE, gateFrom, FENCE),
     run('garden-fence', gateTo, height - FENCE, width - gateTo, FENCE),
   ];
-}
-
-/** Where a Door's middle stands on a room's wall: on the wall's centre line, `at` along it. */
-function doorMiddle(room: ShapeElement, side: DoorSide, at: number): { x: number; y: number } {
-  switch (side) {
-    case 'n':
-      return { x: room.x + at, y: room.y + BACK_FACE - HALF_WALL };
-    case 's':
-      return { x: room.x + at, y: room.y + room.height - HALF_WALL };
-    case 'w':
-      return { x: room.x + HALF_WALL, y: room.y + at };
-    case 'e':
-      return { x: room.x + room.width - HALF_WALL, y: room.y + at };
-  }
-}
-
-/**
- * A Door (or a Window) on the room's wall, snapped onto it as a placed one is (turned to the wall, a Window facing in,
- * in the room's floor colour). `variant` is a Door's type, at its own size.
- */
-export function doorOnWall(
-  room: ShapeElement,
-  side: DoorSide,
-  at: number,
-  kind: 'door' | 'window' = 'door',
-  variant?: DoorVariant,
-): ShapeElement {
-  const middle = doorMiddle(room, side, at);
-  const made = createShape(kind, 0, 0);
-  const base = variant ? { ...made, ...PIECE_VARIANT_SIZES.door?.[variant], variant } : made;
-  const free: ShapeElement = {
-    ...base,
-    x: middle.x - base.width / 2,
-    y: middle.y - base.height / 2,
-  };
-  return snapDoorToWall(free, [room]);
 }
 
 export type CampusSite = {
@@ -213,7 +162,8 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
   const x0 = cx - site.width / 2;
   const y0 = cy - (SPACE_HEAD + site.height + SPACE_BELOW) / 2;
   const top = y0 + SPACE_HEAD;
-  const rooms: OfficeRoom[] = site.rooms.map(({ door: _door, ...room }) => ({
+  // Each room's Door and windows are placed below, after the floors, so they paint over the walls they stand in.
+  const rooms: OfficeRoom[] = site.rooms.map(({ door: _door, windows: _windows, ...room }) => ({
     ...room,
     door: 'none',
   }));
