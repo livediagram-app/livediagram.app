@@ -248,14 +248,105 @@ Machine's, Work Tracker #529, reuses them): they name the piece and a seat, and 
 
 ## Arcade Machine
 
-## Arcade Machine
-
 - An upright cabinet with a glowing screen (a slow colour shimmer and a blinking cursor, in CSS) and a joystick and
   two buttons on its panel. Under reduced motion the screen holds still.
 - Walking up to it (your character's feet within 24 px of its front) shows an **Insert Coin** bubble above it for you,
-  for as long as you stand there. Nothing else happens, and nobody else sees your bubble.
+  for as long as you stand there; nobody else sees your bubble. With a score on the machine's table the bubble adds
+  its best below: **Best 1,240 · Ann**.
 - A click anywhere on the cabinet walks you to its front, 16 px below it under the click (`walkPointFor` in
   `apps/editor/lib/avatar-click-intent.ts`), never onto the floor behind its screen; a turned cabinet's click is the walk.
+- **It is playable** (Work Tracker #529): a press on the cabinet while you stand at it (its Insert Coin bubble showing)
+  opens its game, **Moon Mail**, in a panel over the canvas, for you alone. Everyone in the Space shares the
+  machine's **High Scores**.
+
+### Moon Mail
+
+Our own game, made for this machine: a mail run round a small moon.
+
+- **The screen** is square: a small grey moon in the middle and three orbits round it, drawn as faint dotted rings.
+  Your mail ship flies round the middle orbit on its own, clockwise, a little faster every second (from a lap in
+  about 5.7 seconds to one in about 2.4, reached after 100 seconds).
+- **Letters** (small envelopes) wait on the orbits. Flying through one collects it: 10 points times your
+  **streak**. Three wait when a run starts; another appears at most every 0.9 seconds while fewer than five wait,
+  always on the far side of the moon from you.
+- **Space rocks** drift round the orbits the other way, from the far side of the moon, more often as the run goes on
+  (one every 2.6 seconds at first, down to one every 0.8). Flying into one costs one of your three **shields** and
+  ends your streak; for 1.5 seconds after, your ship blinks and nothing can hit it. A rock that has drifted for 9
+  seconds fades away.
+- **Hopping**: you choose only your orbit, one hop at a time, outward or inward; the ship never stops. From the outer
+  orbit there is no further out, from the inner none further in.
+- **The streak**: every five letters collected in a row raises it by one, from ×1 to at most ×5 (letters 1 to 5 score
+  ×1, 6 to 10 ×2, and from the 21st ×5). A hit sets it back to ×1.
+- **The run ends** when the last shield goes: the screen reads **Game Over** with the score, and a score that makes
+  the table is posted to it (see [High Scores](#high-scores)). **Play Again** starts a new run.
+- **The strip** under the screen shows the score (tabular figures), the streak (`×3`) and the shields left (three
+  small shield marks).
+
+### The panel
+
+- **Opening**: a press on the cabinet while you stand at it, or **Enter** or **Space** while your Insert Coin bubble
+  shows. It loads the game the first time it opens (the game's code is never part of the Space's first load) and
+  shows **Loading…** in the panel until it is ready.
+- **Its place**: centred over the canvas, 360 px wide (on a phone, the screen's width less 16 px each side), never
+  over the bottom-right controls. Its header reads **Moon Mail** with a **Close** button (an X, with its tooltip).
+- **Before a run**: the screen shows the moon and orbits at rest with **Press Space or Tap to Start**, and below it
+  the machine's [High Scores](#high-scores). **Start**, Space, Enter or a tap on the screen starts a run.
+- **Playing**: the panel holds the keys, so walking stops while it is open (see Controls). The ship, letters and
+  rocks move on the screen; the strip counts.
+- **Pausing**: **P**, Space, or the **Pause** button pauses a run and shows **Paused** with **Resume**. A run pauses
+  by itself when the tab or the window is hidden or loses focus, and never resumes by itself.
+- **Closing**: **Escape**, the **Close** button, or the panel's tab being left. Closing during a run ends it, and its
+  score counts as at Game Over (posted if it makes the table). Your character stays where it stood.
+- **A Viewer's press** opens the same panel on the High Scores alone, with no Start and the line **Viewers See the
+  Scores**.
+
+### Controls
+
+- **Keyboard**: **Arrow Up** or **W** hops out, **Arrow Down** or **S** hops in; **Space** or **Enter** starts; **P**
+  or Space pauses and resumes; **Escape** closes. While the panel is open these keys are the game's and never walk,
+  wave or spin your character ([key claims](../008-canvas/avatar-mode.md)).
+- **Touch, mouse or pen**: a tap on the screen outside your ship's orbit hops out, inside it hops in. A tap before a
+  run starts it. The screen takes the press: it never pans, selects or walks.
+- A hop shows at once on your screen; nothing about a run goes over the wire while it plays.
+
+### Reduced motion
+
+The game is played by moving things, so it still plays under reduced motion (the system setting), with nothing that
+moves only for show: the stars behind the moon hold still, a hop jumps to its orbit instead of gliding, a hit dims the
+ship steadily instead of blinking, and nothing flashes or shakes.
+
+### High Scores
+
+- **One table per machine**, shared by everyone in the Space: its ten best scores, best first, each its rank, the
+  player's name, the score and the day it was set ("5 Nov"). An empty table reads **No Scores Yet**. Your own rows
+  are marked (**You** beside the name).
+- **The name** is the person's display name in the Space (the name their character carries), cut to 24 characters;
+  with none it is **Guest**. There is nothing to type.
+- **Posting**: a run's score is posted when it ends, if it is at least 1 and would make the table (fewer than ten
+  scores on it, or better than its tenth). A tie keeps the earlier score above. One person may hold several places.
+  The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
+- **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
+- **Clearing**: an Editor's element menu has an **Arcade Machine** section with **Clear High Scores**, which asks
+  first ("Clear all 10 scores? This can't be undone.") and empties the table for everyone.
+- **Stored on the element** (`ShapeElement.arcadeScores`, best first, at most ten): each `{ id, name, score, ms, by,
+at }`, where `ms` is how long the run played (paused time not counted), `by` the poster's adder key (an Editor
+  without one writes their participant key) and `at` the epoch ms it was posted.
+- **Scores travel as deltas** ([Collab race hardening](../012-collaboration/collab-race-hardening.md)), never inside a
+  whole-element update: a posted score is one `arcade-score` delta carrying it; a clear is one `arcade-clear`. A
+  whole-element update keeps every receiver's own table, so an Editor moving the machine never carries an old table
+  over a new score. Where the delta is applied, on every screen and in the store alike, the table is put in order
+  and cut to ten: a score that does not make it, a replay of an id the table holds, or one that fails the checks
+  below changes nothing. A locked machine still takes scores (a lock fixes where it stands, as a Timer's does).
+- **Trust**: the game runs on the player's screen alone, so a score is that screen's word, held to what a run could
+  score. A score is a whole number from 1 to the run's ceiling: letters appear at most one every 0.9 seconds after
+  the three a run starts with, each worth at most 50 (×5), so a run of `ms` scores at most
+  `(3 + floor(ms / 900)) × 50`; a run plays at most 2 hours. A name is at most 24 characters. The room relays a
+  Participant's `arcade-score` only when its `by` is the sender's server-verified adder key (so a Participant posts
+  as itself), drops a Participant's `arcade-clear` and drops a Viewer's either. The room writes a Participant's
+  scores into the stored machine itself, as it writes its notes. A hand-made score inside those bounds is still
+  possible; the table holds ten, and an Editor clears it.
+- **Not undoable**: a posted score and a clear are the room's, like a pinned note; one person's undo never takes
+  them back.
 
 ## Fireplace, Campfire
 
@@ -325,15 +416,21 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
 - **Participant**: pins a note and unpins its own, signed with its adder key, which the room checks; plays ping-pong;
   walks, sits and uses everything like everyone; the participant palette does not offer the pieces.
 - **Viewer**: reads the notes; watches a ping-pong game but never plays (the room drops its `game-input` and
-  `game-event`, and a Viewer on a seat counts as no player); walks, sits and listens like everyone (all of it is
-  presence or local).
+  `game-event`, and a Viewer on a seat counts as no player); sees an Arcade Machine's High Scores but never plays
+  or posts (the room drops its `arcade-score`); walks, sits and listens like everyone (all of it is presence or
+  local).
+- An **Editor** also clears an Arcade Machine's High Scores; a **Participant** plays Moon Mail and posts its own
+  scores, signed with its adder key, which the room checks.
 
-| Piece                     | Editor | Participant | Viewer |
-| ------------------------- | ------ | ----------- | ------ |
-| Ping-Pong Table: play     | Yes    | Yes         | No     |
-| Ping-Pong Table: watch    | Yes    | Yes         | Yes    |
-| Notice Board: pin a note  | Yes    | Yes (own)   | No     |
-| World Clock, Jukebox: set | Yes    | No          | No     |
+| Piece                                 | Editor | Participant | Viewer |
+| ------------------------------------- | ------ | ----------- | ------ |
+| Ping-Pong Table: play                 | Yes    | Yes         | No     |
+| Ping-Pong Table: watch                | Yes    | Yes         | Yes    |
+| Arcade Machine: play, post a score    | Yes    | Yes (own)   | No     |
+| Arcade Machine: see the High Scores   | Yes    | Yes         | Yes    |
+| Arcade Machine: clear the High Scores | Yes    | No          | No     |
+| Notice Board: pin a note              | Yes    | Yes (own)   | No     |
+| World Clock, Jukebox: set             | Yes    | No          | No     |
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
@@ -344,10 +441,14 @@ Relaxed seating for breakout areas. Both seat people by the [Chair](chair.md) ru
   source set: `Element · Changed · Jukebox`. Never the note's words, the zones or the address.
 - A ping-pong game played to its end: `Canvas · Used · PingPong`, sent by the left player's screen alone, so a game
   counts once. Never the score or who played.
+- A Moon Mail run ended (Game Over or closed mid-run): `Canvas · Used · Arcade`, from the player's screen. High
+  Scores cleared: `Element · Changed · Arcade-machine`. Never the score or the name.
 
 ## Not in scope
 
-- Playing pool, foosball, darts or an arcade game (follow-ups: a mini-game per piece, on the ping-pong wire).
+- Playing pool, foosball or darts (follow-ups: a mini-game per piece, on the ping-pong wire).
+- Watching someone else's Moon Mail run, more than one game on a machine, typing initials, sound, and a high-score
+  table across Spaces.
 - Ping-pong against the computer, doubles, a stored score or a leaderboard, sound, and spin.
 - A snack or a can from the Vending Machine.
 - A built-in jukebox playlist, queueing songs, or volume control beyond mute.

@@ -24,6 +24,7 @@ import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
 import type { ChecklistItem } from './data-shapes';
 import { holdsNotes, isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
+import { arcadeTableWith, type ArcadeScore } from './arcade-scores';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
@@ -69,7 +70,11 @@ export type ElementDelta =
   | { kind: 'notice-unpin'; noteId: string; by: string }
   // A Timer's or Stopwatch's clock (docs/specs/009-elements/timer-and-stopwatch.md "How a change travels"): the whole
   // new state, so the last press in the room's order wins on every screen. Names nobody: anyone who takes part runs it.
-  | { kind: 'piece-timer'; state: PieceTimer };
+  | { kind: 'piece-timer'; state: PieceTimer }
+  // An Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores"): post one score, put in
+  // its place and the table cut to ten where it is applied, or empty the table (an Editor's).
+  | { kind: 'arcade-score'; score: ArcadeScore }
+  | { kind: 'arcade-clear' };
 
 export function isComment(value: unknown): value is Comment {
   if (!value || typeof value !== 'object') return false;
@@ -219,6 +224,16 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       const { running, startedAt, accumulatedMs, durationMs } = delta.state;
       return { ...el, pieceTimer: { running, startedAt, accumulatedMs, durationMs } };
     }
+    case 'arcade-score': {
+      // Locked or not: a lock fixes where the machine stands, as a Timer's does.
+      if (el.type !== 'shape' || el.shape !== 'arcade-machine') return el;
+      const table = arcadeTableWith(el.arcadeScores, delta.score);
+      return table ? { ...el, arcadeScores: table } : el;
+    }
+    case 'arcade-clear': {
+      if (el.type !== 'shape' || el.shape !== 'arcade-machine' || !el.arcadeScores) return el;
+      return withoutArcadeScores(el);
+    }
     default:
       return el;
   }
@@ -265,12 +280,23 @@ export function mergeIncomingElement(local: Element, incoming: Element): Element
     if (local.pieceTimer !== next.pieceTimer) {
       next = local.pieceTimer ? { ...next, pieceTimer: local.pieceTimer } : withoutPieceTimer(next);
     }
+    // An Arcade Machine's High Scores likewise: every score reached us as a delta.
+    if (local.arcadeScores !== next.arcadeScores) {
+      next = local.arcadeScores
+        ? { ...next, arcadeScores: local.arcadeScores }
+        : withoutArcadeScores(next);
+    }
   }
   return next;
 }
 
 function withoutPieceTimer(el: ShapeElement): ShapeElement {
   const { pieceTimer: _drop, ...rest } = el;
+  return rest;
+}
+
+function withoutArcadeScores(el: ShapeElement): ShapeElement {
+  const { arcadeScores: _drop, ...rest } = el;
   return rest;
 }
 
@@ -283,7 +309,13 @@ function withoutNotes(el: ShapeElement): ShapeElement {
 function withoutDeltaFields(el: Element): unknown {
   const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
   if (rest.type !== 'shape') return rest;
-  const { checklistItems, noticeNotes: _n, pieceTimer: _p, ...shape } = rest as ShapeElement;
+  const {
+    checklistItems,
+    noticeNotes: _n,
+    pieceTimer: _p,
+    arcadeScores: _a,
+    ...shape
+  } = rest as ShapeElement;
   return checklistItems
     ? { ...shape, checklistItems: checklistItems.map((item) => item.text) }
     : shape;

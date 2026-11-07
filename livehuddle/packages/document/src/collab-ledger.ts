@@ -15,7 +15,9 @@
 //     (docs/specs/012-collaboration/comment-reactions.md);
 //   - notes: each note pinned on a notice board and each one unpinned, by id
 //     (docs/specs/009-elements/social-pieces.md "Notice Board");
-//   - timer: a Timer's or Stopwatch's latest clock (docs/specs/009-elements/timer-and-stopwatch.md), last press wins.
+//   - timer: a Timer's or Stopwatch's latest clock (docs/specs/009-elements/timer-and-stopwatch.md), last press wins;
+//   - arcade: an Arcade Machine's latest clear and the ten best scores posted after it (docs/specs/009-elements/
+//     social-pieces.md "High Scores"): a score cut from them would be cut from the machine too.
 //
 // Each tick carries the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
@@ -38,6 +40,12 @@ import { applyElementDelta, isComment, type ElementDelta } from './element-delta
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { isNoticeNote, NOTES_MAX, type NoticeNote } from './office-social';
 import { isPieceTimer, type PieceTimer } from './timer-pieces';
+import {
+  ARCADE_SCORES_MAX,
+  compareArcadeScores,
+  isArcadeScore,
+  type ArcadeScore,
+} from './arcade-scores';
 import {
   isReactionChange,
   type CommentReactionId,
@@ -63,6 +71,8 @@ export type ElementLedger = {
   };
   // A Timer's or Stopwatch's clock: the latest press, whole.
   timer?: { state: PieceTimer; seq: number };
+  // An Arcade Machine's High Scores: the ten best scores posted since the latest clear, by id, and that clear's seq.
+  arcade?: { scores: Record<string, { score: ArcadeScore; seq: number }>; cleared?: number };
 };
 
 export type TabLedger = { elements: Record<string, ElementLedger> };
@@ -186,6 +196,9 @@ function recordElement(
       if (!isPieceTimer(d.state, 'timer') && !isPieceTimer(d.state, 'stopwatch')) return null;
       return { ...(prev ?? {}), timer: { state: d.state, seq } };
     }
+    case 'arcade-score':
+    case 'arcade-clear':
+      return recordArcade(prev, d, seq);
     default:
       return null;
   }
@@ -213,6 +226,23 @@ function recordNote(
     ...(prev ?? {}),
     notes: { ...notes, unpins: { ...notes.unpins, [d.noteId]: { by: d.by, seq } } },
   };
+}
+
+// A posted score joins the entry and the entry is cut to the ten best; a clear drops them all and keeps its seq.
+function recordArcade(
+  prev: ElementLedger | undefined,
+  d: Record<string, unknown>,
+  seq: number,
+): ElementLedger | null {
+  if (d.kind === 'arcade-clear') return { ...(prev ?? {}), arcade: { scores: {}, cleared: seq } };
+  if (!isArcadeScore(d.score)) return null;
+  const arcade = prev?.arcade ?? { scores: {} };
+  if (d.score.id in arcade.scores) return null;
+  const kept = [...Object.values(arcade.scores), { score: d.score, seq }]
+    .sort((a, b) => compareArcadeScores(a.score, b.score))
+    .slice(0, ARCADE_SCORES_MAX);
+  const scores = Object.fromEntries(kept.map((e) => [e.score.id, e]));
+  return { ...(prev ?? {}), arcade: { ...arcade, scores } };
 }
 
 // The ledger key of one person's reaction on one comment.
@@ -260,6 +290,7 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
       }) as typeof el;
     }
     next = applyNoteEvents(next, entry, since);
+    next = applyArcadeEvents(next, entry, since);
     if (entry.timer && entry.timer.seq > since) {
       next = applyElementDelta(next, {
         kind: 'piece-timer',
@@ -274,7 +305,7 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's comment reactions, notice board notes and Timer presses itself, since a Participant never
+// writes a Participant's comment reactions, notice board notes, Timer presses and arcade scores itself, since a Participant never
 // saves a whole tab (a clock is the latest press, so re-applying it is a no-op). Only those are taken from the ledger, every one the room holds (they are idempotent: a reaction is the latest
 // per person, a pin whose id the board holds is a no-op, and an unpin follows its pin in the room's order, checked
 // against the stored note's signer); ticks and the rest of a thread stay with an Editor's save.
@@ -284,11 +315,13 @@ export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
     const reacts = entry.comments?.reacts;
     const notes = entry.notes;
     const timer = entry.timer;
-    if (!reacts && !notes && !timer) continue;
+    const arcade = entry.arcade;
+    if (!reacts && !notes && !timer && !arcade) continue;
     elements[id] = {
       ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
       ...(notes ? { notes } : {}),
       ...(timer ? { timer } : {}),
+      ...(arcade ? { arcade } : {}),
     };
   }
   return mergeLedgerIntoTab(tab, { elements }, 0);
@@ -311,6 +344,25 @@ function applyNoteEvents<E extends Tab['elements'][number]>(
     if (seq > since) events.push({ seq, delta: { kind: 'notice-unpin', noteId, by } });
   }
   events.sort((a, b) => a.seq - b.seq);
+  return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);
+}
+
+// The clear and the scores the saver hadn't seen, in the room's order, each through `applyElementDelta`, so a score
+// that does not make the table lands as it did live, which is to say not at all.
+function applyArcadeEvents<E extends Tab['elements'][number]>(
+  el: E,
+  entry: ElementLedger,
+  since: number,
+): E {
+  const a = entry.arcade;
+  if (!a) return el;
+  const events: { seq: number; delta: ElementDelta }[] = [];
+  if (a.cleared !== undefined && a.cleared > since)
+    events.push({ seq: a.cleared, delta: { kind: 'arcade-clear' } });
+  for (const { score, seq } of Object.values(a.scores)) {
+    if (seq > since) events.push({ seq, delta: { kind: 'arcade-score', score } });
+  }
+  events.sort((x, y) => x.seq - y.seq);
   return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);
 }
 

@@ -592,6 +592,8 @@ export * from './tab-folders';
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
 export * from './timer-pieces';
+// The Arcade Machine's High Scores (docs/specs/009-elements/social-pieces.md "High Scores").
+export * from './arcade-scores';
 
 // Pencil-tool shape recognition (docs/specs/008-canvas/canvas-and-palette.md Pencil (freehand)
 // subsection's recognise mode). Re-exported so callers import

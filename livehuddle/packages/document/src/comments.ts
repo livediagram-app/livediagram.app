@@ -259,6 +259,16 @@ export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
         const { pieceTimer: _drop, ...rest } = next;
         next = liveEl.pieceTimer ? { ...rest, pieceTimer: liveEl.pieceTimer } : rest;
       }
+      // An Arcade Machine's High Scores likewise: a posted score is the room's, never one person's to undo.
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        next.arcadeScores !== liveEl.arcadeScores
+      ) {
+        changed = true;
+        const { arcadeScores: _drop, ...rest } = next;
+        next = liveEl.arcadeScores ? { ...rest, arcadeScores: liveEl.arcadeScores } : rest;
+      }
       return next;
     });
     return changed ? { ...tab, elements } : tab;

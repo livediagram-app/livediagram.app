@@ -4,39 +4,44 @@ Derived from [Social pieces](../social-pieces.md).
 
 ## Files
 
-| File                                                          | Role                                                                                                            |
-| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/office-social.ts`                      | The drawings (`OFFICE_SOCIAL_ART`), `pondParts`, the note and zone types, limits and validators                 |
-| `packages/document/src/office-recreation.ts`                  | The second set's drawings (`OFFICE_RECREATION_ART`): pool, foosball, dartboard, vending, bean bag, reading nook |
-| `packages/document/src/furniture-parts.ts`                    | `rect`, `ellipse`, `path`, `allSides`: the part builders every office drawing module shares                     |
-| `packages/document/src/office.ts`                             | The kinds join `OfficeKind`; the pond is a sized kind                                                           |
-| `packages/document/src/participant-content.ts`                | `mergeNoticeNotes`: a Participant adds and removes only its own notes                                           |
-| `packages/document/src/element-deltas.ts`                     | The `notice-pin` and `notice-unpin` deltas, applied on every screen and in the store                            |
-| `packages/document/src/validate-shape.ts`                     | `noticeNotes`, `clockZones`, `jukeboxSource` validation                                                         |
-| `../packages/avatar/src/office-geometry.ts`                   | Footprints (`OFFICE_FOOTPRINT`), the fixed seats, `isWallPieceShape`                                            |
-| `../packages/avatar/src/seats.ts`                             | `PING_PONG_SEATS`, `BENCH_SEATS`, `PICNIC_TABLE_SEATS`, `HAMMOCK_SEATS`, `BEAN_BAG_SEATS`, `READING_NOOK_SEATS` |
-| `../packages/avatar/src/walk.ts`                              | `elementUnderFeet` skips wall pieces                                                                            |
-| `apps/editor/components/canvas/collab/SocialArt.tsx`          | The live parts drawn over a piece's art: rally, fire, water, screen, jukebox lights, night glow                 |
-| `apps/editor/components/canvas/collab/SocialFaces.tsx`        | The Notice Board's cards and Notes button, the World Clock's dials, the Jukebox's button                        |
-| `apps/editor/lib/piece-control.ts`                            | `pieceControlProps`, `isPieceControlPress`: a face's control keeps its press from the canvas                    |
-| `apps/editor/components/canvas/collab/NoticeBoardPopover.tsx` | The note list and add box                                                                                       |
-| `apps/editor/components/canvas/collab/PondView.tsx`           | The pond at its own size                                                                                        |
-| `apps/editor/components/canvas/collab/useSocialPieces.ts`     | Which jukebox's area you stand in, the Insert Coin bubble, the audio element                                    |
-| `apps/editor/lib/minute-clock.ts`                             | The one shared minute timer (`useMinuteNow`)                                                                    |
-| `apps/editor/lib/jukebox-listening.ts`                        | The viewer's off / on / muted choice (this device), the shared audio element                                    |
-| `apps/editor/components/palette/SocialMenuSections.tsx`       | `WorldClockMenuSection`, `JukeboxMenuSection`                                                                   |
-| `apps/editor/app/social-motion.css`                           | The CSS loops, none under reduced motion                                                                        |
-| `packages/api-schema/src/table-game.ts`                       | The game wire: `GameInputOp`, `GameEventOp`, `parseGameInput`, `parseGameEvent`, `GAME_INPUT_MS`                |
-| `apps/api/src/room-op-gate.ts`                                | Drops a Viewer's `game-input` and `game-event`, and a malformed one from anyone                                 |
-| `apps/editor/lib/table-games/ping-pong.ts`                    | The game as pure functions: the ball's flight, a strike, service and winning, `applyPongEvent`                  |
-| `apps/editor/lib/table-games/table-game-inbox.ts`             | `receiveGameOp` (from the room connection), `onGameOp` (the table showing a game)                               |
-| `apps/editor/lib/table-games/game-seats.ts`                   | `gameSeats`: the player on each seat of a game piece (Editors and Participants only), `sameGameSeats`           |
-| `apps/editor/lib/table-games/table-game-scene.ts`             | The tab's scene (you, who sits where, the room), `useGameSeats`, `sendGameOp`, `setGameOn` / `useGameOn`        |
-| `apps/editor/lib/table-games/useTableGameScene.ts`            | The canvas publishes the scene (from useCanvasAvatar): your seat, each peer's seat and role, the sender         |
-| `apps/editor/lib/table-games/pong-session.ts`                 | `PongSession`: one table's game on one screen: seats, trust, your moments, the silent rule, the scoreboard      |
-| `apps/editor/components/canvas/collab/usePingPong.ts`         | The session wired to the seats, the inbox, the keys and one rAF loop that draws through refs                    |
-| `apps/editor/components/canvas/collab/PingPongGame.tsx`       | The ball, both paddles, the scoreboard and your paddle's pointer control, over the table's art (a social face)  |
-| `../packages/avatar/src/key-claims.ts`                        | `claimAvatarKeys`, `avatarKeyClaimed`: keys a piece takes from the walk and the action keys while it holds them |
+| File                                                          | Role                                                                                                             |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/office-social.ts`                      | The drawings (`OFFICE_SOCIAL_ART`), `pondParts`, the note and zone types, limits and validators                  |
+| `packages/document/src/office-recreation.ts`                  | The second set's drawings (`OFFICE_RECREATION_ART`): pool, foosball, dartboard, vending, bean bag, reading nook  |
+| `packages/document/src/furniture-parts.ts`                    | `rect`, `ellipse`, `path`, `allSides`: the part builders every office drawing module shares                      |
+| `packages/document/src/office.ts`                             | The kinds join `OfficeKind`; the pond is a sized kind                                                            |
+| `packages/document/src/participant-content.ts`                | `mergeNoticeNotes`: a Participant adds and removes only its own notes                                            |
+| `packages/document/src/element-deltas.ts`                     | The `notice-pin` and `notice-unpin` deltas, applied on every screen and in the store                             |
+| `packages/document/src/validate-shape.ts`                     | `noticeNotes`, `clockZones`, `jukeboxSource` validation                                                          |
+| `../packages/avatar/src/office-geometry.ts`                   | Footprints (`OFFICE_FOOTPRINT`), the fixed seats, `isWallPieceShape`                                             |
+| `../packages/avatar/src/seats.ts`                             | `PING_PONG_SEATS`, `BENCH_SEATS`, `PICNIC_TABLE_SEATS`, `HAMMOCK_SEATS`, `BEAN_BAG_SEATS`, `READING_NOOK_SEATS`  |
+| `../packages/avatar/src/walk.ts`                              | `elementUnderFeet` skips wall pieces                                                                             |
+| `apps/editor/components/canvas/collab/SocialArt.tsx`          | The live parts drawn over a piece's art: rally, fire, water, screen, jukebox lights, night glow                  |
+| `apps/editor/components/canvas/collab/SocialFaces.tsx`        | The Notice Board's cards and Notes button, the World Clock's dials, the Jukebox's button                         |
+| `apps/editor/lib/piece-control.ts`                            | `pieceControlProps`, `isPieceControlPress`: a face's control keeps its press from the canvas                     |
+| `apps/editor/components/canvas/collab/NoticeBoardPopover.tsx` | The note list and add box                                                                                        |
+| `apps/editor/components/canvas/collab/PondView.tsx`           | The pond at its own size                                                                                         |
+| `apps/editor/components/canvas/collab/useSocialPieces.ts`     | Which jukebox's area you stand in, the Insert Coin bubble, the audio element                                     |
+| `apps/editor/lib/minute-clock.ts`                             | The one shared minute timer (`useMinuteNow`)                                                                     |
+| `apps/editor/lib/jukebox-listening.ts`                        | The viewer's off / on / muted choice (this device), the shared audio element                                     |
+| `apps/editor/components/palette/SocialMenuSections.tsx`       | `WorldClockMenuSection`, `JukeboxMenuSection`                                                                    |
+| `apps/editor/app/social-motion.css`                           | The CSS loops, none under reduced motion                                                                         |
+| `packages/api-schema/src/table-game.ts`                       | The game wire: `GameInputOp`, `GameEventOp`, `parseGameInput`, `parseGameEvent`, `GAME_INPUT_MS`                 |
+| `apps/api/src/room-op-gate.ts`                                | Drops a Viewer's `game-input` and `game-event`, and a malformed one from anyone                                  |
+| `apps/editor/lib/table-games/ping-pong.ts`                    | The game as pure functions: the ball's flight, a strike, service and winning, `applyPongEvent`                   |
+| `apps/editor/lib/table-games/table-game-inbox.ts`             | `receiveGameOp` (from the room connection), `onGameOp` (the table showing a game)                                |
+| `apps/editor/lib/table-games/game-seats.ts`                   | `gameSeats`: the player on each seat of a game piece (Editors and Participants only), `sameGameSeats`            |
+| `apps/editor/lib/table-games/table-game-scene.ts`             | The tab's scene (you, who sits where, the room), `useGameSeats`, `sendGameOp`, `setGameOn` / `useGameOn`         |
+| `apps/editor/lib/table-games/useTableGameScene.ts`            | The canvas publishes the scene (from useCanvasAvatar): your seat, each peer's seat and role, the sender          |
+| `apps/editor/lib/table-games/pong-session.ts`                 | `PongSession`: one table's game on one screen: seats, trust, your moments, the silent rule, the scoreboard       |
+| `apps/editor/components/canvas/collab/usePingPong.ts`         | The session wired to the seats, the inbox, the keys and one rAF loop that draws through refs                     |
+| `apps/editor/components/canvas/collab/PingPongGame.tsx`       | The ball, both paddles, the scoreboard and your paddle's pointer control, over the table's art (a social face)   |
+| `../packages/avatar/src/key-claims.ts`                        | `claimAvatarKeys`, `avatarKeyClaimed`: keys a piece takes from the walk and the action keys while it holds them  |
+| `packages/document/src/arcade-scores.ts`                      | `ArcadeScore`, `MOON_MAIL_SCORING`, `arcadeScoreCeiling`, `isArcadeScore(s)`, `arcadeTableWith`, `arcadePlaceOf` |
+| `packages/document/src/element-deltas.ts`                     | The `arcade-score` and `arcade-clear` deltas, applied on every screen and in the store                           |
+| `packages/document/src/collab-ledger.ts`                      | The latest clear and the ten best scores after it, per machine; merged into saves and a Participant's answers    |
+| `apps/api/src/document-room-rules.ts`                         | `answersAsSelf`: a Participant's `arcade-score` only when its `by` is the adder key; never its `arcade-clear`    |
+| `apps/editor/lib/arcade/moon-mail.ts`                         | Moon Mail as a deterministic model: `newRun`, `hop`, `advance` (fixed 60 Hz steps), seeded spawns                |
 
 ## Domain and naming
 
@@ -174,3 +179,115 @@ play or won)` tells `SocialArt`'s `RestingRally` to give way.
   change.
 - Network: a moving paddle at most 20 `game-input` a second, a still one none during a game and one a second while
   waiting; one `game-event` per moment (about one a second in a rally). The ball never goes over the wire.
+
+## Arcade Machine (Work Tracker #529)
+
+Built in three parts: part 1 (this state) the spec, the High Scores' stored shape, deltas, ledger and room rule, and
+Moon Mail's model; part 2 the panel, the drawing, the controls and posting; part 3 the machine's face, its bubble's
+best score, the Editor's Clear High Scores and the two-browser test. Nothing in part 1 is reachable on screen.
+
+### Arcade domain and naming
+
+| Term        | Identifier                    | Meaning                                                                       |
+| ----------- | ----------------------------- | ----------------------------------------------------------------------------- |
+| High Scores | `arcadeScores`                | The machine's table: `ArcadeScore[]`, best first, at most `ARCADE_SCORES_MAX` |
+| Score       | `ArcadeScore`                 | `{ id, name, score, ms, by, at }`                                             |
+| Ceiling     | `arcadeScoreCeiling(ms)`      | The most a run of `ms` can score (`MOON_MAIL_SCORING`)                        |
+| Place       | `arcadePlaceOf(table, score)` | The 1-based place a score would take, or null when it does not make the table |
+| Run         | `MoonMailRun`                 | One run of Moon Mail on one screen: ship, letters, rocks, score, shields      |
+| Orbit       | `ORBITS`, `run.orbit`         | 0 (inner) to 2 (outer); radii in play units of the square screen              |
+| Streak      | `run.streak`, `streakFor`     | Letters in a row without a hit, and the ×1 to ×5 it scores at                 |
+
+### Arcade data and persistence
+
+- `ShapeElement.arcadeScores?: ArcadeScore[]`, only meaningful on `arcade-machine`; absent = no scores. Validated in
+  `validate-shape.ts` by `isArcadeScores`: an array of at most `ARCADE_SCORES_MAX` (10) valid scores with unique ids.
+  Listed in `element-fields.ts`.
+- `isArcadeScore(v)`: `id` 1 to 64 characters; `name` 1 to `ARCADE_NAME_MAX` (24) characters, not only spaces;
+  `score` an integer from 1 to `arcadeScoreCeiling(ms)`; `ms` an integer from 1 to `ARCADE_RUN_MS_MAX` (7,200,000,
+  two hours); `by` 1 to 128 characters; `at` a finite number.
+- Table order (`compareArcadeScores`): higher `score` first, then earlier `at`, then `id` by code unit, so every
+  screen sorts alike.
+- `MOON_MAIL_SCORING` (`{ startLetters: 3, letterEveryMs: 900, letterPoints: 10, streakMax: 5, streakEvery: 5 }`)
+  lives beside the ceiling, `(startLetters + floor(ms / letterEveryMs)) * letterPoints * streakMax`, in
+  `packages/document`, and the game imports it, so the rule the room checks and the rule the game plays cannot
+  drift apart.
+- Copying a machine, or its Space, carries its table (it is the element's); an export draws the cabinet without it.
+
+### Arcade behaviour and state
+
+- **`arcade-score`** (`{ kind: 'arcade-score'; score: ArcadeScore }`): on a shape whose kind is `arcade-machine`,
+  locked or not, with `isArcadeScore(score)` and no score of that id on the table, `arcadeTableWith(table, score)`
+  inserts it in order and cuts to ten; when the new score is not among the ten the element comes back unchanged
+  (the same object). Anything else: unchanged.
+- **`arcade-clear`** (`{ kind: 'arcade-clear' }`): on an `arcade-machine` with scores, drops `arcadeScores`; else
+  unchanged.
+- `mergeIncomingElement` keeps the receiver's `arcadeScores`; `elementChangeIsDeltaOnly` leaves them out of its
+  comparison; `graftLiveTabState` (comments.ts) carries them over an undo or redo. The participant content rule copies
+  nothing of them from an `el` update (`mergePieces` copies only named fields), so an older screen's update keeps
+  the stored table.
+- **The ledger** (`ElementLedger.arcade?: { scores: Record<id, { score, seq }>; cleared?: number }`): an
+  `arcade-score` with a valid score whose id is new to the entry is recorded, then the entry's scores are cut to the
+  ten best by table order (the cut ones would be cut on the machine too, so the entry stays at ten); an
+  `arcade-clear` sets `cleared` to its seq and drops every recorded score. `mergeLedgerIntoTab` applies the clear
+  when `cleared > since`, then each score with `seq > since`, in seq order, each through `applyElementDelta`.
+  `mergeLedgerAnswersIntoTab` takes the arcade entry whole (its clear and scores), so a Participant's score reaches
+  the stored machine `ANSWERS_FLUSH_MS` after it is posted.
+- **The room's rule**: `arcade-score` joins `PARTICIPATION_DELTA_KINDS` (room-messages.ts); `answersAsSelf` admits
+  it when `score.by` equals the session's non-empty adder key. `arcade-clear` is not a participation delta, so the
+  gate drops a Participant's; an Editor's relays as every Editor delta does. A Viewer's either is dropped.
+
+### Moon Mail's model (`apps/editor/lib/arcade/moon-mail.ts`)
+
+- **Deterministic**: no clock, no `Math.random`; a run carries its own seed (mulberry32), so the same seed and the
+  same hops replay the same run. The model mutates the run it is given (one object per run, owned by the panel's
+  loop), so a frame allocates nothing but a spawned letter or rock.
+- **The square**: 0 to 1 each way, the moon at (0.5, 0.5), `MOON_R` 0.11, `ORBITS` radii `[0.2, 0.3, 0.4]`. The
+  ship starts on orbit 1 at angle `-π/2` (the top) and moves clockwise on screen (its angle grows).
+- **Steps**: `advance(run, dtMs)` adds `min(dtMs, MAX_FRAME_MS)` (250) to an accumulator and runs whole `STEP_MS`
+  (1000 / 60) steps; nothing happens once `run.over`. A step first counts itself (`run.steps`, and `run.ms` the whole
+  milliseconds those make, so every bound compares whole numbers), then moves the ship at its speed (1.1 rad/s,
+  +0.015 rad/s each second, at most 2.6: `SHIP_SPEED_START`, `SHIP_SPEED_GAIN`, `SHIP_SPEED_MAX`) and each rock the
+  other way, ages every item, spawns, and meets. The letter interval is `LETTER_EVERY_STEPS` (54 steps, exactly
+  900 ms).
+- **Letters**: three at the start, on orbits from the seed, at the ship's angle plus 1.2, 2.4 and 3.6 rad. The letter
+  timer counts up each step; once it reaches `letterEveryMs` with fewer than `LETTERS_MAX` (5) waiting, one appears
+  and the timer goes back to 0 (never carried over), on an orbit from the seed at the ship's angle plus π and up to
+  ±π/2, so at most one appears per `letterEveryMs`.
+- **Rocks**: the first at `FIRST_ROCK_MS` (2,000) into a run, then one every `rockEveryMs(ms)` (2,600 ms less 15 ms
+  each second, at least 800: `ROCK_EVERY_START_MS`, `ROCK_EVERY_GAIN`, `ROCK_EVERY_MIN_MS`) while fewer than
+  `ROCKS_MAX` (7) drift: on an orbit from the seed, at the ship's angle plus π and up to ±0.5, moving anticlockwise
+  at 0.5 to 0.9 rad/s. A rock lives `ROCK_LIFE_MS` (9,000). A new rock never walls off all three orbits: when rocks
+  within `ROCK_WALL_GAP` (0.6 rad) of its angle already hold both other orbits, it takes the lowest of theirs.
+- **A tap** (`hopForTap(run, x, y)`): farther from the middle than the ship's orbit is `out`, else `in`.
+- **Collisions**: an item on the ship's orbit is met when the arc between them (the angle difference wrapped to ±π,
+  times the orbit's radius) is under `LETTER_REACH` (0.045) for a letter or `ROCK_REACH` (0.035) for a rock. A letter
+  met scores `letterPoints * streakFor(streak)`, `streakFor(n) = min(1 + floor(n / streakEvery), streakMax)`, then
+  `streak += 1`, and goes. A rock met while `ms >= hurtUntil` takes a shield, sets `streak` to 0 and `hurtUntil` to
+  `ms + HURT_MS` (1,500), and goes; met while hurt it passes through. The last shield gone sets `over`.
+- **Hops**: `hop(run, 'out' | 'in')` moves `orbit` by one within 0 to 2 at once (the drawing eases it) and records
+  `hopAt`; a hop past either end, or once over, changes nothing and answers false.
+- **What the drawing reads**: `run.orbit`, `run.angle`, `run.items` (kind, orbit, angle, age), `score`, `streak`,
+  `shields`, `hurtUntil`, `hopAt`, `ms`, `over`, and the counters `letters` and `hits` (a flash per event).
+- **The bound holds**: letters collected in a run of `ms` are at most `startLetters + floor(ms / letterEveryMs)`,
+  each worth at most `letterPoints * streakMax`, so `run.score <= arcadeScoreCeiling(run.ms)` always; a test plays
+  seeded runs with random hops and checks it at every step.
+
+### Arcade performance and limits
+
+- A frame: at most 15 steps (250 ms), each a few multiplications per item over at most 12 items; no allocation but
+  a spawn. The unit test plays 10 minutes of Moon Mail (36,000 steps) with an autopilot inside 150 ms of CPU
+  (`cpuMsOf`).
+- The table is ten scores of about 150 bytes each, so an `arcade-score` delta is under 300 bytes and the stored
+  field under 2 KB. The ledger entry stays at ten scores however many are posted.
+- Nothing in part 1 runs in the editor: the model is imported only by its test until part 2's panel loads it with a
+  dynamic import.
+
+### Arcade testing
+
+| Rule                                                                          | Test                                                       |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| A valid score, the ceiling, the name and run bounds; order, ties, ten, place  | `packages/document/src/arcade-scores.test.ts`              |
+| The deltas apply; whole-element updates and undo keep the table; the ledger   | `packages/document/src/arcade-score-deltas.test.ts`        |
+| The room relays a Participant's own score only, never its clear or a Viewer's | `apps/api/src/room-op-gate.test.ts`, `share-roles.test.ts` |
+| Moon Mail's rules, determinism, the bound, the frame loop's CPU budget        | `apps/editor/lib/arcade/moon-mail.test.ts`                 |

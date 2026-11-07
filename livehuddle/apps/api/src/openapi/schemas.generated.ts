@@ -233,6 +233,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ArcadeScore": {
+    "additionalProperties": false,
+    "description": "One score on a machine's table.",
+    "properties": {
+      "at": {
+        "description": "When it was posted, epoch ms.",
+        "type": "number"
+      },
+      "by": {
+        "description": "The poster's adder key (an Editor without one writes their participant key).",
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "ms": {
+        "description": "How long the run played, paused time not counted.",
+        "type": "number"
+      },
+      "name": {
+        "description": "The player's display name in the Space, cut to ARCADE_NAME_MAX; \"Guest\" with none.",
+        "type": "string"
+      },
+      "score": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "score",
+      "ms",
+      "by",
+      "at"
+    ],
+    "type": "object"
+  },
   "ArrowElement": {
     "additionalProperties": false,
     "properties": {
@@ -4846,6 +4883,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "animationSpeed": {
         "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "arcadeScores": {
+        "items": {
+          "$ref": "#/components/schemas/ArcadeScore"
+        },
+        "type": "array"
       },
       "aspectLocked": {
         "type": "boolean"
