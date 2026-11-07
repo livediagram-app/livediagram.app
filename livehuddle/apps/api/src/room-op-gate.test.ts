@@ -147,6 +147,31 @@ describe('gateClientOp', () => {
     expect(gateClientOp(op({ kind: 'notice-pin', note: null }), participant)).toEqual(DROP);
   });
 
+  // docs/specs/009-elements/social-pieces.md "High Scores": a Participant posts its own score, never clears the table.
+  it('relays an arcade score from a Participant only when signed with its adder key, and a clear only from an Editor', () => {
+    const op = (delta: Record<string, unknown>) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'arcade',
+      delta,
+    });
+    const post = (by: string) =>
+      op({
+        kind: 'arcade-score',
+        score: { id: 's', name: 'Ann', score: 10, ms: 5_000, by, at: 1 },
+      });
+    const clear = op({ kind: 'arcade-clear' });
+    const participant = as('participate', { adderKey: 'adder' });
+    expect(gateClientOp(post('adder'), participant)).toEqual(relay(false, true));
+    expect(gateClientOp(post('someone'), participant)).toEqual(DROP);
+    expect(gateClientOp(post('me'), participant)).toEqual(DROP);
+    expect(gateClientOp(post('adder'), as('view', { adderKey: 'adder' }))).toEqual(DROP);
+    expect(gateClientOp(post('anyone'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(clear, participant)).toEqual(DROP);
+    expect(gateClientOp(clear, as('view'))).toEqual(DROP);
+    expect(gateClientOp(clear, as('edit'))).toEqual(relay(false));
+  });
+
   it("shows only an editor's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);

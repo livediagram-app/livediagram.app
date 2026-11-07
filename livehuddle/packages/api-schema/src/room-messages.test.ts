@@ -24,8 +24,14 @@ describe('isRoomOpRef', () => {
 
 // The room's participation class (docs/specs/013-workspace/share-roles.md "Integrity").
 describe('isParticipationOp', () => {
-  it('admits a comment reaction and a notice board pin or unpin', () => {
-    for (const kind of ['comment-react', 'notice-pin', 'notice-unpin']) {
+  it('admits a comment reaction, a notice board pin or unpin, a Timer press and an arcade score', () => {
+    for (const kind of [
+      'comment-react',
+      'notice-pin',
+      'notice-unpin',
+      'piece-timer',
+      'arcade-score',
+    ]) {
       expect(
         isParticipationOp({ kind: 'el-delta', tabId: 't', elementId: 'e', delta: { kind } }),
       ).toBe(true);
@@ -34,7 +40,16 @@ describe('isParticipationOp', () => {
 
   it('refuses every other mutation and anything malformed', () => {
     // A retired per-participant response and idea box answer included (Work Tracker #423, part 4).
-    for (const kind of ['check', 'board', 'comment-add', 'comment-remove', 'response', 'idea']) {
+    // An arcade clear is an Editor's.
+    for (const kind of [
+      'check',
+      'board',
+      'comment-add',
+      'comment-remove',
+      'response',
+      'idea',
+      'arcade-clear',
+    ]) {
       expect(isParticipationOp({ kind: 'el-delta', delta: { kind } })).toBe(false);
     }
     for (const op of [{ kind: 'el' }, { kind: 'tab' }, { kind: 'el-delta' }, null, 'vote', 3]) {
