@@ -108,7 +108,11 @@ export function buildBeachOffsite(cx: number, cy: number): Element[] {
       subtitle:
         'A day away together: plan in the beach hut, then the tiki bar, the hammocks and the campfire.',
     },
-    gateAt: GATE,
-    hint: 'You arrive on the Avatar Pad by the path up the beach. The Directory by it walks you to any hut.',
+    // On the sand between the huts' walk and the campfire, where the beach's day happens.
+    arrival: {
+      dx: 6,
+      dy: 116,
+      hint: 'You arrive on the Avatar Pad on the beach. The Directory by the path walks you to any hut.',
+    },
   });
 }

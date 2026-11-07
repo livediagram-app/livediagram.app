@@ -6,15 +6,8 @@
 
 import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import { heading } from './template-session-parts';
-import {
-  officePlan,
-  wayIn,
-  padCentreClearBelow,
-  wayInBeside,
-  WAY_IN_PAD_W,
-  type OfficePiece,
-  type OfficeRoom,
-} from './template-office-parts';
+import { arrival } from './template-arrival';
+import { officePlan, type OfficePiece, type OfficeRoom } from './template-office-parts';
 
 const HEAD = 96;
 const BELOW = 120;
@@ -117,11 +110,13 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
     360,
     'emoji-desktop',
     'Grab any desk, take calls in a booth, and meet at the coffee bar. Everyone is welcome to work here.',
-    wayIn(
-      x0 + width,
-      y0 + HEAD + COWORK_H,
-      'You arrive on the Avatar Pad. Sit at any desk, step into a booth for a call, and say hello with Enter.',
-    ),
+    // On the open floor between the desks and the lounge, the coffee bar and the booths in view.
+    arrival({
+      x: cx - 180,
+      y: cy + 12,
+      side: 'right',
+      hint: 'You arrive on the Avatar Pad. Sit at any desk, step into a booth for a call, and say hello with Enter.',
+    }),
   );
 }
 
@@ -159,7 +154,6 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
   // The team's board on the wall beside the pod: four stickies to fill in together.
   const bx = x0 + POD_W + BOARD_GAP;
   const by = y0 + HEAD;
-  const boardBottom = by + 44 + 2 * 154 - 8;
   const board: Element[] = [
     {
       ...createText(bx, by),
@@ -187,17 +181,13 @@ export function buildTeamPod(cx: number, cy: number): Element[] {
     'Your team’s corner: four desks together, a table for the stand-up, and a board for the week.',
     [
       ...board,
-      // Under the board, beside the pod (docs/specs/012-collaboration/virtual-office-template.md "Spaces"), not under
-      // the plan: seen at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where
-      // the bottom-right cluster floats, and a way in under the pod sat under the cluster. Here the pad is level with
-      // the pod's lower half, with open floor under it and a short walk round to the door.
-      // Never so high that someone standing on it would stand in the board.
-      ...wayInBeside(
-        x0 + width,
-        Math.max((boardBottom + y0 + HEAD + POD_H) / 2, padCentreClearBelow(boardBottom)),
-        'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
-        BOARD_W - WAY_IN_PAD_W - 20,
-      ),
+      // In the middle of the pod, between the desks and the table.
+      ...arrival({
+        x: cx - 168,
+        y: cy + 52,
+        hintW: 320,
+        hint: 'You arrive on the Avatar Pad. Take a desk, and meet at the table for the stand-up.',
+      }),
     ],
   );
 }
@@ -260,11 +250,13 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
       focus,
-      ...wayIn(
-        x0 + width,
-        y0 + HEAD + HALL_H,
-        'You arrive on the Avatar Pad: take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
-      ),
+      // In the aisle, among the rows, facing the stage.
+      ...arrival({
+        x: cx,
+        y: cy + 76,
+        side: 'left',
+        hint: 'You arrive on the Avatar Pad: take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
+      }),
     ],
   );
 }

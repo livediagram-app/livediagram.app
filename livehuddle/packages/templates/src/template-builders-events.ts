@@ -4,14 +4,9 @@
 //
 // Pure: takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
+import { arrival } from './template-arrival';
 import { createShape, type Element } from '@livehuddle/document';
-import {
-  SPACE_BELOW,
-  SPACE_HEAD,
-  spacePlan,
-  wayIn,
-  type OfficeRoom,
-} from './template-office-parts';
+import { SPACE_BELOW, SPACE_HEAD, spacePlan, type OfficeRoom } from './template-office-parts';
 
 const ROOM_W = 1100;
 const ROOM_H = 800;
@@ -65,11 +60,12 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
     },
     [
       focus,
-      ...wayIn(
-        x0 + width,
-        y0 + SPACE_HEAD + ROOM_H,
-        'You arrive on the Avatar Pad: join a table. Whoever stands on the stage is heard by the whole room.',
-      ),
+      // In the middle of the room, the four tables round it and the stage ahead.
+      ...arrival({
+        x: cx,
+        y: cy - 12,
+        hint: 'You arrive on the Avatar Pad: join a table. Whoever stands on the stage is heard by the whole room.',
+      }),
     ],
   );
 }

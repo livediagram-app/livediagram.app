@@ -8,7 +8,7 @@ import { adoptGuest, documentHeaders, expect, mintGuest, serverNewUrl, test } fr
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const CANVAS = '[data-canvas-a11y-root]';
-// A Spaces template: a small pod with an Avatar Pad at its entrance (packages/templates template-builders-spaces.ts).
+// A Spaces template: a small pod with an Avatar Pad in its middle (packages/templates template-builders-spaces.ts).
 const SPACE = 'team-pod';
 
 async function personIn(browser: Browser, baseURL: string, owner: string | null): Promise<Page> {

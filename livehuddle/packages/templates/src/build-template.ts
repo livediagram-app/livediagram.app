@@ -39,7 +39,7 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
 
 /**
- * Every floor ahead of everything else, each group in its own order: a Space's Avatar Pad is a floor, placed by `wayIn`
+ * Every floor ahead of everything else, each group in its own order: a Space's Avatar Pad is a floor, placed by `arrival`
  * after the plan, and the floors lie first (docs/specs/007-editor/templates-by-mode.md "Testing"). Paint order sorts
  * the floors among themselves (paintOrder), so the pad still lies on a room or the grass.
  */

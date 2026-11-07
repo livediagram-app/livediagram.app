@@ -7,12 +7,11 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[], floors first.
 
 import type { Element } from '@livehuddle/document';
+import { arrival } from './template-arrival';
 import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  wayIn,
-  WAY_IN_HALF,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -97,11 +96,12 @@ export function buildGardenRetreat(cx: number, cy: number): Element[] {
       subtitle:
         'Step outside: walk the paths, meet round the table in the summer house, or sit by the campfire.',
     },
-    wayIn(
-      x0 + GARDEN_W / 2 + WAY_IN_HALF,
-      y0 + SPACE_HEAD + GARDEN_H,
-      'You arrive on the Avatar Pad. Come in through the gate: the path leads up to the summer house.',
-    ),
+    // On the lawn beside the summer house, its door and the campfire in view.
+    arrival({
+      x: cx + 336,
+      y: cy + 12,
+      hint: 'You arrive on the Avatar Pad. Meet in the summer house, or sit by the campfire.',
+    }),
     open,
   );
 }
@@ -175,11 +175,13 @@ export function buildCityPark(cx: number, cy: number): Element[] {
       subtitle:
         'Take the meeting outside: stroll the paths, sit on a bench, or gather round the bandstand.',
     },
-    wayIn(
-      x0 + PARK_W / 2 + WAY_IN_HALF,
-      y0 + SPACE_HEAD + PARK_H,
-      'You arrive on the Avatar Pad. Walk up the path: a bench seats two, and the picnic table seats six.',
-    ),
+    // On the lawn above the fountain plaza, between the benches, off the paths and the bandstand.
+    arrival({
+      x: cx - 196,
+      y: cy - 224,
+      side: 'right',
+      hint: 'You arrive on the Avatar Pad by the fountain. A bench seats two, and the picnic table seats six.',
+    }),
     open,
   );
 }
