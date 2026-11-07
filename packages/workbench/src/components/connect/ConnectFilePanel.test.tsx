@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// Connect liveworkspace File in a start panel (connected-tabs.md "Connecting"): one read of Recent once mounted, a press
+// Connect File in a start panel (connected-tabs.md "Connecting"): one read of Recent once mounted, a press
 // connects with the host's grant and the editor's add, telemetry says one way or both, and the clock ticks once a
 // minute until the list goes.
 import {
@@ -62,7 +62,6 @@ const setup = (over: Partial<ConnectFilePanelProps> = {}) => {
   };
   const props: ConnectFilePanelProps = {
     hostId: 'host',
-    hostApp: 'livediagram',
     hostKind: 'canvas',
     hostManaged: true,
     connected: new Map(),
@@ -94,7 +93,7 @@ describe('ConnectFilePanel', () => {
       },
       onOpenExplorer: vi.fn(),
     });
-    expect(screen.getByRole('heading', { name: 'Connect liveworkspace File' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Connect File' })).toBeTruthy();
     expect(client.listItems).toHaveBeenCalledTimes(1);
     fireEvent.click(await screen.findByText('Launch plan'));
     await waitFor(() => expect(props.onConnected).toHaveBeenCalledWith('new-tab', MADE));

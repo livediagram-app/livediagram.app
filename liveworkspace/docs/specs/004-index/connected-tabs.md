@@ -31,16 +31,17 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 
 ## Connecting
 
-From an editor's start screen, **Connect liveworkspace File** (the last entry of the start screen's sidebar, pinned
-to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row; in a 240px rail its
-name breaks once, evenly, with the other apps' logos fanned under it) lists the person's most recent items across every app
+From an editor's start screen, **Connect File** (the last entry of the start screen's sidebar, pinned
+to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row; on one line, led by every
+app's logo fanned where a row's icon goes, the host's too) lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
 - **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked
-  before the file, so the line under it says plainly what it means for whichever file is tapped: "Anyone who can open
+  before the file. No line shows under it; a screen reader hears what it means with the control: "Anyone who can open
   this <host kind> can edit the file you connect." A file whose app does not offer the chosen role (livehuddle has no
   Viewer) is listed but cannot be picked while it is chosen, saying so ("livehuddle has no Viewer role").
-- **Add connection to both files**: off by default.
+- **Add connection to both files**: off by default, with no line under it; a screen reader hears what it does, or
+  why it cannot be turned on, with the switch.
 - **Find a file**: narrows the list by name as the person types.
 
 One tap on an item connects it. The host gains a connected tab at the end of its tab bar, loose, and it becomes the
@@ -126,8 +127,12 @@ double-click does nothing; a screen reader hears "<name>, connected <app> file, 
 file, needs attention"). It is dragged, foldered and opened like any tab, and its menu offers, as plain rows, Connect Again
 (only when it opens nothing), Organise in Tab Folder and, last under a hairline, Remove Tab; never Duplicate.
 
-**The tab's page.** Opened, a connected tab shows one calm card in place of a canvas, the target app's logo over the
-target's name and a line. A visitor whose share link lands on a connected tab is asked for their name first, as on any
+**The tab's page.** Opened, a connected tab shows one calm card in place of a canvas: the target's preview (the
+same picture the Explorer shows of it, never more visible than the file), the target app's logo on its lower edge, then
+the target's name and a line. Shown, the page asks the index once where the tab leads, as Open would but going
+nowhere, and draws the picture its answer names; a file reached through the connection's link shows that link's
+picture. While it is asked for, the picture's place shows a quiet placeholder; a file with no picture (empty, gone,
+its link removed, the host offline, or the index out of reach) shows the logo alone, as before. A visitor whose share link lands on a connected tab is asked for their name first, as on any
 tab, and sees the card once they have joined:
 
 | State                                | Line                                         | Actions (an Editor)       |
@@ -149,9 +154,9 @@ Open Again exists because a browser may block a new tab it did not see a click m
 same card without Remove Tab or Connect Again (Remove Tab takes the tab away and never touches the file), and is
 told "Ask an editor to connect it again" where only an editor can mend it; Open Again and Try Again are everyone's.
 
-**The Connect list.** On the start screen's Connect liveworkspace File, in the start panel's own colours: the title,
-the role as a three-way switch with its line, the both-ways switch with its line ("The file you connect gets a tab
-back to this <host kind>." when allowed, else why not), Find a file, then Recent, one row per file: its app's logo on a tile, its
+**The Connect list.** On the start screen's Connect File, in the start panel's own colours: the title,
+the role as a three-way switch, the both-ways switch (each with no line under it; its words, "The file you connect gets
+a tab back to this <host kind>." when allowed, else why not, are the switch's description for a screen reader), Find a file, then Recent, one row per file: its app's logo on a tile, its
 name, and its app and when it was last opened. A row is pressed once to connect. While it connects it shows a spinner
 and the rest wait; a row already connected says Connected and goes to its tab; a row that cannot be picked is dimmed
 and says why; a failure says why on the row, in words ("This file has too many links already."), and leaves the list

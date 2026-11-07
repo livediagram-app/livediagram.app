@@ -19,6 +19,7 @@ import {
   type Level,
   type TabConnection,
 } from '@liveworkspace/index-client';
+import { previewItemPath, previewSharePath } from '@liveworkspace/media';
 import { accessTo, loadItem } from './access';
 import { callAppForJson } from './app-calls';
 import type { Caller, Person } from './auth';
@@ -305,6 +306,7 @@ type OpenRow = {
   target_item_id: string | null;
   target_app: App | null;
   target_title: string | null;
+  target_updated_at: number | null;
   owner_id: string | null;
   team_id: string | null;
   trashed_at: number | null;
@@ -325,7 +327,7 @@ async function reachable(
   if (!grant || !isConnectionId(id) || !levelAtLeast(grant.level, need)) return null;
   const row = await env.INDEX_DB.prepare(
     `SELECT c.host_item_id, c.host_tab_id, h.app AS host_app, c.confirmed_at, c.target_item_id,
-       t.app AS target_app, t.title AS target_title, t.owner_id, t.team_id, t.trashed_at, c.share_code,
+       t.app AS target_app, t.title AS target_title, t.updated_at AS target_updated_at, t.owner_id, t.team_id, t.trashed_at, c.share_code,
        sl.level AS pass_level, sl.expires_at AS pass_expires_at, gl.public AS grant_link_public
      FROM connections c
      JOIN items h ON h.id = c.host_item_id
@@ -410,6 +412,8 @@ function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
       href: connectionHref(env, app, 'item', row.target_item_id),
       via: 'item',
       level: null,
+      // The reader's own picture of it, fetched with their Bearer (IDX38).
+      preview: previewItemPath(row.target_item_id, row.target_updated_at ?? undefined),
     };
     return json(open);
   }
@@ -422,6 +426,8 @@ function openAnswer(env: Env, person: Person | null, row: OpenRow): Response {
     href: connectionHref(env, app, 'link', row.share_code),
     via: 'link',
     level: row.pass_level,
+    // The pass's live image: the code is its only credential, so an <img> or a bare fetch draws it (IDX38).
+    preview: previewSharePath(row.share_code, 'image.svg'),
   };
   return json(open);
 }

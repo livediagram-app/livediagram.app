@@ -13,7 +13,7 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | 2    | The index: the `connections` table, `POST /items/:id/connections`, `GET /connections/:id`, the take-back, the app's confirm and removal doors, the sweep, purges, the pass's mark in `GET /items/:id/share`, the error codes, the index-client calls              | on main |
 | 3    | Each app (livediagram, liveplanner, livedocuments, livedesign, livehuddle) keeps a connected tab: the `tabs.connection` column, its summaries and reads, the internal door for the reverse tab, telling the index on removal, scope redaction, copies and exports | on main |
 | 4    | The shared UI, not yet mounted: the connected tab in `packages/workbench`'s tab strip, the Connect picker (Recent across apps, the role, both ways), the opening states and the Share dialog's "Connected from", in `packages/workbench` and `packages/explorer`  | on main |
-| 5    | Every editor mounts it: connected tabs in the tab bar, Connect liveworkspace File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                             | on main |
+| 5    | Every editor mounts it: connected tabs in the tab bar, Connect File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                                           | on main |
 
 ## Scope, by file
 
@@ -109,7 +109,10 @@ team) gets `via: 'item'` with `${origin}${itemPath}<id>`. Else a null or lapsed 
 `410 connection_link_removed`, and a live one `via: 'link'` with `${origin}${sharePath}<code>` and the pass's level.
 `origin` is the target app's site for the index's `ENVIRONMENT`: `https://www.<site>` in production,
 `https://staging.<site>` on staging, `http://localhost:<port>` in development (`packages/sites` `APP_ITEMS`,
-`LOCAL_PORTS`). `Cache-Control: private, no-store`.
+`LOCAL_PORTS`). `Cache-Control: private, no-store`. Every answer carries `preview`, the target's picture on the
+reader's own origin (each app's router forwards `/api/previews`, `@liveworkspace/media`): `previewItemPath(<id>,
+<updated_at>)` for `via: 'item'`, which the reader fetches with their Bearer and their appearance, and
+`previewSharePath(<code>, 'image.svg')` for `via: 'link'`, the pass's live image, which needs no credential.
 
 ### Removing (`DELETE /app/items/:id/connections/:cid?tab=` with the host app's key)
 
@@ -186,7 +189,8 @@ Built in `packages/workbench`, mounted by no screen until part 5. Every module i
   `opened`, `gone`, `link_removed`, `copy`, `offline`, `failed`) with the spec's words (`connectedTabCopy`) and
   actions. `canEdit` (the session's `can('edit')`, never `readOnly` alone) shows Remove and Connect Again; Open Again
   (an anchor, `target="_blank" rel="noopener"`) and Try Again are everyone's. The logo turns while opening
-  (`BrandMark spinning`), still under reduced motion.
+  (`BrandMark spinning`), still under reduced motion. Given `preview` (`useConnectedPreview`'s answer), the picture
+  stands over a smaller logo: a placeholder while `loading`, the image once `ready`, the logo-only card for `none`.
 - **`components/connect/connected-tab-view.ts`**: `connectedTabViewOf(error)` maps the open door's refusal
   (`IndexError`): `410 connection_target_gone` to `gone`, `410 connection_link_removed` to `link_removed`,
   `404 not_found` to `copy`, anything else to `failed`. `connectedTabCopy(view, name, app)` gives each state's title
@@ -249,13 +253,17 @@ Every editor mounts the shared UI through thin doors of its own; the shared part
   grant, runs `openConnectedTab`, marks the tab broken or mended, shows the answer's view and, for an Editor
   (`canEdit`: may change the tabs), renames the tab to the answered name (IDX26). Keyed by tab and connection id, so
   Connect Again starts it afresh. `Tab·Opened·Connected` per open.
-- **`ConnectFilePanel.tsx`**: the start panel's content once Connect liveworkspace File is chosen: a heading over
+- **`useConnectedPreview.ts`**: the target's picture for the page (IDX38): unless offline, the host's grant, one
+  `openConnection` and one fetch of its `preview` (the reader's Bearer, and their appearance for an item's), held
+  page-wide by connection id (`CONNECTED_PREVIEW_CACHE_MAX`, least recently used out, blob URLs revoked) and shared by
+  every page that asks meanwhile. Any refusal or failure is `none`, never a broken mark: Open still says why.
+- **`ConnectFilePanel.tsx`**: the start panel's content once Connect File is chosen: a heading over
   `ConnectPicker`, painted with the start palette (`accent` the palette's chosen label colour). Mounted only then, so
   the one `listItems` waits for the choice. `useTickingNow` (one `setInterval`, `CONNECT_CLOCK_MS` 60 s, cleared on
   unmount) keeps "Opened 2 minutes ago" true. A press: the host's grant, a tab id from the editor, `connectFile` with
   the editor's add, `Tab·Added·Connected` or `·ConnectedBoth`, then `onConnected`.
 - **`ConnectRailEntry.tsx`**: the rail's last row, stuck to its bottom under a hairline (`sm:sticky sm:bottom-0
-sm:mt-auto` inside the rail's scroller), the other apps' logos fanned at its end; on a phone, the last chip.
+sm:mt-auto` inside the rail's scroller), every app's logo fanned where its icon goes, its name on one line; on a phone, the last chip.
 - **`useConnectedTabActions.ts`**: the doors every editor shares, generic over its tab type: `grant` (stable), the
   `connected` map, `addConnectedTab(made, tabId, replacing?)` (the app's whole-tab save awaited, then one commit
   appending the tab and dropping the empty start tab `replacing` unless it is the only one), `showConnected` (the new
@@ -366,6 +374,9 @@ staging 2109). No new secret: the reverse write uses each app's `INDEX_KEY`, as 
 - `IDX27`: a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.
 - `IDX36`: a connected tab opens its file only on a person's press (its tab, or Open on its page); shown any other
   way it waits, ready.
+- `IDX38`: a connected tab's page asks the index where it leads once per connection per page (`useConnectedPreview`,
+  a page-wide cache of `CONNECTED_PREVIEW_CACHE_MAX` answers, blob URLs revoked as they go) to draw the target's
+  preview, and never goes there by itself (IDX36); offline it asks nothing.
 - `IDX37`: connecting from an empty tab's start screen replaces that tab, unless it is the item's only tab.
 - `IDX35`: the Connect list shows the person's 40 most recent items across every app (`CONNECT_RECENT_LIMIT`,
   `packages/workbench` `connect/useRecentFiles.ts`), enough to fill the start panel twice without paging.

@@ -16,6 +16,7 @@ const answer = (app: ConnectionOpen['app']): ConnectionOpen => ({
   href: 'https://www.liveplanner.app/s/code',
   via: 'link',
   level: 'edit',
+  preview: '/api/previews/share/code/image.svg',
 });
 
 afterEach(() => vi.unstubAllGlobals());

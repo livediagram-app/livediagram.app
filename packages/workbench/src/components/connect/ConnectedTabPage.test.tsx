@@ -15,6 +15,9 @@ import {
   resetConnectedTabStoreForTests,
 } from './connected-tab-store';
 
+// The card's picture asks the index on its own (useConnectedPreview, its own tests): kept out of these counts.
+vi.mock('./useConnectedPreview', () => ({ useConnectedPreview: () => ({ state: 'none' }) }));
+
 afterEach(() => {
   cleanup();
   resetConnectedTabStoreForTests();
@@ -30,6 +33,7 @@ const OPEN: ConnectionOpen = {
   href: 'https://www.liveplanner.app/s/code',
   via: 'link',
   level: 'edit',
+  preview: '/api/previews/share/code/image.svg',
 };
 
 const setup = (over: Partial<ConnectedTabPageProps> = {}) => {

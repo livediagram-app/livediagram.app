@@ -1,6 +1,6 @@
 'use client';
 
-// Connect liveworkspace File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting", "How it looks"): the
+// Connect File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting", "How it looks"): the
 // list a start screen shows in its content area. The role (Editor unless changed) and Add connection to both files
 // above Find a file and the person's Recent across every app; one press on a row connects it. The app does the connect
 // (`onConnect`, usually through connectFile) and moves to the new tab; this list holds the row busy meanwhile and, on a
@@ -147,7 +147,8 @@ export function ConnectPicker({
             Role
           </span>
           <ConnectRolePicker level={level} onChange={setLevel} describedBy={roleLineId} />
-          <p id={roleLineId} className="text-[12px] leading-snug text-[var(--cp-muted)]">
+          {/* What the role means, or why both ways is off: read out with the control, not shown (owner, #569). */}
+          <p id={roleLineId} className="sr-only">
             {connectRoleLine(level, hostKind)}
           </p>
         </div>
@@ -165,7 +166,7 @@ export function ConnectPicker({
           >
             Add connection to both files
           </SwitchRow>
-          <p id={bothLineId} className="text-[12px] leading-snug text-[var(--cp-muted)]">
+          <p id={bothLineId} className="sr-only">
             {bothWaysLine(hostKind, hostManaged)}
           </p>
         </div>

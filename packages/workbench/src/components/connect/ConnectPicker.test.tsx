@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// Connect liveworkspace File (connected-tabs.md "Connecting", "How it looks"): Recent across every app, the host left
+// Connect File (connected-tabs.md "Connecting", "How it looks"): Recent across every app, the host left
 // out; the role, Editor first; both ways; Find a file; one press connects, one at a time; blocked rows say why; a
 // failure says why on its row; a connected row goes to its tab; loading, empty and failed lists.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';

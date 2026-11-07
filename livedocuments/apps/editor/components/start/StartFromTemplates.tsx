@@ -87,7 +87,7 @@ export function StartFromTemplates({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  // Connect File at the rail's foot, where connecting can work (useConnectStart).
   const connect = useConnectStart();
   // How the Community's tiles draw here: this app's card image, the credit in the panel's muted ink.
   const tiles: CommunityStartTileOptions = {
