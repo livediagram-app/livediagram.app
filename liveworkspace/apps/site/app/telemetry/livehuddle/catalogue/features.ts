@@ -408,6 +408,16 @@ export const PING_PONG_GAMES = chart(
   { types: ['PingPong'] },
 );
 
+// A Moon Mail run ended at an Arcade Machine, by Game Over or by closing its panel mid-run
+// (docs/specs/009-elements/social-pieces.md "Telemetry"), from the player's screen. Never the score or the name.
+export const ARCADE_RUNS = chart(
+  'Canvas',
+  'Used',
+  'Moon Mail Runs',
+  'A run of Moon Mail played on an Arcade Machine in a Space, to Game Over or closed mid-run.',
+  { types: ['Arcade'] },
+);
+
 // A Door swung open or shut (docs/specs/009-elements/room-builder.md).
 export const DOORS_SWUNG = chart(
   'Canvas',
@@ -455,6 +465,7 @@ export const CANVAS_MODES: MetricStack = {
     OFFICE_DRINKS,
     WORKDAY_PIECES_USED,
     PING_PONG_GAMES,
+    ARCADE_RUNS,
     DOORS_SWUNG,
     SCREENS_OPENED,
     AVATAR_PAD_ARRIVALS,
