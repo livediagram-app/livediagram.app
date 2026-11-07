@@ -100,7 +100,7 @@ is set for the wayfinding kinds (Directory, Elevator, Stairs, Signpost, Team Pho
 
 A place whose element vanished while the popover is open drops out with the next snapshot. A Go to a deleted place
 or a tab that no longer exists does nothing. One tab: the Elevator panel shows one floor. A tab not loaded yet has
-no elements: it lists no places until it loads.
+no elements: it lists no places until it loads. The Stairs on the top floor have no Up and on the ground floor no Down (`stairsFlights` returns `null`); a flight to a floor still loading after the wait lands as a floor with no Stairs; Stairs on a tab the active id is not among (a stale snapshot) offer neither. A climb interrupted (a wall, a key, a seat) still travels when `CLIMB_MAX_MS` passes.
 
 ## Performance and limits
 

@@ -17,7 +17,7 @@ link.
 - A **shape kind**, `stairs`, in the palette's **Travel** category after the Elevator. The tile reads **Stairs**.
   Search adds one in any mode.
 - **A placed piece** at a fixed default size (96x128), drawn like the [office pieces](office.md), upright from the
-  room's camera: a flight of seven steps rising away from you between two side walls, a handrail on each, the
+  room's camera: a flight of seven steps rising away from you, narrowing as it goes, between two side walls, a handrail on each, the
   landing at the top opening onto the floor above, and a small sign over it with an up and a down arrow. One
   drawing for the canvas, the placement preview and an export (`office-wayfinding.ts`). Outlines follow the theme's
   stroke on light and dark paper; the stone of the steps, the landing's dark and the sign keep their colours.
