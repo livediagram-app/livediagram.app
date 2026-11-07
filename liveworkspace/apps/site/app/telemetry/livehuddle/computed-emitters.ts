@@ -337,6 +337,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  // A piece of furniture turned by Rotate Left or Rotate Right (docs/specs/009-elements/furniture-facing.md).
+  'apps/editor/hooks/canvas/useDataShapeSetters.ts Element·Changed': {
+    values: ['Sofa', 'Chair', 'Desk', 'Lockers', 'Meeting-table', 'Vending-machine'],
+    open: 'shapeTelemetryToken of the turned piece: any furniture that turns',
+  },
   'apps/editor/hooks/canvas/useStylePreview.ts Element·Changed': {
     // The types the element menu's generic style ops pass through it (apps/editor/lib/element-style-ops.ts): the
     // accent edge, card slots and chip looks.

@@ -1,4 +1,5 @@
-import type { Element as CanvasElement, ShapeKind } from '@livehuddle/document';
+import { pieceFacing, type Element as CanvasElement, type ShapeKind } from '@livehuddle/document';
+import { officeFootprint } from '@liveworkspace/avatar/office-geometry';
 
 // What a click on a piece means in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Clicking a piece"): `walk`
 // walks the character there (and arriving does what it does: sit, drink, travel), `use` does the piece's main action
@@ -239,7 +240,9 @@ const FRONT_END = 0.12;
 
 /**
  * Where a walking click on `el` at `point` walks to: the point itself, or, on an unturned Reception Desk or Arcade
- * Machine, the floor FRONT_STAND below its box under the click (kept off its ends).
+ * Machine, the floor FRONT_STAND below its box under the click (kept off its ends). One turned to face
+ * another way (docs/specs/009-elements/furniture-facing.md) has its front there: the floor FRONT_STAND beyond its
+ * footprint on that side, beside the middle of its footprint's depth on its side, under the click from behind.
  */
 export function walkPointFor(
   el: CanvasElement | null,
@@ -247,9 +250,19 @@ export function walkPointFor(
 ): { x: number; y: number } {
   if (!el || el.type !== 'shape' || !FRONT_KINDS.has(el.shape) || (el.rotation ?? 0) % 360 !== 0)
     return point;
+  // The arcade's bubble and the Reception Desk's Welcome follow their turned front (useSocialPieces arcadeAt,
+  // useWorkdayPieces receptionAt), so the walk ends there.
+  const facing = pieceFacing(el);
+  const foot = facing === 'n' ? null : officeFootprint({ ...el, chairFacing: facing });
+  if (foot && (facing === 'e' || facing === 'w'))
+    return {
+      x: facing === 'e' ? foot.x - FRONT_STAND : foot.x + foot.width + FRONT_STAND,
+      y: foot.y + foot.height / 2,
+    };
   const lo = el.x + el.width * FRONT_END;
   const hi = el.x + el.width * (1 - FRONT_END);
-  return { x: Math.min(hi, Math.max(lo, point.x)), y: el.y + el.height + FRONT_STAND };
+  const x = Math.min(hi, Math.max(lo, point.x));
+  return foot ? { x, y: foot.y - FRONT_STAND } : { x, y: el.y + el.height + FRONT_STAND };
 }
 
 /** Whether a press in Avatar mode landed on a pressable part of a piece that is not walked to, so it acts there. */

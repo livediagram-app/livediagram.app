@@ -6,6 +6,7 @@ import type { AlignmentGuide, DistributionGuide, Element } from '@livehuddle/doc
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
+import { placingSize, subscribePlacingFacing } from '@/lib/placing-facing';
 
 // Alignment guides DURING a palette drag (docs/specs/008-canvas/canvas-and-palette.md): the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords
@@ -64,7 +65,10 @@ export function usePaletteDragGuides({
       clearGuides();
       setPaletteDragSnap(null);
     };
-    const onDragOver = (e: DragEvent) => {
+    // The last move, so a turn (Space, with the pointer still) re-measures the turned piece where it is.
+    let last: { target: EventTarget | null; clientX: number; clientY: number } | null = null;
+    const onDragOver = (e: { target: EventTarget | null; clientX: number; clientY: number }) => {
+      last = { target: e.target, clientX: e.clientX, clientY: e.clientY };
       const target = e.target as Element2 | null;
       // A drag back over a floating panel is a "changed my mind": no snap,
       // no guides — matching the ghost's own over-panel guard.
@@ -76,11 +80,14 @@ export function usePaletteDragGuides({
         return;
       }
       const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, zoomOf.current());
+      // A piece turned while placed (docs/specs/009-elements/furniture-facing.md "Turning while placing") snaps at
+      // its turned box.
+      const { width, height } = placingSize(preview.kind, preview);
       const snap = paletteDragSnapAt({
         canvasX: x,
         canvasY: y,
-        width: preview.width,
-        height: preview.height,
+        width,
+        height,
         elements: board.current,
         room: preview.kind === 'room',
       });
@@ -100,11 +107,17 @@ export function usePaletteDragGuides({
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') clear();
     };
-    document.addEventListener('dragover', onDragOver);
+    // A tile carried by the pointer (lib/palette-carry.ts) moves by pointermoves; the browser's drag by dragovers.
+    const move = preview.carried ? 'pointermove' : 'dragover';
+    document.addEventListener(move, onDragOver);
     document.addEventListener('dragleave', onDragLeave);
     document.addEventListener('keydown', onKeyDown);
+    const unturn = subscribePlacingFacing(() => {
+      if (last) onDragOver(last);
+    });
     return () => {
-      document.removeEventListener('dragover', onDragOver);
+      unturn();
+      document.removeEventListener(move, onDragOver);
       document.removeEventListener('dragleave', onDragLeave);
       document.removeEventListener('keydown', onKeyDown);
       clearGuides();

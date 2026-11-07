@@ -8,13 +8,7 @@
 //
 // Nothing runs at a table with an empty seat: no loop, no keys, no listener beyond the room's inbox.
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { claimAvatarKeys, type ClaimedKey } from '@liveworkspace/avatar/key-claims';
@@ -23,6 +17,7 @@ import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { PREFERS_REDUCED_MOTION, prefersReducedMotion, useMediaQuery } from '@livehuddle/ui';
 import { onGameOp } from '@/lib/table-games/table-game-inbox';
 import { PongSession } from '@/lib/table-games/pong-session';
+import { paddleKey } from '@/lib/table-games/pong-frame';
 import {
   sendGameOp,
   setGameOn,
@@ -37,17 +32,12 @@ const REDUCED_TICK_MS = 250;
 /** The longest step one frame may take: a tab back from the background does not leap the paddles. */
 const MAX_FRAME_MS = 100;
 
-const UP_KEYS = new Set(['w', 'W', 'ArrowUp']);
-const DOWN_KEYS = new Set(['s', 'S', 'ArrowDown']);
-const isPaddleKey = (e: ClaimedKey) =>
-  !e.metaKey && !e.ctrlKey && !e.altKey && (UP_KEYS.has(e.key) || DOWN_KEYS.has(e.key));
-
 /** Where the drawing puts the ball and paddles each frame: the play area's 0 to 1, onto the art's grid. */
 export type PongDraw = (session: PongSession, now: number) => void;
 
 const newMatchId = (): string => crypto.randomUUID().slice(0, 12);
 
-export function usePingPong(pieceId: string, draw: PongDraw) {
+export function usePingPong(pieceId: string, draw: PongDraw, across: 'x' | 'y' = 'y') {
   const seats = useGameSeats(pieceId, 2);
   const reduced = useMediaQuery(PREFERS_REDUCED_MOTION) || prefersReducedMotion();
   // The session and the scoreboard's store: React hears of the scoreboard only when it changes, never per frame.
@@ -92,18 +82,21 @@ export function usePingPong(pieceId: string, draw: PongDraw) {
     return () => setGameOn(pieceId, false);
   }, [pieceId, on]);
 
-  // The keys, while you play here and a game is on: W/S and Up/Down hold the paddle and leave the walk alone.
+  // The keys, while you play here and a game is on: W/S and Up/Down hold the paddle and leave the walk alone, or on a
+  // table turned onto its side, where the paddles move across the canvas, A/D and Left/Right (pong-frame paddleKey).
   const held = useRef({ up: false, down: false });
   const mine = seats.findIndex((p) => p?.self) >= 0;
   const keysOn = mine && on && !reduced;
   useEffect(() => {
     if (!keysOn) return;
+    const isPaddleKey = (e: ClaimedKey) => paddleKey(e, across) !== 0;
     const release = claimAvatarKeys(isPaddleKey);
     const onKey = (down: boolean) => (e: KeyboardEvent) => {
-      if (!isPaddleKey(e)) return;
+      const way = paddleKey(e, across);
+      if (way === 0) return;
       if (down && (isTypingTarget(e.target) || walkInputBlocked())) return;
       if (down) e.preventDefault();
-      if (UP_KEYS.has(e.key)) held.current.up = down;
+      if (way < 0) held.current.up = down;
       else held.current.down = down;
     };
     const keyDown = onKey(true);
@@ -121,7 +114,7 @@ export function usePingPong(pieceId: string, draw: PongDraw) {
       window.removeEventListener('keyup', keyUp);
       window.removeEventListener('blur', blur);
     };
-  }, [keysOn]);
+  }, [keysOn, across]);
 
   // The loop: only with both seats held. Every frame steps the game and draws it; React hears only of the scoreboard.
   useEffect(() => {
@@ -149,12 +142,4 @@ export function usePingPong(pieceId: string, draw: PongDraw) {
   }, [bothHeld, reduced, session, drawRef]);
 
   return { view, seats, reduced, session, mine };
-}
-
-/** The paddle under a pointer: its height over the table top's box, 0 at the top and 1 at the bottom. */
-export function pointerAxis(
-  e: Pick<ReactPointerEvent, 'clientY'>,
-  table: { top: number; height: number },
-): number {
-  return table.height > 0 ? (e.clientY - table.top) / table.height : 0.5;
 }

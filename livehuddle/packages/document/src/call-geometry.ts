@@ -6,6 +6,7 @@ import { roomInterior } from '@liveworkspace/avatar/office-geometry';
 import { pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
 import { isRoomOutline } from './room-outline-field';
 import { podInterior } from '@liveworkspace/avatar/pod';
+import { isSeatFacing } from '@liveworkspace/avatar/facing';
 import { boothInterior } from '@liveworkspace/avatar/booth';
 import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers } from './office';
 
@@ -63,6 +64,8 @@ export type CallElementSource = {
   readonly roomOutline?: unknown;
   readonly stageSpeakers?: unknown;
   readonly stageCameras?: unknown;
+  // A pod's or a phone booth's facing (docs/specs/009-elements/furniture-facing.md): its floor turns with it.
+  readonly chairFacing?: unknown;
 };
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -116,7 +119,14 @@ export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
       });
       continue;
     }
-    const inside = room ? roomInterior(room) : pod ? podInterior(pod) : boothInterior(box);
+    const inside = room
+      ? roomInterior(room)
+      : pod
+        ? podInterior({
+            ...pod,
+            chairFacing: isSeatFacing(el.chairFacing) ? el.chairFacing : undefined,
+          })
+        : boothInterior(box, isSeatFacing(el.chairFacing) ? el.chairFacing : 'n');
     if (inside.width <= 0 || inside.height <= 0) continue;
     zones.push({
       id: el.id,

@@ -16,13 +16,14 @@ import {
   type Element,
   type ProgressAnim,
   turnsWithFacing,
-  seatingFacing,
-  turnedSeatingBox,
-  type SeatingKind,
+  turnPiece,
+  turnPieceBy,
+  type ShapeElement,
   type RoomDoor,
   type ClockZone,
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
+import { shapeTelemetryToken } from '@/lib/element-telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
@@ -43,13 +44,6 @@ type DataShapeSetterDeps = {
 // looping animation + chart legend). Each kind has a private field setter the
 // public ones delegate to; all resolve the selection and commit through the
 // two shared handles, so they live together off useElementStyle.
-// The telemetry type a facing change reports, per piece of furniture (docs/specs/017-telemetry/telemetry.md).
-const SEATING_TELEMETRY: Record<SeatingKind, string> = {
-  chair: 'Chair',
-  desk: 'Desk',
-  sofa: 'Sofa',
-  'meeting-table': 'Meeting-table',
-};
 
 export function useDataShapeSetters({
   currentSelectionIds,
@@ -181,27 +175,23 @@ export function useDataShapeSetters({
     );
   };
 
-  // Chair, desk and sofa (docs/specs/009-elements/chair.md): one facing for all three. A desk or a
-  // sofa turned onto its side swaps its box about its centre, so the drawing keeps its proportions.
-  const setChairFacingSelected = (facing: ChairFacing) => {
+  // Every piece of furniture that turns (docs/specs/009-elements/furniture-facing.md "A turn"): a facing picked from
+  // the element menu, or a quarter turn from the Rotate buttons, the command palette or a multi-selection. Each piece
+  // turns about its own centre, its box taking the turned drawing's proportions; a piece that does not turn, and a
+  // locked one, stays as it is. One change, so one undo step, reported once under the first piece turned.
+  const turnSelection = (turn: (el: ShapeElement) => ShapeElement) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    // A meeting table in the selection never turns, so it neither takes the facing nor names the event.
-    const first = elements().find(
-      (el) => ids.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape),
-    );
-    if (!first || first.type !== 'shape' || !turnsWithFacing(first.shape)) return;
-    const turned: SeatingKind = first.shape;
-    commit((els) =>
-      els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || !turnsWithFacing(el.shape)) return el;
-        const seating = { ...el, shape: el.shape };
-        const box = turnedSeatingBox(seating, seatingFacing(seating), facing);
-        return { ...el, ...box, chairFacing: facing };
-      }),
-    );
-    track('Element', 'Changed', SEATING_TELEMETRY[turned]);
+    const turns = (el: Element): el is ShapeElement =>
+      ids.has(el.id) && el.type === 'shape' && turnsWithFacing(el.shape) && !el.locked;
+    const first = elements().find(turns);
+    if (!first) return;
+    commit((els) => els.map((el) => (turns(el) ? turn(el) : el)));
+    track('Element', 'Changed', shapeTelemetryToken(first.shape));
   };
+  const setChairFacingSelected = (facing: ChairFacing) =>
+    turnSelection((el) => turnPiece(el, facing));
+  const turnSelected = (quarters: number) => turnSelection((el) => turnPieceBy(el, quarters));
 
   // Room (docs/specs/009-elements/office.md "Room"): which wall the doorway is in.
   const setRoomDoorSelected = makeShapePatcher({
@@ -287,6 +277,7 @@ export function useDataShapeSetters({
     setPageHeading,
     setChecklistItemsSelected,
     setChairFacingSelected,
+    turnSelected,
     setRoomDoorSelected: setRoomDoor,
     setStageSelected,
     setScreenUrlSelected,

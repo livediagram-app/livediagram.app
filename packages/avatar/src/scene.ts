@@ -2,6 +2,7 @@
 // lives"). The package never imports a product's element union: it reads only an element's id and type and, for a
 // shape, its kind and box. Every product's union has these, so its own `Element` passes as it is, and what the
 // package hands back (a pad, a chair) comes back as the product's own type.
+import type { SeatFacing } from './facing';
 import type { RoomDoor } from './office-geometry';
 
 /** Any element on the board: the package reads only its id and type. */
@@ -21,6 +22,8 @@ export type AvatarSceneShape = {
   // line as 0..1 fractions of its box. A Door's rotation turns it onto its wall.
   readonly roomOutline?: readonly { readonly x: number; readonly y: number }[];
   readonly rotation?: number;
+  // Which way a piece of furniture faces (facing.ts): its seats and its footprint are its facing's drawing's.
+  readonly chairFacing?: SeatFacing;
   // An Office Pod whose door is shut (pod.ts closePods): never stored, set on the walk's copy of the board.
   readonly podClosed?: boolean;
 };

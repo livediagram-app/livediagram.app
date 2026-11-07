@@ -202,6 +202,7 @@ export function EditorCanvasHost() {
     duplicateSelected,
     stackSelectedFront,
     stackSelectedBack,
+    turnSelected,
     editCursorAtEnd,
     editingId,
     embedMode,
@@ -1125,6 +1126,7 @@ export function EditorCanvasHost() {
             onDuplicateSelected={duplicateSelected}
             onBringSelectedToFront={stackSelectedFront}
             onSendSelectedToBack={stackSelectedBack}
+            onTurnSelected={turnSelected}
             onCanvasDoubleClick={handleCanvasDoubleClick}
             tabLoadState={tabLoadState}
             onRetryTabLoad={retryActiveTabLoad}

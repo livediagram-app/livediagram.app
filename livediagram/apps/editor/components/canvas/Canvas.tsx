@@ -904,7 +904,10 @@ function CanvasView(props: CanvasProps) {
           ) : null}
           {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
-          <PaletteDragGhost zoom={viewportZoom} />
+          <PaletteDragGhost
+            zoom={viewportZoom}
+            armedKind={pendingDraw?.type === 'shape' ? pendingDraw.kind : null}
+          />
           {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
           (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
           {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md

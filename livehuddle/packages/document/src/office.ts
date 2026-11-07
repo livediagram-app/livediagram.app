@@ -6,8 +6,9 @@
 // @liveworkspace/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import type { FurnitureArt, FurniturePart, FurnitureDrawing } from './seating';
-import { allSides, ellipse, path, rect } from './furniture-parts';
+import type { FurnitureArt, FurniturePart } from './seating';
+import { path, rect } from './furniture-parts';
+import { SHARED_OFFICE_ART } from '@liveworkspace/avatar/furniture-art';
 import {
   brokenRun,
   roomDoorSpan,
@@ -15,7 +16,6 @@ import {
   ROOM_WALL,
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
-import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
 import { OFFICE_EXTRA_ART } from './office-garden';
 import { OFFICE_SOCIAL_ART } from './office-social';
 import { OFFICE_RECREATION_ART } from './office-recreation';
@@ -216,192 +216,20 @@ export function isOfficeShape(kind: string): kind is OfficeKind {
   return (OFFICE_KINDS as readonly string[]).includes(kind);
 }
 
-// Fixed colours for what keeps its colour whatever the theme: leaves, water, coffee, terracotta, book spines.
-// The outlines are still the theme's stroke, so every piece sits in the same drawing style.
-export const OFFICE_TONES = {
-  leaf: '#4ade80',
-  leafDeep: '#22c55e',
-  pot: '#ea580c',
-  potDeep: '#c2410c',
-  water: '#bae6fd',
-  waterDeep: '#7dd3fc',
-  coffee: '#78350f',
-  glass: '#e2e8f0',
-  cold: '#60a5fa',
-  hot: '#f87171',
-  books: ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#a78bfa'],
-} as const;
-
-type Part = FurniturePart;
-
-const T = OFFICE_TONES;
-
-// A potted plant: five leaves fanned above a terracotta pot.
-const PLANT_VIEW: FurnitureDrawing = {
-  width: 56,
-  height: 88,
-  parts: [
-    ellipse('shadow', 28, 84, 18, 3.5),
-    path('panel', 'M27 61C18 62 9 56 4 48C13 46 22 52 27 61Z', T.leafDeep),
-    path('panel', 'M29 61C38 62 47 56 52 48C43 46 34 52 29 61Z', T.leafDeep),
-    path('panel', 'M27 60C14 54 6 40 7 26C17 32 24 44 27 60Z', T.leaf),
-    path('panel', 'M29 60C42 54 50 40 49 26C39 32 32 44 29 60Z', T.leaf),
-    path('panel', 'M28 60C20 44 20 24 28 8C36 24 36 44 28 60Z', T.leaf),
-    path('rail', 'M28 56V16'),
-    rect('panel', 12, 56, 32, 8, 3, T.pot),
-    path('panel', 'M15 63H41L38 84H18Z', T.potDeep),
-  ],
-  seats: [],
-  ring: { cx: 28, cy: 70, rx: 18, ry: 8 },
-};
-
-// Shelves of books: a frame, a dark interior, three shelves of coloured spines.
-function bookRow(y: number, offset: number): Part[] {
-  const widths = [8, 7, 9, 6, 8, 9, 7, 10, 7, 8];
-  const heights = [24, 20, 26, 22, 24, 18, 20, 26, 22, 24];
-  const out: Part[] = [];
-  let x = 14;
-  for (let i = 0; i < widths.length && x + widths[i]! <= 106; i += 1) {
-    const w = widths[(i + offset) % widths.length]!;
-    const h = heights[(i + offset * 3) % heights.length]!;
-    // A gap on each shelf, so the rows do not read as a wall of spines.
-    if (i === 5 - offset) {
-      x += 10;
-      continue;
-    }
-    out.push(rect('panel', x, y - h, w, h, 1, T.books[(i + offset) % T.books.length]));
-    x += w + 1;
-  }
-  return out;
-}
-
-const BOOKSHELF_VIEW: FurnitureDrawing = {
-  width: 120,
-  height: 132,
-  parts: [
-    ellipse('shadow', 60, 128, 58, 4),
-    rect('panel', 4, 4, 112, 122, 4),
-    rect('face', 10, 12, 100, 108, 2),
-    ...bookRow(42, 0),
-    rect('panel', 10, 42, 100, 5, 1.5),
-    ...bookRow(78, 1),
-    rect('panel', 10, 78, 100, 5, 1.5),
-    ...bookRow(114, 2),
-    rect('panel', 10, 114, 100, 6, 1.5),
-  ],
-  seats: [],
-  ring: { cx: 60, cy: 120, rx: 56, ry: 8 },
-};
-
-// A water cooler: a blue bottle upside down on a cooler with hot and cold taps.
-const WATER_COOLER_VIEW: FurnitureDrawing = {
-  width: 56,
-  height: 112,
-  parts: [
-    ellipse('shadow', 28, 108, 20, 3.5),
-    rect('face', 10, 44, 36, 60, 4),
-    rect('panel', 8, 40, 40, 8, 3),
-    rect('panel', 16, 56, 8, 6, 1.5, T.cold),
-    rect('panel', 32, 56, 8, 6, 1.5, T.hot),
-    rect('rail', 16, 72, 24, 4, 1.5),
-    rect('panel', 23, 33, 10, 9, 2, T.waterDeep),
-    rect('panel', 12, 4, 32, 32, 10, T.water),
-    path('rail', 'M15 13h26'),
-    path('glint', 'M18 30V14'),
-  ],
-  seats: [],
-  ring: { cx: 28, cy: 100, rx: 22, ry: 7 },
-};
-
-// A coffee machine with a carafe, on a little counter, a mug beside it.
-const COFFEE_MACHINE_VIEW: FurnitureDrawing = {
-  width: 72,
-  height: 96,
-  parts: [
-    ellipse('shadow', 36, 92, 32, 3.5),
-    rect('face', 2, 64, 68, 24, 2),
-    path('rail', 'M8 76h56'),
-    rect('panel', 2, 58, 68, 8, 2),
-    rect('face', 14, 14, 44, 44, 5),
-    rect('panel', 14, 8, 44, 9, 3),
-    rect('screen', 20, 20, 32, 8, 2),
-    rect('panel', 32, 31, 8, 6, 1.5),
-    rect('panel', 26, 40, 20, 18, 4, T.glass),
-    rect('panel', 28, 48, 16, 8, 2, T.coffee),
-    rect('panel', 58, 49, 10, 10, 2),
-  ],
-  seats: [],
-  ring: { cx: 36, cy: 86, rx: 32, ry: 7 },
-};
-
-// A rug: an oval in the element's fill with a border, lying on the floor (no shadow: it is the floor).
-const RUG_VIEW: FurnitureDrawing = {
-  width: 200,
-  height: 120,
-  parts: [
-    ellipse('panel', 100, 60, 96, 56),
-    ellipse('rail', 100, 60, 84, 46),
-    ellipse('rail', 100, 60, 60, 30),
-    ellipse('rail', 100, 60, 34, 14),
-  ],
-  seats: [],
-  ring: { cx: 100, cy: 60, rx: 96, ry: 56 },
-};
-
-const far = (cx: number): Part[] => [
-  rect('panel', cx - 17, 8, 34, 30, 4),
-  path('rail', `M${cx} 13v20`),
-  rect('panel', cx - 22, 34, 44, 12, 3),
-];
-const near = (cx: number): Part[] => [
-  path('line', `M${cx - 17} 136v22M${cx + 17} 136v22`),
-  rect('panel', cx - 22, 110, 44, 12, 3),
-  rect('face', cx - 17, 102, 34, 36, 4),
-  path('rail', `M${cx} 107v26`),
-];
-
-// Six chairs round a table, every seat facing it: two beyond (their sitters face you), two in front (their
-// backs to you), one at each end in profile. Its grid and its seats (each with the way its sitter faces) are
-// @liveworkspace/avatar/seats', so a sitter lands on the chairs drawn here.
-export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly TableSeat[] } = {
-  width: MEETING_TABLE_SEATS.width,
-  height: MEETING_TABLE_SEATS.height,
-  parts: [
-    ellipse('shadow', 116, 160, 110, 6),
-    ...far(86),
-    ...far(146),
-    // The ends: seat, then the backrest on the outside.
-    path('line', 'M10 80v18M32 80v18'),
-    rect('panel', 6, 66, 30, 12, 3),
-    rect('panel', 2, 44, 8, 36, 3),
-    path('line', 'M200 80v18M222 80v18'),
-    rect('panel', 196, 66, 30, 12, 3),
-    rect('panel', 222, 44, 8, 36, 3),
-    // The table: legs, its top, its front edge.
-    path('line', 'M50 110v20M182 110v20'),
-    rect('panel', 40, 56, 152, 44, 6),
-    rect('face', 40, 96, 152, 12, 4),
-    ...near(86),
-    ...near(146),
-  ],
-  seats: [],
-  tableSeats: MEETING_TABLE_SEATS.seats,
-  ring: { cx: 116, cy: 82, rx: 112, ry: 70 },
-};
-
-export const MEETING_TABLE_ART: FurnitureArt = allSides({
-  ...MEETING_TABLE_VIEW,
-  seats: MEETING_TABLE_VIEW.tableSeats.map(({ u, v }) => ({ u, v })),
-});
+// The pieces livediagram draws too (the Meeting Table, the Plant, the Bookshelf, the Water Cooler, the Coffee Machine,
+// the Rug) and the fixed colours they keep whatever the theme are @liveworkspace/avatar/furniture-art's, shared.
+// The machines' answers sit on those drawings, so they are shared with them.
+export {
+  MACHINE_ANSWER_AT,
+  MEETING_TABLE_ART,
+  MEETING_TABLE_VIEW,
+  OFFICE_TONES,
+  type MachineAnswerSpot,
+} from '@liveworkspace/avatar/furniture-art';
 
 // Every office piece but the room and the stage, which are drawn to their size (roomParts, stageParts).
 export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
-  'meeting-table': MEETING_TABLE_ART,
-  plant: allSides(PLANT_VIEW),
-  bookshelf: allSides(BOOKSHELF_VIEW),
-  'water-cooler': allSides(WATER_COOLER_VIEW),
-  'coffee-machine': allSides(COFFEE_MACHINE_VIEW),
-  rug: allSides(RUG_VIEW),
+  ...SHARED_OFFICE_ART,
   ...OFFICE_EXTRA_ART,
   ...OFFICE_SOCIAL_ART,
   ...OFFICE_RECREATION_ART,

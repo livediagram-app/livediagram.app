@@ -7,8 +7,10 @@ import {
   isOfficeShape,
   isRoomDoor,
   isStageSpeakers,
+  MACHINE_ANSWER_AT,
   MEETING_TABLE_VIEW,
   OFFICE_ART,
+  OFFICE_TONES,
   OFFICE_KINDS,
   ROOM_WALL,
   roomParts,
@@ -20,7 +22,8 @@ import {
   stageTop,
 } from './office';
 import { isValidElement } from './validate';
-import { MEETING_TABLE_SEATS } from '@liveworkspace/avatar/seats';
+import { MEETING_TABLE_SEATS, SEAT_VIEWS } from '@liveworkspace/avatar/seats';
+import type { FurnitureDrawing } from './seating';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
@@ -295,5 +298,73 @@ describe('roomParts at the smallest sizes', () => {
             expect(p.w, `${door} ${w}x${h} ${p.role}`).toBeGreaterThan(0);
             expect(p.h, `${door} ${w}x${h} ${p.role}`).toBeGreaterThan(0);
           }
+  });
+});
+
+// docs/specs/009-elements/furniture-facing.md "The camera": the office pieces' back and side drawings.
+describe('the office pieces turned', () => {
+  // Every rect and ellipse inside its drawing's grid (a stroke's width of slack).
+  const inGrid = (view: FurnitureDrawing) =>
+    view.parts.every((p) =>
+      p.tag === 'rect'
+        ? p.x >= -1 && p.y >= -1 && p.x + p.w <= view.width + 1 && p.y + p.h <= view.height + 1
+        : p.tag === 'ellipse'
+          ? p.cx - p.rx >= -1 && p.cx + p.rx <= view.width + 1 && p.cy + p.ry <= view.height + 1
+          : true,
+    );
+
+  it('draws a back and a side of its own for every piece with a front, each on its grid', () => {
+    for (const kind of ['meeting-table', 'bookshelf', 'water-cooler', 'coffee-machine'] as const) {
+      const art = OFFICE_ART[kind];
+      expect(art.side).not.toBe(art.front);
+      for (const view of [art.front, art.back, art.side]) expect(inGrid(view)).toBe(true);
+    }
+    for (const kind of ['bookshelf', 'water-cooler', 'coffee-machine'] as const)
+      expect(OFFICE_ART[kind].back.parts).not.toEqual(OFFICE_ART[kind].front.parts);
+  });
+
+  it('turns the bookshelf narrow and long, its books down its left', () => {
+    const { front, side } = OFFICE_ART.bookshelf;
+    expect(side.width).toBeLessThan(front.width / 2);
+    expect(side.height).toBeGreaterThan(front.height);
+    const books = side.parts.filter((p) => p.fill && p.tag === 'rect');
+    expect(books.length).toBeGreaterThan(12);
+    expect(books.every((p) => p.tag === 'rect' && p.x + p.w <= 18)).toBe(true);
+  });
+
+  it('lays the rug the same from behind and turned on its side with its grid swapped', () => {
+    const { front, back, side } = OFFICE_ART.rug;
+    expect(back).toBe(front);
+    expect([side.width, side.height]).toEqual([front.height, front.width]);
+    expect(side.parts.every((p) => p.tag === 'ellipse' && p.ry > p.rx)).toBe(true);
+  });
+
+  it('seats the meeting table on its turned chairs, from @liveworkspace/avatar/seats', () => {
+    const art = OFFICE_ART['meeting-table'];
+    expect(art.back.parts).toBe(art.front.parts);
+    expect(art.back.seats).toEqual(SEAT_VIEWS['meeting-table'].back.seats);
+    expect(art.side.seats).toEqual(SEAT_VIEWS['meeting-table'].side.seats);
+    expect([art.side.width, art.side.height]).toEqual([168, 232]);
+    expect(art.side.seats).toHaveLength(6);
+  });
+
+  it('answers a drink where the bottle or the carafe shows, and not from behind the coffee machine', () => {
+    for (const view of ['front', 'back', 'side'] as const) {
+      const bottle = OFFICE_ART['water-cooler'][view].parts.find(
+        (p) => p.fill === OFFICE_TONES.water,
+      )!;
+      for (const { x, y } of MACHINE_ANSWER_AT['water-cooler'][view]!) {
+        expect(bottle.tag === 'rect' && x > bottle.x && x < bottle.x + bottle.w).toBe(true);
+        expect(bottle.tag === 'rect' && y > bottle.y && y < bottle.y + bottle.h).toBe(true);
+      }
+    }
+    expect(MACHINE_ANSWER_AT['coffee-machine'].back).toBeNull();
+    for (const view of ['front', 'side'] as const) {
+      const carafe = OFFICE_ART['coffee-machine'][view].parts.find(
+        (p) => p.fill === OFFICE_TONES.glass,
+      )!;
+      for (const { x } of MACHINE_ANSWER_AT['coffee-machine'][view]!)
+        expect(carafe.tag === 'rect' && x > carafe.x && x < carafe.x + carafe.w).toBe(true);
+    }
   });
 });

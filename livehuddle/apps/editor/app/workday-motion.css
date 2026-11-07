@@ -15,6 +15,18 @@
     transform: translateY(12px);
   }
 }
+/* On a treadmill turned on its side the belt runs along the canvas (WorkdayFaces flips it for the other ways). */
+.lh-belt-run-along {
+  animation: lh-belt-run-along 0.5s linear infinite;
+}
+@keyframes lh-belt-run-along {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(12px);
+  }
+}
 
 /* The dog's trot to its next spot over PET_TROT_MS (3 s): the move is a transition on the dog's own transform. */
 .lh-pet-trot {
@@ -111,6 +123,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lh-belt-run,
+  .lh-belt-run-along,
   .lh-pet-tail,
   .lh-pet-breathe,
   .lh-pet-heart,
@@ -123,6 +136,7 @@
   }
 }
 :root.reduce-motion .lh-belt-run,
+:root.reduce-motion .lh-belt-run-along,
 :root.reduce-motion .lh-pet-tail,
 :root.reduce-motion .lh-pet-breathe,
 :root.reduce-motion .lh-pet-heart,

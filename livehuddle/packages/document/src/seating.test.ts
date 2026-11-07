@@ -12,7 +12,6 @@ import {
   isSeatingShape,
   seatingFacing,
   SOFA_ART,
-  turnedSeatingBox,
 } from './seating';
 
 // docs/specs/009-elements/chair.md "Desk and sofa"
@@ -48,14 +47,6 @@ describe('turning', () => {
     expect(facingTurn('n', 'w')).toBe(270);
     expect(facingSwapsBox('n', 's')).toBe(false);
     expect(facingSwapsBox('s', 'w')).toBe(true);
-  });
-
-  it('swaps a desk or sofa box about its centre on a quarter turn, never a chair', () => {
-    const sofa = { x: 0, y: 0, width: 152, height: 86, shape: 'sofa' as const };
-    expect(turnedSeatingBox(sofa, 'n', 'e')).toEqual({ x: 33, y: -33, width: 86, height: 152 });
-    expect(turnedSeatingBox(sofa, 'n', 's')).toMatchObject({ width: 152, height: 86 });
-    const chair = { x: 0, y: 0, width: 76, height: 84, shape: 'chair' as const };
-    expect(turnedSeatingBox(chair, 'n', 'e')).toMatchObject({ width: 76, height: 84 });
   });
 
   it('shows a drawing per facing, never a rotation (docs/specs/009-elements/chair.md "Facing")', () => {

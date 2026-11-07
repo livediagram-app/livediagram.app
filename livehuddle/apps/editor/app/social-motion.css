@@ -24,6 +24,19 @@
     transform: translateX(46px);
   }
 }
+/* A table turned onto its side rallies down the canvas, its ends at the top and the bottom. */
+.lh-rally-down {
+  transform-origin: 50% 50%;
+  animation: lh-rally-down 1.2s ease-in-out infinite alternate;
+}
+@keyframes lh-rally-down {
+  from {
+    transform: translateY(-44px);
+  }
+  to {
+    transform: translateY(44px);
+  }
+}
 @keyframes lh-rally-y {
   0%,
   100% {

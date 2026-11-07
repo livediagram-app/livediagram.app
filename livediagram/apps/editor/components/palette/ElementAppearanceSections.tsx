@@ -41,7 +41,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-  isSeatingShape,
+  turnsWithFacing,
 } from '@livediagram/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
@@ -149,10 +149,9 @@ export function ElementAppearanceSections({
   const isEstimate = target.type === 'shape' && target.shape === 'estimate';
   const isAgenda = target.type === 'shape' && target.shape === 'agenda';
   const isDecision = target.type === 'shape' && target.shape === 'decision';
-  // A desk and a sofa share the chair's facing section (docs/specs/009-elements/chair.md "Desk and sofa").
-  // The meeting table does not turn (docs/specs/009-elements/office.md), so it has no facing section.
-  const isChair =
-    target.type === 'shape' && isSeatingShape(target.shape) && target.shape !== 'meeting-table';
+  // Every piece of furniture that turns has a facing section titled for it
+  // (docs/specs/009-elements/furniture-facing.md "Turning a placed piece").
+  const isChair = target.type === 'shape' && turnsWithFacing(target.shape);
   // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
   // only (self-drawing shapes have no label slot); Alignment applies to any
   // boxed element with a text slot.
