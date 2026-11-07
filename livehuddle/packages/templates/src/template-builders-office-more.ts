@@ -65,8 +65,8 @@ export function buildFocusLibrary(cx: number, cy: number): Element[] {
     arrival({
       x: cx + 52,
       y: cy + 60,
-      side: 'left',
-      hint: 'You arrive on the Avatar Pad. Sit at a desk to work, or step into an Office Pod to talk without disturbing anyone.',
+      hintW: 320,
+      hint: 'You arrive on the Avatar Pad. Take a desk, or an Office Pod for a call.',
     }),
   );
 }

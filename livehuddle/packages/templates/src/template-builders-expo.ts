@@ -124,12 +124,11 @@ export function buildExpoHall(cx: number, cy: number): Element[] {
       subtitle:
         'A day at the show: the keynote on the stage, a sponsor in every booth, lunch in the food court.',
     },
-    // In the aisle facing the stage, between its rows of chairs, with the booths either side.
+    // In the aisle between the stage's two rows of chairs, the booths either side.
     arrival: {
-      dx: 28,
-      dy: 404,
-      side: 'left',
-      hintW: 320,
+      dx: 0,
+      dy: 364,
+      hintW: 360,
       hint: 'You arrive on the Avatar Pad in front of the stage. Step into a booth to talk to its sponsor.',
     },
     extra: (left, top) => [createShape('focus-button', left + MID + 260, top + STAGE_Y + 10)],

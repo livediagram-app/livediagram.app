@@ -39,7 +39,7 @@ Space, so the board needs an entrance, not a switch. A Space made before keeps i
 ## Spaces
 
 Nine siblings, built the same way (`template-office-parts.ts`: open-air floors such as grass and garden paths first,
-then rooms, rugs and stages, furniture after, and an **Avatar Pad** with a how-to line under the plan, beside it for the Team Pod). The first
+then rooms, rugs and stages, furniture after, and an **Avatar Pad** in the middle of the action with a how-to line under it). The first
 three (`template-builders-spaces.ts`):
 
 - **Coworking Space**: one open room of two desk clusters (four desks each pair facing across a shared bench), a coffee

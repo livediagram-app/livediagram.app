@@ -11,6 +11,7 @@ import { AVATAR_WIDTH, avatarFigureHeight } from '@liveworkspace/avatar/walk';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { buildTemplate } from './build-template';
+import { ARRIVAL_HINT_W } from './template-arrival';
 import { templateFloors } from './template-floors';
 import { templateCategory } from './template-categories';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -168,6 +169,11 @@ describe.each(TABS)('the %s Space', (_name, kind, build, first) => {
       (e) => e.type === 'text' && /Avatar Pad/.test(e.label ?? ''),
     ) as unknown as Box;
     expect(inside(hint, { x: left, y: top, width: right - left, height: bottom - top })).toBe(true);
+    // Centred under the pad and no wider than ARRIVAL_HINT_W, so a phone's 390 px view centred on someone arriving
+    // shows the whole line (a line beside the pad ran off the screen: PR #1386's browser check).
+    expect(hint.x + hint.width / 2, 'line centred on the pad').toBeCloseTo(middle.x, 6);
+    expect(hint.width / 2, 'line within 180 px of the pad').toBeLessThanOrEqual(ARRIVAL_HINT_W / 2);
+    expect(hint.y, 'line under the pad').toBeGreaterThan(pad.y + pad.height);
     const solid = [
       ...els.filter((e) => e.type === 'sticky'),
       ...all.filter((e) => !isFloorShape(e.shape) && e.shape !== 'sticker'),

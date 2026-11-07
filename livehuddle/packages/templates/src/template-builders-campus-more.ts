@@ -197,11 +197,11 @@ export function buildConferenceVenue(cx: number, cy: number): Element[] {
       subtitle:
         'A day of talks: the keynote in the main hall, sessions in the breakouts, and the foyer bar and courtyard between.',
     },
-    // In the Main Hall, where the keynote is, in the aisle among its rows facing the stage.
+    // In the Main Hall, where the keynote is, in the aisle between its first two rows, facing the stage.
     arrival: {
-      dx: -4,
-      dy: -268,
-      side: 'left',
+      dx: 0,
+      dy: -308,
+      hintW: 360,
       hint: 'You arrive on the Avatar Pad in the Main Hall. The Directory by the gate walks you to any room.',
     },
     extra: (left, top) => [createShape('focus-button', left + 500 + 820, top + 40 + 64)],
@@ -352,12 +352,11 @@ export function buildStartupHq(cx: number, cy: number): Element[] {
       subtitle:
         'Build it together: desks in the studio, the Friday demo in the town hall, and a garden to take calls in.',
     },
-    // In the Town Hall, where the Friday demo is, in the aisle among its rows facing the stage.
+    // In the Town Hall, where the Friday demo is, in the aisle between its first two rows, facing the stage.
     arrival: {
-      dx: 146,
-      dy: -198,
-      side: 'left',
-      hintW: 240,
+      dx: 150,
+      dy: -238,
+      hintW: 360,
       hint: 'You arrive on the Avatar Pad in the Town Hall. Step into an Office Pod on the lawn for a call.',
     },
     extra: (left, top) => [createShape('focus-button', left + 820 + 580, top + 60 + 60)],

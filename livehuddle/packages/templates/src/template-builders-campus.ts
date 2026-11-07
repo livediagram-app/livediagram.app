@@ -213,11 +213,11 @@ export function buildCompanyCampus(cx: number, cy: number): Element[] {
       subtitle:
         'The whole company on one site: offices, an auditorium, a bar and a games room, joined by a garden.',
     },
-    // In the Auditorium, the company's meeting place, in the aisle among its rows facing the stage.
+    // In the Auditorium, the company's meeting place, in the aisle between its first two rows, facing the stage.
     arrival: {
-      dx: 20,
-      dy: -206,
-      side: 'left',
+      dx: 0,
+      dy: -246,
+      hintW: 360,
       hint: 'You arrive on the Avatar Pad in the Auditorium. The Directory by the gate walks you to any room.',
     },
     // The presenter's Bring Focus, beside the stage.

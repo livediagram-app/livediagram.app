@@ -112,10 +112,10 @@ export function buildCoworkingSpace(cx: number, cy: number): Element[] {
     'Grab any desk, take calls in a booth, and meet at the coffee bar. Everyone is welcome to work here.',
     // On the open floor between the desks and the lounge, the coffee bar and the booths in view.
     arrival({
-      x: cx - 180,
-      y: cy + 12,
-      side: 'right',
-      hint: 'You arrive on the Avatar Pad. Sit at any desk, step into a booth for a call, and say hello with Enter.',
+      x: cx - 184,
+      y: cy - 4,
+      hintW: 160,
+      hint: 'You arrive on the Avatar Pad. Take any desk, or a booth for a call.',
     }),
   );
 }
@@ -250,12 +250,12 @@ export function buildAllHandsHall(cx: number, cy: number): Element[] {
     'Take a seat for the all-hands: the stage up front, the room facing it, and Bring Focus for the presenter.',
     [
       focus,
-      // In the aisle, among the rows, facing the stage.
+      // In the centre aisle, among the rows, facing the stage: the line under it is a narrow sign down the aisle.
       ...arrival({
         x: cx,
         y: cy + 76,
-        side: 'left',
-        hint: 'You arrive on the Avatar Pad: take a seat. Raise a hand with the Avatar panel’s Behaviour › Wave, which everyone sees.',
+        hintW: 140,
+        hint: 'You arrive on the Avatar Pad: take a seat, and Wave to raise a hand.',
       }),
     ],
   );

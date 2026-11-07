@@ -159,12 +159,11 @@ export function buildSchoolQuad(cx: number, cy: number): Element[] {
       subtitle:
         'Learn together: the lecture in the hall, groups in the classrooms, quiet in the library and lunch in the canteen.',
     },
-    // In the Lecture Hall, in the aisle among its rows facing the stage.
+    // In the Lecture Hall, in the aisle between its first two rows, facing the stage.
     arrival: {
-      dx: -4,
-      dy: -262,
-      side: 'left',
-      hintW: 240,
+      dx: 0,
+      dy: -318,
+      hintW: 320,
       hint: 'You arrive on the Avatar Pad in the Lecture Hall. The Directory by the gate walks you to any room.',
     },
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 580, top + HALL.y + 60)],
