@@ -25,13 +25,13 @@
     "@liveworkspace/render-png": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261007.1",
+    "@cloudflare/workers-types": "^5.20261104.1",
     "@liveworkspace/vitest-config": "workspace:^",
-    "@types/node": "^26.6.4",
-    "@vitest/coverage-v8": "^5.0.3",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.148.0"
+    "vitest": "^5.1.0",
+    "wrangler": "^4.157.0"
   }
 }

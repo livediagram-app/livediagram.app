@@ -30,13 +30,13 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "oxlint": "^1.90.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.1.0"
   }
 }
