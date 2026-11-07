@@ -184,6 +184,8 @@ A booth for two, with a sliding glass door that **closes by itself when both sea
   other and nobody outside hears them, door open or shut. A pod in a room is the innermost call, so it is private
   from the room around it.
 - It does not turn. Aspect locked. Default 176 × 144.
+- A call for one is the [Phone Booth](workday-pieces.md#phone-booth): one seat, no invite, a call of its own that
+  shows Busy.
 
 ## Bar, Bar Stool
 

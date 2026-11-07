@@ -566,10 +566,12 @@ of that for other statuses"). They come in three groups, **Availability** (can p
 | Availability | **Available**      | `available`   | green  | A green sparkle by the head, twinkling                                     |
 | Availability | **Need Help**      | `help`        | amber  | A pixel "?" over the head, bobbing                                         |
 | Availability | **Away**           | `away`        | slate  | The character fades to half and a slow "Zz" rises above it                 |
+| Availability | **Busy**           | `busy`        | brown  | A phone held to the ear; still                                             |
 | Availability | **Do Not Disturb** | `dnd`         | rose   | A red no-entry sign beside the head (the dot has the white bar too); still |
 | Activity     | **Focusing**       | `focus`       | violet | Headphones (violet ear cups); still                                        |
 | Activity     | **In a Meeting**   | `meeting`     | red    | A slim headset with a mic boom and a red live tip; still                   |
 | Activity     | **Out to Lunch**   | `lunch`       | teal   | A sandwich in the hand, lifted for a bite every few seconds                |
+| Activity     | **On a Break**     | `break`       | blue   | A water bottle in the hand; still                                          |
 | Mood         | **Angry**          | `angry`       | orange | Steam puffing from both ears, a flushed face and furrowed brows            |
 | Mood         | **Celebrating**    | `celebrating` | pink   | A striped party hat, confetti falling round the head                       |
 | Mood         | **Thinking**       | `thinking`    | sky    | A thought bubble over the head, its three dots lighting in turn            |
@@ -580,7 +582,7 @@ of that for other statuses"). They come in three groups, **Availability** (can p
   from behind, the steam from the one ear in profile. A signature rides the
   figure: it bobs with the walk, rises with a hop and drops with a sitter. Over the head, the hat, the ice pack, the "?" and the
   bubble sit on the hair (taller styles lift them), and the name chip rises clear of them.
-- **Hands**: the sandwich is in the hand only while nothing else is: a drink, a Behaviour or the flag takes the hand
+- **Hands**: the sandwich (and the water bottle) is in the hand only while nothing else is: a drink, a Behaviour or the flag takes the hand
   and the sandwich waits. Everything else stays on through a Behaviour.
 - **Motion**, flat however busy the room ([A busy room](#a-busy-room)): each loop is a CSS keyframe on a few SVG rects, stepped so the pixels move
   whole (`../packages/avatar/src/status-effects.css`, imported by each editor's stylesheet), never a timer per
@@ -593,6 +595,9 @@ of that for other statuses"). They come in three groups, **Availability** (can p
   card its dot, its name and its short line, the current one pressed; **Sound** stays the last group. The whole of it
   fits without scrolling on a desktop, with the preview card beside it. On a phone the flyout spans the screen and
   its cards go two to a row. Every role may set it: it is presence, like the character.
+- **Set by where you sit**: a Nap Pod shows Focusing, a Treadmill or a Weight Bench On a Break, a Phone Booth Busy,
+  while you sit there, laid over your own status and never written over it; a status picked while sitting wins
+  ([Workday pieces](../009-elements/workday-pieces.md#statuses-a-piece-sets)).
 - **Do Not Disturb** is the calls' status ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md#do-not-disturb-part-3-built)):
   while it is on, no voice, bubble or other person's equaliser reaches you, and you are still heard if you speak.
   Every other status is cosmetic. The status list is shared with livediagram (`@liveworkspace/avatar`), which has no
