@@ -47,7 +47,7 @@
     "@liveworkspace/style-guards": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/workbench": "workspace:*",
-    "next": "^16.4.3",
+    "next": "^16.4.5",
     "polygon-clipping": "0.15.7",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
@@ -68,7 +68,7 @@
     "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.7",
     "jsdom": "^30.1.2",
-    "oxlint": "^1.90.0",
+    "oxlint": "^1.91.0",
     "tailwindcss": "^4.3.4",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
