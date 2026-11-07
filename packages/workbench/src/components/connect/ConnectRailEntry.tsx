@@ -7,7 +7,7 @@
 // where the files come from.
 import type { CSSProperties } from 'react';
 import { BrandMark } from '@liveworkspace/brand';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { lucideGlyph, Tooltip } from '@liveworkspace/ui';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { App } from '@liveworkspace/index-client';
 
@@ -23,6 +23,10 @@ const FAN: readonly App[] = [
 ];
 
 export const CONNECT_RAIL_ID = 'connect';
+// The entry's name, said by its tooltip and to a screen reader, and the words it shows: the full name wraps to three
+// lines beside the logos in a 240px rail, so the row shows the short one on one line.
+export const CONNECT_RAIL_NAME = 'Connect liveworkspace File';
+export const CONNECT_RAIL_SHORT = 'Connect a File';
 
 export type ConnectRailColours = {
   // The rail's ink and hairline, and the panel's paper behind the pinned row.
@@ -56,45 +60,46 @@ export function ConnectRailEntry({
       className="contents sm:sticky sm:-bottom-4 sm:-mx-4 sm:-mb-4 sm:mt-auto sm:block sm:border-t sm:px-4 sm:pb-4 sm:pt-3"
       style={{ borderColor: colours.border, backgroundColor: colours.card }}
     >
-      <button
-        type="button"
-        data-rail={CONNECT_RAIL_ID}
-        aria-current={on ? 'true' : undefined}
-        onClick={onPick}
-        className="flex w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium outline-none transition duration-micro hover:bg-[var(--start-hover)] focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none max-sm:w-auto"
-        style={
-          {
-            backgroundColor: on ? colours.chosenTint : undefined,
-            color: on ? colours.chosenText : colours.text,
-            '--start-hover': on ? colours.chosenHoverTint : colours.hoverTint,
-          } as CSSProperties
-        }
-      >
-        <span className="shrink-0">
-          <LinkGlyph />
-        </span>
-        <span className="min-w-0 flex-1 whitespace-nowrap leading-snug sm:whitespace-normal">
-          Connect liveworkspace File
-        </span>
-        <span aria-hidden className="flex shrink-0 items-center max-sm:hidden">
-          {fan.map((app, i) => (
-            <span
-              key={app}
-              className="flex size-[18px] items-center justify-center rounded-full ring-2"
-              style={
-                {
-                  marginLeft: i === 0 ? 0 : -6,
-                  backgroundColor: colours.card,
-                  '--tw-ring-color': colours.card,
-                  zIndex: fan.length - i,
-                } as CSSProperties
-              }
-            >
-              <BrandMark app={app} className="size-3" />
-            </span>
-          ))}
-        </span>
-      </button>
+      <Tooltip label={CONNECT_RAIL_NAME}>
+        <button
+          type="button"
+          data-rail={CONNECT_RAIL_ID}
+          aria-label={CONNECT_RAIL_NAME}
+          aria-current={on ? 'true' : undefined}
+          onClick={onPick}
+          className="flex w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium outline-none transition duration-micro hover:bg-[var(--start-hover)] focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none max-sm:w-auto"
+          style={
+            {
+              backgroundColor: on ? colours.chosenTint : undefined,
+              color: on ? colours.chosenText : colours.text,
+              '--start-hover': on ? colours.chosenHoverTint : colours.hoverTint,
+            } as CSSProperties
+          }
+        >
+          <span className="shrink-0">
+            <LinkGlyph />
+          </span>
+          <span className="min-w-0 flex-1 truncate leading-snug">{CONNECT_RAIL_SHORT}</span>
+          <span aria-hidden className="flex shrink-0 items-center max-sm:hidden">
+            {fan.map((app, i) => (
+              <span
+                key={app}
+                className="flex size-[18px] items-center justify-center rounded-full ring-2"
+                style={
+                  {
+                    marginLeft: i === 0 ? 0 : -6,
+                    backgroundColor: colours.card,
+                    '--tw-ring-color': colours.card,
+                    zIndex: fan.length - i,
+                  } as CSSProperties
+                }
+              >
+                <BrandMark app={app} className="size-3" />
+              </span>
+            ))}
+          </span>
+        </button>
+      </Tooltip>
     </div>
   );
 }
