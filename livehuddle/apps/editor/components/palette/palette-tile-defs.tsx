@@ -1458,7 +1458,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add Ping-Pong Table',
     caption: 'Ping-Pong Table',
     description:
-      'Two seats, one at each end. When both are taken, a little rally plays between them.',
+      'A game for two: sit at each end and play a rally to 11, moving your paddle with the mouse, a finger or W and S.',
     filled: true,
     action: { type: 'shape', kind: 'ping-pong-table' },
     icon: <PingPongTableIcon size={TILE_GLYPH_PX} />,
