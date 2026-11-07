@@ -10,7 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./workday-pieces.md - when implementing or changing the workday pieces: their seats and standing seats, the status a piece sets, the booth's call zone, the hot desk's card, the dog's legs, and the reception bell's wire and earshot
 - ./venue-pieces.md - when implementing or changing the venue pieces: their drawings, footprints, the pool's rim, the curtains as a hanging piece, the stage's boards and footlights, and their template placements
 - ./screen-and-room-sign.md - when implementing or changing the Screen or the Room Sign: their rooms, the live store, the faces, the Video Link and the Meet category
-- ./wayfinding.md - when implementing or changing the Directory or the Elevator: places, names, approach points, who is where, Walk There, Go, rides and re-entry
+- ./wayfinding.md - when implementing or changing the Directory, the Elevator or the Stairs: places, names, approach points, who is where, Walk There, Go, rides and re-entry
 - ./avatar-pad.md - when implementing or changing the Avatar Pad, its pixels, where Avatar mode starts or the arrival beam
 - ./fence.md - when implementing or changing the fence, its drawing or how it blocks Avatar-mode walking
 - ./checklist.md - when implementing or changing the checklist, its ticks, row editor or render
