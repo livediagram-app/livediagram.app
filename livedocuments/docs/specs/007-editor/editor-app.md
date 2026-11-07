@@ -61,6 +61,7 @@ The tabs read as tabs, not buttons, and every editor draws them alike from `pack
 - A tab outside a tab-scoped share stands the same way, outlined dashed. Folders open in place in the strip: [Tab folders](../006-document/tab-folders.md#tab-bar-rendering).
 - **No `Tabs` label** before the tabs: the row is plainly tabs, and the room goes to them.
 - **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. A lock still marks a locked tab, and the open tab keeps its menu button.
+- **A connected tab** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md), the shared `ConnectedTab`) stands the same way, led by its file's app logo; another app's carries a small arrow after the name, a broken one an amber dot. It is never renamed by hand (its name follows its file), dragged and foldered like any tab, and pressing it (the open one included) opens its file. Opened, its page stands in the canvas's place (`components/connect/ConnectedTabHost.tsx`): it holds no pages, every edit is shut as on a locked tab, and no start shows. Its menu keeps Remove Tab (the file stays as it is), Organise in Tab Folder and, when it opens nothing, Connect Again: never Rename, Duplicate, Side by Side, Lock, Add to Document, Import, Export or Clear. Editors connect, reorder and remove; Participants and Viewers open only.
 
 ## Role pill
 

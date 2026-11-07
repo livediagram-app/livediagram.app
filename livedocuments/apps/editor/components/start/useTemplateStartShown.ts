@@ -10,9 +10,11 @@ import { showsTemplateStart } from '@/components/start/template-start-mode';
 import { startClosedKey } from '@/components/start/start-closed-key';
 
 export function useTemplateStartShown(): boolean {
-  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly } = useEditorContext();
+  const { hydrated, zenMode, embedMode, pendingDraw, activeTab, isReadOnly, activeTabConnected } =
+    useEditorContext();
   return showsTemplateStart({
-    hydrated,
+    // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
+    hydrated: hydrated && !activeTabConnected,
     zen: zenMode,
     embed: embedMode,
     readOnly: isReadOnly,

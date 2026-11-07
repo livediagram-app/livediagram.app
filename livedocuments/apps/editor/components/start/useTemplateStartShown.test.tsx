@@ -13,6 +13,7 @@ type Ctx = {
   embedMode: boolean;
   pendingDraw: unknown;
   isReadOnly: boolean;
+  activeTabConnected?: boolean;
   activeTab: { id: string; elements: unknown[]; pages: unknown };
 };
 const ctx = vi.hoisted((): { value: Ctx } => ({
@@ -43,6 +44,13 @@ describe('useTemplateStartShown', () => {
     ctx.value.isReadOnly = true;
     expect(renderHook(() => useTemplateStartShown()).result.current).toBe(false);
     ctx.value.isReadOnly = false;
+  });
+
+  // A connected tab is empty but shows its own page (liveworkspace/docs/specs/004-index/connected-tabs.md).
+  it('is off on a connected tab', () => {
+    ctx.value.activeTabConnected = true;
+    expect(renderHook(() => useTemplateStartShown()).result.current).toBe(false);
+    ctx.value.activeTabConnected = false;
   });
 });
 
