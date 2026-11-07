@@ -15,8 +15,15 @@ import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers }
  */
 export const CALL_RELEASE_RADIUS_PX = 300;
 
-/** A point in canvas px: a character's feet. */
-export type CallPoint = { readonly x: number; readonly y: number };
+/**
+ * A point in canvas px: a character's feet, and the seat they sit on, if any. Only a seated character is in a Phone
+ * Booth's call (`CallZone.seat`); someone crossing its floor stays in the room's.
+ */
+export type CallPoint = {
+  readonly x: number;
+  readonly y: number;
+  readonly seatedOn?: string | null;
+};
 
 /** A share level as the calls read it: an Editor's, a Participant's or a Viewer's. */
 export type CallLevel = 'edit' | 'participate' | 'view';
@@ -32,6 +39,9 @@ export type CallZone = {
   // A room drawn with the Room Builder (docs/specs/009-elements/room-builder.md): its outline in canvas px, which
   // the point must be inside as well as inside the box.
   readonly polygon?: readonly CallPoint[];
+  // A Phone Booth's (docs/specs/009-elements/workday-pieces.md "Phone Booth"): a call only for whoever sits on it,
+  // the piece whose id it carries. Feet on its floor without that seat are in the call round it.
+  readonly seat?: true;
 };
 
 /** A stage's top as the call reads it, the room it stands in (null: the open), and its two settings. */
@@ -115,6 +125,7 @@ export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
       x1: inside.x + inside.width,
       y1: inside.y + inside.height,
       area: inside.width * inside.height,
+      ...(booth ? { seat: true as const } : {}),
     });
   }
   return zones;
@@ -125,6 +136,7 @@ function innermost<T extends CallZone>(at: CallPoint, boxes: readonly T[]): T | 
   let best: T | null = null;
   for (const z of boxes) {
     if (at.x <= z.x0 || at.x >= z.x1 || at.y <= z.y0 || at.y >= z.y1) continue;
+    if (z.seat && at.seatedOn !== z.id) continue;
     if (z.polygon && !pointInPolygon(at, z.polygon)) continue;
     if (!best || z.area < best.area || (z.area === best.area && z.id < best.id)) best = z;
   }
@@ -133,7 +145,8 @@ function innermost<T extends CallZone>(at: CallPoint, boxes: readonly T[]): T | 
 
 /**
  * The room whose call `at` is in: strictly inside its walls' centre lines (feet on the doorway's threshold are still
- * outside), the innermost (smallest) of several, then the lower id; null on the open floor.
+ * outside), the innermost (smallest) of several, then the lower id; null on the open floor. A Phone Booth counts
+ * only for feet seated on it (`at.seatedOn`).
  */
 export function zoneAt(at: CallPoint, zones: readonly CallZone[]): string | null {
   return innermost(at, zones)?.id ?? null;

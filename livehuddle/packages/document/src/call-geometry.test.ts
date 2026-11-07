@@ -34,11 +34,26 @@ describe('call geometry', () => {
     const booth = { ...room('phone', 300, 200, 80, 136), shape: 'phone-booth' };
     const zones = roomZones([room('open-plan', 0, 0, 800, 600), booth]);
     expect(zones.map((z) => z.id)).toEqual(['open-plan', 'phone']);
-    // Its seat (seats.ts PHONE_BOOTH_SEATS: 0.5, 112/136) is in the booth's call; a step outside is the room's.
-    expect(zoneAt({ x: 340, y: 312 }, zones)).toBe('phone');
+    // Its seat (seats.ts PHONE_BOOTH_SEATS: 0.5, 112/136) is in the booth's call for whoever sits on it; a step
+    // outside is the room's.
+    expect(zoneAt({ x: 340, y: 312, seatedOn: 'phone' }, zones)).toBe('phone');
     expect(zoneAt({ x: 420, y: 312 }, zones)).toBe('open-plan');
     // Its roof is outside its call.
     expect(zoneAt({ x: 340, y: 220 }, zones)).toBe('open-plan');
+  });
+
+  it('keeps a walker crossing a phone booth in the room, never in its call, even for a step', () => {
+    const booth = { ...room('phone', 300, 200, 80, 136), shape: 'phone-booth' };
+    const zones = roomZones([room('open-plan', 0, 0, 800, 600), booth]);
+    // Every step of a walk straight down through the booth's floor, standing, or seated on another piece.
+    for (let y = 200; y <= 336; y += 4) {
+      expect(zoneAt({ x: 340, y }, zones), `y ${y}`).toBe('open-plan');
+      expect(zoneAt({ x: 340, y, seatedOn: null }, zones), `y ${y}`).toBe('open-plan');
+      expect(zoneAt({ x: 340, y, seatedOn: 'chair-1' }, zones), `y ${y}`).toBe('open-plan');
+    }
+    // An Office Pod's floor is still a call for anyone on it.
+    const pod = { ...room('pod', 500, 200, 176, 128), shape: 'office-pod' };
+    expect(zoneAt({ x: 588, y: 280 }, roomZones([pod]))).toBe('pod');
   });
 
   it('reads stages with their room and settings, and who may speak from them', () => {

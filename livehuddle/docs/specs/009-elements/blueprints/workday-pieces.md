@@ -47,7 +47,11 @@ Derived from [Workday pieces](../workday-pieces.md).
 - **Standing pose**: the canvas draws a sitter `seated` only when the piece it holds is not a standing seat
   (`sitsDown`, over a set of standing-seat ids rebuilt per board change).
 - **The booth's call**: `roomZones` pushes a Phone Booth's `boothInterior` (the drawn rect inset 6 px of 80 on each
-  side and from 40 px of 136 down to 6 px from its foot); the api's hearing check reads the same function.
+  side and from 40 px of 136 down to 6 px from its foot), marked `seat: true`; the api's hearing check reads the same
+  function. `zoneAt` skips a `seat` zone unless the point's `seatedOn` is that booth's id, so a walker crossing it
+  stays in the room's call. The editor's call passes each walker's `seatedOn` (and yours) with their feet; the room
+  keeps the `seatedOn` of each `avatar` op (up to 64 characters) with the position, and the edge margin's points carry
+  it.
 - **The dog**: leg `n = petLegAt(now)`; `petLeg(id, n, area)` is null (the bed) when `n % 4 === 3`, otherwise a
   point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`); `dogOffset` makes it
   relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
@@ -138,4 +142,5 @@ dog are presence, the clock or local.
 ## Defaults ledger
 
 - Dog only (no cat), no name, pats local: the smallest delight that needs no wire (spec "Not in scope").
-- The booth's zone is its inside, with no walls: a seat stops a second person, so no door is needed.
+- The booth's zone is its inside, with no walls: a seat stops a second person, so no door is needed, and the zone
+  counts only its sitter, so walking across it never joins its call.

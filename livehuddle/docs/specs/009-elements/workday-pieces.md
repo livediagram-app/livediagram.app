@@ -106,6 +106,9 @@ nothing).
   stage](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built)): its floor (the booth inside
   its frame) is a call zone, so whoever sits in it hears nobody in the room and nobody in the room hears them, on
   every screen and in the api's hearing check alike. A booth in a room is the innermost call there.
+- **Only its sitter is in its call.** Someone walking across the booth's floor without sitting in it stays in the
+  room's call the whole way, never joining the booth's, even for a step: the booth's call counts the person seated on
+  it (the seat in their presence), not feet on its floor.
 - **Sitting sets Busy.**
 - It has no door and no walls that block: a full booth stops a second person beside it, by the seat rules.
 

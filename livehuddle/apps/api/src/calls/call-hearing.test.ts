@@ -93,6 +93,25 @@ describe('hearingVerdict', () => {
     expect(hearingVerdict(w, 'onFloor', 'inBooth')).toBe('apart');
   });
 
+  // docs/specs/009-elements/workday-pieces.md "Phone Booth": a call only for whoever sits in it.
+  it("puts only a Phone Booth's sitter in its call, never someone walking across its floor", () => {
+    // A booth wider than the edge margin, so the margin does not blur who is inside.
+    const phone: CallZone = { ...zone('phone', 100, 100, 300, 300), seat: true };
+    const tab: TabCalls = { zones: [BOARDROOM, phone], stages: [] };
+    const placed = new Map<string, Placed>([
+      ['sitter', { tabId: 't', at: { x: 200, y: 200, seatedOn: 'phone' } }],
+      ['crossing', { tabId: 't', at: { x: 200, y: 200 } }],
+      ['nearby', { tabId: 't', at: { x: 500, y: 400 } }],
+    ]);
+    const w: HearingWorld = { ...world({}, { tab }), placed };
+    // The walker crossing the booth is in the boardroom's call with the person beside it, and not the sitter's.
+    expect(hearingVerdict(w, 'crossing', 'nearby')).toBe('heard');
+    expect(hearingVerdict(w, 'nearby', 'crossing')).toBe('heard');
+    expect(hearingVerdict(w, 'crossing', 'sitter')).toBe('apart');
+    expect(hearingVerdict(w, 'sitter', 'crossing')).toBe('apart');
+    expect(hearingVerdict(w, 'sitter', 'nearby')).toBe('apart');
+  });
+
   it('refuses another tab, and an unknown position unless the room has just started', () => {
     const w = world({ a: [10, 10], b: [12, 12, 'other'] });
     expect(hearingVerdict(w, 'a', 'b')).toBe('apart');

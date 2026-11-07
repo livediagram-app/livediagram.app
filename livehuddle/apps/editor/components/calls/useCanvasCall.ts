@@ -58,7 +58,8 @@ export function useCanvasCall(deps: {
         id: p.id,
         name: p.name,
         color: p.color,
-        at: { x: p.avatar.x, y: p.avatar.y },
+        // The seat too: only a seated character is in a Phone Booth's call (workday-pieces.md "Phone Booth").
+        at: { x: p.avatar.x, y: p.avatar.y, seatedOn: p.avatar.seatedOn ?? null },
         scale: avatarScale(parseAvatarConfig(p.avatar.config).size),
         glideMs: p.glideMs,
         walking: p.avatar.walking,
@@ -79,6 +80,11 @@ export function useCanvasCall(deps: {
   }, [props.elements]);
 
   const self = inMode ? avatar.pos : null;
+  const selfSeat = avatar.seatedOn ?? null;
+  const seatedSelf = useMemo(
+    () => (self ? { ...self, seatedOn: selfSeat } : null),
+    [self, selfSeat],
+  );
   // The Screens' and Room Signs' rooms, Knock (docs/specs/009-elements/screen-and-room-sign.md,
   // docs/specs/012-collaboration/knock.md).
   useMeetingPieces({
@@ -110,6 +116,7 @@ export function useCanvasCall(deps: {
   const toast = useToast();
   useProximityCall({
     inMode,
+    // Your feet with your seat, so sitting in a Phone Booth takes you into its call and walking across it does not.
     caller,
     // `can.takePart`, never read-only (Avatar mode makes the canvas read-only for everyone): a Viewer only listens.
     canSpeak: !!props.takePart,
@@ -118,7 +125,7 @@ export function useCanvasCall(deps: {
     view,
     send: props.onCallSignal,
     tabId: props.activeTabId ?? '',
-    self,
+    self: seatedSelf,
     walkers: peers,
     zones,
     stages,

@@ -34,7 +34,8 @@ are the zones, not a separate element). Its walls block sound fully, as they blo
   its own, door open or shut, and a pod in a room is the innermost call (`roomZones` takes `office-pod` with
   `podInterior`).
 - **So is a [Phone Booth](../009-elements/workday-pieces.md#phone-booth)**, a call for one: the booth inside its frame
-  (`roomZones` takes `phone-booth` with `boothInterior`), so whoever sits in it is out of the room's audio.
+  (`roomZones` takes `phone-booth` with `boothInterior`), so whoever sits in it is out of the room's audio. Its call
+  holds only its sitter: someone walking across it stays in the room's call.
 - A room's rotation is ignored, as the walls ignore it.
 - **Video and screens follow hearing**: a bubble is received only from someone you hear
   ([Who sees what](video-and-screen-bubbles.md#who-sees-what)), so a room's cameras and shared screens stay in it.
