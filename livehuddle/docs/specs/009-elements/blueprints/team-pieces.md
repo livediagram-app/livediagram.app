@@ -29,7 +29,7 @@ selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month;
   `selected` (and the cursor to its month when it was a spill-over day).
 - Pin: `{ kind: 'notice-pin', note: { ...NoticeNote, day: selected } }` through `editor.applyElementDelta`; unpin:
   `{ kind: 'notice-unpin', noteId, by }`. Who may pin and unpin is the Notice Board's rule exactly (`mayPin`,
-  `mayUnpin`), factored into `lib/note-signer.ts` so both pieces read one copy.
+  `mayUnpin`), factored into `components/canvas/collab/useNoteSigner.ts` so both pieces read one copy.
 - `applyElementDelta` (`element-deltas.ts`): `openNoticeBoard` becomes `openNotePiece`, true for every
   `holdsNotes(el.shape)` kind not locked. `participant-content.ts` merges `noticeNotes` for every `holdsNotes` kind.
   The room's signer rule and the ledger already key on the delta kind, not the shape.
@@ -49,14 +49,14 @@ sent | failed`, the text cleared on `sent`.
 - `signpostPlaces(post, places, max = SIGNPOST_BOARDS)`: `tabPlaces` of the active tab, sorted by squared distance
   from the post's foot (`x + width / 2`, `y + height`) to each place's `arrival`, ties by place id, first `max`, each
   with `dir: 'left' | 'right'` (`arrival.x < foot.x` is left).
-- `SignpostFace` (`wayfinding/SignpostFace.tsx`) reads the wayfinding store's `tabs` and `activeTabId`, memoised on
+- `SignpostFace` (`components/canvas/wayfinding/SignpostFace.tsx`) reads the wayfinding store's `tabs` and `activeTabId`, memoised on
   the active tab's elements and the post's box. Each board is a button (`pieceControlProps`) whose click calls
   `wayfinding.actions.walkThere(place)`. The top board carries `data-piece-main`, so a walking click on the post
   walks to it.
 
 ### Team Photo Wall
 
-- `PhotoWallFace` (`wayfinding/PhotoWallFace.tsx`) reads the wayfinding store's `people` (already the Directory's
+- `PhotoWallFace` (`components/canvas/wayfinding/PhotoWallFace.tsx`) reads the wayfinding store's `people` (already the Directory's
   order, self first) and maps it through `photoWallFaces(people, PHOTO_FRAMES)`: `{ shown, overflow }`, `shown` at
   most `PHOTO_FRAMES` (8), or 7 plus an overflow of the rest when there are more than 8.
 - `WayPerson` gains an optional `config` (the character's look): the self's from `avatarLook.config`, a walking
