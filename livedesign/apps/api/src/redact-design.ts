@@ -44,6 +44,7 @@ export function redactDesignForReader(liveDoc: DesignDTO, caller: string | null)
 // colour, and nothing about where it sits in its owner's library or came from. Comment threads and the people on
 // actions leave with each tab's read (@liveworkspace/community/app redactTabForCommunity); livedesign has no slide
 // deck, so there are no presenter notes to drop.
+// A connected tab keeps its name and loses its connection (connected-tabs.md): a stranger is told of no other item.
 export function redactDesignForCommunity(liveDoc: DesignDTO): DesignDTO {
   return {
     ...liveDoc,
@@ -51,6 +52,7 @@ export function redactDesignForCommunity(liveDoc: DesignDTO): DesignDTO {
     ownerColor: null,
     folderId: null,
     source: null,
+    tabs: liveDoc.tabs.map(({ connection: _connection, ...tab }) => tab),
   };
 }
 

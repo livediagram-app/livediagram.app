@@ -440,7 +440,7 @@ The migration door (`PUT /api/internal/items/:id/migration`) also takes `MIGRATI
 app"). `POST /api/internal/items/:id/connected-tabs` `{ name, connection }`, on the index's key alone, is the index's
 reverse write of a connection made both ways (`design-room/connected-tab.ts`): one empty tab named `name` (the host's
 title as the index has it), loose, at the end of the design's tab bar, holding the connection, shown at once to
-everyone with the design open as an ordered `document-meta` op. 201 `{ tabId }`; 200 `{ tabId }` for a connection id it
+everyone with the design open as an ordered `design-meta` op. 201 `{ tabId }`; 200 `{ tabId }` for a connection id it
 already holds, adding nothing; 400 for a malformed body; 404 for a design not started; 409 `connection_limit` past
 `CONNECTIONS_PER_ITEM` (50) connected tabs; 503 when the write fails. Otherwise a connection is written only by an
 editor's whole-tab save (the tab PUT, which a token never makes), onto a tab that is new or already connected

@@ -76,6 +76,9 @@ export function handleInternalItems(
         checkMigrationTabSizes(payload, MAX_TAB_BYTES);
         return designRoom(env, payload.id).importMigrated(payload);
       },
+      // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
+      // connected tab at the end of the design's tab bar.
+      connectedTab: (id, write) => designRoom(env, id).addConnectedTab(write),
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them;
