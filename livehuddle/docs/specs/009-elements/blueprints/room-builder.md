@@ -98,6 +98,8 @@ Notes:
   collision (`fenceSegments`) and the path finder never see it, so its wall stays whole. `doorOnRoom` stays Doors only
   (a Walk There heads for a Door, never a Window); `withAttachedDoors`, `doorsFollowRooms` and `snapMovedDoors` take
   every wall piece.
+- Stacking: `paintOrder` puts a Window in the backdrop tier with its own rank after the floors (`backdropRank` 3, array
+  order among windows), so its frame and light paint over its room and rugs and under all furniture.
 - Facing in: after snapping to the wall's angle `a`, the point half a wall plus 4 px along the window's local +y
   (`(-sin a, cos a)`) is tested against the walled piece's floor (a rectangle's `roomInterior`, a custom room's outline,
   a corridor's floor turned by its rotation); outside, the window turns to `a + 180`. Either way it is parallel to the

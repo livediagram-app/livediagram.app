@@ -27,7 +27,7 @@ import type { FurnitureDrawing } from './seating';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
-  it('are eighteen shape kinds, each made at its drawing’s size', () => {
+  it('are seventy-five shape kinds, each made at its drawing’s size', () => {
     expect(OFFICE_KINDS).toEqual([
       'room',
       'corridor',

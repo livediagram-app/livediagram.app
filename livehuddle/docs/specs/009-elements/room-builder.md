@@ -173,7 +173,9 @@ A window in a wall: light comes in, people do not. Work Tracker #538.
   on the floor: a soft trapezoid as wide as the pane where it meets the wall, spreading a little and fading to nothing
   about as deep as the window is wide (drawn past the window's box, as a Revolving Door's drum is; the box is what
   selects it). On light paper it is warm sunlight; on dark paper a cool moonlight, fainter (DEFAULTS.md D228). The
-  patch is translucent over the floor and whatever stands on it, and never blocks or selects.
+  patch is translucent over the floor and never blocks or selects. A window paints with the floors, after its room and
+  rugs but under the furniture, so its light lies on the floor beneath a sofa or desk whichever was placed first
+  ([Layers](../006-document/layers.md#stacking)).
 - **Calls**: a window changes nothing. A room with windows keeps its call inside exactly as before
   ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
 - **Export** draws the frame, pane and light patch as the canvas does, in the export's paper.
