@@ -6,6 +6,7 @@ import { roomInterior } from '@liveworkspace/avatar/office-geometry';
 import { pointInPolygon, polygonArea } from '@liveworkspace/avatar/room-outline';
 import { isRoomOutline } from './room-outline-field';
 import { podInterior } from '@liveworkspace/avatar/pod';
+import { boothInterior } from '@liveworkspace/avatar/booth';
 import { DEFAULT_STAGE_SPEAKERS, isStageSpeakers, stageTop, type StageSpeakers } from './office';
 
 /**
@@ -73,13 +74,16 @@ function boxOf(el: CallElementSource, shape: string): Box | null {
 
 /**
  * Every Office room among `elements` as a zone, and every Office Pod (docs/specs/009-elements/office.md "Office Pod"):
- * the floor inside its walls is a call too. The caller passes only what is on visible layers.
+ * the floor inside its walls is a call too, and every Phone Booth (docs/specs/009-elements/workday-pieces.md "Phone
+ * Booth"): the booth inside its frame is a call for one. The caller passes only what is on visible layers.
  */
 export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
   const zones: CallZone[] = [];
   for (const el of elements) {
     const room = boxOf(el, 'room');
-    const box = room ?? boxOf(el, 'office-pod');
+    const pod = room ? null : boxOf(el, 'office-pod');
+    const booth = room || pod ? null : boxOf(el, 'phone-booth');
+    const box = room ?? pod ?? booth;
     if (!box) continue;
     // A room drawn with the Room Builder (room-builder.md): its floor is its outline.
     if (room && isRoomOutline(el.roomOutline)) {
@@ -102,7 +106,7 @@ export function roomZones(elements: readonly CallElementSource[]): CallZone[] {
       });
       continue;
     }
-    const inside = room ? roomInterior(room) : podInterior(box);
+    const inside = room ? roomInterior(room) : pod ? podInterior(pod) : boothInterior(box);
     if (inside.width <= 0 || inside.height <= 0) continue;
     zones.push({
       id: el.id,

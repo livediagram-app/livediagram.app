@@ -251,4 +251,13 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ ...knock, roomId: '' }, as('edit'))).toEqual(DROP);
     expect(gateClientOp({ ...answer, answer: 'maybe' }, as('view'))).toEqual(DROP);
   });
+
+  // docs/specs/009-elements/workday-pieces.md "Share roles": the reception bell is presence from every level.
+  it('relays a ring of the reception bell from every level, Viewer included, and only well formed', () => {
+    const ring = { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' };
+    for (const role of ['edit', 'participate', 'view'])
+      expect(gateClientOp(ring, as(role))).toEqual(relay(true));
+    expect(gateClientOp({ ...ring, deskId: '' }, as('view'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'avatar-bell', tabId: 't' }, as('edit'))).toEqual(DROP);
+  });
 });

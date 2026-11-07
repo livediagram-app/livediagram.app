@@ -476,6 +476,15 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Swimming-pool',
     'Stage-curtains',
     'Podium',
+    // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+    'Nap-pod',
+    'Treadmill',
+    'Weight-bench',
+    'Phone-booth',
+    'Standing-desk',
+    'Hot-desk',
+    'Pet-bed',
+    'Reception-desk',
     // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
     'Timer',
     'Stopwatch',

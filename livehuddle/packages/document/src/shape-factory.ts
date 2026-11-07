@@ -188,6 +188,15 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'swimming-pool': { width: 320, height: 200 },
   'stage-curtains': { width: 360, height: 120 },
   podium: { width: 56, height: 88 },
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod': { width: 120, height: 112 },
+  treadmill: { width: 72, height: 112 },
+  'weight-bench': { width: 136, height: 88 },
+  'phone-booth': { width: 80, height: 136 },
+  'standing-desk': { width: 112, height: 104 },
+  'hot-desk': { width: 120, height: 112 },
+  'pet-bed': { width: 72, height: 48 },
+  'reception-desk': { width: 200, height: 112 },
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
@@ -396,7 +405,15 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'car-park' ||
       kind === 'bike-rack' ||
       kind === 'stage-curtains' ||
-      kind === 'podium'
+      kind === 'podium' ||
+      kind === 'nap-pod' ||
+      kind === 'treadmill' ||
+      kind === 'weight-bench' ||
+      kind === 'phone-booth' ||
+      kind === 'standing-desk' ||
+      kind === 'hot-desk' ||
+      kind === 'pet-bed' ||
+      kind === 'reception-desk'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

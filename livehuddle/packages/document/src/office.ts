@@ -23,6 +23,7 @@ import { OFFICE_WORKPLACE_ART } from './office-workplace';
 import { OFFICE_KITCHEN_ART } from './office-kitchen';
 import { OFFICE_RESTROOM_ART } from './office-restroom';
 import { OFFICE_VENUE_ART } from './office-venue';
+import { OFFICE_WORKDAY_ART } from './office-workday';
 import { WAYFINDING_ART } from './office-wayfinding';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
@@ -96,7 +97,16 @@ export type OfficeKind =
   | 'bike-rack'
   | 'swimming-pool'
   | 'stage-curtains'
-  | 'podium';
+  | 'podium'
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  | 'nap-pod'
+  | 'treadmill'
+  | 'weight-bench'
+  | 'phone-booth'
+  | 'standing-desk'
+  | 'hot-desk'
+  | 'pet-bed'
+  | 'reception-desk';
 
 export const OFFICE_KINDS: readonly OfficeKind[] = [
   'room',
@@ -159,6 +169,14 @@ export const OFFICE_KINDS: readonly OfficeKind[] = [
   'swimming-pool',
   'stage-curtains',
   'podium',
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
 ];
 
 /** The pieces drawn to their own size, never scaled, so their walls and edges keep their thickness. */
@@ -379,6 +397,7 @@ export const OFFICE_ART: Record<GridOfficeKind, FurnitureArt> = {
   ...OFFICE_KITCHEN_ART,
   ...OFFICE_RESTROOM_ART,
   ...OFFICE_VENUE_ART,
+  ...OFFICE_WORKDAY_ART,
   ...WAYFINDING_ART,
 };
 

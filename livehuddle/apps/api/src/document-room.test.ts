@@ -630,7 +630,14 @@ describe('DocumentRoom op-role enforcement', () => {
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
   // `call-session` too: the room checks and keeps it, never relays it (document-room-calls.test.ts).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['follow', 'calls-check', 'call-session', 'avatar-knock'];
+  // A knock and a reception bell are throttled per sender and need their room or desk (both pinned below).
+  const ROOM_DECIDED_PRESENCE_KINDS = [
+    'follow',
+    'calls-check',
+    'call-session',
+    'avatar-knock',
+    'avatar-bell',
+  ];
   // Speaking is taking part (docs/specs/008-canvas/avatar-mode.md "Who may speak"): a Participant's, never a
   // Viewer's (docs/specs/013-workspace/share-roles.md).
   const PARTICIPANT_PRESENCE_KINDS = ['avatar-say'];
@@ -745,6 +752,31 @@ describe('DocumentRoom op-role enforcement', () => {
     });
     expect(opsReceived(viewer.ws)).toHaveLength(1);
     expect(opsReceived(bystander.ws)).toHaveLength(0);
+  });
+
+  // A reception bell (docs/specs/009-elements/workday-pieces.md "The wire"): a Viewer walks too, so it may ring; once
+  // per 5 seconds per sender, to everyone, who each decide whether they stand in earshot.
+  it("relays a Viewer's reception bell to everyone once per 5 seconds, and nothing malformed", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(1_000_000));
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const viewer = connect(room, 'viewer', 'view');
+      const bystander = connect(room, 'bystander', 'edit');
+      for (const c of [editor, viewer, bystander]) c.ws.sent.length = 0;
+      const bell = { kind: 'avatar-bell', tabId: 't', deskId: 'desk-1' };
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind: 'avatar-bell', tabId: 't' } });
+      expect(opsReceived(editor.ws)).toHaveLength(1);
+      expect(opsReceived(bystander.ws)).toHaveLength(1);
+      vi.setSystemTime(new Date(1_005_001));
+      sendFrame(room, viewer.ws, { kind: 'op', op: bell });
+      expect(opsReceived(editor.ws)).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // Avatar-mode shove (docs/specs/008-canvas/avatar-mode.md). It is ADDRESSED, not broadcast: the room

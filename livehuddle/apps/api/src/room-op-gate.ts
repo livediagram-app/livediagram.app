@@ -5,6 +5,7 @@ import {
   isPresenceOpKind,
   isRetiredOpKind,
   isSystemOpKind,
+  parseAvatarBell,
   parseAvatarHand,
   parseAvatarKnock,
   parseAvatarKnockAnswer,
@@ -115,6 +116,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // malformed one reaches nobody. The room throttles knocks next.
   if (opKind === 'avatar-knock' && !parseAvatarKnock(op)) return DROP;
   if (opKind === 'avatar-knock-answer' && !parseAvatarKnockAnswer(op)) return DROP;
+  // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "Share roles"): presence from any
+  // level, as a knock is, a Viewer at the front desk above all; a malformed one reaches nobody. The room throttles it next.
+  if (opKind === 'avatar-bell' && !parseAvatarBell(op)) return DROP;
   if (opKind === 'call-track') {
     const track = level === 'view' ? null : parseCallTrack(op);
     if (!track) return DROP;

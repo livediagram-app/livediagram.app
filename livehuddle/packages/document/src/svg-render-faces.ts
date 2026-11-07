@@ -159,6 +159,15 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'swimming-pool',
   'stage-curtains',
   'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
   'door',
   'directory',
   'elevator',
@@ -289,6 +298,14 @@ export function svgBehaviourFace(
     case 'bike-rack':
     case 'stage-curtains':
     case 'podium':
+    case 'nap-pod':
+    case 'treadmill':
+    case 'weight-bench':
+    case 'phone-booth':
+    case 'standing-desk':
+    case 'hot-desk':
+    case 'pet-bed':
+    case 'reception-desk':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':

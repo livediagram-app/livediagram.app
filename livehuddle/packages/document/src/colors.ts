@@ -656,6 +656,15 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'swimming-pool',
   'stage-curtains',
   'podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod',
+  'treadmill',
+  'weight-bench',
+  'phone-booth',
+  'standing-desk',
+  'hot-desk',
+  'pet-bed',
+  'reception-desk',
   // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
   'directory',
   'elevator',

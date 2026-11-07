@@ -287,6 +287,8 @@ export * from './call-hand';
 export * from './call-control';
 // Knock (docs/specs/012-collaboration/knock.md).
 export * from './knock';
+// The reception bell (docs/specs/009-elements/workday-pieces.md "The wire").
+export * from './bell';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';
