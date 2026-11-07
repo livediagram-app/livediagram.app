@@ -21,4 +21,4 @@ One row per default applied where a spec is silent or qualitative.
 | D15 | third-party-licences | The page's header calls to action                     | The shared header without a landing-funnel surface: a transparency page is not a funnel step, so its CTAs carry no `via`         |
 | D16 | third-party-licences | The entry's disclosure affordance                     | The native `summary` marker, coloured: no second drawing of a chevron, no rotation to animate, no bytes per entry                |
 | D17 | element-engine       | Where the placeholder's Delete sits and when it shows | Top-right corner, on hover, focus or selection, so a board of placeholders stays quiet until one is pointed at                   |
-| D18 | element-engine       | The smallest card that shows the button               | 72 by 40: the button and a name line fit without overlap                                                                         |
+| D18 | element-engine       | The smallest card that shows the button               | At least 72 by 40, and only where no line of words reaches the button's corner (a 4px gap)                                       |

@@ -42,6 +42,21 @@ describe('retiredPlaceholderLayout', () => {
     expect(card.dash.length).toBe(2);
   });
 
+  it('gives each line its box: the top it starts at and the width it fills, within the padding', () => {
+    const card = retiredPlaceholderLayout(retired('qa-board', { label: 'Sprint questions' }));
+    const [name, note, label] = card.lines;
+    expect(name!.top).toBeLessThan(name!.baseline);
+    expect(note!.top).toBeGreaterThanOrEqual(name!.baseline - name!.size);
+    expect(label!.top).toBeGreaterThan(note!.top);
+    // "Q&A Board" is 9 characters of the bold name.
+    expect(name!.width).toBeCloseTo(9 * 15 * 0.58);
+    // A line cut to the box stays inside the room the padding leaves.
+    const narrow = retiredPlaceholderLayout(retired('qa-board', { width: 100, height: 56 }));
+    const cut = narrow.lines.find((l) => l.role === 'note')!;
+    expect(cut.text.endsWith('…')).toBe(true);
+    expect(cut.width).toBeLessThanOrEqual(80);
+  });
+
   it('leaves out an empty label', () => {
     const card = retiredPlaceholderLayout(retired('agenda', { label: '   ' }));
     expect(card.lines.map((l) => l.role)).toEqual(['name', 'note']);

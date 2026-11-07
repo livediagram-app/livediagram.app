@@ -56,8 +56,9 @@ height }`.
 ## Errors and edge cases
 
 - A retired element with a zero or non-finite box draws an empty card (the layout clamps to 0) and shows no button.
-- A box too small for the button (under 72 by 40, a zero box included) shows no button; the Delete key, the context
-  menu and the multi-selection still remove it.
+- A box too small for the button (under 72 by 40, a zero box included) shows no button, and so does a box where the
+  button would touch a line of words (the layout's `top` and `width` for each line, against the button's corner plus a
+  4px gap); the Delete key, the context menu and the multi-selection still remove it.
 - A retired type with no `label` shows no label line.
 
 ## Security and trust
@@ -90,7 +91,7 @@ height }`.
   each.
 - `svg-render-retired.test.ts`: the export draws the placeholder for a retired type and kind.
 - `RetiredElementFace.test.tsx` (editor): the face shows the name and the note; Delete renders only with `onDelete` and
-  a box of at least 72 by 40; a press calls it with the id and stops the pointer from reaching the wrapper; the
+  a box of at least 72 by 40 whose words sit clear of the button's corner; a press calls it with the id and stops the pointer from reaching the wrapper; the
   router passes Delete only when not read-only (a Participant or a Viewer); `deleteElementById` removes one id as one
   commit.
 - `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
@@ -98,8 +99,8 @@ height }`.
 
 ## Constants and configuration
 
-- `RETIRED_DELETE_MIN_WIDTH = 72`, `RETIRED_DELETE_MIN_HEIGHT = 40`: the smallest card that fits the button beside
-  the name.
+- `RETIRED_DELETE_MIN_WIDTH = 72`, `RETIRED_DELETE_MIN_HEIGHT = 40`: the smallest card that can hold the button at
+  all. A card at least that big still shows it only when no line of words reaches its corner (D18).
 
 ## Defaults ledger
 

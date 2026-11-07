@@ -21,6 +21,7 @@ import {
   RETIRED_DELETE_MIN_HEIGHT,
   RETIRED_DELETE_MIN_WIDTH,
   RetiredElementFace,
+  wordsClearOfDelete,
 } from './RetiredElementFace';
 
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
@@ -213,13 +214,39 @@ describe('the placeholder Delete button', () => {
     );
     expect(button(short.container)).toBeNull();
     cleanup();
-    const fits = render(
+    // Big enough, but the name, centred across so narrow a card, reaches the button's corner.
+    const crowded = render(
       <RetiredElementFace
         element={board({ width: RETIRED_DELETE_MIN_WIDTH, height: RETIRED_DELETE_MIN_HEIGHT })}
         onDelete={() => {}}
       />,
     );
+    expect(button(crowded.container)).toBeNull();
+    cleanup();
+    // As narrow, but tall enough that the words start below the button.
+    const fits = render(
+      <RetiredElementFace
+        element={board({ width: RETIRED_DELETE_MIN_WIDTH, height: 140 })}
+        onDelete={() => {}}
+      />,
+    );
     expect(button(fits.container)).not.toBeNull();
+  });
+
+  it('keeps the button off the words: a line clears it by starting below it or ending left of it', () => {
+    const at = (shape: string, width: number, height: number) =>
+      wordsClearOfDelete(
+        retiredPlaceholderLayout({ type: 'shape', shape, label: '', width, height }),
+        width,
+      );
+    // A short name on a short, wide card ends well left of the corner; the note starts below the button.
+    expect(at('rating', 160, 80)).toBe(true);
+    // The same name on a smaller card runs into the corner.
+    expect(at('rating', 100, 56)).toBe(false);
+    // A long name on that wide card reaches it too.
+    expect(at('progress-ring', 160, 80)).toBe(false);
+    // The words of a big card sit well below it.
+    expect(at('pie-chart', 320, 220)).toBe(true);
   });
 
   it('is not there without a delete handler', () => {

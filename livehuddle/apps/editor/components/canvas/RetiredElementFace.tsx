@@ -5,6 +5,7 @@ import {
   retiredElementName,
   retiredPlaceholderLayout,
   type BoxedElement,
+  type RetiredPlaceholderLayout,
 } from '@livehuddle/document';
 import { Glyph, Prims, Tooltip } from '@livehuddle/ui';
 import { lucideTrash2 } from '@liveworkspace/icons/lucide';
@@ -20,7 +21,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 // An Editor also gets a Delete button on the card ("Deleting it"): the one action the placeholder offers, so a board
 // can be cleared of what it can no longer show without hunting for the menu. It shows on hover, on keyboard focus and
 // while the element is selected (so a touch, which has no hover, finds it after the tap that selects), and only on a
-// card big enough to hold it beside the words.
+// card big enough to hold it clear of the words.
 //
 // The card is laid out once, in @livehuddle/document (retiredPlaceholderLayout), and drawn here from the same layout
 // and colours the export and the thumbnail draw it from (svg-render-retired.ts), so the canvas and an exported image
@@ -31,6 +32,21 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 // still deletes from its menu and the Delete key.
 export const RETIRED_DELETE_MIN_WIDTH = 72;
 export const RETIRED_DELETE_MIN_HEIGHT = 40;
+
+// The button's corner of the card, in the card's own box: a 24px square 6px in from the top and right edges (the
+// `top-1.5 right-1.5` below, which keeps its focus ring off the outline), plus a 4px gap the words must keep from it.
+const DELETE_SIZE = 24;
+const DELETE_EDGE = 6;
+const DELETE_GAP = 4;
+
+// Does every line of words keep clear of the button's corner? A line is clear when it starts below the button or ends
+// left of it; the lines are centred across the box, so a long name on a small card reaches the corner and the button
+// stays away rather than sit on the words.
+export function wordsClearOfDelete(card: RetiredPlaceholderLayout, width: number): boolean {
+  const left = width - DELETE_EDGE - DELETE_SIZE - DELETE_GAP;
+  const bottom = DELETE_EDGE + DELETE_SIZE + DELETE_GAP;
+  return card.lines.every((line) => line.top >= bottom || (width + line.width) / 2 <= left);
+}
 
 export function RetiredElementFace({
   element,
@@ -52,7 +68,10 @@ export function RetiredElementFace({
   const height = Math.max(0, element.height);
   const kind = element.type === 'shape' ? element.shape : element.type;
   const canDelete =
-    !!onDelete && width >= RETIRED_DELETE_MIN_WIDTH && height >= RETIRED_DELETE_MIN_HEIGHT;
+    !!onDelete &&
+    width >= RETIRED_DELETE_MIN_WIDTH &&
+    height >= RETIRED_DELETE_MIN_HEIGHT &&
+    wordsClearOfDelete(card, width);
   const deleteLabel = `Delete ${retiredElementName(element)}`;
   return (
     <>
@@ -94,7 +113,7 @@ export function RetiredElementFace({
         ))}
       </svg>
       {canDelete ? (
-        <span className="absolute right-1 top-1 z-10">
+        <span className="absolute right-1.5 top-1.5 z-10">
           <Tooltip label={deleteLabel}>
             <button
               type="button"
