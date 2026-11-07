@@ -49,8 +49,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, the Google Drive mirror, and email notifications work.',
-    articleCount: 8,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, downloading all your data, deletion, API tokens, the Google Drive mirror, and email notifications work.',
+    articleCount: 9,
   },
   {
     slug: 'privacy-and-security',
@@ -428,6 +428,16 @@ export const articles: Article[] = [
     description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
     keywords:
       'export download png svg pdf image save picture screenshot json markdown embed backup',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'download-all-my-data',
+    title: 'Download All My Data',
+    description:
+      'Download every space you own, a picture of each tab and your comments, as one zip.',
+    keywords:
+      'download all my data zip export backup everything portability gdpr settings your data comments pictures png livehuddle file email link',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },

@@ -74,17 +74,14 @@ Makes a copy in your own files and answers `201` with the new `document`. Leave 
 
 ## Shape Libraries
 
-Shape libraries belong to you, not to a space. The editor no longer offers them, but the API still keeps the ones you have.
+Shape libraries belong to you, not to a space. The editor no longer offers them, and the API now only reads the ones you already have.
 
 ```bash
-# A shape library: each item is a reusable shape, its elements placed from its top-left corner
-curl -X POST https://livehuddle.app/api/shape-libraries \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "'"$(uuidgen)"'", "name": "Network kit", "source": "drawio",
-        "items": [ { "id": "'"$(uuidgen)"'", "title": "Router", "width": 120, "height": 60,
-          "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
+# Your shape libraries, and one library's shapes drawn as SVG by shape id
+curl https://livehuddle.app/api/shape-libraries -H "Authorization: Bearer $TOKEN"
+curl https://livehuddle.app/api/shape-libraries/$LIBRARY/previews -H "Authorization: Bearer $TOKEN"
 ```
 
-A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their spaces). `GET /shape-libraries` lists yours.
+`POST`, `PUT` and `DELETE` on `/shape-libraries` answer `403` with `shape_libraries_read_only`, and nothing is changed. Your libraries are not deleted, and they go when you delete your account.
 
 </ArticleLayout>

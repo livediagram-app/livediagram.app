@@ -186,6 +186,13 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
     </Glyph>
   ),
+  // An arrow down into a tray: everything collected into one download.
+  'download-all-my-data': (
+    <Glyph>
+      <path d="M12 3v12M8 11l4 4 4-4" />
+      <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+    </Glyph>
+  ),
   // A folder with a two-way arrow across it: the mirror kept in step.
   'google-drive': (
     <Glyph>

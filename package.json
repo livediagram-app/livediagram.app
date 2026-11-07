@@ -64,6 +64,9 @@
       "glob@13": "^14.0.2",
       "minimatch@10": "^11.0.1",
       "body-parser@2": "^2.4.0"
+    },
+    "patchedDependencies": {
+      "@better-auth/oauth-provider@1.7.16": "patches/@better-auth__oauth-provider@1.7.16.patch"
     }
   }
 }
