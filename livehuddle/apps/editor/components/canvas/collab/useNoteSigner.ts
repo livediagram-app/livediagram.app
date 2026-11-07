@@ -35,8 +35,7 @@ export function useNoteSigner(
   const level = editor?.can.level ?? 'view';
   const isEditor = level === 'edit';
   const myKey = signingKeyOf(editor);
-  const mayPin =
-    !!editor && (isEditor || (level === 'participate' && !!myKey)) && element.locked !== true;
+  const mayPin = !!editor && (isEditor || (level === 'participate' && !!myKey));
   return {
     editor,
     myKey,

@@ -344,7 +344,7 @@ export type EditorContextMenuProps = {
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters
-  // above apply to the whole selection. Duplicate / Group / Lock / Export /
+  // above apply to the whole selection. Duplicate / Group / Export /
   // Delete are NOT here — the selection toolbar carries those.
   selectionElements: Element[];
 };

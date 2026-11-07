@@ -21,6 +21,7 @@
     "@livediagram/document": "workspace:*",
     "@livediagram/document-views": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",

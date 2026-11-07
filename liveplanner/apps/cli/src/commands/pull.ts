@@ -17,10 +17,11 @@ import {
   type PullFile,
 } from '../sync/pull-file';
 import { readProjectSnapshot } from './snapshot';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type PullInput = { project: string; to?: string; svg?: boolean; force?: boolean };
 
-const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${name}`;
+const joinPath = (dir: string, name: string) => `${withoutTrailingSlashes(dir)}/${name}`;
 
 // `<slug>.liveplanner.json`, or `<slug>-<id8>` when the file there is another project's (CLI27); `there` is this
 // project's pull file already at that path.

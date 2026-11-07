@@ -1,7 +1,7 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tabs,
 // tab folders opening in place, the tab menu (toolbar over full-width rows split into groups),
-// the Organise in Tab Folder / Add to Document / Import / Export dialogs, cross-tab links, a locked
-// tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
+// the Organise in Tab Folder / Add to Document / Import / Export dialogs, cross-tab links and a
+// before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 
@@ -18,23 +18,6 @@ import { Glyph } from './element-indicators';
 
 // --- Tab-bar building blocks -------------------------------------------------
 
-/** A small padlock glyph drawn from its centre (the locked-tab marker). */
-function Padlock({ tone = 'accent' }: { tone?: 'accent' | 'muted' }) {
-  const fill = tone === 'accent' ? 'fill-brand-600' : 'fill-slate-500';
-  const stroke = tone === 'accent' ? 'stroke-brand-600' : 'stroke-slate-500';
-  return (
-    <g>
-      <rect x={-4.5} y={-1} width={9} height={7} rx={1.5} className={fill} />
-      <path
-        d="M-2.8 -1 V-3.2 a2.8 2.8 0 0 1 5.6 0 V-1"
-        fill="none"
-        className={stroke}
-        strokeWidth={1.5}
-      />
-    </g>
-  );
-}
-
 /** One tab on the bar, standing on its bottom edge (TabFrame). The open tab is a white card that
  *  joins the bar's bottom edge, rounded only at the top, its name in the accent with its trailing
  *  ⋯; the others are bare names on the bar. Nothing runs along a tab's top, and no type icon. */
@@ -44,7 +27,6 @@ function TabPill({
   w,
   label,
   active = false,
-  locked = false,
   h = 26,
 }: {
   x: number;
@@ -52,14 +34,13 @@ function TabPill({
   w: number;
   label: string;
   active?: boolean;
-  locked?: boolean;
   h?: number;
 }) {
   const top = y - 4;
   const bottom = y + h + 8;
   const r = 7;
   const mid = (top + bottom) / 2;
-  const textX = x + 12 + (locked ? 13 : 0);
+  const textX = x + 12;
   return (
     <g>
       {active && (
@@ -68,11 +49,6 @@ function TabPill({
           className="fill-white stroke-slate-300"
           strokeWidth={1}
         />
-      )}
-      {locked && (
-        <g transform={`translate(${x + 16} ${mid})`}>
-          <Padlock tone={active ? 'accent' : 'muted'} />
-        </g>
       )}
       <Label
         x={textX}
@@ -454,7 +430,7 @@ function MenuRowList({
   return <g>{out}</g>;
 }
 
-/** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
+/** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Side by Side, Delete) over
  *  full-width rows in two groups (folders and documents, content), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
@@ -486,7 +462,7 @@ export function TabMenu() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Lock Tab, Delete */}
+      {/* Toolbar: Rename, Duplicate, Paste, Side by Side | Delete */}
       {[0, 1, 2, 3].map((i) => (
         <rect
           key={i}
@@ -562,19 +538,7 @@ export function TabMenu() {
         className="stroke-slate-500"
         strokeWidth={1.4}
       />
-      {/* Lock Tab + Delete at the right edge */}
-      <rect
-        x={mx + mw - 62}
-        y={my + 8}
-        width={24}
-        height={24}
-        rx={5}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
-      />
-      <g transform={`translate(${mx + mw - 50} ${my + 21})`}>
-        <Padlock tone="muted" />
-      </g>
+      {/* Delete at the right edge */}
       <rect
         x={mx + mw - 32}
         y={my + 8}
@@ -606,7 +570,7 @@ export function TabMenu() {
         Paste, Side by Side,
       </Label>
       <Label x={14} y={58} size={10} tone="muted">
-        then Lock Tab, Delete
+        then Delete
       </Label>
     </Scene>
   );
@@ -936,23 +900,6 @@ export function ImportWarning() {
           {'{ "kind": "livehuddle.tab", "tab": { … } }'}
         </Label>
       </Dialog>
-    </Scene>
-  );
-}
-
-/** A locked tab: the padlock sits before its name in the tab bar. */
-export function LockedTab() {
-  const barY = 78;
-  return (
-    <Scene w={420} h={150} bg="plain">
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={58} label="Draft" />
-      <TabPill x={80} y={barY + 8} w={122} label="Approved" active locked />
-      <TabPill x={210} y={barY + 8} w={60} label="Notes" />
-      <AddTabButton x={276} y={barY + 8} />
-      <Label x={80} y={barY - 14} size={10} tone="muted">
-        Locked: read-only until unlocked
-      </Label>
     </Scene>
   );
 }

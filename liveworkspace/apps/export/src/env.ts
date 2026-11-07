@@ -1,5 +1,6 @@
 // What the export service is given (wrangler.toml; liveworkspace/docs/specs/003-accounts/data-export.md "The service").
 import type { App } from '@liveworkspace/index-client';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export interface Env {
   ENVIRONMENT?: string;
@@ -47,7 +48,8 @@ const KEY_OF: Partial<Record<App, keyof Env>> = {
 
 export function appOrigin(env: Env, app: App): string | undefined {
   const name = ORIGIN_OF[app];
-  return name ? setting(env[name] as string | undefined)?.replace(/\/+$/, '') : undefined;
+  const origin = name ? setting(env[name] as string | undefined) : undefined;
+  return origin === undefined ? undefined : withoutTrailingSlashes(origin);
 }
 
 export function appKey(env: Env, app: App): string | undefined {

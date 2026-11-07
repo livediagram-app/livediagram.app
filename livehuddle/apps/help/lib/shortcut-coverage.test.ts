@@ -58,7 +58,7 @@ function documentedKeys(): Set<string> {
 // dialog's rows are that catalogue, and shortcut-sections.test.ts pins them to
 // the editor, so checking the article against the dialog reaches the bindings
 // transitively. Rows whose every key is a modifier or a single character, so
-// the chord has one obvious spelling: ⌘Z, ⌘⇧L, ⇧1.
+// the chord has one obvious spelling: ⌘Z, ⌘⇧Z, ⇧1.
 function chords(): string[] {
   const src = readFileSync(SECTIONS_SRC, 'utf8');
   const found: string[] = [];

@@ -184,10 +184,11 @@ too, under `previews/` in the same bucket ([previews.md](previews.md)), so no ap
 
 ```sh
 cd liveworkspace/apps/media
-cp .dev.vars.example .dev.vars
-corepack pnpm db:migrate:local
 corepack pnpm dev                     # the API, http://localhost:8792/api/media
 ```
+
+Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (never over one) and applies the
+local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 `corepack pnpm dev:workspace` from the repo root runs it with the other liveworkspace APIs, and
 `corepack pnpm dev:media` runs it alone. Point an app's api at it with

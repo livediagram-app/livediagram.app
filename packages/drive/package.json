@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {

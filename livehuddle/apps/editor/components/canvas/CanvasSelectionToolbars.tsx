@@ -42,14 +42,8 @@ export function CanvasSelectionToolbars({
   props: CanvasProps;
   selectionInput: CanvasSelectionInput;
 }) {
-  const {
-    selected,
-    selectionBounds,
-    selectedLocked,
-    showPopover,
-    multiToolbarBounds,
-    showMultiToolbar,
-  } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
+  const { selected, selectionBounds, showPopover, multiToolbarBounds, showMultiToolbar } =
+    useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
   const multiSelectedIds = useSelectionOf(multiOf);
   // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
   // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
@@ -74,7 +68,6 @@ export function CanvasSelectionToolbars({
     elements,
     readOnly,
     onDuplicateSelected,
-    onToggleLockSelected,
     onDeleteSelected,
     onOpenComments,
     onOpenElementContextMenu,
@@ -119,7 +112,6 @@ export function CanvasSelectionToolbars({
             // comments, a Viewer only reads them. No other edit affordance
             // applies: every other handler becomes undefined and the
             // matching button drops out.
-            locked={readOnly ? undefined : selectedLocked}
             // Edit text: on every text-CAPABLE element, even before it has
             // a label — an empty shape's "Add Text" button teaches that
             // text can be added. Enters inline edit mode (same path as
@@ -134,7 +126,7 @@ export function CanvasSelectionToolbars({
             // Path tool put down first when it is still in hand.
             onEditPoints={
               // A combined shape edits as a whole (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments").
-              !readOnly && !selectedLocked && selected?.type === 'path' && !isCompoundPath(selected)
+              !readOnly && selected?.type === 'path' && !isCompoundPath(selected)
                 ? () => {
                     if (props.pendingDraw) props.onCancelDraw();
                     props.onBeginEdit(selected.id);
@@ -164,7 +156,6 @@ export function CanvasSelectionToolbars({
             // are the missing nudge for two things on the same one.
             onBringToFront={readOnly || !selected ? undefined : props.onBringSelectedToFront}
             onSendToBack={readOnly || !selected ? undefined : props.onSendSelectedToBack}
-            onToggleLock={readOnly ? undefined : onToggleLockSelected}
             onDelete={readOnly ? undefined : onDeleteSelected}
             // The comment button is a read-only session's only (Participant and Viewer). Editors
             // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
@@ -232,15 +223,10 @@ export function CanvasSelectionToolbars({
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar
-              allLocked={elements
-                .filter((el) => multiSelectedIds.has(el.id))
-                .every((el) => el.locked === true)}
               onTurn={readOnly || !turning.length ? undefined : props.onTurnSelected}
-              turnLocked={turning.every((el) => el.locked === true)}
               selectedElements={elements.filter((el) => multiSelectedIds.has(el.id))}
               onDuplicate={props.onDuplicateMultiSelected}
               onDelete={props.onDeleteMultiSelected}
-              onToggleLock={props.onToggleLockMultiSelected}
               onFilter={readOnly ? undefined : props.onFilterMultiSelected}
               onExport={props.onExportMultiSelected}
               onOpenContextMenu={readOnly ? undefined : onOpenMultiContextMenu}

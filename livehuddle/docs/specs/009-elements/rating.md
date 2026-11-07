@@ -16,7 +16,7 @@ elements ([Progress elements](progress.md)).
   Pulse / Rock), with a **Speed** row + **Repeat** toggle once one is picked.
   Pop / Rock play once (an entrance); Twinkle / Pulse loop by default.
 - It's a normal boxed element otherwise (move / resize / rotate / select /
-  lock / theme-colour). Its accent (stroke colour) tints the filled
+  theme-colour). Its accent (stroke colour) tints the filled
   stars; the wrapper draws no box border.
 
 ## Model

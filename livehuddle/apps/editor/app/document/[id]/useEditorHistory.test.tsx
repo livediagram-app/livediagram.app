@@ -6,19 +6,17 @@ import { useEditorHistory } from './useEditorHistory';
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@liveworkspace/workbench/lib/announcer', () => ({ announce: vi.fn() }));
 
-// A locked tab pauses undo and redo on every route (docs/specs/008-canvas/canvas-and-palette.md
-// "A locked tab pauses undo and redo"): the flags the toolbar and the command palette read, and
-// the handlers the keyboard shortcuts call.
-function setup(tabLocked: boolean) {
+// Undo and redo (docs/specs/008-canvas/canvas-and-palette.md): the flags the toolbar and the command palette read,
+// and the handlers the keyboard shortcuts call. A tab saved locked before locking left pauses nothing.
+function setup(canUndo: boolean) {
   const undoHistory = vi.fn();
   const redoHistory = vi.fn();
   const { result } = renderHook(() =>
     useEditorHistory({
       activeId: 't1',
-      editsBlocked: tabLocked,
-      canUndo: true,
-      canRedo: true,
-      tabLocked,
+      editsBlocked: false,
+      canUndo,
+      canRedo: canUndo,
       tickTabs: vi.fn(),
       undoHistory,
       redoHistory,
@@ -28,24 +26,20 @@ function setup(tabLocked: boolean) {
   return { result, undoHistory, redoHistory };
 }
 
-describe('useEditorHistory on a locked tab', () => {
-  it('reports undo and redo unavailable and ignores both', () => {
+describe('useEditorHistory', () => {
+  it('undoes and redoes when the history has a step', () => {
     const { result, undoHistory, redoHistory } = setup(true);
-    expect(result.current.canUndo).toBe(false);
-    expect(result.current.canRedo).toBe(false);
-    result.current.undo();
-    result.current.redo();
-    expect(undoHistory).not.toHaveBeenCalled();
-    expect(redoHistory).not.toHaveBeenCalled();
-  });
-
-  it('undoes and redoes as usual once the tab is unlocked', () => {
-    const { result, undoHistory, redoHistory } = setup(false);
     expect(result.current.canUndo).toBe(true);
     expect(result.current.canRedo).toBe(true);
     result.current.undo();
     result.current.redo();
     expect(undoHistory).toHaveBeenCalledTimes(1);
     expect(redoHistory).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports undo and redo unavailable with nothing to step', () => {
+    const { result } = setup(false);
+    expect(result.current.canUndo).toBe(false);
+    expect(result.current.canRedo).toBe(false);
   });
 });

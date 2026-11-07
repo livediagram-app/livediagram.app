@@ -139,39 +139,13 @@ describe('applyParticipantOp: update', () => {
     expect(r.tab.elements[0]).toEqual(mine);
   });
 
-  it('refuses a missing element, a changed type and a locked one', () => {
+  it('refuses a missing element and a changed type', () => {
     expect(
       applyParticipantOp(tabOf([]), { kind: 'update', element: sticky('gone') }, ME),
     ).toMatchObject({ result: 'refused', reason: 'missing', correction: null });
     expect(
       applyParticipantOp(tabOf([sticky('s')]), { kind: 'update', element: shape('s') }, ME),
     ).toMatchObject({ result: 'refused', reason: 'type-changed' });
-    const held = sticky('h', { locked: true });
-    expect(
-      applyParticipantOp(
-        tabOf([held]),
-        { kind: 'update', element: { ...held, label: 'x' } as Element },
-        ME,
-      ),
-    ).toMatchObject({
-      result: 'refused',
-      reason: 'locked',
-      correction: { kind: 'update', element: held },
-    });
-  });
-
-  it('refuses everything on a locked tab', () => {
-    const s0 = sticky('s');
-    const tab = tabOf([s0], { locked: true });
-    expect(applyParticipantOp(tab, { kind: 'update', element: s0 }, ME)).toMatchObject({
-      result: 'refused',
-      reason: 'tab-locked',
-    });
-    expect(applyParticipantOp(tab, { kind: 'remove', id: 's' }, ME)).toMatchObject({
-      result: 'refused',
-      reason: 'tab-locked',
-      correction: { kind: 'add', element: s0, at: 0 },
-    });
   });
 });
 
@@ -189,14 +163,6 @@ describe('applyParticipantOp: remove and reorder', () => {
         correction: { kind: 'add', element: el, at: 1 },
       });
     }
-  });
-
-  it('refuses to remove a locked element as locked', () => {
-    const held = sticky('h', { addedBy: ME, locked: true });
-    expect(applyParticipantOp(tabOf([held]), { kind: 'remove', id: 'h' }, ME)).toMatchObject({
-      result: 'refused',
-      reason: 'locked',
-    });
   });
 
   it('refuses a missing element with nothing to restore', () => {
@@ -263,6 +229,17 @@ describe('a Participant and a Door', () => {
       participantTabChange(before, tabOf([door({ doorClosed: true, width: 40 })]), ME),
     ).toBeNull();
     expect(participantTabChange(before, tabOf([]), ME)).toBeNull();
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking": a lock saved before locking left
+  // holds nothing, on the door or on its tab.
+  it('swings a door saved locked, on a tab saved locked', () => {
+    const old = { ...tabOf([door({ locked: true })]), locked: true } as Tab;
+    const swung = { ...tabOf([door({ locked: true, doorClosed: true })]), locked: true } as Tab;
+    expect(participantTabChange(old, swung, ME)?.elements[0]).toMatchObject({ doorClosed: true });
+    expect(
+      applyParticipantOp(old, { kind: 'update', element: swung.elements[0]! }, ME),
+    ).toMatchObject({ result: 'applied', changed: true });
   });
 });
 

@@ -10,6 +10,7 @@ import { forbidden, json, methodNotAllowed, noContent, notFound } from '../respo
 import type { RouteContext } from './context';
 import { revokePresentedToken } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export async function handleTokens(ctx: RouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
@@ -22,7 +23,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
   return json(
     {
       error: 'tokens_moved',
-      manageAt: `${(env.ACCOUNTS_URL ?? 'https://www.liveworkspace.app').replace(/\/+$/, '')}/explorer?settings=tokens`,
+      manageAt: `${withoutTrailingSlashes(env.ACCOUNTS_URL ?? 'https://www.liveworkspace.app')}/explorer?settings=tokens`,
     },
     { status: 410 },
   );

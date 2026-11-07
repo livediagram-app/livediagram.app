@@ -58,7 +58,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
     'corridor hallway hall passage walkway junction corner crossroads tee walls open ends join rooms',
   window:
     'window glass pane light sunlight daylight moonlight wall view outside see through frame sill',
-  door: 'door doorway entrance exit way in opening wall gap room builder double sliding revolving glass locked padlock',
+  door: 'door doorway entrance exit way in opening wall gap room builder double sliding revolving glass',
   'meeting-table': 'meeting table conference boardroom seats chairs sit together team office',
   plant: 'plant pot potted green leaves foliage decoration office scenery',
   bookshelf: 'bookshelf books shelves library bookcase office scenery',

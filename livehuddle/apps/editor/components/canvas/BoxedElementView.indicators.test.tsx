@@ -63,7 +63,6 @@ function draw(
       onOpenNote={vi.fn()}
       onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
-      tabLocked={false}
       tabSummaries={[]}
       readOnly={false}
       remoteSelectors={[]}

@@ -307,14 +307,14 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
   });
 
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): the one field a Participant
-  // writes on a door, and only an unlocked one.
+  // writes on a door, one saved locked too (not-in-livehuddle.md "Element and Tab Locking").
   describe('Swing a door', () => {
     it('edit: relayed', () => {
       expect(roomDoes(update('door', { doorClosed: false }), 'edit')).toBe('relayed');
     });
-    it('participate: an unlocked door written, a locked one refused, nothing else of it changed', () => {
+    it('participate: any door written, one saved locked too, nothing else of it changed', () => {
       expect(roomDoes(update('door', { doorClosed: false }), 'participate')).toBe('written');
-      expect(roomDoes(update('locked-door', { doorClosed: false }), 'participate')).toBe('refused');
+      expect(roomDoes(update('locked-door', { doorClosed: false }), 'participate')).toBe('written');
       expect(roomDoes(update('door', { x: 400 }), 'participate')).toBe('held');
     });
     it('view: dropped', () => {
@@ -503,7 +503,11 @@ describe('share roles in the room (docs/specs/013-workspace/share-roles.md)', ()
     const ops = {
       'rename the tab': { kind: 'tab-meta', tabId: 't', patch: { name: 'Plan' } },
       'change the theme': { kind: 'tab-meta', tabId: 't', patch: { theme: 'mono' } },
-      'lock the tab': { kind: 'tab-meta', tabId: 't', patch: { locked: true } },
+      'change the background': {
+        kind: 'tab-meta',
+        tabId: 't',
+        patch: { background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' } },
+      },
       'replace the tab': { kind: 'tab', tabId: 't', tab: { id: 't', elements: [] } },
       'rename the document': { kind: 'document-meta', patch: { name: 'Mine' } },
     };

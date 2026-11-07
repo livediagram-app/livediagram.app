@@ -231,18 +231,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. A Space opens with you standing on it as a little pixel character in your own colour: click or tap to walk, and share a status, speech bubbles and reactions with everyone there. The Virtual Office, Coworking Space, Team Pod and All-Hands Hall templates give you rooms, desks and a coffee machine to meet at. See Avatar mode.',
       },
       {
-        q: 'Can I stop a finished tab being changed?',
-        a: (
-          <>
-            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
-            unlocks it, with a padlock beside its name. You can also lock single elements. See{' '}
-            <a href="/help/tabs/locking-tabs/">locking a tab</a>.
-          </>
-        ),
-        aText:
-          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements. See locking a tab.',
-      },
-      {
         q: 'How do I keep up with what changed?',
         a: (
           <>

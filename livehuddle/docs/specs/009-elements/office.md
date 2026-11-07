@@ -35,7 +35,7 @@ was a category of its own until 2026-11-06), and `outdoor-plant`, `tree`, `garde
 **Garden**'s **Plants** and **Paths and Fences** groups
 ([Groups in a flyout](../010-palette/palette-top-level-categories.md#groups-in-a-flyout)).
 Every one is drawn from the room's camera like the furniture ([Chair](chair.md#facing)): upright, legs and
-pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, lock, copy,
+pots on the ground, a contact shadow below. Each is an ordinary element otherwise: move, resize, group, copy,
 theme, export. None has a settings `…`; a room's one setting, a stage's two and a table's are in the element menu.
 
 ## Room

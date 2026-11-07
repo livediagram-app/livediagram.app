@@ -25,7 +25,6 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
 - It **never moves anything far**: an element moves at most the few pixels to the line it already nearly shares, so a note that was roughly in place stays roughly in place, only neater.
 - It **never makes things worse.** A snap that would make two elements overlap is skipped for both.
 - It works on **every element on the active tab**, not just a selection.
-- **Locked elements stay put.** A [locked element](/help/canvas/locking/) is not snapped.
 - **Elements keep their proportions.** A square note stays square and a wide picture stays wide. An element whose aspect ratio you locked keeps its ratio.
 - **Running it again changes nothing.** Once a tab is tidy, the **Tidy Up** panel shows Auto-align greyed out with "Already tidy".
 
@@ -44,7 +43,7 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
 
 <Step n={3}>Everything on the tab snaps to the grid in a single undoable step.</Step>
 
-If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previous positions exactly. Auto-Align needs edit access and leaves a locked tab alone.
+If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previous positions exactly. Auto-Align needs edit access.
 
 ## When to use it
 

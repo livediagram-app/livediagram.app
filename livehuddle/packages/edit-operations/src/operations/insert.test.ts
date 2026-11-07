@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livehuddle/document';
 import { applied, lines, refused } from '../fixtures/outcomes';
-import { boxIn, elementOf, flowWith, lockedFlow, run } from '../fixtures/run';
+import { boxIn, elementOf, flowWith, run } from '../fixtures/run';
 import { PLACEMENT_GAP } from '../vocabulary';
 
 describe('insert', () => {
@@ -114,10 +114,7 @@ describe('insert', () => {
     });
   });
 
-  it('refuses a locked arrow, an unknown kind, and an end that is not a box', () => {
-    expect(refused(run('insert square between n3 n4', lockedFlow('a3'))).code).toBe(
-      'element_locked',
-    );
+  it('refuses an unknown kind, and an end that is not a box', () => {
     expect(refused(run('insert arrow between n3 n4')).code).toBe('invalid_value');
     expect(refused(run('insert square between a1 n4')).code).toBe('invalid_value');
     expect(refused(run('insert square between n3 a1')).code).toBe('invalid_value');

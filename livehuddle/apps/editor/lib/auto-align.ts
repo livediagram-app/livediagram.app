@@ -20,7 +20,7 @@
 // separate **Auto Layout** / Tidy up pass (`packages/document/auto-layout.ts`).
 
 import { MIN_SIZE } from './canvas';
-import { isBoxed, type Element, type ElementId } from '@livehuddle/document';
+import { isBoxed, type Element } from '@livehuddle/document';
 import { alignBoxes } from './auto-align-lines';
 
 // Snap step in canvas pixels. Picked so the rounding is visible
@@ -95,19 +95,12 @@ export function autoAlignElement(el: Element): Element {
 // boxes share (auto-align-lines.ts), so boxes that line up by their centres or
 // edges still line up afterwards, and a snap that would make two boxes overlap
 // is undone. Auto Layout is the structural pass.
-// `lockedIds` (the editor's locked elements and everything on a locked layer) are left exactly as
-// they are (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
-export function autoAlignElements(
-  elements: Element[],
-  lockedIds?: ReadonlySet<ElementId>,
-): Element[] {
-  let out = elements.map((el) =>
-    lockedIds?.has(el.id) ? el : el.type === 'arrow' ? autoAlignElement(el) : el,
-  );
+export function autoAlignElements(elements: Element[]): Element[] {
+  let out = elements.map((el) => (el.type === 'arrow' ? autoAlignElement(el) : el));
   // A pass can bring two boxes within reach of a line they did not share before, so passes repeat
   // until one moves nothing: the result is settled, and Auto-align again finds it already tidy.
   for (let pass = 0; pass < MAX_ALIGN_PASSES; pass++) {
-    const next = alignBoxes(out, autoAlignElement, lockedIds);
+    const next = alignBoxes(out, autoAlignElement);
     const settled = next.every((el, i) => el === out[i]);
     out = next;
     if (settled) break;

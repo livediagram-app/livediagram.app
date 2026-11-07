@@ -1363,10 +1363,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const anyWelcomeOpen = identityOnlyScreenOpen;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
-  // A locked tab refuses every element mutation. Commit /
-  // tick / element-add helpers all consult this early-return guard
-  // so a single check covers drag, edit, paint, delete, etc.
-  const activeTabLocked = activeTab.locked === true;
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md). Until the active tab's content has
   // landed it's an empty placeholder, NOT its real server row. The canvas
   // shows a blocking overlay over this state — but that overlay only
@@ -1388,19 +1384,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     elementsLength: activeTab.elements.length,
     templateChosen: activeTab.templateChosen === true,
   });
-  // A view-only session (a 'view' share role) is read-only in exactly
-  // the same way a locked tab is: no element or tab mutation may land.
+  // A view-only session (a 'view' share role) is read-only: no element or tab mutation may land.
   // Folding the flags into one guard means every mutation helper
   // below stays blocked with a single check, and the interaction
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
   // A Participant commits too: every one of its commits passes participant.guardCommit.
-  const editsBlocked =
-    activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
-  // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
-  // tab's lock, which holds every element's place, not an image's picture.
-  const pictureBlocked =
-    (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  const editsBlocked = (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
   // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
@@ -1424,9 +1414,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openComments,
   });
 
-  // A picture swap passes `{ picture: true }` and answers to `pictureBlocked` instead of `editsBlocked`.
-  const commit = (mapElements: (els: Element[]) => Element[], opts?: { picture?: boolean }) => {
-    if (opts?.picture ? pictureBlocked : editsBlocked) return;
+  const commit = (mapElements: (els: Element[]) => Element[]) => {
+    if (editsBlocked) return;
     // Read the LIVE elements (via tabsRef), not the render-time `activeTab`
     // closure. A deferred caller can run long after the render that created
     // this `commit` — e.g. the link-card unfurl resolves a few seconds
@@ -1491,7 +1480,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     editsBlocked,
     canUndo: canHistoryUndo,
     canRedo: canHistoryRedo,
-    tabLocked: activeTabLocked,
     tickTabs,
     undoHistory,
     redoHistory,
@@ -1530,7 +1518,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // --- Tab actions ---------------------------------------------------------
 
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
-  // reorder, active-tab lock, link-into-document, clear content). They
+  // reorder, link-into-document, clear content). They
   // touch history, selection, telemetry, confirm / toast and the
   // document list; see
   // useTabActions. Document-level lifecycle + the template flow stay in
@@ -1539,7 +1527,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
     duplicateTab,
@@ -1714,14 +1701,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     }),
     isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
-    // A locked tab still takes a picture swap (docs/specs/009-elements/images.md "Locked images").
-    pictureBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: pictureBlocked,
-      structureBlocked: pictureBlocked || isReadOnly,
-    }),
-    commitPicture: (mapElements) => commit(mapElements, { picture: true }),
     commit,
     documentId,
     ownerId: selfParticipant.id,
@@ -1835,14 +1814,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
     useCellLinkPicker({ editsBlocked, commit });
 
-  // Structural element operations (delete, marquee commit, lock, and the
+  // Structural element operations (delete, marquee commit, and the
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
   const {
     deleteSelected,
     selectMarquee,
-    toggleLockMultiSelected,
     duplicateMultiSelected,
     deleteMultiSelected,
     narrowMultiSelection,
@@ -1869,12 +1847,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     writeUserPreferences,
     ownerId: selfParticipant.id,
   });
-  // Element styling / layering actions (lock, layer order, text size /
+  // Element styling / layering actions (layer order, text size /
   // align / style, fill / stroke / text colour, opacity, padding, the
   // arrow + border presets, shape-kind morph, reset-to-theme). All
   // mutate the current selection; see useElementStyle.
   const {
-    toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,
     sendSelectedToBack,
@@ -2132,7 +2109,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useSelectionEditing({
     readSelection,
     isReadOnly,
-    tabLocked: activeTabLocked,
     canWriteText: participant.can.writeText,
     formatSourceId,
     formatToolActive,
@@ -2288,13 +2264,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       commitDraw(pendingDraw, centre.x, centre.y, centre.x, centre.y);
       return true;
     },
-    onToggleLock: () => {
-      if (readSelection().multiSelectedIds.size > 0) {
-        toggleLockMultiSelected();
-      } else {
-        toggleLockSelected();
-      }
-    },
     onSelectAll: () => {
       const allIds = selectAllIds(activeTab);
       if (allIds.size === 0) return;
@@ -2311,7 +2280,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCut: () => {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
-      copySelection({ cut: true });
+      copySelection();
       if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected();
       } else {
@@ -2368,8 +2337,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...persistence,
     ...realtime,
     activeTab,
-    activeTabLocked,
-    // The whole creation gate: a locked tab or a view-only session.
+    // The whole creation gate: a view-only session or a tab still loading.
     createBlocked: editsBlocked,
     quickStyleDeps,
     addArrow,
@@ -2770,11 +2738,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     saveAction,
     teams,
     documentList,
-    toggleActiveTabLock,
     toggleAspectLockSelected,
     toggleInMultiSelect,
-    toggleLockMultiSelected,
-    toggleLockSelected,
     toggleTextStyleSelected,
     undo,
     unresolveThread,

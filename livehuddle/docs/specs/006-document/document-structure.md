@@ -16,7 +16,7 @@ Document
 ```
 
 - A document has **one or more tabs**. New documents start with a single empty tab.
-- Each tab has its own independent canvas: elements, layout, theme, background pattern, optional lock state.
+- Each tab has its own independent canvas: elements, layout, theme, background pattern.
 - Tabs are **ordered**; users can drag-reorder them in the tab bar.
 - A tab has a name (default `"Tab 1"`, `"Tab 2"`, etc.) and is renameable.
 - **Auto-rename on first edit.** While a tab still has its default name (matching `^Tab \d+$`), editing the label of its first element renames the tab to that label. The rename only fires once: as soon as the tab name diverges from the default pattern (auto-rename or manual rename), subsequent label edits leave the tab name alone. This mirrors the document-name auto-fill from the default `Untitled document`.
@@ -93,7 +93,7 @@ type Tab = {
   // 'workshop'. A stored kind 'whiteboard' reads as kind 'diagram'.
   opensIn?: EditorMode; // 'workshop'
   elements: Element[];
-  // …plus theme, backgroundColor/Pattern/Opacity, patternColor, locked
+  // …plus theme, backgroundColor/Pattern/Opacity, patternColor
 };
 
 // Concrete element kinds, see packages/document for the full shape of each:

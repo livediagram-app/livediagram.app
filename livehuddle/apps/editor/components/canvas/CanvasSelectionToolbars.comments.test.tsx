@@ -46,7 +46,6 @@ function show(el: Element, takePart: boolean) {
             elements: [el],
             editingId: null,
             isPaintMode: false,
-            tabLocked: false,
             readOnly: true,
           }}
         />

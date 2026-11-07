@@ -1,5 +1,5 @@
 // Tab-lifecycle actions, lifted out of editor-page.tsx: add / import /
-// rename / duplicate / delete / reorder tabs, the active-tab lock,
+// rename / duplicate / delete / reorder tabs,
 // linking a tab into another document, and clearing a tab's content.
 //
 // This is the busiest of the extracted hooks because tab lifecycle
@@ -124,7 +124,6 @@ export function useTabActions(deps: TabActionsDeps) {
   // lives in useTabImport; remintTabElements is shared with the
   // Duplicate below.
   const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
-    tabs,
     activeId,
     commitTabs,
     setSelectedId,
@@ -133,21 +132,6 @@ export function useTabActions(deps: TabActionsDeps) {
     setImportError,
     requestFit,
   });
-
-  const toggleActiveTabLock = () => {
-    const target = tabs.find((t) => t.id === activeId);
-    if (!target) return;
-    const next = !target.locked;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, locked: next } : t)));
-    track('Tab', next ? 'Locked' : 'Unlocked');
-    if (next) {
-      // Drop any in-progress UI state that would be useless on a
-      // newly-locked tab.
-      setSelectedId(null);
-      setEditingId(null);
-      setFormatSourceId(null);
-    }
-  };
 
   const renameTab = (id: string, name: string) => {
     const previous = tabs.find((t) => t.id === id)?.name ?? '';
@@ -224,10 +208,6 @@ export function useTabActions(deps: TabActionsDeps) {
     if (tabs.length <= 1) return;
     const idx = tabs.findIndex((t) => t.id === id);
     if (idx < 0) return;
-    // A locked tab is protected: its elements can't be deleted, so the
-    // tab that holds them can't be deleted out from under them either.
-    // Unlock it first. (The TabBar also gates the Delete row on this.)
-    if (tabs[idx]?.locked === true) return;
     track('Tab', 'Deleted');
     // Drop the tab AND strip any links on remaining elements that point to
     // it, so we don't leave dangling cross-tab references. Bundled into one
@@ -324,7 +304,6 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
-    toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
     duplicateTab,

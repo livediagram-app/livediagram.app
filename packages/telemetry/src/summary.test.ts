@@ -37,6 +37,14 @@ const count = (s: ReturnType<typeof build>, key: 'today' | 'last7' | 'last30') =
 const prev = (s: ReturnType<typeof build>, key: 'today' | 'last7' | 'last30') =>
   s.previousWindows![key].total;
 
+describe('stored keys', () => {
+  it('ignores a __proto__ category rather than setting the series prototype', () => {
+    const s = build([{ ...at(MIDNIGHT), category: '__proto__' }, at(MIDNIGHT)]);
+    expect(Object.getPrototypeOf(s.daily!.byCategory)).toBe(Object.prototype);
+    expect(Object.keys(s.daily!.byCategory)).toEqual(['Element']);
+  });
+});
+
 describe('telemetry window boundaries', () => {
   it('starts the series at UTC midnight 29 days back', () => {
     expect(telemetrySeriesStart(NOW)).toBe(MIDNIGHT - 29 * DAY);

@@ -149,13 +149,6 @@ describe('snapTabColours', () => {
     );
   });
 
-  it('protects locked elements', () => {
-    const locked = stroke({ id: 'locked', locked: true, strokeColor: '#e03131' });
-    const out = snapTabColours([locked]);
-    expect(out.elements[0]).toBe(locked);
-    expect(out.changed).toBe(0);
-  });
-
   it('has one row per kind and field that carries a named colour', () => {
     expect(SNAP_COLOUR_FIELDS.map((r) => [r.hex, r.named])).toEqual([
       ['strokeColor', 'penColour'],
@@ -209,8 +202,6 @@ describe('snappableCustomColours', () => {
       stroke({ id: '3', strokeColor: '#e03131' }),
       stroke({ id: '4', penColour: 'blue' }),
       stroke({ id: '5', pen: 'highlighter', strokeColor: '#ffd43b' }),
-      stroke({ id: '6', locked: true, strokeColor: '#00ff00' }),
-      arrow({ id: '7', locked: true, strokeColor: '#0000ff' }),
     ];
     expect(snappableCustomColours(els)).toEqual(['#e03131', '#1971c2']);
     expect(snappableCustomColours([])).toEqual([]);

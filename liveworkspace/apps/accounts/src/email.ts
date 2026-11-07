@@ -14,6 +14,7 @@ import {
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
 import { reportServerEvent } from './telemetry.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // Every email goes through Cloudflare Email Service's binding (liveworkspace/docs/specs/003-accounts/email.md), as the apps' do.
 // Without the binding a development Worker prints the message to its log instead (the code is in the subject), so
@@ -117,7 +118,7 @@ export async function sendDeletionCodeEmail(
   await sendEmail(env, { to: email, ...deletionCodeEmail(code, emailBrand(env, app)) });
 }
 
-const origin = (baseUrl: string) => baseUrl.replace(/\/+$/, '');
+const origin = (baseUrl: string) => withoutTrailingSlashes(baseUrl);
 
 // The account's notification settings on liveworkspace.app (this deployment's BASE_URL): the Explorer with the Settings
 // panel open on Notifications (liveworkspace/docs/specs/010-site/site.md "Settings"), where every email

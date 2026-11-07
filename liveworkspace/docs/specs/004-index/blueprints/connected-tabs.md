@@ -12,7 +12,7 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | 1    | This spec and blueprint; the shared contract in `packages/index-client/src/connections.ts` (`TabConnection`, the readers, the doors' paths, the limits and the default role)                                                                                      | on main |
 | 2    | The index: the `connections` table, `POST /items/:id/connections`, `GET /connections/:id`, the take-back, the app's confirm and removal doors, the sweep, purges, the pass's mark in `GET /items/:id/share`, the error codes, the index-client calls              | on main |
 | 3    | Each app (livediagram, liveplanner, livedocuments, livedesign, livehuddle) keeps a connected tab: the `tabs.connection` column, its summaries and reads, the internal door for the reverse tab, telling the index on removal, scope redaction, copies and exports | on main |
-| 4    | The shared UI, not yet mounted: the connected tab in `packages/workbench`'s tab strip, the Connect picker (Recent across apps, the role, both ways) and the opening states, in `packages/explorer` or `packages/workbench`                                        | planned |
+| 4    | The shared UI, not yet mounted: the connected tab in `packages/workbench`'s tab strip, the Connect picker (Recent across apps, the role, both ways), the opening states and the Share dialog's "Connected from", in `packages/workbench` and `packages/explorer`  | on main |
 | 5    | Every editor mounts it: connected tabs in the tab bar, Connect liveworkspace File at the very bottom of the start screen's sidebar, Remove and Connect Again, help articles, telemetry with its chart                                                             | planned |
 
 ## Scope, by file
@@ -30,6 +30,8 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | `<app>/apps/api/src/<room>/<item>-schema.ts`                | `tabs.connection`, a schema step in each app   | 3    |
 | `<app>/apps/api/src/<room>/connected-tab.ts`                | each app's reverse tab and its room op         | 3    |
 | `packages/workbench/src/components/chrome/ConnectedTab.tsx` | the tab: the target app's logo and name        | 4    |
+| `packages/workbench/src/components/connect/`                | the tab's page, the Connect list, their calls  | 4    |
+| `packages/explorer/src/dialogs/share/ActivePass.tsx`        | "Connected from <host>" on a pass              | 4    |
 
 ## Domain and naming
 
@@ -168,6 +170,63 @@ The shared part is `packages/index-app` `connected-tabs.ts`; each app binds it t
 - **Copies and exports.** The copy door, the Drive file's envelope and its import, and an editor's create (an Offline
   Mode sync) keep exactly `{ id, app, itemId }` in the column; the index refuses it outside its host and tab.
 
+### The shared UI (part 4)
+
+Built in `packages/workbench`, mounted by no screen until part 5. Every module is a subpath, no barrel.
+
+- **`components/chrome/ConnectedTab.tsx`**: the tab. `TabFrame` with `lead` (a new slot before the name, drawn at
+  full opacity, unlike `lockIcon`) holding the target app's `BrandMark` at `size-3.5`; `afterName` holding the
+  arrow (`lucideArrowUpRight`, 11px) when `connection.app !== hostApp`, else nothing, or the amber dot when
+  `broken`; an `sr-only` phrase after the name (`connectedTabPhrase`). No `onRequestRename` (IDX26). `menu`,
+  `presence`, `caret`, `dragging` and `dragHandlers` pass through, so a connected tab drags, folders and shows
+  avatars as any tab.
+- **`components/connect/ConnectedTabCard.tsx`**: the tab's page, one card per `ConnectedTabView` (`opening`,
+  `opened`, `gone`, `link_removed`, `copy`, `offline`, `failed`) with the spec's words (`connectedTabCopy`) and
+  actions. `canEdit` (the session's `can('edit')`, never `readOnly` alone) shows Remove and Connect Again; Open Again
+  (an anchor, `target="_blank" rel="noopener"`) and Try Again are everyone's. The logo turns while opening
+  (`BrandMark spinning`), still under reduced motion.
+- **`components/connect/connected-tab-view.ts`**: `connectedTabViewOf(error)` maps the open door's refusal
+  (`IndexError`): `410 connection_target_gone` to `gone`, `410 connection_link_removed` to `link_removed`,
+  `404 not_found` to `copy`, anything else to `failed`. `connectedTabCopy(view, name, app)` gives each state's title
+  and line.
+- **`components/connect/open-connected-tab.ts`**: `openConnectedTab` asks `openConnection(id, grant)` and, given the
+  answer, goes there: the same app by `location.assign`, another by `window.open(href, '_blank', 'noopener')`. It
+  answers the view to show (`opened` with the href, or the refusal's) and the name the index answered, so an
+  Editor's editor can rename the tab to match (IDX26).
+- **`components/connect/connect-file.ts`**: `connectFile` runs one connect: `makeConnection(host, { targetId,
+tabId, level, both }, grant)`, then the app's `addTab(made)` (its whole-tab save); when `addTab` throws it calls
+  `takeBackConnection(made.connection.id, grant)` (#571), ignoring that call's own failure, and throws the first
+  error. It answers the `ConnectionMade` so the app can say when the reverse was `unreached`.
+- **`components/connect/connect-words.ts`**: the picker's words: `connectRoleLine(level, hostKind)`,
+  `bothWaysLine`, `rowBlock(item, level)` (why a row cannot be picked: not managed, "Only its owner can share it";
+  the role not offered, "<app> has no <Role> role"; else null), `connectErrorWords(error, hostKind)` for each
+  refusal (`connection_limit`, `share_link_limit`, `forbidden`, `level_not_offered`, `connection_self`,
+  `rate_limited`, `not_found`, else the network line).
+- **`components/connect/useRecentFiles.ts`**: one `listItems({ view: 'recent', limit: CONNECT_RECENT_LIMIT })`
+  with no `app`, so every app's items come back, newest first; the host left out. States `loading`, `ready`,
+  `failed` with `retry`. An unmount aborts it.
+- **`components/connect/ConnectPicker.tsx`**: the list in a start panel's content area, painted from `ink` (the
+  start panel's palette: `text`, `muted`, `border`, `surface`, `column`, `accent`) through CSS variables, else the
+  app's light or dark look. The role is a `radiogroup` of three (`ConnectRolePicker`), Editor chosen; the both-ways
+  `SwitchRow`, disabled with its reason when `hostManaged` is false; Find a file (a plain substring match on the
+  lower-cased title, no regex); then the rows (`ConnectRow`). One connect at a time: while a row is busy every other
+  row is `aria-disabled`. A row in `connected` (a `Map<itemId, tabId>` from the host's tabs) shows Connected and
+  calls `onGoTo(tabId)`.
+
+Accessibility (part 4): the tab is a plain button in the strip's toolbar like any tab, its app and where it opens in
+its `sr-only` phrase. The role picker is a `radiogroup` (the arrows, Home and End move and choose); the both-ways
+switch is the house `SwitchRow`, its reason in `aria-describedby`; each row is one button named by the file, its app
+and its state, `aria-disabled` with the reason in its description when it cannot be picked; a connect in progress is
+`aria-busy`; a failure and an empty filter are announced (`role="status"`). Every word on the tinted paper is
+checked at 4.5:1 by the start panel's own palette; the default look uses slate 600 (light) and 400 (dark) muted ink.
+The logo's turn and the rows' placeholders stop under `prefers-reduced-motion`.
+
+Testing for part 4 is in `packages/workbench`: `connected-tab-view.test.ts`, `connect-words.test.ts`,
+`connect-file.test.ts`, `open-connected-tab.test.ts`, `ConnectedTab.test.tsx`, `ConnectedTabCard.test.tsx` (each
+state; Editor, Participant and Viewer), `ConnectPicker.test.tsx` (loading, empty, failed, rows, blocked rows, the
+role, both ways, the filter, busy, a failure on the row, Connected going to its tab), and in `packages/explorer`
+the Share dialog's "Connected from" line.
+
 ## Data and persistence
 
 | Table         | Key  | Columns                                                                                                                                                                                | Indexes                                                                                                                                                                                                                 |
@@ -254,3 +313,5 @@ staging 2109). No new secret: the reverse write uses each app's `INDEX_KEY`, as 
 - `IDX25`: Connect Again on a tab that still has a connection replaces it, deleting the old pass.
 - `IDX26`: a connected tab's name follows the target's title on open; it is not renamed by hand.
 - `IDX27`: a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.
+- `IDX35`: the Connect list shows the person's 40 most recent items across every app (`CONNECT_RECENT_LIMIT`,
+  `packages/workbench` `connect/useRecentFiles.ts`), enough to fill the start panel twice without paging.

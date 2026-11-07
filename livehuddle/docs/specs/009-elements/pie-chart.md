@@ -80,7 +80,7 @@ ChartAxis`); a series on the right shows "(right)" after its name in the Data su
   each branch hue on multi-colour themes, accent tints/shades on single-accent
   themes), overridable per datum. So a chart reads as part of the theme out of
   the box.
-- It's a normal boxed element otherwise (move / resize / select / lock),
+- It's a normal boxed element otherwise (move / resize / select),
   but the **Colours / Border** context-menu categories are hidden: a
   chart styles per-datum via its Data category, not as one filled box. Its
   **Presets** grid holds the chart palettes (see Chart palettes).
@@ -228,5 +228,5 @@ paints no box; `LegendView` draws the card from the element's fill + stroke, and
 
 ## Element tour
 
-The **Chart tour** is on the footer's **Start Chart Tour** button while a data chart (any of the seven chart types) is selected, for an Editor on an unlocked element, and walks through it on the element
+The **Chart tour** is on the footer's **Start Chart Tour** button while a data chart (any of the seven chart types) is selected, for an Editor, and walks through it on the element
 itself ([Element tours](../007-editor/element-tours.md) "The Chart tour").

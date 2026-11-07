@@ -42,7 +42,7 @@ Scope, by file:
 | Slot             | `QuickSwatchSlot = 1..6`; `0` = theme default                                               | The stable id of a colour across themes                                            |
 | Swatch binding   | `strokeSwatch`, `fillSwatch`, `textSwatch` on the element                                   | The slot a colour was picked from; absent = unbound                                |
 | Section          | `QuickSectionId`                                                                            | `stroke`, `background`, `textColour`, `width`, `style`, `textAlign`, `iconAlign`   |
-| Style target     | `isQuickStyleTarget(el)`                                                                    | An unlocked `shape`, `arrow` or `text`                                             |
+| Style target     | `isQuickStyleTarget(el)`                                                                    | A `shape`, `arrow` or `text`                                                       |
 | Kind key         | `StyleKindKey`, `styleKindOf(el)`                                                           | `shape:<ShapeKind>` for shapes, `arrow` for arrows, `text` for text elements (D53) |
 | Style memory     | `StyleMemory = Partial<Record<StyleKindKey, RememberedStyle>>`                              | Per kind, the last value chosen for each memorable field                           |
 | Memorable fields | `SHAPE_MEMORY_FIELDS`, `ARROW_MEMORY_FIELDS`                                                | The fields memory records and applies (below)                                      |
@@ -215,7 +215,7 @@ calls `forget` with the kind keys of every target it changed.
 
 Derived from the spec's Multi-selection rules for any mix of kinds (a whole imported board):
 
-- **Applicability** stays per element: `isQuickStyleTarget` (unlocked shape, arrow, text, path) and
+- **Applicability** stays per element: `isQuickStyleTarget` (shape, arrow, text, path) and
   `supportsQuickSection` decide each row. Every other element is passed over: it is neither a target nor counted,
   and never empties the view of the rest. In livehuddle the marker rows, the board rows and
   `quickStyleApplicability` went with the whiteboard (Work Tracker #329); livediagram keeps them
@@ -377,7 +377,6 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 | No clear placement                        | Candidate (a); `console.debug('[quick-style] placement fallback')`         |
 | Selection changes while a tooltip is open | Tooltip unmounts with its option                                           |
 | Element deleted by a peer mid-choice      | The commit maps the live elements; a missing id is simply not there        |
-| Locked element in the selection           | Not a target; never written                                                |
 | `documentId` null                         | Memory inert                                                               |
 
 ## Security and trust

@@ -137,6 +137,8 @@ export function buildTelemetrySummary(
       });
   };
   const bump = (series: Record<string, number[]>, key: string, idx: number, n: number) => {
+    // Keys come from stored rows: a `__proto__` one would set the series' prototype rather than add a series.
+    if (key === '__proto__') return;
     const s = series[key] ?? zeros();
     s[idx] = (s[idx] ?? 0) + n;
     series[key] = s;

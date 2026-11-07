@@ -15,7 +15,7 @@ export type WebFaceProps = {
   textColor: string;
   fontFamily: string | undefined;
   // Whether the secondary lines are editable in place: selected, and neither
-  // read-only nor locked. The first click selects, the next one edits.
+  // read-only. The first click selects, the next one edits.
   editable: boolean;
   onSetRows: (rows: WebRows) => void;
   onSetHeading: (field: 'pageTitle' | 'pageSubtitle', value: string) => void;

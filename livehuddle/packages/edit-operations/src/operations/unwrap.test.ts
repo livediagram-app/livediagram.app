@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
-import { boxIn, lockedFlow, run } from '../fixtures/run';
+import { boxIn, run } from '../fixtures/run';
 
 describe('unwrap', () => {
   it('removes the frame and leaves what it held where it was', () => {
@@ -19,12 +19,11 @@ describe('unwrap', () => {
     ]);
   });
 
-  it('unwraps only a frame or lane, unlocked', () => {
+  it('unwraps only a frame or lane', () => {
     expect(refused(run('unwrap n3'))).toMatchObject({
       details: ['n3: n3 is not a boundary or a lane'],
       hint: 'unwrap a boundary or lane; rm removes anything else',
     });
-    expect(refused(run('unwrap f2', lockedFlow('f2'))).code).toBe('element_locked');
     expect(refused(run('unwrap nowhere')).code).toBe('target_not_found');
   });
 });

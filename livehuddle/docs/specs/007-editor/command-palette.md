@@ -42,12 +42,6 @@ the **view-safe subset** (fit to screen, export, Collaborators, and
 Edit and Walk); mutating commands stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
 
-## Locked tabs
-
-The palette offers only what would do something. On a **locked tab** (`tabLocked`) the element
-verbs and layout cleanup are withheld, since the
-tab refuses every element edit; the document, tab and view commands stay.
-
 ## Unchanged on purpose
 
 - Commands still match only on a **non-empty query**: an empty palette lists

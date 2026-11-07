@@ -214,11 +214,6 @@ export type Tab = {
   // Set to true once the user has explicitly chosen a starting template
   // (including "Blank"), so the template picker doesn't reappear on this tab.
   templateChosen?: boolean;
-  // True when the tab is locked: every element becomes read-only,
-  // adds via the palette are blocked, theme / background mutations
-  // are blocked for as long as this tab is active. Toggled from the
-  // tab ellipsis menu.
-  locked?: boolean;
   // Per-document folder name (docs/specs/006-document/tab-folders.md). Tabs sharing a name render
   // as a contiguous run under one collapsible chip in the tab bar.
   // This is link metadata, not body content: it's stripped from the
@@ -575,6 +570,9 @@ export { dropRetiredVote } from './retired-vote';
 // The retired Session strip's tab timer, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "The Session
 // strip's Timer").
 export { dropRetiredTimer } from './retired-timer';
+// The retired element and tab locks, dropped on read (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
+// Locking").
+export { dropRetiredLocks } from './retired-locks';
 
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.

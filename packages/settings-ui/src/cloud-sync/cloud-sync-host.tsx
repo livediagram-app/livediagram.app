@@ -17,6 +17,7 @@ import type { DriveConfigAnswer } from '@liveworkspace/drive';
 import type { SettingsRow } from '../model';
 import { DRIVE_NOT_CONNECTED_TEXT } from './cloud-sync-copy';
 import { GoogleDriveRow } from './GoogleDriveRow';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type CloudSyncHost = {
   client: DriveClient;
@@ -40,7 +41,7 @@ export function createCloudSyncHost({
   workspaceOrigin: string;
   settingsParam: string;
 }): CloudSyncHost {
-  const origin = workspaceOrigin.replace(/\/+$/, '');
+  const origin = withoutTrailingSlashes(workspaceOrigin);
   return {
     client: createDriveClient({ getToken }),
     workspaceOrigin: origin,

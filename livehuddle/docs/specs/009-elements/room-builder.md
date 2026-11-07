@@ -119,12 +119,9 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
 
 ### Locked doors
 
-A Door locked with the element's Lock (the element menu's Lock, `locked`) shows it, on every type: a padlock in the middle
-of its doorway, on a floor-coloured disc ringed in its stroke, always upright however the door is turned on its wall, and
-its leaves, panes or wings drawn half a stroke darker. Unlocked, no padlock. The canvas's own lock badge (the round one
-at an element's top left) is not drawn on a Door: its padlock says it, and a badge turning with the wall would hide it. The rule it shows is the
-one below: a Participant cannot swing a locked door, so a locked shut door is a door only an Editor opens; a locked
-open one stays open.
+A Door no longer locks: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)),
+so no door draws a padlock or darker leaves, and anyone who may swing a door swings any one. A door stored with
+`locked: true` loads as an ordinary door.
 
 ### Opening and closing
 
@@ -143,9 +140,9 @@ A Door is open or closed, and anyone taking part can swing it.
   across the opening, flush with the wall, and the arc is gone. The leaf turns between the two over 180 ms with the
   canvas motion stylesheet's easing, and jumps straight there under reduced motion.
 - **Undo**: a swing is one change on the swinger's history, like any edit. Telemetry: `Canvas · Used · Door`.
-- **Share roles**: an Editor and a Participant open and close any door that is not locked (a Participant changes
+- **Share roles**: an Editor and a Participant open and close any door (a Participant changes
   `doorClosed` and nothing else about a door, by the participant content rule); a Viewer walks through open doors
-  but cannot swing one. A locked door stays as it is for a Participant.
+  but cannot swing one.
 - For the click policy: `toggleDoor(doorId)` (the editor's, from `useDoorToggle`) swings a door and returns whether
   it did; `isNextToDoor(feet, door)` (in `@livehuddle/document`) says whether a character can reach it.
 
@@ -186,7 +183,7 @@ A window in a wall: light comes in, people do not. Work Tracker #538.
 
 - **Editor**: arms the Room Builder, draws rooms, places, moves and deletes doors and windows; opens and closes doors.
 - **Participant**: has no palette, so places neither; always walking, it walks through open doors like everyone, and
-  opens and closes doors that are not locked.
+  opens and closes any door.
 - **Viewer**: walks through open doors like everyone (walking is presence); cannot open or close one.
 
 ## Telemetry
@@ -196,7 +193,7 @@ A window in a wall: light comes in, people do not. Work Tracker #538.
 
 ## Not in scope
 
-- Doors that open only for some people (a lock is the element's Lock, an Editor's; see [Locked doors](#locked-doors)).
+- Doors that open only for some people, or that lock ([Locked doors](#locked-doors)).
 - Window types (a bay, a skylight) and windows that open; a window you can climb through.
 - Changing a placed door's type from its element menu (place another type instead; a follow-up).
 - Editing a custom room's corners after it is drawn (redraw it; corner editing is a follow-up).

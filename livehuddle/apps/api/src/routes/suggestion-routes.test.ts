@@ -120,7 +120,7 @@ describe('dropping a note', () => {
     expect((await drop('No', { owner: null })).status).toBe(400);
   });
 
-  it('refuses no text, too much text, no box, a box that is not one, and a closed box', async () => {
+  it('refuses no text, too much text, no box and a box that is not one', async () => {
     expect((await drop('   ')).status).toBe(400);
     expect((await drop('x'.repeat(SUGGESTION_TEXT_MAX + 1))).status).toBe(400);
     expect((await drop('x'.repeat(SUGGESTION_TEXT_MAX))).status).toBe(201);
@@ -131,12 +131,13 @@ describe('dropping a note', () => {
     expect(
       (await call({ path: '/tabs/t1/suggestions', body: { elementId: 'sq', text: 'x' } })).status,
     ).toBe(404);
-    const shut = await call({
+    // A box saved locked before locking left takes notes like any other (not-in-livehuddle.md "Element and Tab
+    // Locking").
+    const old = await call({
       path: '/tabs/t1/suggestions',
       body: { elementId: 'shut', text: 'x' },
     });
-    expect(shut.status).toBe(409);
-    expect(await shut.json()).toEqual({ error: 'box_closed' });
+    expect(old.status).toBe(201);
     expect(
       (await call({ path: '/tabs/t9/suggestions', body: { elementId: 'b', text: 'x' } })).status,
     ).toBe(404);

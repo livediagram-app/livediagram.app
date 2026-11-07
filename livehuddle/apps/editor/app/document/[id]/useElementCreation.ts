@@ -285,7 +285,7 @@ export function useElementCreation(opts: {
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
     // Same creation gate as every other add path (addShape, addSticker, ...):
-    // a locked/loading tab or a view-only session silently no-ops.
+    // a loading tab or a view-only session silently no-ops.
     if (editsBlocked) return;
     const TEXT_W = 160;
     const TEXT_H = 48;

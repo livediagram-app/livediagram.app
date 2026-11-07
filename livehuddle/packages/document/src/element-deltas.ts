@@ -104,10 +104,9 @@ function withThread(el: Element, thread: CommentThread | undefined): Element {
   return (thread ? { ...rest, commentThread: thread } : rest) as Element;
 }
 
-// A piece that takes note changes (a Notice Board, a Calendar Wall: docs/specs/009-elements/team-pieces.md): a locked
-// one refuses them, on every screen alike.
+// A piece that takes note changes (a Notice Board, a Calendar Wall: docs/specs/009-elements/team-pieces.md).
 function openNotePiece(el: Element): ShapeElement | null {
-  return el.type === 'shape' && holdsNotes(el.shape) && el.locked !== true ? el : null;
+  return el.type === 'shape' && holdsNotes(el.shape) ? el : null;
 }
 
 // The board with its notes set, the field dropped when none are left.
@@ -218,14 +217,12 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     }
     case 'piece-timer': {
       if (el.type !== 'shape' || !isTimerPieceShape(el.shape)) return el;
-      // Locked or not: a lock fixes the piece in place, it does not freeze its clock.
       if (!isPieceTimer(delta.state, el.shape)) return el;
       if (el.pieceTimer && samePieceTimer(el.pieceTimer, delta.state)) return el;
       const { running, startedAt, accumulatedMs, durationMs } = delta.state;
       return { ...el, pieceTimer: { running, startedAt, accumulatedMs, durationMs } };
     }
     case 'arcade-score': {
-      // Locked or not: a lock fixes where the machine stands, as a Timer's does.
       if (el.type !== 'shape' || el.shape !== 'arcade-machine') return el;
       const table = arcadeTableWith(el.arcadeScores, delta.score);
       return table ? { ...el, arcadeScores: table } : el;

@@ -10,7 +10,7 @@ export function slugText(text: string): string {
     .replace(/\p{M}/gu, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-|-$/g, '');
 }
 
 // A slug cut to `max` characters, without a hyphen left dangling at the cut.

@@ -94,9 +94,6 @@ type TabBarProps = {
   // round-trip to the API. Returns a promise so the menu can dismiss
   // after the operation completes.
   onCopyTabTo: (targetDocumentId: string) => Promise<void> | void;
-  // Flip tab.locked. Disables every mutator until toggled back on.
-  // The lock icon appears on the tab itself + on every element.
-  onToggleLockTab: () => void;
   // Move `sourceId` next to `targetId`. `placeBefore` (default true) picks
   // which side of the target it lands on — the tab bar sets it from the
   // pointer position so the drop matches the insertion caret. Omitting it
@@ -105,7 +102,7 @@ type TabBarProps = {
   // True for a view-only ('view' share role) session. Suppresses
   // every mutation affordance on the bar: tab rename (double-click
   // + the ellipsis Rename row), the "+" add button, the whole
-  // ellipsis menu (so Duplicate / Clear content / Lock / Move / Delete
+  // ellipsis menu (so Duplicate / Clear content / Move / Delete
   // all vanish), and tab drag-to-reorder. Tab pills remain
   // clickable so the viewer can still navigate between tabs.
   readOnly?: boolean;
@@ -154,7 +151,6 @@ export function TabBar({
   onExportTab,
   otherDocuments,
   onCopyTabTo,
-  onToggleLockTab,
   onReorder,
   readOnly = false,
   isOutOfScope,
@@ -204,8 +200,7 @@ export function TabBar({
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
     canDelete: tabs.length > 1,
-    canClearContent: activeTabHasContent && !tab.locked,
-    locked: tab.locked === true,
+    canClearContent: activeTabHasContent,
     selfId,
     otherDocuments,
     folderNames,
@@ -240,10 +235,6 @@ export function TabBar({
     },
     onCopyTo: async (targetId: string) => {
       await onCopyTabTo(targetId);
-      close();
-    },
-    onToggleLock: () => {
-      onToggleLockTab();
       close();
     },
     onDelete: () => {

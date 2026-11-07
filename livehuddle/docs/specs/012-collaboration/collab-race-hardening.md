@@ -81,7 +81,7 @@ applied by the sender and every receiver through the same pure
   refused now; a stored ledger entry that still carries one is read and ignored.)
 - `notice-pin` / `notice-unpin`: one note pinned on a Notice Board, or one taken down by id and its signer's `by`
   ([Social pieces](../009-elements/social-pieces.md) "Notice Board"). A pin whose id the board holds is a replay and a
-  no-op; a pin past `NOTES_MAX` or on a locked board changes nothing; an unpin removes the note only while `by` is
+  no-op; a pin past `NOTES_MAX` changes nothing; an unpin removes the note only while `by` is
   still its signer, which is how a Participant, whose `by` the room checks, removes only its own. Before, an Editor
   moving the board while somebody pinned sent the old list in a whole-element update and the new note vanished.
   The ledger records each pin and unpin, and a Participant's are written into the stored board with its answers.

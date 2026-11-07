@@ -903,7 +903,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'door' },
     // Door types (docs/specs/009-elements/room-builder.md "Door types"): a swing, double, sliding or revolving door.
     variants: DOOR_PRESET_TILES,
-    variantsHint: 'Pick a door, then drop it on any wall. Lock it to keep it as it is.',
+    variantsHint: 'Pick a door, then drop it on any wall.',
     icon: <DoorIcon size={TILE_GLYPH_PX} />,
   },
   {

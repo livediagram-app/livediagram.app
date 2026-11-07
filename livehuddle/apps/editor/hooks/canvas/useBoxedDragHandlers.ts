@@ -69,8 +69,7 @@ export function useBoxedDragHandlers({
       d.setMultiSelectedIds(new Set());
     }
     // Selection above still lands so viewers can inspect; the drag
-    // itself is blocked for a locked element or a read-only session.
-    if (element.locked === true) return;
+    // itself is blocked for a read-only session.
     // A Participant moves and resizes only what it may (docs/specs/013-workspace/share-roles.md).
     if (d.isReadOnly && !(mode === 'move' ? d.canMove : d.canResize)?.(element)) return;
 
@@ -79,15 +78,8 @@ export function useBoxedDragHandlers({
     // (members reposition + resize proportionally around the corner opposite
     // the drag handle). A bare single-element drag falls through to the
     // singleton set.
-    // A locked member stays put (docs/specs/008-canvas/canvas-and-palette.md "Locking"): the rest of the
-    // selection moves without it, and so does a frame or lane without a locked element it holds.
-    const lockedIds = new Set(
-      d.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
-    );
-    const unlocked = (set: ReadonlySet<string>) =>
-      lockedIds.size === 0 ? set : new Set([...set].filter((id) => !lockedIds.has(id)));
     const baseIds = multiSelectedIds.has(elementId)
-      ? unlocked(multiSelectedIds)
+      ? new Set(multiSelectedIds)
       : new Set<string>([elementId]);
 
     // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
@@ -97,13 +89,11 @@ export function useBoxedDragHandlers({
     // resize re-sizes the section outline and leaves its contents put.
     const ids =
       mode === 'move'
-        ? unlocked(
-            // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
-            // A room's doors ride it too (docs/specs/009-elements/room-builder.md "Door").
-            withAttachedDoors(
-              d.activeTab.elements,
-              withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
-            ),
+        ? // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
+          // A room's doors ride it too (docs/specs/009-elements/room-builder.md "Door").
+          withAttachedDoors(
+            d.activeTab.elements,
+            withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
           )
         : baseIds;
 
@@ -154,7 +144,7 @@ export function useBoxedDragHandlers({
     const d = depsRef.current;
     if (d.formatSourceId !== null || d.formatToolActive) return;
     const element = d.activeTab.elements.find((el) => el.id === elementId);
-    if (!element || !isBoxed(element) || element.locked === true || d.isReadOnly) return;
+    if (!element || !isBoxed(element) || d.isReadOnly) return;
     // A side without anchors (a triangle's top) starts from the nearest one
     // the shape offers (docs/specs/008-canvas/arrow-anchors.md).
     const anchor = nearestOfferedAnchor(element, sideAnchor);

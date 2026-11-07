@@ -11,8 +11,8 @@
 //      arrow that runs along the axis (a bottom-to-top arrow lines up centres across) also join
 //      a centre group within LINK_TOLERANCE.
 //   3. Groups are settled largest first. A box takes the first group it belongs to and moves so
-//      that line lands on the group's grid-snapped value (or on the value a box already settled,
-//      or a locked box, holds). A box in no group just snaps its start to the grid.
+//      that line lands on the group's grid-snapped value (or on the value a box already settled
+//      holds). A box in no group just snaps its start to the grid.
 //   4. A snap that makes two boxes overlap that did not before, or moves a box part-way out of a
 //      box that held it, is undone for both.
 //
@@ -29,7 +29,7 @@ export const LINK_TOLERANCE = 16;
 type Kind = 'start' | 'centre' | 'end';
 const KINDS: Kind[] = ['centre', 'start', 'end'];
 
-type Item = { id: ElementId; lo: number; size: number; next: number; locked: boolean };
+type Item = { id: ElementId; lo: number; size: number; next: number };
 type Group = { kind: Kind; members: Item[]; links: number };
 
 const snap = (v: number) => Math.round(v / GRID) * GRID;
@@ -46,15 +46,11 @@ const loFor = (kind: Kind, line: number, size: number) =>
 const VERTICAL = new Set(['n', 's']);
 const HORIZONTAL = new Set(['e', 'w']);
 
-export function alignBoxes(
-  elements: Element[],
-  sizeSnap: (el: Element) => Element,
-  lockedIds?: ReadonlySet<ElementId>,
-): Element[] {
+export function alignBoxes(elements: Element[], sizeSnap: (el: Element) => Element): Element[] {
   const boxes = elements.filter(isBoxed);
   if (boxes.length === 0) return elements;
   const sized = new Map<ElementId, BoxedElement>();
-  for (const b of boxes) sized.set(b.id, lockedIds?.has(b.id) ? b : (sizeSnap(b) as BoxedElement));
+  for (const b of boxes) sized.set(b.id, sizeSnap(b) as BoxedElement);
   const linksX: [ElementId, ElementId][] = [];
   const linksY: [ElementId, ElementId][] = [];
   for (const el of elements) {
@@ -72,7 +68,6 @@ export function alignBoxes(
         lo: b[pick],
         size: pick === 'x' ? b.width : b.height,
         next: pick === 'x' ? sized.get(b.id)!.width : sized.get(b.id)!.height,
-        locked: lockedIds?.has(b.id) ?? false,
       })),
       links,
     );
@@ -83,13 +78,11 @@ export function alignBoxes(
     new Map(
       boxes.map((b) => [b.id, pick === 'x' ? sized.get(b.id)!.width : sized.get(b.id)!.height]),
     );
-  const movable = new Set(boxes.filter((b) => !lockedIds?.has(b.id)).map((b) => b.id));
-  keepEvenSpacing(boxes, 'y', ys, sizes('y'), xs, sizes('x'), movable);
-  keepEvenSpacing(boxes, 'x', xs, sizes('x'), ys, sizes('y'), movable);
+  keepEvenSpacing(boxes, 'y', ys, sizes('y'), xs, sizes('x'));
+  keepEvenSpacing(boxes, 'x', xs, sizes('x'), ys, sizes('y'));
 
   const next = new Map<ElementId, BoxedElement>();
   for (const b of boxes) {
-    if (lockedIds?.has(b.id)) continue;
     const s = sized.get(b.id)!;
     next.set(b.id, { ...s, x: xs.get(b.id)!, y: ys.get(b.id)! });
   }
@@ -154,7 +147,6 @@ function settleAxis(items: Item[], links: [ElementId, ElementId][]): Map<Element
   );
 
   const settled = new Map<ElementId, number>();
-  for (const it of items) if (it.locked) settled.set(it.id, it.lo);
   for (const g of groups) {
     const free = g.members.filter((m) => !settled.has(m.id));
     if (free.length === 0) continue;
@@ -183,7 +175,6 @@ function keepEvenSpacing(
   size: Map<ElementId, number>,
   crossLo: Map<ElementId, number>,
   crossSize: Map<ElementId, number>,
-  movable: Set<ElementId>,
 ): void {
   const len = pick === 'x' ? 'width' : 'height';
   const lines = new Map<number, BoxedElement[]>();
@@ -205,7 +196,7 @@ function keepEvenSpacing(
       )
         end++;
       const run = sorted.slice(start, end + 1);
-      if (run.length >= MIN_STACK && step > 0 && run.every((b) => movable.has(b.id))) {
+      if (run.length >= MIN_STACK && step > 0) {
         const snapped = snap(step);
         const pitch =
           Math.abs(snapped - step) * (run.length - 1) <= ALIGN_TOLERANCE ? snapped : step;

@@ -35,7 +35,7 @@ section is still called **Show Me**. "Element tour" is the code's and the specs'
   in hand and the Avatar tour (`TOUR_OFFER_RANK.element`).
 - **When it is on offer**, all of these hold:
   - exactly one element is selected, of a toured kind;
-  - the person may edit it (an Editor, on an unlocked element);
+  - the person may edit it (an Editor);
   - the editor is usable: hydrated, no welcome overlay, no start panel open, not an embed, not on a phone (narrower
     than 640px, or a phone held sideways: `useIsMobileViewport`).
 - **Gone once taken, back from Settings.** Starting an element's tour takes that kind off the button
@@ -108,12 +108,12 @@ menu (More, then **Tools**), so the tour keeps that step for everyone: "More" wh
 
 | Role        | Element tours                                                                                   |
 | ----------- | ----------------------------------------------------------------------------------------------- |
-| Editor      | On offer, on an unlocked element of a toured kind                                               |
+| Editor      | On offer, on an element of a toured kind                                                        |
 | Participant | Never on offer: an element tour teaches editing the element, which is not a Participant's to do |
 | Viewer      | Never on offer                                                                                  |
 
-The gate is the toured kind's own edit check on the session's `can` (for a portal, an Editor on an unlocked
-element, since its link is an Editor's), never `isReadOnly` alone.
+The gate is the toured kind's own edit check on the session's `can` (for a portal, an Editor, since its link
+is an Editor's), never `isReadOnly` alone.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 

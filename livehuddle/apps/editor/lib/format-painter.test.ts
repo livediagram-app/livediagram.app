@@ -40,7 +40,6 @@ const fullyStyledShape: BoxedElement = {
   borderRadius: 'lg',
   // Identity / content fields the painter must NOT copy.
   label: 'Source label',
-  locked: true,
 };
 
 const fullyStyledArrow: ArrowElement = {
@@ -64,7 +63,6 @@ const fullyStyledArrow: ArrowElement = {
   textStrikethrough: true,
   font: 'caveat',
   label: 'Arrow label',
-  locked: true,
 };
 
 describe('paintableBoxedFields', () => {

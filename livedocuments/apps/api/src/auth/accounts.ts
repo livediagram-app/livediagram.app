@@ -10,6 +10,7 @@ import {
   type TeamClaim,
 } from '@liveworkspace/auth-client';
 import type { Env } from '../types';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // Checks the token a browser sends, minted by the liveworkspace accounts Worker (liveworkspace.app,
 // docs/specs/014-identity/auth-and-guest-access.md): a signed-in person's access token, or a guest's token
@@ -19,7 +20,7 @@ import type { Env } from '../types';
 
 // The issuer is the accounts Worker's Better Auth base path, which is also where its keys live.
 export function accountsIssuer(env: Pick<Env, 'ACCOUNTS_URL'>): string | null {
-  return env.ACCOUNTS_URL ? `${env.ACCOUNTS_URL.replace(/\/+$/, '')}/api/auth` : null;
+  return env.ACCOUNTS_URL ? `${withoutTrailingSlashes(env.ACCOUNTS_URL)}/api/auth` : null;
 }
 
 // The identity a verified access token asserts. `email` is only ever the token's own claim, and only

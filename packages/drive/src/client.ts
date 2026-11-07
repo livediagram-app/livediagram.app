@@ -16,6 +16,7 @@ import type {
   DrivePickerTokenAnswer,
   DriveStateAnswer,
 } from './wire';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // `offline`: no answer at all (no network, or the page is leaving); `signed_out`: no token to send; `failed`: an
 // answer that wasn't one of ours.
@@ -49,7 +50,7 @@ export function createDriveClient({
   getToken,
   fetch: doFetch,
 }: DriveClientOptions) {
-  const base = baseUrl.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl);
 
   async function call<T>(path: string, method = 'GET', body?: unknown): Promise<DriveResult<T>> {
     let token: string | null;
@@ -159,7 +160,7 @@ export function withCloudSyncOpen(href: string, settings: string): string {
 
 /** Where Connect goes: liveworkspace's /drive/connect, carrying the page to come back to. */
 export function driveConnectUrl(workspaceOrigin: string, returnTo: string): string {
-  const origin = workspaceOrigin.replace(/\/+$/, '');
+  const origin = withoutTrailingSlashes(workspaceOrigin);
   return `${origin}${DRIVE_CONNECT_PATH}?${DRIVE_RETURN_PARAM}=${encodeURIComponent(returnTo)}`;
 }
 

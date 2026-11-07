@@ -2,12 +2,12 @@
 
 // docs/specs/008-canvas/layout-cleanup.md "The popover" and "Hover to see it first": the Auto-align row, and no
 // Auto Layout tile (gone from livehuddle, Work Tracker #423 part 4); a press ends the preview, runs it and closes,
-// in that order; a mouse hover previews and a touch does not; closing mid-hover reverts; an empty or locked tab
-// shows it inert under its note.
+// in that order; a mouse hover previews and a touch does not; closing mid-hover reverts; an empty tab shows it
+// inert under its note.
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ALIGN_NAME, TIDY_EMPTY_NOTE, TIDY_LOCKED_NOTE, TidyUpPopover } from './TidyUpPopover';
+import { ALIGN_NAME, TIDY_EMPTY_NOTE, TidyUpPopover } from './TidyUpPopover';
 import type { TidyUpActions } from './tidy-up-actions';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 import { loadTidyEngine } from '@/lib/tidy-engine';
@@ -27,14 +27,13 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 } as unknown as typeof ResizeObserver;
 
-function setup(opts: { blocked?: boolean; empty?: boolean; verdict?: CleanupVerdict } = {}) {
+function setup(opts: { empty?: boolean; verdict?: CleanupVerdict } = {}) {
   const calls: string[] = [];
   const actions: TidyUpActions = {
     run: vi.fn((judged: boolean) => calls.push(`run:${judged}`)),
     preview: vi.fn(() => calls.push('preview')),
     endPreview: vi.fn(() => calls.push('end')),
     assess: vi.fn(() => opts.verdict ?? { kind: 'ok' as const }),
-    blocked: opts.blocked ?? false,
   };
   const onClose = vi.fn(() => calls.push('close'));
   const view = render(
@@ -99,12 +98,9 @@ describe('TidyUpPopover', () => {
     expect(TIDY_EMPTY_NOTE).toMatch(/notes|pictures/);
   });
 
-  it.each([
-    ['an empty tab', { empty: true }, TIDY_EMPTY_NOTE],
-    ['a locked tab', { blocked: true }, TIDY_LOCKED_NOTE],
-  ])('shows Auto-align inert on %s, under its note', (_, opts, note) => {
-    const { actions } = setup(opts);
-    expect(screen.getByText(note)).toBeTruthy();
+  it('shows Auto-align inert on an empty tab, under its note', () => {
+    const { actions } = setup({ empty: true });
+    expect(screen.getByText(TIDY_EMPTY_NOTE)).toBeTruthy();
     expect((align() as HTMLButtonElement).disabled).toBe(true);
     fireEvent.pointerEnter(align(), { pointerType: 'mouse' });
     fireEvent.click(align());
@@ -153,8 +149,8 @@ describe('TidyUpPopover', () => {
     expect(second.actions.run).toHaveBeenLastCalledWith(true);
   });
 
-  it('judges nothing on a locked tab', () => {
-    const { actions } = setup({ blocked: true });
+  it('judges nothing on an empty tab', () => {
+    const { actions } = setup({ empty: true });
     expect(actions.assess).not.toHaveBeenCalled();
   });
 });

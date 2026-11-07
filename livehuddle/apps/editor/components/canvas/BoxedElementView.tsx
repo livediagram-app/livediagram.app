@@ -33,7 +33,7 @@ import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { uprightTitleFrame } from '@/components/canvas/upright-title';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
-import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
+import { SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline';
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
@@ -125,7 +125,6 @@ function BoxedElementViewImpl({
   imageContext,
   onContextSelect,
   remoteSelectors,
-  tabLocked,
   tabSummaries,
   readOnly,
   movable = true,
@@ -136,12 +135,10 @@ function BoxedElementViewImpl({
   // itself (docs/specs/007-editor/editor-app.md): a Default tab stores no element colours at all, so on
   // a dark canvas this is where the greys come from.
   const surface = useCanvasSurface();
-  const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own
   // selection) and holds it: a Viewer's selection only shows its badge. We block select / drag / edit and show a not-allowed
-  // cursor so two people don't fight over the same element. Distinct
-  // from `isLocked` above, which is the persisted user-set padlock.
+  // cursor so two people don't fight over the same element.
   const remotelyLocked = remoteSelectors.some((s) => s.holds);
   // Clockwise rotation about the element centre. The resize handles stay
   // while rotated, turned with the box: resolveBoxedResize projects the drag
@@ -235,7 +232,7 @@ function BoxedElementViewImpl({
       ? 'cursor-copy'
       : editLook.textCursor
         ? 'cursor-text'
-        : isLocked || !movable
+        : !movable
           ? 'cursor-default'
           : 'cursor-move';
 
@@ -459,7 +456,7 @@ function BoxedElementViewImpl({
             <PointerNoteOverlay
               element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              editable={isSelected && !readOnly && !isLocked}
+              editable={isSelected && !readOnly}
               onSetTip={onSetPointerTip}
             />
           ) : null}
@@ -470,7 +467,6 @@ function BoxedElementViewImpl({
             accent={accent}
             textColor={textColor}
             remoteBorderColor={remoteBorderColor}
-            isLocked={isLocked}
             isSelected={isSelected}
             readOnly={readOnly}
             onToggleChecklistItem={onToggleChecklistItem}
@@ -576,7 +572,6 @@ function BoxedElementViewImpl({
             textSize={textSize}
             alignX={alignX}
             alignY={alignY}
-            isLocked={isLocked}
             remoteBorderColor={remoteBorderColor}
             inlineIcon={inlineIcon}
             marker={marker}
@@ -611,13 +606,6 @@ function BoxedElementViewImpl({
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
           land. Cleared on drop / drag-leave. */}
-
-      {/* The element's own lock only: a locked tab or layer shows its padlock once, on the tab or the layer
-          (canvas-and-palette.md "Locking"). */}
-      {/* A locked Door shows its own upright padlock instead (room-builder.md "Locked doors"). */}
-      {element.locked === true && !(element.type === 'shape' && element.shape === 'door') ? (
-        <LockBadge />
-      ) : null}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 

@@ -13,7 +13,7 @@ checklistItems?: { text: string; done: boolean }[];
 // validate.ts bounds: ≤ 30 items, text ≤ 200 chars each
 ```
 
-Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, lock, duplicate, copy/paste, history, sync, eraser. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
+Everything else is inherited from the shape path: tap-to-drop AND draw-to-size, selection, resize, duplicate, copy/paste, history, sync, eraser. `checklist` joins `isSelfDrawingShape` (no centred label; the rows are the content). Default size 240×180; new checklists seed three unchecked starter rows, "First task", "Second task" and "Third task" (`CHECKLIST_DEFAULT_ITEMS`): concrete enough to show the affordance, cheap to overwrite.
 
 ## Visual treatment
 
@@ -21,7 +21,7 @@ A themed boxed card (fill/stroke/text follow the tab theme like any shape; unlik
 
 ## Interaction
 
-- **Clicking a checkbox on the canvas toggles that row's `done`**. Edit-role only; locked elements, locked tabs, and view-only sessions are gated. Each toggle is one `check` delta ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md)), not undoable, and the menu's row toggles send the same delta.
+- **Clicking a checkbox on the canvas toggles that row's `done`**. Edit-role only; view-only sessions are gated. Each toggle is one `check` delta ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md)), not undoable, and the menu's row toggles send the same delta.
 - **Row text editing** follows the data-shape pattern: the element context menu has a **Checklist** section (`ElementDataSections.tsx`, inside the menu's Tools flyout, + `ChecklistRowsEditor` in `context-menu-data-editors.tsx`): one text input per row with its done toggle, an "Add Row" button (capped at 30), and per-row remove. Same commit/undo semantics as the rail-label and chart-data editors.
 - Double-click on the card is deliberately inert, matching the other self-drawing shapes: the on-canvas interaction is the checkbox itself, and row editing lives in the context menu's Checklist section.
 
