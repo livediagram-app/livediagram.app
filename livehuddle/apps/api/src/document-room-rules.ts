@@ -174,5 +174,11 @@ export function answersAsSelf(
   // A Timer's or Stopwatch's press names nobody (docs/specs/009-elements/timer-and-stopwatch.md "Share roles"):
   // anyone who takes part runs it, so there is no one to impersonate.
   if (d.kind === 'piece-timer') return true;
+  // An Arcade Machine score is signed with the adder key, as a note is (docs/specs/009-elements/social-pieces.md
+  // "High Scores"), so a Participant posts only as itself.
+  if (d.kind === 'arcade-score') {
+    const score = (d as { score?: unknown }).score as { by?: unknown } | null | undefined;
+    return signer !== null && typeof score === 'object' && score !== null && score.by === signer;
+  }
   return false;
 }

@@ -63,6 +63,9 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Drop a note in a Suggestion Box                           | Yes    | Yes         | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                                  |
 | Read and remove a Suggestion Box's notes                  | Yes    | No          | No     | [Team pieces](../009-elements/team-pieces.md#suggestion-box)                                                  |
 | Start, pause, reset or set a Timer or Stopwatch           | Yes    | Yes         | No     | [Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)                                     |
+| Play the Arcade Machine, post your own score              | Yes    | Yes         | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
+| See an Arcade Machine's High Scores                       | Yes    | Yes         | Yes    | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
+| Clear an Arcade Machine's High Scores                     | Yes    | No          | No     | [Social pieces](../009-elements/social-pieces.md#high-scores)                                                 |
 | Open or close a Door                                      | Yes    | Yes         | No     | [Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)                                  |
 | Comment, reply, resolve                                   | Yes    | Yes         | No     | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
 | Pan, zoom, export                                         | Yes    | Yes         | Yes    | [Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)                                |
@@ -111,7 +114,8 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   unpinning its own ([Social pieces](../009-elements/social-pieces.md#notice-board), [Team
   pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, opening and closing a Door that is not locked
   ([Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)), a Timer or Stopwatch
-  ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Jukebox, knocking, sitting,
+  ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Arcade Machine and posting its
+  own scores ([Social pieces](../009-elements/social-pieces.md#high-scores)), playing the Jukebox, knocking, sitting,
   drinks, reactions, speech bubbles, comments and session-tool answers, as the table says.
 - **Its earlier stickies and text stay as they are.** A Space that holds stickies or text a Participant added before
   this change loads and draws them unchanged, still signed with that Participant's adder key. The Participant can no

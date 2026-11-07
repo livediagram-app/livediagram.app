@@ -90,6 +90,7 @@ export const ELEMENT_FIELD_NAMES = {
     'clockZones',
     'jukeboxSource',
     'pieceTimer',
+    'arcadeScores',
     'screenUrl',
     'railCount',
     'railLabels',

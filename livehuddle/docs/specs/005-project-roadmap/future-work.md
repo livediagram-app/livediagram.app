@@ -80,7 +80,8 @@ From [Social pieces](../009-elements/social-pieces.md):
 
 - **A built-in jukebox list.** v1 is link only. A short list of always-on streams, each checked to be CC0 or licensed
   royalty-free for any use (and its licence linked from the menu), becomes the Jukebox section's first choice.
-- **Mini-games.** A frame of pool, a foosball match, a round of darts and a game on the Arcade Machine (Work Tracker
-  #529), each for the people at it, on the Ping-Pong Table's game wire (Work Tracker #528).
+- **Mini-games.** A frame of pool, a foosball match and a round of darts, each for the people at it, on the Ping-Pong
+  Table's game wire (Work Tracker #528). The Arcade Machine's Moon Mail (Work Tracker #529) is single-player and
+  needs no wire; watching someone's run over their shoulder would.
 - **A snack from the Vending Machine.** Walking up to it hands you a can or a snack, as the Drinks Fridge does; it
   needs a held-snack drawing and a way to use a piece that blocks.

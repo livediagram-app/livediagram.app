@@ -245,6 +245,36 @@ describe('answersAsSelf, Timer and Stopwatch presses', () => {
   });
 });
 
+// docs/specs/009-elements/social-pieces.md "High Scores": an Arcade Machine score is signed with the adder key, and a
+// clear is never a Participant's.
+describe('answersAsSelf, Arcade Machine scores', () => {
+  const post = (by: unknown) => ({
+    kind: 'el-delta',
+    delta: { kind: 'arcade-score', score: { by } },
+  });
+  it('admits a score signed with the adder key only', () => {
+    expect(answersAsSelf(post('adder'), 'k', 'adder')).toBe(true);
+    expect(answersAsSelf(post('someone'), 'k', 'adder')).toBe(false);
+    expect(answersAsSelf(post('k'), 'k', null)).toBe(false);
+    expect(answersAsSelf(post(''), 'k', '')).toBe(false);
+    expect(answersAsSelf({ kind: 'el-delta', delta: { kind: 'arcade-score' } }, 'k', 'adder')).toBe(
+      false,
+    );
+    expect(
+      answersAsSelf(
+        { kind: 'el-delta', delta: { kind: 'arcade-score', score: null } },
+        'k',
+        'adder',
+      ),
+    ).toBe(false);
+  });
+  it('never admits a clear', () => {
+    expect(answersAsSelf({ kind: 'el-delta', delta: { kind: 'arcade-clear' } }, 'k', 'adder')).toBe(
+      false,
+    );
+  });
+});
+
 // docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels": a reaction names its reactor.
 describe('answersAsSelf, comment reactions', () => {
   const react = (by: unknown) => ({ kind: 'el-delta', delta: { kind: 'comment-react', by } });
