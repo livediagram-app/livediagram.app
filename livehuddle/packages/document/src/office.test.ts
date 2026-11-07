@@ -47,6 +47,7 @@ describe('the office pieces', () => {
       'door',
       'directory',
       'elevator',
+      'stairs',
       // The social pieces (docs/specs/009-elements/social-pieces.md).
       'notice-board',
       'world-clock',

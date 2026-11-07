@@ -128,6 +128,8 @@ export const SHAPE_KINDS = new Set<string>([
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   'directory',
   'elevator',
+  // Stairs (docs/specs/009-elements/stairs.md).
+  'stairs',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',
   'room-sign',

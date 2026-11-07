@@ -5415,6 +5415,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "door",
       "directory",
       "elevator",
+      "stairs",
       "screen",
       "room-sign",
       "timer",

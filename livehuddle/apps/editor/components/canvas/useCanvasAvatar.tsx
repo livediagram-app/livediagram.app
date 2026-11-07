@@ -398,6 +398,7 @@ export function useCanvasAvatar({
       // The Signpost and the Team Photo Wall (team-pieces.md) read the same store: the tab's places, who is here.
       element.shape === 'directory' ||
       element.shape === 'elevator' ||
+      element.shape === 'stairs' ||
       element.shape === 'signpost' ||
       element.shape === 'photo-wall'
         ? { targetName: null, wayfinding }

@@ -360,7 +360,7 @@ function makeWayfinding(): Wayfinding & { walkThere: ReturnType<typeof vi.fn> } 
   const walkThere = vi.fn();
   return {
     store,
-    actions: { walkThere, go: vi.fn(), loadFloors: vi.fn(), closeElevator: vi.fn() },
+    actions: { walkThere, go: vi.fn(), loadFloors: vi.fn(), closePanel: vi.fn(), climb: vi.fn() },
     walkThere,
   };
 }

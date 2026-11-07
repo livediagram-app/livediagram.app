@@ -359,6 +359,15 @@ export function ElevatorIcon({ size = 14 }: IconSizeProps = {}) {
   );
 }
 
+// Stairs (docs/specs/009-elements/stairs.md): a flight's profile rising to the right, an up arrow over its foot.
+export function StairsIcon({ size = 14 }: IconSizeProps = {}) {
+  return (
+    <Glyph size={size} units={24}>
+      <path d="M3 20.5h4.5V16H12v-4.5h4.5V7H21M6.5 11.5V3.5M4 6l2.5-2.5L9 6" />
+    </Glyph>
+  );
+}
+
 // A selection-mode glyph drawn from the data (MODE_GLYPHS in @livehuddle/document:
 // the shared @liveworkspace/icons table), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).

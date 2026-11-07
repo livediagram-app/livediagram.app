@@ -431,6 +431,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Wayfinding (docs/specs/009-elements/directory.md, elevator.md), beside the office.
     'Directory',
     'Elevator',
+    'Stairs',
     // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md), beside the office.
     'Screen',
     'Room-sign',

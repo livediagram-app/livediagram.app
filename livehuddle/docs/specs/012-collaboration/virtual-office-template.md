@@ -170,7 +170,8 @@ The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor p
   are always walking) arrives on the pad rather than in the middle of the view.
 - **Named Elevators.** Every floor has its Elevators named after the floor or their place ("Lobby Lift", "North
   Lift"), so the Elevator panel reads like a building's directory. The Co-working Tower's lifts stand in the same place
-  on every floor.
+  on every floor, and so do its [Stairs](../009-elements/stairs.md), beside the North Lift, so a flight up or down lands
+  you in the same spot a floor away.
 - **Each floor is its own Space plan**: a heading naming the floor, closed rooms with a Door and a Room Sign each, and
   the same aisle and door rules as the other Spaces. A floor's tab is named after the floor ("Lobby", "Suites",
   "Rooftop"), and each floor has its own floor pattern.

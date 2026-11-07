@@ -146,6 +146,7 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a button over the drawing.
   'directory',
   'elevator',
+  'stairs',
 ]);
 
 /** The wrapper's role (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements"): a picture

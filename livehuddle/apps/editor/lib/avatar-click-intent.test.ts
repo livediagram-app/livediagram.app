@@ -29,6 +29,7 @@ const ALL_KINDS = [...SHAPE_KINDS, ...[...ELEMENT_TYPES].filter((t) => t !== 'sh
 const IN_PLACE = [
   'directory',
   'elevator',
+  'stairs',
   'portal',
   'mode-button',
   'focus-button',
