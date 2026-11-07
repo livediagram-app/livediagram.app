@@ -130,8 +130,13 @@ export function buildHotelLobby(cx: number, cy: number): Element[] {
       subtitle:
         'Three floors to stay on: the lobby, bar and ballroom here, the suites and the rooftop by the Lobby Lift.',
     },
-    gateAt: LOBBY_MID,
-    hint: 'You arrive on the Avatar Pad by the front door. The Lobby Lift takes you up to the suites and the rooftop.',
+    // In the lobby, before the reception desk, between the columns and the Directory.
+    arrival: {
+      dx: -68,
+      dy: 476,
+      hintW: 240,
+      hint: 'You arrive on the Avatar Pad in the lobby. The Lobby Lift takes you up to the suites and the rooftop.',
+    },
     extra: (left, top) => [
       createShape('focus-button', left + BALLROOM.x + 580, top + BALLROOM.y + 60),
     ],

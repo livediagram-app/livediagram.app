@@ -147,8 +147,12 @@ export function buildTowerGround(cx: number, cy: number): Element[] {
       subtitle:
         'Three floors to work on: hot desks and the cafe here, phone booths on Level 2, events on Level 3.',
     },
-    gateAt: GROUND_MID,
-    hint: 'You arrive on the Avatar Pad by the entrance. The North and South Lifts go to every floor.',
+    // In the lobby, between the Hot Desks' door and the Lifts.
+    arrival: {
+      dx: -254,
+      dy: 350,
+      hint: 'You arrive on the Avatar Pad in the lobby. The North and South Lifts go to every floor.',
+    },
   });
 }
 

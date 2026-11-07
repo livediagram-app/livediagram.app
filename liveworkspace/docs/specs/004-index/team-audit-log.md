@@ -73,8 +73,27 @@ A year (`TEAM_AUDIT_RETENTION_MS`, 365 days) from when it happened, then deleted
 
 ## Who reads it
 
-A team's admins only, checked against accounts on each read, as a team webhook's are; a member, a guest, an app or the
-Drive mirror acting for someone is refused. Members keep the Timeline's Team Activity, which is unchanged.
+A team's admins only, checked against accounts on each read, as a team webhook's are; a member, someone outside the
+team, a guest, an app or the Drive mirror acting for someone is refused (`403 not_team_admin`), and when accounts
+can't say who runs the team the read is refused too (`503 team_audit_unavailable`), never answered from a token's
+hour-old claim. Members keep the Timeline's Team Activity, which is unchanged.
 
-Still to come (Work Tracker #160): the admins' read, with filters by person, kind and date and a CSV export (part 2),
-and the Activity section in team settings that shows it (part 3). Until then nothing reads the log.
+`GET /team-audit?team=<id>` answers the team's log, newest first, a page at a time:
+
+- **Filters**, each optional and combinable: `person` (who did it), `kind` (one of the kinds above), `from` and `to`
+  (milliseconds; `from` inclusive, `to` exclusive).
+- **Pages**: `limit` rows (50 by default, at most 100) and `nextCursor` for the next page, or null at the end.
+- **Each row**: its id, kind and app; who did it (`actor`: their id and name) and whom a team event is about
+  (`subject`); the document's id and its name then; the event's detail; and when.
+- **Names come from accounts** on each read, as the person is named now, members who have left included (they still
+  have an account). A name accounts doesn't know falls back to the one accounts sent with the event; a closed
+  account's rows read `deleted` with no name, as everywhere else.
+
+`GET /team-audit?team=<id>&format=csv` is the same read as a CSV file (the same filters), for a spreadsheet: one row
+per event, newest first, with the time (UTC, ISO 8601), kind, app, who did it, whom it is about, the document and the
+detail, each with its id. One file holds at most 10,000 rows; when more match, the response says where the next file
+starts (`X-Next-Cursor`, passed back as `cursor`), so a year of a busy team is a few files, or a narrower date range.
+A cell a spreadsheet would run as a formula is opened with an apostrophe.
+
+Still to come (Work Tracker #160): the Activity section in team settings that shows it, with its filters and Export
+CSV (part 3).

@@ -101,10 +101,11 @@ owner 2026-11-05): before, it added stickies, text and images and wrote on other
 
 Piece fields a Participant may change, on anyone's element:
 
-| Element                | Fields                                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| `shape` `door`         | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
-| `shape` `notice-board` | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
+| Element                 | Fields                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| `shape` `door`          | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
+| `shape` `notice-board`  | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
+| `shape` `calendar-wall` | `noticeNotes`, as a `notice-board` (`holdsNotes`)                                                     |
 
 Every other field stays as stored, so a stale or crafted update that also moves, recolours or rewrites an element
 lands as its piece change alone, or as nothing (`changed: false`).

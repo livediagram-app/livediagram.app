@@ -267,12 +267,27 @@ const V3 = migrationSchema();
 // run once by the version row; every key already there reads as never tried.
 const V4 = outboxRetrySchema();
 
+// A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "Suggestion Box"), kept beside the content, never in
+// the box element: each is its text and its UTC day, and nothing about who dropped it. Listed by the box, newest
+// first (rowid); a tab's go with the tab (db/tabs.ts deleteTabRow).
+const V5 = `
+CREATE TABLE IF NOT EXISTS suggestions (
+  id          TEXT PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  tab_id      TEXT NOT NULL,
+  element_id  TEXT NOT NULL,
+  text        TEXT NOT NULL,
+  day         TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS suggestions_by_box ON suggestions (document_id, tab_id, element_id);
+`;
+
 // A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
 // `{ id, app, itemId }` beside the tab's name, never in its body. A plain ALTER, run once by the version row; every
 // tab already there reads as not connected.
-const V5 = TAB_CONNECTION_SCHEMA;
+const V6 = TAB_CONNECTION_SCHEMA;
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

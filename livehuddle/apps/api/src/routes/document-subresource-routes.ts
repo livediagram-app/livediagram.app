@@ -14,6 +14,7 @@ import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
+import { handleSuggestionRoutes } from './suggestion-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import {
@@ -181,6 +182,9 @@ export async function handleDocumentSubresources(
   // The comment endpoints (docs/specs/024-agents/agent-presence.md "Comments").
   const comments = await handleCommentRoutes(ctx);
   if (comments) return comments;
+  // A Suggestion Box's notes (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+  const suggestions = await handleSuggestionRoutes(ctx);
+  if (suggestions) return suggestions;
   // Agent presence (docs/specs/024-agents/agent-presence.md "Presence").
   const presence = await handleAgentPresenceRoute(ctx);
   if (presence) return presence;

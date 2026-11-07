@@ -97,6 +97,12 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'hot-desk': W,
   'pet-bed': W,
   'reception-desk': W,
+  // The team pieces (docs/specs/009-elements/team-pieces.md): the calendar and the box open, the signpost walks to its
+  // top board's place; the photo wall is walked to, like a picture.
+  'calendar-wall': U,
+  'suggestion-box': U,
+  signpost: U,
+  'photo-wall': W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,
@@ -197,6 +203,8 @@ export const NO_READER_KINDS: ReadonlySet<AvatarClickKind> = new Set<AvatarClick
   'mode-button',
   'timer',
   'stopwatch',
+  // A Signpost with no places yet has no arrow to press (team-pieces.md "Signpost").
+  'signpost',
 ]);
 
 /** What a walking click on a piece does, once its intent and whether it has a main action right now are known. */

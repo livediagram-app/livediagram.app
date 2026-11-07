@@ -26,6 +26,7 @@ import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleWebhooks } from './webhooks/routes';
+import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
@@ -56,6 +57,7 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   trash: handleTrash,
   timeline: handleTimeline,
   webhooks: (ctx) => handleWebhooks(ctx),
+  'team-audit': (ctx) => handleTeamAudit(ctx),
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -143,6 +145,7 @@ const routeLabel = createApiRouteLabel(
     'migration',
     'handoff',
     'webhooks',
+    'team-audit',
     'test',
     'deliveries',
     'card-moves',

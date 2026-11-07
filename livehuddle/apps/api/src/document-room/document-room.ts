@@ -229,8 +229,13 @@ const MAINTENANCE_KEY = 'maintenance-at';
 // The sample streams this room relays and coalesces (docs/specs/015-api/api.md "A busy room bounds its presence
 // fan-out"): the walking characters and cursors, plus proximity audio's talking level
 // (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds bytes to frames the
-// walkers already cause, never frames.
-const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([...RELAYED_SAMPLE_KINDS, 'avatar-voice']);
+// walkers already cause, never frames; and a game's paddle (docs/specs/009-elements/social-pieces.md "The wire"),
+// which only its tab can see.
+const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([
+  ...RELAYED_SAMPLE_KINDS,
+  'avatar-voice',
+  'game-input',
+]);
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).

@@ -3,9 +3,7 @@
 // floors lie under everything. The Virtual Office and the space templates are tables of these.
 
 import {
-  AVATAR_PAD_DEFAULT_SIZE,
   createShape,
-  createText,
   isFloorShape,
   roomWithDoorPiece,
   type ChairFacing,
@@ -13,10 +11,6 @@ import {
   type RoomDoor,
   type ShapeKind,
 } from '@livehuddle/document';
-import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
-import { AVATAR_SIZE_SCALE } from '@liveworkspace/avatar/size-scale';
-import { avatarFigureHeight } from '@liveworkspace/avatar/walk';
-import { CANVAS_TONES } from './template-inks';
 import { heading } from './template-session-parts';
 
 // `w`/`h` override the piece's default size (keep its proportion: the drawings are aspect locked).
@@ -106,64 +100,6 @@ export function furnishRooms(
   return [...ground, ...walls, ...floor, ...doors, ...furniture];
 }
 
-// The Space's Avatar Pad, its size as placed: a way in tucked into a column sizes its hint round it.
-export const WAY_IN_PAD_W = AVATAR_PAD_DEFAULT_SIZE.width;
-const PAD_W = WAY_IN_PAD_W;
-const PAD_H = AVATAR_PAD_DEFAULT_SIZE.height;
-const HINT_W = 520;
-
-// Half a Space's Avatar Pad: a gate's pad centred under it has its right edge this far past the gate's middle.
-export const WAY_IN_HALF = PAD_W / 2;
-// How far a Space's pad stands below the wall, fence or site edge above it (docs/specs/009-elements/avatar-pad.md
-// "Every Space and blank tab has one", D215): the character standing on its core (32 px under the pad's top) is a
-// Regular figure 99 px tall, so its head stays 5 px clear of the wall.
-export const WAY_IN_CLEAR = 72;
-
-/**
- * The least pad centre (canvas y) at which everyone arriving stands clear of `above` by `gap`: a Regular character,
- * feet on the pad's core, its head and whatever it wears over it (avatarFigureHeight) below that edge.
- */
-export function padCentreClearBelow(above: number, gap = 16): number {
-  const feet = avatarPadCore({ x: 0, y: 0, ...AVATAR_PAD_DEFAULT_SIZE }).y;
-  return above + gap + avatarFigureHeight(AVATAR_SIZE_SCALE.regular) - feet + PAD_H / 2;
-}
-
-/**
- * The way in (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): the Space's Avatar Pad, where
- * everyone arrives, right-aligned to `right` and standing WAY_IN_CLEAR below `wallY` (the bottom of the wall, fence or
- * site above it), with a line saying what to do, ending 20 px left of it and centred on it. It replaced the Walk In
- * Selection Mode button that stood here.
- */
-export function wayIn(right: number, wallY: number, hint: string): Element[] {
-  return wayInBeside(right, wallY + WAY_IN_CLEAR + PAD_H / 2, hint);
-}
-
-// A tucked hint's height: a narrow column wraps the line over several rows.
-const TUCKED_HINT_H = 112;
-
-/**
- * The way in centred on `cy` rather than hung below a wall: for a pad on open floor beside the plan, with nothing
- * above it to keep clear of. A narrower `hintW` (a way in tucked into a column beside the plan, the Team Pod's under
- * its board) wraps the line over TUCKED_HINT_H.
- */
-export function wayInBeside(right: number, cy: number, hint: string, hintW = HINT_W): Element[] {
-  const padY = cy - PAD_H / 2;
-  const hintH = hintW < HINT_W ? TUCKED_HINT_H : 64;
-  return [
-    {
-      ...createText(right - PAD_W - 20 - hintW, cy - hintH / 2),
-      width: hintW,
-      height: hintH,
-      label: hint,
-      textSize: 'sm',
-      textAlignX: 'right',
-      // On the canvas beside the room: a slate that reads in either half (#475569 sank into the dark one).
-      textColor: CANVAS_TONES.slate,
-    },
-    createShape('avatar-pad', right - PAD_W, padY),
-  ];
-}
-
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
 
 /**
@@ -189,8 +125,8 @@ export function officePlan(
   ];
 }
 
-// A space's heading band above its plan, and the band under it the Avatar Pad waits in (its pad and how-to line run
-// a little past it: wayIn).
+// A space's heading band above its plan, and the margin under it (where its Avatar Pad waited before it moved into
+// the plan: template-arrival.ts), which keeps every plan centred where it always was.
 export const SPACE_HEAD = 96;
 export const SPACE_BELOW = 120;
 

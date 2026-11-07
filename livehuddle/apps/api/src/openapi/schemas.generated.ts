@@ -3741,6 +3741,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color": {
         "$ref": "#/components/schemas/NoteColor"
       },
+      "day": {
+        "type": "string"
+      },
       "id": {
         "type": "string"
       },
@@ -5405,6 +5408,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hot-desk",
       "pet-bed",
       "reception-desk",
+      "calendar-wall",
+      "suggestion-box",
+      "signpost",
+      "photo-wall",
       "door",
       "directory",
       "elevator",
@@ -5962,6 +5969,43 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height"
+    ],
+    "type": "object"
+  },
+  "Suggestion": {
+    "additionalProperties": false,
+    "description": "One note in a Suggestion Box.",
+    "properties": {
+      "day": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "day"
+    ],
+    "type": "object"
+  },
+  "SuggestionsResponse": {
+    "additionalProperties": false,
+    "description": "`GET /api/documents/:id/tabs/:tabId/suggestions?elementId=`: the box's notes, newest first.",
+    "properties": {
+      "suggestions": {
+        "items": {
+          "$ref": "#/components/schemas/Suggestion"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "suggestions"
     ],
     "type": "object"
   },

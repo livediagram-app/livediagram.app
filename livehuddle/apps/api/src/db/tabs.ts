@@ -366,6 +366,11 @@ export async function deleteTabRow(
     env.DOCUMENT_DB.prepare(
       'DELETE FROM tabs WHERE id = ? AND NOT EXISTS (SELECT 1 FROM document_tabs WHERE tab_id = ?)',
     ).bind(tabId, tabId),
+    // Its Suggestion Boxes' notes go with it (docs/specs/009-elements/team-pieces.md "Suggestion Box").
+    env.DOCUMENT_DB.prepare('DELETE FROM suggestions WHERE document_id = ? AND tab_id = ?').bind(
+      documentId,
+      tabId,
+    ),
   ]);
   const row = (
     unlinked as { results?: { data?: string | null; connection?: string | null }[] } | undefined

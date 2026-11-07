@@ -76,6 +76,7 @@ export const ROOT_TYPES = [
   'TemplateCatalogueResponse',
   'IconSearchResponse',
   'UnfurlResult',
+  'SuggestionsResponse',
 ];
 
 // Code names that differ from the published component name. The document's TypeScript type is

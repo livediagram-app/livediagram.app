@@ -98,6 +98,10 @@ describe('the office pieces', () => {
       'hot-desk',
       'pet-bed',
       'reception-desk',
+      'calendar-wall',
+      'suggestion-box',
+      'signpost',
+      'photo-wall',
     ]);
     const sized = [
       'room',

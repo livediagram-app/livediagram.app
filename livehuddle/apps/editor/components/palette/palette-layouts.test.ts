@@ -83,6 +83,7 @@ describe('palette layouts', () => {
       'tools:focus-button',
       'tools:avatar-pad',
       'tools:directory',
+      'tools:signpost',
       'tools:elevator',
       'tools:mode-avatar',
     ]);
@@ -204,6 +205,9 @@ describe('palette layouts', () => {
       'tools:room-sign',
       'tools:notice-board',
       'tools:world-clock',
+      'tools:calendar-wall',
+      'tools:suggestion-box',
+      'tools:photo-wall',
       // docs/specs/009-elements/timer-and-stopwatch.md: placed in a room, not a cluster button.
       'tools:timer',
       'tools:stopwatch',

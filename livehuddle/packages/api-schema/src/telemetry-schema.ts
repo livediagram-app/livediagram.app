@@ -485,6 +485,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Hot-desk',
     'Pet-bed',
     'Reception-desk',
+    // The team pieces (docs/specs/009-elements/team-pieces.md).
+    'Calendar-wall',
+    'Suggestion-box',
+    'Signpost',
+    'Photo-wall',
     // The Timer and Stopwatch (docs/specs/009-elements/timer-and-stopwatch.md), beside the meeting pieces.
     'Timer',
     'Stopwatch',

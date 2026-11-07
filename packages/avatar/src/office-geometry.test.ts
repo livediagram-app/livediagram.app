@@ -9,6 +9,7 @@ import {
   isRoomDoor,
   isSceneryShape,
   isSeatingShape,
+  isWallPieceShape,
   seatsACharacter,
   officeFootprint,
   ROOM_BACK_FACE,
@@ -168,5 +169,35 @@ describe('the pod, the bar and the garden', () => {
     for (const kind of ['plant', 'bookshelf', 'bar', 'outdoor-plant', 'tree'])
       expect(isSceneryShape(kind)).toBe(true);
     expect(isSceneryShape('drinks-fridge')).toBe(false);
+  });
+});
+
+// livehuddle docs/specs/009-elements/team-pieces.md
+describe('the team pieces', () => {
+  const rounded = (el: Parameters<typeof officeFootprint>[0]) => {
+    const r = officeFootprint(el);
+    return (
+      r && Object.fromEntries(Object.entries(r).map(([k, v]) => [k, Math.round(v * 100) / 100]))
+    );
+  };
+  it('hangs the calendar and the photo wall on the wall', () => {
+    expect(isWallPieceShape('calendar-wall')).toBe(true);
+    expect(isWallPieceShape('photo-wall')).toBe(true);
+  });
+
+  it('blocks the foot of the suggestion box and of the signpost', () => {
+    expect(isWallPieceShape('signpost')).toBe(false);
+    expect(rounded({ shape: 'suggestion-box', x: 0, y: 0, width: 64, height: 112 })).toEqual({
+      x: 14,
+      y: 98,
+      width: 36,
+      height: 10,
+    });
+    expect(rounded({ shape: 'signpost', x: 0, y: 0, width: 120, height: 144 })).toEqual({
+      x: 50,
+      y: 126,
+      width: 20,
+      height: 12,
+    });
   });
 });

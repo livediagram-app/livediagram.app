@@ -20,7 +20,7 @@ import {
 import { podInterior } from '@liveworkspace/avatar/pod';
 import { doorLine, pointInPolygon } from '@liveworkspace/avatar/room-outline';
 import { avatarPadCore } from '@liveworkspace/avatar/pad-art';
-import { avatarScale } from '@liveworkspace/avatar/config';
+import { avatarScale, type AvatarConfig } from '@liveworkspace/avatar/config';
 import { avatarSpawnBelow } from '@liveworkspace/avatar/walk';
 
 export type WayPoint = { x: number; y: number };
@@ -339,11 +339,18 @@ export type WayPerson = {
   /** The place they stand in on the current tab; null for Around (or another tab, where it is not known). */
   placeId: string | null;
   self?: boolean;
+  /** The character they walk as, when this screen has seen it (the Team Photo Wall's portraits). */
+  config?: AvatarConfig;
 };
+
+const lookKey = (c: AvatarConfig | undefined) =>
+  c ? `${c.gender}.${c.clothing}.${c.hair}.${c.hairColour ?? ''}` : '';
 
 /** A by-value key for a people list: what the Directory shows, so a walk inside one room changes nothing. */
 export function peopleKey(people: readonly WayPerson[]): string {
-  return people.map((p) => `${p.id}|${p.tabId}|${p.placeId ?? ''}|${p.name}|${p.color}`).join('\n');
+  return people
+    .map((p) => `${p.id}|${p.tabId}|${p.placeId ?? ''}|${p.name}|${p.color}|${lookKey(p.config)}`)
+    .join('\n');
 }
 
 /**
@@ -354,8 +361,14 @@ export function peopleKey(people: readonly WayPerson[]): string {
 export function whoIsWhere(input: {
   activeTabId: string;
   findPlace: (at: WayPoint) => string | null;
-  self: { id: string; name: string; color: string; feet: WayPoint | null };
-  peers: readonly { id: string; name: string; color: string; feet: WayPoint }[];
+  self: { id: string; name: string; color: string; feet: WayPoint | null; config?: AvatarConfig };
+  peers: readonly {
+    id: string;
+    name: string;
+    color: string;
+    feet: WayPoint;
+    config?: AvatarConfig;
+  }[];
   byTab: ReadonlyMap<string, readonly { id: string; name: string; color: string }[]>;
 }): WayPerson[] {
   const { activeTabId, findPlace, self, peers, byTab } = input;
@@ -368,12 +381,20 @@ export function whoIsWhere(input: {
     tabId: activeTabId,
     placeId: self.feet ? findPlace(self.feet) : null,
     self: true,
+    ...(self.config ? { config: self.config } : null),
   });
   seen.add(self.id);
   for (const peer of peers) {
     if (seen.has(peer.id)) continue;
     seen.add(peer.id);
-    out.push({ ...peer, tabId: activeTabId, placeId: findPlace(peer.feet) });
+    out.push({
+      id: peer.id,
+      name: peer.name,
+      color: peer.color,
+      tabId: activeTabId,
+      placeId: findPlace(peer.feet),
+      ...(peer.config ? { config: peer.config } : null),
+    });
   }
   for (const [tabId, people] of byTab) {
     for (const p of people) {
@@ -383,4 +404,40 @@ export function whoIsWhere(input: {
     }
   }
   return out;
+}
+
+// --- The Signpost --------------------------------------------------------------------------------------------
+
+/** One board of a Signpost: the place it names and the way its arrow points. */
+export type SignpostBoard = { place: SpacePlace; dir: 'left' | 'right' };
+
+/** Where a Signpost stands: the foot of its post, the middle of its blocking footprint (office-geometry). */
+export function signpostFoot(el: WayBox): WayPoint {
+  return { x: el.x + el.width / 2, y: el.y + (el.height * 132) / 144 };
+}
+
+/**
+ * A Signpost's boards (docs/specs/009-elements/team-pieces.md "Signpost"): the `max` places whose arrival is nearest
+ * its foot, nearest first (ties in the Directory's reading order), each pointing right when its arrival lies right of
+ * the post. One pass that keeps the best `max`, so a tab of many rooms costs a scan, never a sort.
+ */
+export function signpostBoards(
+  places: readonly SpacePlace[],
+  foot: WayPoint,
+  max: number,
+): SignpostBoard[] {
+  if (max <= 0) return [];
+  const best: { place: SpacePlace; d: number }[] = [];
+  for (const place of places) {
+    const d = (place.arrival.x - foot.x) ** 2 + (place.arrival.y - foot.y) ** 2;
+    if (best.length === max && d >= best[max - 1]!.d) continue;
+    let i = best.length;
+    while (i > 0 && best[i - 1]!.d > d) i -= 1;
+    best.splice(i, 0, { place, d });
+    if (best.length > max) best.pop();
+  }
+  return best.map(({ place }) => ({
+    place,
+    dir: place.arrival.x > foot.x ? 'right' : 'left',
+  }));
 }

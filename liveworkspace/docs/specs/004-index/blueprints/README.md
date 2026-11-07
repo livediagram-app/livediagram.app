@@ -10,7 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./inbox.md - when an app pushes a summary, threads, actions or forms, or when building the Inbox
 - ./timeline.md - when recording or reading Timeline events
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
-- ./team-audit-log.md - when working on the team audit log: its table, the write path beside each Timeline event, the sweep and anonymising
+- ./team-audit-log.md - when working on the team audit log: its table, the write path beside each Timeline event, the sweep, anonymising and the admins' read and CSV
 - ./webhooks.md - when working on webhooks: the tables, the outbox statement, the dispatcher, the address check, the messages
 - ./trash.md - when working on the Trash, purges, the daily sweep or closing an account
 - ./default-folders.md - when working on where a new item lands by default

@@ -116,6 +116,11 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'hot-desk': 'Hot desk',
   'pet-bed': 'Pet bed',
   'reception-desk': 'Reception desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall': 'Calendar wall',
+  'suggestion-box': 'Suggestion box',
+  signpost: 'Signpost',
+  'photo-wall': 'Team photo wall',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */

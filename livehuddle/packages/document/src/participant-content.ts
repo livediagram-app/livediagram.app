@@ -8,7 +8,7 @@
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
 import { isValidElement } from './validate';
-import { mergeNoticeNotes } from './office-social';
+import { holdsNotes, mergeNoticeNotes } from './office-social';
 
 export type ParticipantRefusal =
   | 'tab-locked'
@@ -59,9 +59,9 @@ function mergePieces(stored: Element, incoming: Element, adderKey: string | null
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): a Participant opens and closes
   // any door, and changes nothing else about it.
   if (stored.type === 'shape' && stored.shape === 'door') copyField(next, inc, 'doorClosed');
-  // A notice board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"): a Participant pins notes it
-  // signs and unpins those, never anyone else's.
-  if (stored.type === 'shape' && stored.shape === 'notice-board') {
+  // A notice board's notes (docs/specs/009-elements/social-pieces.md "Notice Board"), and a Calendar Wall's
+  // (team-pieces.md): a Participant pins notes it signs and unpins those, never anyone else's.
+  if (stored.type === 'shape' && holdsNotes(stored.shape)) {
     const notes = mergeNoticeNotes(stored.noticeNotes, inc.noticeNotes, adderKey);
     if (notes) next.noticeNotes = notes;
     else delete next.noticeNotes;

@@ -159,8 +159,13 @@ export function buildSchoolQuad(cx: number, cy: number): Element[] {
       subtitle:
         'Learn together: the lecture in the hall, groups in the classrooms, quiet in the library and lunch in the canteen.',
     },
-    gateAt: MID,
-    hint: 'You arrive on the Avatar Pad by the gate. The Directory by it walks you to any room.',
+    // In the Lecture Hall, in the aisle between its first two rows, facing the stage.
+    arrival: {
+      dx: 0,
+      dy: -318,
+      hintW: 360,
+      hint: 'You arrive on the Avatar Pad in the Lecture Hall. The Directory by the gate walks you to any room.',
+    },
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 580, top + HALL.y + 60)],
   });
 }

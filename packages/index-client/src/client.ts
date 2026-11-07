@@ -13,6 +13,7 @@ import {
   ITEM_GRANT_HEADER,
   SHARE_CODE_HEADER,
   SHARE_PASSWORD_HEADER,
+  TEAM_AUDIT_NEXT_CURSOR_HEADER,
   type App,
   type IndexErrorCode,
 } from './constants';
@@ -40,6 +41,9 @@ import type {
   ShareResolution,
   ItemRead,
   SharedWithItem,
+  TeamAuditCsv,
+  TeamAuditPage,
+  TeamAuditQuery,
   TimelinePage,
   TimelineQuery,
   AppTimelineEvent,
@@ -74,6 +78,12 @@ export class IndexError extends Error {
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;
+
+// A refusal's `{ error }` as an IndexError; `unknown` when the body names none.
+function refusal(status: number, parsed: unknown): IndexError {
+  const error = (parsed as { error?: unknown } | null)?.error;
+  return new IndexError(status, typeof error === 'string' ? error : 'unknown');
+}
 
 // `?a=1&b=2` from the set values, or '' when none is set.
 export function queryString(query: Query = {}): string {
@@ -132,6 +142,24 @@ export function createIndexClient({
   const base = baseUrl.replace(/\/+$/, '');
 
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
+    const res = await send(path, options);
+    if (res.status === 204) return undefined as T;
+    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
+    if (!res.ok) throw refusal(res.status, parsed);
+    return parsed as T;
+  }
+
+  // A read answered as text (a CSV file), with its response for the headers.
+  async function callText(
+    path: string,
+    options: CallOptions = {},
+  ): Promise<{ text: string; res: Response }> {
+    const res = await send(path, options);
+    if (!res.ok) throw refusal(res.status, await res.json().catch(() => null));
+    return { text: await res.text(), res };
+  }
+
+  async function send(path: string, options: CallOptions): Promise<Response> {
     const headers = new Headers(fixedHeaders);
     const token = await getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -146,19 +174,12 @@ export function createIndexClient({
       body = JSON.stringify(options.body);
     }
     // Looked up per call so a test or a polyfill installed later is used.
-    const res = await (doFetch ?? fetch)(`${base}${path}${queryString(options.query)}`, {
+    return (doFetch ?? fetch)(`${base}${path}${queryString(options.query)}`, {
       method: options.method ?? 'GET',
       headers,
       body,
       signal: options.signal,
     });
-    if (res.status === 204) return undefined as T;
-    const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
-    if (!res.ok) {
-      const code = typeof parsed?.error === 'string' ? parsed.error : 'unknown';
-      throw new IndexError(res.status, code);
-    }
-    return parsed as T;
   }
 
   return {
@@ -308,6 +329,15 @@ export function createIndexClient({
       call<{ queued: true }>(`/webhooks/${enc(id)}/test`, { method: 'POST' }),
     webhookDeliveries: (id: string) =>
       call<{ deliveries: WebhookDelivery[] }>(`/webhooks/${enc(id)}/deliveries`),
+
+    // The team audit log (team-audit-log.md "Who reads it"): a team admin's alone, newest first, a page at a time,
+    // or as a CSV file of up to TEAM_AUDIT_CSV_MAX rows.
+    teamAudit: (query: TeamAuditQuery, options: RequestOptions = {}) =>
+      call<TeamAuditPage>('/team-audit', { query, signal: options.signal }),
+    teamAuditCsv: async (query: Omit<TeamAuditQuery, 'limit'>): Promise<TeamAuditCsv> => {
+      const { text, res } = await callText('/team-audit', { query: { ...query, format: 'csv' } });
+      return { csv: text, nextCursor: res.headers.get(TEAM_AUDIT_NEXT_CURSOR_HEADER) };
+    },
 
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>

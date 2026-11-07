@@ -35,3 +35,6 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX28 | team-audit-log  | the daily run deletes at most 5,000 audit rows past the year, the oldest first.                                                              |
 | IDX29 | team-audit-log  | a team item deleted for good by the Trash's own 30-day purge writes no audit row; its `trashed` row says who sent it there.                  |
 | IDX30 | team-audit-log  | a deleted team's audit rows stay until the year takes them; nobody can read them, as the team has no admins.                                 |
+| IDX31 | team-audit-log  | the admins' read pages 50 rows by default, at most 100; a CSV file holds at most 10,000 rows, read 2,000 a query.                            |
+| IDX32 | team-audit-log  | the read's `person` filter is who did it, not whom an event is about; `kind` takes one kind.                                                 |
+| IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |

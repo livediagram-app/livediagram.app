@@ -402,6 +402,7 @@ export * from './office-workday';
 export * from './pet-wander';
 export * from './room-presets';
 export * from './office-wayfinding';
+export * from './office-team';
 // Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
 export * from './call-geometry';
 // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).

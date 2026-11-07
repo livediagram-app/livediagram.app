@@ -168,6 +168,11 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'hot-desk',
   'pet-bed',
   'reception-desk',
+  // The team pieces (docs/specs/009-elements/team-pieces.md).
+  'calendar-wall',
+  'suggestion-box',
+  'signpost',
+  'photo-wall',
   'door',
   'directory',
   'elevator',
@@ -306,6 +311,10 @@ export function svgBehaviourFace(
     case 'hot-desk':
     case 'pet-bed':
     case 'reception-desk':
+    case 'calendar-wall':
+    case 'suggestion-box':
+    case 'signpost':
+    case 'photo-wall':
       return furnitureArt(el, chairSeatFill(el.fillColor, stroke), stroke);
     // A pond (docs/specs/009-elements/social-pieces.md "Pond"): its water in the fill, drawn to its size.
     case 'pond':

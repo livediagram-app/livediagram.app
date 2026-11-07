@@ -26,6 +26,10 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/lib/jukebox-listening.ts`                        | The viewer's off / on / muted choice (this device), the shared audio element                                    |
 | `apps/editor/components/palette/SocialMenuSections.tsx`       | `WorldClockMenuSection`, `JukeboxMenuSection`                                                                   |
 | `apps/editor/app/social-motion.css`                           | The CSS loops, none under reduced motion                                                                        |
+| `packages/api-schema/src/table-game.ts`                       | The game wire: `GameInputOp`, `GameEventOp`, `parseGameInput`, `parseGameEvent`, `GAME_INPUT_MS`                |
+| `apps/api/src/room-op-gate.ts`                                | Drops a Viewer's `game-input` and `game-event`, and a malformed one from anyone                                 |
+| `apps/editor/lib/table-games/ping-pong.ts`                    | The game as pure functions: the ball's flight, a strike, service and winning, `applyPongEvent`                  |
+| `apps/editor/lib/table-games/table-game-inbox.ts`             | `receiveGameOp` (from the room connection), `onGameOp` (the table showing a game)                               |
 
 ## Domain and naming
 
@@ -37,6 +41,9 @@ Derived from [Social pieces](../social-pieces.md).
 | Listening  | `JukeboxListening`          | `'off' \| 'on' \| 'muted'`, per device                                 |
 | Wall piece | `isWallPieceShape`          | Notice board, world clock, dartboard: never blocks, never rung         |
 | Night glow | `NightGlow`, `NIGHT_GLOW`   | The light a lit piece throws on dark paper (vending window, nook lamp) |
+| Play area  | `PONG`, `paddleLine`        | The table top, 0 to 1 across (seat 0's end to seat 1's) and down       |
+| Match      | `PongMatch`                 | `{ match, seq, score, phase, ball, since }` as one screen keeps it     |
+| Moment     | `GameEventOp`               | A `serve`, `hit` or `miss`, sent by the seat whose moment it is        |
 
 ## Behaviour and state
 
@@ -70,3 +77,27 @@ Derived from [Social pieces](../social-pieces.md).
   per element change, then on each move of your feet works out the jukebox whose area holds you and the arcade you
   stand at; an effect sets the one shared `HTMLAudioElement`'s source and plays or pauses it only when that answer,
   the source or your choice changes.
+
+## Ping-pong (Work Tracker #528)
+
+Built in two parts. Part 1 (this blueprint's state) is the spec, the wire, the room's rule and the model; nothing on
+screen reads them yet, and the table still plays only its decorative rally. Part 2 adds the session, the drawing and
+the controls.
+
+- **The wire**: `game-input` and `game-event` are presence op kinds (`PRESENCE_OP_KINDS`, room-messages.ts), so the
+  room relays them unordered and never logs them. `gateClientOp` drops either from a Viewer, and either that fails
+  its parser. `game-input` joins `ROOM_SAMPLE_KINDS` (document-room.ts), so `PresenceRelay` sends it to its `tabId`'s
+  sockets only and, in a room of more than 10, coalesces it to the sender's newest sample each step.
+- **The model** (`ping-pong.ts`): `ballAt(ball, ms)` is the closed form of the flight (x straight, y folded between
+  `ballR` and `1 - ballR`), so a frame's work is one call and no state; `arrivalMs` is when the ball reaches the
+  paddle line it travels to (`endOf`); `strike(ball, seat, paddleY)` judges the meeting at that line and returns
+  the new flight (angle from the offset, speed times `speedUp` to `maxSpeed`) or null for a miss; `serverAt` and
+  `winnerAt` are the table tennis rules (first to 11 by two, service every two points and every point from 10 all).
+- **A match**: `applyPongEvent(current, ev, now)` is the one reducer every screen runs on every moment, its own
+  included. The left seat's `serve` with `seq` 1 at 0 all opens a match; any other moment must carry the next `seq`
+  of the match on show, come from `nextSeat` (the server while `serve`, the ball's end while `flight`), and keep the
+  score (`serve`, `hit`) or give the point to the other seat (`miss`); anything else returns `current` unchanged.
+  `ballShown` holds the ball at the far paddle line until that end's word comes; `silentAfter` is when the waiting
+  seat counts as gone.
+- **The inbox**: `useRoomConnection` hands both kinds to `receiveGameOp`, which parses and notifies `onGameOp`
+  listeners. The listener (part 2) checks the sender's presence id sits on the seat the op names.

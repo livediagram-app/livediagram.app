@@ -6,6 +6,7 @@ import {
   RETIRED_PLACEMENT_KEYS,
   TEAM_AUDIT_EVENT_TYPES,
   foldRetiredDefaults,
+  isTeamAuditEventType,
   linkLevelOffered,
   placementDefaultKeysFor,
   retiredKeysClearedWith,
@@ -116,5 +117,11 @@ describe('TEAM_AUDIT_EVENT_TYPES', () => {
     expect(TEAM_AUDIT_EVENT_TYPES.filter((t) => t.startsWith('token_'))).toEqual([]);
     expect(TEAM_AUDIT_EVENT_TYPES).not.toContain('team_deleted');
     expect(new Set(TEAM_AUDIT_EVENT_TYPES).size).toBe(TEAM_AUDIT_EVENT_TYPES.length);
+  });
+
+  it('tells a kind the log keeps from one it never does', () => {
+    expect(isTeamAuditEventType('webhook_added')).toBe(true);
+    expect(isTeamAuditEventType('token_created')).toBe(false);
+    expect(isTeamAuditEventType(1)).toBe(false);
   });
 });

@@ -641,6 +641,32 @@ describe('DocumentRoom op-role enforcement', () => {
   // Speaking is taking part (docs/specs/008-canvas/avatar-mode.md "Who may speak"): a Participant's, never a
   // Viewer's (docs/specs/013-workspace/share-roles.md).
   const PARTICIPANT_PRESENCE_KINDS = ['avatar-say'];
+  // Playing a game at a piece is taking part too (docs/specs/009-elements/social-pieces.md "Share roles"), pinned just
+  // below; the paddle is a tab-scoped sample.
+  const GAME_PRESENCE_KINDS = ['game-input', 'game-event'];
+  it("drops a Viewer's game paddle and moments and relays a Participant's to the tab", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    editor.ws.sent.length = 0;
+    const input = { kind: 'game-input', tabId: 't', pieceId: 'table-1', seat: 1, axis: 0.4 };
+    const miss = {
+      kind: 'game-event',
+      tabId: 't',
+      pieceId: 'table-1',
+      seat: 1,
+      game: 'ping-pong',
+      match: 'm1',
+      seq: 2,
+      event: 'miss',
+      score: [1, 0],
+    };
+    for (const op of [input, miss]) sendFrame(room, viewer.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(0);
+    for (const op of [input, miss]) sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(editor.ws)).toHaveLength(2);
+  });
   for (const kind of PARTICIPANT_PRESENCE_KINDS) {
     it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
       const { room } = newRoom();
@@ -709,6 +735,7 @@ describe('DocumentRoom op-role enforcement', () => {
       !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
       !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
       !PARTICIPANT_PRESENCE_KINDS.includes(k) &&
+      !GAME_PRESENCE_KINDS.includes(k) &&
       !CALL_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {

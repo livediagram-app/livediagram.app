@@ -294,6 +294,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/canvas/collab/TimerView.tsx Element·Changed': {
     values: ['TimerReset', 'StopwatchReset'],
   },
+  // A note pinned or unpinned on a piece that holds notes (docs/specs/009-elements/team-pieces.md "Telemetry"), by
+  // the piece: never the note, never who.
+  'apps/editor/components/canvas/collab/useNoteSigner.ts Element·Changed': {
+    values: ['Notice-board', 'Calendar-wall'],
+  },
   'apps/editor/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],

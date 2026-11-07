@@ -105,14 +105,17 @@ describe.each(CAMPUS)('the %s campus', (kind: TemplateKind) => {
     expect(all.filter((e) => e.shape === 'grass')).toHaveLength(site.lawn ? 1 : 0);
   });
 
-  it('puts the Directory just inside the gate, above the Avatar Pad', () => {
+  // The Directory waits just inside the gate (or the front door), in the plan's bottom middle; the Avatar Pad is in
+  // the middle of the action, never down there (docs/specs/009-elements/avatar-pad.md "Where a Space's pad stands").
+  it('puts the Directory just inside the gate, and the Avatar Pad up in the site, away from it', () => {
     const [directory] = all.filter((e) => e.shape === 'directory');
     const walk = all.find((e) => e.shape === 'avatar-pad')!;
     expect(directory).toBeDefined();
-    const dx = Math.abs(directory!.x + directory!.width / 2 - (walk.x + walk.width / 2));
-    expect(dx).toBeLessThan(160);
-    expect(directory!.y).toBeLessThan(walk.y);
-    expect(walk.y - directory!.y).toBeLessThan(400);
+    const bottom = Math.max(...all.filter((e) => e !== walk).map((e) => e.y + e.height));
+    // Built round (0, 0): the plan's middle is x 0.
+    expect(Math.abs(directory!.x + directory!.width / 2)).toBeLessThan(200);
+    expect(bottom - (directory!.y + directory!.height)).toBeLessThan(200);
+    expect(directory!.y).toBeGreaterThan(walk.y);
   });
 });
 
