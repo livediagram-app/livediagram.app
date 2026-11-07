@@ -3,10 +3,10 @@ import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 
 // liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/specs/010-site/site.md).
 // Every page is here: the home page, the telemetry dashboard, the sign-in pages and the account
-// pages, and the Explorer. The APIs are Workers on more specific routes of the same origin: accounts on
+// pages, the Explorer and the Community. The APIs are Workers on more specific routes of the same origin: accounts on
 // /api/auth/* and /api/account/* (and the two .well-known documents), the index on /api/index/* (the
 // Explorer's lists), media on /api/previews/* (every item's picture), telemetry on /api/telemetry/*, the
-// Community on /api/community/* (whose pages each app hosts itself; liveworkspace.app has none), and the status
+// Community on /api/community/* (its pages are here, served on each app's address by its router too), and the status
 // history on /api/status* (the status page's hourly checks).
 // The shared settings are every Next app's (@liveworkspace/next-config).
 

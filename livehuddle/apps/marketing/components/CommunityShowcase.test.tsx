@@ -51,7 +51,7 @@ describe('CommunityShowcase', () => {
     expect(container.querySelectorAll('li [aria-hidden="true"]').length).toBeGreaterThanOrEqual(6);
     expect(await screen.findByText('Featured 6')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Featured 1' }).getAttribute('href')).toBe(
-      '/community/post/?id=post1',
+      '/community/post?id=post1',
     );
     expect(screen.getByRole('img', { name: 'Featured 1' }).getAttribute('src')).toBe(
       '/api/share/CODE1/image.svg',
@@ -59,7 +59,7 @@ describe('CommunityShowcase', () => {
     expect(screen.getByText('1 like')).toBeTruthy();
     expect(screen.getAllByText('1 copy')).toHaveLength(6);
     expect(screen.getByRole('link', { name: 'Explore the Community' }).getAttribute('href')).toBe(
-      '/community/',
+      '/community',
     );
   });
 

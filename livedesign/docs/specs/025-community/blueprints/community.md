@@ -3,33 +3,33 @@
 How livedesign builds [Community](../community.md). The listings are liveworkspace's Community service's
 ([liveworkspace's Community](../../../../../liveworkspace/docs/specs/007-community/community.md) and its blueprint); the
 shared pieces are `@liveworkspace/community-ui` (the card, the Share tab, the Public badge, the links, the landing
-section), `@liveworkspace/community-site` (the Community pages and their Worker), `@liveworkspace/community/app` (the
-api's side) and `@liveworkspace/explorer` (`ShareDialogWithCommunity`). This blueprint covers livedesign's binding of
-them: the browser side, the api's routes and the Community pages, each in its own sections. livedocuments' blueprint
-([its 025 blueprints](../../../../../livedocuments/docs/specs/025-community/blueprints/community.md)) is the same binding
-in its words; where the two differ, this one says so.
+section), `@liveworkspace/community-site` (the router's Community step; the Community page itself is
+liveworkspace.app's, `liveworkspace/apps/site`), `@liveworkspace/community/app` (the api's side) and
+`@liveworkspace/explorer` (`ShareDialogWithCommunity`). This blueprint covers livedesign's binding of them: the browser
+side, the api's routes and the Community pages, each in its own sections. livedocuments' blueprint ([its 025
+blueprints](../../../../../livedocuments/docs/specs/025-community/blueprints/community.md)) is the same binding in its
+words; where the two differ, this one says so.
 
 ## 0. Where each part lives
 
-| File                                                                                                  | What it holds                                                                                                                   |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/live/lib/api/community.ts`                                                                      | The owner client (read, publish or Edit Listing, remove) over `/api/designs/<id>/community`, and the service's facets read      |
-| `apps/live/lib/community-share-host.tsx`                                                              | `livedesignCommunityClient`, `livedesignCommunityHost` (the tab's `CommunityShareHost`), `trackCommunity`, `communityThumbnail` |
-| `apps/live/lib/community-state-store.ts`                                                              | `useCommunityState(designId)` / `setCommunityState`: the open design's post state, seeded from the load                         |
-| `apps/live/lib/community-public.ts`                                                                   | `designIsPublic`: whether the header reads Public                                                                               |
-| `apps/live/lib/explorer-community-host.ts`                                                            | `explorerCommunity(account, communityOn)`: the Explorer's `ShareHost.community(item)`                                           |
-| `apps/live/components/dialogs/community/ShareDialogWithCommunity.tsx`                                 | The live app's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                             |
-| `apps/live/components/chrome/CommunityBar.tsx`                                                        | The Community bar on a community link's view, loaded only then (`app/design/[id]/EditorView.tsx`)                               |
-| `apps/live/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`             | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                  |
-| `apps/live/hooks/canvas/useAutoCopyParam.ts`                                                          | `?copy=1`: the Community's Make a Copy                                                                                          |
-| `apps/live/app/design/[id]/editor-realtime.ts`                                                        | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own design id                       |
-| `apps/live/app/design/[id]/seed-fetched-design.ts`                                                    | Seeds the post state from the design read (`LiveDoc.communityState`)                                                            |
-| `apps/live/lib/api/share.ts`                                                                          | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                             |
-| `packages/ui/src/ProductNav.tsx`, `SiteFooter.tsx`, `packages/ui/src/community/CommunityHelpLink.tsx` | The links: the Explorer footer's, the site footer's, and the help deep links bound to this site's telemetry                     |
-| `packages/help-registry/src/community.ts`                                                             | `COMMUNITY_HELP`, every app's (`@liveworkspace/help-registry/community`)                                                        |
-| `apps/router/src/index.ts`                                                                            | `/community*` to the Community app, stripped                                                                                    |
-| `apps/community/**`                                                                                   | The Community pages (section 17)                                                                                                |
-| `apps/marketing/components/CommunityShowcase.tsx`                                                     | The landing section (section 17)                                                                                                |
+| File                                                                                                  | What it holds                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/live/lib/api/community.ts`                                                                      | The owner client (read, publish or Edit Listing, remove) over `/api/designs/<id>/community`, and the service's facets read                                   |
+| `apps/live/lib/community-share-host.tsx`                                                              | `livedesignCommunityClient`, `livedesignCommunityHost` (the tab's `CommunityShareHost`), `trackCommunity`, `communityThumbnail`                              |
+| `apps/live/lib/community-state-store.ts`                                                              | `useCommunityState(designId)` / `setCommunityState`: the open design's post state, seeded from the load                                                      |
+| `apps/live/lib/community-public.ts`                                                                   | `designIsPublic`: whether the header reads Public                                                                                                            |
+| `apps/live/lib/explorer-community-host.ts`                                                            | `explorerCommunity(account, communityOn)`: the Explorer's `ShareHost.community(item)`                                                                        |
+| `apps/live/components/dialogs/community/ShareDialogWithCommunity.tsx`                                 | The live app's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                                                          |
+| `apps/live/components/chrome/CommunityBar.tsx`                                                        | The Community bar on a community link's view, loaded only then (`app/design/[id]/EditorView.tsx`)                                                            |
+| `apps/live/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`             | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                                               |
+| `apps/live/hooks/canvas/useAutoCopyParam.ts`                                                          | `?copy=1`: the Community's Make a Copy                                                                                                                       |
+| `apps/live/app/design/[id]/editor-realtime.ts`                                                        | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own design id                                                    |
+| `apps/live/app/design/[id]/seed-fetched-design.ts`                                                    | Seeds the post state from the design read (`LiveDoc.communityState`)                                                                                         |
+| `apps/live/lib/api/share.ts`                                                                          | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                                                          |
+| `packages/ui/src/ProductNav.tsx`, `SiteFooter.tsx`, `packages/ui/src/community/CommunityHelpLink.tsx` | The links: the Explorer footer's, the site footer's, and the help deep links bound to this site's telemetry                                                  |
+| `packages/help-registry/src/community.ts`                                                             | `COMMUNITY_HELP`, every app's (`@liveworkspace/help-registry/community`)                                                                                     |
+| `apps/router/src/index.ts`                                                                            | `routeCommunity` (`@liveworkspace/community-site/router`, `COMMUNITY_SITE`) first, then `/community*` to liveworkspace.app's page through `routeToWorkspace` |
+| `apps/marketing/components/CommunityShowcase.tsx`                                                     | The landing section (section 17)                                                                                                                             |
 
 ## 1. Domain and naming
 
@@ -41,11 +41,12 @@ picture is the "first page" (D5). The categories are livedesign's own (`COMMUNIT
 
 ## 2. Constants and configuration
 
-- `NEXT_PUBLIC_COMMUNITY_API` (the live app's and the Community pages' `.env.example`): the Community service's base,
+- `NEXT_PUBLIC_COMMUNITY_API` (the live app's `.env.example`): the Community service's base,
   production's when unset.
-- The router's `COMMUNITY` binding (`livedesign-community`, staging `livedesign-community-staging`), locally
-  `COMMUNITY_ORIGIN = "http://127.0.0.1:3405"` (D1).
-- `COMMUNITY_HOME_PATH` (`/community/`), `communityPostPath(id)`, `communityImagePath(id)` and
+- The router's `COMMUNITY_URL` var, where its Community step reads the service (local
+  `http://localhost:3000/api/community`, staging `https://staging.liveworkspace.app/api/community`, production the
+  default).
+- `COMMUNITY_HOME_PATH` (`/community`), `communityPostPath(id)`, `communityImagePath(id)` and
   `COMMUNITY_KEY_STORAGE` from `@livedesign/api-schema` (`community-paths.ts`, which loads none of the categories or
   validation).
 - The api Worker: `COMMUNITY_KEY` (a secret, the service's `COMMUNITY_KEY_LIVEDESIGN`), `COMMUNITY_URL` (a hosted var,
@@ -227,16 +228,18 @@ and the counted copy named after the post. `apps/api/src/redact-design.test.ts` 
 
 ## 17. The Community pages
 
-`apps/community` is a thin shell on `@liveworkspace/community-site`, on port 3405 locally (D1):
+livedesign keeps no Community pages of its own: `/community` is liveworkspace.app's one page (`liveworkspace/apps/site`,
+liveworkspace/docs/specs/007-community "An app's Community pages"), served on livedesign's address by its router
+(locally through the router on 3400, the page itself from liveworkspace's site on 3000, D1):
 
-| File                                                                                               | What it holds                                                                                                           |
-| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `apps/community/lib/community-site.tsx`                                                            | The `CommunitySite` binding: `livedesign.app`, its words, `/api`, `COMMUNITY_KEY_STORAGE`, `signedInHintOf`, its routes |
-| `apps/community/lib/telemetry.ts`                                                                  | `communityTelemetry`, literal `siteTrack` calls the dashboard reads                                                     |
-| `apps/community/app/layout.tsx`, `apps/community/app/page.tsx`, `apps/community/app/post/page.tsx` | The header (`ctaSurface="Community"`), footer, boot scripts and metadata; the gallery and post pages                    |
-| `apps/community/worker/index.ts`                                                                   | `createCommunityWorker({ app: 'livedesign.app', siteUrl, product: 'livedesign' })`, its only export                     |
-| `apps/marketing/components/CommunityShowcase.tsx`                                                  | The landing section, lazy below the template gallery, hidden while the Community is off or has nothing featured         |
+| File                                                                                                        | What it holds                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router/src/index.ts`                                                                                  | `routeCommunity` bound to `COMMUNITY_SITE` (`app: 'livedesign.app'`, `siteUrl`, `product: 'livedesign'`, `nouns: 'designs'`) and `COMMUNITY_URL`: the gallery's head made livedesign's, a post's head and the sitemap from the service |
+| `liveworkspace/apps/site/components/community/CommunityBinding.tsx`                                         | What the address makes the page: livedesign's posts (or every app's under All Apps), its words, its `/api`, its community key, its routes, each on the post's own app's address                                                        |
+| `liveworkspace/apps/site/lib/community/telemetry.ts`                                                        | The page's telemetry, literal `siteTrack` calls the dashboard reads, sent in livedesign's name on its address                                                                                                                          |
+| `liveworkspace/apps/site/app/community/`, `liveworkspace/apps/site/components/community/CommunityFrame.tsx` | The routes (gallery and post) and the frame: the `liveworkspace \| app` header, the rail and the site's footer                                                                                                                         |
+| `apps/marketing/components/CommunityShowcase.tsx`                                                           | The landing section, lazy below the template gallery, hidden while the Community is off or has nothing featured                                                                                                                        |
 
 The binding's routes: **Open Design** opens the design through its community link (`/design/shared?<share query>`,
 the live app's share path), **Make a Copy** the same with `&copy=1`, and the author's **Edit Your Design**
-`/design/<id>`. The marketing sitemap lists `/community/`.
+`/design/<id>`. The marketing sitemap lists `/community`.

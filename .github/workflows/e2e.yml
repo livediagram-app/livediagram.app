@@ -88,13 +88,14 @@ jobs:
       product: livediagram
       editor: '@livediagram/editor'
       editor-dir: apps/editor
-      sites: --filter @livediagram/help --filter @livediagram/community
+      sites: --filter @livediagram/help
       sites-cache: |
         apps/editor/.next/cache
         apps/help/.next/cache
-        apps/community/.next/cache
         apps/marketing/.next/cache
       smoke-explorer: true
+      # Its sites audit opens the Community, liveworkspace's page at /community.
+      sites-explorer: true
       signed-in-explorer: true
       signed-in-cache: editor-signed-in
       # Its smoke specs take about three minutes a shard on three: two would pass the 5-minute budget.
@@ -175,13 +176,14 @@ jobs:
       product: livehuddle
       editor: '@livehuddle/editor'
       editor-dir: apps/editor
-      sites: --filter @livehuddle/help --filter @livehuddle/community
+      sites: --filter @livehuddle/help
       sites-cache: |
         apps/editor/.next/cache
         apps/help/.next/cache
-        apps/community/.next/cache
         apps/marketing/.next/cache
       smoke-explorer: true
+      # Its sites audit opens the Community, liveworkspace's page at /community.
+      sites-explorer: true
       signed-in-explorer: true
       signed-in-cache: editor-signed-in
 

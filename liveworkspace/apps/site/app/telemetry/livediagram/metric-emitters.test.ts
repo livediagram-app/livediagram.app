@@ -139,9 +139,9 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
-    // siteTrack called by name, through the Community app's wrapper object.
+    // The Community page on liveworkspace.app, reporting in this app's name with each type literal.
     expect(has('Community', 'Liked', 'Post')).toBe(true);
-    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
+    expect(has('Community', 'Reported', 'PersonalInfo')).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
       true,

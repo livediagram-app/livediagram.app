@@ -64,7 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // each marketing route is now a noindex redirect there.
     // Community (docs/specs/025-community/community.md): the public gallery of shared boards, new posts daily.
     {
-      url: `${base}/community/`,
+      url: `${base}/community`,
       lastModified: now,
       changeFrequency: 'daily',
       priority: 0.6,

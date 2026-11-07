@@ -4,12 +4,13 @@ Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). 
 
 ## Domain and naming
 
-| Term          | Identifier                         | Meaning                                             |
-| ------------- | ---------------------------------- | --------------------------------------------------- |
-| Site          | `@liveworkspace/site`              | A static Next.js export, served as Worker assets    |
-| Explorer page | `/explorer/*`                      | The One Explorer, also served on each app's address |
-| Sign-in pages | `/sign-in`, `/sign-up`, `/consent` | Accounts' pages, drawn by the site                  |
-| Site switcher | `@liveworkspace/sites`             | Every site, in the public and Explorer headers      |
+| Term          | Identifier                         | Meaning                                                   |
+| ------------- | ---------------------------------- | --------------------------------------------------------- |
+| Site          | `@liveworkspace/site`              | A static Next.js export, served as Worker assets          |
+| Explorer page | `/explorer/*`                      | The One Explorer, also served on each app's address       |
+| Community     | `/community`, `/community/post`    | Every app's posts, also served on each app's address      |
+| Sign-in pages | `/sign-in`, `/sign-up`, `/consent` | Accounts' pages, drawn by the site                        |
+| Site switcher | `@liveworkspace/sites`             | Every site, in the public, Explorer and Community headers |
 
 ## Behaviour and state
 
@@ -100,6 +101,8 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `/account`                  | `liveworkspace/apps/site/app/account/page.tsx`                  |                                                                                                                                                                             |
 | `/account/settings`         | `liveworkspace/apps/site/app/account/settings/page.tsx`         |                                                                                                                                                                             |
 | `/account/tokens`           | `liveworkspace/apps/site/app/account/tokens/page.tsx`           |                                                                                                                                                                             |
+| `/community`                | `liveworkspace/apps/site/app/community/page.tsx`                | The Community, every app's posts; each app's router serves it at its own `/community`.                                                                                      |
+| `/community/post`           | `liveworkspace/apps/site/app/community/post/page.tsx`           | A post's shell; its head is filled by the post's app's router.                                                                                                              |
 | `/compare`                  | `liveworkspace/apps/site/app/compare/page.tsx`                  |                                                                                                                                                                             |
 | `/consent`                  | `liveworkspace/apps/site/app/consent/page.tsx`                  |                                                                                                                                                                             |
 | `/drive/connect`            | `liveworkspace/apps/site/app/drive/connect/page.tsx`            |                                                                                                                                                                             |

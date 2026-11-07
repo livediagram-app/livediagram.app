@@ -23,6 +23,8 @@ import {
   PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   WORKBENCH_ROUTE,
+  COMMUNITY_ROUTE,
+  hasCommunityPage,
 } from './workspace-proxy';
 import { APP_NAMES } from './index';
 
@@ -51,13 +53,35 @@ describe('which paths go to liveworkspace', () => {
     expect(workspaceRouteFor(path, ROUTES)).toBe(route);
   });
 
-  it('is the Explorer and its account reads, signing in and workbenches, for every app but livehuddle', () => {
+  it('is the Explorer and its account reads, signing in, the Community page but for liveplanner, and workbenches but for livehuddle', () => {
     const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
     for (const app of APP_NAMES) {
+      const community = app === 'liveplanner' ? [] : [COMMUNITY_ROUTE];
       const workbenches = app === 'livehuddle' ? [] : [WORKBENCH_ROUTE];
-      expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn, ...workbenches]);
+      expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn, ...community, ...workbenches]);
+      expect(hasCommunityPage(app)).toBe(app !== 'liveplanner');
       expect(explorerHomeHref(app)).toBe('/explorer/home');
     }
+  });
+
+  it("sends /community and everything under it to liveworkspace's Community page, with no cookies", async () => {
+    const routes = workspaceRoutes('livediagram');
+    for (const path of ['/community', '/community/', '/community/post', '/community.txt']) {
+      expect(workspaceRouteFor(path, routes)).toBe(COMMUNITY_ROUTE);
+    }
+    expect(workspaceRouteFor('/communityx', routes)).toBeNull();
+    expect(workspaceRouteFor('/community', workspaceRoutes('liveplanner'))).toBeNull();
+    const doFetch = upstream();
+    await routeToWorkspace(
+      new Request('https://www.livediagram.app/community/post?id=p1', {
+        headers: { Cookie: 'ld_signed_in=1' },
+      }),
+      { app: 'livediagram', fetch: doFetch },
+    );
+    const sent = doFetch.mock.calls[0]![0] as Request;
+    expect(sent.url).toBe(`${PRODUCTION_WORKSPACE_ORIGIN}/community/post?id=p1`);
+    expect(sent.headers.get('Cookie')).toBeNull();
+    expect(sent.headers.get(WORKSPACE_PROXY_HEADER)).toBe('livediagram');
   });
 
   it('leaves /api/workbench/* to livehuddle’s own api, which has no workbenches', () => {

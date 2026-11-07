@@ -1,54 +1,31 @@
 # @liveworkspace/community-site
 
-Every app's Community pages: the gallery (`/community/`), a post's page (`/community/post/?id=`) and the small
-Worker in front of them. An app's `apps/community` is a thin shell on it, as each help centre is on
-`@liveworkspace/help-site`. What every app's Community is, and what a binding names, is in
-[liveworkspace/docs/specs/007-community](../../liveworkspace/docs/specs/007-community/community.md) ("Shared pieces",
-"An app's Community pages").
+The Community on every app's address: the step each app's router runs for `/community`. The Community's pages (the
+gallery and a post's page) are liveworkspace.app's, built once in `liveworkspace/apps/site` and served under each
+app's own address by its router, the way the Explorer is (`@liveworkspace/sites/workspace-proxy`). What every app's
+Community is, and how the pages are scoped to an app or to All Apps, is in
+[liveworkspace/docs/specs/007-community](../../liveworkspace/docs/specs/007-community/community.md) ("One page for
+every app", "Search engines").
 
-## Binding an app
+## Binding an app's router
 
-The shell keeps its layout (head, boot scripts, header, footer), its routes and its metadata, and binds the pages once:
+```ts
+import { routeCommunity } from '@liveworkspace/community-site/router';
 
-```tsx
-// apps/community/lib/community-site.tsx
-'use client';
-import { CommunitySiteProvider, type CommunitySite } from '@liveworkspace/community-site/client';
-
-const SITE: CommunitySite = {
-  app,
-  words,
-  apiBase,
-  communityApi,
-  keyStorage,
-  signedInHint,
-  links,
-  telemetry,
-  HelpLink,
-};
-export function CommunityProvider({ children }) {
-  return <CommunitySiteProvider site={SITE}>{children}</CommunitySiteProvider>;
-}
+const community = routeCommunity(request, {
+  site: { app: 'livediagram.app', siteUrl: SITE_URL, product: 'livediagram', nouns: 'canvases' },
+  communityUrl: env.COMMUNITY_URL,
+  forward: (req) => routeToWorkspace(req, { app: 'livediagram', origin: env.WORKSPACE_ORIGIN }),
+});
+if (community) return community;
 ```
 
-- `app/layout.tsx` wraps its `<main>` in `CommunityProvider` and `CommunityGate` (from `./gate`).
-- `app/page.tsx` renders `CommunityGalleryPage`; `app/post/page.tsx` renders `CommunityPostPage` under its own metadata
-  (no canonical: one shell serves every post).
-- `worker/index.ts` exports `createCommunityWorker({ app, siteUrl, product })` as its default, and nothing else.
-- `app/globals.css` imports `@liveworkspace/community-site/community.css` after Tailwind, and scans
-  `packages/community-site/src` (not its tests) and community-ui's `tile` and `help-link`.
-
-Functions cannot cross from a server component to a client one, so the binding lives in the shell's own client module.
-Each page is its own entry, so a route loads only its page. The telemetry stays the app's own (its `siteTrack` calls), so its dashboard's emitter scan still reads it.
+It runs before the router's other routes. It answers the sitemap itself, makes the gallery's head the app's own
+(title, description, canonical) and fills a post's head from the Community service, and hands every other Community
+path to `forward` as it is.
 
 ## Entries
 
-| Entry             | What                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| `./client`        | `CommunitySite` and its parts, `CommunitySiteProvider`, `useCommunitySite`              |
-| `./gate`          | `CommunityGate`: nothing while the app's Community is switched off                      |
-| `./gallery`       | `CommunityGalleryPage`                                                                  |
-| `./post`          | `CommunityPostPage`                                                                     |
-| `./worker`        | `createCommunityWorker`, `CommunityWorkerSite`, `CommunityWorkerEnv`                    |
-| `./community.css` | The gallery's hero wash and the heart's pop                                             |
-| `./testing`       | `communityTestSite`, `withCommunitySite`, `quietCommunityTelemetry`, for an app's tests |
+| Entry      | What                                                                               |
+| ---------- | ---------------------------------------------------------------------------------- |
+| `./router` | `routeCommunity`, `isCommunityPath`, `CommunityRouteOptions`, `CommunityRouteSite` |

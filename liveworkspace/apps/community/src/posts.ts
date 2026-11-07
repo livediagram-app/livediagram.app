@@ -20,10 +20,19 @@ import {
   type CommunityFacetsResponse,
   type CommunityListQuery,
   type CommunityMineTotals,
+  type CommunityScope,
   type CommunitySitemapEntry,
 } from '@liveworkspace/community';
 import type { Env } from './env';
-import { likePattern, newPostId, POST_COLS, PUBLIC_POST, searchText, type PostRow } from './rows';
+import {
+  likePattern,
+  newPostId,
+  POST_COLS,
+  PUBLIC_POST,
+  publicWhere,
+  searchText,
+  type PostRow,
+} from './rows';
 
 // The post an app's document has, in any state.
 export async function getPostForDocument(
@@ -241,16 +250,19 @@ export async function mineTotals(
   return row ?? { posts: 0, likes: 0, copies: 0 };
 }
 
-// The gallery page: one indexed query, one extra row to decide whether there is a next page. With
-// `owner`, My Shares: only that owner's posts, hidden ones included.
+// The gallery page: one indexed query, one extra row to decide whether there is a next page. `all` lists every app's
+// posts together (All Apps), on the indexes that lead with the state rather than the app (migration 0002). With
+// `owner`, My Shares: only that owner's posts in one app, hidden ones included.
 export async function listPosts(
   env: Env,
-  app: CommunityApp,
+  app: CommunityScope,
   query: CommunityListQuery,
   owner: string | null = null,
 ): Promise<{ rows: PostRow[]; nextOffset: number | null }> {
-  const where = owner ? [OWN_POST] : [PUBLIC_POST];
-  const binds: (string | number)[] = owner ? [app, owner] : [app];
+  const own = owner !== null && app !== 'all';
+  const first = own ? { where: OWN_POST, binds: [app, owner] } : publicWhere(app);
+  const where = [first.where];
+  const binds: (string | number)[] = [...first.binds];
   if (query.category) {
     where.push('p.category = ?');
     binds.push(query.category);
@@ -317,16 +329,18 @@ export async function listSitemap(env: Env, app: CommunityApp): Promise<Communit
   return (result.results ?? []).map((r) => ({ id: r.id, updatedAt: r.updated_at }));
 }
 
-// The filter counts: posts per category and the most used tags, over what the public can see.
-export async function facets(env: Env, app: CommunityApp): Promise<CommunityFacetsResponse> {
+// The filter counts: posts per category and the most used tags, over what the public can see of one app, or of
+// every app (`all`).
+export async function facets(env: Env, app: CommunityScope): Promise<CommunityFacetsResponse> {
+  const { where, binds } = publicWhere(app);
   const [categories, tags] = await env.COMMUNITY_DB.batch<{ key: string; n: number }>([
     env.COMMUNITY_DB.prepare(
-      `SELECT p.category AS key, COUNT(*) AS n FROM posts p WHERE ${PUBLIC_POST} GROUP BY p.category`,
-    ).bind(app),
+      `SELECT p.category AS key, COUNT(*) AS n FROM posts p WHERE ${where} GROUP BY p.category`,
+    ).bind(...binds),
     env.COMMUNITY_DB.prepare(
       `SELECT t.tag AS key, COUNT(*) AS n FROM post_tags t JOIN posts p ON p.id = t.post_id
-        WHERE ${PUBLIC_POST} GROUP BY t.tag ORDER BY n DESC, t.tag LIMIT ?`,
-    ).bind(app, COMMUNITY_POPULAR_TAGS),
+        WHERE ${where} GROUP BY t.tag ORDER BY n DESC, t.tag LIMIT ?`,
+    ).bind(...binds, COMMUNITY_POPULAR_TAGS),
   ]);
   const categoryCounts: CommunityFacetsResponse['categories'] = {};
   let total = 0;

@@ -11,7 +11,7 @@ describe('sitemap', () => {
 
 describe('sitemap: Community', () => {
   it('lists the gallery (docs/specs/025-community/community.md "Where Community is linked from")', () => {
-    const entry = sitemap().find((e) => e.url === 'https://www.livedesign.app/community/');
+    const entry = sitemap().find((e) => e.url === 'https://www.livedesign.app/community');
     expect(entry).toMatchObject({ changeFrequency: 'daily', priority: 0.7 });
   });
 });

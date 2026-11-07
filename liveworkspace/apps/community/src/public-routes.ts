@@ -4,6 +4,7 @@
 // an owner id. Nobody moderates by hand: enough reports hide a post.
 
 import {
+  COMMUNITY_ALL_APPS,
   COMMUNITY_APP_PARAM,
   COMMUNITY_KEY_HEADER,
   COMMUNITY_REPORT_NOTE_MAX,
@@ -11,8 +12,8 @@ import {
   isCommunityKey,
   isCommunityReportReason,
   parseCommunityListQuery,
-  type CommunityApp,
   type CommunityPost,
+  type CommunityScope,
 } from '@liveworkspace/community';
 import { FEATURED_MAX_AGE_S, LIST_MAX_AGE_S, MAX_BODY_BYTES, SITEMAP_MAX_AGE_S } from './config';
 import { likedPostIds, recordReport, setLike } from './engagement';
@@ -29,6 +30,28 @@ import {
   listSitemap,
 } from './posts';
 import { rowToPost, type PostRow } from './rows';
+
+// Every app's posts (`/posts`) or their counts (`/facets`), under the same rules and caching as one app's.
+async function allAppsRead(
+  env: Env,
+  ctx: ExecutionContext,
+  url: URL,
+  read: string,
+  key: string | null,
+): Promise<Response> {
+  if (read === 'facets') {
+    return edgeCached(env, ctx, appUrl(url, COMMUNITY_ALL_APPS), LIST_MAX_AGE_S, async () =>
+      json(await facets(env, COMMUNITY_ALL_APPS)),
+    );
+  }
+  const query = parseCommunityListQuery(url.searchParams);
+  if (!query.ok) return badRequest('invalid_query');
+  const { rows, nextOffset } = await listPosts(env, COMMUNITY_ALL_APPS, query.value);
+  return json(
+    { posts: await withLikes(env, key, rows), nextOffset },
+    { headers: listCacheHeaders(key) },
+  );
+}
 
 function communityKeyOf(request: Request): string | null {
   const key = request.headers.get(COMMUNITY_KEY_HEADER);
@@ -54,6 +77,10 @@ function listCacheHeaders(key: string | null): HeadersInit {
   return { 'Cache-Control': key ? 'private, no-store' : `public, max-age=${LIST_MAX_AGE_S}` };
 }
 
+// The reads that may name every app at once (`?app=all`): the gallery's list and its counts, for the Community page's
+// All Apps. A post, its likes and reports, the featured six and the sitemap are always one app's.
+const ALL_APPS_READS: ReadonlySet<string> = new Set(['posts', 'facets']);
+
 // `path` is what follows /api/community: `/posts`, `/posts/<id>`, `/posts/<id>/like`, …
 export async function handlePublic(
   request: Request,
@@ -62,11 +89,20 @@ export async function handlePublic(
   url: URL,
   path: string,
 ): Promise<Response> {
-  const app = url.searchParams.get(COMMUNITY_APP_PARAM);
-  if (!isCommunityApp(app)) return badRequest('invalid_app');
   const segments = path.split('/').filter(Boolean);
   const method = request.method;
   const key = communityKeyOf(request);
+  const named = url.searchParams.get(COMMUNITY_APP_PARAM);
+  if (
+    named === COMMUNITY_ALL_APPS &&
+    segments.length === 1 &&
+    method === 'GET' &&
+    ALL_APPS_READS.has(segments[0]!)
+  ) {
+    return allAppsRead(env, ctx, url, segments[0]!, key);
+  }
+  const app = named;
+  if (!isCommunityApp(app)) return badRequest('invalid_app');
 
   if (segments.length === 1 && method === 'GET') {
     switch (segments[0]) {
@@ -140,7 +176,7 @@ export async function handlePublic(
 }
 
 // One edge cache entry per app and route, whatever else the URL carries.
-function appUrl(url: URL, app: CommunityApp): URL {
+function appUrl(url: URL, app: CommunityScope): URL {
   return new URL(`${url.origin}${url.pathname}?${COMMUNITY_APP_PARAM}=${encodeURIComponent(app)}`);
 }
 

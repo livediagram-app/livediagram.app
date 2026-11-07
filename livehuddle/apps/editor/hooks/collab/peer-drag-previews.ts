@@ -4,7 +4,7 @@
 // PEER_PREVIEW_EXPIRY_MS without a message. Only an editor's preview is drawn.
 
 import type { RoomOp } from '@livehuddle/api-schema';
-import { parseDragPreviewPatches } from '@livehuddle/api-schema';
+import { parseDragPreviewPatches, parseDragPreviewRide } from '@livehuddle/api-schema';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearPeerPreview, peerPreviewIds, setPeerPreview } from '@/lib/drag-preview';
 
@@ -45,12 +45,19 @@ export function receivePeerDragPreview(
     else stop(presenceId);
     return;
   }
-  const patches = typeof op.tabId === 'string' ? parseDragPreviewPatches(op.patches) : null;
+  // A very large move carries one shared offset (`ride`) in place of a patch per element.
+  const ride =
+    typeof op.tabId === 'string' && op.ride !== undefined ? parseDragPreviewRide(op.ride) : null;
+  const patches = ride
+    ? ride.patches
+    : typeof op.tabId === 'string' && op.ride === undefined
+      ? parseDragPreviewPatches(op.patches)
+      : null;
   if (!patches) {
     warnOnce(presenceId, '[drag-preview] bad op');
     return;
   }
-  setPeerPreview(presenceId, op.tabId, patches);
+  setPeerPreview(presenceId, op.tabId, patches, ride ?? undefined);
   arm(presenceId);
 }
 

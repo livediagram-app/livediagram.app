@@ -15,3 +15,10 @@ describe('sitemap: Build with AI', () => {
     expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.8 });
   });
 });
+
+describe('sitemap: Community', () => {
+  it('lists the gallery, without a trailing slash (docs/specs/025-community/community.md)', () => {
+    const entry = sitemap().find((e) => e.url === 'https://www.livedocuments.app/community');
+    expect(entry).toMatchObject({ changeFrequency: 'daily', priority: 0.7 });
+  });
+});

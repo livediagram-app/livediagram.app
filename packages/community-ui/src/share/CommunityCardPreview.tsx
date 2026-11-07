@@ -28,10 +28,11 @@ export function CommunityCardPreview({
 }) {
   // One snapshot version, and one "now", for the dialog's life: a fresh read when it opens, then a stable image
   // (and "just now") while the person types.
-  const { thumbnail } = useCommunityShareHost();
+  const { thumbnail, app } = useCommunityShareHost();
   const [version] = useState(() => Date.now());
   const post: CommunityPost = {
     id: 'preview',
+    app,
     title: title.trim() || 'Your title',
     description: '',
     category: category ?? 'other',

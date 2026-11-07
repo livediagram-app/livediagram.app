@@ -14,7 +14,7 @@ export function testHost(over: Partial<CommunityShareHost> = {}): CommunityShare
       remove: vi.fn(async () => {}),
       popularTags: vi.fn(async () => []),
     },
-    postHref: (id) => `/community/post/?id=${id}`,
+    postHref: (id) => `/community/post?id=${id}`,
     ...over,
   };
 }

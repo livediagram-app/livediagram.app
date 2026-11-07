@@ -49,8 +49,6 @@ const CONTRACT: Record<string, ReadonlySet<string>> = {
   ]),
   'apps/api/src/design-room/community-post.ts': new Set(['documentId']),
   'apps/api/src/routes/community-owner-routes.ts': new Set(['documentId']),
-  // @liveworkspace/community-site's binding names its links for every app.
-  'apps/community/lib/community-site.tsx': new Set(['openDocument', 'editDocument']),
   'docs/specs/025-community/blueprints/community.md': new Set(['empty_document', 'team_document']),
   'apps/live/lib/community-share-host.tsx': new Set(['documentName']),
 };

@@ -19,9 +19,16 @@ export type DragOverlay = {
 // A collaborator's preview: the geometry patches they sent, resolved against the elements being drawn
 // at read time, so the rest of each element is ours as it is now.
 type PeerPatch = { id: string } & Record<string, unknown>;
+// A collaborator's very large move: the one offset its riding elements share, from where they are drawn.
+type PeerRide = { dx: number; dy: number; ids: ReadonlySet<string> };
 
 let local: DragOverlay | null = null;
-const peers = new Map<string, { tabId: string; patches: readonly PeerPatch[] }>();
+// The board our preview is laid over, as the gesture found it (what a ride's offset is measured from).
+let localBase: readonly Element[] | null = null;
+const peers = new Map<
+  string,
+  { tabId: string; patches: readonly PeerPatch[]; ride: PeerRide | null }
+>();
 // One merged preview per tab and per element list a reader draws (Canvas and the element layer read
 // different lists): a reader must get the same object back until something changes, or
 // useSyncExternalStore re-renders it forever.
@@ -59,7 +66,13 @@ export function setLocalPreview(
   doc: readonly Element[],
 ): void {
   local = overlayBetween(tabId, next, doc);
+  localBase = doc;
   changedNow();
+}
+
+// The board our preview is laid over, or null while there is none.
+export function localPreviewBase(): readonly Element[] | null {
+  return local ? localBase : null;
 }
 
 // How our last preview ended: written to the document (`landed`) or dropped (`cancelled`), for the
@@ -69,6 +82,7 @@ let lastEnding: 'landed' | 'cancelled' = 'cancelled';
 export function clearLocalPreview(how: 'landed' | 'cancelled' = 'cancelled'): void {
   if (local === null) return;
   local = null;
+  localBase = null;
   lastEnding = how;
   changedNow();
 }
@@ -81,13 +95,38 @@ export function localPreview(): DragOverlay | null {
   return local;
 }
 
+// `ride`, for a very large move: its offset, and the riding ids when the message names them; without them the
+// ids the peer last named on this tab ride it, and before any, nothing does.
 export function setPeerPreview(
   presenceId: string,
   tabId: string,
   patches: readonly PeerPatch[],
+  ride?: { dx: number; dy: number; ids?: readonly string[] },
 ): void {
-  peers.set(presenceId, { tabId, patches });
+  const prev = peers.get(presenceId);
+  const ids = ride
+    ? ride.ids
+      ? new Set(ride.ids)
+      : prev?.tabId === tabId
+        ? prev.ride?.ids
+        : undefined
+    : undefined;
+  peers.set(presenceId, {
+    tabId,
+    patches,
+    ride: ride && ids ? { dx: ride.dx, dy: ride.dy, ids } : null,
+  });
   changedNow();
+}
+
+// An element moved by a ride's offset: a box's position, an arrow's free ends (its pinned ends follow their boxes).
+function shifted(el: Element, dx: number, dy: number): Element {
+  if (el.type === 'arrow') {
+    const move = (end: typeof el.from) =>
+      end.kind === 'free' ? { ...end, x: end.x + dx, y: end.y + dy } : end;
+    return { ...el, from: move(el.from), to: move(el.to) };
+  }
+  return 'x' in el && 'y' in el ? { ...el, x: el.x + dx, y: el.y + dy } : el;
 }
 
 export function clearPeerPreview(presenceId: string): void {
@@ -133,17 +172,25 @@ function mergedFor(tabId: string, elements: readonly Element[]): DragOverlay | n
     merged.set(tabId, forTab);
   }
   if (forTab.has(elements)) return forTab.get(elements)!;
-  const theirs = [...peers.values()].filter((p) => p.tabId === tabId && p.patches.length > 0);
+  const theirs = [...peers.values()].filter(
+    (p) => p.tabId === tabId && (p.patches.length > 0 || p.ride !== null),
+  );
   const ours = local && local.tabId === tabId ? local : null;
   let overlay: DragOverlay | null = ours;
   if (theirs.length > 0) {
     const byId = new Map(elements.map((el) => [el.id, el] as const));
     const changed = new Map<string, Element>();
-    for (const p of theirs)
+    for (const p of theirs) {
+      if (p.ride)
+        for (const id of p.ride.ids) {
+          const base = byId.get(id);
+          if (base) changed.set(id, shifted(base, p.ride.dx, p.ride.dy));
+        }
       for (const patch of p.patches) {
         const base = byId.get(patch.id);
         if (base) changed.set(patch.id, { ...base, ...patch });
       }
+    }
     if (ours) for (const [id, el] of ours.changed) changed.set(id, el);
     overlay =
       changed.size || ours
@@ -174,6 +221,7 @@ export function useDragPreview(tabId: string, elements: readonly Element[]): Dra
 
 export function resetDragPreviewForTests(): void {
   local = null;
+  localBase = null;
   peers.clear();
   changedNow();
   listeners.clear();

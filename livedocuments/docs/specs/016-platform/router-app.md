@@ -22,21 +22,21 @@ redirect, so there is no loop and neither staging nor local development leads to
 
 In order, the first match wins:
 
-| Path                                                                                                                                                                         | Forwards to                                                                                                                            |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| liveworkspace's pages and doors: `/explorer/*`, sign-in, `/api/workspace/*`, `/_liveworkspace/*`, `/api/workbench/*`                                                         | liveworkspace.app (`WORKSPACE_ORIGIN`), [below](#signing-in-on-livedocumentsapp)                                                       |
-| `/api/previews/*`, and a share link's `/api/share/<code>/image.svg`, `image.png` and `card`                                                                                  | liveworkspace's previews (`PREVIEWS_ORIGIN`, `https://www.liveworkspace.app` when unset), no cookies                                   |
-| `/api/index`, `/api/index/*`                                                                                                                                                 | liveworkspace's index (`INDEX_ORIGIN`, `https://www.liveworkspace.app` when unset), as-is                                              |
-| `/api/drive`, `/api/drive/*`                                                                                                                                                 | liveworkspace's Drive sync (`DRIVE_ORIGIN`, production's when unset; [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)) |
-| `/api`, `/api/*`                                                                                                                                                             | api worker (`apps/api`)                                                                                                                |
-| `/live/*` (the editor app's `_next` assets only)                                                                                                                             | editor app (`apps/editor`), stripped                                                                                                   |
-| `/status`, `/status/*`                                                                                                                                                       | `301` to liveworkspace.app's status page at livedocuments's group (`statusRedirect`)                                                   |
-| `/telemetry`, `/telemetry/*`                                                                                                                                                 | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/specs/008-telemetry/telemetry.md)                         |
-| `/community`, `/community/*`                                                                                                                                                 | Community app (`apps/community`, [Community](../025-community/community.md)), stripped                                                 |
-| `/help`, `/help/*`                                                                                                                                                           | help app (`apps/help`), stripped                                                                                                       |
-| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                      |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                                                                         |
-| everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                       |
+| Path                                                                                                                                                                         | Forwards to                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/community`, `/community/*`                                                                                                                                                 | liveworkspace.app's Community page, address bar unchanged: `routeCommunity` first (the head and sitemap, "The Community on livedocuments.app" below), then `routeToWorkspace` |
+| liveworkspace's pages and doors: `/explorer/*`, sign-in, `/api/workspace/*`, `/_liveworkspace/*`, `/api/workbench/*`                                                         | liveworkspace.app (`WORKSPACE_ORIGIN`), [below](#signing-in-on-livedocumentsapp)                                                                                              |
+| `/api/previews/*`, and a share link's `/api/share/<code>/image.svg`, `image.png` and `card`                                                                                  | liveworkspace's previews (`PREVIEWS_ORIGIN`, `https://www.liveworkspace.app` when unset), no cookies                                                                          |
+| `/api/index`, `/api/index/*`                                                                                                                                                 | liveworkspace's index (`INDEX_ORIGIN`, `https://www.liveworkspace.app` when unset), as-is                                                                                     |
+| `/api/drive`, `/api/drive/*`                                                                                                                                                 | liveworkspace's Drive sync (`DRIVE_ORIGIN`, production's when unset; [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md))                                        |
+| `/api`, `/api/*`                                                                                                                                                             | api worker (`apps/api`)                                                                                                                                                       |
+| `/live/*` (the editor app's `_next` assets only)                                                                                                                             | editor app (`apps/editor`), stripped                                                                                                                                          |
+| `/status`, `/status/*`                                                                                                                                                       | `301` to liveworkspace.app's status page at livedocuments's group (`statusRedirect`)                                                                                          |
+| `/telemetry`, `/telemetry/*`                                                                                                                                                 | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/specs/008-telemetry/telemetry.md)                                                                |
+| `/help`, `/help/*`                                                                                                                                                           | help app (`apps/help`), stripped                                                                                                                                              |
+| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                                                             |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                                                                                                                |
+| everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                                                              |
 
 The editor app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livedocuments/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip, as the editor worker's `out/` files are already prefix-free).
 
@@ -93,14 +93,26 @@ development). A redirect from there comes back as an address on livedocuments.ap
 `X-Liveworkspace-Proxy: livedocuments`, and a router that receives one, or whose origin is its own, answers `508` rather than
 forward again. The page is `no-store`, as every page; the assets are content-hashed and cached for a year. Requests never reach the editor app's own `/explorer` pages; its links to the Explorer are same-origin `/explorer` addresses.
 
+## The Community on livedocuments.app
+
+`/community` and everything under it is liveworkspace.app's one Community page
+([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app)),
+served here the way the Explorer is (`@liveworkspace/sites/workspace-proxy` `COMMUNITY_ROUTE`, no cookies forwarded).
+Before liveworkspace's other pages the router runs `routeCommunity` (`@liveworkspace/community-site/router`), bound
+to livedocuments (`COMMUNITY_SITE`) and the `COMMUNITY_URL` var: it rewrites the gallery's head to livedocuments's own, fills a
+post's head from the Community service (404 for a missing post; the shell unchanged when the service is unavailable),
+and answers `/community/sitemap.xml`; the rest goes through `routeToWorkspace`. `COMMUNITY_URL` is
+`http://localhost:3000/api/community` locally, `https://staging.liveworkspace.app/api/community` on staging, and
+production's by default ([Community](../025-community/community.md)).
+
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / EDITOR / API / COMMUNITY / HELP);
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP);
 `/telemetry` and `/status` are redirects to liveworkspace.app, and liveworkspace's own pages, index, previews and Drive
 are forwarded to its origins (`WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIGIN`, `DRIVE_ORIGIN`), not bindings. One
 `forward(request, url, binding, origin, stripPrefix?)` resolves each app target as _binding if present, else
 local-dev origin_ (see Local development below) and strips the prefix for the assetPrefix and basePath paths (`/live`
-assets, `/community` and `/help`) when forwarding to a binding, re-prefixing a redirect's `Location` (`withPrefixedRedirect`). The
+assets and `/help`) when forwarding to a binding, re-prefixing a redirect's `Location` (`withPrefixedRedirect`). The
 order is `route()` in `apps/router/src/index.ts`, as the table above lists it; `LIVE_ROUTE_SEGMENTS` is
 `document`, `auth`, `embed`, `explorer`, `get-started`, `join`, `new`, `oauth`, `offline` and `sign-in`.
 
@@ -120,7 +132,6 @@ The router **also runs locally**, so `pnpm dev` gives you the production URL sha
 | marketing | `http://localhost:3301/`                                       |
 | live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)    |
 | help      | `http://localhost:3304/help` (basePath baked in)               |
-| community | `http://localhost:3305/community` (basePath baked in)          |
 | api       | `http://localhost:8987/api/...` (wrangler dev)                 |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedocuments/router dev` runs `wrangler dev --env local --port 3300`, and the root `pnpm dev` includes it.

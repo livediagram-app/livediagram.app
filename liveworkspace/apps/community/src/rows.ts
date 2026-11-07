@@ -6,6 +6,7 @@ import {
   isCommunityApp,
   isCommunityCategory,
   isCommunityCategoryOf,
+  type CommunityApp,
   type CommunityAuthor,
   type CommunityCategory,
   type CommunityPost,
@@ -40,9 +41,19 @@ export const POST_COLS = `p.id, p.app, p.document, p.share_code, p.owner, p.auth
   p.author_picture, p.anonymous, p.title, p.description, p.category, p.tags, p.document_state, p.like_count,
   p.copy_count, p.state, p.hidden_at, p.published_at, p.updated_at`;
 
-// What the public sees, of one app: listed (not hidden after reports), and its document public in its
-// app. The app binds first.
-export const PUBLIC_POST = `p.app = ? AND p.state = 'listed' AND p.document_state = 'public'`;
+// What the public sees: listed (not hidden after reports), and its document public in its app.
+const PUBLIC = `p.state = 'listed' AND p.document_state = 'public'`;
+// Of one app; the app binds first.
+export const PUBLIC_POST = `p.app = ? AND ${PUBLIC}`;
+// Of every app (All Apps: the gallery's list and its counts only), with nothing to bind.
+export const PUBLIC_POST_ANY_APP = PUBLIC;
+
+/** The public condition for one app's posts or every app's, and what it binds. */
+export function publicWhere(scope: CommunityApp | 'all'): { where: string; binds: string[] } {
+  return scope === 'all'
+    ? { where: PUBLIC_POST_ANY_APP, binds: [] }
+    : { where: PUBLIC_POST, binds: [scope] };
+}
 
 // A tags column that isn't a JSON array of strings reads as no tags rather than failing the whole list.
 export function parseTags(raw: string): string[] {
@@ -74,6 +85,8 @@ export function rowCategory(row: Pick<PostRow, 'app' | 'category'>): CommunityCa
 export function rowToPost(row: PostRow, liked: boolean): CommunityPost {
   return {
     id: row.id,
+    // Written only by the app routes, which name a known app.
+    app: row.app as CommunityApp,
     title: row.title,
     description: row.description,
     category: rowCategory(row),

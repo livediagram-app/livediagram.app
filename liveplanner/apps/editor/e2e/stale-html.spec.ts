@@ -49,7 +49,11 @@ test('back after a deploy brings the Explorer back, never a white screen', async
   test.setTimeout(60_000);
   const refusedStyles: string[] = [];
   page.on('console', (m) => {
-    if (/Refused to apply style|MIME type/i.test(m.text())) refusedStyles.push(m.text());
+    // The Explorer's own refusals: its assets are liveworkspace's (/_liveworkspace). The project page's code under
+    // /live/_next, which it fetches on demand while idle, can be refused when the deploy lands mid-fetch; that is
+    // the project page's, not the Explorer this test is about.
+    if (/Refused to apply style|MIME type/i.test(m.text()) && !m.text().includes('/live/_next/'))
+      refusedStyles.push(m.text());
   });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });

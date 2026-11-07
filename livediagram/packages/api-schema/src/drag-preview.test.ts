@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DRAG_PREVIEW_MAX_ELEMENTS, isPresenceOpKind, parseDragPreviewPatches } from './index';
+import {
+  DRAG_PREVIEW_MAX_ELEMENTS,
+  DRAG_PREVIEW_MAX_RIDE_IDS,
+  isPresenceOpKind,
+  parseDragPreviewPatches,
+  parseDragPreviewRide,
+} from './index';
 
 // docs/specs/008-canvas/drag-preview.md "Live movement for collaborators": a dragger's preview travels
 // as presence, carrying only geometry, validated before anyone draws it.
@@ -49,5 +55,31 @@ describe('drag-preview on the wire', () => {
       x: i,
     }));
     expect(parseDragPreviewPatches(many)).toBeNull();
+  });
+});
+
+describe('a ride on the wire', () => {
+  it('keeps the offset, the ids when named, and the patches of what does not ride', () => {
+    expect(
+      parseDragPreviewRide({ dx: 4, dy: -2, ids: ['a', 'b'], patches: [{ id: 'c', x: 1 }] }),
+    ).toEqual({
+      dx: 4,
+      dy: -2,
+      ids: ['a', 'b'],
+      patches: [{ id: 'c', x: 1 }],
+    });
+    expect(parseDragPreviewRide({ dx: 4, dy: -2 })).toEqual({ dx: 4, dy: -2, patches: [] });
+  });
+
+  it('refuses a ride without a finite offset, with bad ids, too many ids, or bad patches', () => {
+    expect(parseDragPreviewRide(null)).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1 })).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1, dy: Number.POSITIVE_INFINITY })).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1, dy: 1, ids: 'a' })).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1, dy: 1, ids: [7] })).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1, dy: 1, ids: ['x'.repeat(201)] })).toBeNull();
+    const ids = Array.from({ length: DRAG_PREVIEW_MAX_RIDE_IDS + 1 }, (_, i) => `e${i}`);
+    expect(parseDragPreviewRide({ dx: 1, dy: 1, ids })).toBeNull();
+    expect(parseDragPreviewRide({ dx: 1, dy: 1, patches: [{ x: 1 }] })).toBeNull();
   });
 });

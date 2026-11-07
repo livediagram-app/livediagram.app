@@ -8,9 +8,11 @@ const linkClass =
   'relative touch-target-y text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white';
 
 // The footer (liveworkspace/docs/specs/010-site/site.md "The front door"): every app again, the platform's own
-// pages and services (Comparison, which points at each app's comparisons), and the privacy
-// policy and terms that cover all of them, where to report a vulnerability, and the site's third-party licences.
-export function Footer() {
+// pages and services (Comparison, which points at each app's comparisons; the Community, every app's posts), and the
+// privacy policy and terms that cover all of them, where to report a vulnerability, and the site's third-party
+// licences. `base` is liveworkspace.app's origin where the footer is drawn on an app's address (the Community page
+// there), so its links lead to liveworkspace.app's pages rather than the app's.
+export function Footer({ base = '' }: { base?: string }) {
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:px-6">
@@ -33,21 +35,25 @@ export function Footer() {
           ))}
         </FooterColumn>
         <FooterColumn title="Platform">
-          <a href="/compare" className={linkClass}>
+          <a href={`${base}/compare`} className={linkClass}>
             Comparison
           </a>
-          <a href="/telemetry" className={linkClass}>
+          {/* Every app's posts together (liveworkspace/docs/specs/007-community/community.md "One page for every app"). */}
+          <a href={`${base}/community`} className={linkClass}>
+            Community
+          </a>
+          <a href={`${base}/telemetry`} className={linkClass}>
             Telemetry
           </a>
-          <a href="/status" className={linkClass}>
+          <a href={`${base}/status`} className={linkClass}>
             Status
           </a>
         </FooterColumn>
         <FooterColumn title="Legal">
-          <a href="/privacy" className={linkClass}>
+          <a href={`${base}/privacy`} className={linkClass}>
             Privacy Policy
           </a>
-          <a href="/terms" className={linkClass}>
+          <a href={`${base}/terms`} className={linkClass}>
             {TERMS_LABEL}
           </a>
           {/* The repository's security policy, the same private channel for every app
@@ -56,7 +62,7 @@ export function Footer() {
             Report a Vulnerability
           </a>
           {/* Third-party licences (liveworkspace/docs/specs/010-site/site.md "Licences"). */}
-          <a href="/licences" className={linkClass}>
+          <a href={`${base}/licences`} className={linkClass}>
             Licences
           </a>
         </FooterColumn>

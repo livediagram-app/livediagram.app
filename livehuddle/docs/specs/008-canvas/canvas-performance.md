@@ -43,14 +43,19 @@ A selection of any size drags as smoothly as a few elements. Measured on the lar
 (1,770 elements: 900 labelled shapes in a 30 × 30 grid and 870 arrows, each joining a shape to its
 right-hand neighbour), with every element selected:
 
-| Moment                        | Budget                                                                        |
-| ----------------------------- | ----------------------------------------------------------------------------- |
-| One pointer move of the drag  | At most 16 ms of script (the move's handler and the render it causes), median |
-| A drag frame's arrow work     | At most 16 ms of CPU, held by a CPU-time test at that size                    |
-| A typical (five-element) drag | No slower than before this budget                                             |
+| Moment                        | Budget                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| One pointer move of the drag  | At most 16 ms of script (the move's handler and the render it causes), median   |
+| One frame of the drag         | At most 16 ms from the move to the frame painted (script, style, paint), median |
+| A drag frame's arrow work     | At most 16 ms of CPU, held by a CPU-time test at that size                      |
+| A typical (five-element) drag | No slower than before this budget                                               |
+| A collaborator watching       | Sees the whole-board drag move live, not only on release                        |
 
-The script budget is read unthrottled on a developer's laptop, the "mid-range laptop" it stands for;
-the bench also reports it at the reference speed (4× slower), where it is not a budget.
+The script and frame budgets are read unthrottled on a developer's laptop, the "mid-range laptop" it
+stands for; the bench also reports them at the reference speed (4× slower), where they are not
+budgets. The frame is what the page spends restyling and repainting what the drag shifts, which is
+why a very large move shifts one layer, not each element ([Drag preview](drag-preview.md) "A very
+large move rides as one layer").
 
 ## The rules
 

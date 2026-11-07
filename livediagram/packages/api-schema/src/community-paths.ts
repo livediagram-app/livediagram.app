@@ -1,20 +1,16 @@
-// Where the Community lives on the site (docs/specs/025-community/community.md "The Community app"). Kept apart
-// from the rest of the Community vocabulary so a link to it (the apps menu, the footer, the editor's Community bar)
-// never loads the categories, limits and validation with it.
+// Where the Community lives on livediagram's site (docs/specs/025-community/community.md "Where it lives"): the paths
+// every app's site shares (@liveworkspace/community/paths), kept apart from the rest of the Community vocabulary so a
+// link to it (the apps menu, the footer, the editor's Community bar) never loads the categories, limits and validation
+// with it.
 
-// The Community's own address on the site (the router serves the Community app there).
-export const COMMUNITY_HOME_PATH = '/community/';
+import { communityKeyStorage } from '@liveworkspace/community/paths';
 
-// A post's own page on the site (the Community app is served at /community).
-export function communityPostPath(postId: string): string {
-  return `/community/post/?id=${encodeURIComponent(postId)}`;
-}
+export {
+  COMMUNITY_HOME_PATH,
+  communityImagePath,
+  communityPostPath,
+} from '@liveworkspace/community/paths';
 
-// The live image a card shows, relative to the api base.
-export function communityImagePath(shareCode: string): string {
-  return `/share/${encodeURIComponent(shareCode)}/image.svg`;
-}
-
-// Where the Community pages keep their per-browser key (liveworkspace/docs/specs/007-community/community.md "Likes"): livediagram's
-// own, on its own origin.
-export const COMMUNITY_KEY_STORAGE = 'livediagram:v2:community-key';
+// Where the Community page keeps its per-browser key on livediagram's address (liveworkspace/docs/specs/007-community/
+// community.md "Likes").
+export const COMMUNITY_KEY_STORAGE = communityKeyStorage('livediagram');

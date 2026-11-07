@@ -35,8 +35,9 @@ describe('repo layout trees', () => {
     for (const dir of ['apps', 'packages'] as const) {
       it(`${file} lists exactly the ${dir} on disk`, () => {
         const onDisk = workspaces(dir);
-        // Guard against going blind: the repo has many of each.
-        expect(onDisk.length).toBeGreaterThan(5);
+        // Guard against going blind: the repo has at least five of each (five apps since Community moved to
+        // liveworkspace).
+        expect(onDisk.length).toBeGreaterThanOrEqual(5);
         expect(listed(tree, dir)).toEqual(onDisk);
       });
     }

@@ -306,6 +306,16 @@ const BY_ID: ReadonlyMap<string, CommunityCategoryDef> = new Map(
   ),
 );
 
+// Every app's categories together, each id once (a shared id has one label), in the apps' order with Something Else
+// last: the category filter of the Community page's All Apps.
+export function allCommunityCategories(): readonly (CommunityCategoryDef & {
+  id: CommunityCategory;
+})[] {
+  const seen = [...BY_ID.values()].filter((c) => c.id !== OTHER.id);
+  // Every id in BY_ID comes from COMMUNITY_APP_CATEGORIES, so each is a CommunityCategory.
+  return [...seen, OTHER] as (CommunityCategoryDef & { id: CommunityCategory })[];
+}
+
 // Any app's category: what a query or a stored row may name. A post's own must also be its app's
 // (`isCommunityCategoryOf`).
 export function isCommunityCategory(value: unknown): value is CommunityCategory {
