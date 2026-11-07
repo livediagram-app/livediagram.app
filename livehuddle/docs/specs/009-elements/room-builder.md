@@ -119,8 +119,10 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
 
 ### Locked doors
 
-A Door locked with the element's Lock (the element menu's Lock, `locked`) shows it: a small padlock on its jamb, in its
-stroke, on every type, and its leaves or panels drawn a shade darker. Unlocked, no padlock. The rule it shows is the
+A Door locked with the element's Lock (the element menu's Lock, `locked`) shows it, on every type: a padlock in the middle
+of its doorway, on a floor-coloured disc ringed in its stroke, always upright however the door is turned on its wall, and
+its leaves, panes or wings drawn half a stroke darker. Unlocked, no padlock. The canvas's own lock badge (the round one
+at an element's top left) is not drawn on a Door: its padlock says it, and a badge turning with the wall would hide it. The rule it shows is the
 one below: a Participant cannot swing a locked door, so a locked shut door is a door only an Editor opens; a locked
 open one stays open.
 

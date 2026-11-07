@@ -40,7 +40,8 @@ Derived from [Door types](../room-builder.md#door-types), [Room presets](../offi
 | `../packages/avatar/src/collision.ts`                             | `fenceSegments` adds a corridor's walls, cut by the doors on them                                                                    |
 | `packages/document/src/piece-variants.ts`                         | `DOOR_VARIANTS`, `RUG_VARIANTS`, `CORRIDOR_VARIANTS`, `pieceVariant(el)` (the stored type, or the first), the sizes, `corridorPaths` |
 | `packages/document/src/shape-variants.ts`                         | `applyShapeVariant` stores a door's, rug's or corridor's `variant` and its size; a room preset's size, name, outline                 |
-| `packages/document/src/room-preset-shapes.ts`                     | `ROOM_PRESETS`, `roomAsPreset`, and the point a shaped preset's Door snaps to (`roomPresetDoorAt`)                                   |
+| `packages/document/src/room-preset-shapes.ts`                     | `ROOM_PRESETS`, `roomAsPreset`, the point a shaped preset's Door snaps to (`roomPresetDoorAt`), `outlineNameAlign`                   |
+| `packages/document/src/room-presets.ts`                           | `ROOM_PRESET_LAYOUTS`: each furnished preset's pieces; `roomPresetCompanions` places them, spread with the room                      |
 | `packages/document/src/door-art.ts`                               | `doorArt(width, height, variant)`: each type's parts with their open and shut poses, for the canvas and the export                   |
 | `packages/document/src/svg-render-doors.ts`                       | The export's `doorSvg` (over `doorArt`, padlock and shading) and `corridorSvg` (over `corridorPaths`)                                |
 | `packages/document/src/rug-art.ts`                                | `rugParts(width, height, variant)`: each patterned rug drawn to its size, in `tint`, `sheen` and `dye` parts                         |
@@ -59,6 +60,11 @@ Notes:
 - A door's parts carry `open` and `shut` poses (`rotate` about an origin, or a `dx` slide); the canvas sets the pose
   as a CSS transform under the 180 ms door transition (`.lh-door-leaf`, `.lh-door-swing`), the export bakes the current
   one in. Paints are data too: a revolving drum's floor is `pane` (the glass wash, unoutlined).
+- A locked door's padlock parts carry `lock` and come last; both renderers draw them in a group turned back by the
+  door's rotation about `doorLockCentre`, so it stands upright. `BoxedElementView` skips the canvas lock badge on a Door.
+- `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
+  (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
+  ResizeObserver.
 - A corridor's arm is `min(CORRIDOR_ARM, the box's shorter side)`; its walls are polylines along each arm's sides at
   `ROOM_WALL / 2` in, stopping at the open ends; the drawing's walls are the same lines, stroked as a room's.
 - The palette drag hands the preview its `variant` (`PaletteDragPreview.variant`), so a dragged preset previews at

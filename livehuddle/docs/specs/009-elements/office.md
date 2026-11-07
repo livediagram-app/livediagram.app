@@ -95,13 +95,15 @@ Four walls round a floor, with a doorway, and the room's name on its back wall.
 The Room tile opens six rooms to start from, the way the Card tile opens its presets ([Card presets](card.md#card-presets)):
 on the Toolbar strip and in the Rooms flyout it is an opener whose side panel lists them, one card each, and each places,
 drags and previews as the Room tile did (dropped at its own size, lining up with its neighbours). Every preset is an
-ordinary Room (`shape: 'room'`): nothing about the preset is stored, so a placed one is moved, resized, renamed and
-recoloured like any room.
+ordinary Room (`shape: 'room'`) placed already furnished, as the [Restroom](office-amenities.md#the-restroom-preset) is:
+the room, its Door and the pieces that show what the room is for arrive in one change (one undo). Nothing about the
+preset is stored on the room or its pieces: each is an ordinary element, so a placed one is moved, resized, renamed,
+recoloured, refurnished or emptied like any room, and its pieces like any piece.
 
 | Preset    | Variant     | Shape                                                     | Size      | Name      | Door                    |
 | --------- | ----------- | --------------------------------------------------------- | --------- | --------- | ----------------------- |
 | Room      | (none)      | A rectangle with its back wall standing up                | 480 × 320 | Room      | The front wall's middle |
-| Office    | `office`    | A small rectangle for one or two desks                    | 280 × 220 | Office    | The front wall's middle |
+| Office    | `office`    | A small rectangle for one or two desks                    | 360 × 240 | Office    | The front wall's middle |
 | Boardroom | `boardroom` | A long rectangle round a big table                        | 800 × 400 | Boardroom | The front wall's middle |
 | Open Plan | `open-plan` | An L: a wide floor with a wing down the left              | 720 × 520 | Open Plan | The wing's front wall   |
 | Kitchen   | `kitchen`   | A rectangle with its front right corner cut at 45 degrees | 440 × 340 | Kitchen   | The cut corner's wall   |
@@ -109,9 +111,26 @@ recoloured like any room.
 
 - The rectangles (Room, Office, Boardroom) are rectangular Rooms with a back wall face and a name plate. The shaped
   ones (Open Plan, Kitchen, Lounge) are [custom rooms](room-builder.md#the-custom-room): their walls along a stored
-  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name at the top left.
+  `roomOutline`, aspect locked so their 45-degree walls stay at 45, their name inside their walls: at the top left
+  where the floor reaches it (the Open Plan, the Kitchen), else centred along the top (the Lounge's octagon). A room
+  drawn with the Room Builder places its name the same way.
 - Each comes with one [Door](room-builder.md#door), where the table says, snapped onto that wall as every Door is, in
   the room's stroke: one change, one undo, the room selected.
+- Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
+  (DEFAULTS.md D222):
+
+  | Preset    | Furnishings                                                                                                  |
+  | --------- | ------------------------------------------------------------------------------------------------------------ |
+  | Room      | None: the empty room to furnish from scratch                                                                 |
+  | Office    | A desk against the back wall, a plant and a bookshelf                                                        |
+  | Boardroom | Two Meeting Tables end to end (sixteen seats), plants in the back corners, a water cooler and coffee machine |
+  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing  |
+  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler          |
+  | Lounge    | A fireplace on the back wall, a Round rug, two sofas facing in across it, plants either side of the door     |
+
+  A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
+  own size.
+
 - The [Restroom](office-amenities.md#the-restroom-preset) stays in **Perks** with the restroom pieces it brings.
 - For a passage between rooms there is the [Corridor](corridor.md), its own piece beside the Room.
 
