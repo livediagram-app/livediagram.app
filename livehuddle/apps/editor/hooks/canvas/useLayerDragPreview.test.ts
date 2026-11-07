@@ -190,6 +190,14 @@ describe('the layer preview store', () => {
     expect((store.entryOf(a.id)?.element as { width: number } | undefined)?.width).toBe(121);
   });
 
+  it('rides a move on a board without arrows, which has no element index', () => {
+    const store = createLayerPreviewStore();
+    setLocalPreview('t', [{ ...a, x: 30 }, { ...c, x: 30 }, b], [a, b, c]);
+    store.update(inputs({ drawnElements: [a, b, c], elementIndex: null, arrowLinks: null }));
+    expect(store.entryOf(a.id)).toBeUndefined();
+    expect(store.entryOf(c.id)).toBeUndefined();
+  });
+
   it('keeps a moved element and the arrow between moved ends out of its entries: they ride', () => {
     const store = createLayerPreviewStore();
     const told = { a: vi.fn(), ab: vi.fn() };

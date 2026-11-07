@@ -91,8 +91,7 @@ export function createRideWriter(): RideWriter {
 
   const sameIds = (rides: ReadonlyMap<string, RideOffset>) =>
     rides.size === nodesFor.size && [...rides.keys()].every((id) => nodesFor.has(id));
-  const isoNow = () =>
-    root !== null && (root as Partial<Element>).closest?.('[data-iso]') != null;
+  const isoNow = () => root !== null && (root as Partial<Element>).closest?.('[data-iso]') != null;
 
   // Finds the planes and their children again, keeping what each plane still found carries; a plane no longer
   // there puts its offset down.
@@ -242,7 +241,8 @@ export function createRideWriter(): RideWriter {
         for (const { node, id } of p.children!)
           if (!rides.has(id)) want.set(node, css(-p.carries.dx, -p.carries.dy));
       }
-      for (const [node, was] of written) if (!want.has(node) && was !== '') node.style.translate = '';
+      for (const [node, was] of written)
+        if (!want.has(node) && was !== '') node.style.translate = '';
       const next = new Map<Styled, string>();
       for (const [node, value] of want) {
         if ((written.get(node) ?? '') !== value) node.style.translate = value;

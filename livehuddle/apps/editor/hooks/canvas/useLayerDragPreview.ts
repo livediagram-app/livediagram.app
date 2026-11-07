@@ -1,7 +1,12 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { Element, ElementGrid, ElementIndex } from '@livehuddle/document';
+import {
+  elementIndexFor,
+  type Element,
+  type ElementGrid,
+  type ElementIndex,
+} from '@livehuddle/document';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
 import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
@@ -14,7 +19,7 @@ import {
 import type { Rect } from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { ridingElements, type RideOffset } from './drag-ride';
-import { createRideWriter } from './drag-ride-dom';
+import { createRideWriter } from '@liveworkspace/workbench/lib/drag-ride-dom';
 
 // The element layer's drag preview (docs/specs/008-canvas/drag-preview.md "The preview",
 // docs/specs/008-canvas/canvas-performance.md "A move re-renders what moved"): what each element looks
@@ -171,13 +176,18 @@ export function createLayerPreviewStore(): LayerPreviewStore {
   const writeRides = (rides: ReadonlyMap<string, RideOffset>, over: readonly Element[]) => {
     if (dropFrame !== null) cancelAnimationFrame(dropFrame);
     dropFrame = null;
-    if (rides.size !== rideCount) {
-      rideCount = rides.size;
-      if (rides.size > 0) debugLog('[drag-preview] ride', { count: rides.size });
+    if (rides.size === 0 && !rideWriter.active()) {
+      rideCount = 0;
+      return;
     }
-    if (rides.size === 0 && !rideWriter.active()) return;
     rodeOver = rides.size > 0 ? over : null;
     rideWriter.apply(rides);
+    // Logged when the count changes, with how many planes carry the offset as one layer.
+    if (rides.size !== rideCount) {
+      rideCount = rides.size;
+      if (rides.size > 0)
+        debugLog('[drag-preview] ride', { count: rides.size, planes: rideWriter.planesCarrying() });
+    }
   };
   let structure: PreviewStructure | null = null;
   let lastOverlay: DragOverlay | null = null;
@@ -191,9 +201,14 @@ export function createLayerPreviewStore(): LayerPreviewStore {
   ): { out: Map<string, PreviewEntry>; rides: ReadonlyMap<string, RideOffset> } {
     const out = new Map<string, PreviewEntry>();
     const { elementIndex, arrowLinks, drawnElements } = inputs;
-    const rides = elementIndex
-      ? ridingElements(overlay, elementIndex, arrowLinks, inputs.stackedIds)
-      : NO_RIDES;
+    // A board without arrows has no element index; the board's cached one finds what rides (built once per board,
+    // not per frame).
+    const rides = ridingElements(
+      overlay,
+      elementIndex ?? elementIndexFor(drawnElements),
+      arrowLinks,
+      inputs.stackedIds,
+    );
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });
     if (!elementIndex || !arrowLinks) return { out, rides };
