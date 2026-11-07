@@ -107,6 +107,11 @@ first sign-in after a quiet spell (and the status page's Accounts check) wait on
 database's region. The same check runs in CI instead, against a database built from the migrations, so a migration
 that leaves out a table or column Better Auth needs still fails before it ships.
 
+The OAuth provider also makes sure every app API it issues tokens for has its row before a Worker's first answer. It
+looks them all up in one read rather than one read per app, so a cold Worker waits on a single round trip for them
+however many apps there are, and adds only the rows that are missing. Rows already there are never changed, and the
+apps a token may be for are still exactly the configured list.
+
 Better Auth answers a database failure itself, as a 500 or as no session. When D1 is unavailable during a request
 and Better Auth's answer is an error, the Worker answers `503 storage_unavailable` instead
 ([architecture.md](../002-architecture/architecture.md) "When a request fails"), so an outage is retryable and never
