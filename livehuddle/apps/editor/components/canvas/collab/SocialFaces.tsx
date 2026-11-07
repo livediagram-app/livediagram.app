@@ -23,15 +23,15 @@ import {
   useJukeboxFailed,
   useJukeboxListening,
 } from '@/lib/jukebox-listening';
-import { useNearArcade } from './useSocialPieces';
+import { ArcadeFace } from './ArcadeFace';
 import { PingPongGame } from './PingPongGame';
 import { NoticeBoardPopover, NoticeBoardReader } from './NoticeBoardPopover';
 import { WorldClockReader } from './WorldClockReader';
 
 // The live faces of the social pieces (docs/specs/009-elements/social-pieces.md) laid over their art: the Notice
 // Board's cards and Notes button, the World Clock's dials, the Jukebox's Play / Mute button and the Arcade Machine's
-// Insert Coin bubble. Each lies over the drawn rectangle of its piece (the art is fitted whole and centred), and
-// draws in the piece's own grid, so it scales with the piece and the canvas.
+// Insert Coin bubble and its game (ArcadeFace.tsx). Each lies over the drawn rectangle of its piece (the art is fitted
+// whole and centred), and draws in the piece's own grid, so it scales with the piece and the canvas.
 
 /** Whether a kind has a live face over its art. */
 export function hasSocialFace(kind: string): boolean {
@@ -61,7 +61,7 @@ export function SocialFace({
     case 'jukebox':
       return <JukeboxFace element={element} />;
     case 'arcade-machine':
-      return <ArcadeBubble id={element.id} />;
+      return <ArcadeFace element={element} />;
     // The table's game: ball, paddles and score (PingPongGame.tsx).
     case 'ping-pong-table':
       return <PingPongGame element={element} />;
@@ -426,21 +426,5 @@ function JukeboxFace({ element }: { element: ShapeElement }) {
         </button>
       </Tooltip>
     </Overlay>
-  );
-}
-
-// --- Arcade Machine --------------------------------------------------------------------------------------------
-
-function ArcadeBubble({ id }: { id: string }) {
-  const near = useNearArcade(id);
-  if (!near) return null;
-  return (
-    <span
-      className="lh-coin-bubble pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100"
-      style={{ transform: 'translateX(-50%)' }}
-      role="status"
-    >
-      Insert Coin
-    </span>
   );
 }
