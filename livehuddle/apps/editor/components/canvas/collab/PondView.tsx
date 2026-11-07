@@ -1,6 +1,7 @@
 'use client';
 
 import { FurniturePartView } from './FurnitureView';
+import { PondMoment } from './PieceMoments';
 import { pondParts, type ShapeElement } from '@livehuddle/document';
 
 // A Pond (docs/specs/009-elements/social-pieces.md "Pond"): a stone rim, the water in the element's fill and two lily
@@ -38,6 +39,8 @@ export function PondView({
           className="lh-social-anim lh-ripple"
           aria-hidden
         />
+        {/* A pebble now and then (docs/specs/009-elements/piece-moments.md). */}
+        <PondMoment id={element.id} width={w} height={h} />
       </svg>
     </div>
   );

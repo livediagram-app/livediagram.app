@@ -1,0 +1,353 @@
+/* Piece moments (docs/specs/009-elements/piece-moments.md): one-shot keyframes for the small surprises a still piece
+   plays when you walk right up to it. Transform and opacity only, so the compositor runs them; each runs once and
+   holds its last frame, which is the resting pose or invisible. Per-instance values ride custom properties set on the
+   part (--lean, --fall, --drift, --dx, --peak, --drop, --rise, --up, --delay, --dur). None plays under reduced motion,
+   and any already mounted is hidden. */
+
+.lh-moment {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+/* A tree rocking away from you and settling; a plant's quicker shiver. */
+.lh-moment-sway {
+  transform-origin: 50% 100%;
+  animation: lh-moment-sway 1.8s ease-in-out both;
+}
+@keyframes lh-moment-sway {
+  0% {
+    transform: rotate(0deg);
+  }
+  16% {
+    transform: rotate(calc(var(--lean, 1) * 2.4deg));
+  }
+  40% {
+    transform: rotate(calc(var(--lean, 1) * -1.3deg));
+  }
+  62% {
+    transform: rotate(calc(var(--lean, 1) * 0.6deg));
+  }
+  82% {
+    transform: rotate(calc(var(--lean, 1) * -0.2deg));
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.lh-moment-rustle {
+  transform-origin: 50% 100%;
+  animation: lh-moment-rustle 1s ease-in-out both;
+}
+@keyframes lh-moment-rustle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  12% {
+    transform: rotate(calc(var(--lean, 1) * 2deg));
+  }
+  28% {
+    transform: rotate(calc(var(--lean, 1) * -1.6deg));
+  }
+  44% {
+    transform: rotate(calc(var(--lean, 1) * 1.1deg));
+  }
+  60% {
+    transform: rotate(calc(var(--lean, 1) * -0.6deg));
+  }
+  78% {
+    transform: rotate(calc(var(--lean, 1) * 0.2deg));
+  }
+}
+
+/* A leaf falling and drifting, fluttering side to side, lying a moment, then gone. */
+.lh-moment-fall {
+  animation: lh-moment-fall var(--dur, 2.2s) cubic-bezier(0.3, 0.1, 0.55, 1) both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-fall {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  72% {
+    transform: translate(var(--drift, 0px), var(--fall, 40px));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift, 0px), var(--fall, 40px));
+    opacity: 0;
+  }
+}
+.lh-moment-flutter {
+  animation: lh-moment-flutter 0.5s ease-in-out 3 alternate both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-flutter {
+  from {
+    transform: translateX(-4px) rotate(-40deg);
+  }
+  to {
+    transform: translateX(4px) rotate(35deg);
+  }
+}
+
+/* A butterfly lifting out of a bush and away, its wings beating. */
+.lh-moment-flyaway {
+  animation: lh-moment-flyaway 2.2s ease-in-out both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-flyaway {
+  0% {
+    transform: translate(0, 4px) scale(0.5);
+    opacity: 0;
+  }
+  12% {
+    transform: translate(0, -4px) scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(calc(var(--dx, 30px) * 0.35), -22px) scale(1);
+  }
+  65% {
+    transform: translate(calc(var(--dx, 30px) * 0.6), -28px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 30px), -54px) scale(0.9);
+    opacity: 0;
+  }
+}
+.lh-moment-flap {
+  animation: lh-moment-flap 0.14s ease-in-out 16 alternate both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-flap {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.25);
+  }
+}
+
+/* A stoked fire: the flames flare and settle, sparks rise and fade, the glow brightens. */
+.lh-moment-flare {
+  transform-origin: 50% 100%;
+  animation: lh-moment-flare 1.3s ease-out both;
+}
+@keyframes lh-moment-flare {
+  0% {
+    transform: scale(0.6, 0.5);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1.08, 1.2);
+    opacity: 0.55;
+  }
+  60% {
+    transform: scale(1, 1.02);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(0.9, 0.85);
+    opacity: 0;
+  }
+}
+.lh-moment-spark {
+  animation: lh-moment-spark 1.1s ease-out both;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes lh-moment-spark {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 0px), var(--rise, -30px));
+    opacity: 0;
+  }
+}
+.lh-moment-glow {
+  animation: lh-moment-glow 1.6s ease-in-out both;
+}
+@keyframes lh-moment-glow {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 0.3;
+  }
+}
+
+/* Something thrown: across steadily, up then down under gravity, gone as it lands. */
+.lh-moment-across {
+  animation: lh-moment-across 0.62s linear both;
+}
+@keyframes lh-moment-across {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--dx, 0px));
+  }
+}
+.lh-moment-arc {
+  animation: lh-moment-arc 0.62s both;
+}
+@keyframes lh-moment-arc {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+  45% {
+    transform: translateY(var(--peak, -30px));
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+  96% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--drop, 0px));
+    opacity: 0;
+  }
+}
+.lh-moment-spin {
+  animation: lh-moment-spin 0.155s ease-in-out 4 alternate both;
+}
+@keyframes lh-moment-spin {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.15);
+  }
+}
+
+/* Where it lands: rings spreading on the water, droplets hopping, a glint. */
+.lh-moment-ripple {
+  animation: lh-moment-ripple 1.4s ease-out both;
+  animation-delay: var(--delay, 0.6s);
+}
+@keyframes lh-moment-ripple {
+  0% {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+.lh-moment-droplet {
+  animation: lh-moment-droplet 0.5s ease-out 0.6s both;
+}
+@keyframes lh-moment-droplet {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate(calc(var(--dx, 0px) * 0.6), var(--up, -10px));
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: translate(var(--dx, 0px), 2px);
+    opacity: 0;
+  }
+}
+.lh-moment-glint {
+  animation: lh-moment-glint 0.7s ease-out 0.6s both;
+}
+@keyframes lh-moment-glint {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  35% {
+    transform: scale(1.1) rotate(25deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.2) rotate(60deg);
+    opacity: 0;
+  }
+}
+
+/* A can tipping off its shelf and dropping to the flap; the display blinking. */
+.lh-moment-can {
+  animation: lh-moment-can 1.4s both;
+}
+@keyframes lh-moment-can {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  10% {
+    opacity: 1;
+  }
+  22% {
+    transform: translate(3px, -1px) rotate(-14deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+  }
+  62% {
+    transform: translate(4px, 50px) rotate(-90deg);
+    animation-timing-function: ease-out;
+  }
+  72% {
+    transform: translate(4px, 46px) rotate(-90deg);
+    animation-timing-function: ease-in;
+  }
+  80% {
+    transform: translate(4px, 50px) rotate(-90deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(4px, 50px) rotate(-90deg);
+    opacity: 0;
+  }
+}
+.lh-moment-blink {
+  animation: lh-moment-blink 0.9s steps(1, end) 0.15s both;
+}
+@keyframes lh-moment-blink {
+  0%,
+  50% {
+    opacity: 0.9;
+  }
+  25%,
+  75%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-moment {
+    animation: none !important;
+  }
+  .lh-moment-parts {
+    display: none;
+  }
+}
+:root.reduce-motion .lh-moment {
+  animation: none !important;
+}
+:root.reduce-motion .lh-moment-parts {
+  display: none;
+}
