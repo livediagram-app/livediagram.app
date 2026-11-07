@@ -79,6 +79,8 @@ function doorPaint(p: DoorArtPart, floor: string, stroke: string): SVGProps<SVGE
         stroke,
         strokeWidth: FURNITURE_RAIL_STROKE,
       };
+    case 'pane':
+      return { fill: stroke, fillOpacity: GLASS_OPACITY };
     case 'wing':
       return { fill: 'none', stroke, strokeWidth: 3, strokeLinecap: 'round' };
     case 'swing':
@@ -113,12 +115,7 @@ function DoorPartView({ part, props }: { part: DoorArtPart; props: SVGProps<SVGE
       );
     case 'circle':
       return (
-        <circle
-          cx={part.cx}
-          cy={part.cy}
-          r={part.r}
-          {...(props as SVGProps<SVGCircleElement>)}
-        />
+        <circle cx={part.cx} cy={part.cy} r={part.r} {...(props as SVGProps<SVGCircleElement>)} />
       );
     case 'path':
       return <path d={part.d} {...(props as SVGProps<SVGPathElement>)} />;
@@ -151,7 +148,11 @@ export function DoorView({
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
-        aria-label={`${locked ? 'Locked ' : ''}${closed ? 'Closed' : 'Open'} door`}
+        aria-label={
+          locked
+            ? `Locked ${closed ? 'closed' : 'open'} door`
+            : `${closed ? 'Closed' : 'Open'} door`
+        }
       >
         {parts.map((p, i) => {
           const pose = p.motion ? (closed ? p.motion.shut : p.motion.open) : null;

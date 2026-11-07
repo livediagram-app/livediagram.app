@@ -44,6 +44,14 @@ describe('placementLanding', () => {
     expect(door.y + door.height / 2).toBe(900);
   });
 
+  it("lands a preset at its own size: a Double Door on the wall, a Boardroom's box", () => {
+    const { piece: door, onWall } = placementLanding('door', { x: 200, y: 120 }, [room], 'double');
+    expect(onWall).toBe(true);
+    expect(door).toMatchObject({ width: 144, variant: 'double' });
+    const { piece } = placementLanding('room', { x: 0, y: 0 }, [], 'boardroom');
+    expect(piece).toMatchObject({ x: -400, y: -200, width: 800, label: 'Boardroom' });
+  });
+
   it('centres any other placed piece on the pointer at its own size, never on a wall', () => {
     const { piece, onWall } = placementLanding('bar-stool', { x: 210, y: 105 }, [room]);
     expect(onWall).toBe(false);
@@ -146,6 +154,31 @@ describe('DoorPlacementPreview', () => {
     move('pointermove', 200, 120);
     move('pointermove', 200, 120, document.body);
     expect(preview()).toBeNull();
+  });
+
+  it("draws the armed preset's own piece, then the dragged one's", () => {
+    const { rerender } = render(
+      <PlacementPreview
+        pendingDraw={{ type: 'shape', kind: 'corridor', variant: 'cross' }}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 500, 500);
+    expect(preview()?.getAttribute('style')).toContain('width: 480px; height: 480px');
+    act(() => setPaletteDragPreview({ kind: 'rug', width: 320, height: 88, variant: 'runner' }));
+    rerender(
+      <PlacementPreview
+        pendingDraw={null}
+        elements={[]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+    );
+    move('dragover', 500, 500);
+    expect(preview()?.getAttribute('style')).toContain('width: 320px; height: 88px');
   });
 
   it('follows a Door dragged from the palette', () => {

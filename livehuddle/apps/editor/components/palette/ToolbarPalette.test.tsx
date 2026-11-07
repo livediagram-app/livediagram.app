@@ -117,7 +117,7 @@ describe('ToolbarPalette', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build".
-  it('opens Rooms one level deep, on its Build group: Room, Room Builder, Door', () => {
+  it('opens Rooms one level deep, on its Build group: Room, Room Builder, Corridor, Door', () => {
     show();
     const rooms = openFlyout('Rooms');
     expect(
@@ -128,8 +128,11 @@ describe('ToolbarPalette', () => {
     const items = [...rooms.querySelectorAll('[data-flyout-item]')].map((b) =>
       b.getAttribute('aria-label'),
     );
-    expect(items.slice(0, 3)).toEqual(['Add Room', 'Room Builder', 'Add Door']);
+    expect(items.slice(0, 4)).toEqual(['Add Room', 'Room Builder', 'Add Corridor', 'Add Door']);
+    // The Room opens its presets beside the flyout (docs/specs/009-elements/office.md "Room presets"); a preset places.
     fireEvent.click(within(rooms).getByRole('button', { name: 'Add Room' }));
+    const presets = screen.getByRole('dialog', { name: 'Room' });
+    fireEvent.click(within(presets).getByRole('button', { name: 'Add Boardroom' }));
     expect(flyout()).toBeNull();
   });
 
