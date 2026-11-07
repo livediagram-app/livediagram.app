@@ -2,13 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { CHANGESET_MAX_OPERATIONS } from '@livehuddle/api-schema';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import {
-  elementLocked,
   formatRejections,
   idTaken,
   invalidResult,
   invalidValue,
   parseError,
-  tabLocked,
   tooLarge,
   unknownField,
   unknownOperation,
@@ -130,17 +128,6 @@ describe('rejection builders', () => {
       hint: 'use id n3-3',
     });
     expect(idTaken(1, byId('a1'), taken).details).toEqual(['id "a1" is taken by arrow']);
-  });
-
-  it('element_locked names the tab, or each element and why', () => {
-    expect(tabLocked()).toEqual({
-      code: 'element_locked',
-      details: ['the tab is locked'],
-      hint: 'unlock it in the editor, or leave it out of the changeset',
-    });
-    expect(elementLocked(2, byId('n3'), { scope: 'element' }).details[1]).toBe(
-      '  n3  square "Login" (element)',
-    );
   });
 
   it('invalid_result names the element, field and rule', () => {

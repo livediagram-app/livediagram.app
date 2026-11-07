@@ -88,7 +88,6 @@ export const SHAPE_COMMON_FIELDS = [
   'y',
   'width',
   'height',
-  'locked',
   'textAlignX',
   'textAlignY',
   'textBold',

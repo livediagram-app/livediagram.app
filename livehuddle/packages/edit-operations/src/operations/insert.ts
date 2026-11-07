@@ -16,7 +16,6 @@ import {
   insertElement,
   namingOf,
   refsOf,
-  refuseLocked,
   touch,
   type EditState,
   writeFields,
@@ -101,8 +100,6 @@ export function applyInsert(
       { hint: 'rewire one of them by its ref instead' },
     );
   const arrow = arrows[0]!;
-  const lock = state.locked.get(arrow.id);
-  if (lock) return refuseLocked(state, 'insert', index, arrow, lock);
   noteTarget(state, arrow.id);
 
   const axis = axisOf(a.el, b.el);

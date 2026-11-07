@@ -56,7 +56,6 @@ const ATTRIBUTE_SOURCES = [
   'iconId',
   'link',
   'alt',
-  'locked',
   'action',
   'actions',
   'stats',

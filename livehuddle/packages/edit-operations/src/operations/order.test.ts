@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applied, lines, refused } from '../fixtures/outcomes';
-import { lockedFlow, run } from '../fixtures/run';
+import { run } from '../fixtures/run';
 
 const ids = (text: string) =>
   applied(run(text))
@@ -24,12 +24,11 @@ describe('order', () => {
     expect(ids('order f2 front')).toBe('n1 n2 n3 f2 n4 n5 n6 n7 n8 t1 a1 a2 a3 a4 a5 a6 a7');
   });
 
-  it('refuses ordering against itself, a missing other, and a locked target', () => {
+  it('refuses ordering against itself and a missing other', () => {
     expect(refused(run('order n3 above=n3')).details).toEqual([
       'above=n3: an element is not ordered against itself',
     ]);
     expect(refused(run('order n3 below=nowhere')).code).toBe('target_not_found');
-    expect(refused(run('order n3 front', lockedFlow('n3'))).code).toBe('element_locked');
     expect(refused(run('order nowhere front')).code).toBe('target_not_found');
   });
 });

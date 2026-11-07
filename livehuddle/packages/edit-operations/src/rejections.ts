@@ -8,7 +8,7 @@ import {
   type JsonValue,
 } from '@livehuddle/api-schema';
 import type { Element } from '@livehuddle/document';
-import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
+import { kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {
   DID_YOU_MEAN_MAX_DISTANCE,
@@ -16,9 +16,6 @@ import {
   LABEL_CUT_CHARS,
   VALUE_CUT_CHARS,
 } from './vocabulary';
-
-// Why an element may not change: its own lock.
-export type LockReason = { scope: 'element' };
 
 const didYouMean = (word: string, names: readonly string[]) => {
   const near = nearestName(word, names, DID_YOU_MEAN_MAX_DISTANCE);
@@ -130,22 +127,6 @@ export function idTaken(
       `id "${holder.id}" is taken by ${kindOf(holder)}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}`,
     ],
     hint: `use id ${freeIdLike(holder.id, taken)}`,
-  };
-}
-
-const UNLOCK_HINT = 'unlock it in the editor, or leave it out of the changeset';
-
-export function tabLocked(): EditRejection {
-  return { code: 'element_locked', details: ['the tab is locked'], hint: UNLOCK_HINT };
-}
-
-export function elementLocked(operation: number, el: Element, lock: LockReason): EditRejection {
-  const why = `(${lock.scope})`;
-  return {
-    code: 'element_locked',
-    operation,
-    details: ['locked:', `  ${describeElement(el)} ${why}`],
-    hint: UNLOCK_HINT,
   };
 }
 

@@ -11,14 +11,7 @@ import {
   type Endpoint,
 } from '@livehuddle/document';
 import { resolveSome } from '../selectors';
-import {
-  type EditState,
-  type Removal,
-  refsOf,
-  refuseLocked,
-  removeElement,
-  writeFields,
-} from '../state';
+import { type EditState, type Removal, refsOf, removeElement, writeFields } from '../state';
 import type { RmOperation } from '../types';
 
 const attachedTo = (end: Endpoint): ElementId | null =>
@@ -67,21 +60,12 @@ function freeEnds(state: EditState, arrow: ArrowElement, target: ElementId): Arr
   return { ...arrow, from: free(arrow.from), to: free(arrow.to) };
 }
 
-const lockRejection = (state: EditState, el: Element, operation: number) => {
-  const lock = state.locked.get(el.id);
-  return lock ? refuseLocked(state, 'rm', operation, el, lock) : null;
-};
-
 function keepArrows(
   state: EditState,
   target: ElementId,
   arrows: readonly ArrowElement[],
   operation: number,
-): EditRejection | null {
-  for (const arrow of arrows) {
-    const locked = lockRejection(state, arrow, operation);
-    if (locked) return locked;
-  }
+): void {
   for (const arrow of arrows) {
     const freed = freeEnds(state, arrow, target);
     const ends = (['from', 'to'] as const).filter((end) => freed[end] !== arrow[end]);
@@ -92,7 +76,6 @@ function keepArrows(
       message: `${refsOf(state).refOf(arrow.id)} ${ends.join(' and ')} freed where it was drawn: ${refsOf(state).refOf(target)} was removed`,
     });
   }
-  return null;
 }
 
 export function applyRm(
@@ -106,8 +89,7 @@ export function applyRm(
     // An arrow already gone with an earlier target's cascade.
     const el = state.byId.get(id);
     if (!el) continue;
-    const rejection = removeOne(state, el, keep === true, operation);
-    if (rejection) return rejection;
+    removeOne(state, el, keep === true, operation);
   }
   return null;
 }
@@ -119,20 +101,10 @@ export function removeOne(
   keep: boolean,
   operation: number,
   removal: Removal = {},
-): EditRejection | null {
-  const targetLocked = lockRejection(state, el, operation);
-  if (targetLocked) return targetLocked;
+): void {
   const attached = arrowsByAttachment(state);
   const pulled = keep ? new Map<ElementId, ElementId>() : cascadeOf(el.id, attached);
-  for (const id of pulled.keys()) {
-    const locked = lockRejection(state, state.byId.get(id)!, operation);
-    if (locked) return locked;
-  }
-  if (keep) {
-    const kept = keepArrows(state, el.id, attached.get(el.id) ?? [], operation);
-    if (kept) return kept;
-  }
+  if (keep) keepArrows(state, el.id, attached.get(el.id) ?? [], operation);
   removeElement(state, el.id, operation, removal);
   for (const [id, by] of pulled) removeElement(state, id, operation, { pinnedTo: by });
-  return null;
 }

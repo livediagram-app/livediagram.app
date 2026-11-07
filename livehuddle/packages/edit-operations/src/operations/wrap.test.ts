@@ -9,7 +9,7 @@ import {
 import { applyEditOperations } from '../apply';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';
-import { boxIn, elementOf, lockedFlow, run } from '../fixtures/run';
+import { boxIn, elementOf, run } from '../fixtures/run';
 import { PLACEMENT_GAP } from '../vocabulary';
 import { clearOf, wrapBox } from './wrap';
 
@@ -56,9 +56,6 @@ describe('wrap', () => {
       '» n8  laid out (flow, down)',
       'boundary-2  +n7 +n8',
     ]);
-    expect(refused(run('wrap n7 n8 in boundary tidy', lockedFlow('n8'))).code).toBe(
-      'element_locked',
-    );
   });
 
   it('refuses to capture a non-member, naming it and the box', () => {
@@ -87,12 +84,9 @@ describe('wrap', () => {
       'boundary-2  +n6 +n8',
     ]);
     expect(boxIn(applied(outcome).tab, 'n7')[0] + 140).toBe(-FRAME_PAD - PLACEMENT_GAP);
-    expect(refused(run('wrap n6 n8 in boundary make-room', lockedFlow('n7'))).code).toBe(
-      'element_locked',
-    );
   });
 
-  it('carries what a captured container holds out with it, and leaves locked contents', () => {
+  it('carries what a captured container holds out with it', () => {
     const tab = {
       ...checkoutFlow(),
       elements: [
@@ -132,13 +126,11 @@ describe('wrap', () => {
     expect(refused(run('wrap n7 in boundary id=n2')).code).toBe('id_taken');
   });
 
-  it('moves a captured container out with what it holds, members and locked elements staying', () => {
+  it('moves a captured container out with what it holds, members staying', () => {
     const outcome = run('wrap n4 n6 in boundary make-room');
     const { tab } = applied(outcome);
     expect(boxIn(tab, 'n4')).toEqual(boxIn(checkoutFlow(), 'n4'));
     expect(boxIn(tab, 'n5')[0]).not.toBe(0);
-    const locked = applied(run('wrap n4 n6 in boundary make-room', lockedFlow('n5'))).tab;
-    expect(boxIn(locked, 'n5')).toEqual(boxIn(checkoutFlow(), 'n5'));
   });
 
   it('refuses members whose words match nothing, or do not read', () => {

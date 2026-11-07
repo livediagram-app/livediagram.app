@@ -24,9 +24,6 @@ export function flowWith(change: (el: Element) => Element): Tab {
   return { ...tab, elements: tab.elements.map(change) };
 }
 
-export const lockedFlow = (...ids: string[]) =>
-  flowWith((el) => (ids.includes(el.id) ? { ...el, locked: true } : el));
-
 export const elementOf = (tab: Tab, id: string): Element | undefined =>
   tab.elements.find((e) => e.id === id);
 
