@@ -32,6 +32,7 @@
     "@livedocuments/template-previews": "workspace:*",
     "@livedocuments/templates": "workspace:*",
     "@livedocuments/ui": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community-ui": "workspace:^",
     "@liveworkspace/explorer": "workspace:*",

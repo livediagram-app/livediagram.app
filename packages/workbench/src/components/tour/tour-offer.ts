@@ -20,13 +20,21 @@ export const TOUR_OFFER_RANK = {
   element: 3,
 } as const;
 
+// The eyebrow without a closing " tour" (any case, after any whitespace). A scan, not `/\s+tour$/i`, which is
+// quadratic on a long run of whitespace (CodeQL js/polynomial-redos).
+function withoutTourWord(eyebrow: string): string {
+  if (eyebrow.slice(-4).toLowerCase() !== 'tour') return eyebrow;
+  const before = eyebrow.slice(0, -4);
+  const trimmed = before.trimEnd();
+  return trimmed.length < before.length ? trimmed : eyebrow;
+}
+
 // Words the button keeps small in a tour's name.
 const SMALL_WORDS = new Set(['and', 'or', 'of', 'in', 'a', 'an', 'the']);
 
 /** A tour's name from its card's eyebrow, in title case: "Hub and spoke tour" → "Hub and Spoke". */
 export function tourNameOf(eyebrow: string): string {
-  return eyebrow
-    .replace(/\s+tour$/i, '')
+  return withoutTourWord(eyebrow)
     .split(' ')
     .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
     .join(' ');

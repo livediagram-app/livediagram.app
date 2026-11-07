@@ -24,6 +24,7 @@
     "@livedesign/photo-engine": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/drive": "workspace:*",

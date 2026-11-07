@@ -42,6 +42,7 @@
     "./title-case": "./src/title-case.ts",
     "./trash": "./src/trash.ts",
     "./untitled-names": "./src/untitled-names.ts",
+    "./url-slashes": "./src/url-slashes.ts",
     "./within-reach": "./src/within-reach.ts"
   },
   "scripts": {

@@ -6,6 +6,7 @@
 // in the app's Worker only.
 import type { SiteId } from '@liveworkspace/sites';
 import { basicAuthorization, type ClientCredentials } from './oauth';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 const ACCOUNT_PATH = '/api/account/internal';
 
@@ -45,7 +46,7 @@ export async function call(
   init: { method: 'GET' | 'POST'; body?: unknown },
   fetcher: typeof fetch,
 ): Promise<Response> {
-  return fetcher(`${credentials.accountsUrl.replace(/\/+$/, '')}${ACCOUNT_PATH}${path}`, {
+  return fetcher(`${withoutTrailingSlashes(credentials.accountsUrl)}${ACCOUNT_PATH}${path}`, {
     method: init.method,
     headers: {
       authorization: basicAuthorization(credentials),

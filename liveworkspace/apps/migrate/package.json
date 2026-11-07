@@ -19,6 +19,7 @@
     "@liveplanner/items": "workspace:*",
     "@liveplanner/project": "workspace:*",
     "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/migration": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",

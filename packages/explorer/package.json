@@ -26,6 +26,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/drive": "workspace:*",

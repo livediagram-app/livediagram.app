@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@better-auth/oauth-provider": "1.7.14",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/data-export": "workspace:^",
