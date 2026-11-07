@@ -72,7 +72,7 @@ Local only: no input from anyone else reaches it.
 ## Performance and limits
 
 - Per step: one `inside` test per moment piece, no allocation. Budget test: 1000 steps among 2000 moment pieces inside
-  `cpuBudgetMs(60)` (`usePieceMoments.perf.test.ts`).
+  `cpuBudgetMs(60)` (`apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`).
 - At rest: no loop, no timer, no rAF. A moment: one keyed SVG group of at most 8 nodes, one-shot CSS on transform and
   opacity, under 3 s.
 
@@ -93,12 +93,12 @@ None: a moment is a decoration with no failure mode. No telemetry event (it is n
 
 ## Testing
 
-- `lib/piece-moments.test.ts`: the reach per kind, arrival only on entering, the chance, the third-time rule, both
+- `apps/editor/lib/piece-moments.test.ts`: the reach per kind, arrival only on entering, the chance, the third-time rule, both
   rests, reset, the store's seq and side.
-- `collab/PieceMoments.test.tsx`: nothing drawn at mount, a moment drawn on a new seq, not replayed on remount, the
+- `apps/editor/components/canvas/collab/PieceMoments.test.tsx`: nothing drawn at mount, a moment drawn on a new seq, not replayed on remount, the
   sway class by side, every kind draws.
-- `collab/usePieceMoments.test.ts`: plays on arrival in Avatar mode, nothing out of it, nothing under reduced motion.
-- `collab/usePieceMoments.perf.test.ts`: the per-step budget.
+- `apps/editor/components/canvas/collab/usePieceMoments.test.ts`: plays on arrival in Avatar mode, nothing out of it, nothing under reduced motion.
+- `apps/editor/components/canvas/collab/usePieceMoments.perf.test.ts`: the per-step budget.
 
 ## Constants and configuration
 
