@@ -255,7 +255,7 @@ Every editor mounts the shared UI through thin doors of its own; the shared part
   unmount) keeps "Opened 2 minutes ago" true. A press: the host's grant, a tab id from the editor, `connectFile` with
   the editor's add, `Tab·Added·Connected` or `·ConnectedBoth`, then `onConnected`.
 - **`ConnectRailEntry.tsx`**: the rail's last row, stuck to its bottom under a hairline (`sm:sticky sm:bottom-0
-  sm:mt-auto` inside the rail's scroller), the other apps' logos fanned at its end; on a phone, the last chip.
+sm:mt-auto` inside the rail's scroller), the other apps' logos fanned at its end; on a phone, the last chip.
 - **`useConnectedTabActions.ts`**: the doors every editor shares, generic over its tab type: `grant` (stable), the
   `connected` map, `addConnectedTab(made, tabId, replacing?)` (the app's whole-tab save awaited, then one commit
   appending the tab and dropping the empty start tab `replacing` unless it is the only one), `showConnected` (the new
