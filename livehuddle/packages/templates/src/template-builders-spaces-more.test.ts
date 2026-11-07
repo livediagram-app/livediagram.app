@@ -45,6 +45,13 @@ const ROOMY: readonly string[] = [
   'coworking-tower',
   'expo-hall',
   'beach-offsite',
+  'arcade-lounge',
+  'games-night-den',
+  'sports-bar',
+  'family-house',
+  'city-townhouse',
+  'country-cottage',
+  'music-hall',
 ];
 // Seats this close side by side are one row.
 const ROW_GAP = 16;
@@ -83,9 +90,9 @@ const SEATS = [
   'hammock',
   'ping-pong-table',
 ];
-// Shapes that are no furniture to bump into: the walls, their doors, the floors (the Avatar Pad among them), Bring Focus
-// and the heading's sticker.
-const NOT_FURNITURE = ['room', 'door', 'sticker', 'focus-button'];
+// Shapes that are no furniture to bump into: the walls, their doors and windows (docs/specs/009-elements/room-builder.md
+// "Window": it stands in the wall), the floors (the Avatar Pad among them), Bring Focus and the heading's sticker.
+const NOT_FURNITURE = ['room', 'door', 'window', 'sticker', 'focus-button'];
 
 const meets = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;

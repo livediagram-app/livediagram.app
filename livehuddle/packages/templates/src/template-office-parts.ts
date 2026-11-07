@@ -5,6 +5,7 @@
 import {
   createShape,
   isFloorShape,
+  PIECE_VARIANT_SIZES,
   roomWithDoorPiece,
   type ChairFacing,
   type Element,
@@ -25,6 +26,9 @@ export type OfficePiece = {
   stageCameras?: boolean;
   // A piece's label: an Elevator's name (docs/specs/009-elements/elevator.md "Names").
   label?: string;
+  // A piece's type (a rug's, a Long Table's: docs/specs/009-elements/office.md "Rug types"), its size the type's own
+  // unless `w`/`h` say otherwise.
+  variant?: string;
 };
 export type OfficeRoom = {
   name: string;
@@ -34,6 +38,8 @@ export type OfficeRoom = {
   h: number;
   door: RoomDoor;
   pieces: OfficePiece[];
+  // Glass walls (docs/specs/009-elements/office.md "Glass walls"): you see who is in the room without walking in.
+  glass?: boolean;
 };
 
 // A piece's size: its own `w` and `h`, or one of them with the other kept to the drawing's proportion (the drawings
@@ -50,7 +56,9 @@ function sizeOf(
 
 /** One piece placed with its top left at (x, y): its facing, cameras and size applied. */
 function placePiece(p: OfficePiece, x: number, y: number): Element {
-  const base = createShape(p.kind, x, y);
+  const made = createShape(p.kind, x, y);
+  const typed = p.variant ? PIECE_VARIANT_SIZES[p.kind]?.[p.variant] : undefined;
+  const base = p.variant ? { ...made, ...typed, variant: p.variant } : made;
   return {
     ...base,
     ...(p.facing ? { chairFacing: p.facing } : {}),
@@ -90,6 +98,7 @@ export function furnishRooms(
       height: room.h,
       label: room.name,
       roomDoor: room.door,
+      ...(room.glass ? { variant: 'glass' } : {}),
     });
     walls.push(el);
     if (door) doors.push(door);

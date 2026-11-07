@@ -10,9 +10,12 @@ import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBuilding2,
+  lucideGamepad2,
+  lucideHouse,
   lucideMap,
   lucidePresentation,
   lucideStar,
+  lucideTicket,
   lucideTreePine,
   lucideWine,
 } from '@liveworkspace/icons/lucide';
@@ -55,6 +58,9 @@ const RAIL_ICONS: Readonly<
   events: glyph(lucidePresentation),
   outdoor: glyph(lucideTreePine),
   recreation: glyph(lucideWine),
+  games: glyph(lucideGamepad2),
+  homes: glyph(lucideHouse),
+  venues: glyph(lucideTicket),
 };
 
 const COPY: Record<

@@ -18,6 +18,13 @@ import { buildHotelLobby } from './template-builders-hotel';
 import { buildExpoHall } from './template-builders-expo';
 import { buildBeachOffsite } from './template-builders-beach';
 import { buildSchoolQuad } from './template-builders-school';
+import { buildArcadeLounge, buildGamesNightDen, buildSportsBar } from './template-builders-games';
+import {
+  buildCityTownhouse,
+  buildCountryCottage,
+  buildFamilyHouse,
+} from './template-builders-homes';
+import { buildMusicHall } from './template-builders-venues';
 import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
@@ -96,6 +103,20 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildHotelLobby(cx, cy);
     case 'coworking-tower':
       return buildTowerGround(cx, cy);
+    case 'arcade-lounge':
+      return buildArcadeLounge(cx, cy);
+    case 'games-night-den':
+      return buildGamesNightDen(cx, cy);
+    case 'sports-bar':
+      return buildSportsBar(cx, cy);
+    case 'family-house':
+      return buildFamilyHouse(cx, cy);
+    case 'city-townhouse':
+      return buildCityTownhouse(cx, cy);
+    case 'country-cottage':
+      return buildCountryCottage(cx, cy);
+    case 'music-hall':
+      return buildMusicHall(cx, cy);
     // The blank holds only its entrance (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): an
     // Avatar Pad a little below the middle, where people arrive; the user adds the rest from the palette.
     case 'blank-session':

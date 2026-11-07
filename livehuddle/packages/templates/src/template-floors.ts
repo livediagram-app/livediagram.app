@@ -1,11 +1,17 @@
 // A template's floors (docs/specs/007-editor/templates-by-mode.md "A template with floors"): the tabs that come after
-// its first, each with its own name, floor pattern and builder. Only the buildings have floors; the first floor is
-// buildTemplate's, named by templateFirstFloorName.
+// its first, each with its own name, floor pattern and builder. Only the buildings and the Homes have floors; the first
+// floor is buildTemplate's, named by templateFirstFloorName.
 
 import type { Element, FloorPattern } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 import { buildHotelRooftop, buildHotelSuites } from './template-builders-hotel';
 import { buildTowerLevel2, buildTowerLevel3 } from './template-builders-tower';
+import {
+  buildCottageUpstairs,
+  buildFamilyUpstairs,
+  buildTownhouseRoof,
+  buildTownhouseUpstairs,
+} from './template-builders-homes';
 
 export type TemplateFloor = {
   name: string;
@@ -29,6 +35,22 @@ const BUILDINGS: Partial<Record<TemplateKind, Building>> = {
       { name: 'Level 2', floor: 'carpet-tiles', build: buildTowerLevel2 },
       { name: 'Level 3', floor: 'parquet', build: buildTowerLevel3 },
     ],
+  },
+  // The Homes (docs/specs/012-collaboration/virtual-office-template.md "Homes"), joined by Stairs.
+  'family-house': {
+    first: 'Downstairs',
+    more: [{ name: 'Upstairs', floor: 'carpet', build: buildFamilyUpstairs }],
+  },
+  'city-townhouse': {
+    first: 'Downstairs',
+    more: [
+      { name: 'Upstairs', floor: 'carpet', build: buildTownhouseUpstairs },
+      { name: 'Roof Terrace', floor: 'deck', build: buildTownhouseRoof },
+    ],
+  },
+  'country-cottage': {
+    first: 'Downstairs',
+    more: [{ name: 'Upstairs', floor: 'carpet', build: buildCottageUpstairs }],
   },
 };
 

@@ -7,7 +7,16 @@
 //
 // Pure: campusPlan takes the site's top left and returns a fresh Element[], floors first.
 
-import { createShape, snapDoorToWall, type Element, type ShapeElement } from '@livehuddle/document';
+import {
+  createShape,
+  PIECE_VARIANT_SIZES,
+  snapDoorToWall,
+  type DOOR_VARIANTS,
+  type Element,
+  type ShapeElement,
+} from '@livehuddle/document';
+
+type DoorVariant = (typeof DOOR_VARIANTS)[number];
 import { arrival, type Arrival } from './template-arrival';
 import {
   SPACE_BELOW,
@@ -24,7 +33,10 @@ export type CampusRoom = Omit<OfficeRoom, 'door'> & {
   // The wall the Door stands on, how far along that wall its middle is (room-relative px), which way along the wall
   // its sign stands from the door's path (-1 towards the wall's start, 1 towards its end), and how far out from the
   // wall the walk its path joins starts (REACH_SIDE for a side wall, REACH_END for the top or bottom).
-  door: { side: DoorSide; at: number; sign: -1 | 1; reach?: number };
+  // `variant` is the Door's type (docs/specs/009-elements/room-builder.md "Door types"): a glass room's sliding door.
+  door: { side: DoorSide; at: number; sign: -1 | 1; reach?: number; variant?: DoorVariant };
+  // Windows in its outside walls (docs/specs/009-elements/room-builder.md "Window"), each on a wall, `at` along it.
+  windows?: readonly { side: DoorSide; at: number }[];
 };
 
 // A Room's wall centre lines sit half a wall (5 px) inside its box, the back wall at its back face (36 px down):
@@ -111,10 +123,20 @@ function doorMiddle(room: ShapeElement, side: DoorSide, at: number): { x: number
   }
 }
 
-/** A Door on the room's wall, snapped onto it as a placed Door is (turned to the wall, in the room's floor colour). */
-export function doorOnWall(room: ShapeElement, side: DoorSide, at: number): ShapeElement {
+/**
+ * A Door (or a Window) on the room's wall, snapped onto it as a placed one is (turned to the wall, a Window facing in,
+ * in the room's floor colour). `variant` is a Door's type, at its own size.
+ */
+export function doorOnWall(
+  room: ShapeElement,
+  side: DoorSide,
+  at: number,
+  kind: 'door' | 'window' = 'door',
+  variant?: DoorVariant,
+): ShapeElement {
   const middle = doorMiddle(room, side, at);
-  const base = createShape('door', 0, 0);
+  const made = createShape(kind, 0, 0);
+  const base = variant ? { ...made, ...PIECE_VARIANT_SIZES.door?.[variant], variant } : made;
   const free: ShapeElement = {
     ...base,
     x: middle.x - base.width / 2,
@@ -137,6 +159,8 @@ export type CampusSite = {
   arrival?: Omit<Arrival, 'x' | 'y'> & { dx: number; dy: number };
   // Anything else placed absolutely (a stage's Bring Focus), given the site's top left.
   extra?: (left: number, top: number) => Element[];
+  // False for a home: its rooms have no Room Sign (docs/specs/012-collaboration/virtual-office-template.md "Homes").
+  signs?: false;
 };
 
 const defaultReach = (side: DoorSide) => (side === 'e' || side === 'w' ? REACH_SIDE : REACH_END);
@@ -198,7 +222,7 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
     ...site.open.filter((p) => GROUND.has(p.kind)),
     ...site.rooms.filter((r) => !('indoor' in r)).map(doorPath),
     ...site.open.filter((p) => !GROUND.has(p.kind)),
-    ...site.rooms.map(doorSign),
+    ...(site.signs === false ? [] : site.rooms.map(doorSign)),
   ];
   const plan = spacePlan(
     x0,
@@ -214,12 +238,15 @@ export function campusPlan(cx: number, cy: number, site: CampusSite): Element[] 
     ],
     open,
   );
-  // Each room's Door, on the wall the room names, after the floors so it paints over the wall it cuts.
-  const doors = site.rooms.map((r) => {
+  // Each room's Door, on the wall the room names, after the floors so it paints over the wall it cuts, then its windows.
+  const doors = site.rooms.flatMap((r) => {
     const room = plan.find(
       (el): el is ShapeElement => el.type === 'shape' && el.shape === 'room' && el.label === r.name,
     )!;
-    return doorOnWall(room, r.door.side, r.door.at);
+    return [
+      doorOnWall(room, r.door.side, r.door.at, 'door', r.door.variant),
+      ...(r.windows ?? []).map((w) => doorOnWall(room, w.side, w.at, 'window')),
+    ];
   });
   return [...plan, ...doors];
 }
