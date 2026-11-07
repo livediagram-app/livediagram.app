@@ -1323,6 +1323,8 @@ const UNTYPED_SHAPES = new Set<string>([
   'mode-button',
   // The Directory (docs/specs/009-elements/directory.md) carries no label; an Elevator's label is its name.
   'directory',
+  // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+  'stairs',
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) carry no label.
   'screen',
   'room-sign',

@@ -303,7 +303,7 @@ describe('Avatar mode presses', () => {
     return face;
   };
 
-  it.each(['directory', 'elevator', 'notice-board', 'world-clock', 'portal'])(
+  it.each(['directory', 'elevator', 'stairs', 'notice-board', 'world-clock', 'portal'])(
     'opens a %s in place: no walk, and the press kept from the element',
     (kind) => {
       for (const pointer of ['mouse', 'touch']) {
@@ -372,6 +372,7 @@ describe('Avatar mode presses', () => {
   it.each([
     'directory',
     'elevator',
+    'stairs',
     'portal',
     'mode-button',
     'focus-button',

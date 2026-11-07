@@ -153,6 +153,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 7v15M9 4.5l1.5-2 1.5 2M12 2.5l1.5 2 1.5-2" />
     </Glyph>
   ),
+  // A flight's profile rising to the right, an up arrow over its foot (the palette's Stairs tile).
+  stairs: (
+    <Glyph>
+      <path d="M3 20.5h4.5V16H12v-4.5h4.5V7H21M6.5 11.5V3.5M4 6l2.5-2.5L9 6" />
+    </Glyph>
+  ),
   // A room's walls with a doorway, a little table and a plant: an office floor plan.
   'virtual-office': (
     <Glyph>

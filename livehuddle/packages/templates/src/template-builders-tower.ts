@@ -1,6 +1,6 @@
 // The Co-working Tower (docs/specs/012-collaboration/virtual-office-template.md "Spaces with floors"): a co-working
 // building on three floors, one tab each. The North Lift and the South Lift stand in the same place on every floor, at
-// the left by the stairs' wall, so riding one steps out where you expect.
+// the left, with the Stairs beside the North Lift, so riding one or climbing a flight steps out where you expect.
 //
 // - Ground Floor (the first tab, Wood): Hot Desks (three islands of four), a Meeting Room and a Cafe; the Avatar Pad at
 //   the entrance with the Directory beside it.
@@ -22,6 +22,9 @@ const LIFTS: OfficePiece[] = [
   { kind: 'elevator', x: 60, y: 300, label: 'North Lift' },
   { kind: 'elevator', x: 60, y: 700, label: 'South Lift' },
 ];
+// The Stairs (docs/specs/009-elements/stairs.md "In the templates"), beside the North Lift and in the same place on
+// every floor, so a flight lands on the Stairs a floor away.
+const STAIRS: OfficePiece = { kind: 'stairs', x: 184, y: 300 };
 const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 520 };
 // The upper floors' Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): between the
 // lifts, left of the Directory, so someone who changes floor from the tab bar arrives in the lift lobby. Clear of the
@@ -123,6 +126,7 @@ const GROUND_ROOMS: IndoorRoom[] = [
 
 const GROUND_FLOOR: OfficePiece[] = [
   ...LIFTS,
+  STAIRS,
   // The entrance lounge: a sofa on its rug and plants, the Directory beside the door.
   { kind: 'rug', x: 500, y: 820 },
   { kind: 'sofa', x: 524, y: 840, facing: 'n' },
@@ -230,7 +234,7 @@ export function buildTowerLevel2(cx: number, cy: number): Element[] {
     width: W,
     height: L2_H,
     rooms: L2_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 900, y: 860 }],
+    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 900, y: 860 }],
     title: {
       text: 'Level 2',
       width: 160,
@@ -302,7 +306,7 @@ export function buildTowerLevel3(cx: number, cy: number): Element[] {
     width: W,
     height: L3_H,
     rooms: L3_ROOMS,
-    open: [...LIFTS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1100, y: 960 }],
+    open: [...LIFTS, STAIRS, LIFT_DIRECTORY, LIFT_PAD, { kind: 'plant', x: 1100, y: 960 }],
     title: {
       text: 'Level 3',
       width: 160,

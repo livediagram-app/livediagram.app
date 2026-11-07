@@ -12,6 +12,7 @@ import {
   AvatarPadIcon,
   DirectoryIcon,
   ElevatorIcon,
+  StairsIcon,
   RoomIcon,
   RoomBuilderIcon,
   DoorIcon,
@@ -791,6 +792,21 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'elevator' },
     icon: <ElevatorIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Stairs (docs/specs/009-elements/stairs.md): a flight to the floor (tab) above or below.
+    id: 'tools:stairs',
+    tileGroup: 'travel',
+    blurb: 'Walk up or down a floor (tab)',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Stairs',
+    caption: 'Stairs',
+    description:
+      "A flight between this space's tabs. Click it, or walk your character on, pick Up or Down and climb to the Stairs on the next floor.",
+    filled: true,
+    action: { type: 'shape', kind: 'stairs' },
+    icon: <StairsIcon size={TILE_GLYPH_PX} />,
   },
   {
     // The Avatar Selection Mode button (docs/specs/009-elements/mode-button.md "Only Avatar"): the one mode button

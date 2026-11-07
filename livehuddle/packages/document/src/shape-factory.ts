@@ -205,6 +205,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   directory: { width: 72, height: 124 },
   elevator: { width: 112, height: 140 },
+  // Stairs (docs/specs/009-elements/stairs.md): a flight to the floor above or below.
+  stairs: { width: 96, height: 128 },
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md): a wall screen and a door plaque.
   screen: MEETING_PIECE_SIZE.screen,
   'room-sign': MEETING_PIECE_SIZE['room-sign'],
@@ -422,7 +424,9 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       kind === 'calendar-wall' ||
       kind === 'suggestion-box' ||
       kind === 'signpost' ||
-      kind === 'photo-wall'
+      kind === 'photo-wall' ||
+      // Stairs (docs/specs/009-elements/stairs.md) carry no name.
+      kind === 'stairs'
         ? { label: '' }
         : {}),
       ...(kind === 'meeting-table' || kind === 'office-pod'

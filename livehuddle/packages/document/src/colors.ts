@@ -673,6 +673,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // The Directory and the Elevator (docs/specs/009-elements/directory.md, elevator.md) draw themselves.
   'directory',
   'elevator',
+  // Stairs (docs/specs/009-elements/stairs.md) draw themselves.
+  'stairs',
   // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md) draw themselves.
   'screen',
   'room-sign',
