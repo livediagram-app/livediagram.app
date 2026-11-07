@@ -35,7 +35,7 @@ Scope, by file:
 | `apps/editor/components/palette/EditWalkToggle.tsx`               | Walk is always on the Edit                                                | Walk toggle |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                  |
 | `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                           |
-| `packages/templates/src/template-office-parts.ts`                 | `wayIn`: a Space's pad and how-to line; `WAY_IN_CLEAR`, `WAY_IN_HALF`     |
+| `packages/templates/src/template-arrival.ts`                      | `arrival`: a Space's pad and how-to line, where the builder puts them     |
 | `packages/templates/src/build-template.ts`                        | `floorsFirst`; Blank Space's pad (`blankPad`, `BLANK_PAD_DROP`)           |
 | `packages/templates/src/template-builders-{tower,hotel}.ts`       | An upper floor's pad by its Elevators                                     |
 | `apps/editor/lib/pad-only-tab.ts`                                 | `holdsOnlyPads`, `padOnlyTabCentre`: a pad-only tab is blank, entry view  |
@@ -221,11 +221,19 @@ the drawing is 17 entries built once. INP: entry adds one O(n) pass, well under 
 
 Every Space and blank tab has one ([Avatar Pad](../avatar-pad.md#every-space-and-blank-tab-has-one)).
 
-- `wayIn(right, wallY, hint)`: the pad at `(right - 128, wallY + WAY_IN_CLEAR)`, the hint (520 x 64, right aligned)
-  ending 20 px left of it and centred on it. `right` is where the old Walk In button's right edge was; a gate's
-  centred pad passes `gateX + WAY_IN_HALF`. `wallY` is the bottom of the wall, fence or site above the pad.
+- `arrival({ x, y, hint, side = 'below', hintW = ARRIVAL_HINT_W })`: `[how-to line, pad]`, the pad centred on
+  `(x, y)`. The line (`sm`, in the half's own ink, `arrivalHintBox`) is `hintW` wide and `arrivalHintHeight(hint, hintW)` tall
+  (`ceil(len * 7.4 / hintW)` lines of 22 px): `'below'` centred, its top `ARRIVAL_HINT_BELOW` (8) under the pad,
+  centre aligned; `'left'` right aligned, ending `ARRIVAL_HINT_BESIDE` (20) left of the pad, centred on it; `'right'`
+  left aligned, starting 20 right of it.
+- Each Space builder passes its spot as an offset from the plan's centre `(cx, cy)` (a campus site: `arrival: { dx,
+dy, side?, hintW?, hint }` on its `CampusSite`, placed by `campusPlan`); the spots are the spec's table ([Where a
+  Space's pad stands](../avatar-pad.md#where-a-spaces-pad-stands)), each checked by the tests below.
 - Clearance: the core sits 32 px below the pad's top (`(TOP.cy + 0.5) * 4`), and a Regular figure is
-  `avatarFigureHeight(1.5)` = 99 px tall, so its head is 67 px above the pad's top: `WAY_IN_CLEAR` 72 leaves 5 px.
+  `avatarFigureHeight(1.5)` = 99 px tall, so its head is 67 px above the pad's top; the tests hold the pad and that
+  figure clear of every wall and piece.
+- `SPACE_BELOW` (120), the margin under a plan where the pad used to wait, stays: it keeps every plan centred where it
+  was, so the hero art and anything else drawn from a template's coordinates keep theirs.
 - `buildTemplate` returns `floorsFirst(...)`: every `isFloorShape` element ahead of the rest, order kept within each
   group (stable). Paint order sorts the floors among themselves (`paintOrder`), so the pad still lies on a room or the
   grass.
@@ -239,36 +247,39 @@ Every Space and blank tab has one ([Avatar Pad](../avatar-pad.md#every-space-and
 
 ## Testing
 
-| Rule                                                   | Test                                                                                       |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
-| Drawn core on `avatarPadCore`, fixed nodes, tints      | `packages/document/src/avatar-pad.test.ts`                                                 |
-| Scale whole, centred; core and footprint; rotation     | same                                                                                       |
-| Kind registration, factory, export drawing             | same                                                                                       |
-| Spawn pad: nearest, tie by order, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                       |
-| Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                       |
-| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                      |
-| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                   |
-| View nodes, theme stroke, shimmer; beam, colour        | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                 |
-| I5: picker, key, command                               | `EditWalkToggle.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
-| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                   |
-| One pad per Space tab, on open floor, figure clear     | `packages/templates/src/template-builders-spaces-more.test.ts`                             |
-| Floors first; Blank Space is one pad below the middle  | `packages/templates/src/build-template.test.ts`                                            |
-| A pad-only tab opens no walk                           | `apps/editor/lib/walk-entrance.test.ts`                                                    |
-| A new Space on its start is empty; Start Blank's pad   | `apps/editor/lib/new-document-content.test.ts`                                             |
-| The × lands the pad uncounted                          | `apps/editor/components/start/StartFromTemplates.test.tsx`                                 |
+| Rule                                                    | Test                                                                                       |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Drawn core on `avatarPadCore`, fixed nodes, tints       | `packages/document/src/avatar-pad.test.ts`                                                 |
+| Scale whole, centred; core and footprint; rotation      | same                                                                                       |
+| Kind registration, factory, export drawing              | same                                                                                       |
+| Spawn pad: nearest, tie by order, none, no view         | `apps/editor/lib/avatar-pad.test.ts`                                                       |
+| Arrivals: new on a pad, not seen, cap, replace, expiry  | same                                                                                       |
+| Entry order, recentre, telemetry, I1, every entry       | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                      |
+| Own and peer beams from presence, once, expiry          | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                   |
+| View nodes, theme stroke, shimmer; beam, colour         | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                 |
+| I5: picker, key, command                                | `EditWalkToggle.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
+| A peer walks in from a board button                     | `apps/editor/e2e/realtime-peers.spec.ts`                                                   |
+| One pad per Space tab, on open floor, figure clear      | `packages/templates/src/template-builders-spaces-more.test.ts`                             |
+| In the plan, off its bottom-right, no stage; line clear | same                                                                                       |
+| No pad on a path's stones                               | `packages/templates/src/template-paths.test.ts`                                            |
+| Floors first; Blank Space is one pad below the middle   | `packages/templates/src/build-template.test.ts`                                            |
+| A pad-only tab opens no walk                            | `apps/editor/lib/walk-entrance.test.ts`                                                    |
+| A new Space on its start is empty; Start Blank's pad    | `apps/editor/lib/new-document-content.test.ts`                                             |
+| The × lands the pad uncounted                           | `apps/editor/components/start/StartFromTemplates.test.tsx`                                 |
 
 ## Constants and configuration
 
-| Constant                  | Value    | Provenance                                                | Safe range     |
-| ------------------------- | -------- | --------------------------------------------------------- | -------------- |
-| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions; the core geometry's units     | fixed          |
-| `AVATAR_PAD_VIEW`         | 128 x 80 | The grid at 4 a unit: a new pad draws 1:1                 | fixed          |
-| `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                         | 64 to 256 wide |
-| `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                 | 600 to 1200    |
-| `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213)  | 4 to 16        |
-| `WAY_IN_CLEAR`            | 72       | A Regular figure on the core clears the wall above (D215) | 68 to 120      |
-| `WAY_IN_HALF`             | 64       | Half the pad's width, to centre it under a gate           | fixed          |
-| `BLANK_PAD_DROP`          | 160      | Below the middle, in view at 100% on a phone (D216)       | 120 to 200     |
+| Constant                  | Value    | Provenance                                               | Safe range     |
+| ------------------------- | -------- | -------------------------------------------------------- | -------------- |
+| `AVATAR_PAD_GRID`         | 32 x 20  | Round platform proportions; the core geometry's units    | fixed          |
+| `AVATAR_PAD_VIEW`         | 128 x 80 | The grid at 4 a unit: a new pad draws 1:1                | fixed          |
+| `AVATAR_PAD_DEFAULT_SIZE` | 128 x 80 | 4 canvas px per grid pixel (D212)                        | 64 to 256 wide |
+| `AVATAR_PAD_ARRIVAL_MS`   | 900      | Under a second; matches `avatar-pad-beam`                | 600 to 1200    |
+| `AVATAR_PAD_MAX_ARRIVALS` | 8        | A full row of arrivals without filling the canvas (D213) | 4 to 16        |
+| `ARRIVAL_HINT_W`          | 400      | Two lines of a how-to line, under a pad (D215)           | 160 to 520     |
+| `ARRIVAL_HINT_BELOW`      | 8        | The line just under the pad's front rim                  | 4 to 24        |
+| `ARRIVAL_HINT_BESIDE`     | 20       | The line beside the pad, as the old way in's             | 12 to 40       |
+| `BLANK_PAD_DROP`          | 160      | Below the middle, in view at 100% on a phone (D216)      | 120 to 200     |
 
 ## Assets and external resources
 
@@ -276,5 +287,5 @@ None: the pad is a vector table and the beam a pixel table, both in source.
 
 ## Defaults ledger
 
-D211 (beam size), D212 (default size), D213 (arrival cap), D215 (a Space's pad clearance), D216 (a blank tab's pad
+D211 (beam size), D212 (default size), D213 (arrival cap), D215 (a Space's how-to line), D216 (a blank tab's pad
 below the middle).
