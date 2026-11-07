@@ -25,7 +25,9 @@ const LIFTS: OfficePiece[] = [
 // The Stairs (docs/specs/009-elements/stairs.md "In the templates"), beside the North Lift and in the same place on
 // every floor, so a flight lands on the Stairs a floor away.
 const STAIRS: OfficePiece = { kind: 'stairs', x: 184, y: 300 };
-const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 520 };
+// The Directory stands below the Stairs' landing spot (stairsFootPoint, about 115 px under their foot), so a climb
+// never ends with the character standing on it.
+const LIFT_DIRECTORY: OfficePiece = { kind: 'directory', x: 190, y: 610 };
 // The upper floors' Avatar Pad (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"): between the
 // lifts, left of the Directory, so someone who changes floor from the tab bar arrives in the lift lobby. Clear of the
 // North Lift by more than a standing character (its head 67 px above the pad's top).
