@@ -20,7 +20,7 @@ const GLASS_OPACITY = 0.16;
 function geometry(p: DoorArtPart): string {
   switch (p.tag) {
     case 'rect':
-      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.rx}"`;
+      return `<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}"${p.rx ? ` rx="${p.rx}"` : ''}`;
     case 'circle':
       return `<circle cx="${p.cx}" cy="${p.cy}" r="${p.r}"`;
     case 'path':
