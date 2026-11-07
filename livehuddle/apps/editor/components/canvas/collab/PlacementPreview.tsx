@@ -179,6 +179,10 @@ export function PlacementPreview({
   const previewBox = (
     <div
       aria-hidden
+      // Inert, its art's own controls included (palette-drag-ghost.md "The preview is inert"): a Pet Bed's sleeping
+      // dog is a Pat the Dog button across the bed's middle, right under the pointer, and it took the press that
+      // should have placed the bed.
+      inert
       data-testid="placement-preview"
       data-kind={kind}
       data-on-wall={onWall ? '' : undefined}

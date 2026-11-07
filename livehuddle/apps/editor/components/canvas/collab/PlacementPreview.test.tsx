@@ -266,6 +266,29 @@ describe('DoorPlacementPreview', () => {
     move('pointermove', 200, 120);
     expect(preview()).toBeNull();
   });
+
+  // The owner's report: an armed Pet Bed would not place. Its preview's sleeping dog is a Pat the Dog button across
+  // the bed's middle, right under the pointer, and it took the click (palette-drag-ghost.md "The preview is inert").
+  it.each(['pet-bed', 'jukebox', 'notice-board'] as const)(
+    'keeps every control an armed %s preview draws from the press that places it',
+    (kind) => {
+      render(
+        <PlacementPreview
+          pendingDraw={{ type: 'shape', kind }}
+          elements={[]}
+          wrapperRef={{ current: wrapper }}
+          zoom={1}
+        />,
+        { container: wrapper },
+      );
+      move('pointermove', 400, 300);
+      const el = preview() as HTMLElement;
+      expect(el.hasAttribute('inert')).toBe(true);
+      const controls = el.querySelectorAll('button, [data-piece-control]');
+      if (kind === 'pet-bed') expect(el.querySelector('[aria-label="Pat the Dog"]')).not.toBeNull();
+      for (const c of controls) expect(c.closest('[inert]')).toBe(el);
+    },
+  );
 });
 
 // The owner's report: a Room tile dragged or armed showed no preview of the room. Every Space piece tile previews the
