@@ -15,7 +15,7 @@ import {
 // docs/specs/009-elements/workday-pieces.md "Reception Desk" (the Welcome bubble) and "Pet Bed and its dog".
 
 const at = (
-  shape: 'reception-desk' | 'pet-bed' | 'room',
+  shape: 'reception-desk' | 'pet-bed' | 'room' | 'coffee-machine' | 'desk' | 'rug',
   id: string,
   x: number,
   y: number,
@@ -88,5 +88,27 @@ describe("the dog's area", () => {
     view.unmount();
     dog.rerender();
     expect(dog.result.current).toBeNull();
+  });
+
+  it('keeps the dog clear of the pieces in its room, but walks it over a rug', () => {
+    const elements = [
+      at('room', 'room', 0, 0, 600, 400),
+      at('pet-bed', 'bed', 100, 100),
+      at('coffee-machine', 'coffee', 300, 60),
+      at('desk', 'desk', 300, 200),
+      at('rug', 'rug', 40, 240),
+    ];
+    const blocks = petAreasOf(elements).get('bed')?.blocks ?? [];
+    const box = (id: string) => {
+      const el = elements.find((e) => e.id === id) as Element & {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      return { x: el.x, y: el.y, width: el.width, height: el.height };
+    };
+    expect(blocks).toEqual([box('coffee'), box('desk')]);
+    expect(petAreasOf([at('room', 'room', 0, 0, 600, 400)]).size).toBe(0);
   });
 });

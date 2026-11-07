@@ -199,12 +199,21 @@ export function FurnitureView({
         {hasSocialArt(kind) ? (
           <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
         ) : null}
-        {hasWorkdayArt(kind) ? <WorkdayArt kind={kind} id={element.id} sitters={sitters} /> : null}
+        {hasWorkdayArt(kind) ? (
+          <WorkdayArt
+            kind={kind}
+            id={element.id}
+            sitters={sitters}
+            box={element}
+            grid={frame.view}
+          />
+        ) : null}
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
         ) : null}
       </svg>
-      {occupied ? (
+      {/* A Hot Desk's raised name card is its pill (WorkdayFaces hotDeskCardY). */}
+      {occupied && kind !== 'hot-desk' ? (
         <span
           className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
           // Clear of the highest sitter's head and the chip over it, never below the piece's top (#582).

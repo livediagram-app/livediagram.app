@@ -218,6 +218,31 @@ export function elementClickKind(el: CanvasElement): AvatarClickKind {
   return el.type === 'shape' ? el.shape : el.type;
 }
 
+// The pieces walked up to at their front, which is where arriving does its thing (the Reception Desk's Welcome, the
+// Arcade's Insert Coin): a click anywhere on one walks you to the floor just in front of it, under the click, as a seat
+// sits you wherever on it you click, never to the floor behind or inside it (docs/specs/008-canvas/avatar-mode.md
+// "Clicking a piece").
+const FRONT_KINDS: ReadonlySet<string> = new Set(['reception-desk', 'arcade-machine']);
+/** How far below a front piece's box its walk ends, in canvas px: clear of its footprint and inside its front strip. */
+export const FRONT_STAND = 16;
+/** How far in from a front piece's ends its walk ends, as a share of its width: on its front, never round its side. */
+const FRONT_END = 0.12;
+
+/**
+ * Where a walking click on `el` at `point` walks to: the point itself, or, on an unturned Reception Desk or Arcade
+ * Machine, the floor FRONT_STAND below its box under the click (kept off its ends).
+ */
+export function walkPointFor(
+  el: CanvasElement | null,
+  point: { x: number; y: number },
+): { x: number; y: number } {
+  if (!el || el.type !== 'shape' || !FRONT_KINDS.has(el.shape) || (el.rotation ?? 0) % 360 !== 0)
+    return point;
+  const lo = el.x + el.width * FRONT_END;
+  const hi = el.x + el.width * (1 - FRONT_END);
+  return { x: Math.min(hi, Math.max(lo, point.x)), y: el.y + el.height + FRONT_STAND };
+}
+
 /** Whether a press in Avatar mode landed on a pressable part of a piece that is not walked to, so it acts there. */
 export function isInPlacePress(target: EventTarget | null): boolean {
   if (typeof Element === 'undefined' || !(target instanceof Element)) return false;

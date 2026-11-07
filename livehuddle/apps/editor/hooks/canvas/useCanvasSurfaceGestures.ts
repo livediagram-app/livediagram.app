@@ -25,6 +25,7 @@ import {
   elementClickKind,
   isInPlacePress,
   pressPieceMain,
+  walkPointFor,
 } from '@/lib/avatar-click-intent';
 import { elementAt, onPaintedText } from '@/lib/avatar-press-target';
 import { avatarDoorPress } from '@/lib/avatar-door-press';
@@ -304,7 +305,8 @@ export function useCanvasSurfaceGestures({
             if (outcome === 'read') onReadElement?.(hit.id);
             return;
           }
-          avatar.walkTo(point);
+          // A Reception Desk or an Arcade Machine walks you to its front, where arriving says hello (walkPointFor).
+          avatar.walkTo(walkPointFor(hit, point));
         };
         // A finger has no middle button or Space to pan with (docs/specs/008-canvas/avatar-mode.md "Walking"):
         // its drag pans, and only a press that never moved, a tap, walks.

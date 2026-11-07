@@ -122,6 +122,9 @@ nothing).
   your own, on your screen), on every screen. The claim is the seat claim: whoever presence says holds the seat is
   named, and two people who sat at once are settled by the [seat rules](chair.md), so the card never shows two
   names. Nothing is stored: the desk is free again the moment its sitter stands, leaves or drops off.
+- **While held, the card rises** off the desk to stand over the sitter, clear of their head and the chip over it,
+  where any other seat's name pill would be (a Tall character's higher), so the head never hides the name. It is the
+  desk's name pill: a held Hot Desk shows no second one. The desk's own card stays, blank, under it.
 
 ### Pet Bed and its dog
 
@@ -131,6 +134,10 @@ a wagging tail.
 - **It wanders its room.** The dog's room is the innermost Room whose floor holds the bed's middle; a bed in no room
   lets it wander a circle 240 px round the bed. Every 9 seconds is a **leg**: the dog trots to a spot in its room for
   the first 3 seconds of the leg, then sits there. Every fourth leg it goes back to its bed and naps.
+- **Never behind or under a piece.** A spot where the dog's body would overlap any piece's box (a coffee machine, a
+  desk, a plant, a fence) or another room inside its own is passed over for the generator's next spot, up to 12 tries;
+  a room with no clear spot in 12 keeps the dog napping that leg. Floors are walked over: rugs, grass, paths, stages,
+  pads and the beds. The same spot is chosen on every screen, as the pieces are the same.
 - **The same dog for everyone, with nothing sent.** Each leg's spot comes from the bed's id and the leg's number
   (the time, `floor(now / 9000)`), through a small seeded generator, so every screen with a clock right to a second
   sees the dog in the same place. Nothing is stored, nothing rides presence, and nothing runs per frame: each dog has
@@ -150,6 +157,9 @@ plant behind the counter, and a brass service bell on the counter.
 - **Walking up to it** (your feet within 32 px in front of its counter, across its width) shows a **Welcome** bubble
   above it for you, for as long as you stand there, as the [Arcade Machine](social-pieces.md#arcade-machine)'s
   Insert Coin does. Nobody else sees your bubble.
+- **A click anywhere on the desk walks you to its front**, 16 px below it under the click (kept off its ends), never to
+  the floor behind the counter, where there is no Welcome. A turned desk has no front below it, so the click is the walk.
+  The [Arcade Machine](social-pieces.md#arcade-machine) walks the same way.
 - **The bubble holds a Ring Bell button.** Pressing it rings the bell: you hear a bright ding, the bell on the desk
   rings out (two waves spread from it and fade), and so does it for everyone who hears it.
 - **Who hears it**: everyone walking whose character stands in the desk's room (the room it stands in, or beside, as a

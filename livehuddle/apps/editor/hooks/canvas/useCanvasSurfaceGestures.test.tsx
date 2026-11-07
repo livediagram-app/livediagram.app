@@ -446,7 +446,7 @@ describe('Avatar mode presses', () => {
     expect(walkTo).not.toHaveBeenCalled();
   });
 
-  it.each(['chair', 'room', 'tree', 'arcade-machine', 'water-cooler', 'avatar-pad'])(
+  it.each(['chair', 'room', 'tree', 'water-cooler', 'avatar-pad'])(
     'walks onto a %s under the press',
     (kind) => {
       const onReadElement = vi.fn();
@@ -457,6 +457,16 @@ describe('Avatar mode presses', () => {
       press('mouse');
       expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 240 });
       expect(onReadElement).not.toHaveBeenCalled();
+    },
+  );
+
+  // docs/specs/009-elements/workday-pieces.md "Reception Desk": a click on the counter walks to its front, never behind.
+  it.each(['arcade-machine', 'reception-desk'])(
+    'walks to the front of a %s under the press',
+    (kind) => {
+      const { press, walkTo } = avatarSetup([], { elements: [pieceAt('shape', kind)] });
+      press('mouse');
+      expect(walkTo).toHaveBeenCalledWith({ x: 120, y: 296 });
     },
   );
 

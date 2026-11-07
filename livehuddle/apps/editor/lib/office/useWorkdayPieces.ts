@@ -4,12 +4,12 @@
 // the Reception Desk you stand at, whose Welcome bubble (and its Ring Bell) shows for you. The desks are picked out of
 // the board once per change of the elements; each move of your feet then checks only those few, and the store changes
 // only when the answer does, so a step re-renders nothing (as the arcade's Insert Coin, useSocialPieces). And where each
-// Pet Bed's dog may wander ("Pet Bed and its dog"): its room's floor or a circle round it, worked out per board change
-// whether or not you walk, each dog woken only when its own area changes.
+// Pet Bed's dog may wander ("Pet Bed and its dog"): its room's floor or a circle round it, less the pieces standing
+// there, worked out per board change whether or not you walk, each dog woken only when its own area changes.
 
 import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
-import { petArea, type Element, type PetArea } from '@livehuddle/document';
+import { PET_FLOOR_KINDS, petArea, type Element, type PetArea } from '@livehuddle/document';
 
 /** How far in front of a reception desk's counter your feet may be for its Welcome. */
 export const RECEPTION_REACH = 32;
@@ -88,12 +88,16 @@ export function setPetAreas(next: ReadonlyMap<string, PetArea>): void {
 export function petAreasOf(elements: readonly Element[]): Map<string, PetArea> {
   const beds: Box[] = [];
   const rooms: Box[] = [];
+  // The pieces the dog keeps clear of, so it never ends up behind the coffee machine or under a desk.
+  const pieces: Box[] = [];
   for (const el of elements) {
     if (el.type !== 'shape') continue;
     if (el.shape === 'pet-bed') beds.push(el);
     else if (el.shape === 'room') rooms.push(el);
+    else if (!PET_FLOOR_KINDS.has(el.shape)) pieces.push(el);
   }
-  return new Map(beds.map((b) => [b.id, petArea(b, rooms)]));
+  if (beds.length === 0) return new Map();
+  return new Map(beds.map((b) => [b.id, petArea(b, rooms, pieces)]));
 }
 
 export function useWorkdayPieces({

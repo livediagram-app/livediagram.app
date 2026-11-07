@@ -15,6 +15,8 @@ import {
 } from '@livehuddle/document';
 import { Glyph } from '@livehuddle/ui';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
+import { seatPillBottom } from '@liveworkspace/avatar/chair-sitters';
+import { drawnRect, type SeatGrid } from '@liveworkspace/avatar/seats';
 import { pieceControlProps } from '@/lib/piece-control';
 import { track } from '@/lib/telemetry';
 import { ringBell, useBellRings, useBellRung } from '@/lib/office/reception-bell';
@@ -56,14 +58,34 @@ export function hotDeskCard(sitters: readonly ChairSitter[]): string {
   return name ? clip(name, 12) : 'Hot Desk';
 }
 
+type Box = { x: number; y: number; width: number; height: number };
+
+/**
+ * Where a hot desk's name card stands, on its grid: on the desk's front edge while free; while held, raised clear of
+ * the sitter's head and what rides over it, where any other seat's name pill would be (seatPillBottom), so the head
+ * never hides the name. It stands in for that pill (FurnitureView draws none on a hot desk).
+ */
+export function hotDeskCardY(box: Box, grid: SeatGrid, sitters: readonly ChairSitter[]): number {
+  if (sitters.length === 0) return HOT_DESK_CARD.y;
+  const drawn = drawnRect(box, grid);
+  const perGrid = drawn.height / grid.height;
+  const bottom = (seatPillBottom(box, grid, sitters) - (drawn.y - box.y)) / perGrid;
+  return Math.min(HOT_DESK_CARD.y, bottom - HOT_DESK_CARD.h);
+}
+
 export function WorkdayArt({
   kind,
   id,
   sitters,
+  box,
+  grid,
 }: {
   kind: string;
   id: string;
   sitters: readonly ChairSitter[];
+  // The piece's box and drawing, for what is placed round its sitters (the hot desk's raised card).
+  box: Box;
+  grid: SeatGrid;
 }) {
   const used = sitters.length > 0;
   switch (kind) {
@@ -72,7 +94,14 @@ export function WorkdayArt({
     case 'phone-booth':
       return used ? <BoothLamp /> : null;
     case 'hot-desk':
-      return <DeskCard text={hotDeskCard(sitters)} held={used} />;
+      return (
+        <DeskCard
+          text={hotDeskCard(sitters)}
+          held={used}
+          y={hotDeskCardY(box, grid, sitters)}
+          middle={grid.width / 2}
+        />
+      );
     case 'reception-desk':
       return <BellRing id={id} />;
     default:
@@ -126,23 +155,64 @@ function BoothLamp() {
   );
 }
 
-// The name card: the sitter's name in dark ink while held, Hot Desk in a quieter grey while free.
-function DeskCard({ text, held }: { text: string; held: boolean }) {
-  const { x, y, w, h } = HOT_DESK_CARD;
+// The name card: Hot Desk in a quieter grey on the desk's own card while free; while held, the card raised clear of
+// the sitter's head (hotDeskCardY) with their name in dark ink, the desk's card left blank under it.
+function DeskCard({
+  text,
+  held,
+  y,
+  middle,
+}: {
+  text: string;
+  held: boolean;
+  y: number;
+  middle: number;
+}) {
+  const { x, w, h } = HOT_DESK_CARD;
+  if (!held)
+    return (
+      <text
+        x={x + w / 2}
+        y={y + h / 2 + 2.6}
+        textAnchor="middle"
+        fontSize={7}
+        fontWeight={600}
+        fill="#64748b"
+        data-hot-desk-card="free"
+      >
+        {text}
+      </text>
+    );
+  // Raised over the sitter, centred on the desk: wide enough for a twelve-character name.
+  const raised = RAISED_CARD_W;
   return (
-    <text
-      x={x + w / 2}
-      y={y + h / 2 + 2.6}
-      textAnchor="middle"
-      fontSize={held ? 7.5 : 7}
-      fontWeight={held ? 700 : 600}
-      fill={held ? '#0f172a' : '#64748b'}
-      data-hot-desk-card={held ? 'held' : 'free'}
-    >
-      {text}
-    </text>
+    <g data-hot-desk-card-at={y}>
+      <rect
+        x={middle - raised / 2}
+        y={y}
+        width={raised}
+        height={h}
+        rx={2}
+        fill={T.card}
+        stroke="#cbd5e1"
+        strokeWidth={0.75}
+      />
+      <text
+        x={middle}
+        y={y + h / 2 + 2.8}
+        textAnchor="middle"
+        fontSize={7.5}
+        fontWeight={700}
+        fill="#0f172a"
+        data-hot-desk-card="held"
+      >
+        {text}
+      </text>
+    </g>
   );
 }
+/** The raised card's width on the grid. */
+const RAISED_CARD_W = 60;
 
 // The bell ringing out: two waves from it, played again on each ring this screen hears (keyed on the count).
 function BellRing({ id }: { id: string }) {

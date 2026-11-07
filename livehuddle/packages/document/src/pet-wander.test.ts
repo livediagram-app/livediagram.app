@@ -7,8 +7,11 @@ import {
   PET_INSET,
   PET_LEG_MS,
   PET_NAP_EVERY,
+  PET_BODY,
   PET_RADIUS,
+  PET_TRIES,
   petArea,
+  petClear,
   petLeg,
   petLegAt,
   seeded,
@@ -81,11 +84,72 @@ describe('the office dog', () => {
     expect(msToNextLeg(-1000)).toBe(1000);
   });
 
+  it('never ends a leg behind or under a piece, or in another room, the same spot on every screen', () => {
+    // A coffee machine, a desk and a small meeting room in the dog's room, and a cabinet outside it (out of reach).
+    const machine = { x: 60, y: 60, width: 72, height: 96 };
+    const desk = { x: 320, y: 120, width: 120, height: 112 };
+    const meeting = { x: 380, y: 260, width: 200, height: 120 };
+    const far = { x: 2000, y: 2000, width: 50, height: 50 };
+    // The room round the bed's room is the bed's own, never a block.
+    const hall = { x: -500, y: -500, width: 2000, height: 2000 };
+    const area = petArea(bed, [hall, room, meeting], [machine, desk, far]);
+    expect(area.kind).toBe('box');
+    expect(area.blocks).toEqual([machine, desk, meeting]);
+    const body = (p: { x: number; y: number }) => ({
+      x0: p.x - PET_BODY.left,
+      x1: p.x + PET_BODY.right,
+      y0: p.y - PET_BODY.up,
+      y1: p.y + PET_BODY.down,
+    });
+    let wandered = 0;
+    for (let n = 0; n < 2000; n += 1) {
+      const spot = petLeg('bed-1', n, area);
+      expect(petLeg('bed-1', n, area)).toEqual(spot);
+      if (!spot) continue;
+      wandered += 1;
+      const d = body(spot);
+      for (const b of [machine, desk, meeting])
+        expect(d.x1 <= b.x || d.x0 >= b.x + b.width || d.y1 <= b.y || d.y0 >= b.y + b.height).toBe(
+          true,
+        );
+    }
+    // It still wanders most legs: a few pieces only move it on to the generator's next spot.
+    expect(wandered).toBeGreaterThan(1400);
+    // A spot is clear only with its whole body clear: feet just below a piece clear it, a head behind its foot does not.
+    expect(petClear({ x: 96, y: 156 + PET_BODY.up }, [machine])).toBe(true);
+    expect(petClear({ x: 96, y: 156 + PET_BODY.up - 1 }, [machine])).toBe(false);
+    expect(petClear({ x: 96, y: 10 }, undefined)).toBe(true);
+  });
+
+  it('naps in its bed when its room has no clear spot in PET_TRIES tries', () => {
+    const packed = petArea(bed, [room], [{ x: -10, y: -10, width: 700, height: 500 }]);
+    for (let n = 0; n < 40; n += 1) expect(petLeg('bed-1', n, packed)).toBeNull();
+    expect(PET_TRIES).toBeGreaterThan(1);
+    // A bed in no room keeps clear of the rooms near it, and of pieces round it.
+    const nearby = { x: 300, y: 150, width: 200, height: 160 };
+    const round = petArea(bed, [nearby], [{ x: 100, y: 300, width: 60, height: 60 }]);
+    expect(round.kind).toBe('circle');
+    expect(round.blocks).toEqual([{ x: 100, y: 300, width: 60, height: 60 }, nearby]);
+  });
+
   it('works out a hundred thousand legs well inside a frame budget', () => {
     expect(
       cpuMsOf(() => {
         for (let n = 0; n < 100_000; n += 1) petLeg('bed-1', n, box);
       }),
     ).toBeLessThan(cpuBudgetMs(60));
+    // A room crowded with two hundred pieces, every leg trying its spots against them all.
+    const crowd = Array.from({ length: 200 }, (_, i) => ({
+      x: 40 + (i % 20) * 27,
+      y: 40 + Math.floor(i / 20) * 33,
+      width: 8,
+      height: 8,
+    }));
+    const crowded = petArea(bed, [room], crowd);
+    expect(
+      cpuMsOf(() => {
+        for (let n = 0; n < 10_000; n += 1) petLeg('bed-1', n, crowded);
+      }),
+    ).toBeLessThan(cpuBudgetMs(200));
   });
 });

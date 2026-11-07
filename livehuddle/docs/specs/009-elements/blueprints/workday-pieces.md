@@ -26,14 +26,14 @@ Derived from [Workday pieces](../workday-pieces.md).
 
 ## Domain and naming
 
-| Term          | Identifier                                    | Meaning                                                                 |
-| ------------- | --------------------------------------------- | ----------------------------------------------------------------------- |
-| Piece status  | `pieceStatusOf(kind)`                         | The status a seat piece shows while you sit: `focus`, `break`, `busy`   |
-| Shown status  | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                                      |
-| Standing seat | `isStandingSeatShape`                         | Treadmill, standing desk: held like a seat, drawn standing              |
-| Leg           | `petLeg(id, n, area)`                         | One 9 s step of the dog: a spot, or the bed (every fourth)              |
-| Pet area      | `petArea(bed, rooms)`                         | The innermost room's interior holding the bed's middle, else the circle |
-| Earshot       | `hearsBell(desk, self, zones)`                | Your zone and the desk's room, for whether a ring reaches you           |
+| Term          | Identifier                                    | Meaning                                                                                                       |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Piece status  | `pieceStatusOf(kind)`                         | The status a seat piece shows while you sit: `focus`, `break`, `busy`                                         |
+| Shown status  | `shownStatus(own, pickedOn, seatedOn, piece)` | The status peers and the panel see                                                                            |
+| Standing seat | `isStandingSeatShape`                         | Treadmill, standing desk: held like a seat, drawn standing                                                    |
+| Leg           | `petLeg(id, n, area)`                         | One 9 s step of the dog: a spot, or the bed (every fourth)                                                    |
+| Pet area      | `petArea(bed, rooms, pieces)`                 | The innermost room's interior holding the bed's middle, else the circle, and the boxes in it to keep clear of |
+| Earshot       | `hearsBell(desk, self, zones)`                | Your zone and the desk's room, for whether a ring reaches you                                                 |
 
 ## Behaviour and state
 
@@ -53,13 +53,18 @@ Derived from [Workday pieces](../workday-pieces.md).
   keeps the `seatedOn` of each `avatar` op (up to 64 characters) with the position, and the edge margin's points carry
   it.
 - **The dog**: leg `n = petLegAt(now)`; `petLeg(id, n, area)` is null (the bed) when `n % 4 === 3`, otherwise a
-  point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`); `dogOffset` makes it
-  relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
+  point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`): the first of `PET_TRIES` whose
+  body box (`PET_BODY` round the feet) overlaps none of the area's `blocks` (`petClear`), else the bed. The blocks are
+  the boxes of every shape on the board but the floors (`PET_FLOOR_KINDS`), and every room that does not hold the bed,
+  cut to the area's reach. `dogOffset` makes it relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
   the next leg boundary (one per dog), translating from the bed with a `PET_TROT_MS` CSS transition. Reduced motion, or no area
   yet: the spot is always the bed and the dog sleeps.
 - **Welcome**: `receptionAt(feet, desks)`: the desk whose front strip (`x - 0 .. x + width`, `y + 0.62 h .. y + h +
 RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
-  changes.
+  changes. A walking click on an unturned desk (or Arcade Machine) walks to `walkPointFor(el, point)`: `FRONT_STAND`
+  below its box under the click, clamped 12% in from its ends (`lib/avatar-click-intent.ts`).
+- **Hot Desk card**: free, the text on the drawing's card; held, `hotDeskCardY(box, grid, sitters)` raises a card to
+  end where `seatPillBottom` would put a pill (in grid units), and FurnitureView draws no pill on a hot desk.
 - **Ringing**: the face calls `ringBell(deskId)`, which the canvas hook points at `send({ kind: 'avatar-bell', deskId
 })` while walking; `ringBell` starts the 5 s Rang itself; the ringer plays its own ding and waves (no toast). A received op
   (`receiveBellOp`) reaches `useReceptionBell`, which checks the desk is a Reception Desk on the board, you walk, you
@@ -93,8 +98,9 @@ dog are presence, the clock or local.
 
 - The shown status is a constant-time lookup per render. The standing set is built once per board change.
 - `receptionAt` runs on a change of your feet over the few desks (picked once per board change), like `arcadeAt`.
-- The dog: one timeout per dog per 9 s; `petLeg` is a hash and two PRNG draws. A test holds 100000 legs inside a
-  CPU budget.
+- The dog: one timeout per dog per 9 s; `petLeg` is a hash and two PRNG draws a try, each try a box test against the
+  area's blocks (cut to the area once per board change, so a 2000-piece board tests only its room's). Tests hold
+  100000 legs, and 10000 legs against 200 blocks, inside CPU budgets.
 - The booth adds one zone per booth to `roomZones`, which already loops every element once.
 
 ## Presentation and UX
@@ -125,6 +131,7 @@ dog are presence, the clock or local.
 | Bell parse, gate (every level), throttle      | `packages/api-schema/src/bell.test.ts`, `apps/api/src/room-op-gate.test.ts` |
 | Earshot, Welcome, ringing                     | `apps/editor/lib/office/reception-bell.test.ts`, `useWorkdayPieces.test.ts` |
 | Faces                                         | `apps/editor/components/canvas/collab/workday-views.test.tsx`               |
+| A click on a desk walks to its front          | `apps/editor/lib/avatar-click-intent.test.ts`                               |
 | Templates                                     | `packages/templates/src/template-workday.test.ts`                           |
 
 ## Constants and configuration
@@ -135,6 +142,8 @@ dog are presence, the clock or local.
 | `PET_TROT_MS`      | 3000  | A third of a leg spent moving                       |
 | `PET_RADIUS`       | 240   | A bed in no room keeps its dog close                |
 | `PET_INSET`        | 28    | The dog stays off the walls                         |
+| `PET_TRIES`        | 12    | Enough for a busy room; a packed one naps the dog   |
+| `FRONT_STAND`      | 16    | Clear of a counter's foot, inside its front strip   |
 | `RECEPTION_REACH`  | 32    | As the arcade's reach, a step more for a wide desk  |
 | `BELL_RADIUS`      | 480   | Across an open lobby                                |
 | `BELL_THROTTLE_MS` | 5000  | A ring, not a rattle                                |

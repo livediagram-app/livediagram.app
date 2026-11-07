@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, PET_LEG_MS, type ShapeElement } from '@livehuddle/document';
+import {
+  createShape,
+  HOT_DESK_CARD,
+  OFFICE_ART,
+  PET_LEG_MS,
+  type ShapeElement,
+} from '@livehuddle/document';
+import { AVATAR_HEIGHT } from '@liveworkspace/avatar/walk';
+import { avatarScale } from '@liveworkspace/avatar/config';
+import { drawnRect } from '@liveworkspace/avatar/seats';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({ useOptionalEditorContext: () => null }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -18,7 +27,7 @@ import { resetBell } from '@/lib/office/reception-bell';
 import { setPetAreas, useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
 import { hasPieceArt, PieceArt } from '@/components/canvas/PieceArt';
 import { FurnitureView, isFurnitureViewShape, type ChairSitter } from './FurnitureView';
-import { hotDeskCard, dogOffset } from './WorkdayFaces';
+import { hotDeskCard, hotDeskCardY, dogOffset } from './WorkdayFaces';
 
 afterEach(() => {
   cleanup();
@@ -97,6 +106,37 @@ describe('the workday pieces on the canvas', () => {
     free.unmount();
     const held = view('hot-desk', 'light', [sam]);
     expect(held.container.querySelector('[data-hot-desk-card="held"]')?.textContent).toBe('Sam');
+    // The raised card is the desk's pill: no second name over it.
+    expect(held.container.querySelector('span')).toBeNull();
+  });
+
+  it('raises a held hot desk’s card clear of its sitter’s head, a tall one’s higher still', () => {
+    const desk = piece('hot-desk');
+    const grid = OFFICE_ART['hot-desk'].front;
+    expect(hotDeskCardY(desk, grid, [])).toBe(HOT_DESK_CARD.y);
+    const drawn = drawnRect(desk, grid);
+    const perGrid = drawn.height / grid.height;
+    const seat = grid.seats[0]!;
+    for (const size of ['regular', 'tall'] as const) {
+      const scale = avatarScale(size);
+      const y = hotDeskCardY(desk, grid, [{ ...sam, scale }]);
+      // The card's foot, in canvas px down from the desk's top, is above the top of the head, by more than its chip.
+      const cardFoot = drawn.y - desk.y + (y + HOT_DESK_CARD.h) * perGrid;
+      const headTop = drawn.y - desk.y + seat.v * drawn.height - AVATAR_HEIGHT * scale;
+      expect(cardFoot, size).toBeLessThan(headTop - 16);
+      expect(y, size).toBeLessThan(HOT_DESK_CARD.y);
+    }
+    expect(hotDeskCardY(desk, grid, [{ ...sam, scale: avatarScale('tall') }])).toBeLessThan(
+      hotDeskCardY(desk, grid, [{ ...sam, scale: avatarScale('regular') }]),
+    );
+    const held = view('hot-desk', 'light', [sam]);
+    expect(
+      Number(
+        held.container
+          .querySelector('[data-hot-desk-card-at]')
+          ?.getAttribute('data-hot-desk-card-at'),
+      ),
+    ).toBe(hotDeskCardY(desk, grid, [sam]));
   });
 });
 
