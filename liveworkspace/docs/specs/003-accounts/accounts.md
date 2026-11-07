@@ -43,7 +43,9 @@ team takes effect when the person's token is next minted.
 made or revoked its links, which documents came in, went out or were deleted, and who added or removed its webhooks:
 an append-only log the index keeps for a year beside the Timeline, written in the same batch as each event
 ([../004-index/team-audit-log.md](../004-index/team-audit-log.md)). The team events below reach it through the same
-`POST /internal/timeline`; API token events never do (a token is its owner's, not the team's).
+`POST /internal/timeline`; API token events never do (a token is its owner's, not the team's). When an admin reads
+it, the index names the people in it by asking `POST /api/account/index/people {ids}` (with the key it shares with
+accounts): each account's display name as it is now, up to 100 a call, so a member who has left is still named.
 
 A team always keeps a joined admin: demoting or removing the last one answers `409 last_admin`. The check is part of
 the write itself, so two admins demoting or removing each other at once can't both pass it.

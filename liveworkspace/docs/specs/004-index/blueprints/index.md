@@ -129,6 +129,7 @@ is `{}`).
 | `/timeline` (`?team=` for a team's Team Activity), `/timeline/seen`, `/timeline/dismiss`                                               | GET, POST                     | [timeline.md](timeline.md)                       |
 | `/trash`                                                                                                                               | GET, DELETE                   | [trash.md](trash.md)                             |
 | `/placement-defaults`, `/placement-defaults/:key`                                                                                      | GET, PUT, DELETE              | [default-folders.md](default-folders.md)         |
+| `/team-audit`                                                                                                                          | GET                           | [team-audit-log.md](team-audit-log.md)           |
 | `/webhooks`, `/webhooks/:id`, `/webhooks/:id/{test,deliveries}`                                                                        | GET, POST, PATCH, DELETE      | [webhooks.md](webhooks.md)                       |
 | `/app/items/:id/card-moves`                                                                                                            | PUT                           | [webhooks.md](webhooks.md)                       |
 | `/app/items/:id/{summary,events,collab/:tab,forms/:tab,forms/:tab/seen}`, `/app/forms/:code`, `/app/items/:id/forms/:tab/seen/:person` | PUT, GET                      | [inbox.md](inbox.md), [timeline.md](timeline.md) |
