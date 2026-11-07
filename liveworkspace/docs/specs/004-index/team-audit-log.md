@@ -95,5 +95,36 @@ detail, each with its id. One file holds at most 10,000 rows; when more match, t
 starts (`X-Next-Cursor`, passed back as `cursor`), so a year of a busy team is a few files, or a narrower date range.
 A cell a spreadsheet would run as a formula is opened with an apostrophe.
 
-Still to come (Work Tracker #160): the Activity section in team settings that shows it, with its filters and Export
-CSV (part 3).
+## The Audit Log on a team's view
+
+A team's admins read the log in the Explorer, on the team's view (`/explorer/team?id=`, in every app), in a section
+headed **Audit Log** under Team Activity. A member never sees the section: it is drawn only when the team card says
+the reader is an admin, and the read would refuse them anyway. It is named apart from Team Activity, which every member
+reads, so the two are never mistaken for each other.
+
+- **Closed until opened**, like Team Activity: a disclosure (`h2`, `aria-expanded`) whose header says "Admins only ·
+  kept a year". Nothing is read until it opens; another team's view starts it closed again.
+- **Filters**, above the list, each reading the first page again: **Person** (who did it: Everyone, the team's joined
+  members by name, then anyone else the loaded rows name, such as a member who has left), **Event** (All Events, or
+  one kind by its label, grouped People, Documents and Webhooks), and **From** and **To** (whole days in the reader's
+  time zone, both included: To is sent as the next day's midnight). **Clear Filters** shows while any is set. There is
+  no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused.
+- **Each row**: the kind's glyph; one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee
+  removed Bo Chen", "Ann Lee added the webhook hooks.slack.com"); then the kind's label, the detail that matters
+  (the link's level, into or out of the team, the webhook's kind, a renamed team's old name, Take Offline), the app
+  (its mark and name; a team's own and a webhook's read liveworkspace) and the time. Rows sit under day bands
+  (the reader's date), newest first; a row's time carries the UTC time as its tooltip. A closed account reads
+  "Deleted account"; a person with no name reads "Someone".
+- **Pages**: 50 rows, then **Show More** for the next page. A Show More that fails keeps the rows and says so, with
+  Try again.
+- **Export CSV** saves every row the filters match as one file, `<team>-audit-log-<YYYY-MM-DD>.csv`: it reads the
+  CSV a file at a time (10,000 rows), follows `X-Next-Cursor` to the next, and joins them under one header, with a
+  byte-order mark. At most 20 files (200,000 rows) are joined; past that, the file holds the newest 200,000 and a
+  toast asks for a narrower date range. While it runs the button reads "Exporting…" and can't be pressed again; a
+  failure is a toast, and nothing is saved.
+- **States**: three placeholder rows while the first page loads; empty, "No Audit Events Yet" ("Who joins or leaves,
+  shares, moves or deletes the team's documents, and the team's webhooks show here for a year."); nothing matching,
+  "No Events Match" with Clear Filters; refused (`403 not_team_admin`, an admin who has just stepped down), "Only the
+  team's admins can see its audit log."; anything else (`503 team_audit_unavailable` included), "Couldn't load the
+  audit log" with Try again.
+- **The help article** is each app's Teams › Audit Log (`collaboration/teams/audit-log`).

@@ -84,6 +84,13 @@ before they joined; anyone else is refused (`403 not_team_member`) and the view 
 - Moving to another team starts the feed again: the section is keyed on the team.
 - It reads again on coming back to the tab, the same way and at the same rate as the Timeline.
 
+## 3b. Audit Log
+
+For the team's admins alone, under Team Activity on the same view: the team's **Audit Log**, closed until opened,
+with filters by person, kind and date, Show More and Export CSV. It is the platform's, specified in
+[team-audit-log.md "The Audit Log on a team's view"](../../../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-view);
+the help article is `apps/help/app/collaboration/teams/audit-log`.
+
 ## 4. Telemetry
 
 `Timeline·Changed` (`Cards` is reported as `List`, and `Calendar`), `Timeline·Selected` (a category switched off,
