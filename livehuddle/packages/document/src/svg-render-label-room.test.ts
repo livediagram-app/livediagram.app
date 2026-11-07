@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createSticky, createTable, PADDING_PX, type BoxedElement } from './index';
+import { createShape, createSticky, PADDING_PX, type BoxedElement } from './index';
 import { drawsStandardLabel, labelRoom, selfLabelled } from './svg-render-describe';
 import {
   estimatedLabelMeasure,
@@ -37,7 +37,6 @@ describe('drawsStandardLabel', () => {
   });
 
   it('is false for elements that draw their own text', () => {
-    expect(drawsStandardLabel(createTable(0, 0))).toBe(false);
     expect(drawsStandardLabel(shape('plant'))).toBe(false);
     expect(selfLabelled(shape('plant'))).toBe(true);
     expect(selfLabelled(createSticky(0, 0))).toBe(false);

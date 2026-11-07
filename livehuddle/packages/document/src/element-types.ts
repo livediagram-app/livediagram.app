@@ -1,4 +1,4 @@
-// Boxed-element type definitions (shape / text / table / sticky / image /
+// Boxed-element type definitions (shape / text / sticky / image /
 // freehand / annotation / link-card), split out of index.ts to keep it under
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livehuddle/document` surface is unchanged. ElementLink + the enums
@@ -463,143 +463,6 @@ export type TextElement = {
   textArc?: number;
 };
 
-// --- Tables ----------------------------------------------------------------
-
-// An editable grid. `cells` is row-major (`cells[r][c]`) and is the
-// source of truth for the grid size: `cells.length` rows, each row the
-// same length = the column count (helpers keep it rectangular). A
-// double-click on a cell edits its text in place. The whole table
-// resizes via the normal element handles (cells share the space
-// evenly); per-column / per-row sizing can come later. The first row
-// is rendered as a header when `headerRow` is set.
-export type TableCellStyle = {
-  // Per-cell overrides of the table's text styling (each falls back
-  // to the table default when unset).
-  bg?: string;
-  textColor?: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  textSize?: TextSize;
-  alignX?: TextAlignX;
-  // Optional per-cell link (tab / document / element / external URL).
-  // Lives on the cell style so it rides the same parallel `cellStyles`
-  // grid the table helpers already splice on row / column edits, staying
-  // aligned with no extra bookkeeping (docs/specs/008-canvas/canvas-and-palette.md).
-  link?: ElementLink;
-};
-
-export type TableElement = {
-  id: ElementId;
-  type: 'table';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  // Row-major cell text. Always rectangular (every row same length).
-  cells: string[][];
-  // Render the first row as a header (tinted band + bold text).
-  headerRow?: boolean;
-  // Render the first column as a header (same treatment). Combinable
-  // with headerRow (the corner cell is then both).
-  headerColumn?: boolean;
-  // Alternating body-row background tint (a 'zebra' table).
-  zebra?: boolean;
-  // The table look this was painted with (docs/specs/010-palette/style-presets.md), if any: the id of a
-  // `tableColorPresets` entry. Stored for the same reason a shape stores
-  // `colorPreset` — the colours below are resolved values, so without the id a
-  // theme change cannot tell "the theme's Banded" from four hand-picked
-  // colours, and the table strands on the old theme. Cleared the moment any of
-  // those colours (or the banding) is set by hand.
-  tablePreset?: string;
-  // Per-cell style overrides, row-major + aligned with `cells`
-  // (null = inherit the table defaults). Splices alongside cells
-  // when rows / columns are added or removed.
-  cellStyles?: (TableCellStyle | null)[][];
-  // Header-band TEXT colour, independent of the body cells. Unset = the cell
-  // text colour. (The band's FILL is the shared `headerFill` on the base
-  // element: a table's header row and a lane's title gutter are the same
-  // idea, so they are the same field.)
-  headerTextColor?: string;
-  // Per-column width override in element-space px. An entry of
-  // null / undefined (or a short array) means "auto": that column
-  // shares the remaining width as a 1fr track. Lets some columns
-  // be pinned while the rest fill the space.
-  colWidths?: (number | null)[];
-  // Per-row height override in element-space px (null / undefined =
-  // auto: shares the remaining height as a 1fr track).
-  rowHeights?: (number | null)[];
-  // Tables have no single label (cells carry the text). Declared as an
-  // always-undefined optional so the generic "boxed element has a
-  // label" code paths (export, search) compile without a
-  // per-type guard, mirroring ImageElement.
-  label?: string;
-  // Text controls apply to every cell uniformly (a table is one styled
-  // grid, not per-cell formatting — that can come later).
-  textSize?: TextSize;
-  textAlignX?: TextAlignX;
-  textAlignY?: TextAlignY;
-  textBold?: boolean;
-  textItalic?: boolean;
-  textUnderline?: boolean;
-  textStrikethrough?: boolean;
-  // Font-family id (see ../packages/model-core/src/fonts.ts — e.g. 'inter', 'caveat').
-  // Unset = inherit the tab's font (Tab.font), which itself falls back to
-  // the editor default. Stored as a stable id and mapped to a CSS stack
-  // at render time so saved documents round-trip independent of the
-  // catalogue's exact font stacks.
-  font?: string;
-  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
-  finish?: Finish;
-  // fillColor tints the cell background; strokeColor draws the grid
-  // lines + border; textColor is the cell text.
-  fillColor?: string;
-  strokeColor?: string;
-  textColor?: string;
-  // Fill for an element's HEADING area, where it has one distinct from its
-  // body: a table's header row (docs/specs/008-canvas/canvas-and-palette.md) and a lane's title gutter
-  // (docs/specs/009-elements/lane.md). Unset falls back to each one's own historical default, a
-  // tint of the grid stroke for a table and a 10% wash of the lane's stroke
-  // for a lane, so an unset heading looks exactly as it always did.
-  //
-  // Separate from `fillColor` because they are separate surfaces: a lane's
-  // body and its title strip are the two halves a swimlane is made of, and
-  // wanting a coloured heading over a plain body is the normal case, not an
-  // exotic one.
-  headerFill?: string;
-  strokeWidth?: BorderStroke;
-  strokeStyle?: BorderStyle;
-  aspectLocked?: boolean;
-  opacity?: number; // 0..1, defaults to 1
-  rotation?: number;
-  // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
-  animation?: ElementAnimation;
-  // Speed of `animation` (multiplier on its base duration). Default 'slow'
-  // (DEFAULT_ANIMATION_SPEED).
-  animationSpeed?: AnimationSpeed;
-  // Whether `animation` loops. Undefined / true = loop forever (the
-  // default); false = play once and hold.
-  animationRepeat?: boolean;
-  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
-  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
-  // and stay revealed): stored only when true.
-  textAnimation?: TextAnimation;
-  textAnimationSpeed?: AnimationSpeed;
-  textAnimationRepeat?: boolean;
-  link?: ElementLink;
-  commentThread?: CommentThread;
-  // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
-  // the comment thread. See element-action.ts.
-  action?: ElementAction;
-  note?: string;
-  // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
-  // underline / heading / link deltas. `note` stays the plain-text mirror,
-  // always === runsPlainText(noteRich). Absent = an unformatted note, which
-  // renders exactly as it always did.
-  noteRich?: TextRun[];
-  padding?: Padding;
-};
-
 // --- Sticky notes ----------------------------------------------------------
 
 export type StickyElement = {
@@ -1011,7 +874,7 @@ export type AnnotationElement = {
   // exotic one.
   headerFill?: string;
   // An annotation has no editable label; declared always-undefined so the
-  // generic "boxed element has a label" paths compile (mirrors Table/Image).
+  // generic "boxed element has a label" paths compile (mirrors Image).
   label?: string;
   opacity?: number; // 0..1, defaults to 1
   link?: ElementLink;
@@ -1023,7 +886,7 @@ export type AnnotationElement = {
   // painter, geometry, search) read uniformly. An annotation doesn't expose
   // UI for these — it's a fixed, non-rotating marker with no inline text —
   // so they stay undefined in practice; declared for parity the same way
-  // ImageElement / TableElement declare their always-undefined text fields.
+  // ImageElement declares its always-undefined text fields.
   rotation?: number;
   // Looping CSS animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"). Undefined = static.
   animation?: ElementAnimation;
@@ -1134,13 +997,13 @@ export type LinkCardElement = {
 // --- Retired element types --------------------------------------------------
 
 // A stored element of a TYPE the element engine deleted (docs/specs/002-project-scope/not-in-livehuddle.md
-// "The element engine", "Retired elements"; part 1: `video`, the video and website embeds). Kept exactly as stored
-// and drawn as the placeholder in its box: nothing reads its own fields, so whatever else it carries (a video's
-// `embedProvider`) rides through a save untouched. Only the box and the shared boxed fields the generic code paths
+// "The element engine", "Retired elements"; part 1: `video`, the video and website embeds; part 2: `table`). Kept
+// exactly as stored and drawn as the placeholder in its box: nothing reads its own fields, so whatever else it
+// carries (a video's `embedProvider`, a table's `cells` and `cellStyles`) rides through a save untouched. Only the box and the shared boxed fields the generic code paths
 // read (selection, layout, comments, format painter) are typed.
 export type RetiredTypeElement = {
   id: ElementId;
-  type: 'video';
+  type: 'video' | 'table';
   x: number;
   y: number;
   width: number;

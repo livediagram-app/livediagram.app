@@ -8,6 +8,7 @@
 // self-drawing data shapes the same way the inline editor does.
 import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
+import { isRetiredElementType } from './retired-kinds';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 
@@ -15,7 +16,7 @@ import type { EditorMode } from './editor-mode';
 // index <-> rich-text relationship stays erasable; the runtime helpers +
 // this type are re-exported lower down via `export * from '@liveworkspace/model-core/rich-text'`.
 // Only the BoxedElement union members are imported for local use; the full set
-// (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
+// (incl. the LinkCardMeta sub-type) is re-exported just below.
 import type { ArrowElement } from './arrow-types';
 import type { Finish } from './finish';
 export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
@@ -25,7 +26,6 @@ export { ALL_ANCHORS } from './arrow-types';
 import type {
   ShapeElement,
   TextElement,
-  TableElement,
   StickyElement,
   ImageElement,
   FreehandElement,
@@ -45,8 +45,6 @@ export type {
   ShapeElement,
   TextElement,
   TextSizing,
-  TableCellStyle,
-  TableElement,
   StickyElement,
   ImageElement,
   FreehandElement,
@@ -149,7 +147,6 @@ export type BoxedElement =
   | ImageElement
   | FreehandElement
   | PathElement
-  | TableElement
   | AnnotationElement
   | LinkCardElement
   | RetiredTypeElement;
@@ -267,18 +264,18 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'image' ||
     element.type === 'freehand' ||
     element.type === 'path' ||
-    element.type === 'table' ||
     element.type === 'annotation' ||
     element.type === 'link-card' ||
-    element.type === 'video'
+    // A retired type (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"), a stored embed or table,
+    // is a box like any other: it moves, resizes and deletes as its placeholder.
+    isRetiredElementType(element.type)
   );
 }
 
 // True when the element carries a non-empty text label — the plain-text
 // `label` every labelable kind mirrors (shape / text / sticky / freehand /
 // link-card and arrows). Drives the selection toolbar's "Edit Text" button,
-// which only appears once an element actually has text to edit. Tables
-// (per-cell `cells`), images (`alt`), and annotations (`note`) carry no
+// which only appears once an element actually has text to edit. Images (`alt`) and annotations (`note`) carry no
 // single `label`, so this reads false for them — matching the inline label
 // editor, which targets `label`-bearing elements only.
 export function elementHasText(element: Element): boolean {
@@ -321,7 +318,6 @@ export * from '@liveworkspace/model-core/arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
 export * from '@liveworkspace/model-core/label-font';
-export * from '@liveworkspace/model-core/table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
@@ -411,8 +407,6 @@ export * from './web-components';
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
 export * from './colors';
-export * from './cell-colours';
-export * from './table-header-colours';
 export * from '@liveworkspace/model-core/icon-size';
 export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
@@ -443,7 +437,6 @@ export * from './snap-colours';
 export * from './path-geometry';
 export * from './path-element';
 export * from './component-factories';
-export * from './table';
 
 // Runtime structural validation for Element + Tab (the trust-boundary guard
 // the API uses to vet incoming tabs / documents). See validate.ts.
@@ -481,7 +474,6 @@ export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
-export * from './svg-render-table';
 // The SVG face kit's marks (text, line fitting, colour mixing), for drawings made outside this package.
 export {
   fitLine as svgFitLine,

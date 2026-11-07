@@ -107,10 +107,10 @@ describe('finishHatches', () => {
 });
 
 describe('supportsFinish', () => {
-  it('takes shapes, arrows, text, stickies and tables only', () => {
-    for (const type of ['shape', 'arrow', 'text', 'sticky', 'table'])
+  it('takes shapes, arrows, text and stickies only', () => {
+    for (const type of ['shape', 'arrow', 'text', 'sticky'])
       expect(supportsFinish({ type }), type).toBe(true);
-    for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card'])
+    for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card', 'table', 'video'])
       expect(supportsFinish({ type }), type).toBe(false);
   });
 });

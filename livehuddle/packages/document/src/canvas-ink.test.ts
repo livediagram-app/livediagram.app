@@ -7,7 +7,6 @@ import {
   createArrow,
   createShape,
   createSticky,
-  createTable,
   createText,
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
@@ -59,13 +58,6 @@ describe('element ink on dark paper', () => {
   it('draws text and arrows so they read against it', () => {
     expect(defaultTextColor(createText(0, 0), 'dark')).toBe(PEN_INK.dark);
     expect(defaultArrowStrokeColor('dark')).toBe('#64748b');
-  });
-
-  it('keeps a table transparent, with legible rules and text', () => {
-    const table = createTable(0, 0);
-    expect(defaultFillColor(table, 'dark')).toBe('transparent');
-    expect(defaultStrokeColor(table, 'dark')).toBe('#64748b');
-    expect(defaultTextColor(table, 'dark')).toBe('#ffffff');
   });
 
   it('leaves a sticky note its amber', () => {

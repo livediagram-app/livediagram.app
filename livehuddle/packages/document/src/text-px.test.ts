@@ -11,11 +11,6 @@ import {
   TEXT_PX_MAX,
   TEXT_PX_MIN,
 } from '@liveworkspace/model-core/label-font';
-import {
-  CELL_FONT_PX,
-  scaleCellFontPx,
-  tableCellFontPx,
-} from '@liveworkspace/model-core/table-cell-font';
 import { svgBoxed } from './svg-render';
 import { createShape } from './factories';
 
@@ -58,15 +53,5 @@ describe('an exact px draws at itself on every surface', () => {
   it('leaves the presets on their own tables', () => {
     expect(labelFontPx('md')).toBe(LABEL_FONT_PX.md);
     expect(labelFontPx('sm', true)).toBe(NOTE_FONT_PX.sm);
-  });
-});
-
-describe('tableCellFontPx', () => {
-  it('reads a preset, a px, Scale and the fallback', () => {
-    expect(tableCellFontPx('lg', 40)).toBe(CELL_FONT_PX.lg);
-    expect(tableCellFontPx(21, 40)).toBe(21);
-    expect(tableCellFontPx('scale', 40)).toBe(scaleCellFontPx(40));
-    expect(tableCellFontPx(undefined, 40)).toBe(CELL_FONT_PX.md);
-    expect(tableCellFontPx(undefined, 40, 19)).toBe(19);
   });
 });

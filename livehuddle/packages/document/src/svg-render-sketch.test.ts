@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createTable, renderElementsToSvg, type Element, type Tab } from './index';
+import { createShape, renderElementsToSvg, type Element, type Tab } from './index';
 import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too": a face's ink goes through the wobble, its
@@ -86,13 +86,6 @@ describe('renderElementsToSvg under Sketch', () => {
     const svg = renderElementsToSvg(tabOf([square], 'sketch'));
     expect(svg).not.toContain(FILTERED);
     expect(svg).toContain('data-finish="sketch"');
-  });
-
-  it("draws a table's grid by hand and keeps its sketched frame over it", () => {
-    const table = { ...createTable(0, 0), id: 'tb' } as Element;
-    const svg = renderElementsToSvg(tabOf([table], 'sketch'));
-    expect(inkLayer(svg)).toContain('<rect');
-    expect(svg.indexOf(FILTERED)).toBeLessThan(svg.indexOf('data-finish="sketch"'));
   });
 });
 

@@ -4,6 +4,7 @@
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import type { Element } from './index';
 import { ELEMENT_TYPES } from './validate';
+import { isRetiredElementType } from './retired-kinds';
 import { SHAPE_KINDS } from './shape-kinds';
 
 const SLUG_ID_PATTERN = /^[a-z][a-z0-9_-]{0,23}$/;
@@ -135,14 +136,17 @@ function unknownKindWord(name: unknown, fallback: string): string {
 
 // Whether the document model knows this element's type, and its shape kind for a shape.
 export function isKnownElement(el: Element): boolean {
-  if (!ELEMENT_TYPES.has(el.type)) return false;
+  if (!ELEMENT_TYPES.has(el.type) || isRetiredElementType(el.type)) return false;
   return el.type !== 'shape' || SHAPE_KINDS.has(el.shape);
 }
 
 // The first word of an element's line: a shape's kind, else the element type. An unknown type or shape
 // kind prints `? <name>`.
 export function kindWordOf(el: Element): string {
-  if (!ELEMENT_TYPES.has(el.type)) return unknownKindWord(el.type, 'element');
+  // A retired element type (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") prints as an
+  // unknown kind, as a retired shape kind does.
+  if (!ELEMENT_TYPES.has(el.type) || isRetiredElementType(el.type))
+    return unknownKindWord(el.type, 'element');
   if (el.type !== 'shape') return el.type;
   return SHAPE_KINDS.has(el.shape) ? el.shape : unknownKindWord(el.shape, 'shape');
 }

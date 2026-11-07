@@ -31,15 +31,17 @@ const shape = (id: string, extra: Record<string, unknown> = {}): Element =>
     label: 'Column',
     ...extra,
   }) as unknown as Element;
-const table = (id: string): Element => ({
-  id,
-  type: 'table',
-  ...box,
-  cells: [
-    ['a', 'b'],
-    ['c', 'd'],
-  ],
-});
+// A stored table (a retired element type, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+const table = (id: string): Element =>
+  ({
+    id,
+    type: 'table',
+    ...box,
+    cells: [
+      ['a', 'b'],
+      ['c', 'd'],
+    ],
+  }) as unknown as Element;
 
 function tabOf(elements: Element[], extra: Partial<Tab> = {}): Tab {
   return { id: 't1', name: 'Retro', elements, ...extra };

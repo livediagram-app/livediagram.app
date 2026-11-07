@@ -30,10 +30,16 @@ const BOXED_SRC = read('./element-types.ts');
 const ARROW_SRC = read('./arrow-types.ts');
 const INDEX_SRC = read('./index.ts');
 
-// Each element interface declares its discriminant as `  type: 'shape';`.
-const discriminants = (src: string): string[] =>
-  [...src.matchAll(/^ {2}type: '([\w-]+)';/gm)].map((m) => m[1]!);
+// Each element interface declares its discriminant as `  type: 'shape';`, or, for the retired element types
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), one interface for several:
+// `  type: 'video' | 'table';`.
+const discriminantLines = (src: string): string[][] =>
+  [...src.matchAll(/^ {2}type: ('[\w-]+'(?: \| '[\w-]+')*);/gm)].map((m) =>
+    m[1]!.split(' | ').map((t) => t.slice(1, -1)),
+  );
+const discriminants = (src: string): string[] => discriminantLines(src).flat();
 
+const boxedInterfaces = discriminantLines(BOXED_SRC).length;
 const boxedTypes = discriminants(BOXED_SRC);
 const arrowTypes = discriminants(ARROW_SRC);
 const declaredTypes = [...boxedTypes, ...arrowTypes];
@@ -74,7 +80,7 @@ describe('the element vocabulary', () => {
     // Counted rather than name-matched: the discriminant ('link-card') and the
     // interface name (LinkCardElement) are different spellings of one thing, so
     // a mismatch in either list shows up as a different length.
-    expect(boxedUnionMembers).toHaveLength(boxedTypes.length);
+    expect(boxedUnionMembers).toHaveLength(boxedInterfaces);
   });
 });
 

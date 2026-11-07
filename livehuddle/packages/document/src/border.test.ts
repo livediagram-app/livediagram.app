@@ -39,10 +39,10 @@ const ofType = (type: string) => ({ type }) as unknown as Element;
 // ['none', 'sm', 'md', 'lg'] long after BorderRadius gained 'full'.
 
 describe('supportsBorderControls', () => {
-  it('includes shapes, freehand and tables', () => {
+  it('includes shapes and freehand, never a stored table', () => {
     expect(supportsBorderControls(shape('square'))).toBe(true);
     expect(supportsBorderControls(ofType('freehand'))).toBe(true);
-    expect(supportsBorderControls(ofType('table'))).toBe(true);
+    expect(supportsBorderControls(ofType('table'))).toBe(false);
   });
 
   // THE cross-list invariant, and the reason a whole class of this bug exists.

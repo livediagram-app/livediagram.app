@@ -409,10 +409,10 @@ export function selfLabelled(el: BoxedElement): boolean {
   );
 }
 
-// Whether an export prints the element's label as the ordinary centred, wrapped label: not a table,
-// stroke or path (each draws its own), nor a self-labelled element.
+// Whether an export prints the element's label as the ordinary centred, wrapped label: not a stroke or
+// path (each draws its own), nor a self-labelled element.
 export function drawsStandardLabel(el: BoxedElement): boolean {
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return false;
+  if (el.type === 'freehand' || el.type === 'path') return false;
   return !selfLabelled(el);
 }
 

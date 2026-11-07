@@ -39,9 +39,6 @@ export type MarkerDrawing = {
   nibPx: number;
 };
 
-/** The width a table's frame is drawn at in marker, px: bold enough to read as marker over the grid's own rules. */
-const MARKER_TABLE_FRAME_PX = 2.5;
-
 /** An element in marker, with the width and dash its outline is stroked at; null for a kind Marker leaves as drawn
  *  (a sticky, which stays paper; text, images, freehand and self-painting faces). An unset or Thin border is drawn
  *  at MARKER_LINE_PX; Medium and wider are drawn as picked. */
@@ -55,18 +52,6 @@ export function markerElementPaint(
   const h = el.height;
   if (!(w > 0) || !(h > 0)) return null;
   const seed = sketchSeed(el.id);
-  if (el.type === 'table') {
-    const strokePx = MARKER_TABLE_FRAME_PX;
-    const drawing: MarkerDrawing = {
-      pen: 'marker',
-      ink: markerStrokes(outlineOfBox('square', w, h, 0, strokePx / 2), seed),
-      details: '',
-      solid: '',
-      streaks: ['', ''],
-      nibPx: 0,
-    };
-    return { drawing, strokePx, dash: null };
-  }
   // A sticky stays paper, its peel and no outline (a note on a wall is written on, never outlined), but is coloured
   // in like any filled body (docs/specs/008-canvas/finish.md "Marker"); the canvas draws the streaks over the paper.
   if (el.type === 'sticky') {

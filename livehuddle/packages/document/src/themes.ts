@@ -3,13 +3,8 @@
 // in the package so anything that themes a tab does it the editor's way. The viewer-appearance wrappers +
 // deriveNewBoxedColours stay in apps/editor/lib/themes.ts, which re-exports this.
 import { themeHalf } from './theme-halves';
-import {
-  deriveTextColorForBg,
-  type BackgroundPattern,
-  type Element,
-  type ShapeKind,
-} from './index';
-import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import type { BackgroundPattern, Element, ShapeKind } from './index';
+import { rederiveColorPresetForTheme } from './theme-presets';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
 
@@ -111,8 +106,7 @@ export type ThemeDefinition = {
   // diamond, a datastore cylinder and a process box differently — these
   // win over the single elementFill / -Stroke / -Text for that kind.
   // Kinds left unset fall through to the element-level fields. Only shape
-  // elements carry a `shape` kind, so this never touches text / arrows /
-  // tables. Resolved through `elementThemeView` (like the palette branch
+  // elements carry a `shape` kind, so this never touches text / arrows. Resolved through `elementThemeView` (like the palette branch
   // colours), so every theme transform stays shape-aware with no second
   // code path. A theme can combine this with a palette, but in practice
   // per-shape themes (UML) and per-branch themes (rainbow) are distinct.
@@ -226,12 +220,6 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   // (docs/specs/023-draw-mode/path-tool.md "Style").
   path: [{ element: 'strokeColor', theme: 'elementStroke' }],
   text: [{ element: 'textColor', theme: 'elementText' }],
-  // Tables theme their grid lines + cell text, but keep cells
-  // transparent (no fill mapping) so the grid reads as a grid.
-  table: [
-    { element: 'strokeColor', theme: 'elementStroke' },
-    { element: 'textColor', theme: 'elementText' },
-  ],
   arrow: [{ element: 'strokeColor', theme: 'elementStroke' }],
   sticky: [],
   image: [],
@@ -247,6 +235,9 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   // A video keeps its own look across themes, like image and sticky: the
   // poster frame is the content, and tinting the surround would only fight it.
   video: [],
+  // A stored table (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") is a retired element: a
+  // theme change leaves every colour it stored as it was.
+  table: [],
 };
 
 // The colour fields a given element actually exposes to theming. Starts
@@ -310,31 +301,9 @@ export function switchThemeElement(
   const current = el as unknown as Record<string, string | undefined>;
   const patch: Record<string, string | undefined> = {};
   for (const { element, theme: themeKey } of fields) {
-    // Tables derive their cell fill + text from the BACKDROP (cells track
-    // the canvas colour so the table blends in, only grid lines + text
-    // read), not from elementFill / elementText alone. Handle fill + text
-    // below; the generic rule would compare a backdrop-derived text colour
-    // against the old theme's `elementText` (null on light themes) and so
-    // mistake it for a user override, stranding dark text on a dark theme.
-    if (el.type === 'table' && element === 'textColor') continue;
     const value = current[element];
     patch[element] =
       value === undefined || value === prev[themeKey] ? (next[themeKey] ?? undefined) : value;
-  }
-  if (el.type === 'table') {
-    // The "on-theme" table colours, matching deriveNewBoxedColours: cells
-    // are the canvas background, text contrasts with it (an explicit
-    // elementText wins when the theme sets one). Replace each only when the
-    // current value is still the OLD theme's backdrop colour (or unset),
-    // preserving a genuine per-table override.
-    const prevText = prev.elementText ?? deriveTextColorForBg(prev.backgroundColor);
-    const nextText = next.elementText ?? deriveTextColorForBg(next.backgroundColor);
-    if (current.textColor === undefined || current.textColor === prevText) {
-      patch.textColor = nextText;
-    }
-    if (current.fillColor === undefined || current.fillColor === prev.backgroundColor) {
-      patch.fillColor = next.backgroundColor;
-    }
   }
   return { ...el, ...patch };
 }
@@ -406,12 +375,6 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
     const rederived = rederiveColorPresetForTheme(el, theme);
     if (rederived !== el) return rederived;
   }
-  // Same for a table's look: "reset" on a Banded table means this theme's
-  // Banded, not a stripped grid.
-  if (el.type === 'table' && el.tablePreset) {
-    const rederived = rederiveTablePresetForTheme(el, theme);
-    if (rederived !== el) return rederived;
-  }
   const fields = themeColourFields(el);
   if (fields.length === 0) return el;
   const patch: Record<string, string | undefined> = {};
@@ -422,9 +385,6 @@ export function resetThemeElement(el: Element, theme: ThemeDefinition): Element 
   // the shape is forced back to the theme look, so the preset no longer holds.
   if (el.type === 'shape' && el.colorPreset) {
     return { ...el, ...patch, colorPreset: undefined };
-  }
-  if (el.type === 'table' && el.tablePreset) {
-    return { ...el, ...patch, tablePreset: undefined };
   }
   return { ...el, ...patch };
 }

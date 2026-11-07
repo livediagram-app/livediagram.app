@@ -1,10 +1,10 @@
 // The animation sets (docs/specs/028-animation/element-animations.md): one catalogue per family of
 // elements, so each kind animates in ways that suit it. A body set animates the element itself
-// (Shape, Sticky, Drawing, Media, Table); the Text set animates the words an element carries.
+// (Shape, Sticky, Drawing, Media); the Text set animates the words an element carries.
 //
 // A LEAF module, like './animation': it imports nothing from the barrel.
 
-export type AnimationSetId = 'shape' | 'sticky' | 'drawing' | 'media' | 'table' | 'text';
+export type AnimationSetId = 'shape' | 'sticky' | 'drawing' | 'media' | 'text';
 export type BodyAnimationSet = Exclude<AnimationSetId, 'text'>;
 
 // The Shape set: the fifteen motions every boxed element took before the sets split, rebuilt to
@@ -119,19 +119,6 @@ const MEDIA_ANIMATIONS: readonly MediaAnimation[] = [
   'sheen',
 ];
 
-export type TableAnimation =
-  'rows' | 'columns' | 'cells' | 'scan' | 'sweep' | 'header' | 'pulse' | 'glow';
-const TABLE_ANIMATIONS: readonly TableAnimation[] = [
-  'rows',
-  'columns',
-  'cells',
-  'scan',
-  'sweep',
-  'header',
-  'pulse',
-  'glow',
-];
-
 export type TextAnimation =
   | 'typewriter'
   | 'words'
@@ -166,15 +153,13 @@ const TEXT_ANIMATIONS: readonly TextAnimation[] = [
 
 // The stored `animation` field of every boxed element: any body set's value. Every value saved
 // before the split is a Shape value, so it stays valid.
-export type ElementAnimation =
-  ShapeAnimation | StickyAnimation | DrawingAnimation | MediaAnimation | TableAnimation;
+export type ElementAnimation = ShapeAnimation | StickyAnimation | DrawingAnimation | MediaAnimation;
 
 export const ANIMATION_SET_VALUES: Readonly<Record<AnimationSetId, readonly string[]>> = {
   shape: SHAPE_ANIMATIONS,
   sticky: STICKY_ANIMATIONS,
   drawing: DRAWING_ANIMATIONS,
   media: MEDIA_ANIMATIONS,
-  table: TABLE_ANIMATIONS,
   text: TEXT_ANIMATIONS,
 };
 
@@ -184,7 +169,6 @@ const REVEALS: Readonly<Record<AnimationSetId, ReadonlySet<string>>> = {
   sticky: new Set(['drop', 'slap']),
   drawing: new Set(['draw']),
   media: new Set(['develop', 'focus', 'wipe', 'iris']),
-  table: new Set(['rows', 'columns', 'cells']),
   text: new Set([
     'typewriter',
     'words',
@@ -227,7 +211,6 @@ export const ANIMATION_SET_NAME: Readonly<Record<AnimationSetId, string>> = {
   sticky: 'Sticky',
   drawing: 'Drawing',
   media: 'Media',
-  table: 'Table',
   text: 'Text',
 };
 
@@ -244,6 +227,5 @@ export const ANIMATION_SET_TELEMETRY_TYPE: Readonly<Record<AnimationSetId, strin
   sticky: 'StickyAnimation',
   drawing: 'DrawingAnimation',
   media: 'MediaAnimation',
-  table: 'TableAnimation',
   text: 'TextAnimation',
 };

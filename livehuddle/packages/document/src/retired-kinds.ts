@@ -52,6 +52,8 @@ export const RETIRED_SHAPE_NAMES: Readonly<Record<string, string>> = {
 export const RETIRED_TYPE_NAMES: Readonly<Record<string, string>> = {
   // The video and website embeds (part 1), named Embed since they carried Figma files and Google Docs too.
   video: 'Embed',
+  // Tables (part 2), with their cell links and styles.
+  table: 'Table',
 };
 
 export const RETIRED_ELEMENT_TYPES: ReadonlySet<string> = new Set(Object.keys(RETIRED_TYPE_NAMES));

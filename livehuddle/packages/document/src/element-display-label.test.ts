@@ -21,7 +21,7 @@ describe('elementDisplayLabel', () => {
     expect(elementDisplayLabel(shape(undefined))).toBe('Untitled');
   });
 
-  it('names a table by its first non-empty cell', () => {
+  it('names a stored table Table, as its placeholder does, whatever its cells hold', () => {
     expect(
       elementDisplayLabel(
         table([
@@ -29,10 +29,7 @@ describe('elementDisplayLabel', () => {
           ['', 'Owner'],
         ]),
       ),
-    ).toBe('Table: Owner');
-  });
-
-  it('names an empty table plainly', () => {
+    ).toBe('Table');
     expect(elementDisplayLabel(table([['', '']]))).toBe('Table');
   });
 });

@@ -29,7 +29,6 @@ import { acceptsInlineIcon, canvasSurface } from './colors';
 import { inlineIconLayout } from './svg-render-inline-icon';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
-import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { isRetiredElement } from './retired-kinds';
@@ -235,12 +234,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // A kind or type livehuddle no longer has (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): its
     // placeholder card, in place of its body, border and label.
     return `<g${opAttr}${rotAttr}>${svgRetiredElement(el, surface, fontFamily)}</g>`;
-  }
-  if (el.type === 'table') {
-    // The real grid (tracks / headers / zebra / per-cell text), not a
-    // box-with-nothing. Tables carry no element label; the cells are the
-    // content.
-    return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}${sketch ?? ''}</g>`;
   }
   if (el.type === 'freehand' && shape.kind === 'rect') {
     // The sketch's actual polyline instead of its bounding box; a Polygon-tool outline drawn by hand in its finish
@@ -481,7 +474,10 @@ export function boxedNeedsSvgRaster(
   if (supportsShadow(el) && el.shadow) return true;
   // An accent edge (docs/specs/008-canvas/accent-edge.md) is a clipped bar only the SVG draws.
   if (resolvedAccentEdge(el)) return true;
-  if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
+  if (el.type === 'freehand' || el.type === 'path') return true;
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is the SVG's placeholder
+  // card, which the canvas drawers have no drawer for: a stored table or embed would otherwise export as a bare box.
+  if (isRetiredElement(el)) return true;
   // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
   if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
