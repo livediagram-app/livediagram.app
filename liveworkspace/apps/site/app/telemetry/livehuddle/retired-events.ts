@@ -303,6 +303,12 @@ function isLeftLivehuddleEvent(category: string, action: string, type: string | 
   return false;
 }
 
+// Element and Tab Locking (removed 2026-11-07, Work Tracker #625; livehuddle/docs/specs/002-project-scope/
+// not-in-livehuddle.md "Element and Tab Locking"): an element or a tab locked or unlocked. The facilitator's own
+// Facilitator·Changed·Unlocked is another feature, and carries on.
+const LOCKING_CATEGORIES = new Set(['Element', 'Tab']);
+const LOCKING_ACTIONS = new Set(['Locked', 'Unlocked']);
+
 // What livehuddle inherited from livediagram and never had as its own, per the above.
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
@@ -319,6 +325,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
   if (isInheritedEvent(category, action, type)) return true;
   if (isEraserEvent(category, action, type)) return true;
+  if (LOCKING_CATEGORIES.has(category) && LOCKING_ACTIONS.has(action)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === DRIVE_MIRROR_CATEGORY) return true;
   if (isTagsEvent(category, action, type)) return true;
