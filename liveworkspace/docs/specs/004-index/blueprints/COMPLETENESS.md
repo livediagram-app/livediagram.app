@@ -189,8 +189,8 @@
 - [x] Errors and edge cases
 - [x] Security and trust
 - [x] Performance and limits
-- [ ] Presentation and UX
-- [ ] Accessibility
+- [x] Presentation and UX
+- [x] Accessibility
 - [ ] Web Experience
 - [ ] Observability
 - [x] Testing

@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
+import { BrandMark } from '@liveworkspace/brand';
 import { timeLeftCompact } from '../../time';
 import { Button, ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
@@ -105,6 +106,8 @@ export function ActivePass({
           </button>
         </Tooltip>
       </div>
+
+      {link.connection ? <ConnectedFrom connection={link.connection} /> : null}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
@@ -270,5 +273,22 @@ export function ActivePass({
         </div>
       </div>
     </PassTicket>
+  );
+}
+
+// A connected tab's pass (liveworkspace/docs/specs/004-index/connected-tabs.md "Removing"): which file's tab it was made
+// for, with that file's app logo, so its owner knows what Revoke ends. Revoking it leaves that tab offering Connect Again.
+function ConnectedFrom({ connection }: { connection: NonNullable<ShareLink['connection']> }) {
+  return (
+    <p
+      data-share-connected-from=""
+      className="flex min-w-0 items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300"
+    >
+      <span className={META}>Connected from</span>
+      <BrandMark app={connection.hostApp} className="size-3.5 shrink-0" />
+      <span className="truncate font-medium text-slate-800 dark:text-slate-100">
+        {connection.hostTitle}
+      </span>
+    </p>
   );
 }
