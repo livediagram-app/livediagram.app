@@ -215,7 +215,19 @@ const AGENT_FRONT_DOORS = tokensAfter(
   ';',
 );
 
+// The UI Scale slider's per-part rows (settings-catalogue.ts uiScalePartRow), each naming its token in the copy
+// it hands the helper, which builds the row's event from it.
+const UI_SCALE_PARTS = [
+  ...read('live/components/dialogs/settings/settings-catalogue.ts').matchAll(
+    /uiScalePartRow\('[A-Za-z]+', \{[^}]*?changed: '([A-Za-z]+)'/g,
+  ),
+].map((m) => m[1]!);
+
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The UI Scale slider's per-part rows (UI_SCALE_PARTS above).
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: UI_SCALE_PARTS,
+  },
   // The Explorer on liveworkspace.app, in this app's name: its closed token lists (../platform-emitters.ts).
   ...platformComputedEmitters(isValidTelemetryEvent),
   // The api worker.

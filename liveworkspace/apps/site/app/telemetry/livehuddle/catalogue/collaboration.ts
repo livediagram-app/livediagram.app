@@ -2,7 +2,6 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import { SLIDE_DECK_OPENED } from './features';
 import { chart } from '../../_shared/catalogue-helpers';
 
 export const TEAM_DOCUMENTS_MOVED = chart(
@@ -126,14 +125,6 @@ export const TEAM_REMOVALS = chart(
   'Team Removals',
   'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
-);
-
-export const SLIDE_NOTES = chart(
-  'UI',
-  'Changed',
-  'Slide Notes',
-  'Speaker notes on a slide edited.',
-  { types: ['SlideNotes'] },
 );
 
 export const LIVE_IMAGE_TABS = chart(
@@ -403,26 +394,8 @@ export const TEAM_ACTIVITY: MetricStack = {
 };
 
 // The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
-// Timeline·Opened carries four things by type: two ways of arriving on the
-// feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
-// which is how the landing-page change is measured, and two things done in it
-// (a card or stack menu opened, a stacked run expanded).
-export const TIMELINE_LANDINGS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Landings',
-  'A page load that started on the Timeline.',
-  { types: ['Landing'] },
-);
-
-export const TIMELINE_VISITS = chart(
-  'Timeline',
-  'Opened',
-  'Timeline Visits',
-  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See Timeline.",
-  { types: ['Nav'] },
-);
-
+// Timeline·Opened carries what is done in the feed: a card or stack menu opened, a stacked run expanded, a card
+// opened. (Its Landing and Nav arrivals stopped when the Explorer moved to liveworkspace.app.)
 export const TIMELINE_MENUS = chart(
   'Timeline',
   'Opened',
@@ -492,24 +465,8 @@ export const ACTIVITY_RESOLVED = chart(
   "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
-// from each part of Home, summaries expanded, and failed reads retried.
-export const HOME_LANDINGS = chart(
-  'Home',
-  'Opened',
-  'Home Landings',
-  'The Explorer opened straight onto Home, its default page.',
-  { types: ['Landing'] },
-);
-
-export const HOME_VISITS = chart(
-  'Home',
-  'Opened',
-  'Home Visits',
-  'Home opened after starting elsewhere in the Explorer.',
-  { types: ['Nav'] },
-);
-
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): first-run arrivals, documents opened from each part of
+// Home, summaries expanded, and failed reads retried.
 export const HOME_WELCOMES = chart(
   'Home',
   'Opened',
@@ -541,14 +498,10 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   blurb:
     "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
   members: [
-    HOME_LANDINGS,
-    HOME_VISITS,
     HOME_WELCOMES,
     HOME_DOCUMENTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
-    TIMELINE_LANDINGS,
-    TIMELINE_VISITS,
     TIMELINE_MENUS,
     TIMELINE_STACKS_EXPANDED,
     TIMELINE_CARDS_OPENED,
@@ -563,74 +516,6 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
     TIMELINE_FILTERED,
     FEED_RETRIES,
   ],
-};
-
-// Presentations (docs/specs/012-collaboration/presentation-mode.md).
-export const SLIDES_REORDERED = chart(
-  'UI',
-  'Moved',
-  'Slides Reordered',
-  'Slides dragged into a new order in the deck.',
-  { types: ['Slide'] },
-);
-export const PRESENTATIONS_STARTED = chart(
-  'UI',
-  'Started',
-  'Presentations Started',
-  'A slide deck presented full screen.',
-  { types: ['Presentation'] },
-);
-
-export const PRESENTATIONS_CLOSED = chart(
-  'UI',
-  'Closed',
-  'Presentations Closed',
-  'A presentation ended.',
-  { types: ['Presentation'] },
-);
-
-export const SLIDES_SHOWN_HIDDEN = chart(
-  'UI',
-  'Toggled',
-  'Slides Shown & Hidden',
-  'A slide hidden from the deck or shown again.',
-  { types: ['SlideShown', 'SlideHidden'], rising: 'neutral' },
-);
-
-// The presenter settings (transition, speed, auto-advance, loop and the
-// rest) send UI·Changed·Presentation-<field>: which setting, never its value.
-export const PRESENTER_SETTINGS_CHANGED = chart(
-  'UI',
-  'Changed',
-  'Presenter Settings Changed',
-  'A presentation setting changed: the transition, speed, auto-advance, loop, zoom, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-// The Settings dialog's presenter switches send UI·Toggled·Presentation-<field>On|Off.
-export const PRESENTER_SETTINGS_TOGGLED = chart(
-  'UI',
-  'Toggled',
-  'Presenter Settings Switched',
-  'A presentation switch turned on or off in Settings: advance on click, loop, or what the presenter sees.',
-  { typeIn: (type) => (type ?? '').startsWith('Presentation-') },
-);
-
-export const PRESENTATIONS: MetricStack = {
-  stack: true,
-  title: 'Presentations',
-  blurb: 'Slide decks built from element sets and presented full screen.',
-  members: [
-    PRESENTATIONS_STARTED,
-    PRESENTATIONS_CLOSED,
-    SLIDE_DECK_OPENED,
-    SLIDES_SHOWN_HIDDEN,
-    SLIDE_NOTES,
-    SLIDES_REORDERED,
-    PRESENTER_SETTINGS_CHANGED,
-    PRESENTER_SETTINGS_TOGGLED,
-  ],
-  headline: PRESENTATIONS_STARTED,
 };
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): set running, paused, reset, and a

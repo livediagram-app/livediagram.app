@@ -39,6 +39,16 @@ export type ViewProps = { summary: TelemetrySummary; active: TelemetryWindowKey 
 /** A Detail tab's section that only some apps have: the groups it shows and how it introduces them. */
 export type GroupsSection = { intro: string; groups: MetricGroup[] };
 
+/** One ranking card on the Palette section: a palette category's kinds, most added first. */
+export type PaletteCard = {
+  /** The key of its kinds in the app's `palette.tabs`. */
+  tab: string;
+  title: string;
+  subtitle: string;
+  /** What the empty card says was not added ("No seats were added in this window yet."). */
+  empty: string;
+};
+
 export type TelemetryAppConfig = {
   id: TelemetryApp;
   /** 'livediagram', as the copy and the CLI name it. */
@@ -75,7 +85,12 @@ export type TelemetryAppConfig = {
     /** The palette's tabs (the app's PALETTE_TELEMETRY_TYPES). Collaborate shows only where present. */
     tabs: Readonly<Record<string, readonly string[]>>;
     aliases: TypeAliases;
-    subtitles: { shapes: string; collaborate?: string; devices: string };
+    /** The diagram palette's card subtitles; unused with `cards`. */
+    subtitles?: { shapes: string; collaborate?: string; devices: string };
+    /** The ranking cards, one per palette category, in the palette's order, for an app whose palette is not the
+     *  diagram one (livehuddle's Space categories). Each ranks its `tab`'s kinds; without it the Palette section
+     *  shows the diagram palette's Shapes, Tools, Components, Devices and Icons. */
+    cards?: readonly PaletteCard[];
   };
   /** The canvas selection modes and their options; an app without any has no Modes section. */
   modes?: {

@@ -34,7 +34,6 @@ import {
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
   COMMUNITY_ENGAGEMENT,
-  DATA_MODELS,
   CALLS,
   DISCUSSION,
   DOCUMENTS_CREATED,
@@ -44,6 +43,7 @@ import {
   EDITOR_SEARCH,
   EDITOR_TIMING_CHARTS,
   ELEMENTS_ADDED,
+  IN_THE_SPACE,
   ELEMENT_EDITING,
   ELEMENT_TOURS,
   EMAILS_SENT,
@@ -69,7 +69,6 @@ import {
   PAGE_VIEWS_BY_APP,
   PALETTE_USE,
   PANELS_OPENED,
-  PRESENTATIONS,
   REALTIME_RESYNCS,
   RETURNING_VISITORS,
   SERVER_CRASHES,
@@ -225,6 +224,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
       title: 'Features',
       metrics: [
         WHITEBOARD_RECOGNITION,
+        IN_THE_SPACE,
         PALETTE_USE,
         CANVAS_MODES,
         LOOK_AND_FEEL,
@@ -243,7 +243,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         JOINING,
         SHARING_AND_JOINING,
         TIMELINE_AND_ACTIVITY,
-        PRESENTATIONS,
         COMMUNITY_ENGAGEMENT,
       ],
     },
@@ -272,7 +271,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
           UNDO_AND_REDO,
           EXPORT_AND_IMPORT,
           TABLES,
-          DATA_MODELS,
           SIDE_BY_SIDE,
           EDITOR_SEARCH,
           EDITOR_CHROME,
@@ -280,19 +278,65 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         ],
       },
     ],
-    exportFormats:
-      'Which formats Spaces leave in: PNG, SVG, PDF, JSON, Mermaid, Markdown, Excalidraw',
+    exportFormats: 'Which formats Spaces leave in: PNG, SVG, PDF, JSON, Markdown',
     aiOptIn: true,
   },
   palette: {
     tabs: PALETTE_TELEMETRY_TYPES,
     aliases: PALETTE_TYPE_ALIASES,
-    subtitles: {
-      shapes: 'Boxes, circles, flowchart symbols and other primitives',
-      collaborate:
-        'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls',
-      devices: 'Device frames: browser, phone, laptop and friends',
-    },
+    // livehuddle's palette categories, in the category bar's order (docs/specs/010-palette/
+    // palette-top-level-categories.md "The strip's order"). Kinds no category offers are counted only in Elements
+    // Added's Other Elements Added.
+    cards: [
+      {
+        tab: 'write',
+        title: 'Write',
+        subtitle: 'Text, sticky notes and stickers',
+        empty: 'No text or notes were added in this window yet.',
+      },
+      {
+        tab: 'rooms',
+        title: 'Rooms',
+        subtitle: 'Rooms and doors, and what lays out the floor',
+        empty: 'No rooms were added in this window yet.',
+      },
+      {
+        tab: 'seats',
+        title: 'Seats',
+        subtitle: 'Chairs, desks, sofas and meeting tables',
+        empty: 'No seats were added in this window yet.',
+      },
+      {
+        tab: 'perks',
+        title: 'Perks',
+        subtitle: 'The office, kitchen and restroom pieces',
+        empty: 'No perks were added in this window yet.',
+      },
+      {
+        tab: 'play',
+        title: 'Play',
+        subtitle: 'The bar, the games, the gym and the lounge',
+        empty: 'Nothing to play with was added in this window yet.',
+      },
+      {
+        tab: 'garden',
+        title: 'Garden',
+        subtitle: 'Plants, paths, garden furniture, water and parking',
+        empty: 'No garden pieces were added in this window yet.',
+      },
+      {
+        tab: 'meet',
+        title: 'Meet',
+        subtitle: 'Screens, signs, boards, clocks and timers',
+        empty: 'No meeting pieces were added in this window yet.',
+      },
+      {
+        tab: 'travel',
+        title: 'Travel',
+        subtitle: 'Portals, Bring Focus, Avatar Pads, directories, elevators and stairs',
+        empty: 'No travel pieces were added in this window yet.',
+      },
+    ],
   },
   modes: {
     selection: SELECTION_MODES,

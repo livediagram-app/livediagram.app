@@ -22,16 +22,6 @@ export const JUST_DRAW = chart(
   { types: ['JustDraw'] },
 );
 
-// Escape in the New Document wizard: back to where they came from, nothing made
-// (docs/specs/007-editor/new-document-route.md "Escape backs out").
-export const NEW_DOCUMENT_BACKED_OUT = chart(
-  'UI',
-  'Closed',
-  'New Document Backed Out',
-  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
-  { types: ['NewDocument'] },
-);
-
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
@@ -319,7 +309,6 @@ export const DOCUMENT_ACTIONS: MetricStack = {
     JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
-    NEW_DOCUMENT_BACKED_OUT,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };
@@ -443,10 +432,9 @@ export const SIDE_BY_SIDE: MetricStack = {
   members: [SIDE_BY_SIDE_OPENED, SIDE_BY_SIDE_FOCUSED, SIDE_BY_SIDE_CLOSED],
 };
 
-// Elements added, one chart per palette tab (Palette tab ranks inside each),
-// plus every kind the catalogue doesn't list, so together they cover every
-// Element·Added exactly once and the stack's total is every element added.
-// Copies count: a duplicate or paste adds one per element it creates.
+// Elements added, one chart per palette category (the api schema's PALETTE_TELEMETRY_TYPES, the category bar's
+// order), plus every kind no category offers, so together they cover every Element·Added exactly once and the
+// stack's total is every element added. Copies count: a duplicate or paste adds one per element it creates.
 const addedFrom = (tab: PaletteTab, title: string, blurb: string): Metric => ({
   category: 'Element',
   action: 'Added',
@@ -456,69 +444,73 @@ const addedFrom = (tab: PaletteTab, title: string, blurb: string): Metric => ({
   blurb,
 });
 
-export const SHAPES_ADDED = addedFrom(
-  'shapes',
-  'Shapes Added',
-  'Boxes, circles, flowchart symbols and other primitives.',
+export const WRITE_ADDED = addedFrom('write', 'Write Added', 'Text, sticky notes and stickers.');
+
+export const ROOMS_ADDED = addedFrom(
+  'rooms',
+  'Rooms Added',
+  'Rooms and doors, and what lays out the floor: fences, stages, pods, rugs and pillars.',
 );
 
-export const TOOLS_ADDED = addedFrom(
-  'tools',
-  'Tools Added',
-  'Text, arrows, stickies, tables, charts and other building blocks.',
+export const SEATS_ADDED = addedFrom(
+  'seats',
+  'Seats Added',
+  'Chairs, desks, sofas, meeting tables and the other places to sit.',
 );
 
-export const COLLABORATE_ADDED = addedFrom(
-  'collaborate',
-  'Collaborate Added',
-  'Estimate cards, temperature checks, idea boxes, agendas, decisions and roll calls.',
+export const PERKS_ADDED = addedFrom(
+  'perks',
+  'Perks Added',
+  'The office, kitchen and restroom pieces that make a Space feel like a place.',
 );
 
-export const COMPONENTS_ADDED = addedFrom(
-  'components',
-  'Components Added',
-  'Blocks that lay themselves out: cards, badges, step numbers, banners, callouts, stat rows, heroes.',
+export const PLAY_ADDED = addedFrom(
+  'play',
+  'Play Added',
+  'The bar, the games (ping-pong, pool, the arcade), the gym and the lounge.',
 );
 
-export const CONCEPTS_ADDED = addedFrom(
-  'concepts',
-  'Concepts Added',
-  'Concept graphics that lay out their own rows: layer stacks, pyramids, funnels and cycles.',
+export const GARDEN_ADDED = addedFrom(
+  'garden',
+  'Garden Added',
+  'Plants, paths, garden furniture, water and fire, and the parking.',
 );
 
-export const DEVICES_ADDED = addedFrom('devices', 'Devices Added', 'Device frames and mockups.');
+export const MEET_ADDED = addedFrom(
+  'meet',
+  'Meet Added',
+  'Screens, room signs, notice boards, clocks, timers and the other meeting-room pieces.',
+);
 
-export const ICONS_ADDED = addedFrom('icons', 'Icons Added', 'Line-art and technology icons.');
-
-// The data-model types Data Models charts (docs/specs/009-elements/entity.md), kept out of the catch-alls.
-const DATA_MODEL_ADDED = ['EntityField'];
-const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
+export const TRAVEL_ADDED = addedFrom(
+  'travel',
+  'Travel Added',
+  'Portals, Bring Focus, Avatar Pads, directories, signposts, elevators and stairs.',
+);
 
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  typeIn: (type) =>
-    !PALETTE_KINDS.has(canonicalElementType(type)) &&
-    !isTablePart(type) &&
-    !DATA_MODEL_ADDED.includes(type ?? ''),
+  typeIn: (type) => !PALETTE_KINDS.has(canonicalElementType(type)) && !isTablePart(type),
   title: 'Other Elements Added',
   blurb:
-    'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
+    'Kinds no palette category offers, such as a pasted diagram shape. Table rows and columns are in Tables.',
 };
 
 export const ELEMENTS_ADDED: MetricStack = {
   stack: true,
   title: 'Elements Added',
   blurb:
-    'Everything put on a canvas, by the palette tab it comes from. Copies count too: a duplicate or paste adds one per element.',
+    'Everything put in a Space, by the palette category it comes from. Copies count too: a duplicate or paste adds one per element.',
   members: [
-    SHAPES_ADDED,
-    TOOLS_ADDED,
-    COLLABORATE_ADDED,
-    COMPONENTS_ADDED,
-    CONCEPTS_ADDED,
-    DEVICES_ADDED,
-    ICONS_ADDED,
+    WRITE_ADDED,
+    ROOMS_ADDED,
+    SEATS_ADDED,
+    PERKS_ADDED,
+    PLAY_ADDED,
+    GARDEN_ADDED,
+    MEET_ADDED,
+    TRAVEL_ADDED,
     OTHER_ELEMENTS_ADDED,
   ],
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
@@ -537,9 +529,9 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An entity's fields and a relationship's cardinality are Data Models'; a timer piece's presses are Timers'.
+  // A timer piece's presses are Timers'.
   {
-    typeIn: (t) => !DATA_MODEL_CHANGED.includes(t ?? '') && !TIMER_PIECE_CHANGES.includes(t ?? ''),
+    typeIn: (t) => !TIMER_PIECE_CHANGES.includes(t ?? ''),
   },
 );
 
@@ -631,38 +623,6 @@ export const KEYBOARD_SELECTIONS = chart(
   'Elements selected from the keyboard, or by selecting everything matching a filter.',
 );
 
-export const INSERTED_BETWEEN = chart(
-  'Canvas',
-  'Used',
-  'Inserted Between',
-  'A note dropped into the gap between two notes on an event-storming board, the board making room for it.',
-  { types: ['InsertBetween'] },
-);
-
-export const NEXT_NOTES_ADDED = chart(
-  'Canvas',
-  'Used',
-  'Next Notes Added',
-  'A next-note tab beside an event-storming note clicked, adding the note the notation puts there.',
-  { types: ['AddNextNote'] },
-);
-
-export const NOTE_KINDS_CHANGED = chart(
-  'Canvas',
-  'Used',
-  'Note Kinds Changed',
-  'An event-storming note turned into another kind, say a domain event into a hotspot.',
-  { types: ['ChangeNoteKind'] },
-);
-
-export const LANES_SETTLED = chart(
-  'Canvas',
-  'Used',
-  'Boards Lined Up On Lanes',
-  'An older event-storming board opened for the first time since notes always sit on a lane, its stray notes lined up in one undoable step.',
-  { types: ['LanesSettled'] },
-);
-
 export const ELEMENT_EDITING: MetricStack = {
   stack: true,
   title: 'Element Editing',
@@ -681,10 +641,6 @@ export const ELEMENT_EDITING: MetricStack = {
     IMAGE_SEARCHES,
     IMAGE_SEARCH_PICKS,
     KEYBOARD_SELECTIONS,
-    INSERTED_BETWEEN,
-    NEXT_NOTES_ADDED,
-    NOTE_KINDS_CHANGED,
-    LANES_SETTLED,
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
@@ -734,38 +690,6 @@ export const TABLES: MetricStack = {
   blurb:
     'Editing inside a table: rows and columns added, removed and moved, and its header and zebra switches.',
   members: [TABLE_ROWS_ADDED, TABLE_ROWS_REMOVED, TABLE_ROWS_MOVED, TABLE_STYLE_TOGGLES],
-};
-
-export const ENTITY_FIELDS_STARTED = chart(
-  'Element',
-  'Added',
-  'Entity Fields Started',
-  "A new field started on an entity from its ring's Add Field.",
-  { types: DATA_MODEL_ADDED },
-);
-
-export const ENTITY_FIELDS_SAVED = chart(
-  'Element',
-  'Changed',
-  'Entity Fields Saved',
-  "An entity's fields saved, in place on the canvas or from its Fields menu.",
-  { types: ['Entity'] },
-);
-
-export const RELATIONSHIP_CARDINALITY = chart(
-  'Element',
-  'Changed',
-  'Cardinality Set',
-  "A relationship's cardinality picked from its toolbar (one to many, many to many and the rest).",
-  { types: ['Cardinality'] },
-);
-
-export const DATA_MODELS: MetricStack = {
-  stack: true,
-  title: 'Data Models',
-  blurb:
-    'Entities grown into a model: related entities added, fields started and saved, and relationship cardinality set.',
-  members: [ENTITY_FIELDS_STARTED, ENTITY_FIELDS_SAVED, RELATIONSHIP_CARDINALITY],
 };
 
 // Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a

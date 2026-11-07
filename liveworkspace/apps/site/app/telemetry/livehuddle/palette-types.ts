@@ -30,9 +30,12 @@ export const canonicalElementType = (type: string | null): string =>
 
 export type PaletteTab = keyof typeof PALETTE_TELEMETRY_TYPES;
 
-/** Every kind the palette catalogue lists, across its tabs. */
+/** Every kind a palette category offers today: the catalogue's tabs but `retired`, the kinds livehuddle no longer
+ *  offers (counted under Other Elements Added). */
 export const PALETTE_KINDS: ReadonlySet<string> = new Set(
-  Object.values(PALETTE_TELEMETRY_TYPES).flat(),
+  Object.entries(PALETTE_TELEMETRY_TYPES)
+    .filter(([tab]) => tab !== 'retired')
+    .flatMap(([, kinds]) => kinds),
 );
 
 // The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other

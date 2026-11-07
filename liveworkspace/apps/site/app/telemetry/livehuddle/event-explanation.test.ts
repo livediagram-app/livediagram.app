@@ -6,7 +6,7 @@ import {
 } from '@livehuddle/api-schema';
 import { REPO, SCAN_ROOTS, SKIP } from './scan-roots';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import { avatarEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
@@ -23,6 +23,8 @@ const eventExplanation = APP.explain;
 const EMITS = [
   ...scanEmitters(REPO, SCAN_ROOTS, SKIP),
   ...sharedClientEmitters(),
+  // Avatar mode's events, sent through this editor's bound track.
+  ...avatarEmitters(),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
 ];
