@@ -94,9 +94,20 @@ const ARCADE_ROOMS: IndoorRoom[] = [
 const arcadeBank = (xs: readonly number[]): OfficePiece[] =>
   BANK_ROWS.flatMap((y) => xs.map((x) => ({ kind: 'arcade-machine' as const, x, y })));
 
+// Three Bean Bags on a round rug, its top left at (x, y): somewhere to sit between games and watch a run.
+const beanBags = (x: number, y: number): OfficePiece[] => [
+  { kind: 'rug', x, y, variant: 'round' },
+  { kind: 'bean-bag', x: x + 16, y: y + 30 },
+  { kind: 'bean-bag', x: x + 92, y: y + 30 },
+  { kind: 'bean-bag', x: x + 54, y: y + 86 },
+];
+
 const ARCADE_FLOOR: OfficePiece[] = [
   ...arcadeBank(LEFT_BANK),
   ...arcadeBank(RIGHT_BANK),
+  // Bean Bags either side of the pad, between it and the banks.
+  ...beanBags(640, 760),
+  ...beanBags(1200, 760),
   // The Prize Counter by the entrance, the Directory on the other side of the way in.
   { kind: 'reception-desk', x: 640, y: 1060 },
   { kind: 'directory', x: ARCADE_W / 2 + 80, y: 1080 },
@@ -187,8 +198,8 @@ const DEN_ROOMS: IndoorRoom[] = [
     w: 560,
     h: 340,
     indoor: true,
-    // Its door in its top wall, onto the hall.
-    door: { side: 'n', at: 160, sign: -1 },
+    // Its door in its left wall, onto the hall.
+    door: { side: 'w', at: 170, sign: 1 },
     windows: [
       { side: 'e', at: 170 },
       { side: 's', at: 400 },

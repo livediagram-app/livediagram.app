@@ -68,11 +68,11 @@ describe.each(Object.entries(HOMES))('the %s', (key, names) => {
 });
 
 describe('what the new Spaces furnish', () => {
-  it('gives the Arcade Lounge twenty Arcade Machines, a glass Party Room, a Vending Machine and Bean Bags', () => {
+  it('gives the Arcade Lounge twenty Arcade Machines, a glass Party Room, a Vending Machine and nine Bean Bags', () => {
     const [els] = floorsOf('arcade-lounge');
     expect(count(els!, 'arcade-machine')).toBe(20);
     expect(count(els!, 'vending-machine')).toBe(1);
-    expect(count(els!, 'bean-bag')).toBe(3);
+    expect(count(els!, 'bean-bag')).toBe(9);
     const glass = els!.filter((e) => e.shape === 'room' && isGlassRoom(e)).map((r) => r.label);
     expect(glass).toEqual(['Party Room']);
   });
