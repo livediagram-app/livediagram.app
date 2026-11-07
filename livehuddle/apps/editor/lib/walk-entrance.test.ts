@@ -54,7 +54,7 @@ describe('walkEntrance', () => {
     const spaces = TEMPLATES.map((t) => t.kind).filter(
       (kind) => kind !== 'blank-session' && templateCategory(kind) !== null,
     );
-    expect(spaces.length).toBe(18);
+    expect(spaces.length).toBe(25);
     expect(offering.sort()).toEqual(spaces.sort());
   });
 
