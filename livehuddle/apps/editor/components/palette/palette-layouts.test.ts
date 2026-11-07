@@ -93,6 +93,8 @@ describe('palette layouts', () => {
       'tools:meeting-table',
       'tools:bean-bag',
       'tools:reading-nook',
+      'tools:hot-desk',
+      'tools:standing-desk',
     ]);
     // Rooms opens on Build (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): Room,
     // Room Builder and Door, a divider, then the rest of the rooms pieces in catalogue order, each once.
@@ -107,6 +109,9 @@ describe('palette layouts', () => {
       'tools:stage-curtains',
       'tools:podium',
       'tools:office-pod',
+      'tools:phone-booth',
+      'tools:nap-pod',
+      'tools:reception-desk',
       'tools:rug',
       'tools:pillar',
       'tools:column',
@@ -154,15 +159,22 @@ describe('palette layouts', () => {
       'tools:foosball-table',
       'tools:arcade-machine',
       'tools:dartboard',
+      'tools:treadmill',
+      'tools:weight-bench',
       'tools:jukebox',
       'tools:fireplace',
+      'tools:pet-bed',
     ]);
     const dividers = (id: string) =>
       paletteCategories()
         .find((c) => c.id === id)!
         .tiles!.filter((t) => t.dividerAfter)
         .map((t) => t.id);
-    expect(dividers('collab-recreation')).toEqual(['tools:drinks-fridge', 'tools:dartboard']);
+    expect(dividers('collab-recreation')).toEqual([
+      'tools:drinks-fridge',
+      'tools:dartboard',
+      'tools:weight-bench',
+    ]);
     expect(tileIds('collab-garden')).toEqual([
       'tools:outdoor-plant',
       'tools:tree',

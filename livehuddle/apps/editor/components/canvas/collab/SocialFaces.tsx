@@ -65,8 +65,9 @@ export function SocialFace({
   }
 }
 
-// The piece's drawn rectangle inside its box, as percentages, with the grid's viewBox for an SVG over it.
-function Overlay({ element, children }: { element: ShapeElement; children: ReactNode }) {
+// The piece's drawn rectangle inside its box, as percentages, with the grid's viewBox for an SVG over it. Shared with
+// the workday pieces' faces (WorkdayFaces.tsx).
+export function Overlay({ element, children }: { element: ShapeElement; children: ReactNode }) {
   const art = OFFICE_ART[element.shape as keyof typeof OFFICE_ART];
   const grid = art?.front ?? { width: element.width, height: element.height };
   const r = drawnRect({ x: 0, y: 0, width: element.width, height: element.height }, grid);
@@ -89,7 +90,7 @@ function Overlay({ element, children }: { element: ShapeElement; children: React
 // A press on a face's control is the control's, never the start of a drag, a selection, a label edit or a walk on
 // the canvas (pieceControlProps).
 
-const PILL =
+export const PILL =
   'pointer-events-auto absolute left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
 
 // While walking, a press anywhere on a reading piece opens it large. Not a piece control: the click policy

@@ -25,6 +25,7 @@ import { roomZones } from '@/lib/calls/zones';
 import { track } from '@/lib/telemetry';
 import { useTimerEarshot } from '@/lib/office/timer-earshot';
 import { useMeetingPieces } from '@/lib/office/useMeetingPieces';
+import { useReceptionBell } from '@/lib/office/reception-bell';
 import type { TalkingBarsPeer } from './TalkingBars';
 
 type WalkingSelf = {
@@ -95,6 +96,16 @@ export function useCanvasCall(deps: {
   });
   // Who hears each Timer's chime: the people in its room (docs/specs/009-elements/timer-and-stopwatch.md "The chime").
   useTimerEarshot({ elements: props.elements, zones, inMode, self });
+  // Who hears a Reception Desk's bell, and ringing it (docs/specs/009-elements/workday-pieces.md "Reception Desk").
+  useReceptionBell({
+    elements: props.elements,
+    zones,
+    inMode,
+    self,
+    walkers: props.remoteAvatars,
+    doNotDisturb: deps.doNotDisturb === true,
+    send: props.onCallSignal,
+  });
   const view = useViewRect(deps.viewport);
   const toast = useToast();
   useProximityCall({

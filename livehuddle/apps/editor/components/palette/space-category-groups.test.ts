@@ -47,8 +47,12 @@ describe('the Space categories’ groups', () => {
       'tools:arcade-machine',
       'tools:dartboard',
       '|',
+      'tools:treadmill',
+      'tools:weight-bench',
+      '|',
       'tools:jukebox',
       'tools:fireplace',
+      'tools:pet-bed',
     ]);
   });
 
@@ -76,8 +80,12 @@ describe('the Space categories’ groups', () => {
       'tools:drinks-cabinet',
       'tools:drinks-fridge',
       '|',
+      'tools:treadmill',
+      'tools:weight-bench',
+      '|',
       'tools:jukebox',
       'tools:fireplace',
+      'tools:pet-bed',
     ]);
   });
 

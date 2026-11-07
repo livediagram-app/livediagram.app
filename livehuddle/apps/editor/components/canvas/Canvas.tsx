@@ -276,6 +276,7 @@ function CanvasView(props: CanvasProps) {
     setAvatarBurst,
     setAvatarStatus,
     sittersOf,
+    sitsDown,
     speech,
     speechBubbles,
   } = useCanvasAvatar({
@@ -621,7 +622,7 @@ function CanvasView(props: CanvasProps) {
                 stepFrame={peer.avatar.stepFrame}
                 lift={peer.avatar.lift}
                 wave={peer.avatar.wave}
-                seated={!!peer.avatar.seatedOn}
+                seated={sitsDown(peer.avatar.seatedOn)}
                 // Parsed, not trusted: anything but a known drink draws an empty hand.
                 holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
                 status={parseAvatarStatus(peer.avatar.status)}
@@ -667,7 +668,7 @@ function CanvasView(props: CanvasProps) {
                 lift={avatar.lift}
                 wave={avatar.wave}
                 pose={avatar.pose}
-                seated={avatar.seatedOn !== null}
+                seated={sitsDown(avatar.seatedOn)}
                 holding={avatar.holding}
                 status={avatarStatus}
                 shirt={props.selfParticipant.color}

@@ -6,6 +6,7 @@ import { podClosed } from '@liveworkspace/avatar/pod';
 import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { hasSocialArt, SocialArt } from './SocialArt';
+import { hasWorkdayArt, WorkdayArt } from './WorkdayFaces';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
   chairSeatFill,
@@ -106,6 +107,15 @@ const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   'bike-rack': 'Bike rack',
   'stage-curtains': 'Stage curtains',
   podium: 'Podium',
+  // The workday pieces (docs/specs/009-elements/workday-pieces.md).
+  'nap-pod': 'Nap pod',
+  treadmill: 'Treadmill',
+  'weight-bench': 'Weight bench',
+  'phone-booth': 'Phone booth',
+  'standing-desk': 'Standing desk',
+  'hot-desk': 'Hot desk',
+  'pet-bed': 'Pet bed',
+  'reception-desk': 'Reception desk',
 };
 
 /** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
@@ -189,6 +199,7 @@ export function FurnitureView({
         {hasSocialArt(kind) ? (
           <SocialArt kind={kind} id={element.id} sitters={sitters.length} />
         ) : null}
+        {hasWorkdayArt(kind) ? <WorkdayArt kind={kind} id={element.id} sitters={sitters} /> : null}
         {kind === 'water-cooler' || kind === 'coffee-machine' ? (
           <MachineAnswer kind={kind} id={element.id} />
         ) : null}

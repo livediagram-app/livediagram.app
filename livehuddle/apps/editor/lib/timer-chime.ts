@@ -36,23 +36,35 @@ function audio(): AudioContext | null {
 
 /** Play the chime now. Silent where the browser refuses sound (nothing pressed on the page yet) or has no Web Audio. */
 export function playChime(): void {
+  playTones(NOTES, NOTE_S, PEAK_GAIN);
+}
+
+/**
+ * Play sine notes now, each with a soft attack and a fade over `noteS` seconds, at `peak` gain: the chime's voice, and the
+ * reception bell's ding (lib/office/reception-bell.ts). Silent where the browser refuses sound or has no Web Audio.
+ */
+export function playTones(
+  notes: readonly { hz: number; at: number }[],
+  noteS: number,
+  peak: number,
+): void {
   const ctx = audio();
   if (!ctx) return;
   try {
     if (ctx.state === 'suspended') void ctx.resume().catch(() => {});
     const t0 = ctx.currentTime + 0.02;
-    for (const note of NOTES) {
+    for (const note of notes) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = note.hz;
       const start = t0 + note.at;
       gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(PEAK_GAIN, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + NOTE_S);
+      gain.gain.linearRampToValueAtTime(peak, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + noteS);
       osc.connect(gain).connect(ctx.destination);
       osc.start(start);
-      osc.stop(start + NOTE_S + 0.05);
+      osc.stop(start + noteS + 0.05);
     }
   } catch {
     // A browser that throws on any of it stays silent; the flash still shows.

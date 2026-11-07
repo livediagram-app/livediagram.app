@@ -111,6 +111,15 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'swimming-pool': 'swimming pool swim water lanes hotel rooftop beach resort spa lido',
   'stage-curtains': 'stage curtains drapes theatre theater proscenium velvet backdrop show event',
   podium: 'podium lectern speaker microphone mic talk keynote stage presentation event',
+  'nap-pod': 'nap pod sleep rest quiet focus lounger cocoon recharge wellbeing heads down',
+  treadmill: 'treadmill running machine gym fitness exercise run walk break wellbeing',
+  'weight-bench':
+    'weight bench weights barbell dumbbells gym fitness lift exercise break wellbeing',
+  'phone-booth': 'phone booth call private quiet pod one person busy telephone',
+  'standing-desk': 'standing desk stand up sit stand adjustable desk work monitor',
+  'hot-desk': 'hot desk hot-desking hotdesk desk claim name card flexible seat work',
+  'pet-bed': 'pet bed dog cat office dog pet corner puppy animal pat',
+  'reception-desk': 'reception desk front desk welcome lobby arrival bell service bell concierge',
   screen:
     'screen tv television monitor display wall screen share presentation video youtube meeting room',
   'room-sign':

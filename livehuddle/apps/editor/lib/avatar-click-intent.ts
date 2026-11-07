@@ -87,6 +87,16 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   'swimming-pool': W,
   'stage-curtains': W,
   podium: W,
+  // Walk: the workday pieces (docs/specs/009-elements/workday-pieces.md): seats you sit or stand in (arriving sits
+  // you, and may set your status), the pet bed you walk over, and the reception desk you walk up to (Welcome).
+  'nap-pod': W,
+  treadmill: W,
+  'weight-bench': W,
+  'phone-booth': W,
+  'standing-desk': W,
+  'hot-desk': W,
+  'pet-bed': W,
+  'reception-desk': W,
   // Walk: arriving gives you a drink.
   'water-cooler': W,
   'coffee-machine': W,

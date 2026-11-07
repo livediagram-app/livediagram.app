@@ -160,6 +160,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone walked their Avatar-mode character up to a drinks cabinet and took a drink.',
   'Canvas|Used|DrinksFridge':
     'Someone walked their Avatar-mode character up to a drinks fridge and took a drink.',
+  'Canvas|Used|ReceptionBell':
+    'Someone standing at a Reception Desk rang its bell, for the people nearby to hear.',
+  'Canvas|Used|PatPet': 'Someone patted the office dog that wanders round a Pet Bed.',
   'Canvas|Used|Door': 'Someone swung a Door in a Space open or shut.',
   'Canvas|Used|ScreenOpen':
     'Someone opened a Screen in a meeting room large, to read what it shows.',

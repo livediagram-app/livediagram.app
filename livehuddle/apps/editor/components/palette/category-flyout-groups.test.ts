@@ -71,7 +71,7 @@ describe('a flyout’s groups', () => {
   });
 
   // docs/specs/010-palette/palette-top-level-categories.md "Groups in a flyout".
-  it('splits Play into Bar, Games and Lounge', () => {
+  it('splits Play into Bar, Games, Gym and Lounge', () => {
     const groups = flyoutGroups('collab-recreation', tiles('collab-recreation'));
     expect(groups.map((g) => [g.title, g.tiles.map((t) => t.id)])).toEqual([
       ['Bar', ['tools:bar', 'tools:bar-stool', 'tools:drinks-cabinet', 'tools:drinks-fridge']],
@@ -85,7 +85,8 @@ describe('a flyout’s groups', () => {
           'tools:dartboard',
         ],
       ],
-      ['Lounge', ['tools:jukebox', 'tools:fireplace']],
+      ['Gym', ['tools:treadmill', 'tools:weight-bench']],
+      ['Lounge', ['tools:jukebox', 'tools:fireplace', 'tools:pet-bed']],
     ]);
   });
 

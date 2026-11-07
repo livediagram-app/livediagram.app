@@ -13,6 +13,7 @@ import { DoorView } from '@/components/canvas/collab/RoomBuilderViews';
 import { PondView } from '@/components/canvas/collab/PondView';
 import { SwimmingPoolView } from '@/components/canvas/collab/SwimmingPoolView';
 import { hasSocialFace, SocialFace } from '@/components/canvas/collab/SocialFaces';
+import { hasWorkdayFace, WorkdayFace } from '@/components/canvas/collab/WorkdayFaces';
 import { RoomView } from '@/components/canvas/collab/RoomView';
 import { RoomSignView } from '@/components/canvas/collab/RoomSignView';
 import { ScreenView } from '@/components/canvas/collab/ScreenView';
@@ -91,14 +92,22 @@ export function PieceArt({
     );
     // A social piece's live face over its art (docs/specs/009-elements/social-pieces.md): the notice board's notes,
     // the world clock's dials, the jukebox's button, the arcade's bubble.
-    return hasSocialFace(kind) ? (
-      <>
-        {art}
-        <SocialFace element={element} walking={walking} />
-      </>
-    ) : (
-      art
-    );
+    if (hasSocialFace(kind))
+      return (
+        <>
+          {art}
+          <SocialFace element={element} walking={walking} />
+        </>
+      );
+    // A workday piece's face (docs/specs/009-elements/workday-pieces.md): the reception desk's Welcome, the office dog.
+    if (hasWorkdayFace(kind))
+      return (
+        <>
+          {art}
+          <WorkdayFace element={element} />
+        </>
+      );
+    return art;
   }
   switch (kind) {
     // A room (office.md "Room"): its floor, walls and doorway; its name is the ordinary label on the back wall.

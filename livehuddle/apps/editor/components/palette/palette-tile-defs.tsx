@@ -41,6 +41,16 @@ import {
 } from './palette-icons-garden';
 import { RoomSignIcon, ScreenIcon } from './palette-icons-meeting';
 import {
+  HotDeskIcon,
+  NapPodIcon,
+  PetBedIcon,
+  PhoneBoothIcon,
+  ReceptionDeskIcon,
+  StandingDeskIcon,
+  TreadmillIcon,
+  WeightBenchIcon,
+} from './palette-icons-workday';
+import {
   BikeRackIcon,
   CarParkIcon,
   ColumnIcon,
@@ -915,6 +925,34 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <ReadingNookIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:hot-desk',
+    tileGroup: 'seating',
+    blurb: 'Your name while you sit',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Hot Desk',
+    caption: 'Hot Desk',
+    description: 'A desk anyone can take: sit at it and its card shows your name until you get up.',
+    filled: true,
+    action: { type: 'shape', kind: 'hot-desk' },
+    icon: <HotDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:standing-desk',
+    tileGroup: 'seating',
+    blurb: 'Work on your feet',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Standing Desk',
+    caption: 'Standing Desk',
+    description: 'A tall desk with a monitor. Walk up to it to work standing.',
+    filled: true,
+    action: { type: 'shape', kind: 'standing-desk' },
+    icon: <StandingDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Plant (docs/specs/009-elements/office.md).
     id: 'tools:plant',
     tileGroup: 'amenities',
@@ -1215,6 +1253,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     icon: <OfficePodIcon size={TILE_GLYPH_PX} />,
   },
   {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:phone-booth',
+    tileGroup: 'rooms',
+    blurb: 'One seat, out of the room',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Phone Booth',
+    caption: 'Phone Booth',
+    description:
+      "A booth for one in Avatar mode: sit in it to step out of the room's call, and its lamp shows Busy until you leave.",
+    filled: true,
+    action: { type: 'shape', kind: 'phone-booth' },
+    icon: <PhoneBoothIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:nap-pod',
+    tileGroup: 'rooms',
+    blurb: 'Lie back, shown as Focusing',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Nap Pod',
+    caption: 'Nap Pod',
+    description:
+      'A cocoon lounger for a quiet moment. Walk in to lie back; while you rest, people see you as Focusing.',
+    filled: true,
+    action: { type: 'shape', kind: 'nap-pod' },
+    icon: <NapPodIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:reception-desk',
+    tileGroup: 'rooms',
+    blurb: 'A counter with a bell',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Reception Desk',
+    caption: 'Reception Desk',
+    description:
+      'A front desk with a bell. Stand at it to see Welcome and ring the bell, and everyone in the room hears it.',
+    filled: true,
+    action: { type: 'shape', kind: 'reception-desk' },
+    icon: <ReceptionDeskIcon size={TILE_GLYPH_PX} />,
+  },
+  {
     // Bar (docs/specs/009-elements/office.md). The bar pieces are Play's Bar group
     // (docs/specs/010-palette/palette-top-level-categories.md "Play holds the Bar").
     id: 'tools:bar',
@@ -1452,6 +1535,51 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     filled: true,
     action: { type: 'shape', kind: 'fireplace' },
     icon: <FireplaceIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:treadmill',
+    tileGroup: 'recreation',
+    blurb: 'Walk on, shown On a Break',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Treadmill',
+    caption: 'Treadmill',
+    description:
+      'A treadmill whose belt runs while you walk on it; while you do, people see you as On a Break.',
+    filled: true,
+    action: { type: 'shape', kind: 'treadmill' },
+    icon: <TreadmillIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:weight-bench',
+    tileGroup: 'recreation',
+    blurb: 'Lift, shown On a Break',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Weight Bench',
+    caption: 'Weight Bench',
+    description:
+      'A bench with a barbell on its rack. Sit to lift; while you do, people see you as On a Break.',
+    filled: true,
+    action: { type: 'shape', kind: 'weight-bench' },
+    icon: <WeightBenchIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Workday pieces (docs/specs/009-elements/workday-pieces.md).
+    id: 'tools:pet-bed',
+    tileGroup: 'recreation',
+    blurb: 'An office dog',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Pet Bed',
+    caption: 'Pet Bed',
+    description:
+      'A dog bed with a bone, and the office dog that naps in it and wanders the room. Click the dog to pat it.',
+    filled: true,
+    action: { type: 'shape', kind: 'pet-bed' },
+    icon: <PetBedIcon size={TILE_GLYPH_PX} />,
   },
   {
     // Social pieces (docs/specs/009-elements/social-pieces.md).

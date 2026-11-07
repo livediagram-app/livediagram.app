@@ -69,7 +69,9 @@ export type CallSignal =
   | { kind: 'call-stop-share'; targetId: string }
   // A knock on a room, and the answer to one (docs/specs/012-collaboration/knock.md "The wire").
   | { kind: 'avatar-knock'; roomId: string }
-  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' };
+  | { kind: 'avatar-knock-answer'; targetId: string; roomId: string; answer: 'in' | 'later' }
+  // A ring of a Reception Desk's bell (docs/specs/009-elements/workday-pieces.md "The wire").
+  | { kind: 'avatar-bell'; deskId: string };
 
 /**
  * Where everyone stands, as the canvas sees it: your feet, every other walker's on your tab, the visible area, the
