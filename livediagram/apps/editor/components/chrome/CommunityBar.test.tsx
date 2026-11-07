@@ -24,7 +24,7 @@ describe('CommunityBar', () => {
       'Shared to the Community by Anonymous',
     );
     expect(screen.getByRole('link', { name: /Back to Community/ }).getAttribute('href')).toBe(
-      '/community/post/?id=post1',
+      '/community/post?id=post1',
     );
     fireEvent.click(screen.getByRole('button', { name: /Make a Copy/ }));
     expect(onMakeCopy).toHaveBeenCalledTimes(1);

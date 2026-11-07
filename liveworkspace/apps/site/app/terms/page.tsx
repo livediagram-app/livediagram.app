@@ -150,11 +150,15 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           You can create API tokens on liveworkspace.app to use the apps programmatically. A token
-          acts as your account in every app and its MCP server (or only reads, if you make it
-          read-only), so keep it secret and revoke any that might have been exposed. You are
-          responsible for what is done with your tokens. We may apply rate limits to keep the
-          Service healthy. If you connect a third-party or AI tool, you authorise it to act for you
-          with that access, until you revoke its token.
+          acts as your account in every app&rsquo;s API, and in the MCP server of every app that has
+          one (all but livehuddle), or only reads, if you make it read-only, so keep it secret and
+          revoke any that might have been exposed. You are responsible for what is done with your
+          tokens. We may apply rate limits to keep the Service healthy. If you connect a third-party
+          or AI tool, you authorise it to act for you with that access, until you revoke its token.
+        </p>
+        <p>
+          If you add a webhook, you choose where news of your items (or, as a team&rsquo;s admin,
+          the team&rsquo;s) is sent, and the service at that address handles it under its own terms.
         </p>
       </>
     ),
@@ -166,9 +170,24 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           We send sign-in codes when you ask for them, and, if you have an account, account and
-          service emails, notifications about your work and a short onboarding series. You can turn
-          off the notifications and onboarding emails in each app&rsquo;s Settings. We do not send
-          advertising.
+          service emails, notifications about your work and a short onboarding series, and, if you
+          turn them on, phone notifications. You can turn off the notifications and onboarding
+          emails, and each kind of phone notification, in Settings. We do not send advertising.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'calls',
+    title: 'Calls, cameras and screen sharing',
+    body: (
+      <>
+        <p>
+          In livehuddle, what you say, show on camera or share from your screen reaches the people
+          who can hear you, live. We do not record it. It is your content like anything else you
+          add, so the rules below apply to it, and only share a screen or a camera picture you have
+          the right to show. To keep the free service affordable, calls may sometimes be limited to
+          audio, or paused, while everything else in a Space carries on.
         </p>
       </>
     ),
@@ -215,7 +234,8 @@ const SECTIONS: LegalSection[] = [
         <p>
           To the fullest extent allowed by law, we are not liable for any indirect, incidental or
           consequential damages, or for any loss of data or profits, arising from your use of the
-          Service. You can export your documents at any time.
+          Service. You can export your documents at any time, or, with an account, download
+          everything you own as one file.
         </p>
       </>
     ),

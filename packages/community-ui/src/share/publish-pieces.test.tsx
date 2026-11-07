@@ -104,12 +104,12 @@ describe('CommunityPublishedConfirmation', () => {
     expect(screen.getByRole('status').textContent).toContain('is live');
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Done' }));
     expect(screen.getByRole('link', { name: /View Post/ }).getAttribute('href')).toBe(
-      '/community/post/?id=post1',
+      '/community/post?id=post1',
     );
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Copy Link/ }));
     });
-    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/community/post/?id=post1`);
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/community/post?id=post1`);
     await waitFor(() => expect(screen.getByRole('button', { name: /Copied/ })).toBeTruthy());
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onDone).toHaveBeenCalledTimes(1);

@@ -6,10 +6,8 @@ import { SiteFooter } from './SiteFooter';
 const html = renderToStaticMarkup(<SiteFooter />);
 const footerNav = html.slice(html.indexOf('aria-label="Footer"'), html.indexOf('</nav>'));
 
-// Every link's label in nav order, ignoring the icon markup inside each anchor.
-const labels = [...footerNav.matchAll(/<a [^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]+)<\/a>/g)].map(
-  (m) => m[1],
-);
+// Every link's label in nav order.
+const labels = [...footerNav.matchAll(/<a [^>]*>([^<]+)<\/a>/g)].map((m) => m[1]);
 
 describe('SiteFooter', () => {
   it('opens with the large logo, linking home', () => {
@@ -31,16 +29,18 @@ describe('SiteFooter', () => {
     expect(footerNav).toContain('href="/licences"');
   });
 
-  it('gives an icon to the key links only', () => {
-    const withIcon = [...footerNav.matchAll(/<a [^>]*><svg[\s\S]*?<\/svg>([^<]+)<\/a>/g)].map(
-      (m) => m[1],
-    );
-    expect(withIcon).toEqual(['New Space', 'Help Centre', 'GitHub']);
+  it('draws every link as plain text, with no icon', () => {
+    expect(footerNav).not.toContain('<svg');
   });
 
-  it('has no AI & MCP link, since livehuddle has no MCP server', () => {
+  it("puts the Explorer second under Product, opening this app's Explorer Home", () => {
+    expect(labels.slice(0, 2)).toEqual(['New Space', 'Explorer']);
+    expect(footerNav).toContain('<a href="/explorer/home" class="');
+  });
+
+  it('has no Build with AI link, since livehuddle has no MCP server', () => {
     expect(footerNav).not.toContain('href="/ai"');
-    expect(labels).not.toContain('AI &amp; MCP');
+    expect(labels).not.toContain('Build with AI');
   });
 });
 

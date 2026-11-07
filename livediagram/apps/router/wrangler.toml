@@ -32,9 +32,6 @@ service = "livediagram-api"
 binding = "HELP"
 service = "livediagram-help"
 
-[[services]]
-binding = "COMMUNITY"
-service = "livediagram-community"
 
 # /telemetry is not a downstream: it redirects to the liveworkspace telemetry
 # dashboard (docs/specs/017-telemetry/telemetry.md).
@@ -50,11 +47,13 @@ DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
 # switch is on (liveworkspace/docs/specs/004-index/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
+# liveworkspace's Community service behind the local site (it forwards /api/community): the Community page's head
+# and its sitemap read it (liveworkspace/docs/specs/007-community/community.md "Search engines").
+COMMUNITY_URL = "http://localhost:3000/api/community"
 MARKETING_ORIGIN = "http://127.0.0.1:3101"
 EDITOR_ORIGIN = "http://127.0.0.1:3102"
 API_ORIGIN = "http://127.0.0.1:8687"
 HELP_ORIGIN = "http://127.0.0.1:3104"
-COMMUNITY_ORIGIN = "http://127.0.0.1:3105"
 # liveworkspace's index (`pnpm dev` in liveworkspace/apps/index): `/api/index/*` goes there.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
 # liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
@@ -69,10 +68,10 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 # non-inheritable, so production's two never reach staging).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
-# non-inheritable, so these five are the staging router's only downstreams,
+# non-inheritable, so these four are the staging router's only downstreams,
 # but a suffix dropped from one of them is the worst failure this repo can
 # produce: a staging frontend writing to the PRODUCTION database, with
-# nothing in the UI to say so. Read them against the five above before
+# nothing in the UI to say so. Read them against the four above before
 # changing anything here; `pnpm staging:check` prints the resolved binding table.
 # ---------------------------------------------------------------------------
 
@@ -99,9 +98,6 @@ service = "livediagram-api-staging"
 binding = "HELP"
 service = "livediagram-help-staging"
 
-[[env.staging.services]]
-binding = "COMMUNITY"
-service = "livediagram-community-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a
@@ -112,4 +108,5 @@ DEPLOY_ENV = "staging"
 INDEX_ORIGIN = "https://staging.liveworkspace.app"
 DRIVE_ORIGIN = "https://staging.liveworkspace.app"
 WORKSPACE_ORIGIN = "https://staging.liveworkspace.app"
+COMMUNITY_URL = "https://staging.liveworkspace.app/api/community"
 PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

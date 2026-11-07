@@ -15,7 +15,7 @@ covers what they do for livedocuments. [Staging environment](staging-environment
 | `apps/help`      | `livedocuments-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
 | `apps/api`       | `livedocuments-api`       | Worker (Durable Objects; no database, no bucket).                             |
 | `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other four sites and the api).                |
+| `apps/router`    | `livedocuments-router`    | Worker (service bindings to marketing, editor, help and api).                 |
 
 `apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
 MCP Registry listing is manual too (by hand, or the root `mcp-registry.yml` workflow started by hand,

@@ -48,6 +48,8 @@ export { Portal } from './Portal';
 export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { Tooltip, type TooltipProps } from './Tooltip';
 export { HoverCard, type HoverCardProps } from './HoverCard';
+// The "this app or All Apps" switch the Explorer and the Community page share (AppScopeToggle.tsx).
+export { AppScopeToggle, type AppScope, type AppScopeOption } from './AppScopeToggle';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';

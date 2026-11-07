@@ -1,5 +1,5 @@
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideChartLine, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
+import { lucideChartLine, lucideLayoutGrid, lucideUsers } from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { AccountControl } from './AccountControl';
 import { HeaderLogo } from './HeaderLogo';
@@ -9,15 +9,17 @@ import { Wordmark } from './Wordmark';
 // Left out on a phone, where the wordmark and the account control fill the bar; the footer lists them
 // all.
 const AppsIcon = lucideGlyph(lucideLayoutGrid, 16);
+const CommunityIcon = lucideGlyph(lucideUsers, 16);
 const TelemetryIcon = lucideGlyph(lucideChartLine, 16);
 
 const NAV: { href: string; label: string; icon: ReactNode }[] = [
   { href: '/#apps', label: 'Our Apps', icon: <AppsIcon /> },
+  { href: '/community', label: 'Community', icon: <CommunityIcon /> },
   { href: '/telemetry', label: 'Telemetry', icon: <TelemetryIcon /> },
 ];
 
 // The header on every page (liveworkspace/docs/specs/010-site/site.md "The header"): the wordmark, whose hover lists
-// every site (liveworkspace/docs/specs/010-site/site-switcher.md), two links, each with its icon, and Sign in or the
+// every site (liveworkspace/docs/specs/010-site/site-switcher.md), three links, each with its icon, and Sign in or the
 // account menu. The sign-in pages leave the account control out: they are the sign-in, and under an app's address
 // they wear that app's logo (HeaderLogo).
 //

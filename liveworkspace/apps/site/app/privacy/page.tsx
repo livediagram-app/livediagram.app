@@ -76,8 +76,16 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>What it holds.</strong> Your email address and your first and last name. You
             confirm the address with a 6-digit code we email you, or by continuing with Google, in
-            which case we take your name and email from Google and leave your Google picture behind.
-            We never ask for a password.
+            which case we take your name and email from Google. We never ask for a password.
+          </li>
+          <li>
+            <strong>Your Google picture, if you sign in with Google.</strong> We keep the address of
+            the profile picture Google gives us at sign-in (never the image itself), and update it
+            at your next Google sign-in. Your avatar shows it to you, and to other signed-in people
+            you work with, in every app; guests and people signed out never receive it. Turn off{' '}
+            <strong>Show My Google Picture</strong> in Settings, Profile, and everyone else sees
+            your initials instead. Each browser loads the picture straight from Google, without
+            saying which page it is on.
           </li>
           <li>
             <strong>Signing in to an app.</strong> When an app sends you to liveworkspace.app to
@@ -88,10 +96,12 @@ const SECTIONS: LegalSection[] = [
           <li>
             <strong>Your teams.</strong> Each team&rsquo;s name, and for each member their account,
             email address and role. If you invite someone, we store the address you typed and email
-            them the invitation, with up to three reminders while nobody has answered it, each with
-            a link to decline it; it waits on liveworkspace.app until they accept or decline it. The
-            token an app gets when you sign in also lists the teams you are in, which is how we
-            decide who may open a team&rsquo;s work. The apps keep no copy of your teams.
+            them the invitation, with up to three reminders (after a day, a week and three weeks)
+            while nobody has answered it, each with a link to decline it. It waits on
+            liveworkspace.app until they accept or decline it, or until 28 days pass unanswered,
+            when it expires and they are not emailed again. The token an app gets when you sign in
+            also lists the teams you are in, which is how we decide who may open a team&rsquo;s
+            work. The apps keep no copy of your teams.
           </li>
           <li>
             <strong>API tokens, if you create them.</strong> We store a one-way hash of each token
@@ -160,9 +170,10 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           <strong>Connected AI tools, if you connect one.</strong> If you connect a tool through an
-          app&rsquo;s MCP server, we store the tool&rsquo;s registration (its name and redirect
-          address, for 30 days), short-lived authorisation codes that expire within minutes, and for
-          an hour a count of registrations from your network address, to stop abuse.
+          app&rsquo;s MCP server (every app has one but livehuddle), we store the tool&rsquo;s
+          registration (its name and redirect address, for 30 days), short-lived authorisation codes
+          that expire within minutes, and for an hour a count of registrations from your network
+          address, to stop abuse.
         </li>
         <li>
           <strong>Form responses.</strong> Each response to a form you publish is stored in your
@@ -295,11 +306,12 @@ const SECTIONS: LegalSection[] = [
     body: (
       <p>
         If you sign in, liveworkspace.app sets a cookie to keep you signed in, and each app you use
-        sets its own to remember that you are. If you use an app without an account,
-        liveworkspace.app sets a cookie holding your guest id. The apps keep your guest id, your
-        preferences (also saved to our database so they follow you) and your Community key in local
-        storage, and liveworkspace.app keeps your light or dark choice there. We do not use
-        advertising or tracking cookies.
+        sets its own to remember that you are, with your name, colour and Google picture (if you
+        have one) for its header. If you use an app without an account, liveworkspace.app sets a
+        cookie holding your guest id. The apps keep your guest id, your preferences (also saved to
+        our database so they follow you) and your Community key in local storage, and
+        liveworkspace.app keeps your light or dark choice there. We do not use advertising or
+        tracking cookies.
       </p>
     ),
   },
@@ -310,13 +322,15 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li>
-            <strong>Sign-in codes</strong>, from liveworkspace.app, when you ask for one.
+            <strong>Sign-in codes</strong>, from liveworkspace.app, when you ask for one, and the
+            code that confirms you want to delete your account.
           </li>
           <li>
             <strong>Account and service emails</strong>: team invitations from liveworkspace.app
             (with up to three reminders while unanswered), a confirmation when you delete your
-            account, a one-time reminder a week before an API token expires, and a note if one of
-            your forms is suspended after reports.
+            account, a one-time reminder a week before an API token expires, a link when a download
+            of your data is ready (or a note if it failed), and a note if one of your forms is
+            suspended after reports.
           </li>
           <li>
             <strong>Notifications about your work</strong>: when someone first opens a document you
@@ -334,10 +348,79 @@ const SECTIONS: LegalSection[] = [
         <p>
           You can turn off every notification, tip and milestone email in each app&rsquo;s Settings,
           or from the link at the bottom of each one. We send no advertising, and share your address
-          only with our email providers, to deliver these. People who use an app without an account
-          are never emailed, apart from team invitations and what follows from them.
+          only with our email provider, Cloudflare, to deliver these. People who use an app without
+          an account are never emailed, apart from team invitations and what follows from them.
         </p>
       </>
+    ),
+  },
+  {
+    id: 'phone-notifications',
+    title: 'Phone notifications',
+    body: (
+      <>
+        <p>
+          If you have an account and turn on phone notifications, we tell that phone or browser when
+          someone mentions you, assigns you an action, replies in a thread you are in, or comments
+          on something you own.
+        </p>
+        <ul>
+          <li>
+            <strong>What we keep</strong> for each device you turn them on for: the address your
+            browser&rsquo;s push service gave it, the two keys that encrypt messages to it, a label
+            naming the browser and system (such as &ldquo;Safari on iOS&rdquo;), the app you turned
+            them on in, and when one last reached it.
+          </li>
+          <li>
+            <strong>What a notification says</strong>: who did it and the name of the item, the
+            app&rsquo;s name and a link, never the words of a comment or an action.
+          </li>
+          <li>
+            <strong>How it travels.</strong> Each one is encrypted for your device and handed to
+            your browser&rsquo;s push service (Google, Mozilla, Apple or Microsoft, depending on
+            your browser), which delivers it but cannot read it.
+          </li>
+          <li>
+            You can switch each kind off, or remove a device, in Settings. A device the push service
+            no longer knows is removed, and all of them go when you delete your account.
+          </li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    id: 'webhooks',
+    title: 'Webhooks',
+    body: (
+      <>
+        <p>
+          If you add a webhook (for your own items, or as a team&rsquo;s admin for the
+          team&rsquo;s), we send what happens to those items to the address you choose: any HTTPS
+          address, a Slack channel or a Microsoft Teams channel. Each message holds the item&rsquo;s
+          name and link, who did it, and a short detail, such as the opening words of a comment.
+          What happens to it there is governed by that service&rsquo;s own terms and privacy policy.
+        </p>
+        <p>
+          We keep each webhook&rsquo;s name, the events it hears, and its address and signing secret
+          (both encrypted), with its last 20 deliveries (the event, when, and the answer that came
+          back). Your own webhooks are deleted with your account; a team&rsquo;s are paused when the
+          person who added it stops being one of its admins.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'downloading-your-data',
+    title: 'Downloading your data',
+    body: (
+      <p>
+        If you have an account, you can download everything you own, in every app, as one file: your
+        documents, a picture of each tab, the comments you wrote in them, your profile and the
+        images you uploaded. A team&rsquo;s admins can do the same for the team&rsquo;s documents.
+        The file is built on our servers and kept in Cloudflare object storage until its link
+        lapses, 3 days after it is ready, when it is deleted. The link only works while you are
+        signed in as the account it was made for.
+      </p>
     ),
   },
   {
@@ -348,17 +431,23 @@ const SECTIONS: LegalSection[] = [
         <ul>
           <li>
             <strong>Cloudflare</strong>: hosting, databases, image storage, Turnstile on the sign-in
-            pages, and delivering every email we send, sign-in codes included.
+            pages, delivering every email we send, sign-in codes included, and relaying
+            livehuddle&rsquo;s calls.
           </li>
           <li>
-            <strong>Google</strong>: sign-in with Google, if you choose it.
+            <strong>Google</strong>: sign-in with Google, if you choose it, and showing your Google
+            picture, if you have one.
+          </li>
+          <li>
+            <strong>Your browser&rsquo;s push service</strong> (Google, Mozilla, Apple or
+            Microsoft): delivering phone notifications, encrypted, if you turn them on.
           </li>
         </ul>
         <p>
           The editors load fonts from <strong>Google Fonts</strong>, and an embedded video, link
           card or website loads from its provider, which sees the viewer&rsquo;s IP address. Link
-          previews are fetched by our server. An app that uses anyone else says so in its section
-          below.
+          previews are fetched by our server. A webhook goes where you point it. An app that uses
+          anyone else says so in its section below.
         </p>
       </>
     ),
@@ -385,12 +474,16 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           You can delete your account yourself from <strong>Settings</strong>, then{' '}
-          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app. Your
-          liveworkspace account closes, for every app at once: the documents you own in every app
-          (the Trash included), your folders, favourites, images and preferences, your account
-          details, sessions, API tokens and sign-in records are deleted straight away, and you leave
-          every team (a team you ran alone goes; one you were the only admin of passes to its
-          longest-standing member). Documents that belong to a team stay with the team.
+          <strong>Account</strong>, then <strong>Delete Account</strong>, in any app, with a code we
+          email you to confirm it. Your liveworkspace account closes, for every app at once: the
+          documents you own in every app (the Trash included), your folders, favourites, images and
+          preferences, your account details and Google picture address, sessions, API tokens,
+          sign-in records, phone notification devices and your own webhooks are deleted straight
+          away. We also disconnect your Google Drive and delete any download of your data at the
+          same time; if either fails, the Drive access ends when you remove it in your Google
+          account, and a download is deleted by itself after 3 days. You leave every team (a team
+          you ran alone goes; one you were the only admin of passes to its longest-standing member).
+          Documents that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
@@ -534,14 +627,60 @@ const SECTIONS: LegalSection[] = [
   },
   {
     app: 'livehuddle.app',
-    id: 'livehuddle-everything-above',
-    title: 'Nothing beyond the above',
+    id: 'livehuddle-calls',
+    title: 'Talking, cameras and screen sharing',
     body: (
-      <p>
-        livehuddle&rsquo;s spaces, and everything on their boards, are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
-        its own.
-      </p>
+      <>
+        <p>
+          In a Space you can talk to the people near your character, turn on your camera and share
+          your screen. livehuddle&rsquo;s spaces, and everything on their boards, are stored as
+          described under <a href="#what-the-apps-store">What the apps store</a>; what you say and
+          show in a call is not stored at all.
+        </p>
+        <ul>
+          <li>
+            <strong>Only when you choose.</strong> Your microphone opens only after you press{' '}
+            <strong>Join Audio</strong>, your camera only when you turn it on, and your screen only
+            when you pick what to share, each after your browser asks your permission. Your
+            microphone closes on its own when nobody else has been on your tab for 15 seconds.
+            Screen sharing sends no sound. A camera or screen you turn on outside a call is a
+            preview only you see, and nothing is sent.
+          </li>
+          <li>
+            <strong>Relayed, never recorded.</strong> Your voice, camera and screen travel from your
+            browser through Cloudflare&rsquo;s realtime service (Cloudflare Realtime, with its TURN
+            relay) to the people who can hear you, never straight to their browsers, so they do not
+            see your IP address. Our server sets up each connection but never receives the sound or
+            picture, and we do not record, transcribe or keep any of it.
+          </li>
+          <li>
+            <strong>Who hears and sees you.</strong> The people near your character, or in the same
+            room, hear you, and see your camera and screen. Speaking from a stage, or once someone
+            lets you speak, everyone on the tab hears you; they also see your camera and screen only
+            if the stage is set to show cameras. Everyone on your tab can see when you are talking
+            (a small level meter above your character, never the sound). Someone with view access
+            can listen but never speak or turn on a camera.
+          </li>
+          <li>
+            <strong>Your character.</strong> Where your character walks, the messages it says, its
+            status, a raised hand and a knock on a door are sent live to the people in the Space,
+            and never stored. A message is never shown to anyone who arrives later. How your
+            character looks is kept in your browser.
+          </li>
+          <li>
+            <strong>Music and video in a Space.</strong> A Jukebox plays an audio stream from a link
+            an editor set, loaded by your browser from wherever it is hosted (which sees your IP
+            address), and only after you have pressed its Play. A Screen&rsquo;s video loads from
+            YouTube, Vimeo or Loom, like any embedded video.
+          </li>
+          <li>
+            <strong>Counting.</strong> The anonymous product events count that someone joined a
+            call, muted, or turned on a camera or a screen share, never who, for how long, or
+            anything said or shown.
+          </li>
+        </ul>
+        <p>livehuddle has no MCP server, so connected AI tools reach it only with an API token.</p>
+      </>
     ),
   },
 ];

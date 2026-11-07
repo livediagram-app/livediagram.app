@@ -9,7 +9,7 @@ import { brandLogoSvg, brandMarkSvg } from '@livehuddle/ui';
 // `pnpm icons:brand` from the Living Prism module in @livehuddle/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'editor', 'help', 'community'] as const;
+const APPS = ['marketing', 'editor', 'help'] as const;
 const REPO = new URL('../../../', import.meta.url);
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, REPO)), 'utf8').trim();
 const REGENERATE = 'stale: run `pnpm icons:brand`';
@@ -32,14 +32,14 @@ describe('brand icon', () => {
     }
   });
 
-  // The apps that serve their own icon under a basePath (help, community) pair the SVG with a PNG fallback through
-  // Next's icon file convention (both app/icon.svg and app/icon.png), the 256px white tile the other three name in
+  // The app that serves its own icon under a basePath (help) pairs the SVG with a PNG fallback through
+  // Next's icon file convention (both app/icon.svg and app/icon.png), the 256px white tile the others name in
   // BRAND_ICONS (docs/specs/016-platform/nextjs.md "Features used and declined").
-  it('gives help and community the PNG fallback, the same tile marketing serves', () => {
+  it('gives help the PNG fallback, the same tile marketing serves', () => {
     const tile = readFileSync(
       fileURLToPath(new URL('apps/marketing/public/livehuddle-icon-256.png', REPO)),
     );
-    for (const app of ['help', 'community'])
+    for (const app of ['help'])
       expect(
         readFileSync(fileURLToPath(new URL(`apps/${app}/app/icon.png`, REPO))).equals(tile),
         `${app} ${REGENERATE}`,

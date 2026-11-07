@@ -43,7 +43,6 @@
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community-ui": "workspace:^",
-    "@liveworkspace/icons": "workspace:^",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

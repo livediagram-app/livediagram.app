@@ -210,6 +210,10 @@ What it forwards:
 - `/api/workspace/account/…` to liveworkspace's `/api/account/…`: what the page asks of the account (people's
   names, their settings, and their teams: reading them and running them, [Teams](#teams-are-run-in-the-explorer)),
   with the page's bearer token. The editors' panels, on the same address, use the same route.
+- `/community`, `/community/…` and their payloads, the same way and with no cookies: liveworkspace.app's Community
+  page, which on the app's address is the app's Community (every app but liveplanner for now, `hasCommunityPage`).
+  The router's Community step runs first, making the page's head the app's own
+  ([007-community](../007-community/community.md) "One page for every app").
 
 In local dev, `next dev`'s overlay font (`/__nextjs_font/…`, requested from the page's origin, not under the asset
 prefix) is not forwarded: the router sends it to the app's own editor dev server, which serves the same file. A 500

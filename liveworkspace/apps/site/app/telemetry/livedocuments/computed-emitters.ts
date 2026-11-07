@@ -23,7 +23,6 @@ import {
   pascalToken,
   isValidTelemetryEvent,
   COMMUNITY_CATEGORY_TYPES,
-  COMMUNITY_REPORT_REASONS,
 } from '@livedocuments/api-schema';
 import { countedVerbs } from '@livedocuments/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedocuments/agent-verbs/mcp';
@@ -361,14 +360,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/lib/community-share-host.tsx Community·Shared': { values: COMMUNITY_CATEGORY_TYPES },
   'apps/editor/lib/community-share-host.tsx Community·Changed': {
     values: COMMUNITY_CATEGORY_TYPES,
-  },
-  // The Community app (docs/specs/025-community/community.md "Telemetry"): a report's reason as its closed type, and
-  // the gallery filter kinds its CommunitySelection union names.
-  'apps/community/lib/telemetry.ts Community·Reported': {
-    values: COMMUNITY_REPORT_REASONS.map((r) => r.type),
-  },
-  'apps/community/lib/telemetry.ts Community·Selected': {
-    values: tokensAfter(read('community/lib/telemetry.ts'), 'export type CommunitySelection', ';'),
   },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },

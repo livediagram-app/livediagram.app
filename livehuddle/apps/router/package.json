@@ -26,6 +26,7 @@
     "wrangler": "^4.152.0"
   },
   "dependencies": {
+    "@liveworkspace/community-site": "workspace:*",
     "@liveworkspace/sites": "workspace:*"
   }
 }

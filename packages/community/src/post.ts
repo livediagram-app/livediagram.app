@@ -206,6 +206,9 @@ export type CommunityPostState = 'listed' | 'hidden';
 
 export type CommunityPost = {
   id: string;
+  // The app the post's document is in: whose gallery lists it, and where its page, viewer and copy open. Every app's
+  // gallery shows it under All Apps (liveworkspace/docs/specs/007-community/community.md "One page for every app").
+  app: CommunityApp;
   title: string;
   description: string;
   category: CommunityCategory;
