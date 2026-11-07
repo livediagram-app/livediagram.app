@@ -11,6 +11,7 @@ import {
   TEXT_PX_MAX,
   TEXT_PX_MIN,
   THEMES,
+  TURNING_SHAPES,
   type Element,
   withArticle,
 } from '@livediagram/document';
@@ -109,13 +110,7 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartPalette',
-  ],
+  'pie-chart': ['pieSlices', 'chartVariant', 'chartLegend', 'chartValues', 'chartPalette'],
   'bar-chart': [
     'pieSlices',
     'chartVariant',
@@ -171,9 +166,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   estimate: ['estimateScale'],
-  chair: ['chairFacing'],
-  desk: ['chairFacing'],
-  sofa: ['chairFacing'],
+  // docs/specs/009-elements/furniture-facing.md: every piece of furniture that turns takes a facing.
+  ...Object.fromEntries(TURNING_SHAPES.map((kind) => [kind, ['chairFacing']])),
   // docs/specs/009-elements/office.md: which wall a room's doorway is in.
   room: ['roomDoor'],
   portal: ['portalTarget'],

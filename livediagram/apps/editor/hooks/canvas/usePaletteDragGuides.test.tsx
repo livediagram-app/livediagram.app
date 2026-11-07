@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   ES_LANE_PITCH,
   laneCentre,
+  SHAPE_DEFAULT_SIZE,
   type Element,
   type EsTimeline,
   type EventStormingNoteKind,
@@ -15,6 +16,7 @@ import {
 } from '@/lib/palette-drag-preview';
 import { getInsertionSlot, setInsertionSlot } from '@/lib/insertion-preview';
 import { getLanePreview, setLanePreview } from '@/lib/lane-preview';
+import { placingSize, resetPlacingFacing, turnPlacing } from '@/lib/placing-facing';
 import { usePaletteDragGuides } from './usePaletteDragGuides';
 
 // A row of three 200x200 notes with 72 gaps: 0..200, 272..472, 544..744.
@@ -93,6 +95,7 @@ afterEach(() => {
   setInsertionSlot(null);
   setPaletteDragSnap(null);
   setLanePreview(null);
+  resetPlacingFacing();
   document.body.innerHTML = '';
 });
 
@@ -299,5 +302,54 @@ describe('usePaletteDragGuides — insert between (docs/specs/021-event-storming
     // A fresh drag that never hovers a gap keeps it that way.
     altDragOver(second.wrapperRef.current, 100, 100);
     expect(getInsertionSlot()).toBeNull();
+  });
+});
+
+describe('a piece turned while placed (docs/specs/009-elements/furniture-facing.md "Turning while placing")', () => {
+  // One neighbour, its left edge at 100, far above where the piece is carried.
+  const neighbour = { ...note('n', 100), y: -400 };
+
+  function carried() {
+    const wrapperRef = wrapper();
+    setPaletteDragPreview({ kind: 'sofa', ...SHAPE_DEFAULT_SIZE.sofa, carried: true });
+    renderHook(() =>
+      usePaletteDragGuides({
+        elements: [neighbour],
+        readZoom: () => 1,
+        wrapperRef,
+        insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
+        inertIds: new Set<string>(),
+        timeline: null,
+      }),
+    );
+    return wrapperRef;
+  }
+
+  function pointerMove(target: HTMLElement, clientX: number, clientY: number) {
+    const event = new MouseEvent('pointermove', { bubbles: true, clientX, clientY });
+    act(() => {
+      target.dispatchEvent(event);
+    });
+  }
+
+  it('snaps a carried tile on its pointer moves, at the turned box', () => {
+    const wrapperRef = carried();
+    turnPlacing('sofa', 1);
+    const { width } = placingSize('sofa', SHAPE_DEFAULT_SIZE.sofa);
+    // The turned footprint's left edge four px right of the neighbour's.
+    pointerMove(wrapperRef.current, 104 + width / 2, 600);
+    expect(getPaletteDragSnap()?.dx).toBe(-4);
+  });
+
+  it('re-measures when the piece turns under a still pointer', () => {
+    const wrapperRef = carried();
+    turnPlacing('sofa', 1);
+    const { width: turnedWidth } = placingSize('sofa', SHAPE_DEFAULT_SIZE.sofa);
+    resetPlacingFacing();
+    pointerMove(wrapperRef.current, 104 + turnedWidth / 2, 600);
+    const before = getPaletteDragSnap()?.dx;
+    act(() => void turnPlacing('sofa', 1));
+    expect(getPaletteDragSnap()?.dx).toBe(-4);
+    expect(before).not.toBe(-4);
   });
 });

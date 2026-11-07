@@ -12,6 +12,7 @@ const PURE = [
   'config',
   'facing',
   'fence',
+  'furniture-art',
   'key-claims',
   'office-geometry',
   'pad',

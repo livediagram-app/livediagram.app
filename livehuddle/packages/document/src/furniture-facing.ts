@@ -4,7 +4,8 @@
 // @liveworkspace/avatar's facing.ts, shared with the walk that reads a piece's seats and footprint. Pure.
 
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { facingView, turnedBox, turnFacing, type SeatFacing } from '@liveworkspace/avatar/facing';
+import { turnFacing, type SeatFacing } from '@liveworkspace/avatar/facing';
+import { turnWithArt } from '@liveworkspace/avatar/furniture-art';
 import { DEFAULT_SEATING_FACING } from '@liveworkspace/avatar/seats';
 import { seatsACharacter } from '@liveworkspace/avatar/office-geometry';
 import { FURNITURE_ART, isSeatingShape, type FurnitureArt } from './seating';
@@ -113,20 +114,14 @@ type Turnable = Rect & { shape: string; chairFacing?: SeatFacing; rotation?: num
 
 /**
  * A piece turned to face `to` (furniture-facing.md "A turn"): its box keeps its centre and scale and takes the turned
- * drawing's proportions, and any rotation stored before furniture stopped rotating is dropped, so it stands upright.
- * A piece that does not turn comes back as it was.
+ * drawing's proportions, and any rotation stored before furniture stopped rotating is dropped, so it stands upright
+ * (@liveworkspace/avatar/furniture-art's turnWithArt, shared with livediagram). A piece that does not turn comes back
+ * as it was.
  */
 export function turnPiece<E extends Turnable>(el: E, to: SeatFacing): E {
   const art = pieceArt(el.shape);
   if (!art || !turnsWithFacing(el.shape)) return el;
-  const from = pieceFacing(el);
-  const { x, y, width, height } = turnedBox(
-    { x: el.x, y: el.y, width: el.width, height: el.height },
-    art[facingView(from).view],
-    art[facingView(to).view],
-  );
-  const { rotation: _dropped, ...rest } = el;
-  return { ...rest, x, y, width, height, chairFacing: to } as E;
+  return turnWithArt(el, art, pieceFacing(el), to);
 }
 
 /** A piece turned a number of clockwise quarter turns (Rotate Right is +1, Rotate Left -1). */

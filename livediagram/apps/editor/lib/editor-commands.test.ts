@@ -11,6 +11,7 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
+    turn: vi.fn(),
     clearAnimation: vi.fn(),
     renumberSteps: vi.fn(),
     setMarker: vi.fn(),
@@ -196,6 +197,15 @@ describe('buildEditorCommands — dispatch', () => {
 
     cmds.find((c) => c.id === 'delete')!.run();
     expect(h.deleteSelection).toHaveBeenCalledOnce();
+  });
+
+  it('turns furniture a quarter either way (docs/specs/009-elements/furniture-facing.md)', () => {
+    const h = handlers();
+    expect(ids({ ...base, selectionCount: 1, singleIsBoxed: true })).not.toContain('rotate-left');
+    const cmds = buildEditorCommands({ ...base, selectionCount: 2, selectionTurns: true }, h);
+    cmds.find((c) => c.id === 'rotate-left')!.run();
+    cmds.find((c) => c.id === 'rotate-right')!.run();
+    expect(vi.mocked(h.turn).mock.calls).toEqual([[-1], [1]]);
   });
 
   it('Clear marker dispatches setMarker(null)', () => {

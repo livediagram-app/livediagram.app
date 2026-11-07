@@ -80,6 +80,23 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
+  // A piece of furniture turns a quarter at a time instead (docs/specs/009-elements/furniture-facing.md "Turning a
+  // placed piece"): a single piece or a selection holding one.
+  if (ctx.selectionTurns) {
+    out.push({
+      id: 'rotate-left',
+      name: 'Rotate Left',
+      keywords: 'rotate turn face facing furniture anticlockwise counterclockwise left quarter',
+      run: () => h.turn(-1),
+    });
+    out.push({
+      id: 'rotate-right',
+      name: 'Rotate Right',
+      keywords: 'rotate turn face facing furniture clockwise right quarter',
+      run: () => h.turn(1),
+    });
+  }
+
   // Note / comment are single boxed-element actions.
   if (isSingle && ctx.singleIsBoxed) {
     out.push({
