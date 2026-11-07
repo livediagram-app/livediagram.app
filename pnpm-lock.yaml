@@ -5761,6 +5761,9 @@ importers:
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../../../packages/vitest-config
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
