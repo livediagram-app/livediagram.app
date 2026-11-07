@@ -1,4 +1,4 @@
-// Who is in and who runs a team, as accounts says now (liveworkspace/docs/specs/004-index/webhooks.md "Who adds one",
+// Who is in and who runs a team, and what people are called, as accounts says now (liveworkspace/docs/specs/004-index/webhooks.md "Who adds one",
 // "What it sends", "Security"): adding or changing a team's webhook, and sending one, each ask whether the person is
 // an admin of the team at that moment, and a mention asks whether the mentioned person is one of the item's team's
 // people (`POST /api/account/index/teams`, with the key the two share, as a team filter asks). A token's `teams` claim
@@ -38,6 +38,58 @@ export function accountsAdminTeams(env: Env): AdminTeams {
   return async (personId) => {
     const teams = await teamsNow(env, personId);
     return teams && new Set(teams.filter((t) => t.role === 'admin').map((t) => t.id));
+  };
+}
+
+/** People's display names now, by id (a closed account's, or one accounts doesn't know, absent), or null when
+ *  accounts can't say. */
+export type PeopleNames = (ids: readonly string[]) => Promise<ReadonlyMap<string, string> | null>;
+
+// Accounts names at most this many a call (its MAX_PROFILE_IDS), and the index makes at most this many at once.
+export const NAMES_PER_CALL = 100;
+const NAMES_CALLS_AT_ONCE = 4;
+
+// One call's names: `POST /api/account/index/people`, the shared key.
+async function namesNow(env: Env, key: string, ids: string[]): Promise<[string, string][] | null> {
+  try {
+    const res = await fetch(`${accountsUrl(env)}/api/account/index/people`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    const { people } = (await res.json()) as { people?: { id?: unknown; name?: unknown }[] };
+    return (people ?? []).flatMap((p) =>
+      typeof p.id === 'string' && typeof p.name === 'string'
+        ? [[p.id, p.name] as [string, string]]
+        : [],
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function accountsPeopleNames(env: Env): PeopleNames {
+  return async (ids) => {
+    const key = env.MERGE_KEY?.trim();
+    if (!key) return null;
+    const unique = [...new Set(ids)];
+    const chunks: string[][] = [];
+    for (let i = 0; i < unique.length; i += NAMES_PER_CALL) {
+      chunks.push(unique.slice(i, i + NAMES_PER_CALL));
+    }
+    const names = new Map<string, string>();
+    for (let i = 0; i < chunks.length; i += NAMES_CALLS_AT_ONCE) {
+      const answers = await Promise.all(
+        chunks.slice(i, i + NAMES_CALLS_AT_ONCE).map((chunk) => namesNow(env, key, chunk)),
+      );
+      for (const answer of answers) {
+        if (!answer) return null;
+        for (const [id, name] of answer) names.set(id, name);
+      }
+    }
+    return names;
   };
 }
 
