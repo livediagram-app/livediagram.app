@@ -11,6 +11,8 @@ import {
   type ItemFilters,
   type ItemListQuery,
   type SharedListQuery,
+  type TeamAuditEvent,
+  type TeamAuditQuery,
   type TimelineEvent,
   type TimelineQuery,
 } from '@liveworkspace/index-client';
@@ -72,6 +74,10 @@ export type FakeIndex = {
   // The Timeline, newest first or not (the fake sorts), and when the person last marked it seen.
   events: TimelineEvent[];
   timelineSeen: { at: number | null };
+  // The team audit log's rows (each with its `team`), newest first, and the CSV
+  // files Export CSV reads in turn (the cursor is the next file's index).
+  audit: (TeamAuditEvent & { team: string })[];
+  auditFiles: string[];
   calls: Call[];
   // Methods that answer with this refusal until removed.
   fail: Map<string, IndexError>;
@@ -90,8 +96,12 @@ export function createFakeIndex(
     events?: TimelineEvent[];
     seenAt?: number | null;
     defaults?: Record<string, string>;
+    audit?: (TeamAuditEvent & { team: string })[];
+    auditFiles?: string[];
   } = {},
 ): FakeIndex {
+  const audit = seed.audit ?? [];
+  const auditFiles = seed.auditFiles ?? [];
   const items = seed.items ?? [];
   const events = seed.events ?? [];
   const timelineSeen = { at: seed.seenAt ?? null };
@@ -431,6 +441,29 @@ export function createFakeIndex(
       }),
     listShareLinks: (id: string) =>
       answer('listShareLinks', [id], undefined, () => ({ links: [], passwordSet: false })),
+    teamAudit: (query: TeamAuditQuery, options: { signal?: AbortSignal } = {}) =>
+      answer('teamAudit', [query], options.signal, () => {
+        const rows = audit
+          .filter(
+            (e) =>
+              e.team === query.team &&
+              (!query.person || e.actor?.id === query.person) &&
+              (!query.kind || e.type === query.kind) &&
+              (query.from === undefined || e.occurredAt >= query.from) &&
+              (query.to === undefined || e.occurredAt < query.to),
+          )
+          .map(({ team: _team, ...e }) => e as TeamAuditEvent);
+        const { slice, next } = page(rows, query.limit, query.cursor);
+        return { events: slice, nextCursor: next };
+      }),
+    teamAuditCsv: (query: Omit<TeamAuditQuery, 'limit'>) =>
+      answer('teamAuditCsv', [query], undefined, () => {
+        const at = query.cursor ? Number(query.cursor) : 0;
+        return {
+          csv: auditFiles[at] ?? '',
+          nextCursor: at + 1 < auditFiles.length ? String(at + 1) : null,
+        };
+      }),
   } as unknown as IndexClient;
 
   return {
@@ -441,6 +474,8 @@ export function createFakeIndex(
     inbox,
     events,
     timelineSeen,
+    audit,
+    auditFiles,
     calls,
     fail,
     hold,
