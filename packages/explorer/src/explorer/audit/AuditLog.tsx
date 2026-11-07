@@ -32,6 +32,9 @@ import { exportAuditCsv, useAuditLog, type AuditFilter } from './useAuditLog';
 
 export const AUDIT_LOG_TITLE = 'Audit Log';
 
+// The two selects at the date fields' height and 13px type, so the four filters line up in one row.
+const FILTER_SELECT = 'h-[34px] text-[13px]';
+
 /** The section, closed by default. Drawn only for a team admin; keyed on the team by its caller. */
 export function AuditLog({
   teamId,
@@ -159,6 +162,7 @@ function AuditBody({
           <Select
             id={`${ids}-person`}
             className="w-full"
+            selectClassName={FILTER_SELECT}
             value={filters.person}
             onChange={(e) => {
               const id = e.target.value;
@@ -180,6 +184,7 @@ function AuditBody({
           <Select
             id={`${ids}-kind`}
             className="w-full"
+            selectClassName={FILTER_SELECT}
             value={filters.kind}
             onChange={(e) => {
               const kind = e.target.value;
