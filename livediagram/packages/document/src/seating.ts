@@ -36,6 +36,7 @@ export {
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
   FURNITURE_SHADOW,
+  FURNITURE_WEAVE,
   furnitureFrame,
   SOFA_ART,
   type FurnitureArt,

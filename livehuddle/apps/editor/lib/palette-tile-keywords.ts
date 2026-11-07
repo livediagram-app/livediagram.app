@@ -53,8 +53,10 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   elevator: 'elevator lift floor floors tab tabs stairs up down travel go building level',
   stairs:
     'stairs staircase stairway steps flight floor floors upstairs downstairs up down climb tab tabs travel building level',
-  room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office',
-  door: 'door doorway entrance exit way in opening wall gap room builder',
+  room: 'office room walls door doorway meeting kitchen lounge area space zone floor virtual office boardroom open plan l-shaped octagon preset',
+  corridor:
+    'corridor hallway hall passage walkway junction corner crossroads tee walls open ends join rooms',
+  door: 'door doorway entrance exit way in opening wall gap room builder double sliding revolving glass locked padlock',
   'meeting-table': 'meeting table conference boardroom seats chairs sit together team office',
   plant: 'plant pot potted green leaves foliage decoration office scenery',
   bookshelf: 'bookshelf books shelves library bookcase office scenery',
@@ -131,7 +133,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'room-sign':
     'room sign door sign plaque free busy in use occupied do not disturb knock meeting room',
   'garden-fence': 'garden fence picket low fence barrier outdoor',
-  rug: 'rug carpet mat floor lounge reception office',
+  rug: 'rug carpet mat floor lounge reception office round bordered runner striped persian kilim doormat pattern',
   stage:
     'stage platform podium all-hands all hands town hall keynote presenter speaker speak broadcast audience',
   'focus-button':

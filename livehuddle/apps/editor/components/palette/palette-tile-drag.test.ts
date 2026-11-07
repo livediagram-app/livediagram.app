@@ -43,6 +43,17 @@ describe('tileDragStart', () => {
     expect(data.get(PALETTE_DND_MIME)).toBe('mode-button|avatar');
   });
 
+  it('publishes a preset at its own size with its variant (office.md "Room presets")', () => {
+    const { data } = drag({ type: 'shape', kind: 'room', variant: 'boardroom' });
+    expect(data.get(PALETTE_DND_MIME)).toBe('room|boardroom');
+    expect(setPaletteDragPreview).toHaveBeenCalledWith({
+      kind: 'room',
+      width: 800,
+      height: 400,
+      variant: 'boardroom',
+    });
+  });
+
   it('carries a sticky note', () => {
     expect(drag({ type: 'sticky' }).data.get(PALETTE_DND_MIME)).toBe('sticky');
   });

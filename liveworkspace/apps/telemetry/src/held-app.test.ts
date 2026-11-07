@@ -45,15 +45,16 @@ describe('livehuddle in the telemetry service', () => {
     // Only livediagram has an /api/ai door; livehuddle reads it as an unknown route.
     expect(livediagramRouteLabel('POST', '/api/ai/notes')).toBe('Post.Ai');
     expect(livehuddleRouteLabel('POST', '/api/ai/notes')).toBe('Post.Unknown');
-    // And the palette tokens livehuddle ranks that livediagram does not are its Space pieces: the Stage, and the
-    // meeting, wayfinding, recreation and garden pieces only a Space holds, and a room drawn by hand (CustomRoom). The
-    // palette groups them by its own categories, so the order here is not the palette's.
+    // And the palette tokens livehuddle ranks that livediagram does not are its Space pieces: the Corridor, the
+    // Stage, and the meeting, wayfinding, recreation and garden pieces only a Space holds, and a room drawn by hand
+    // (CustomRoom). The palette groups them by its own categories, so the order here is not the palette's.
     const huddleOnly = palette(LIVEHUDDLE_PALETTE_TYPES).filter(
       (t) => !palette(LIVEDIAGRAM_PALETTE_TYPES).includes(t),
     );
     expect(huddleOnly.toSorted()).toEqual(
       [
         'CustomRoom',
+        'Corridor',
         'Stage',
         'Office-pod',
         'Bar',

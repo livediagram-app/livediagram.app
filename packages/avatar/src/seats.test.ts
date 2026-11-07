@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LONG_TABLE_VARIANT,
+  longTableGrid,
+  longTableLength,
+  longTableSeatViews,
+  longTableSideXs,
+  longTableSideYs,
   DEFAULT_SEATING_FACING,
   facingView,
   MEETING_TABLE_SEATS,
@@ -217,5 +223,67 @@ describe('every seat view', () => {
     for (const [kind, views] of Object.entries(SEAT_VIEWS))
       for (const view of ['front', 'back', 'side'] as const)
         expect(views[view].seats.length, `${kind} ${view}`).toBe(views.facings.length);
+  });
+});
+
+// livehuddle's office.md "Long Table": the Meeting Table's long type, seated along its width.
+const box560 = { shape: 'meeting-table' as const, x: 0, y: 0, width: 560, height: 168 };
+
+describe('a long table', () => {
+  it('seats both sides as many as fit 60 apart, and one at each end, every seat facing it', () => {
+    expect(longTableSideXs(560)).toHaveLength(7);
+    expect(longTableSideXs(232)).toHaveLength(2);
+    expect(longTableSideXs(100)).toHaveLength(2);
+    const seats = seatPoints({
+      shape: 'meeting-table',
+      x: 0,
+      y: 0,
+      width: 560,
+      height: 168,
+      variant: LONG_TABLE_VARIANT,
+    });
+    expect(seats).toHaveLength(16);
+    expect(seats.filter((s) => s.facing === 'down')).toHaveLength(7);
+    expect(seats.filter((s) => s.facing === 'up')).toHaveLength(7);
+    expect(seats.at(-2)).toMatchObject({ x: 21, y: 72, facing: 'right' });
+    expect(seats.at(-1)).toMatchObject({ x: 539, y: 72, facing: 'left' });
+    expect(seats[0]).toMatchObject({ x: 86, y: 40 });
+  });
+
+  it('fills a box of other proportions as wide as its depth allows', () => {
+    // Twice as deep: the drawing is 280 wide at that depth's scale, so fewer chairs, each where it is drawn.
+    const grid = longTableGrid(560, 336);
+    expect(grid.width).toBe(280);
+    const box = { shape: 'meeting-table' as const, x: 0, y: 0, width: 560, height: 336 };
+    expect(seatPoints({ ...box, variant: 'long' })).toHaveLength(grid.seats.length);
+    // A Meeting Table of no type keeps its six.
+    expect(seatPoints({ ...box, width: 232, height: 168 })).toHaveLength(6);
+  });
+
+  it('turns like the Meeting Table: its length down the box on its side, every sitter still facing it', () => {
+    // At 232 long it is the Meeting Table's own turn.
+    expect(longTableSideYs(232)).toEqual([86, 134]);
+    expect(longTableLength(168, 560, 'e')).toBe(560);
+    expect(longTableLength(168, 560, 'n')).toBe(232);
+    const views = longTableSeatViews(560);
+    expect(views.side).toMatchObject({ width: 168, height: 560 });
+    expect(views.back.seats).toHaveLength(16);
+    expect(longTableSeatViews(560)).toBe(views);
+    // Only the last few lengths are kept.
+    for (let L = 600; L < 800; L += 10) longTableSeatViews(L);
+    expect(longTableSeatViews(560)).not.toBe(views);
+    expect(longTableSeatViews(560)).toEqual(views);
+    const tall = { shape: 'meeting-table' as const, x: 0, y: 0, width: 168, height: 560 };
+    const side = seatPoints({ ...tall, variant: LONG_TABLE_VARIANT, chairFacing: 'e' });
+    expect(side).toHaveLength(16);
+    // The far row down its right faces left, the near row down its left faces right, the ends face in.
+    expect(side.filter((s) => s.facing === 'left').every((s) => s.x === 147)).toBe(true);
+    expect(side.filter((s) => s.facing === 'right').every((s) => s.x === 21)).toBe(true);
+    expect(side.at(-2)).toMatchObject({ x: 84, y: 40, facing: 'down' });
+    expect(side.at(-1)).toMatchObject({ x: 84, y: 514, facing: 'up' });
+    // From behind, the first seat is the far row's first chair, now nearest you at the other end.
+    const back = seatPoints({ ...box560, variant: LONG_TABLE_VARIANT, chairFacing: 's' });
+    expect(back[0]).toMatchObject({ x: 474, y: 116, facing: 'up' });
+    expect(back.at(-2)).toMatchObject({ x: 539, y: 72, facing: 'left' });
   });
 });

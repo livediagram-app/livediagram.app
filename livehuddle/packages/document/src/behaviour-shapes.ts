@@ -29,6 +29,8 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   // The virtual office (docs/specs/009-elements/office.md): what happens is a character walking in, round
   // or up to it.
   'room',
+  // The Corridor (docs/specs/009-elements/corridor.md): walked down.
+  'corridor',
   'meeting-table',
   'plant',
   'bookshelf',

@@ -9,6 +9,10 @@
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { facingView, turnedBox, type SeatFacing, type SeatView } from './facing';
 import {
+  longTableLength,
+  longTableSeatViews,
+  longTableSideXs,
+  longTableSideYs,
   MEETING_TABLE_SEATS,
   MEETING_TABLE_SEATS_BACK,
   MEETING_TABLE_SEATS_SIDE,
@@ -27,9 +31,23 @@ import {
 //   glint:  a light reflection on the glass
 //   floor:  a room's floor, in the element's fill, unstroked (docs/specs/009-elements/office.md)
 //   mark:   a small unstroked mark in its own `fill`: a table's white line, a flame, a dark screen (social-pieces.md)
+//   tint:   a pattern woven darker into the fill: the stroke, faint, unstroked (a rug's bands, office.md "Rug types")
+//   sheen:  a pattern woven lighter into the fill: white, faint, unstroked
+//   dye:    a pattern in its own `fill`, half seen through the rug's fill, unstroked (a Persian's crimson)
 // A panel or face may carry its own `fill`: what keeps its colour whatever the theme (a leaf, water, coffee).
 export type FurniturePartRole =
-  'shadow' | 'panel' | 'face' | 'line' | 'rail' | 'screen' | 'glint' | 'floor' | 'mark';
+  | 'shadow'
+  | 'panel'
+  | 'face'
+  | 'line'
+  | 'rail'
+  | 'screen'
+  | 'glint'
+  | 'floor'
+  | 'mark'
+  | 'tint'
+  | 'sheen'
+  | 'dye';
 
 export type FurniturePart = (
   | { tag: 'rect'; role: FurniturePartRole; x: number; y: number; w: number; h: number; rx: number }
@@ -286,6 +304,8 @@ export const FURNITURE_SHADOW = { fill: '#0f172a', opacity: 0.12 } as const;
 export const FURNITURE_GLINT = { stroke: '#ffffff', opacity: 0.35 } as const;
 // How much of the stroke colour shades a face toward the room, over the seat fill.
 export const FURNITURE_FACE_SHADE = 0.22;
+// A woven pattern's strength over the fill: the stroke's tint, white's sheen, a dye's own colour.
+export const FURNITURE_WEAVE = { tint: 0.2, sheen: 0.32, dye: 0.7 } as const;
 
 /** The drawing a piece shows at a facing: its grid as a viewBox, and the mirror for facing right. */
 export function furnitureFrame(
@@ -660,6 +680,68 @@ export const MEETING_TABLE_ART: FurnitureArt = {
   back: { ...MEETING_TABLE_VIEW, ...MEETING_TABLE_SEATS_BACK },
   side: MEETING_TABLE_SIDE,
 };
+
+// The last few Long Tables' drawings, by length: a table is redrawn on every render, its length changes only on a
+// resize or a turn.
+const longTables = new Map<number, FurnitureArt>();
+
+const r1 = (v: number) => Math.round(v * 10) / 10;
+
+/**
+ * A Long Table's drawings for its box at its facing (livehuddle's office.md "Long Table"): the Meeting Table's chairs
+ * and top stretched to the length its box allows (seats.ts longTableLength), so a sitter lands on a drawn chair. From
+ * behind it reads the same, so its back is its front's drawing with the seats turned; on its side it is a tall table,
+ * the Meeting Table's side drawing stretched, its side chairs in profile down both sides (furniture-facing.md "A turn").
+ */
+export function longTableArt(
+  width: number,
+  height: number,
+  facing: SeatFacing = 'n',
+): FurnitureArt {
+  const L = longTableLength(width, height, facing);
+  const cached = longTables.get(L);
+  if (cached) return cached;
+  const seats = longTableSeatViews(L);
+  const sides = longTableSideXs(L).map(r1);
+  const end = L - MEETING_TABLE_SEATS.width;
+  const front: FurnitureDrawing = {
+    ...seats.front,
+    parts: [
+      ellipse('shadow', L / 2, 160, L / 2 - 6, 6),
+      ...sides.flatMap((x) => far(x)),
+      path('line', 'M10 80v18M32 80v18'),
+      rect('panel', 6, 66, 30, 12, 3),
+      rect('panel', 2, 44, 8, 36, 3),
+      path('line', `M${200 + end} 80v18M${222 + end} 80v18`),
+      rect('panel', 196 + end, 66, 30, 12, 3),
+      rect('panel', 222 + end, 44, 8, 36, 3),
+      path('line', `M50 110v20M${L / 2} 110v20M${L - 50} 110v20`),
+      rect('panel', 40, 56, L - 80, 44, 6),
+      rect('face', 40, 96, L - 80, 12, 4),
+      ...sides.flatMap((x) => near(x)),
+    ],
+    ring: { cx: L / 2, cy: 82, rx: L / 2 - 4, ry: 70 },
+  };
+  const ys = longTableSideYs(L).map(r1);
+  const side: FurnitureDrawing = {
+    ...seats.side,
+    parts: [
+      ellipse('shadow', 84, L - 4, 78, 4),
+      ...far(84),
+      ...ys.flatMap((y) => profile(y, true)),
+      ...ys.flatMap((y) => profile(y, false)),
+      path('line', `M56 ${L - 54}v20M112 ${L - 54}v20`),
+      rect('panel', 46, 50, 76, L - 112, 6),
+      rect('face', 46, L - 66, 76, 12, 4),
+      ...near(84, L - 162),
+    ],
+    ring: { cx: 84, cy: L / 2, rx: 80, ry: L / 2 - 4 },
+  };
+  const art: FurnitureArt = { front, back: { ...front, ...seats.back }, side };
+  if (longTables.size >= 16) longTables.clear();
+  longTables.set(L, art);
+  return art;
+}
 
 /** Where a machine's answer plays on one drawing: each bubble or drip's spot, on that drawing's grid. */
 export type MachineAnswerSpot = { x: number; y: number };

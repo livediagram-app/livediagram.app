@@ -48,6 +48,8 @@ describe('a side panel’s place', () => {
     const placed = sidePlacement(layout({ flyout: [400, 976], tile: [690, 970] }), def)!;
     expect(leftOf(placed.right)).toBe(976 + 8);
     expect(placed.top).toBe(300 - 12 - 4);
+    // And the flyout's own top, where a phone's panel starts.
+    expect(placed.flyoutTop).toBe(70 - 12);
   });
 
   it('opens a left-column tile to the flyout’s left', () => {

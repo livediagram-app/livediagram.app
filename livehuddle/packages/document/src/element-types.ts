@@ -255,6 +255,10 @@ export type ShapeElement = {
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
   // is open, so every door starts open.
   doorClosed?: boolean;
+  // A piece's type within its kind (docs/specs/009-elements/room-builder.md "Door types"): a Door's (Double, Sliding,
+  // Revolving), a Rug's pattern (office.md "Rug types"), a Corridor's shape (corridor.md). Absent is the kind's first
+  // type; a value its kind does not take draws as the first (piece-variants.ts).
+  variant?: string;
   // Notice Board (docs/specs/009-elements/social-pieces.md "Notice Board"): its pinned notes, oldest first.
   noticeNotes?: NoticeNote[];
   // World Clock (social-pieces.md "World Clock"): up to six zones; absent = the viewer's own zone.
