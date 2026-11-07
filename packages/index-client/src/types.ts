@@ -12,6 +12,7 @@ import type {
   Kind,
   Level,
   ShareLinkExpiry,
+  TeamAuditEventType,
   TimelineApp,
   TimelineEventType,
 } from './constants';
@@ -456,5 +457,44 @@ export type AccountTimelineEvent = {
   at: number;
   scopes: string[];
 };
+
+// The team audit log (liveworkspace/docs/specs/004-index/team-audit-log.md "Who reads it"): one row as a team admin
+// reads it. A person is named by accounts now (`name` null when nobody is: a closed account's `deleted`).
+export type TeamAuditPerson = { id: string; name: string | null };
+
+export type TeamAuditEvent = {
+  id: string;
+  type: TeamAuditEventType;
+  // The document's app; TIMELINE_PLATFORM for a team's own event and a webhook's.
+  app: TimelineApp;
+  // Who did it.
+  actor: TeamAuditPerson | null;
+  // Whom a team event is about (an invitee, a member removed or whose role changed).
+  subject: TeamAuditPerson | null;
+  itemId: string | null;
+  // The document's, team's or webhook's name then.
+  title: string;
+  // As on the Timeline: shared: { level, public }; moved: { fromTeamId, teamId }; deleted: { reason };
+  // webhook_*: { webhookId, kind, host }; team_*: { teamId, memberName, role, from, inviteeId, left }.
+  detail: Record<string, string | null> | null;
+  occurredAt: number;
+};
+
+export type TeamAuditQuery = {
+  team: string;
+  // Who did it.
+  person?: string;
+  kind?: TeamAuditEventType;
+  // Milliseconds: `from` inclusive, `to` exclusive.
+  from?: number;
+  to?: number;
+  limit?: number;
+  cursor?: string;
+};
+
+export type TeamAuditPage = Page<TeamAuditEvent, 'events'>;
+
+// A CSV file of the log: its text, and where the next file starts when more rows matched than one holds.
+export type TeamAuditCsv = { csv: string; nextCursor: string | null };
 
 export type MergeRequest = { guestId: string; userId: string };

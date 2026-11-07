@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/app-doors": "workspace:*",
     "@liveworkspace/data-export": "workspace:*",
     "@liveworkspace/index-app": "workspace:*",

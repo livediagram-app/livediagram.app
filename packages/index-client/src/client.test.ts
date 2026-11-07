@@ -194,6 +194,40 @@ describe('createIndexClient reads', () => {
     ).rejects.toMatchObject({ name: 'AbortError' });
     expect(signals[1]).toBe(controller.signal);
   });
+
+  it("reads a team's audit log as pages and as CSV, with where the next file starts", async () => {
+    const { seen, doFetch } = fakeFetch((s) =>
+      s.url.includes('format=csv')
+        ? new Response('Time,Kind\r\n', { headers: { 'X-Next-Cursor': 'c2' } })
+        : Response.json({ events: [], nextCursor: null }),
+    );
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    expect(await client.teamAudit({ team: 't1', kind: 'shared', limit: 20 })).toEqual({
+      events: [],
+      nextCursor: null,
+    });
+    expect(seen[0]!.url).toBe('/api/index/team-audit?team=t1&kind=shared&limit=20');
+    expect(await client.teamAuditCsv({ team: 't1', from: 5 })).toEqual({
+      csv: 'Time,Kind\r\n',
+      nextCursor: 'c2',
+    });
+    expect(seen[1]!.url).toBe('/api/index/team-audit?team=t1&from=5&format=csv');
+  });
+
+  it("refuses a CSV read as any other, with the index's code or `unknown`", async () => {
+    let answer = Response.json({ error: 'not_team_admin' }, { status: 403 });
+    const doFetch = (async () => answer) as typeof fetch;
+    const client = createIndexClient({ getToken: () => 'tok', fetch: doFetch });
+    await expect(client.teamAuditCsv({ team: 't1' })).rejects.toMatchObject({
+      status: 403,
+      code: 'not_team_admin',
+    });
+    answer = new Response('down', { status: 502 });
+    await expect(client.teamAuditCsv({ team: 't1' })).rejects.toMatchObject({
+      status: 502,
+      code: 'unknown',
+    });
+  });
 });
 
 describe('createIndexAppClient', () => {
