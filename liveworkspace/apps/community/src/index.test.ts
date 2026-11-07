@@ -1,5 +1,5 @@
 // The Worker over HTTP (liveworkspace/docs/specs/007-community/community.md "The API"): the public routes one app at a time
-// with their CORS, likes and reports; the app routes behind each app's key; the rules publishing keeps.
+// (and every app's list and counts at once) with their CORS, likes and reports; the app routes behind each app's key; the rules publishing keeps.
 import {
   COMMUNITY_POSTS_PER_AUTHOR,
   type CommunityAppPost,
@@ -301,6 +301,45 @@ describe('the public routes', () => {
     expect(one.post.title).toBe('Payments platform');
   });
 
+  it("list and count every app's posts for All Apps, each naming its app, and nothing else", async () => {
+    const { post: diagram } = await publish();
+    const res = await asApp(
+      '/app/documents/d2',
+      {
+        method: 'PUT',
+        ...body(
+          publishing({
+            shareCode: 'CODE2',
+            input: { ...publishing().input, title: 'Launch plan', category: 'projects' },
+          }),
+        ),
+      },
+      'liveplanner.app',
+      'lp-key',
+    );
+    const plan = ((await res.json()) as { post: CommunityAppPost }).post;
+    const all = (await (await call('/posts?app=all')).json()) as CommunityListResponse;
+    expect(all.posts.map((p) => [p.id, p.app]).sort()).toEqual(
+      [
+        [diagram!.id, 'livediagram.app'],
+        [plan.id, 'liveplanner.app'],
+      ].sort(),
+    );
+    const projects = (await (
+      await call('/posts?app=all&category=projects')
+    ).json()) as CommunityListResponse;
+    expect(projects.posts.map((p) => p.id)).toEqual([plan.id]);
+    const counts = (await (await call('/facets?app=all')).json()) as { total: number };
+    expect(counts.total).toBe(2);
+    // A post, its likes and reports, the featured six and the sitemap are always one app's.
+    expect((await call(`/posts/${plan.id}?app=all`)).status).toBe(400);
+    expect((await call('/featured?app=all')).status).toBe(400);
+    expect((await call('/sitemap?app=all')).status).toBe(400);
+    expect(
+      (await call(`/posts/${plan.id}/like?app=all`, { method: 'PUT', headers: fromPage() })).status,
+    ).toBe(400);
+  });
+
   it('let any page read, cacheable without a key and private with one', async () => {
     await publish();
     const anon = await call('/posts?app=livediagram.app', {
@@ -396,7 +435,7 @@ describe('the public routes', () => {
     expect(app.status).toBe(404);
   });
 
-  it('answer nothing outside its API: liveworkspace.app hosts no Community pages', async () => {
+  it("answer nothing outside its API: the Community page is the site's", async () => {
     for (const path of ['/community', '/community/post/', '/api/communityx']) {
       const res = await worker.fetch(new Request(`https://liveworkspace.app${path}`), db.env, ctx);
       expect(res.status).toBe(404);

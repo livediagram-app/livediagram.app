@@ -65,6 +65,7 @@ pointer events from bubbling, and the hint must still see them.
 | #   | Event (on the wrapper unless noted)        | Guard                                                         | Effect                                                                                     |
 | --- | ------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | T1  | `pointerenter`, `pointerType !== 'touch'`  | not `dismissed`, no touch ended within `HINT_TOUCH_COMPAT_MS` | `overTrigger`; cancel close; open after `openDelayMs(kind, now)`                           |
+| T1b | `pointermove`, `pointerType !== 'touch'` | not `overTrigger` (no `pointerenter` came: the trigger mounted under a resting pointer) | as T1 |
 | T2  | `pointerleave`, `pointerType !== 'touch'`  |                                                               | clear `overTrigger`; cancel open; `settle()`                                               |
 | T3  | surface `pointerenter`                     |                                                               | `overSurface`; cancel close                                                                |
 | T4  | surface `pointerleave`                     |                                                               | clear `overSurface`; `settle()`                                                            |
@@ -80,8 +81,10 @@ pointer events from bubbling, and the hint must still see them.
 | T14 | another hint opens (registry)              |                                                               | close at once                                                                              |
 | T15 | unmount                                    |                                                               | clear every timer; release the registry                                                    |
 
-`settle()`: if none of `overTrigger`, `overSurface`, `focused` holds, clear `dismissed` and, when open, close after
-`HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
+`settle()`: if neither `overTrigger` nor `overSurface` holds, clear `dismissed` (the pointer has gone, even if the
+control keeps focus: a pressed button left focused in an open flyout showed its hint again only after a blur); then,
+unless `focused`, when open, close after `HINT_CLOSE_GRACE_MS`. Closing clears `overSurface`, since the surface goes
+with it and can send no `pointerleave`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
 
 `OPEN_DELAY_MS[kind]`: `0` for a hover card, `TOOLTIP_OPEN_DELAY_MS` for a tooltip,
 `PREVIEW_OPEN_DELAY_MS` for a preview; a tooltip or a preview opens at once when `isHintWarm(kind, now)`.

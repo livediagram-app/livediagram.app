@@ -88,11 +88,10 @@ jobs:
       product: livediagram
       editor: '@livediagram/editor'
       editor-dir: apps/editor
-      sites: --filter @livediagram/help --filter @livediagram/community
+      sites: --filter @livediagram/help
       sites-cache: |
         apps/editor/.next/cache
         apps/help/.next/cache
-        apps/community/.next/cache
         apps/marketing/.next/cache
       smoke-explorer: true
       signed-in-explorer: true
@@ -175,11 +174,10 @@ jobs:
       product: livehuddle
       editor: '@livehuddle/editor'
       editor-dir: apps/editor
-      sites: --filter @livehuddle/help --filter @livehuddle/community
+      sites: --filter @livehuddle/help
       sites-cache: |
         apps/editor/.next/cache
         apps/help/.next/cache
-        apps/community/.next/cache
         apps/marketing/.next/cache
       smoke-explorer: true
       signed-in-explorer: true

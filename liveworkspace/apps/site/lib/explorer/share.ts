@@ -7,6 +7,7 @@
 // reached through a link), as the previews are: the tabs alone where the app serves them, never the whole item.
 
 import { isCommunityApp } from '@liveworkspace/community';
+import { communityPostPath } from '@liveworkspace/community/paths';
 import { COMMUNITY_APP_WORDS, communityOwnerClient } from '@liveworkspace/community-ui/share';
 import type {
   CommunityShareInput,
@@ -130,8 +131,8 @@ export function communityShareOf(
         token: workspaceToken,
         fetch: doFetch,
       }),
-      // The post's page in the app's own Community.
-      postHref: (postId) => `${url}/community/post/?id=${encodeURIComponent(postId)}`,
+      // The post's page in the app's Community, on its address.
+      postHref: (postId) => `${url}${communityPostPath(postId)}`,
     },
     ownerId: account.id,
     documentName: item.title,

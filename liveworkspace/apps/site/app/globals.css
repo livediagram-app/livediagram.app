@@ -3,11 +3,14 @@
 @import '@liveworkspace/marketing-site/css/licences.css';
 @import '@liveworkspace/marketing-site/css/hero-tall.css';
 
-/* Every page but the telemetry dashboard and the Explorer, whose classes (and the apps' UI) are in
- * their own stylesheets, telemetry/telemetry.css and explorer/explorer.css, each loaded only there. */
+/* Every page but the telemetry dashboard, the Explorer and the Community, whose classes (and the apps' UI) are in
+ * their own stylesheets, telemetry/telemetry.css, explorer/explorer.css and community/community.css, each loaded
+ * only there. */
 @source not './telemetry';
 @source not './explorer';
 @source not '../components/explorer';
+@source not './community';
+@source not '../components/community';
 
 /* The header's site switcher and the shared icon primitive come from livediagram's UI package: scan
  * them so their classes are generated. Tailwind v4 skips node_modules, where the workspace package

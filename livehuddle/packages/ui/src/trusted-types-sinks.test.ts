@@ -5,7 +5,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 // The shared sink checks (@liveworkspace/trusted-types/sinks-suite) over livehuddle's apps and packages.
 describeTrustedTypesSinks({
   root: fileURLToPath(new URL('../../../', import.meta.url)),
-  apps: ['editor', 'marketing', 'help', 'community'],
+  apps: ['editor', 'marketing', 'help'],
   editorApp: 'editor',
   csp: TRUSTED_TYPES_CSP,
   domParserAllowed: ['packages/ui/src/trusted-types.ts', 'apps/editor/lib/drawio/test-support.ts'],

@@ -12,9 +12,9 @@ action, the footer, and the Explorer's footer row.
 
 ## Where it shows
 
-The header of every public page (`SiteHeader`: marketing, help, community, licences), the
-Explorer's header (on liveworkspace.app and on each app's own `/explorer`), and the telemetry
-dashboard on liveworkspace.app.
+The header of every public page (`SiteHeader`: marketing, help, licences), the
+Explorer's and the Community's header (on liveworkspace.app and on each app's own `/explorer` and `/community`), and
+the telemetry dashboard on liveworkspace.app.
 
 **Not in an editor.** The editor's header in each app (a diagram, plan, document, design or space,
 and its `/new` start) has a plain logo: no card on hover, no chevron, and a tap follows the link.
@@ -64,9 +64,18 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
   `shapeLibrariesPath` say which apps do; liveworkspace.app shows the last app's).
 - **How**: `explorerSwitchHref(pathname, search)` in `@liveworkspace/sites` turns the page's
   address into each site's link (null off the Explorer), and the shared `SiteSwitcher` takes it as
-  `hrefFor`. Only the Explorer's header passes it; every other header's switcher still goes to each
-  site's home. The links are worked out from the address the page already has, once per move
+  `hrefFor`. Only the Explorer's and the Community's headers pass one; every other header's switcher still goes to
+  each site's home. The links are worked out from the address the page already has, once per move
   within the Explorer: no request.
+
+## On a Community page
+
+On the Community page (`/community` and a post under it, on liveworkspace.app and on each app's own address), each
+site's row goes to **that site's Community**: an app's row to its own `/community`, which opens on its posts, and
+liveworkspace's row to liveworkspace.app's, every app's posts together. Nothing else carries over (a post is one
+app's; the search is the gallery's). An app whose router serves no Community page yet (liveplanner) leads to its home.
+The app whose address the page is on is the one marked. `communitySwitchHref(site)` in the site's
+`lib/community/switch-href.ts` works it out, with `hasCommunityPage` from `@liveworkspace/sites/workspace-proxy`.
 
 ## The list
 

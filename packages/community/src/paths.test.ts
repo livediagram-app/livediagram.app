@@ -8,8 +8,8 @@ import {
 
 describe('community paths', () => {
   it('names the gallery, a post page and a card image the same way on every site', () => {
-    expect(COMMUNITY_HOME_PATH).toBe('/community/');
-    expect(communityPostPath('a b')).toBe('/community/post/?id=a%20b');
+    expect(COMMUNITY_HOME_PATH).toBe('/community');
+    expect(communityPostPath('a b')).toBe('/community/post?id=a%20b');
     expect(communityImagePath('c/d')).toBe('/share/c%2Fd/image.svg');
   });
 

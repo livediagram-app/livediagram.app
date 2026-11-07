@@ -1,6 +1,6 @@
 // Community calls from the editor (docs/specs/025-community/community.md "Publishing"): the owner's post on a design (read,
 // publish / Edit Listing, remove). The public gallery reads live in
-// apps/community; nothing here is called without an owner identity.
+// liveworkspace.app's Community page; nothing here is called without an owner identity.
 import {
   communityServiceUrl,
   type CommunityFacetsResponse,

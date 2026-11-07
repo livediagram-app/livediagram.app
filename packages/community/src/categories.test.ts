@@ -1,6 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { COMMUNITY_APPS } from './apps';
 import {
+  allCommunityCategories,
   COMMUNITY_APP_CATEGORIES,
   communityCategories,
   communityCategoryLabel,
@@ -64,6 +65,14 @@ describe("each app's categories", () => {
     // livediagram keeps Workshops; livehuddle, for meeting in Spaces, retired it (Work Tracker #423).
     expect(isCommunityCategoryOf('livehuddle.app', 'workshops')).toBe(false);
     expect(isCommunityCategoryOf('livehuddle.app', 'socials')).toBe(true);
+  });
+
+  it("gives All Apps every app's categories once each, Something Else last", () => {
+    const ids = allCommunityCategories().map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(ids)).toEqual(new Set(all().map((c) => c.id)));
+    expect(ids.at(-1)).toBe('other');
+    expect(ids[0]).toBe('architecture');
   });
 
   it('labels and types a category by its id', () => {

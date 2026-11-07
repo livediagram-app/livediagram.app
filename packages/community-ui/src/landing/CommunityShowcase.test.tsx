@@ -50,7 +50,7 @@ describe('CommunityShowcase', () => {
       'http://localhost:8791/api/community/featured?app=livedocuments.app',
     );
     expect(screen.getByRole('link', { name: 'Quarterly Report' }).getAttribute('href')).toBe(
-      '/community/post/?id=p1',
+      '/community/post?id=p1',
     );
     expect(screen.getByRole('img', { name: 'Quarterly Report' }).getAttribute('src')).toBe(
       '/api/share/C1/image.svg',

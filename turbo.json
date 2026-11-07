@@ -62,7 +62,6 @@
         "^build",
         "@livediagram/editor#build",
         "@livediagram/help#build",
-        "@livediagram/community#build",
         "@livediagram/api#build",
         "@livediagram/mcp#build",
         "@livediagram/router#build"
@@ -459,7 +458,6 @@
         "^build",
         "@livehuddle/editor#build",
         "@livehuddle/help#build",
-        "@livehuddle/community#build",
         "@livehuddle/api#build",
         "@livehuddle/router#build"
       ],

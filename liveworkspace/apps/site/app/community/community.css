@@ -1,0 +1,74 @@
+@import 'tailwindcss/theme' layer(theme);
+@import 'tailwindcss/utilities' layer(utilities) source(none);
+@import '@liveworkspace/tailwind-config';
+/* The colours of the app whose address the page is on (app-colours.css), shared with the Explorer. */
+@import '../app-colours.css';
+
+/* The Community page's own stylesheet (liveworkspace/docs/specs/010-site/site.md "The Community"), loaded only on
+ * /community (app/community/layout.tsx), so the rest of the site doesn't carry it, as the Explorer's. The site's
+ * stylesheet comes first with the base styles; this one adds the page's own utilities. */
+@source './';
+@source '../../components/community';
+/* The shared Community card, its counts and the help link (@liveworkspace/community-ui). */
+@source '../../../../../packages/community-ui/src/tile';
+@source '../../../../../packages/community-ui/src/help-link';
+/* This sheet comes after the site's and shares its utilities layer, so a light class it emits again beats a `dark:`
+ * one only the site's sheet has (explorer.css explains). Everything else drawn on the page is scanned here too, so
+ * its `dark:` classes sort after this sheet's light ones: the header and its app logo, the footer, the account
+ * control and the Settings panel it opens, the switch and the design system's pieces. */
+@source '../../components/AppPageHeader.tsx';
+@source '../../components/Wordmark.tsx';
+@source '../../components/AccountControl.tsx';
+@source '../../components/explorer/AppAccountControl.tsx';
+@source '../../../../../livediagram/packages/ui/src/SiteSwitcher.tsx';
+@source '../../components/settings';
+@source '../../../../../packages/settings-ui/src';
+@source '../../components/Footer.tsx';
+@source '../../components/SiteRail.tsx';
+@source '../../components/landing/AppLogo.tsx';
+@source '../../../../../packages/brand/src';
+@source '../../../../../packages/account-menu/src';
+@source '../../../../../packages/ui/src';
+
+/* The hero's soft wash, quietly, in the colours of the app whose address the page is on (its brand ramp from
+ * app-colours.css; liveworkspace's slate on liveworkspace.app). */
+.community-hero {
+  background:
+    radial-gradient(
+      60rem 22rem at 15% -10%,
+      color-mix(in srgb, var(--color-brand-500) 14%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.08), transparent 70%);
+}
+.dark .community-hero {
+  background:
+    radial-gradient(
+      60rem 22rem at 15% -10%,
+      color-mix(in srgb, var(--color-brand-500) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(40rem 18rem at 95% 0%, rgb(244 63 94 / 0.07), transparent 70%);
+}
+
+/* The heart's pop on liking. */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.heart-pop {
+  animation: heart-pop var(--transition-duration-long) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heart-pop {
+    animation: none;
+  }
+}

@@ -28,15 +28,13 @@ function makeEnv() {
   const live = mockFetcher();
   const api = mockFetcher();
   const help = mockFetcher();
-  const community = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
     HELP: help.fetcher,
-    COMMUNITY: community.fetcher,
   };
-  return { env, marketing, live, api, help, community };
+  return { env, marketing, live, api, help };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -59,17 +57,6 @@ describe('production dispatch (service bindings)', () => {
     const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
     expect(help.urls).toEqual(['https://www.livedesign.app/canvas/themes/']);
-  });
-
-  it('strips the basePath for the Community, keeping the query', async () => {
-    const { env, community, marketing } = makeEnv();
-    await dispatch('/community/post/?id=p1', env);
-    await dispatch('/community', env);
-    expect(community.urls).toEqual([
-      'https://www.livedesign.app/post/?id=p1',
-      'https://www.livedesign.app/',
-    ]);
-    expect(marketing.urls).toEqual([]);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -672,6 +659,66 @@ describe('the bare domain', () => {
       for (const e of [env, staging]) {
         expect(REDIRECTS.has((await on(host, '/new', e)).status), host).toBe(false);
       }
+    }
+  });
+});
+
+describe("liveworkspace's Community page under this address (@liveworkspace/community-site/router)", () => {
+  it("serves /community and its posts from liveworkspace.app, the head made livedesign's own", async () => {
+    const urlOf = (req: Request | string) => (typeof req === 'string' ? req : req.url);
+    const fetchMock = vi.fn((req: Request | string) =>
+      Promise.resolve(
+        new URL(urlOf(req)).pathname.startsWith('/api/community')
+          ? new Response('', { status: 503 })
+          : new Response('<!doctype html><title>Community</title>', {
+              headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal(
+      'HTMLRewriter',
+      class {
+        on() {
+          return this;
+        }
+        transform(res: Response) {
+          return res;
+        }
+      },
+    );
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { env, marketing } = makeEnv();
+      for (const path of ['/community', '/community/post?id=p1', '/community.txt?_rsc=x']) {
+        const res = await dispatch(path, env);
+        expect(res.status, path).toBe(200);
+        if (path === '/community') expect(res.headers.get('Cache-Control')).toBe('no-store');
+        const asked = fetchMock.mock.calls.map(([req]) => urlOf(req));
+        expect(asked, path).toContain(`https://www.liveworkspace.app${path}`);
+      }
+      expect(marketing.urls).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    }
+  });
+
+  it("answers the Community's sitemap itself, from the service, for livedesign's posts", async () => {
+    const fetchMock = vi.fn((_req: Request | string) =>
+      Promise.resolve(Response.json({ posts: [{ id: 'p1', updatedAt: 0 }] })),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const { env } = makeEnv();
+      const res = await dispatch('/community/sitemap.xml', env);
+      expect(await res.text()).toContain(
+        '<loc>https://www.livedesign.app/community/post?id=p1</loc>',
+      );
+      const asked = String(fetchMock.mock.calls[0]![0]);
+      expect(asked).toBe('https://www.liveworkspace.app/api/community/sitemap?app=livedesign.app');
+    } finally {
+      vi.unstubAllGlobals();
     }
   });
 });

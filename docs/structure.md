@@ -23,7 +23,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab, the landing section
-│  ├─ community-site           every app's Community pages (gallery, post) and their Worker; each product binds its own
+│  ├─ community-site           the routers' Community step: the app's head on liveworkspace.app's Community page, the sitemap
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ data-export              Download Your Data's contract: limits, export keys and states, the link's message, the doors' paths
 │  ├─ diagram-lint             the numbers and line formats livediagram's and livedocuments' diagram lint judge by
@@ -58,7 +58,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
-│  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /telemetry, /status, /sign-in
+│  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
@@ -72,19 +72,19 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ docs/specs               the platform's specs and blueprints, one category per service
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
 ├─ livediagram/                imported with full history; Diagram, Draw, Workshop
-│  ├─ apps/                    editor, api, mcp, cli, marketing, help, community, router
+│  ├─ apps/                    editor, api, mcp, cli, marketing, help, router
 │  └─ packages/                @livediagram/*
 ├─ liveplanner/                imported with full history; Plan
-│  ├─ apps/                    the same set minus community
+│  ├─ apps/                    the same set
 │  └─ packages/                @liveplanner/*
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
 │  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
+│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
 └─ livehuddle/                 forked from livediagram in-tree (meetings, workshops, Avatar mode)
-   ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, help, community, router
+   ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, help, router
    ├─ packages/                @livehuddle/*
    └─ docs/specs               its specs, folded back to the code (build plan step 9)
 ```
@@ -156,11 +156,11 @@ liveworkspace/
 │  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
 │  ├─ drive                        the Google Drive mirror, for every product
 │  ├─ export                       Download Your Data: every product's items, comments and images as one zip
-│  └─ site                         liveworkspace.app: the front door, the Explorer, Settings, the telemetry dashboard
+│  └─ site                         liveworkspace.app: the front door, the Explorer, the Community, Settings, the telemetry dashboard
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
 │  ├─ apps/api                     api-core + the diagram-only routes
-│  ├─ apps/…                       marketing, help, mcp, cli, community: product-specific
+│  ├─ apps/…                       marketing, help, mcp, cli: product-specific
 │  └─ packages/                    mode-draw (canvas tabs), diagram, diagram-lint, sticky-*
 └─ liveplanner/
    ├─ apps/editor                  thin: workbench + mode-plan

@@ -49,8 +49,9 @@ export default function robots(): MetadataRoute.Robots {
     // Three sitemaps share this origin: the marketing one (this app), the
     // help centre's (apps/help, served at /help with its own
     // app/sitemap.ts that mirrors lib/articles.ts), and the Community's
-    // (apps/community's worker lists every public post from the api,
-    // docs/specs/025-community/community.md "Search engines"). All are
+    // (the router's Community step lists every public post from the
+    // Community service, docs/specs/025-community/community.md "Search
+    // engines"). All are
     // listed so crawlers find pages that otherwise hang off a sitemap
     // nothing points at.
     sitemap: [

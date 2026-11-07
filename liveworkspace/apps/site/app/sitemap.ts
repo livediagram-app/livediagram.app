@@ -8,6 +8,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: 'https://www.liveworkspace.app/', changeFrequency: 'monthly', priority: 1 },
     // Comparison: points at each app's comparisons, which each app's sitemap lists.
     { url: 'https://www.liveworkspace.app/compare', changeFrequency: 'monthly', priority: 0.5 },
+    // The Community, every app's posts together (each app's own gallery and posts are in that app's sitemap).
+    { url: 'https://www.liveworkspace.app/community', changeFrequency: 'daily', priority: 0.6 },
     { url: 'https://www.liveworkspace.app/telemetry', changeFrequency: 'daily', priority: 0.5 },
     // Status: every app's services, checked live (liveworkspace/docs/specs/010-site/site.md "Status").
     { url: 'https://www.liveworkspace.app/status', changeFrequency: 'daily', priority: 0.4 },

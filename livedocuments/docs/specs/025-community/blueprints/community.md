@@ -8,22 +8,22 @@ browser side below, and the api's routes, which its own sections add.
 
 ## 0. Where each part lives
 
-| File                                                                                                  | What it holds                                                                                                                         |
-| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/editor/lib/api/community.ts`                                                                    | The owner client (read, publish or Edit Listing, remove) over `/api/documents/<id>/community`, and the service's facets read          |
-| `apps/editor/lib/community-share-host.tsx`                                                            | `livedocumentsCommunityClient`, `livedocumentsCommunityHost` (the tab's `CommunityShareHost`), `trackCommunity`, `communityThumbnail` |
-| `apps/editor/lib/community-state-store.ts`                                                            | `useCommunityState(documentId)` / `setCommunityState`: the open document's post state, seeded from the load                           |
-| `apps/editor/lib/community-public.ts`                                                                 | `documentIsPublic`: whether the header reads Public                                                                                   |
-| `apps/editor/lib/explorer-community-host.ts`                                                          | `explorerCommunity(account, communityOn)`: the Explorer's `ShareHost.community(item)`                                                 |
-| `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`                               | The editor's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                                     |
-| `apps/editor/components/chrome/CommunityBar.tsx`                                                      | The Community bar on a community link's view, loaded only then (`EditorView.tsx`)                                                     |
-| `apps/editor/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`           | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                        |
-| `apps/editor/hooks/canvas/useAutoCopyParam.ts`                                                        | `?copy=1`: the Community's Make a Copy                                                                                                |
-| `apps/editor/app/document/[id]/editor-realtime.ts`                                                    | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own document id                           |
-| `apps/editor/lib/api/share.ts`                                                                        | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                                   |
-| `packages/ui/src/ProductNav.tsx`, `SiteFooter.tsx`, `packages/ui/src/community/CommunityHelpLink.tsx` | The links: the Explorer footer's, the site footer's, and the help deep links bound to this site's telemetry                           |
-| `packages/help-registry/src/community.ts`                                                             | `COMMUNITY_HELP`, every app's (`@liveworkspace/help-registry/community`)                                                              |
-| `apps/router/src/index.ts`                                                                            | `/community*` to the Community app, stripped                                                                                          |
+| File                                                                                                  | What it holds                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/editor/lib/api/community.ts`                                                                    | The owner client (read, publish or Edit Listing, remove) over `/api/documents/<id>/community`, and the service's facets read                                 |
+| `apps/editor/lib/community-share-host.tsx`                                                            | `livedocumentsCommunityClient`, `livedocumentsCommunityHost` (the tab's `CommunityShareHost`), `trackCommunity`, `communityThumbnail`                        |
+| `apps/editor/lib/community-state-store.ts`                                                            | `useCommunityState(documentId)` / `setCommunityState`: the open document's post state, seeded from the load                                                  |
+| `apps/editor/lib/community-public.ts`                                                                 | `documentIsPublic`: whether the header reads Public                                                                                                          |
+| `apps/editor/lib/explorer-community-host.ts`                                                          | `explorerCommunity(account, communityOn)`: the Explorer's `ShareHost.community(item)`                                                                        |
+| `apps/editor/components/dialogs/community/ShareDialogWithCommunity.tsx`                               | The editor's Share dialog with the Community tab, loaded with the dialog (`EditorTabDialogs.tsx`)                                                            |
+| `apps/editor/components/chrome/CommunityBar.tsx`                                                      | The Community bar on a community link's view, loaded only then (`EditorView.tsx`)                                                                            |
+| `apps/editor/components/chrome/share-states.tsx`, `SharedBadge.tsx`, `VisibilityLegend.tsx`           | The `community` share state (Public), from `@liveworkspace/community-ui/badge`                                                                               |
+| `apps/editor/hooks/canvas/useAutoCopyParam.ts`                                                        | `?copy=1`: the Community's Make a Copy                                                                                                                       |
+| `apps/editor/app/document/[id]/editor-realtime.ts`                                                    | `CommunitySession` (`sessionCommunity`): the post a community link opened, and the author's own document id                                                  |
+| `apps/editor/lib/api/share.ts`                                                                        | `apiLoadShared` asks `GET /api/share/<code>` for the post; `readCommunityShareInfo`                                                                          |
+| `packages/ui/src/ProductNav.tsx`, `SiteFooter.tsx`, `packages/ui/src/community/CommunityHelpLink.tsx` | The links: the Explorer footer's, the site footer's, and the help deep links bound to this site's telemetry                                                  |
+| `packages/help-registry/src/community.ts`                                                             | `COMMUNITY_HELP`, every app's (`@liveworkspace/help-registry/community`)                                                                                     |
+| `apps/router/src/index.ts`                                                                            | `routeCommunity` (`@liveworkspace/community-site/router`, `COMMUNITY_SITE`) first, then `/community*` to liveworkspace.app's page through `routeToWorkspace` |
 
 ## 1. Domain and naming
 
@@ -35,9 +35,10 @@ the card picture is the "first page".
 ## 2. Constants and configuration
 
 - `NEXT_PUBLIC_COMMUNITY_API` (the editor's `.env.example`): the Community service's base, production's when unset.
-- The router's `COMMUNITY` binding (`livedocuments-community`, staging `livedocuments-community-staging`), locally
-  `COMMUNITY_ORIGIN = "http://127.0.0.1:3305"` (D1).
-- `COMMUNITY_HOME_PATH` (`/community/`), `communityPostPath(id)` from `@livedocuments/api-schema`.
+- The router's `COMMUNITY_URL` var, where its Community step reads the service (local
+  `http://localhost:3000/api/community`, staging `https://staging.liveworkspace.app/api/community`, production the
+  default).
+- `COMMUNITY_HOME_PATH` (`/community`), `communityPostPath(id)` from `@livedocuments/api-schema`.
 
 ## 3. Data and persistence
 
@@ -174,12 +175,15 @@ post. `apps/api/src/redact-document.test.ts` pins the presenter notes.
 
 ## 17. The Community pages
 
-`apps/community` is a thin shell on `@liveworkspace/community-site`, on port 3305 locally:
+livedocuments keeps no Community pages of its own: `/community` is liveworkspace.app's one page
+(`liveworkspace/apps/site`, liveworkspace/docs/specs/007-community "An app's Community pages"), served on
+livedocuments's address by its router (locally through the router on 3300, the page itself from liveworkspace's site on
+3000, D1):
 
-| File                                                                                               | What it holds                                                                                                              |
-| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `apps/community/lib/community-site.tsx`                                                            | The `CommunitySite` binding: `livedocuments.app`, its words, `/api`, `COMMUNITY_KEY_STORAGE`, `signedInHintOf`, its routes |
-| `apps/community/lib/telemetry.ts`                                                                  | `communityTelemetry`, literal `siteTrack` calls the dashboard reads                                                        |
-| `apps/community/app/layout.tsx`, `apps/community/app/page.tsx`, `apps/community/app/post/page.tsx` | The header (`ctaSurface="Community"`), footer, boot scripts and metadata; the gallery and post pages                       |
-| `apps/community/worker/index.ts`                                                                   | `createCommunityWorker({ app: 'livedocuments.app', siteUrl, product: 'livedocuments' })`, its only export                  |
-| `apps/marketing/components/CommunityShowcase.tsx`                                                  | The landing section, lazy below the template gallery, hidden while the Community is off or has nothing featured            |
+| File                                                                                | What it holds                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router/src/index.ts`                                                          | `routeCommunity` bound to `COMMUNITY_SITE` (`app: 'livedocuments.app'`, `siteUrl`, `product: 'livedocuments'`, `nouns: 'documents'`) and `COMMUNITY_URL`: the gallery's head made livedocuments's, a post's head and the sitemap from the service |
+| `liveworkspace/apps/site/components/community/CommunityBinding.tsx`                 | What the address makes the page: livedocuments's posts (or every app's under All Apps), its words, its `/api`, its community key, its routes, each on the post's own app's address                                                                |
+| `liveworkspace/apps/site/lib/community/telemetry.ts`                                | The page's telemetry, literal `siteTrack` calls the dashboard reads, sent in livedocuments's name on its address                                                                                                                                  |
+| `liveworkspace/apps/site/app/community/`, `components/community/CommunityFrame.tsx` | The routes (gallery and post) and the frame: the `liveworkspace \| app` header, the rail and the site's footer                                                                                                                                    |
+| `apps/marketing/components/CommunityShowcase.tsx`                                   | The landing section, lazy below the template gallery, hidden while the Community is off or has nothing featured                                                                                                                                   |

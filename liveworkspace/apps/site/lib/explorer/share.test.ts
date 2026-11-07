@@ -102,7 +102,7 @@ describe('the Community tab on liveworkspace.app', () => {
     });
     expect(tab.host.app).toBe('livediagram.app');
     expect(tab.host.words.noun).toBe('canvas');
-    expect(tab.host.postHref('p1')).toBe('https://www.livediagram.app/community/post/?id=p1');
+    expect(tab.host.postHref('p1')).toBe('https://www.livediagram.app/community/post?id=p1');
     expect(await tab.host.client.get()).toBeNull();
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://www.livediagram.app/api/documents/d%201/community');
@@ -125,7 +125,7 @@ describe('the Community tab on liveworkspace.app', () => {
     const tab = communityShareOf(doc, account, true, '/sign-in', fetch)!;
     expect(tab.host.app).toBe('livedocuments.app');
     expect(tab.host.words.noun).toBe('document');
-    expect(tab.host.postHref('p1')).toBe('https://www.livedocuments.app/community/post/?id=p1');
+    expect(tab.host.postHref('p1')).toBe('https://www.livedocuments.app/community/post?id=p1');
     await tab.host.client.get();
     const [url] = fetch.mock.calls[0] as unknown as [string];
     expect(url).toBe('https://www.livedocuments.app/api/documents/x/community');
@@ -137,7 +137,7 @@ describe('the Community tab on liveworkspace.app', () => {
     const tab = communityShareOf(design, account, true, '/sign-in', fetch)!;
     expect(tab.host.app).toBe('livedesign.app');
     expect(tab.host.words.noun).toBe('design');
-    expect(tab.host.postHref('p1')).toBe('https://www.livedesign.app/community/post/?id=p1');
+    expect(tab.host.postHref('p1')).toBe('https://www.livedesign.app/community/post?id=p1');
     await tab.host.client.get();
     const [url] = fetch.mock.calls[0] as unknown as [string];
     expect(url).toBe('https://www.livedesign.app/api/designs/d/community');

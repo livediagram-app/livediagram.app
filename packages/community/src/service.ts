@@ -13,10 +13,18 @@ export const COMMUNITY_API_URL = `https://www.liveworkspace.app${COMMUNITY_API_P
 // Every public read names its app in this query parameter; a post of another app answers as missing.
 export const COMMUNITY_APP_PARAM = 'app';
 
-// A public route of the service, for one app's posts: `path` under the API (`/posts`, `/facets`, ...), `search`
-// the rest of the query, `base` the service's API when not production's (staging's, a local one).
+// What a gallery's list and its counts may name instead of one app: every app's posts together (All Apps, on the one
+// Community page liveworkspace.app serves for every app). A post's own routes, likes and reports still name its app.
+export const COMMUNITY_ALL_APPS = 'all';
+
+/** Whose posts a list or its counts are for: one app's, or every app's. */
+export type CommunityScope = CommunityApp | typeof COMMUNITY_ALL_APPS;
+
+// A public route of the service, for one app's posts (or, for `/posts` and `/facets`, every app's): `path` under the
+// API (`/posts`, `/facets`, ...), `search` the rest of the query, `base` the service's API when not production's
+// (staging's, a local one).
 export function communityServiceUrl(
-  app: CommunityApp,
+  app: CommunityScope,
   path: string,
   { base, search }: { base?: string | null; search?: string } = {},
 ): string {

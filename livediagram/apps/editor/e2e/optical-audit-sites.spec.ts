@@ -3,8 +3,9 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 import { auditOptical, OPTICAL_TOLERANCE_PX } from './optical';
 
 // Optical alignment audit on the other sites (docs/specs/004-interface-design/optical-alignment.md): the
-// help centre, the Community and the marketing site. The e2e stack serves their static builds (help and
-// the Community under their basePath on this origin, marketing on its own port); against a dev stack,
+// help centre, the Community and the marketing site. The e2e stack serves their static builds (help under its
+// basePath on this origin, the Community from liveworkspace's site at /community as the router serves it, marketing
+// on its own port); against a dev stack,
 // point E2E_HELP_URL / E2E_COMMUNITY_URL / E2E_MARKETING_URL at the dev servers. The telemetry dashboard
 // is liveworkspace's now (docs/specs/017-telemetry/telemetry.md), audited there.
 
@@ -59,9 +60,9 @@ test.describe('Optical alignment audit, other sites', () => {
   });
 
   test('the Community', async ({ page, pageErrors, baseURL }) => {
-    // The gallery (docs/specs/025-community/community.md), as a visitor with nothing shared yet sees it on a fresh
-    // stack: its header, search box and controls, and the empty state.
-    await open(page, `${site('community', baseURL!)}/`, 'community');
+    // The gallery (liveworkspace/docs/specs/007-community/community.md), as a visitor with nothing shared yet
+    // sees it on a fresh stack: its header, search box and controls, and the empty state.
+    await open(page, site('community', baseURL!), 'community');
     await expect(page.getByRole('searchbox')).toBeVisible();
     await page.waitForLoadState('networkidle');
     await expectCentred(page, 'community gallery');

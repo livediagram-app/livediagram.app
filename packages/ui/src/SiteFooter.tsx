@@ -1,11 +1,9 @@
 import { Brand, WorkspaceWordmark, type BrandApp } from '@liveworkspace/brand';
-import { lucideBookOpen, lucideSparkles } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, TERMS_LABEL } from '@liveworkspace/sites';
-import { Fragment, type ComponentType, type ReactNode } from 'react';
+import { explorerHomeHref } from '@liveworkspace/sites/workspace-proxy';
+import { Fragment, type ReactNode } from 'react';
 
 import { CONTRIBUTORS } from './contributors';
-import { Glyph, type IconProps } from './icons/Glyph';
-import { lucideGlyph } from './icons/lucide-glyph';
 import { STATUS_PAGE_URL } from './status-page';
 
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
@@ -13,47 +11,45 @@ const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
 
 // The public site footer shared by the marketing landing page, the help centre, the telemetry dashboard and
 // livediagram's Community. Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
-// strip at the bottom crediting the human contributors by their avatars. Only the key links carry an icon (the
-// first action, AI, help and the source); the rest stay plain text so the columns read quietly.
+// strip at the bottom crediting the human contributors by their avatars. Every link is plain text, no icon, so the
+// columns read quietly.
 // On a touch screen each link is a 44px-tall row (touch-targets.md) and the column drops its gap, so
 // the rows abut and every tap lands on a link; a mouse keeps the compact 28px rhythm.
 //
-// Each product binds it (its SiteFooter): its app, its tagline, its first link's label and glyph, and what only
-// some products carry: livediagram's Community link (`community`, drawn with SITE_FOOTER_LINK), the GitHub link
-// (`repoUrl`), the contributors' credits (`credits`), which liveplanner leaves out, and the AI & MCP link to the
-// Build with AI page (`buildWithAi`), which livehuddle leaves out (it has no MCP server).
+// Each product binds it (its SiteFooter): its app, its tagline, its first link's label, and what only some products
+// carry: the Community link (`community`, drawn with SITE_FOOTER_LINK), the GitHub link (`repoUrl`), the
+// contributors' credits (`credits`), which liveplanner leaves out, and the Build with AI link (`buildWithAi`), which
+// livehuddle leaves out (it has no MCP server). The Explorer link, second under Product, opens the app's own
+// Explorer Home (explorerHomeHref, the same href as the header's Explorer link).
 export const SITE_FOOTER_LINK =
   'inline-flex items-center gap-2 hover:text-slate-900 pointer-coarse:py-3 dark:hover:text-slate-100';
-const ICON_SIZE = 16;
 
 const LINK = SITE_FOOTER_LINK;
 
-type FooterLink = { href: string; label: string; icon?: ComponentType<IconProps> };
+type FooterLink = { href: string; label: string };
 
 const COMMUNITY = 'community' as const;
 const GITHUB = 'github' as const;
-
-const AiIcon = /* @__PURE__ */ lucideGlyph(lucideSparkles, ICON_SIZE);
-const HelpIcon = /* @__PURE__ */ lucideGlyph(lucideBookOpen, ICON_SIZE);
 
 type Column = { title: string; links: (FooterLink | typeof COMMUNITY | typeof GITHUB)[] };
 
 const columns = ({
   app,
   newLabel,
-  newIcon,
   community,
   repoUrl,
   buildWithAi,
 }: Pick<
   SiteFooterProps,
-  'app' | 'newLabel' | 'newIcon' | 'community' | 'repoUrl' | 'buildWithAi'
+  'app' | 'newLabel' | 'community' | 'repoUrl' | 'buildWithAi'
 >): Column[] => [
   {
     title: 'Product',
     links: [
-      { href: '/new', label: newLabel, icon: newIcon },
-      ...(buildWithAi ? [{ href: '/ai', label: 'AI & MCP', icon: AiIcon }] : []),
+      { href: '/new', label: newLabel },
+      // The app's own Explorer Home, on its own address (liveworkspace/docs/specs/004-index/one-explorer.md).
+      { href: explorerHomeHref(app), label: 'Explorer' },
+      ...(buildWithAi ? [{ href: '/ai', label: 'Build with AI' }] : []),
       // This app's own comparisons (packages/comparisons/README.md).
       { href: '/alternatives', label: 'Comparison' },
       // The public gallery of shared documents (livediagram's docs/specs/025-community/community.md), unless
@@ -65,7 +61,7 @@ const columns = ({
   {
     title: 'Resources',
     links: [
-      { href: '/help/', label: 'Help Centre', icon: HelpIcon },
+      { href: '/help/', label: 'Help Centre' },
       { href: `/help/about/what-is-${app}/`, label: 'About' },
       // liveworkspace's one status page, for every app (liveworkspace/docs/specs/010-site/site.md "Status").
       { href: STATUS_PAGE_URL, label: 'Status' },
@@ -94,16 +90,15 @@ export type SiteFooterProps = {
   app: BrandApp;
   // The line under the logo.
   tagline: string;
-  // The first link, /new: its label ("New Document") and glyph.
+  // The first link, /new: its label ("New Document").
   newLabel: string;
-  newIcon: ComponentType<IconProps>;
   // The Community link, drawn by the product (@liveworkspace/community-ui/links' CommunityFooterLink, with SITE_FOOTER_LINK).
   community?: ReactNode;
   // The source's GitHub link, last under Connect; none without it.
   repoUrl?: string;
   // The contributors' credits beside the copyright.
   credits?: boolean;
-  // The AI & MCP link to the Build with AI page, for a product with an MCP server.
+  // The Build with AI link to the /ai page, for a product with an MCP server.
   buildWithAi?: boolean;
 };
 
@@ -111,13 +106,12 @@ export function SiteFooter({
   app,
   tagline,
   newLabel,
-  newIcon,
   community,
   repoUrl,
   credits = true,
   buildWithAi = true,
 }: SiteFooterProps) {
-  const COLUMNS = columns({ app, newLabel, newIcon, community, repoUrl, buildWithAi });
+  const COLUMNS = columns({ app, newLabel, community, repoUrl, buildWithAi });
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -146,14 +140,11 @@ export function SiteFooter({
                         rel="noopener noreferrer"
                         className={LINK}
                       >
-                        <GitHubIcon />
                         GitHub
                       </a>
                     );
-                  const Icon = link.icon;
                   return (
                     <a key={link.href} href={link.href} className={LINK}>
-                      {Icon && <Icon />}
                       {link.label}
                     </a>
                   );
@@ -212,13 +203,5 @@ export function SiteFooter({
         </div>
       </div>
     </footer>
-  );
-}
-
-function GitHubIcon() {
-  return (
-    <Glyph size={ICON_SIZE} units={24} filled>
-      <path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.305-5.467-1.335-5.467-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12z" />
-    </Glyph>
   );
 }

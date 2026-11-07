@@ -21,6 +21,8 @@ import {
   statusRedirect,
   wwwRedirect,
 } from '@liveworkspace/sites/workspace-proxy';
+import { siteOfApp } from '@liveworkspace/sites';
+import { routeCommunity, type CommunityRouteSite } from '@liveworkspace/community-site/router';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -28,13 +30,11 @@ export interface Env {
   EDITOR?: Fetcher;
   API?: Fetcher;
   HELP?: Fetcher;
-  COMMUNITY?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
   EDITOR_ORIGIN?: string;
   API_ORIGIN?: string;
   HELP_ORIGIN?: string;
-  COMMUNITY_ORIGIN?: string;
   // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
   // response noindex so the public staging mirror can't compete with
   // production in search results. Absent in production and in local dev.
@@ -45,6 +45,9 @@ export interface Env {
   // liveworkspace's Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md): `/api/drive/*` goes there, not to the api.
   // Unset means production's.
   DRIVE_ORIGIN?: string;
+  // liveworkspace's Community service (liveworkspace/docs/specs/007-community/community.md), read for the Community
+  // page's head and its sitemap. Unset means production's.
+  COMMUNITY_URL?: string;
   // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
   // (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
@@ -73,7 +76,14 @@ export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
   return `${base}?app=livehuddle.app`;
 }
 const HELP_PATH = '/help';
-const COMMUNITY_PATH = '/community';
+
+// Whose Community the page at /community is here: livehuddle's posts, at its canonical address, in its words.
+const COMMUNITY_SITE: CommunityRouteSite = {
+  app: 'livehuddle.app',
+  siteUrl: siteOfApp('livehuddle').url,
+  product: 'livehuddle',
+  nouns: 'spaces',
+};
 
 // The editor app's top-level page route segments. These serve at CLEAN
 // URLs (no `/live` prefix) — the editor worker's `out/` files are already
@@ -150,7 +160,7 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
 // files and the router presents `/<prefix>/foo` to them as `/foo`.
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
-// Next dev servers serve their own prefixes (basePath for telemetry/help/community,
+// Next dev servers serve their own prefixes (basePath for telemetry and help,
 // the editor app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
@@ -241,6 +251,15 @@ async function route(request: Request, env: Env): Promise<Response> {
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
   const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
   if (www) return www;
+  // The Community page is liveworkspace's, one page for every app (liveworkspace/docs/specs/007-community/
+  // community.md "One page for every app"), served here at /community scoped to livehuddle: its head made this app's
+  // own and its sitemap answered here (@liveworkspace/community-site/router).
+  const community = routeCommunity(request, {
+    site: COMMUNITY_SITE,
+    communityUrl: env.COMMUNITY_URL,
+    forward: (req) => routeToWorkspace(req, { app: 'livehuddle', origin: env.WORKSPACE_ORIGIN }),
+  });
+  if (community) return community;
   // liveworkspace's Explorer under this address, while livehuddle's switch is on (@liveworkspace/sites/workspace-proxy):
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
   const workspace = routeToWorkspace(request, { app: 'livehuddle', origin: env.WORKSPACE_ORIGIN });
@@ -267,11 +286,6 @@ async function route(request: Request, env: Env): Promise<Response> {
   // Stripped in production — the worker serves them from `out/_next`.
   if (hasPrefix(url.pathname, LIVE_PATH)) {
     return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, LIVE_PATH);
-  }
-  if (hasPrefix(url.pathname, COMMUNITY_PATH)) {
-    // Community (docs/specs/025-community/community.md), a basePath:'/community' static app: the same prefix-strip
-    // as help.
-    return forward(request, url, env.COMMUNITY, env.COMMUNITY_ORIGIN, COMMUNITY_PATH);
   }
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;

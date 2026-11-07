@@ -133,12 +133,10 @@ const WORKSPACE_SITE_DIR = path.resolve(
   process.env.E2E_WORKSPACE_SITE_OUT ?? 'out',
 );
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
-// optical-alignment.md, "Ink audit"). Help and the Community sit under their basePath on the
-// live origin, as the router mounts them; marketing owns "/" in production, so it gets its own port.
-const SITES = [
-  { prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') },
-  { prefix: '/community', dir: path.join(ROOT, 'apps', 'community', 'out') },
-];
+// optical-alignment.md, "Ink audit"). Help sits under its basePath on the live origin, as the router mounts it
+// (the Community is liveworkspace's page, served with the Explorer below); marketing owns "/" in production, so it
+// gets its own port.
+const SITES = [{ prefix: '/help', dir: path.join(ROOT, 'apps', 'help', 'out') }];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3513);
 // A switch for trying the editor beside a stack that is already up:
@@ -733,13 +731,15 @@ function proxyApi(req, res) {
   req.pipe(proxyReq);
 }
 
-// The router's routeToWorkspace (@liveworkspace/sites/workspace-proxy): the Explorer is liveworkspace's page, shown
-// at livehuddle's own /explorer with the address unchanged, its build assets under /_liveworkspace. Served from
-// the site's static export when it is built; otherwise a logged 404, so only the specs that open the Explorer page
-// need the build.
+// The router's routeToWorkspace (@liveworkspace/sites/workspace-proxy): the Explorer and the Community are
+// liveworkspace's pages, shown at livehuddle's own /explorer and /community with the address unchanged, their build
+// assets under /_liveworkspace. Served from the site's static export when it is built; otherwise a logged 404, so
+// only the specs that open those pages need the build.
 const isWorkspacePath = (pathname) =>
   pathname === '/explorer' ||
   pathname.startsWith('/explorer/') ||
+  pathname === '/community' ||
+  pathname.startsWith('/community/') ||
   pathname.startsWith('/_liveworkspace/');
 
 function serveWorkspace(req, res, pathname) {

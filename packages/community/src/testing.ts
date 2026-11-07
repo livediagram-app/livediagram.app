@@ -7,6 +7,7 @@ import type { CommunityPost } from './post';
 export function communityPostFixture(patch: Partial<CommunityPost> = {}): CommunityPost {
   return {
     id: 'post1',
+    app: 'livediagram.app',
     title: 'Payments Platform',
     description: 'How our payment services talk to each other.',
     category: 'architecture',

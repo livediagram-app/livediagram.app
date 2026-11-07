@@ -6,18 +6,17 @@ There is a second environment, **staging**, which does deploy on its own: when C
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker      | Type                                                                                                                                |
-| ---------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/marketing` | `livehuddle-marketing` | Static assets only (Next.js `output: 'export'`).                                                                                    |
-| `apps/editor`    | `livehuddle-editor`    | Static assets + a tiny path-rewrite worker.                                                                                         |
-| `apps/help`      | `livehuddle-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                                              |
-| `apps/community` | `livehuddle-community` | Static assets plus a small worker for post metadata and the sitemap, bound to the api ([Community](../025-community/community.md)). |
-| `apps/api`       | `livehuddle-api`       | Worker (Durable Objects; no database or bucket of its own).                                                                         |
-| `apps/router`    | `livehuddle-router`    | Worker (service bindings to marketing, editor, api, help and community).                                                            |
+| App              | Cloudflare Worker      | Type                                                                   |
+| ---------------- | ---------------------- | ---------------------------------------------------------------------- |
+| `apps/marketing` | `livehuddle-marketing` | Static assets only (Next.js `output: 'export'`).                       |
+| `apps/editor`    | `livehuddle-editor`    | Static assets + a tiny path-rewrite worker.                            |
+| `apps/help`      | `livehuddle-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)). |
+| `apps/api`       | `livehuddle-api`       | Worker (Durable Objects; no database or bucket of its own).            |
+| `apps/router`    | `livehuddle-router`    | Worker (service bindings to marketing, editor, api and help).          |
 
 livehuddle has no MCP server or CLI ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)), so nothing is published outside the Workers.
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The community worker serves its static export under `/community` with a small script (`apps/community/worker/index.ts`) that runs first for only the post page and the sitemap, reading from the api through an `API` service binding ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livehuddle.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../../../../livediagram/docs/specs/015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page; see [New document route](../007-editor/new-document-route.md). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). There is no Community Worker: `/community` is liveworkspace.app's page, whose head and sitemap the router fills ([Community](../025-community/community.md) "Search engines"). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livehuddle.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../../../../livediagram/docs/specs/015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `EDITOR`, `API`, `HELP` and `COMMUNITY` service bindings that forward requests to the right downstream worker, and `/telemetry` redirects to liveworkspace's dashboard ([Telemetry](../017-telemetry/telemetry.md)).
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, Durable Object bindings and the account it deploys to (`account_id`, the liveworkspace account). Secrets **never** go in `wrangler.toml`: they are set on each worker with `wrangler secret put`. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -74,8 +73,8 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 **Order.** Three tiers, each waiting for the one before, and a failing tier stops the ones after it:
 
 1. **Services and apis**: `livehuddle-api`.
-2. **Sites**: `livehuddle-marketing`, `livehuddle-editor`, `livehuddle-help` and `livehuddle-community`, so a new editor never calls an api that lacks its routes, and the community's binding to the api exists.
-3. **Routers**: `livehuddle-router`, whose service bindings target the five workers above.
+2. **Sites**: `livehuddle-marketing`, `livehuddle-editor` and `livehuddle-help`, so a new editor never calls an api that lacks its routes.
+3. **Routers**: `livehuddle-router`, whose service bindings target the four workers above.
 
 **One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the other services and apis, livehuddle's sites in a job of their own, and the router with the other routers, each Worker after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): a static site builds first (its `out/`, with `NEXT_PUBLIC_BUILD_ID`, the [stale-build](stale-builds.md) check, and the hosted build vars). Then `pnpm exec wrangler deploy`, with `--env staging` on staging and nothing on production; the api adds its hosted vars and `BUILD_ID` and checks them on the live deployment (see [Hosted profile](#hosted-profile)).
 
@@ -85,7 +84,7 @@ The root `deploy.yml` (reusable) deploys one environment, and two thin callers r
 
 There is no database migration step: each Durable Object makes its own schema the first time it is used. The apps' workers deploy separately, so old and new versions briefly serve side by side. The deploy keeps that window short and recoverable:
 
-- The api deploys a tier before the editor, so a new editor never calls an api that lacks its routes, and the router deploys last, after the five it binds.
+- The api deploys a tier before the editor, so a new editor never calls an api that lacks its routes, and the router deploys last, after the four it binds.
 - The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)), and a save that fails in the window is retried on its own ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
 
 ## Hosted profile
@@ -117,7 +116,7 @@ From the router:
 
 - `/api/*` → api worker (REST + WebSocket).
 - `/live` and `/live/<anything>` → the editor (the router strips the `/live` prefix before forwarding).
-- `/help` → help centre; `/community` → Community (both prefix-stripped).
+- `/help` → help centre (prefix-stripped); `/community` → liveworkspace.app's Community page, address bar unchanged ([Router app](router-app.md)).
 - `/telemetry` → a 301 to liveworkspace's telemetry dashboard, `https://www.liveworkspace.app/telemetry?app=livehuddle.app`.
 - Everything else → marketing.
 

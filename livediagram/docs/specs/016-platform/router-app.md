@@ -20,19 +20,19 @@ redirect, so there is no loop and neither staging nor local development leads to
 
 ## Routing table
 
-| Path                                                                                                                                                                                    | Forwards to                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/api/index/*`, `/api/drive/*`, `/api/previews/*` and a share link's image and card                                                                                                     | liveworkspace's index, Google Drive mirror and previews, ahead of the api row                         |
-| `/api`, `/api/*`                                                                                                                                                                        | api worker (`apps/api`)                                                                               |
-| `/telemetry`, `/telemetry/*`                                                                                                                                                            | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md)) |
-| `/form`, `/form/*` (old form links)                                                                                                                                                     | 308 to the same path on liveplanner ("Old form links go to liveplanner" below)                        |
-| `/help`, `/help/*`                                                                                                                                                                      | help app (`apps/help`), stripped                                                                      |
-| `/community`, `/community/*`                                                                                                                                                            | Community (`apps/community`), stripped                                                                |
-| `/live/*` (the editor app's `_next` assets only)                                                                                                                                        | editor app (`apps/editor`), stripped                                                                  |
-| `/explorer/*`                                                                                                                                                                           | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)             |
-| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/import`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                     |
-| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                        | 308 redirect to `/help/<path>`                                                                        |
-| everything else                                                                                                                                                                         | marketing app (`apps/marketing`)                                                                      |
+| Path                                                                                                                                                                                    | Forwards to                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/index/*`, `/api/drive/*`, `/api/previews/*` and a share link's image and card                                                                                                     | liveworkspace's index, Google Drive mirror and previews, ahead of the api row                                                                            |
+| `/api`, `/api/*`                                                                                                                                                                        | api worker (`apps/api`)                                                                                                                                  |
+| `/telemetry`, `/telemetry/*`                                                                                                                                                            | 301 to liveworkspace's dashboard, `?app=livediagram.app` ([Telemetry](../017-telemetry/telemetry.md))                                                    |
+| `/form`, `/form/*` (old form links)                                                                                                                                                     | 308 to the same path on liveplanner ("Old form links go to liveplanner" below)                                                                           |
+| `/help`, `/help/*`                                                                                                                                                                      | help app (`apps/help`), stripped                                                                                                                         |
+| `/community`, `/community/*`                                                                                                                                                            | liveworkspace.app's Community page, address bar unchanged: `routeCommunity` first (the head and sitemap, "The Community" below), then `routeToWorkspace` |
+| `/live/*` (the editor app's `_next` assets only)                                                                                                                                        | editor app (`apps/editor`), stripped                                                                                                                     |
+| `/explorer/*`                                                                                                                                                                           | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)                                                                |
+| live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/import`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                                        |
+| a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                        | 308 redirect to `/help/<path>`                                                                                                                           |
+| everything else                                                                                                                                                                         | marketing app (`apps/marketing`)                                                                                                                         |
 
 The editor app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip: the editor worker's `out/` files are already prefix-free).
 
@@ -90,13 +90,13 @@ Explorer; livediagram has no Explorer of its own.
 
 ## Implementation
 
-In production the Worker has five **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP / COMMUNITY). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help + community) when forwarding to a binding:
+In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP). A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help) when forwarding to a binding:
 
 ```ts
 // sketch, real source: apps/router/src/index.ts
 // LIVE_ROUTE_SEGMENTS (packages/api-schema/src/page-views.ts): auth, document, embed, explorer, form, get-started,
 // import, join, new, oauth, offline, sign-in
-// Before these: routeToWorkspace, the previews, /api/index/* and /api/drive/* (above).
+// Before these: routeCommunity, routeToWorkspace, the previews, /api/index/* and /api/drive/* (above).
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -134,6 +134,18 @@ Every `/diagram/<id>` address (share links, embeds, bookmarks, `/diagram/shared?
 The help articles renamed with it ([Help app, Renamed articles](../018-help/help-app.md#renamed-articles)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
 <!-- /legacy-names -->
 
+## The Community
+
+`/community` and everything under it is liveworkspace.app's one Community page
+([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#one-page-for-every-app)),
+served here the way the Explorer is (`@liveworkspace/sites/workspace-proxy` `COMMUNITY_ROUTE`, no cookies forwarded).
+Before anything else the router runs `routeCommunity` (`@liveworkspace/community-site/router`), bound to livediagram
+(`COMMUNITY_SITE`) and the `COMMUNITY_URL` var: it rewrites the gallery's head to livediagram's own, fills a post's head
+from the Community service (404 for a missing post; the shell unchanged when the service is unavailable), and answers
+`/community/sitemap.xml`; the rest goes through `routeToWorkspace`. `COMMUNITY_URL` is
+`http://localhost:3000/api/community` locally, `https://staging.liveworkspace.app/api/community` on staging, and
+production's by default ([Community](../025-community/community.md) "Search engines").
+
 ## Local development
 
 The router **also runs locally**, so `corepack pnpm dev:diagram` (from the monorepo root) gives you the production URL shape on one port: `http://localhost:3100` serves marketing at `/`, the editor at `/new` etc., `/help`, `/community`, and `/api` (`/telemetry` redirects to the local liveworkspace telemetry service), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
@@ -144,18 +156,17 @@ The router **also runs locally**, so `corepack pnpm dev:diagram` (from the monor
 | marketing | `http://localhost:3101/`                                          |
 | live      | `http://localhost:3102/new`, `/document/<id>`, ... (clean routes) |
 | help      | `http://localhost:3104/help` (basePath baked in)                  |
-| community | `http://localhost:3105/community` (basePath baked in)             |
 | api       | `http://localhost:8687/api/...` (wrangler dev)                    |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livediagram/router dev` runs `wrangler dev --env local --port 3100`, and the root `pnpm dev` includes it.
 
-Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves: `basePath` for help/community, and the editor app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
+Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves: `basePath` for help, and the editor app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
 
 The routing decisions stay identical in both modes; only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
 
 ## Routing infrastructure, not logic
 
-The router is **routing infrastructure**, not application logic, holding no data and running no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, telemetry, help, community, or api).
+The router is **routing infrastructure**, not application logic, holding no data and running no business rules. That separation is non-negotiable: if you find yourself adding business logic to the router, stop, the logic belongs in a service the router forwards to (marketing, live, telemetry, help, or api).
 
 Two response rules sit with the routing because every site passes through it, and they are HTTP
 policy rather than business rules: on staging every response is marked `X-Robots-Tag: noindex,
