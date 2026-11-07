@@ -1,7 +1,7 @@
-// One browser's proximity call (docs/specs/012-collaboration/proximity-audio.md): from Join Audio to Leave Audio, it
-// mints a Realtime session through the api, publishes the microphone (call-mic.ts), hears the speakers in earshot at
-// their distance and side (call-subscriptions.ts), and closes the microphone while nobody is on your tab. Loaded only
-// when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill switch
+// One browser's proximity call (docs/specs/012-collaboration/proximity-audio.md): from walking in to leaving the mode,
+// it mints a Realtime session through the api, publishes the microphone on your first unmute (call-mic.ts), hears the
+// speakers in earshot at their distance and side (call-subscriptions.ts), and releases a muted microphone while nobody
+// is on your tab. Loaded only when walking first joins a call; the canvas feeds it positions through `update`. The calls kill switch
 // (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a refused
 // mint. The camera and a shared screen ride the same session (call-video.ts; docs/specs/012-collaboration/
 // video-and-screen-bubbles.md). A stage (meeting-rooms-and-stage.md "The stage") reaches the whole tab; its audience
@@ -151,9 +151,9 @@ export class ProximityCall {
     return this.stopped;
   }
 
-  /** Mint the session, open the microphone (a speaker's), publish it and start hearing. */
+  /** Mint the session and start hearing, the microphone muted and unopened until your first unmute (call-mic.ts). */
   async start(): Promise<void> {
-    setCallSelf({ phase: 'joining', muted: false, level: 0 });
+    setCallSelf({ phase: 'joining', muted: true, level: 0 });
     void this.input.context.resume().catch(() => {});
     try {
       const session = await apiCallSession(this.input.caller);
@@ -173,7 +173,6 @@ export class ProximityCall {
         onNotHeard: () => this.notHeard(),
       });
       this.proveSession();
-      if (this.input.canSpeak && session.canSpeak) await this.mic.open();
       if (this.stopped) return;
       setCallSelf({ phase: 'live' });
       this.hear();
@@ -403,14 +402,14 @@ export class ProximityCall {
     this.graph.close();
   }
 
-  /** Leave Audio: the microphone is released, every subscription closes, the session ends. */
+  /** The call ends (leaving the mode, the room or the tab): the microphone is released, every subscription closes, the session ends. */
   stop(): void {
     if (this.stopped) return;
     this.teardown();
     setCallSelf({
       phase: 'off',
       mic: 'closed',
-      muted: false,
+      muted: true,
       level: 0,
       heard: new Set(),
       someoneNear: false,

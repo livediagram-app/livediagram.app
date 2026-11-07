@@ -43,10 +43,10 @@ export function ScreenShareStripGroup() {
       className="flex shrink-0 items-center gap-0.5"
     >
       <HoverCard
-        title={preview ? 'Only You See Your Screen' : 'You Are Sharing Your Screen'}
+        title={preview ? 'Screen: Only You' : 'You Are Sharing Your Screen'}
         description={
           preview
-            ? 'Nothing is sent: your screen shows only above your own head.'
+            ? 'Nothing is sent.'
             : 'The people near you see your screen in a bubble above your head.'
         }
       >
@@ -75,7 +75,7 @@ export function ScreenShareStripGroup() {
         title="Stop Sharing"
         description={
           preview
-            ? 'Close the preview of your screen.'
+            ? 'Close the preview.'
             : 'Stop sharing your screen. The people near you stop seeing it.'
         }
         icon={<StopIcon />}

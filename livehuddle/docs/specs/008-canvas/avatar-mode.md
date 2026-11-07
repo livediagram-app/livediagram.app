@@ -103,8 +103,10 @@ reads as one surface rather than a widget on top of the editor. It replaced the 
 button in the bottom-right cluster; that button and panel are gone.
 
 ```
- [Join Audio] [Camera] [Share] │ Gender Clothes Hair Status │ Actions React │ [Say]
-   the call (left)                the look                        the actions (right)    speak
+ [Edit|Walk] │ Gender Clothes Hair Status │ Actions React │ [Say]         (top centre)
+                 the look                      the actions     speak
+
+                  [Mic] [Camera] [Share]                               (bottom centre: the Call dock)
 ```
 
 - **When.** The moment the mode starts, for every role, and only while it lasts: leaving the mode brings the building
@@ -114,32 +116,9 @@ button in the bottom-right cluster; that button and panel are gone.
   welcome flow), and it never shows while **Start a Space** is open, since the mode cannot start there
   ([Not over a start](#not-over-a-start)).
 - **An Editor's starts with the [Edit | Walk toggle](#the-edit--walk-toggle)**, Walk on, a divider after it, ahead
-  of the call: the way back to building. A Participant's and a Viewer's has no toggle: they never leave. Who gets which palette is one pure rule
+  of the look: the way back to building. A Participant's and a Viewer's has no toggle: they never leave. Who gets which palette is one pure rule
   read from the session's `can` (`stripPaletteFor` in `apps/editor/lib/avatar-palette.ts`).
-- **Left: the call** (owner, 2026-11-06: "Put the camera / audio / share buttons on the left of the palette items,
-  rather than at the bottom"). The call controls of [Proximity audio](../012-collaboration/proximity-audio.md) and
-  [Video and screen bubbles](../012-collaboration/video-and-screen-bubbles.md) open the strip, a divider after them:
-  **Join Audio** (**Listen In** for a Viewer, **Calls Paused** under the kill switch), then once in the microphone
-  (Live, Nobody Near, Muted, Mic Blocked, Mic Off, Listening), **Do Not Disturb** while that is your status, the
-  stage's **Raise Hand** or count, the **Camera** and **Share Screen** (or one **Video Paused**), and **Leave Audio**.
-  With no call to offer, a greyed **Join Audio** saying why (in a space kept in This Browser, "Turn on Sync Space to
-  Server to talk with people here."; see [No call here](../012-collaboration/proximity-audio.md#no-call-here)), then
-  the camera and Share Screen as a local preview; for someone who may not speak and has no preview, no group and no
-  divider. Each keeps its hover card, its states and its role gates exactly as the calls specs give them; they are
-  drawn as **Say** is, not as the category buttons (owner, 2026-11-06: "the same background as Say, rather than
-  palette categories"): the brand tint at rest, 36 px, rounded. Join Audio, the microphone, the Camera and Share Screen
-  are **glyphs alone**, square, whatever the bar shows (owner, 2026-11-06: "camera and share don't need labels, same
-  with audio"): each hover card carries its name and state ("Mic: Live", "Camera: Off", "Share Screen"), the button's
-  label the action it takes. Listen In, Calls Paused, Video Paused, Raise Hand and Leave Audio are named beside their
-  glyph while the bar shows names, glyphs alone otherwise. On is the solid brand (a live microphone, a camera on, a share), so it reads at a glance
-  against the tint; a warning is amber and Muted rose, each on its own soft fill. The stage line hangs **under** the group rather than above it.
-  **While you share your screen** the look's Gender, Clothes and Hair leave the strip and the **Screen Share** group
-  (Sharing, Stop Sharing) takes their place right after the call group, Status staying
-  ([The screen share](../012-collaboration/video-and-screen-bubbles.md#the-screen-share-318)); the look comes back
-  when the share ends. The call group is the strip's, not the building strip's: a call rides Avatar
-  mode ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)), so while an Editor builds there
-  is no call to control and the building strip has none.
-- **Then the look**, one category per choice, each opening a flyout of picture tiles drawn by the same sprite the
+- **The look**, one category per choice, each opening a flyout of picture tiles drawn by the same sprite the
   canvas uses, each tile wearing that choice on **your** character in **your** colour, so you pick by sight:
   - **Gender** (owner, 2026-11-06: "Character -> Gender"; the category id stays `character`): your portrait, large,
     with **Randomise** beside it (rolls gender, clothes, hair and a natural hair colour, keeping the size), then
@@ -192,11 +171,14 @@ button in the bottom-right cluster; that button and panel are gone.
   key; on a desktop its tooltip names Enter. A Viewer has no Say button.
 - **Labels** are Title Case on the strip and the tiles (Jumping Jacks, Lab Coat, Top Knot), whatever the shared
   catalogue spells.
-- **On a phone** the strip takes the top row beside the menu card, as the building strip does: glyphs alone, 44 px
-  apart, and the look and action buttons swipe sideways together while the call group and Say stay put. A flyout
-  spans the screen between the gutters.
+- **On a phone** the strip takes the top row beside the menu card, as the building strip does, 44 px apart, and the
+  look and action buttons swipe sideways together while Say stays put. Its categories (the look's and the actions')
+  and Say are **always named** there, since the rail scrolls and they need not all fit on screen (owner, 2026-11-07:
+  "On mobile, in the palette, always include labels for the buttons and categories, it scrolls so its not an issue
+  that they don't all fit on screen"); the Edit | Walk toggle stays glyphs alone. A flyout spans the screen between
+  the gutters.
 - **Hover cards**: none on the category buttons (the flyout names itself, as on the building strip); Randomise,
-  Say and every call button have one.
+  Say and every [Call dock](#the-call-dock) button have one.
 
 The choices themselves:
 
@@ -220,6 +202,47 @@ The choices themselves:
 - **React** (the `reactions` category) holds five bursts (Confetti, Sparkles, Hearts, Applause, Fireworks), played around the character instead of around a pad. Unlike a Behaviour performance, a Reactions burst plays **on your own screen only**: the room's `reaction` op is keyed to a pad's element id (the character has none), and the avatar presence packet carries no burst. Showing it to peers would mean a burst field on `AvatarPresence` and a peer-side burst layer; it is not built.
 
 **No colour picker** for the shirt, deliberately; see above. Hair colour is the Hair menu's fixed swatches.
+
+### The Call dock
+
+The call's buttons are not on the strip: they sit on a card of their own, the **Call dock**, at the **bottom centre**
+of the canvas (owner, 2026-11-06: "Put the camera / audio / share buttons on the left of the palette items, rather
+than at the bottom"; then, 2026-11-07: "Audio, Camera and Share buttons should be moved from the palette and put as
+buttons in the bottom, but for livehuddle, center them"). The controls of [Proximity audio](../012-collaboration/proximity-audio.md)
+and [Video and screen bubbles](../012-collaboration/video-and-screen-bubbles.md) are the same, in the same order; only
+their home moved (`components/calls/CallDock.tsx`).
+
+- **When.** Exactly while the avatar palette shows: Avatar mode, the chrome up, never over **Start a Space**. It
+  hides with the rest of the chrome, and a building Editor has no call to control, so the building strip has none.
+  The card **draws nothing when nothing is in it** (no call to offer and no preview, for someone who may not speak):
+  no empty frame.
+- **Where.** Centred along the bottom edge, 16 px up. On a phone, where the bottom-right cluster
+  spans the row, **one row above it**.
+- **What.** There is **no Join and no Leave** (owner, 2026-11-07: "Currently we have this concept of Joining audio and
+  leaving audio, which is friction I don't like"): walking where there is a call joins it, so the dock holds the
+  microphone (Live, Nobody Near, Muted, Mic Blocked, Mic Off, Listening; it starts muted), **Do Not Disturb** while
+  that is your status, the stage's **Raise Hand** or count, and the **Camera** and **Share Screen** (or one **Video
+  Paused**). While the call connects, a greyed **Connecting…**; on a failure a warn **Retry** (a press tries again);
+  **Calls Paused** under the kill switch (likewise). With no call to offer (a space kept in This Browser, a server
+  without calls, calls paused or failed), the microphone shows **Muted** as a local preview that opens on a press and
+  sends nothing (title Mic: Only You, a one-line card; see [No call
+  here](../012-collaboration/proximity-audio.md#no-call-here)), then the camera and Share Screen as local previews. Each keeps its hover card, its states and its role gates
+  exactly as the calls specs give them. They are drawn as **Say** is (owner, 2026-11-06: "the same background as
+  Say, rather than palette categories"): the brand tint at rest, 36 px, rounded. On is the solid brand (a live
+  microphone, a camera on, a share), so it reads at a glance against the tint; a warning is amber and Muted rose,
+  each on its own soft fill.
+- **Short labels, on a desktop** (owner, 2026-11-07: "On desktop add short labels to each, on mobile do not"). Every
+  button is named beside its glyph: the microphone's **Mic** / **Muted** / **Blocked** / **Mic Off** /
+  **Listening**, **Connecting…**, **Retry**, **Camera**, **Share**, **Calls Paused**, **Video Paused**, **Raise Hand**. On a phone, glyphs alone, 44 px. The hover cards stay as they were and carry the full name and
+  state ("Mic: Live", "Camera: Off", "Share Screen"). This replaces the 2026-11-06 rule that the
+  microphone, the Camera and Share Screen were glyphs alone whatever the bar showed.
+- **The stage line** ([meeting-rooms-and-stage.md](../012-collaboration/meeting-rooms-and-stage.md#the-stage-line-part-3-built))
+  hangs **over** the group, centred on it, since the dock sits on the bottom edge.
+- **While you share your screen** the **Screen Share** group (Sharing, Stop Sharing) joins the dock after the call
+  group, behind a divider ([The screen share](../012-collaboration/video-and-screen-bubbles.md#the-screen-share-318)).
+  The avatar palette keeps its look: Gender, Clothes and Hair no longer leave the strip while you share.
+- The dock is the call group's, not the building strip's: a call rides Avatar mode
+  ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
 
 ## Not over a start
 
@@ -274,7 +297,7 @@ for as long as the mode is on, for every role, and come back the moment it ends:
   leaves the cluster, and so do its other ways in, the command palette's **Open Theme** and **Open Canvas Options**.
   It has no shortcut.
 - What stays in the cluster is Collaborate (while the tab has a thread) and the zoom controls; the way back to
-  building is the toggle at the strip's start. The call buttons are on the [avatar palette](#the-avatar-palette). On a phone the cluster is shorter,
+  building is the toggle at the strip's start. The call buttons are on the [Call dock](#the-call-dock). On a phone the cluster is shorter,
   still one row.
 - A Participant and a Viewer are always walking ([Always walking](../013-workspace/share-roles.md#always-walking)),
   so they never see any of them. Only an Editor sees the change, as it walks.
@@ -309,6 +332,12 @@ through it, and on to the point you clicked.
 - **Every walk to a point routes**: a click or a tap, Walk There's legs ([Directory](../009-elements/directory.md)
   "Walk There"), and a call's walk to someone. Arrow-key steering and a push stay direct (collision only, no route):
   steering is you choosing the way.
+- **Chrome drawn over the canvas never walks you.** A press on the talking bars walks to the talker (their own
+  rule), but a press on a camera or screen bubble (anyone's, your own too), its Stop Sharing control or the maximised
+  panel does not walk you to the spot behind it: it only maximises (or stops the share) (owner, 2026-11-07: "when
+  sharing camera or screen, anybody including me who clicks the bubble over my head walks to that spot, don't do
+  that"). `CHROME_OVER_CANVAS` in `useCanvasSurfaceGestures.ts` lists the talking bars, `[data-call-bubbles]` and
+  `[data-call-maximised]`.
 - **Sitting** still asks where the walk is going, not where its legs turn: walking through a chair on the way to
   another never sits you in it ([Chair](../009-elements/chair.md) "Only the chair you are going to").
 - **Peers** see the walk as it happens: the packet carries the feet as they move, and every point on a route is clear
@@ -763,7 +792,7 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 - **`../packages/avatar/src/reactions.ts`**: the five reactions, their durations, and `reactionPose(kind, elapsedMs)`: a pure timeline that turns "this reaction, this far in" into the pose inputs the sprite already draws (hop height, facing, arms, stance, lean). Unit-tested (five jack reps, two spin turns, no arms-up-two-ways-at-once, everything back to standing when done), and pure precisely so a peer can replay a performance from a kind + a clock.
 - **`../packages/avatar/src/hooks/useAvatarConfig.ts`**: the costume state slice: load on mount, persist + report telemetry on each pick, and the gender toggle the right-click uses.
 - **Hair colour in the sprite**: `hairTones` in `../packages/avatar/src/components/avatar-sprite-palette.ts` turns the token into its two tones (cached, as the outfit tones are), and `avatar-sprite-head.tsx` paints every hairstyle with them.
-- **`apps/editor/components/palette/AvatarPalette.tsx`**: the [avatar palette](#the-avatar-palette), the strip while walking: the call group (`components/calls/CallStripGroup.tsx`), the look and action buttons (the category bar's `CategoryBarButtons` and `useCategoryBar`) and Say. **`AvatarPaletteFlyouts.tsx`** draws each category's flyout (the category bar's `FlyoutHeader`, `PictureTile` and `CardTile`), and **`apps/editor/lib/avatar-palette.ts`** holds its pure parts: the categories, `stripPaletteFor` (which strip, from `can`), Title Case labels and each Behaviour's still pose. **`AvatarPalettePreview.tsx`** is the [preview card](#the-avatar-palette) beside a flyout (its place and fit, `previewFits`, in `avatar-palette-widths.ts`), and **`apps/editor/lib/avatar-preview.ts`** the option being tried on (a module store the tiles write through `previewHandlers`) and what the card draws for it (`previewView`, pure). livediagram keeps its Avatar Panel, whose body and cluster button moved into livediagram's editor when livehuddle stopped drawing them.
+- **`apps/editor/components/palette/AvatarPalette.tsx`**: the [avatar palette](#the-avatar-palette), the strip while walking: the [Call dock](#the-call-dock) (`components/calls/CallDock.tsx`, with `CallStripGroup.tsx`), the look and action buttons (the category bar's `CategoryBarButtons` and `useCategoryBar`) and Say. **`AvatarPaletteFlyouts.tsx`** draws each category's flyout (the category bar's `FlyoutHeader`, `PictureTile` and `CardTile`), and **`apps/editor/lib/avatar-palette.ts`** holds its pure parts: the categories, `stripPaletteFor` (which strip, from `can`), Title Case labels and each Behaviour's still pose. **`AvatarPalettePreview.tsx`** is the [preview card](#the-avatar-palette) beside a flyout (its place and fit, `previewFits`, in `avatar-palette-widths.ts`), and **`apps/editor/lib/avatar-preview.ts`** the option being tried on (a module store the tiles write through `previewHandlers`) and what the card draws for it (`previewView`, pure). livediagram keeps its Avatar Panel, whose body and cluster button moved into livediagram's editor when livehuddle stopped drawing them.
 - **Speech**: **`../packages/api-schema/src/avatar-say.ts`** (the `avatar-say` op, its limits and its field-by-field parser, shared by the room and the editor); **`../packages/avatar/src/speech-store.ts`** (the bubbles on screen, a module store the room connection writes to and the layer reads); **`../packages/avatar/src/speech.ts`** (pure: word counting and the limits, the flight time, the bubble's rise, sway and fade at a moment, the per-person cap; unit-tested); **`../packages/avatar/src/hooks/useAvatarSpeech.ts`** (the composer's open state, the cooldown, the floating bubbles, own and peers', sending and receiving); **`../packages/avatar/src/components/AvatarSpeechLayer.tsx`** (the composer and the floating bubbles, drawn in canvas space at reading size, loaded the first time somebody speaks); **`../packages/avatar/src/components/AvatarSpeechBubble.tsx`** (the bubble's look and the draft field, shared with the message popover); **`../packages/avatar/src/components/AvatarMessagePopover.tsx`** (the message popover, hung from the palette's Say).
 - **`../packages/avatar/src/hooks/useAvatarWalk.ts`**: the state slice: position / target / facing / hop / wave, the `requestAnimationFrame` loop, the camera nudge, and the presence publisher. Generic over the product's element, so its arrival callbacks get this product's `ShapeElement`.
 - **`../packages/avatar/src/hooks/useAvatarKeys.ts`**: the keyboard slice (held arrows + the Space jump), split out so the hook above keeps to state + loop.

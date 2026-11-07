@@ -15,6 +15,7 @@ import {
   VOICE_STALE_MS,
   type CallPeer,
 } from '@/lib/calls/calls-store';
+import { SELF_MEDIA_ID, useCallMedia } from '@/lib/calls/calls-media-store';
 import { barsOpacity, distance, type Point } from '@/lib/calls/hearing';
 
 /** Above a peer's name chip (its top sits 16 px over the head), with a 6 px gap. */
@@ -146,14 +147,17 @@ export function TalkingBars(props: {
   const peers = useCallPeers();
   const self = useCallSelf();
   const now = useStaleClock(peers);
+  // Someone wearing a camera or screen bubble talks on the bubble (BubbleBars), which sits where these would.
+  const media = useCallMedia();
 
   const talking = props.hidePeers
     ? []
     : props.peers.flatMap((p) => {
+        if (media.has(p.id)) return [];
         const level = levelNow(peers.get(p.id), now);
         return level > 0 ? [{ ...p, level }] : [];
       });
-  const selfLevel = self.muted ? 0 : self.level;
+  const selfLevel = self.muted || media.has(SELF_MEDIA_ID) ? 0 : self.level;
   if (talking.length === 0 && !(props.self && selfLevel > 0)) return null;
 
   return (
@@ -182,5 +186,28 @@ export function TalkingBars(props: {
         </div>
       ) : null}
     </>
+  );
+}
+
+/**
+ * The talking equaliser of someone wearing a bubble, on the bubble's top-left corner while they talk (CallBubbles): the
+ * bubble sits just over the head, where the bars over a head would be (docs/specs/012-collaboration/
+ * video-and-screen-bubbles.md "Bubble size and place"). Its own subscription, so a level ticking re-renders the bars
+ * alone, never the video tiles.
+ */
+export function BubbleBars({ id, color }: { id: string; color: string }) {
+  const peers = useCallPeers();
+  const self = useCallSelf();
+  const now = useStaleClock(peers);
+  const level = id === SELF_MEDIA_ID ? (self.muted ? 0 : self.level) : levelNow(peers.get(id), now);
+  if (level <= 0) return null;
+  return (
+    <span
+      data-bubble-bars={id}
+      aria-hidden
+      className="pointer-events-none absolute top-1.5 left-1.5 z-10 flex items-end rounded-md bg-slate-950/65 px-1.5 py-1"
+    >
+      <Bars level={level} color={color} />
+    </span>
   );
 }

@@ -36,6 +36,7 @@ import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@
 import { atLeastInset } from '@livehuddle/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
+import { CallDock } from '@/components/calls/CallDock';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
@@ -220,8 +221,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const startOpen = useStartPanelOpen();
   // Which strip, from the session's `can` (lib/avatar-palette, docs/specs/013-workspace/share-roles.md): the building
   // palette, an Editor's; or, while walking, the avatar palette, every role's, a Participant's and a Viewer's always
-  // (docs/specs/008-canvas/avatar-mode.md "The avatar palette"). It holds the call controls, at its left, so every role
-  // that can be in a call has them. A session without a level (an embed's) reads as its read-only flag says.
+  // (docs/specs/008-canvas/avatar-mode.md "The avatar palette"). The Call dock, bottom centre, shows with it, so every
+  // role that can be in a call has the call's buttons. A session without a level (an embed's) reads as its read-only flag says.
   const can = {
     level: props.accessLevel ?? (readOnly ? 'view' : 'edit'),
     alwaysWalks: props.alwaysWalks === true,
@@ -444,6 +445,15 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.format}
         </>
       )}
+
+      {/* The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons, bottom centre,
+          while the avatar palette shows. */}
+      {strip === 'avatar' && stripShown ? (
+        <CallDock
+          doNotDisturb={props.avatarStatus === 'dnd'}
+          onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
+        />
+      ) : null}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the

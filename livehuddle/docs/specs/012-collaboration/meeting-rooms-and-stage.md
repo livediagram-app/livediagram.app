@@ -2,7 +2,7 @@
 
 Status: **built** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
 calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate), part 3, **raise hand and
-Do Not Disturb** (with the line under the call group for a stage you may not speak from), and part 4, **the stage's
+Do Not Disturb** (with the line over the call group for a stage you may not speak from), and part 4, **the stage's
 way in** (its palette tile, its settings, the All-Hands Hall on a real stage, and its help). Under the calls kill
 switch, and on wherever calls are ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
@@ -92,7 +92,7 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   off, leaves Avatar mode, changes tab or drops off, and it works with calls off too. The spotlight fades in and out
   (off under reduced motion). Someone on a stage they may not speak from still lights it: it says who stands there;
   the mic indicator and the stage line say who is heard.
-- **You are told you are on it.** While you speak from a stage, a calm line hangs under the call group, where the stage
+- **You are told you are on it.** While you speak from a stage, a calm line hangs over the call group, where the stage
   line goes: **"You're on stage. Everyone on this tab hears you."** (the may-not-speak line keeps its place for a stage
   you may not speak from). It is an `aria-live="polite"` status, so it is announced once.
 - Implementation: `stageStanders` (`apps/editor/lib/calls/stage-presence.ts`) works out who stands on each stage from
@@ -105,20 +105,20 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
 
 A stage's audience asks to speak by raising a hand, and the stage lets them.
 
-- **Raise Hand** sits in the call strip while you are a live stage's **audience** (someone speaks from a stage and
+- **Raise Hand** sits on the Call dock while you are a live stage's **audience** (someone speaks from a stage and
   you do not) and you may speak (an Editor or a Participant). Pressed, it reads **Lower Hand**, and a raised hand
   shows above your character: a small amber hand on a round badge, beside your head, where everyone on the tab sees
   it. Raising is counted (`RaiseHand`).
-- **The stage sees how many.** While you speak from a stage, the call strip shows the number of raised hands on the
+- **The stage sees how many.** While you speak from a stage, the Call dock shows the number of raised hands on the
   tab (a hand badge with the count), and each raised hand above a character is a button: **Let Speak**.
 - **Let Speak** is pressed by anyone speaking from a stage, or by an Editor anywhere on the tab, on the hand above
   someone's character. That person is then **heard by everyone on the tab as if on the stage** (full volume,
   centred, and they hear the other speakers as one room), and their badge turns from the amber hand to the brand's
-  microphone. Their call strip reads **Speaking**, still with **Lower Hand**. Letting someone speak is counted
+  microphone. Their Call dock reads **Speaking**, still with **Lower Hand**. Letting someone speak is counted
   (`LetSpeak`).
 - **It ends** when they press **Lower Hand**, when someone who may let them speak presses their badge again
   (**Done**), when they walk out of the room they raised it in (for a stage in the open, off the open floor into a
-  room), or when they leave audio, the mode, the tab or the Space. Done lowers the hand too: asking again is a new
+  room), or when the call ends (they leave the mode, the tab or the Space). Done lowers the hand too: asking again is a new
   hand.
 - **Whoever let you speak must still be able to.** Each browser checks the person who pressed Let Speak is an Editor
   or speaks from a stage now; once neither is true (a Participant who let you speak steps off the stage), you are
@@ -129,12 +129,12 @@ A stage's audience asks to speak by raising a hand, and the stage lets them.
   the mode lowers it, and nobody arriving later sees an old one. A late arrival does see the hands already up: a
   raised hand is sent again whenever someone new walks onto the tab.
 - With a screen reader: the badge is a button named "Sam raised a hand, Let Speak" (or "Sam is speaking, Done")
-  for someone who may press it, and an image named "Sam raised a hand" for everyone else; the call strip's count is
+  for someone who may press it, and an image named "Sam raised a hand" for everyone else; the Call dock's count is
   read as "3 raised hands".
 
 ## The stage line (part 3, built)
 
-Standing on a stage you may not speak from, a calm line hangs just under the call group (at the left of the avatar palette), left-aligned with it:
+Standing on a stage you may not speak from, a calm line hangs just over the call group (on the [Call dock](../008-canvas/avatar-mode.md#the-call-dock), at the bottom centre), centred on it (owner, 2026-11-07: the call moved to the dock, so the line moved from under the group to over it):
 **"Only Editors speak from this stage"** (or "Only Editors and Participants speak from this stage" for a Viewer on a
 stage that lets Participants speak). It goes the moment you step off. It is an `aria-live="polite"` status, so a
 screen reader hears it once on stepping on.
@@ -148,7 +148,7 @@ screen reader hears it once on stepping on.
 - **You can still be heard** if you speak (your microphone keeps its own Mute), and your bars still show to others,
   so turning to a neighbour does not need the status cleared.
 - Set and cleared from the avatar palette's Status flyout, like the others, for the session only. While you are in a call,
-  the call strip shows a **Do Not Disturb** segment beside the microphone; pressing it clears the status.
+  the Call dock shows a **Do Not Disturb** segment beside the microphone; pressing it clears the status.
 - **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@liveworkspace/avatar`), which has
   no calls: there the Avatar panel keeps offering the four (livehuddle's avatar palette offers the five), though a `dnd` status on the wire still parses and draws.
 

@@ -44,8 +44,8 @@ export function OnlyYouTag({ size = 'bubble' }: { size?: 'bubble' | 'panel' }) {
   );
 }
 
-/** A bubble's width in canvas px: readable at 100%, small beside a character. */
-export const BUBBLE_WIDTH_PX = 120;
+/** A bubble's width in canvas px: a face and a screen readable at 100% (owner, 2026-11-07: "Make the bubble bigger"). */
+export const BUBBLE_WIDTH_PX = 180;
 
 /** "Sam's Camera", "Your Screen": the bubble's and the panel's name. */
 export function mediaTitle(name: string | null, media: CallMedia): string {
@@ -184,7 +184,7 @@ export function MediaBubble({
             className="flex h-5 cursor-pointer items-center gap-1 rounded-md bg-rose-600 px-1.5 text-[10px] leading-none font-semibold text-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-rose-700 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white active:bg-rose-800 pointer-coarse:opacity-100"
           >
             <StopIcon />
-            {/* Short on a 120 px tile, beside the maximise mark; the hover card and the name say whose share. */}
+            {/* Short on a small tile, beside the maximise mark; the hover card and the name say whose share. */}
             Stop
           </button>
         </HoverCard>
