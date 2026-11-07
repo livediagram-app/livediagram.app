@@ -175,7 +175,7 @@ SVG / PDF paint the same typeface the canvas did, never the UI sans.
 Implementation: `../packages/model-core/src/fonts.ts` (catalogue + resolver),
 `components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
-the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
+the label renderers (`element-labels.tsx`) and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
 `useTabCanvas.setTabFont` are the mutators. See also
 [Document structure](../006-document/document-structure.md) and

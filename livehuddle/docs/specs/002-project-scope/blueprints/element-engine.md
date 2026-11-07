@@ -1,27 +1,30 @@
 # The element engine: blueprint
 
-Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds part 1
-of Work Tracker #459 and the rules every later part follows.
+Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" and "Retired elements". It holds parts 1 and
+2 of Work Tracker #459 and the rules every later part follows.
 
 ## Domain and naming
 
 - **Retired shape kind**: a `shape` element whose `shape` is not in `SHAPE_KINDS` (`packages/document/src/shape-kinds.ts`).
   `isRetiredElement` already answers true for one; nothing new names it.
 - **Retired element type**: an element whose `type` is in `RETIRED_ELEMENT_TYPES`
-  (`packages/document/src/retired-kinds.ts`). Part 1: `video`. Typed `RetiredTypeElement` (`element-types.ts`): the
+  (`packages/document/src/retired-kinds.ts`). Part 1: `video`; part 2: `table`. Typed `RetiredTypeElement` (`element-types.ts`): the
   box (`id`, `type`, `x`, `y`, `width`, `height`) and the shared boxed fields the generic code paths read (label,
   colours, opacity, shadow, rotation, animation, link, comments, action, note, text settings), all optional but the
-  box. It takes the place of `VideoElement` in `BoxedElement`.
+  box. It takes the place of `VideoElement` and `TableElement` in
+  `BoxedElement`; its `type` is `'video' | 'table'`.
 - **Retired element**: either. `isRetiredElement(el)` is true for both; `retiredElementName(el)` reads
   `RETIRED_SHAPE_NAMES[shape]` for a shape and `RETIRED_TYPE_NAMES[type]` for a type, else `UNKNOWN_ELEMENT_NAME`.
 - Part 1's names: Pie Chart, Bar Chart, Line Chart, Legend, Progress Bar, Progress Ring, Rating, Code Block, Checklist, Page, Banner, Stat Row, Process, Site Header; the type `video` is **Embed**.
+- Part 2's name: the type `table` is **Table**.
 
 ## Behaviour and state
 
 - Load: `migrateStoredTab` runs nothing that reads a retired element's own fields. `settleChartRows`
   (`malformed-chart-rows.ts`) is deleted with its test.
-- Validation (`validate.ts`): `ELEMENT_TYPES` keeps `video` through `RETIRED_ELEMENT_TYPES`, and `boxedIssue` checks
-  only the box for one. Shape validation needs no change (a shape of an unknown kind already passes on its box).
+- Validation (`validate.ts`): `ELEMENT_TYPES` keeps `video` and `table` through `RETIRED_ELEMENT_TYPES`, and
+  `boxedIssue` checks only the box for one. Part 2 deletes `tableIssue` and `MAX_TABLE_ROWS`, `MAX_TABLE_COLS` and
+  `MAX_TABLE_CELLS`: a stored table's `cells` are never read, and the api's byte-size caps still bound a tab. Shape validation needs no change (a shape of an unknown kind already passes on its box).
 - Render: `ElementFaceRouter` and `svgElement` (`svg-render.ts`) take the placeholder branch for `isRetiredElement(el)`
   before any other branch, for any `type`. `paint-order`, the variant chrome (`element-variant.ts`) and the sketch
   finish treat a retired type as they treat a retired shape.
@@ -56,6 +59,10 @@ height }`.
 - The removed fields leave the `ShapeElement` type (`pieSlices`, `lineSeries`, `legendItems`, `progress*`, `rating*`,
   `code*`, `checklistItems`, `stats`, `processSteps`, `navLinks`, `chart*`); a stored one
   stays on the object at run time.
+- Part 2 deletes `TableElement` and `TableCellStyle` with every field only a table had (`cells`, `cellStyles`,
+  `colWidths`, `rowHeights`, `headerRow`, `headerColumn`, `zebra`, `tablePreset`, `headerTextColor`), and the
+  helpers that read them (`table.ts`, `table-header-colours.ts`, `svg-render-table.ts`). Shared fields a table
+  also used (`headerFill`, a link) stay on the kinds that keep them.
 
 ## Errors and edge cases
 
@@ -103,7 +110,8 @@ height }`.
 
 - `retired-kinds.test.ts` (`packages/document`): a tab holding each part 1 shape kind, and one holding a `video`, loads
   through `migrateStoredTab` and `migrateIncomingTab` deep-equal to what was stored, passes `isValidTab`, and names
-  each.
+  each. Part 2 adds a `table` with cells, cell styles, a cell link, column and row sizes and a table look: it loads
+  and saves deep-equal and is named Table.
 - `svg-render-retired.test.ts`: the export draws the placeholder for a retired type and kind.
 - `RetiredElementFace.test.tsx` (editor): the face shows the name and the note; Delete renders only with `onDelete`
   and, inside, on a card of at least 72 by 48 on screen whose words sit clear of the button's corner; it keeps 24
@@ -115,7 +123,7 @@ height }`.
 - `CanvasSelectionToolbars.retired.test.tsx` (editor): the selection toolbar's Delete removes a selected retired
   element for an Editor and is not offered when read-only (a Participant or a Viewer).
 - `packages/edit-operations` and `packages/document-views`: an agent's `add` of a retired kind gets a square with a
-  warning, `add video` is refused, and the views print a retired element as `?` with no state or summary.
+  warning, `add video` and `add table` are refused, and the views print a retired element as `?` with no state or summary.
 
 ## Constants and configuration
 

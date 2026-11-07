@@ -359,7 +359,7 @@ Every other kind has no state attribute; `show` has its content. A retired eleme
 **Style attributes** (`styleAttributesOf`): `fill=` (`fillColor`), `stroke=` (`strokeColor`), `text-color=`
 (`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`),
 `font=` (`font`), each printed only when present and different from what the kind's factory writes
-(`createShape(kind, 0, 0)`, `createText`, `createSticky`, `createTable`, `createPinnedArrow` built once per render
+(`createShape(kind, 0, 0)`, `createText`, `createSticky`, `createPinnedArrow` built once per render
 with a fixed id). The keys are the edit-operations field keys, so a printed style attribute can be written back with
 `set` unchanged; the two blueprints keep one key table (`STYLE_KEYS` in `@livehuddle/document`).
 
@@ -862,8 +862,8 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E27 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
 
-The checkout tab uses the factories (`createText`, `createShape`, `createTable`, `createSticky`, `createPinnedArrow`,
-`createComment`) and then pins every id to a fixed UUID whose first four characters are the research's prefixes
+The checkout tab uses the factories (`createText`, `createShape`, `createSticky`, `createPinnedArrow`,
+`createComment`), with its table a stored one (`storedTableAt`, printed `? table`), and then pins every id to a fixed UUID whose first four characters are the research's prefixes
 (`98eb`, `048c`, `c991`, `ca76`, `b811`, `a3cf`, `649c`, `202b`, `146b`, `e4a8`, `6406`, `12de`, `0556`, `d41e`,
 `822f`, `e6d7`, `cb02`, `480a`, `0c84`; arrows `c74b`, `6e71`, `9c5e`, `111e`, `c41d`, `8e70`, `892e`, `3462`,
 `1434`, `0cee`, `1fc0`), the tab id `0b3481f3-59fb-4bd0-a21a-152f1ba9bba5`, every `createdAt` to a fixed epoch and

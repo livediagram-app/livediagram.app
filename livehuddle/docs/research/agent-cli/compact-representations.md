@@ -70,8 +70,9 @@ Two things inside this repo are prior art too:
 ### 3.1 The tab
 
 A 30-element architecture tab ("Checkout platform"), built from the real factories in `packages/document`
-(`createShape`, `createText`, `createTable`, `createSticky`, `createPinnedArrow`), so every element carries the
-defaults the editor writes. `isValidTab` accepts it. Ids are deterministic pseudo-UUIDs so the counts reproduce.
+(`createShape`, `createText`, `createSticky`, `createPinnedArrow`), so every element carries the
+defaults the editor writes. Its table is a stored one, written as it was saved (livehuddle has no tables since Work
+Tracker #459, part 2). `isValidTab` accepts it. Ids are deterministic pseudo-UUIDs so the counts reproduce.
 
 - 1 text title, 3 frames (Edge, Services, Data).
 - 12 graph nodes: an actor, 7 squares (with `iconId`), a hexagon, a stadium, 2 cylinders, a cloud with a URL link.
@@ -163,7 +164,7 @@ commas, refs repeat in the edge table, and indentation (which costs one token pe
 ### 4.1 Rendered
 
 ```text
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · threads 1 open/2
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · 1 unknown · threads 1 open/2
 text 98eb "Checkout platform: production"
 boundary 048c "Edge"
   actor b811 "Customer" → a3cf
@@ -181,7 +182,7 @@ boundary ca76 "Data"
   cylinder 822f "Inventory DB"
 cloud e6d7 "Stripe" link=https://stripe.com/docs/api
 square cb02 "Order"
-table 480a 4x3 Service | p99 latency | Availability
+? table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```
 

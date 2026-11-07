@@ -454,13 +454,13 @@ A **retired element** is a stored element whose kind livehuddle no longer has: t
 `idea-box`, `qa-board`, `agenda`, `decision`, `roll-call`, `quiz`), the `reaction-pad` that went with the
 presenting tools, the `frame` ([The Frame](#the-frame)), the diagram tools' kinds [the element engine](#the-element-engine)
 has deleted so far, any other shape kind livehuddle does not know, and an element of a retired element type (an
-`type` the engine deleted, such as `video`).
+`type` the engine deleted: `video`, then `table`).
 
 - **Kept untouched.** Its kind and every field it carries (a poll's question, a board's notes, its responses) stay in
   the document exactly as stored. Nothing in livehuddle reads or writes them, so a save, a sync, a copy and an undo
   carry them through; livediagram still opens them as they were.
 - **Drawn as a placeholder.** A plain card in the element's own box: a dashed outline, a muted fill, the kind's name
-  ("Q&A Board", "Poll", "Bar Chart", "Embed"; "Unknown Element" for a kind livehuddle never had) and, beneath it,
+  ("Q&A Board", "Poll", "Bar Chart", "Embed", "Table"; "Unknown Element" for a kind livehuddle never had) and, beneath it,
   "No longer supported in livehuddle", so the two lines read as one sentence about this element. Its stored label
   shows below that when it has one. The export and the thumbnail draw the same card, without the Delete button.
 - **Deleting it.** An Editor sees a small **Delete** button (a bin icon, a 24px target that keeps its size on screen
@@ -529,8 +529,8 @@ image and the link card.
 | Part | What leaves the engine                                                                                                                                                                                                                                                                                                                                    | State |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | 1    | The content widgets and the embeds: the data charts (`pie-chart`, `bar-chart`, `line-chart`, `legend`), progress (`progress-bar`, `progress-ring`), `rating`, `code-block`, `checklist`, the Page (`page`), the web components but the card (`banner`, `stat-row`, `process`, `site-header`), and the video and website embeds (the `video` element type) | Done  |
-| 2    | Tables (the `table` element type) and their cell links and styles                                                                                                                                                                                                                                                                                         | Next  |
-| 3    | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries                                                                                                  | Later |
+| 2    | Tables (the `table` element type) and their cell links and styles                                                                                                                                                                                                                                                                                         | Done  |
+| 3    | The layout containers: `lane`, `stack`, `boundary`, the Timeline (`timeline-rail`), `diagram-key`, `card` and `callout`, `badge`, `step`, `pointer-note`, an image's hero caption, and the graph input and cluster layout that draw groups as boundaries                                                                                                  | Next  |
 | 4    | Arrows and lines (the `arrow` type, its routing, anchors and gestures), the pens and paths (`freehand`, `path`), annotations (`annotation`), with card #583's pen leftovers                                                                                                                                                                               | Later |
 | 5    | The diagram shapes (`square`, `circle`, `diamond` and the rest of the Shapes category) and the agent-side diagram code left (`diagram-lint`, the edit operations' diagram verbs)                                                                                                                                                                          | Later |
 
@@ -551,8 +551,13 @@ What every part does:
   `RETIRED_TYPE_NAMES`), so its placeholder, its selection and Search say "Bar Chart", not "Unknown Element".
 - **Agents.** The api's agent schema and the edit operations already make none of them (part 3); an agent that names a
   deleted shape kind gets a square, as with any kind it does not know, and `add video` is refused ("embeds are no
-  longer supported in livehuddle"). Reading a stored one, an agent's views print it as an unknown kind (`?`) with no
+  longer supported in livehuddle"), as is `add table` ("tables are no longer supported in livehuddle"). Reading a stored one, an agent's views print it as an unknown kind (`?`) with no
   state or summary, and `find` still searches the text it stored.
+- **Part 2, tables.** A stored `table` keeps its cells, its cell styles and cell links (`cellStyles`), its column
+  and row sizes, its header settings and its table look (`tablePreset`) exactly as stored, and draws as the
+  placeholder named **Table**. Gone with it: the table face and its cell editor, the cell menu and cell link picker,
+  the row and column controls, the table looks in Style Presets, the table animations, the cell search results
+  (Search no longer matches a table's cell text; agents' `find` still does) and the export's grid.
 - **The count.** Part 1 started from a read-only count: the build machine's two local document stores hold no tab,
   and no checked-in fixture outside a test names a deleted kind. Production tabs live in each document's Durable
   Object, which no read-only query reaches, so the owner counts them after merging and the placeholder keeps them
@@ -675,4 +680,7 @@ comments on it; a Viewer sees it).
   `packages/document`, `RetiredElementFace.test.tsx` in the editor); the placeholder's Delete shows for an Editor
   only and removes the element without selecting it (`RetiredElementFace.test.tsx`, `editor-capabilities.test.ts`);
   validation accepts a stored element of a retired type (`validate.test.ts`).
+  Part 2: a stored table (cells, cell styles and links included) loads deep-equal, saves unchanged, passes
+  validation and is named Table (`retired-kinds.test.ts`); the canvas draws its placeholder and only an Editor gets
+  its Delete (`RetiredElementFace.test.tsx`); `add table` is refused (`packages/edit-operations`).
 - Every part: the help path tests (`repo-paths-in-docs`, `article-links`, the heading anchors) pass.

@@ -176,32 +176,8 @@ The presets bind by exact colour match rather than by id: `colorPreset` is a sha
 
 ## Table looks
 
-A table paints **four** surfaces (cells, grid lines, header band, header text)
-that only read well in combination, so picking them one swatch at a time was
-four decisions and a fair chance of a header you cannot read the title on. The
-Presets grid offers eight complete looks from `tableColorPresets(theme)`,
-theme-derived like the shape presets: the accent tier (Theme, Banded, Bold Head,
-Minimal) then neutrals that are the same under every theme (Plain, Paper, Slate,
-Inked). A test holds that every header band pairs with a readable title colour.
-
-Banding (`zebra`) rides along, because it is a look. `headerRow` /
-`headerColumn` deliberately do **not**: which cells ARE headers is data, and a
-preset flipping it would silently re-read the first row of somebody's table as a
-heading. Reset goes through the shared reset-colours handler, the same one the
-Colours section's own reset uses.
-
-A table **binds to its look** exactly as a shape binds to its colour preset:
-`applyTablePresetToEl` records the preset's id in `tablePreset` on the table
-element, and the theme-change paths call `rederiveTablePresetForTheme` so a
-Banded table moves to the new theme's Banded instead of stranding on the old
-theme's accent. The binding is what makes that possible: a table preset writes
-RESOLVED colours into four fields, so without an id a theme change cannot tell a
-look from four hand-picked colours, and it preserves them as customs. (This is
-why a table was the one preset-styled element that did not follow a theme
-change: charts and code blocks store only an id and resolve at render, and
-shapes have always had `colorPreset`.) Hand-setting any of the colours the look
-owns (cell fill, grid, text, header band, header text) or toggling the banding
-clears the binding, because past that point the colours are the user's.
+Gone from livehuddle (Work Tracker #459, part 2): there are no tables, so there are no table looks. A stored
+table keeps the `tablePreset` it saved, unread ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)).
 
 ## Code-block schemes
 

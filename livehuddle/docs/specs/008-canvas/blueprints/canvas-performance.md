@@ -105,7 +105,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `LaneGutter`, `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `SelectionChromeLayer`,
   `RichTextEditor` (mounted only
-  while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
+  while editing), `HeroCaptionCard`, `PageMasthead` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
   path reads the zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
 - `ArrowView` takes `frame: ArrowViewFrame` and `holes: Rect[]` in place of `elementIndex` and

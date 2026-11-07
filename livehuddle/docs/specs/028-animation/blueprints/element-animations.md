@@ -5,32 +5,32 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 ## Domain and naming
 
-| Spec term                | Identifier                                                                                                |
-| ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| animation set            | `AnimationSetId` = `'shape' \| 'sticky' \| 'drawing' \| 'media' \| 'table' \| 'text'`                     |
-| body set                 | `BodyAnimationSet` = `Exclude<AnimationSetId, 'text'>`                                                    |
-| the set of an element    | `bodyAnimationSetOf(el): BodyAnimationSet \| undefined`                                                   |
-| carries words            | `carriesWords(el): boolean`                                                                               |
-| a category acts on it    | `inAnimationSet(set, el): boolean`                                                                        |
-| Shape set values         | `ShapeAnimation`, `SHAPE_ANIMATIONS`                                                                      |
-| Shape motions            | `SHAPE_MOTIONS` (Blink, Heartbeat, Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing)                   |
-| takes the motions        | `takesShapeMotions(el): boolean`                                                                          |
-| a Shape category's offer | `shapeAnimationsFor(el)`; a selection's overlap is `sharedShapeAnimations(elements)` (AnimationSections)  |
-| the section of a value   | `animationSectionOf(el, value): BodyAnimationSet \| undefined`                                            |
-| Sticky set values        | `StickyAnimation`, `STICKY_ANIMATIONS`                                                                    |
-| Drawing set values       | `DrawingAnimation`, `DRAWING_ANIMATIONS`                                                                  |
-| Media set values         | `MediaAnimation`, `MEDIA_ANIMATIONS`                                                                      |
-| Table set values         | `TableAnimation`, `TABLE_ANIMATIONS`                                                                      |
-| Text set values          | `TextAnimation`, `TEXT_ANIMATIONS`, `isTextAnimation`                                                     |
-| a set's offered values   | `ANIMATION_SET_VALUES: Record<AnimationSetId, readonly string[]>`, `isAnimationInSet`                     |
-| reveal                   | `isRevealAnimation(set, value)`                                                                           |
-| a value kept from before | `keptAnimation(set, value)`: the value when the set does not offer it, else undefined                     |
-| the body value union     | `ElementAnimation` = the union of the five body sets' values                                              |
-| section name             | `ANIMATION_SET_NAME[set]`: `'Shape'`, … `'Text'`; the parent row is `Animation`                           |
-| tile label               | `animationLabel(value)`: `Ken Burns` for `kenburns`, else the capitalised value                           |
-| telemetry type           | `ANIMATION_SET_TELEMETRY_TYPE[set]`                                                                       |
-| a set's class prefix     | `ANIMATION_CLASS_PREFIX[set]`: `lvd-anim-`, `lvd-tx-`, `lvd-note-`, `lvd-draw-`, `lvd-media-`, `lvd-tbl-` |
-| play once                | the `lvd-once` class (`ONCE_CLASS`), on a reveal whose Repeat is off                                      |
+| Spec term                | Identifier                                                                                               |
+| ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| animation set            | `AnimationSetId` = `'shape' \| 'sticky' \| 'drawing' \| 'media' \| 'text'`                               |
+| body set                 | `BodyAnimationSet` = `Exclude<AnimationSetId, 'text'>`                                                   |
+| the set of an element    | `bodyAnimationSetOf(el): BodyAnimationSet \| undefined`                                                  |
+| carries words            | `carriesWords(el): boolean`                                                                              |
+| a category acts on it    | `inAnimationSet(set, el): boolean`                                                                       |
+| Shape set values         | `ShapeAnimation`, `SHAPE_ANIMATIONS`                                                                     |
+| Shape motions            | `SHAPE_MOTIONS` (Blink, Heartbeat, Breathe, Bounce, Wobble, Shake, Jelly, Float, Swing)                  |
+| takes the motions        | `takesShapeMotions(el): boolean`                                                                         |
+| a Shape category's offer | `shapeAnimationsFor(el)`; a selection's overlap is `sharedShapeAnimations(elements)` (AnimationSections) |
+| the section of a value   | `animationSectionOf(el, value): BodyAnimationSet \| undefined`                                           |
+| Sticky set values        | `StickyAnimation`, `STICKY_ANIMATIONS`                                                                   |
+| Drawing set values       | `DrawingAnimation`, `DRAWING_ANIMATIONS`                                                                 |
+| Media set values         | `MediaAnimation`, `MEDIA_ANIMATIONS`                                                                     |
+| Table set values         | `TableAnimation`, `TABLE_ANIMATIONS`                                                                     |
+| Text set values          | `TextAnimation`, `TEXT_ANIMATIONS`, `isTextAnimation`                                                    |
+| a set's offered values   | `ANIMATION_SET_VALUES: Record<AnimationSetId, readonly string[]>`, `isAnimationInSet`                    |
+| reveal                   | `isRevealAnimation(set, value)`                                                                          |
+| a value kept from before | `keptAnimation(set, value)`: the value when the set does not offer it, else undefined                    |
+| the body value union     | `ElementAnimation` = the union of the five body sets' values                                             |
+| section name             | `ANIMATION_SET_NAME[set]`: `'Shape'`, … `'Text'`; the parent row is `Animation`                          |
+| tile label               | `animationLabel(value)`: `Ken Burns` for `kenburns`, else the capitalised value                          |
+| telemetry type           | `ANIMATION_SET_TELEMETRY_TYPE[set]`                                                                      |
+| a set's class prefix     | `ANIMATION_CLASS_PREFIX[set]`: `lvd-anim-`, `lvd-tx-`, `lvd-note-`, `lvd-draw-`, `lvd-media-`            |
+| play once                | the `lvd-once` class (`ONCE_CLASS`), on a reveal whose Repeat is off                                     |
 
 `ElementAnimation` keeps its name: it is the type of the stored `animation` field. `ELEMENT_ANIMATIONS` became
 `SHAPE_ANIMATIONS` (its values were exactly the Shape set).
@@ -52,9 +52,8 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | `../packages/workbench/src/components/canvas/AnimationLayer.tsx` | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
 | `apps/editor/components/canvas/animated-words.tsx`               | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
 | `apps/editor/components/canvas/useTextAnimation.ts`              | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
-| `apps/editor/components/canvas/useTableAnimation.ts`             | a table's grid class, counts, cells' Text view and unit starts                                                                             |
 | `apps/editor/components/canvas/drawing-animation.tsx`            | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
-| `apps/editor/app/motion-<set>.css`                               | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`, `table`)                                                              |
+| `apps/editor/app/motion-<set>.css`                               | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`)                                                                       |
 
 `canvas-motion.css` keeps arrow, icon, progress, rating and chart animations and the legacy text-native and
 sticker classes a kept Shape value still draws.
@@ -68,13 +67,12 @@ sticker classes a kept Shape value still draws.
 | `sticky`                                                               | `sticky`             |
 | `freehand`, `path`                                                     | `drawing`            |
 | `image`, `video`                                                       | `media`              |
-| `table`                                                                | `table`              |
 | `text`                                                                 | undefined            |
 | `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
 | `shape` that is the Timeline (words: Text)                             | undefined (own sets) |
 | any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
 
-`takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, `table`, and a `shape` with a set
+`takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, and a `shape` with a set
 of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimationSet('shape', el)` is
 `bodyAnimationSetOf(el) === 'shape' || takesShapeMotions(el)`, and `animationSetsOf` adds `shape` for such an element.
 `shapeAnimationsFor(el)` is `CONTAINER_ANIMATIONS` for a boundary, `SHAPE_ANIMATIONS` for any other Shape member,
@@ -84,19 +82,19 @@ of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimation
 has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as the Shape section's kept tile); else
 `bodyAnimationSetOf(el)`.
 
-`carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
+`carriesWords(el)`: `text` and `sticky` are true; a `shape` is true when `takesTypedLabel(el)`, not
 `selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
 
 `animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, progress,
 rating, concept, arrow) to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, table, icon, chart, progress, rating, concept, text, arrow`. Concept
+`shape, sticky, drawing, media, icon, chart, progress, rating, concept, text, arrow`. Concept
 renders `ConceptAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
 through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
 `onSet*Anim*` handlers.
 
 ## Data and persistence
 
-New optional fields on `ShapeElement`, `TextElement`, `StickyElement`, `TableElement`: `textAnimation?:
+New optional fields on `ShapeElement`, `TextElement`, `StickyElement`: `textAnimation?:
 TextAnimation`, `textAnimationSpeed?: AnimationSpeed`, `textAnimationRepeat?: boolean` (Text plays once by default: stored only when true; `setRepeats(set, stored)` reads either default). They
 are listed in `ELEMENT_FIELD_NAMES`, mapped to the format painter's `effects` group (`../packages/workbench/src/lib/format-config.ts`),
 projected by `paintableBoxedFields` for a word-carrying source, and in the OpenAPI document (regenerated with
@@ -129,17 +127,16 @@ trio onto a target without words.
 
 ### Rendering
 
-| Set     | Where the class lands                                                        | Built by                                                      |
-| ------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| shape   | the wrapper, its `.lvd-anim-layer` child, the SVG overlay, or silhouette art | `useBoxedElementAnimation`, `useShapeSvgAnimation`            |
-| text    | the label's content node (`lvd-tx lvd-tx-<v>`) and its unit spans            | `useLabelTextAnimation` / `useTableAnimation` + `renderUnits` |
-| sticky  | the wrapper, and the layer for Peel, Lift and Slap                           | `bodySetClass(el, 'sticky')` in the hook                      |
-| drawing | the main line, a mask or filters in its svg, and an overlay svg              | `useDrawingAnimation`                                         |
-| media   | the image / video frame; its `img` / `iframe` child moves inside it          | `bodySetClass(el, 'media')`                                   |
-| table   | the grid (`--lvd-rows`, `--lvd-cols`) and each cell (`--lvd-r`, `--lvd-c`)   | `useTableAnimation`                                           |
+| Set     | Where the class lands                                                        | Built by                                           |
+| ------- | ---------------------------------------------------------------------------- | -------------------------------------------------- |
+| shape   | the wrapper, its `.lvd-anim-layer` child, the SVG overlay, or silhouette art | `useBoxedElementAnimation`, `useShapeSvgAnimation` |
+| text    | the label's content node (`lvd-tx lvd-tx-<v>`) and its unit spans            | `useLabelTextAnimation` + `renderUnits`            |
+| sticky  | the wrapper, and the layer for Peel, Lift and Slap                           | `bodySetClass(el, 'sticky')` in the hook           |
+| drawing | the main line, a mask or filters in its svg, and an overlay svg              | `useDrawingAnimation`                              |
+| media   | the image / video frame; its `img` / `iframe` child moves inside it          | `bodySetClass(el, 'media')`                        |
 
-`wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky or table
-the shared Pulse / Glow / Highlight (a note and a table are rectangles); a kept value (a motion among them) on any set;
+`wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky
+the shared Pulse / Glow / Highlight (a note is a rectangle); a kept value (a motion among them) on any set;
 on the Timeline a motion only; and a text
 element's legacy value unless it has a `textAnimation`. Annotations, stickers and chairs draw Pulse,
 Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker or
@@ -231,10 +228,7 @@ Wipe and Iris filter or clip the frame; Sheen sweeps the frame's `::after`.
 
 ### Table specifics
 
-Rows, Columns and Cells animate the registered `--lvd-tbl-p` on the grid over a 5s cycle; each cell's moment is its
-row, column or `r + c` of `--n`, and its share `--k` spans two turns. Scan and Sweep are the grid's `::after` bar
-sized `100% / rows` or `100% / cols`; Header sweeps a band across each first-row cell (`data-first-row`), staggered by
-column.
+Deleted with tables (Work Tracker #459, part 2): `useTableAnimation`, `motion-table.css` and the `lvd-tbl-` classes.
 
 ## Interfaces and contracts
 
