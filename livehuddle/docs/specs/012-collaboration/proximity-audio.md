@@ -189,6 +189,24 @@ Every route answers **503 `calls_off`** while calls are off (close excepted whil
 them), **404** without a grant on the Space, and **403 `calls_listen_only`** for a Viewer's publish. The kill switch
 checks every session and track against its mode ([Calls kill switch](../016-platform/calls-kill-switch.md#wired-in)).
 
+### A session that expires
+
+Walking in mints the session, but the browser connects its media to it only on the first publish (an unmute, the
+camera, a shared screen) or the first subscribe. Realtime drops a session nobody connected to within about half a
+minute, so someone who walks in and unmutes later, or a listener alone until a speaker arrives, holds a dead session
+(found on production 2026-11-07: Realtime answered `410` to a publish 36 seconds after the mint, and the call looked
+live, with your own equaliser and bubble, while nothing reached anyone).
+
+- The routes answer **410 `calls_session_gone`** when Realtime says the session is gone, not the generic
+  `502 calls_upstream`.
+- The call **renews** itself on that answer, with no press: it mints a new session, proves it to the room
+  (`call-session`), publishes again what was live (an open microphone, the camera, a shared screen), tells the room
+  its new locators (`call-track`), and subscribes again to whoever it should hear. The dock stays as it was; the first
+  unmute after a quiet spell takes a moment longer.
+- A session that is gone again straight after renewing is a broken call, not an idle one: after 3 renewals inside a
+  minute the call fails into **Retry** (Audio Unavailable), as a failed connection does. No loop.
+- A publish that fails leaves nothing behind that claims it worked, so the next attempt publishes afresh.
+
 ## Turning calls on
 
 Calls run on any deployment, production (`www.livehuddle.app`) included, where both of these hold (the owner lifted
@@ -200,6 +218,10 @@ shows no call otherwise (the microphone, camera and screen buttons stay, as a
   create; unset, calls are off.
 - **The kill switch allows it** ([Calls kill switch](../016-platform/calls-kill-switch.md)): `off` pauses calls, and
   the controls read **Calls Paused** rather than going away; `audio-only` leaves audio as it is.
+- **The page may ask for them**: the editor's `Permissions-Policy` header allows `camera`, `microphone` and
+  `display-capture` for its own origin (`self`), and still denies every other powerful feature. It denied the camera
+  and the microphone until 2026-11-07 (a leftover from the livediagram fork), so Chrome and Edge refused both on
+  every deployed page while local dev, which serves no such header, worked.
 
 `/api/capabilities` answers `callsEnabled` (this deployment has calls: its secrets are set) and `callsMode`
 (the switch: `on`, `audio-only` or `off`).
@@ -213,7 +235,7 @@ hour. The equaliser adds no Realtime cost, only small presence messages.
 ## Telemetry
 
 `track('Canvas', 'Used', 'CallNotHeard')` when the mint route refuses a subscription as not heard (#483: counts
-false refusals). `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on the automatic join (by the door: speaker or listener; there is no leave event),
+false refusals). `track('Canvas', 'Used', 'CallRenewed')` when a call renews a session Realtime dropped. `track('Canvas', 'Used', 'AudioJoin' | 'AudioListen')` on the automatic join (by the door: speaker or listener; there is no leave event),
 `track('UI', 'Changed', 'AudioMute')` on a mute or unmute, and `track('Canvas', 'Used', 'WalkToTalker')` on pressing
 someone's bars. Never who, never how long, never anything heard.
 

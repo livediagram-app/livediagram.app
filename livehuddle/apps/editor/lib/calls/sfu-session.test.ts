@@ -113,6 +113,7 @@ function open() {
     onPaused: vi.fn(),
     onAudioOnly: vi.fn(),
     onNotHeard: vi.fn(),
+    onSessionGone: vi.fn(),
   };
   const sfu = new SfuSession(caller, session, events);
   return { sfu, events, pc: FakePc.last };
@@ -270,6 +271,22 @@ describe('SfuSession', () => {
     sfu.want([loc('b')]);
     await settle();
     expect(events.onPaused).toHaveBeenCalledTimes(1);
+  });
+
+  // proximity-audio.md "A session that expires".
+  it('says so when Realtime dropped the session, and forgets a publish it never took', async () => {
+    const { sfu, events, pc } = open();
+    const track = {} as MediaStreamTrack;
+    api.apiCallTracks.mockRejectedValueOnce(new CallsApiError(410, 'calls_session_gone'));
+    await expect(sfu.publish(track)).rejects.toThrow('calls 410');
+    await settle();
+    expect(events.onSessionGone).toHaveBeenCalledTimes(1);
+    expect(pc.transceivers[0]!.stop).toHaveBeenCalledTimes(1);
+    // Nothing claims it: a later publish of the name negotiates afresh rather than swapping a track in.
+    await sfu.publish(track);
+    expect(api.apiCallTracks).toHaveBeenCalledTimes(2);
+    expect(pc.transceivers[0]!.sender.replaceTrack).not.toHaveBeenCalled();
+    expect(events.onPaused).not.toHaveBeenCalled();
   });
 
   it('closes every subscription and does nothing after', async () => {

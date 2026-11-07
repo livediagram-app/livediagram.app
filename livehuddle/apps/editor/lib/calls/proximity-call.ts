@@ -13,7 +13,13 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { AudioGraph } from './audio-graph';
 import { CallBeacon, trackSignalOf } from './call-beacon';
-import { REPROVE_MS, type CallScene, type ProximityCallInput } from './call-config';
+import {
+  RENEW_MAX,
+  RENEW_WINDOW_MS,
+  REPROVE_MS,
+  type CallScene,
+  type ProximityCallInput,
+} from './call-config';
 import { CallMic } from './call-mic';
 import { stageScene } from './call-staging';
 import { CallReceiver } from './call-receiver';
@@ -49,6 +55,8 @@ export {
   CAMERA_ENCODINGS,
   LOCATOR_RESEND_MS,
   MIC_IDLE_CLOSE_MS,
+  RENEW_MAX,
+  RENEW_WINDOW_MS,
   REPROVE_MS,
   SCREEN_CONSTRAINTS,
   SCREEN_MAX_BITRATE,
@@ -89,6 +97,9 @@ export class ProximityCall {
   // Your raised hand (meeting-rooms-and-stage.md "Raise hand"), and Do Not Disturb (the same spec's).
   private readonly hand: RaisedHand;
   private dnd = false;
+  // Renewing a session Realtime dropped, and the renewals counted in the current window (renew).
+  private renewing = false;
+  private renewals: number[] = [];
 
   constructor(input: ProximityCallInput) {
     this.input = input;
@@ -156,33 +167,92 @@ export class ProximityCall {
     setCallSelf({ phase: 'joining', muted: true, level: 0 });
     void this.input.context.resume().catch(() => {});
     try {
-      const session = await apiCallSession(this.input.caller);
-      if (this.stopped) return;
-      // The session says what the switch allows (an older api says nothing: on).
-      setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
-      this.trackToken = session.trackToken ?? null;
-      this.session = { sessionId: session.sessionId, sessionToken: session.sessionToken };
-      this.sfu = new SfuSession(this.input.caller, session, {
-        onTrack: (publisher, trackName, stream) => {
-          if (this.receiver.onTrack(publisher, trackName, stream)) this.place();
-        },
-        onTrackEnded: (publisher, trackName) => this.receiver.onTrackEnded(publisher, trackName),
-        onFailed: () => this.fail('connection'),
-        onPaused: () => this.pause(),
-        onAudioOnly: () => setCallsMode('audio-only'),
-        onNotHeard: () => this.notHeard(),
-      });
-      this.proveSession();
-      if (this.stopped) return;
+      if (!(await this.openSession())) return;
       setCallSelf({ phase: 'live' });
       this.hear();
       this.adoptPreview();
     } catch (error) {
-      if (error instanceof CallsApiError && error.paused) {
-        this.pause();
-        return;
-      }
-      this.fail(error instanceof CallsApiError ? (error.code ?? String(error.status)) : 'start');
+      this.refused(error, 'start');
+    }
+  }
+
+  // Mint a session and connect its events; false when the call stopped meanwhile.
+  private async openSession(): Promise<boolean> {
+    const session = await apiCallSession(this.input.caller);
+    if (this.stopped) return false;
+    // The session says what the switch allows (an older api says nothing: on).
+    setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
+    this.trackToken = session.trackToken ?? null;
+    this.session = { sessionId: session.sessionId, sessionToken: session.sessionToken };
+    // Only the current session's events count: a step of a closed one may still finish.
+    const current = () => this.sfu === sfu;
+    const sfu: SfuSession = new SfuSession(this.input.caller, session, {
+      onTrack: (publisher, trackName, stream) => {
+        if (current() && this.receiver.onTrack(publisher, trackName, stream)) this.place();
+      },
+      // Always: closing a renewed session ends its subscriptions here.
+      onTrackEnded: (publisher, trackName) => this.receiver.onTrackEnded(publisher, trackName),
+      onFailed: () => {
+        if (current()) this.fail('connection');
+      },
+      onPaused: () => {
+        if (current()) this.pause();
+      },
+      onAudioOnly: () => {
+        if (current()) setCallsMode('audio-only');
+      },
+      onNotHeard: () => {
+        if (current()) this.notHeard();
+      },
+      onSessionGone: () => {
+        if (current()) void this.renew();
+      },
+    });
+    this.sfu = sfu;
+    this.proveSession();
+    return true;
+  }
+
+  // A mint refused: paused is no error (Calls Paused); anything else fails into Retry.
+  private refused(error: unknown, why: string): void {
+    if (error instanceof CallsApiError && error.paused) {
+      this.pause();
+      return;
+    }
+    this.fail(error instanceof CallsApiError ? (error.code ?? String(error.status)) : why);
+  }
+
+  /**
+   * Realtime dropped the session (proximity-audio.md "A session that expires": it was minted on walking in and nobody
+   * connected to it in time). Mint a new one, prove it, publish again what was live, and hear again. More than
+   * RENEW_MAX inside RENEW_WINDOW_MS is a broken call: it fails into Retry.
+   */
+  private async renew(): Promise<void> {
+    if (this.stopped || this.renewing) return;
+    const now = performance.now();
+    this.renewals = this.renewals.filter((at) => now - at < RENEW_WINDOW_MS);
+    if (this.renewals.length >= RENEW_MAX) {
+      this.fail('session');
+      return;
+    }
+    this.renewals.push(now);
+    this.renewing = true;
+    debugLog('[calls] session gone, renewing');
+    track('Canvas', 'Used', 'CallRenewed');
+    const old = this.sfu;
+    this.sfu = null;
+    old?.close();
+    try {
+      if (!(await this.openSession())) return;
+      await this.mic.republish();
+      await this.video.republish();
+      // A microphone released before the renewal is no longer published: the room learns that too.
+      this.beacon.sendLocator(true);
+      this.hear();
+    } catch (error) {
+      this.refused(error, 'renew');
+    } finally {
+      this.renewing = false;
     }
   }
 

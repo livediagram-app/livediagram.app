@@ -255,6 +255,17 @@ describe('POST tracks', () => {
     });
   });
 
+  // proximity-audio.md "A session that expires": Realtime's 410 is its own answer, so the browser renews the session.
+  it('answers 410 calls_session_gone when Realtime says the session is gone', async () => {
+    answer = () => new Response('gone', { status: 410 });
+    const res = await call('POST', 'tracks', {
+      ...(await speakerProof()),
+      publish: { sdp: 'v=0 offer', mid: '0' },
+    });
+    expect(res.status).toBe(410);
+    expect(await res.json()).toEqual({ error: 'calls_session_gone' });
+  });
+
   it('refuses a Viewer’s publish, and a listener session’s even with a speaker’s grant', async () => {
     grant = grantAt('view');
     const publish = { sdp: 'v=0', mid: '0' };

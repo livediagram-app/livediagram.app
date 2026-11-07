@@ -28,6 +28,22 @@ export type CallVideoHost = {
   announce: () => void;
 };
 
+// Publish a camera or a screen, with its encodings. A refused publish (already logged by the session) is false: the
+// bubble stays on your own screen, and a session Realtime dropped is renewed by the call, which publishes it again.
+async function published(
+  sfu: SfuSession,
+  stream: MediaStream,
+  name: typeof CALL_VIDEO_TRACK_NAME | typeof CALL_SCREEN_TRACK_NAME,
+): Promise<boolean> {
+  const encodings = name === CALL_VIDEO_TRACK_NAME ? CAMERA_ENCODINGS : SCREEN_ENCODINGS;
+  try {
+    await sfu.publish(stream.getVideoTracks()[0]!, name, encodings);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export class CallVideo {
   private readonly host: CallVideoHost;
   camera: MediaStream | null = null;
@@ -82,8 +98,7 @@ export class CallVideo {
     setCallMedia(SELF_MEDIA_ID, 'video', stream);
     setCallSelf({ camera: 'on' });
     this.cameraAnnounced = true;
-    await sfu.publish(stream.getVideoTracks()[0]!, CALL_VIDEO_TRACK_NAME, CAMERA_ENCODINGS);
-    this.host.announce();
+    if (await published(sfu, stream, CALL_VIDEO_TRACK_NAME)) this.host.announce();
   }
 
   stopCamera(): void {
@@ -150,8 +165,7 @@ export class CallVideo {
     setCallMedia(SELF_MEDIA_ID, 'screen', stream);
     setCallSelf({ screen: 'on' });
     this.screenAnnounced = true;
-    await sfu.publish(track, CALL_SCREEN_TRACK_NAME, SCREEN_ENCODINGS);
-    this.host.announce();
+    if (await published(sfu, stream, CALL_SCREEN_TRACK_NAME)) this.host.announce();
   }
 
   stopScreen(): void {
@@ -162,6 +176,15 @@ export class CallVideo {
     setCallMedia(SELF_MEDIA_ID, 'screen', null);
     setCallSelf({ screen: 'off' });
     this.host.announce();
+  }
+
+  /** The call renewed a session Realtime dropped: the camera and the screen that are on go out on the new one. */
+  async republish(): Promise<void> {
+    const sfu = this.host.sfu();
+    if (!sfu) return;
+    const camera = !!this.camera && (await published(sfu, this.camera, CALL_VIDEO_TRACK_NAME));
+    const screen = !!this.screen && (await published(sfu, this.screen, CALL_SCREEN_TRACK_NAME));
+    if (camera || screen) this.host.announce();
   }
 
   /** The open streams, for the call's teardown; released with it. */

@@ -56,6 +56,8 @@ export type SfuEvents = {
   onAudioOnly?: () => void;
   // The room said a track is not heard yet: the call proves its session again before the retry.
   onNotHeard?: () => void;
+  // Realtime dropped this session (proximity-audio.md "A session that expires"): the call renews it.
+  onSessionGone?: () => void;
 };
 
 type Subscription = { mid: string; locator: CallTrackLocator; layer: CallLayer | undefined };
@@ -110,6 +112,7 @@ export class SfuSession {
       if (!(error instanceof CallsApiError)) return;
       if (error.paused) this.events.onPaused();
       else if (error.audioOnly) this.events.onAudioOnly?.();
+      else if (error.sessionGone) this.events.onSessionGone?.();
     });
     return run;
   }
@@ -134,13 +137,20 @@ export class SfuSession {
         ...(sendEncodings ? { sendEncodings } : {}),
       });
       this.senders.set(trackName, transceiver.sender);
-      await this.pc.setLocalDescription(await this.pc.createOffer());
-      const mid = transceiver.mid;
-      const sdp = this.pc.localDescription?.sdp;
-      if (!mid || !sdp) throw new Error('no local offer');
-      const publish = trackName === CALL_TRACK_NAME ? { sdp, mid } : { sdp, mid, trackName };
-      const answer = await apiCallTracks(this.caller, { ...this.proof, publish });
-      await this.applyAnswer(answer);
+      try {
+        await this.pc.setLocalDescription(await this.pc.createOffer());
+        const mid = transceiver.mid;
+        const sdp = this.pc.localDescription?.sdp;
+        if (!mid || !sdp) throw new Error('no local offer');
+        const publish = trackName === CALL_TRACK_NAME ? { sdp, mid } : { sdp, mid, trackName };
+        const answer = await apiCallTracks(this.caller, { ...this.proof, publish });
+        await this.applyAnswer(answer);
+      } catch (error) {
+        // Nothing claims a publish Realtime never took: the next one of this name negotiates afresh.
+        this.senders.delete(trackName);
+        transceiver.stop();
+        throw error;
+      }
     });
   }
 

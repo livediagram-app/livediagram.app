@@ -657,6 +657,12 @@ export const CALL_NOT_HEARD = call(
   'A call refused to carry someone’s voice to a listener it judged out of earshot. A rise can mean false refusals.',
   'bad',
 );
+export const CALL_RENEWED = call(
+  'CallRenewed',
+  'Calls Renewed',
+  'A call renewed a session Realtime had dropped, so it kept reaching the other people. A rise can mean sessions expiring early.',
+  'neutral',
+);
 
 export const CALLS: MetricStack = {
   stack: true,
@@ -676,6 +682,7 @@ export const CALLS: MetricStack = {
     CALL_STAGE_SPEAKERS,
     CALL_LET_SPEAK,
     CALL_NOT_HEARD,
+    CALL_RENEWED,
   ],
   headline: [CALL_AUDIO_JOINS, CALL_LISTEN_JOINS],
 };

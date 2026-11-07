@@ -184,6 +184,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Canvas|Used|LetSpeak': 'A host let someone in the audience speak on the Stage.',
   'Canvas|Used|CallNotHeard':
     "A call refused to carry someone's voice to a listener it judged out of earshot.",
+  'Canvas|Used|CallRenewed':
+    'A call renewed a session Realtime had dropped (it answered 410), so it kept reaching the other people.',
   'UI|Changed|AudioMute': 'Someone muted or unmuted their microphone in a call.',
   'Canvas|Used|AvatarMessage':
     'Someone said something in Avatar mode, typing a message in the bubble above their character (Enter). Never the words.',
