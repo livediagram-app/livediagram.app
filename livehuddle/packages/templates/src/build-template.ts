@@ -5,6 +5,7 @@
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (livediagram/docs/specs/015-api/mcp-server.md §4.5).
 
+import { BLANK_PAD_DROP } from './blank-pad-drop';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
 import { buildFocusLibrary } from './template-builders-office-more';
@@ -54,10 +55,7 @@ export function floorsFirst(elements: Element[]): Element[] {
   return [...elements.filter(isFloor), ...elements.filter((el) => !isFloor(el))];
 }
 
-// How far below the middle of the view a blank tab's Avatar Pad stands, centre to centre
-// (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one", D216): the middle stays free to build in,
-// and the pad is in view at 100% on a phone.
-export const BLANK_PAD_DROP = 160;
+export { BLANK_PAD_DROP };
 
 /** Blank Space's one element: an Avatar Pad, centred across `cx` and BLANK_PAD_DROP below `cy`. */
 function blankPad(cx: number, cy: number): Element[] {

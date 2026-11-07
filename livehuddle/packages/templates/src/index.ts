@@ -15,8 +15,10 @@ export {
   popularKindsFor,
 } from './popular';
 export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
-export { buildTemplate, BLANK_PAD_DROP } from './build-template';
+export { buildTemplate } from './build-template';
+export { BLANK_PAD_DROP } from './blank-pad-drop';
 export { templateFamilyOf } from './template-families';
 export * from './template-tab';
-export { templateFloors, templateFirstFloorName, type TemplateFloor } from './template-floors';
+export { templateFloors, type TemplateFloor } from './template-floors';
+export { templateFirstFloorName } from './template-floor-names';
 export { templateCatalogue } from './template-catalogue';

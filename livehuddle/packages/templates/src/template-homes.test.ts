@@ -3,7 +3,7 @@ import { isGlassRoom, onRoomWall, type Element } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { templateFirstFloorName, templateFloors } from './template-floors';
 import { templateCanvasOverrides } from './template-canvas-overrides';
-import type { TemplateKind } from './templates';
+import { TEMPLATES, type TemplateKind } from './templates';
 
 // docs/specs/012-collaboration/virtual-office-template.md "Homes", "Games Rooms" and "Venues" (Work Tracker #641): the
 // houses' floors and their Stairs, the windows and glass walls, and what each new Space promises.
@@ -64,6 +64,13 @@ describe.each(Object.entries(HOMES))('the %s', (key, names) => {
         ).toBe(true);
       if (rooms.length > 0) expect(windows.length).toBeGreaterThanOrEqual(rooms.length);
     }
+  });
+});
+
+describe('the first floor’s name', () => {
+  it('is given to every template with more floors, and only to them', () => {
+    for (const { kind } of TEMPLATES)
+      expect(templateFirstFloorName(kind) !== null, kind).toBe(templateFloors(kind).length > 0);
   });
 });
 
