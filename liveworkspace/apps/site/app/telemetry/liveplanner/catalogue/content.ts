@@ -419,7 +419,8 @@ export const FILES_CONNECTED_AGAIN: Metric = {
   action: 'Added',
   type: 'ConnectedAgain',
   title: 'Connected Again',
-  blurb: 'A connected tab mended with Connect Again, after its link was removed or it came with a copy.',
+  blurb:
+    'A connected tab mended with Connect Again, after its link was removed or it came with a copy.',
 };
 
 export const CONNECTED_TABS_OPENED: Metric = {
