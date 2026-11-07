@@ -148,11 +148,14 @@ describe('open path ends and continuing', () => {
   );
   const closed: PathElement = { ...open, id: 'c', closed: true };
 
-  it('offers the two ends of every open, unlocked path', () => {
-    const ends = openPathEnds([open, closed, { ...open, id: 'l', locked: true }]);
+  it('offers the two ends of every open path, one saved locked too', () => {
+    const old = { ...open, id: 'l', locked: true } as PathElement;
+    const ends = openPathEnds([open, closed, old]);
     expect(ends.map((e) => [e.id, e.end])).toEqual([
       [open.id, 'start'],
       [open.id, 'end'],
+      ['l', 'start'],
+      ['l', 'end'],
     ]);
     expect(ends[1]!.point.x).toBeCloseTo(100);
   });

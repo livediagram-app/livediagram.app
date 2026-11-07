@@ -23,7 +23,14 @@ describe('element tours', () => {
     expect(canTourElement({ level: 'edit' }, portal, 'portal')).toBe(true);
     expect(canTourElement({ level: 'participate' }, portal, 'portal')).toBe(false);
     expect(canTourElement({ level: 'view' }, portal, 'portal')).toBe(false);
-    expect(canTourElement({ level: 'edit' }, { ...portal, locked: true }, 'portal')).toBe(false);
+    // A portal saved locked before locking left tours like any other (not-in-livehuddle.md).
+    expect(
+      canTourElement(
+        { level: 'edit' },
+        { ...portal, locked: true } as unknown as Element,
+        'portal',
+      ),
+    ).toBe(true);
   });
 
   it('remembers an answer, and counts every kind seen under the blanket flag', () => {

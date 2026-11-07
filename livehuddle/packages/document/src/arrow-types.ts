@@ -78,7 +78,6 @@ export type ArrowElement = {
   type: 'arrow';
   from: Endpoint;
   to: Endpoint;
-  locked?: boolean;
   // Stroke colour for the line + arrowhead. Falls through to the
   // default arrow slate when unset. There's no fill or text on an
   // arrow so this is the only colour field.

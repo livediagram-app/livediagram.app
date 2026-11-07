@@ -8,6 +8,7 @@ import { settingsUrl } from './email.ts';
 import { appUrl, button, emailBrand, frame, list, paragraph } from './email-layout.ts';
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type LifecycleStage = 'welcome' | 'week1' | 'week2' | 'activation' | 'winback';
 
@@ -21,7 +22,7 @@ export interface LifecycleEmail {
 
 const SLATE = '#334155';
 
-const origin = (url: string) => url.replace(/\/+$/, '');
+const origin = (url: string) => withoutTrailingSlashes(url);
 
 export { appUrl };
 

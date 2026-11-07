@@ -14,6 +14,7 @@
 // slow service is logged at most and never holds up or fails a send.
 import type { Env } from './env.ts';
 import type { SettingsApp } from './settings.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // Where the service lives and how to prove a batch is an app's own (packages/telemetry wire.ts).
 const TELEMETRY_KEY_HEADER = 'X-Telemetry-Key';
@@ -82,7 +83,7 @@ export async function flushServerEvents(env: Partial<TelemetryEnv>): Promise<voi
     list.push(event);
     byApp.set(app, list);
   }
-  const url = env.TELEMETRY_URL.replace(/\/+$/, '') + EVENTS_PATH;
+  const url = withoutTrailingSlashes(env.TELEMETRY_URL) + EVENTS_PATH;
   const sends: Promise<void>[] = [];
   for (const [app, events] of byApp) {
     const key = env[KEYS[app]];

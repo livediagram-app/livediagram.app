@@ -126,6 +126,9 @@ describe('legacyHelpRedirect', () => {
       // Image and Link card left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
       ['/help/palette/tools/images/', '/help/palette/tools/'],
       ['/help/canvas/links/link-cards/', '/help/canvas/links/'],
+      // Element and Tab Locking left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md).
+      ['/help/canvas/locking/', '/help/canvas/selecting-and-grouping/'],
+      ['/help/tabs/locking-tabs/', '/help/tabs/using-tabs/'],
       // The Activity Panel was removed (docs/specs/012-collaboration/README.md); Undo / Redo moved to Canvas.
       ['/help/activity-panel/', '/help/canvas/undo/'],
       ['/help/activity-panel/undo/', '/help/canvas/undo/'],

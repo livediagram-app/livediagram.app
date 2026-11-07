@@ -176,6 +176,23 @@ describe('the snapshot', () => {
     }
   });
 
+  it('drops a closing run of comments, and keeps a last statement without its semicolon', () => {
+    const only = new StatementSplitter();
+    expect([...only.push('CREATE TABLE a (x);\n-- one\n\n  -- two'), ...only.end()]).toEqual([
+      'CREATE TABLE a (x);',
+    ]);
+    const last = new StatementSplitter();
+    expect([...last.push('-- note\nCREATE TABLE b (x)'), ...last.end()]).toEqual([
+      '-- note\nCREATE TABLE b (x)',
+    ]);
+    // A long run of `--` once took exponential time to test.
+    const worst = new StatementSplitter();
+    const started = process.cpuUsage();
+    expect([...worst.push(`${'--'.repeat(5_000)}\nx`), ...worst.end()]).toHaveLength(1);
+    const { user, system } = process.cpuUsage(started);
+    expect((user + system) / 1000).toBeLessThan(500);
+  });
+
   it('loads an export at the right level and refuses any other', async () => {
     const dir = tempDir('snap');
     const exportAt = (level: string) =>

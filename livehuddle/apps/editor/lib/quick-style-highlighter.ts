@@ -17,9 +17,9 @@ export type QuickHighlighterStyle = {
   width: { value: HighlighterWidthId | null };
 };
 
-// An unlocked highlight stroke: the only element the Highlighter rows style.
+// A highlight stroke: the only element the Highlighter rows style.
 export function isHighlightStroke(el: Element): el is FreehandElement {
-  return el.type === 'freehand' && el.pen === 'highlighter' && el.locked !== true;
+  return el.type === 'freehand' && el.pen === 'highlighter';
 }
 
 const OPTIONS = HIGHLIGHTER_COLORS.map((c) => ({ value: c.id, name: c.label, swatch: c.id }));

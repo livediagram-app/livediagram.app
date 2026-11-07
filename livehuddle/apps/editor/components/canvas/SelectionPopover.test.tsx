@@ -33,14 +33,12 @@ function renderSingle() {
   );
 }
 
-function renderMulti(allLocked = false) {
+function renderMulti() {
   render(
     <MultiSelectionToolbar
-      allLocked={allLocked}
       selectedElements={[]}
       onDuplicate={() => {}}
       onDelete={() => {}}
-      onToggleLock={() => {}}
       onExport={() => {}}
       onOpenContextMenu={() => {}}
     />,
@@ -141,18 +139,22 @@ describe('SelectionPopover tap areas', () => {
   });
 });
 
-// A click locks every member unless all are locked already, so the button says what it will do: Lock for a
-// mixed selection, Unlock only for a fully locked one.
-describe('MultiSelectionToolbar lock', () => {
-  it('offers Lock for a selection that is only partly locked', () => {
+// docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking": neither toolbar offers a lock, and
+// Delete is always live.
+describe('no Lock on the selection toolbars', () => {
+  it('shows no Lock button and a live Delete on one element', () => {
     setTouch(false);
-    renderMulti(false);
-    expect(screen.getByRole('button', { name: 'Lock selected elements' })).toBeTruthy();
+    renderSingle();
+    expect(screen.queryByRole('button', { name: /lock/i })).toBeNull();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Delete' }).disabled).toBe(false);
   });
 
-  it('offers Unlock once every member is locked', () => {
+  it('shows no Lock button and a live Delete on a multi-selection', () => {
     setTouch(false);
-    renderMulti(true);
-    expect(screen.getByRole('button', { name: 'Unlock selected elements' })).toBeTruthy();
+    renderMulti();
+    expect(screen.queryByRole('button', { name: /lock/i })).toBeNull();
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Delete selected elements' }).disabled,
+    ).toBe(false);
   });
 });

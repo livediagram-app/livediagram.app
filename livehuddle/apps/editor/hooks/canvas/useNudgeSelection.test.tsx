@@ -50,19 +50,20 @@ describe('useNudgeSelection', () => {
   });
 });
 
-// docs/specs/008-canvas/canvas-and-palette.md "Locking": a locked element is never nudged, alone or in a selection.
-describe('nudging a locked element', () => {
-  it('moves the rest of the selection and leaves the locked one where it is', () => {
-    const locked = { ...shape('l', 0, 0), locked: true } as Element;
+// An element saved locked before locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
+// Locking") nudges like any other.
+describe('nudging an element saved locked', () => {
+  it('moves it with the rest of the selection, and alone', () => {
+    const locked = { ...shape('l', 0, 0), locked: true } as unknown as Element;
     const h = harness({
       elements: [locked, shape('s', 200, 0)],
       multi: ['l', 's'],
     });
     h.press(10, 0);
-    expect(h.at('l').x).toBe(0);
+    expect(h.at('l').x).toBe(10);
     expect(h.at('s').x).toBe(210);
     const alone = harness({ elements: [locked], selected: 'l' });
     alone.press(10, 0);
-    expect(alone.at('l').x).toBe(0);
+    expect(alone.at('l').x).toBe(10);
   });
 });

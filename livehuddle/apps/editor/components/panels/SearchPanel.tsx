@@ -90,7 +90,7 @@ type SearchPanelProps = {
   // dialog to open simply omit both and get no Settings group.
   settingItems?: SettingSearchItem[];
   onSelectSetting?: (categoryId: string, rowKey: string) => void;
-  // Editor-only: the contextual command catalogue (delete / lock / rotate /
+  // Editor-only: the contextual command catalogue (delete / rotate /
   // share / rename / ...) surfaced as "Actions" results, plus the dispatcher
   // that runs the picked command's id. The editor builds the list selection-
   // aware (useEditorCommands); view-only sessions get the view-safe subset

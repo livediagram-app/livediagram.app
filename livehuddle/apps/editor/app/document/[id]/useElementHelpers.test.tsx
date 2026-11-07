@@ -186,27 +186,20 @@ describe('applyFormatFromSource', () => {
     expect(setFormatSourceId).toHaveBeenCalledWith(null);
   });
 
-  // docs/specs/008-canvas/format-panel.md "Locks": a lock holds an element's look as well as its place.
-
-  it('paints nothing onto a locked element, and keeps the brush loaded', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { element: 'b' });
-    telemetry.track.mockClear();
+  // not-in-livehuddle.md "Element and Tab Locking": what was saved locked behaves as unlocked.
+  it('paints onto an element saved locked', () => {
+    const { paint, commit } = paintHarness('once', 'a', { element: 'b' });
     paint('b');
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-    expect(telemetry.track).not.toHaveBeenCalled();
+    expect(commit).toHaveBeenCalledTimes(1);
   });
 
-  it('paints nothing on a locked tab', () => {
-    const { paint, commit, setFormatSourceId } = paintHarness('once', 'a', { tab: true });
-    telemetry.track.mockClear();
+  it('paints on a tab saved locked', () => {
+    const { paint, commit } = paintHarness('once', 'a', { tab: true });
     paint('b');
-    expect(commit).not.toHaveBeenCalled();
-    expect(setFormatSourceId).not.toHaveBeenCalled();
-    expect(telemetry.track).not.toHaveBeenCalled();
+    expect(commit).toHaveBeenCalledTimes(1);
   });
 
-  it('still lends a locked source its look', () => {
+  it('lends a source saved locked its look', () => {
     const { paint, commit } = paintHarness('keep', 'a', { element: 'a' });
     paint('b');
     expect(commit).toHaveBeenCalledTimes(1);

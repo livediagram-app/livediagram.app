@@ -37,7 +37,6 @@ export const SelectableBoxedView = memo(function SelectableBoxedView({
   const grips = elementGrips(props.element, flags.single, {
     editingId,
     isPaintMode: props.isPaintMode === true,
-    tabLocked: props.tabLocked === true,
     readOnly: props.readOnly === true,
     resizable: props.resizable,
   });
@@ -64,7 +63,7 @@ export const SelectableArrowView = memo(
 );
 
 // A selected free arrow wears a box's selection: ring + scale handles (docs/specs/008-canvas/arrow-bending.md),
-// portalled into the grips layer. Not while it is locked, edited or reshaped by a handle (the frame
+// portalled into the grips layer. Not while it is edited or reshaped by a handle (the frame
 // grew with every bend and read as a selection box being dragged out), nor in an edit-blocking mode.
 export const FreeArrowFrame = memo(function FreeArrowFrame({
   arrow,
@@ -75,7 +74,7 @@ export const FreeArrowFrame = memo(function FreeArrowFrame({
 }: {
   arrow: ArrowElement;
   elements: Element[];
-  // Editing, reshaping, read-only, tab-locked or painting: any of them hides the frame.
+  // Editing, reshaping, read-only or painting: any of them hides the frame.
   standsDown: boolean;
   onBeginArrowTranslate: (id: string, e: ReactPointerEvent) => void;
   onBeginArrowScale: (
@@ -85,12 +84,7 @@ export const FreeArrowFrame = memo(function FreeArrowFrame({
   ) => void;
 }) {
   const { single } = useFlagsOf(arrow.id);
-  const framed =
-    single &&
-    !standsDown &&
-    arrow.from.kind === 'free' &&
-    arrow.to.kind === 'free' &&
-    arrow.locked !== true;
+  const framed = single && !standsDown && arrow.from.kind === 'free' && arrow.to.kind === 'free';
   if (!framed) return null;
   return (
     <FramedArrow

@@ -15,7 +15,7 @@ export type StripPalette = 'build' | 'avatar' | null;
 /**
  * The strip for this session (docs/specs/013-workspace/share-roles.md), from `can`, never `isReadOnly` alone:
  * walking (or a Participant or a Viewer, which always walk) gets the avatar palette whatever its level; otherwise only
- * an Editor on an unlocked tab (`readOnly` false) gets the building palette. The avatar palette has no selection-mode
+ * an Editor that may edit (`readOnly` false) gets the building palette. The avatar palette has no selection-mode
  * picker for anyone: an Editor leaves with the Walk button, and the others never leave ("Always walking").
  */
 export function stripPaletteFor({
@@ -24,7 +24,7 @@ export function stripPaletteFor({
   walking,
 }: {
   can: Pick<EditorCapabilities, 'level' | 'alwaysWalks'>;
-  // The session's read-only flag: below an Editor, or a locked tab.
+  // The session's read-only flag: below an Editor, or a tab still loading.
   readOnly: boolean;
   walking: boolean;
 }): StripPalette {

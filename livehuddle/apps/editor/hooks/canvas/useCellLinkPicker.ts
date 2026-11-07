@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { setCellStyle, type Element, type ElementLink } from '@livehuddle/document';
 
 type CellLinkPickerDeps = {
-  // Locked tab or view-only session: no cell-link mutations may land.
+  // A view-only session: no cell-link mutations may land.
   editsBlocked: boolean;
   // The history-aware element mutator. Cell-link writes push a
   // snapshot, same as any other element-field change.

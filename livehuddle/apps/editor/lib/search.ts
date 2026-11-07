@@ -190,7 +190,7 @@ export type SearchGroup = {
   items: SearchResultItem[];
 };
 
-// A searchable command the editor passes in (delete / lock / rotate /
+// A searchable command the editor passes in (delete / rotate /
 // share / rename / ...). `keywords` widens matching beyond the visible
 // name (so "front" finds "Bring to front"); the editor builds the list
 // contextually (selection-aware) and owns the id -> handler dispatch.
@@ -258,7 +258,7 @@ type SearchInput = {
   // "Add to canvas" results. Only the editor passes it; matched only when
   // the query is non-empty (you don't browse the whole palette via search).
   paletteItems?: PaletteSearchItem[];
-  // Contextual command catalogue (delete / lock / rotate / share / rename /
+  // Contextual command catalogue (delete / rotate / share / rename /
   // ...) the editor offers as "Actions" results. Editor-only, selection-aware
   // (the editor decides which commands apply); matched on name + keywords on
   // a non-empty query only (no catalogue dump, and an empty query keeping the
@@ -435,7 +435,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     }
   }
 
-  // Commands: the contextual action palette (delete / lock / share / rename
+  // Commands: the contextual action palette (delete / share / rename
   // / ...). Editor-supplied + non-empty query only, placed AFTER the
   // navigation + element groups so picking a tab / element by name keeps the
   // default Enter; the user types a verb to reach a command. Matched on name

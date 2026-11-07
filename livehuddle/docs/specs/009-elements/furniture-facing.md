@@ -79,7 +79,6 @@ Left**), or a facing picked outright from the element menu.
   so the lockers turned onto a side wall block along that wall and no longer across the room.
 - **Its live face turns with it** ([Live faces](#live-faces)).
 - **One turn is one change**: one undo step, one realtime element change, the same for everyone in the room.
-- **A locked piece does not turn**: its Rotate buttons show disabled, "Locked. Unlock it to turn."
 
 ## Turning a placed piece
 

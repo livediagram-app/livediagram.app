@@ -146,16 +146,17 @@ describe('useEditorDrag — a container carries by the centre rule', () => {
   });
 });
 
-// docs/specs/008-canvas/canvas-and-palette.md "Locking": a frame carries no locked element it holds.
-describe('useEditorDrag — a frame leaves a locked member put', () => {
-  it('moves the frame and its other members, never the locked one', () => {
+// A member saved locked before locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
+// Locking") rides its frame like any other.
+describe('useEditorDrag: a frame carries a member saved locked', () => {
+  it('moves the frame with every member', () => {
     const before = BOARD().map((el) => (el.id === 'inside' ? { ...el, locked: true } : el));
     const h = harness(before);
     dragFrame(h, 50, 0);
     const after = h.elements();
     expect(xOf(after, 'frame')! - xOf(before, 'frame')!).toBe(50);
     expect(xOf(after, 'straddling')! - xOf(before, 'straddling')!).toBe(50);
-    expect(xOf(after, 'inside')).toBe(xOf(before, 'inside'));
+    expect(xOf(after, 'inside')! - xOf(before, 'inside')!).toBe(50);
   });
 });
 

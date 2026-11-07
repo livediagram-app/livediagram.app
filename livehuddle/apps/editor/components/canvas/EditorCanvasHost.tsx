@@ -52,7 +52,6 @@ export function EditorCanvasHost() {
   const {
     activeTab,
     activeTabLoadState,
-    activeTabLocked,
     commitElements,
     formatConfig,
     onToggleFormatGroup,
@@ -224,8 +223,6 @@ export function EditorCanvasHost() {
     tabSummaries,
     toggleAspectLockSelected,
     toggleInMultiSelect,
-    toggleLockMultiSelected,
-    toggleLockSelected,
     undo,
     userPreferences,
     drag,
@@ -335,7 +332,6 @@ export function EditorCanvasHost() {
           onLoadPortalTabs={() => void loadAllTabs()}
           activeTabId={activeTab.id}
           activeTabLoaded={loadedTabIds.has(activeTab.id)}
-          tabLocked={activeTabLocked}
           readOnly={isReadOnly}
           takePart={can.takePart}
           accessLevel={can.level}
@@ -462,7 +458,6 @@ export function EditorCanvasHost() {
           onStopFollowing={followMe.stopFollowing}
           onDuplicateMultiSelected={duplicateMultiSelected}
           onDeleteMultiSelected={deleteMultiSelected}
-          onToggleLockMultiSelected={toggleLockMultiSelected}
           onFilterMultiSelected={narrowMultiSelection}
           onExportMultiSelected={() => {
             setExportScope('selection');
@@ -471,8 +466,8 @@ export function EditorCanvasHost() {
           editingId={editingId}
           editCursorAtEnd={editCursorAtEnd}
           formatSourceId={formatSourceId}
-          canUndo={canUndo && !activeTabLocked}
-          canRedo={canRedo && !activeTabLocked}
+          canUndo={canUndo}
+          canRedo={canRedo}
           onAddShape={addShape}
           onAddSticker={addSticker}
           onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
@@ -738,7 +733,6 @@ export function EditorCanvasHost() {
 
           onToggleAspectLock={toggleAspectLockSelected}
           onDropPalette={dropThenDisarm(dropPaletteItem, cancelDrawShape)}
-          onToggleLockSelected={toggleLockSelected}
           onDeleteSelected={deleteSelected}
           // One gesture, one answer: while the element menu is open the
           // selection popover stands down (see deriveCanvasSelection).

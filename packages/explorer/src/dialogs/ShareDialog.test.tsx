@@ -147,6 +147,24 @@ describe('ShareDialog', () => {
     );
   });
 
+  it('names the file a connected tab’s pass was made for, and only on that pass', async () => {
+    renderDialog(
+      {},
+      {
+        links: [
+          link('cn1', {
+            connection: { hostItemId: 'd1', hostApp: 'liveplanner', hostTitle: 'Launch plan' },
+          }),
+          link('a1'),
+        ],
+      },
+    );
+    const from = await screen.findByText('Connected from');
+    expect(from.parentElement?.textContent).toBe('Connected fromLaunch plan');
+    expect(from.parentElement?.querySelector('svg')).not.toBeNull();
+    expect(document.querySelectorAll('[data-share-connected-from]')).toHaveLength(1);
+  });
+
   it('asks before revoking, then revokes', async () => {
     const { calls, onTelemetry } = renderDialog({}, { links: [link('a1')] });
     fireEvent.click(await screen.findByRole('button', { name: 'Revoke link' }));

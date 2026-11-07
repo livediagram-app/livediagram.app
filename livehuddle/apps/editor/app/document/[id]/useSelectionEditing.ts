@@ -31,9 +31,6 @@ export function useSelectionEditing(opts: {
   // Read when an edit runs (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   isReadOnly: boolean;
-  // The active tab is locked: every save is refused, so no label editor opens to take typing it would
-  // throw away.
-  tabLocked?: boolean;
   // A Participant writes on elements despite isReadOnly (docs/specs/013-workspace/share-roles.md).
   canWriteText?: (el: Element) => boolean;
   formatSourceId: string | null;
@@ -114,8 +111,8 @@ export function useSelectionEditing(opts: {
   };
 
   const beginEdit = (elementId: string) => {
-    // Viewers may select to inspect, but never enter text-edit mode; nor anyone on a locked tab.
-    if (opts.tabLocked || !writable(elementId)) return;
+    // Viewers may select to inspect, but never enter text-edit mode.
+    if (!writable(elementId)) return;
     // Another participant has it selected — don't let two people edit it.
     if (lockedByOther(elementId)) return;
     if (formatSourceId !== null) return;
@@ -295,7 +292,7 @@ export function useSelectionEditing(opts: {
   };
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
-    if (opts.tabLocked || !writable(elementId)) return false;
+    if (!writable(elementId)) return false;
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;

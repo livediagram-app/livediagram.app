@@ -33,7 +33,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', 'C'], label: 'Copy Selection' },
       { keys: ['⌘', 'V'], label: 'Paste (offset copy)' },
       { keys: ['⌘', 'D'], label: 'Duplicate Selection' },
-      { keys: ['⌘', '⇧', 'L'], label: 'Lock  /  Unlock Selection' },
       { keys: ['⌘', 'A'], label: 'Select All' },
       { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
       { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },

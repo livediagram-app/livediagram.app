@@ -5,7 +5,6 @@ import {
   CommentIcon,
   DuplicateIcon,
   FormatPainterIcon,
-  LockIcon,
   TrashIcon,
   HoverCard,
 } from '@livehuddle/ui';
@@ -26,11 +25,7 @@ type SelectionPopoverProps = {
   zoom: number;
   // Hidden while the selection moves: measures nothing until it ends (useEdgeAwarePlacement).
   suspended?: boolean;
-  // Lock state + toggler. Optional so the read-only / view-role
-  // mode (no edit handlers) can mount the popover without faking a
-  // lock toggle; when omitted the lock button is suppressed.
-  locked?: boolean;
-  onToggleLock?: () => void;
+  // Omitted in read-only / view-role mode, which suppresses the Delete button.
   onDelete?: () => void;
   // Enter inline text-edit mode on the selected element. Passed for every
   // text-CAPABLE element (see elementSupportsText) — including ones with no
@@ -43,7 +38,7 @@ type SelectionPopoverProps = {
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
   // Turn a piece of furniture a quarter (docs/specs/009-elements/furniture-facing.md "Turning a placed piece"): a piece
-  // that turns only. Disabled, still in its place, while the piece is locked.
+  // that turns only.
   onTurn?: (quarters: 1 | -1) => void;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
@@ -93,8 +88,6 @@ export function SelectionPopover({
   bounds,
   canvasOffset,
   zoom,
-  locked = false,
-  onToggleLock,
   onDelete,
   onEditText,
   hasText = true,
@@ -219,7 +212,7 @@ export function SelectionPopover({
 
           {onTurn ? (
             <>
-              <TurnButtons onTurn={onTurn} locked={locked} />
+              <TurnButtons onTurn={onTurn} />
               <Divider />
             </>
           ) : null}
@@ -288,48 +281,14 @@ export function SelectionPopover({
             </PopoverButton>
           ) : null}
 
-          {onToggleLock ? (
-            <HoverCard
-              title={locked ? 'Unlock' : 'Lock'}
-              description={
-                locked
-                  ? 'Allow this element to be moved, resized, and deleted again.'
-                  : 'Protect from moves, resizes, and deletion. You can still unlock it.'
-              }
-            >
-              <button
-                type="button"
-                onClick={onToggleLock}
-                aria-label={locked ? 'Unlock' : 'Lock'}
-                aria-pressed={locked}
-                className={
-                  locked
-                    ? 'flex h-8 w-8 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                    : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-                }
-              >
-                <LockIcon closed={locked} />
-              </button>
-            </HoverCard>
-          ) : null}
           {showDelete ? (
             <>
-              <HoverCard
-                title="Delete"
-                description={
-                  locked ? 'Locked. Unlock it to delete.' : 'Delete this element (arrows too).'
-                }
-              >
+              <HoverCard title="Delete" description="Delete this element (arrows too).">
                 <button
                   type="button"
                   onClick={onDelete}
-                  disabled={locked}
                   aria-label="Delete"
-                  className={
-                    locked
-                      ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-                      : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-                  }
+                  className="flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
                   <TrashIcon />
                 </button>

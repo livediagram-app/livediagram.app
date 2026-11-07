@@ -151,7 +151,6 @@ export function EditorView() {
     renameDocumentNonce,
     renameTabNonce,
     tabs,
-    toggleActiveTabLock,
     openCollaborators,
     userPreferences,
     sessionCommunity,
@@ -294,7 +293,6 @@ export function EditorView() {
               isOwner,
             })}
             onCopyTabTo={linkActiveTabTo}
-            onToggleLockTab={toggleActiveTabLock}
             onReorder={reorderTabs}
             // A tab-scoped visitor edits their tab's content at most, never the
             // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).

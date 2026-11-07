@@ -68,13 +68,13 @@ export function useShapeStyleSetters({
   // shape ships with); we keep the element's current visual area so it
   // doesn't jump in size, just snaps the width:height back to default,
   // and recentre about the old centre so it doesn't drift. Every shape of a multi-selection resets (the
-  // multi-selection menu offers it); a locked one keeps its size, as on a drag handle.
+  // multi-selection menu offers it).
   const resetAspectRatioSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || el.type !== 'shape' || el.locked === true) return el;
+        if (!ids.has(el.id) || el.type !== 'shape') return el;
         const def = SHAPE_DEFAULT_SIZE[el.shape];
         const ratio = def.width / def.height;
         const area = el.width * el.height;
@@ -106,8 +106,7 @@ export function useShapeStyleSetters({
     if (!selectedId) return;
     commit((els) =>
       els.map((el) => {
-        // A locked element is never resized (docs/specs/008-canvas/canvas-and-palette.md "Locking").
-        if (el.id !== selectedId || !isBoxed(el) || el.locked === true) return el;
+        if (el.id !== selectedId || !isBoxed(el)) return el;
         const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
         const ratio = el.height > 0 ? el.width / el.height : 1;
         let width = size.width ?? el.width;
@@ -137,11 +136,7 @@ export function useShapeStyleSetters({
   const setRotationSelected = (deg: number) => {
     const { selectedId } = readSelection();
     if (!selectedId) return;
-    commit((els) =>
-      els.map((el) =>
-        el.id === selectedId && el.locked !== true ? applyRotationToEl(el, deg) : el,
-      ),
-    );
+    commit((els) => els.map((el) => (el.id === selectedId ? applyRotationToEl(el, deg) : el)));
     track('Element', 'Changed', 'Rotation');
   };
 

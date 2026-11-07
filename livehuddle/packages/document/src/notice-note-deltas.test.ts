@@ -72,11 +72,7 @@ describe('notice-pin and notice-unpin', () => {
     expect(ids(first)).not.toContain('y');
   });
 
-  it('refuses a locked board, another shape and a malformed note', () => {
-    const locked = board({ locked: true });
-    expect(applyElementDelta(locked, pin(note('a')))).toBe(locked);
-    const lockedWithNote = board({ locked: true, noticeNotes: [note('a')] });
-    expect(applyElementDelta(lockedWithNote, unpin('a', 'adder-a'))).toBe(lockedWithNote);
+  it('refuses another shape and a malformed note', () => {
     const square = board({ shape: 'square' });
     expect(applyElementDelta(square, pin(note('a')))).toBe(square);
     const plain = board();

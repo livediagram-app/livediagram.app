@@ -96,6 +96,21 @@ describe('config.toml', () => {
       profiles: { work: { host: 'https://x.test' } },
     });
     expect(withTelemetry(text, false)).toBe(`telemetry = false\n${text}`);
+    expect(
+      parseConfig('telemetry = true # off later\n  # a note\n[profiles.a]\nhost = "h#1"\t# x', 'c'),
+    ).toEqual({
+      profiles: { a: { host: 'h#1' } },
+      telemetry: true,
+    });
+    expect(withTelemetry('a = "b"\n\n\n', true)).toBe('telemetry = true\na = "b"\n');
+    expect(withTelemetry('', true)).toBe('telemetry = true\n');
+    const worst = `a${'\t'.repeat(50_000)}b`;
+    const started = process.cpuUsage();
+    expect(() => parseConfig(worst, 'c')).toThrow(CliError);
+    expect(() => parseConfig(`_=${'\t'.repeat(50_000)}\u2028x`, 'c')).toThrow(CliError);
+    expect(withTelemetry(`x${'\n'.repeat(50_000)}y`, true).length).toBeGreaterThan(50_000);
+    const { user, system } = process.cpuUsage(started);
+    expect((user + system) / 1000).toBeLessThan(500);
     expect(() => parseConfig('what', 'config.toml')).toThrow(CliError);
   });
 

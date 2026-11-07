@@ -30,7 +30,6 @@ function draw(element: BoxedElement, selected: boolean) {
         onOpenNote={vi.fn()}
         onSetPageHeading={vi.fn()}
         onContextSelect={vi.fn()}
-        tabLocked={false}
         tabSummaries={[]}
         readOnly={false}
         remoteSelectors={[]}

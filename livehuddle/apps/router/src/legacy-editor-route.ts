@@ -184,6 +184,10 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'canvas/quick-style-panel': 'canvas/colours-borders-opacity',
   'palette/quick-add-on-hover': 'user-interface/settings',
   'palette/icons': 'palette/stickers',
+  // Element and Tab Locking left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
+  // Locking").
+  'canvas/locking': 'canvas/selecting-and-grouping',
+  'tabs/locking-tabs': 'tabs/using-tabs',
   // Image and Link card left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card").
   'palette/tools/images': 'palette/tools',
   'canvas/links/link-cards': 'canvas/links',

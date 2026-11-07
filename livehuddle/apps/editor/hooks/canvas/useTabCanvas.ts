@@ -27,7 +27,7 @@ import {
 import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
 
 type TabCanvasDeps = {
-  // True when edits are disallowed (read-only role / locked tab). Every
+  // True when edits are disallowed (read-only role / a tab still loading). Every
   // handler no-ops when set.
   editsBlocked: boolean;
   // Shows a short notice (a toast): a tidier refused because it would change nothing or damage

@@ -9,7 +9,7 @@ export function featureAnchor(title: string): string {
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-|-$/g, '');
 }
 
 export function featureHref(sectionId: string, title: string): string {

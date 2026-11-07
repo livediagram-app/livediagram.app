@@ -99,7 +99,6 @@ const NO_INERT_IDS = new Set<string>();
 
 function CanvasView(props: CanvasProps) {
   const {
-    tabLocked,
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
@@ -236,12 +235,11 @@ function CanvasView(props: CanvasProps) {
       elements,
       editingId,
       isPaintMode,
-      tabLocked,
       readOnly,
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
     }),
-    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
+    [elements, editingId, isPaintMode, readOnly, props.elementMenuOpen, arrowLabels],
   );
   // The one selected element when it is a path: the path tool's edit gesture arms on it.
   const soleSelectedPathId = useSelectionOf(

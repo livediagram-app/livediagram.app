@@ -46,7 +46,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
     d.setSelectedId(arrowId);
     // Arm a checkpoint; it is taken on the first real mutation (tick).
@@ -73,7 +73,7 @@ export function useArrowDragHandlers({
     if (!r) return;
     const { d, arrow } = r;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     const start = endpointPosition(end === 'from' ? arrow.from : arrow.to, d.activeTab.elements);
     // Shift-drag on the HEAD forks a branch (docs/specs/008-canvas/arrow-to-arrow.md): the arrow itself
     // stays put; a NEW arrow starts with its tail connected on this line
@@ -127,7 +127,7 @@ export function useArrowDragHandlers({
     const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'curved') return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const control = curveControlPoint(from, to, arrow.curveOffset, arrow.from, arrow.to);
@@ -162,7 +162,7 @@ export function useArrowDragHandlers({
     // existence is the gate; the style no longer is.
     if (!arrow.curvePoints?.[index]) return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     // Where the handle shows: an angled arrow's corners are squared to its ends.
@@ -200,7 +200,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     // The arrow's <svg> spans the transformed canvas wrapper, so its rect maps
     // the pointer into canvas coordinates exactly as the wrapper's does.
     const svg = e.currentTarget.ownerSVGElement;
@@ -227,7 +227,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     if (arrow.from.kind !== 'free' || arrow.to.kind !== 'free') return;
     const pts = arrowRoutePoints(arrow, d.activeTab.elements);
     const xs = pts.map((p) => p.x);
@@ -253,7 +253,7 @@ export function useArrowDragHandlers({
     const r = resolveArrowDrag(arrowId);
     if (!r) return;
     const { d, arrow } = r;
-    if (arrow.locked === true || d.isReadOnly || !arrow.curvePoints?.[index]) return;
+    if (d.isReadOnly || !arrow.curvePoints?.[index]) return;
     const remaining = arrow.curvePoints.filter((_, i) => i !== index);
     d.commit((all) =>
       all.map((el) => {
@@ -288,7 +288,7 @@ export function useArrowDragHandlers({
     const { d, arrow } = r;
     if (arrowStyleOf(arrow) !== 'angled') return;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const baseElbow = angledElbow(from, to, arrow.from, arrow.to);
@@ -318,7 +318,7 @@ export function useArrowDragHandlers({
     if (!r) return;
     const { d, arrow } = r;
     d.setSelectedId(arrowId);
-    if (arrow.locked === true || d.isReadOnly) return;
+    if (d.isReadOnly) return;
     const from = endpointPosition(arrow.from, d.activeTab.elements);
     const to = endpointPosition(arrow.to, d.activeTab.elements);
     const anchor = arrowLabelAnchor(

@@ -21,7 +21,7 @@ type Point = { x: number; y: number };
 export function shapeToEditAt(elements: readonly Element[], p: Point): ShapeElement | null {
   for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]!;
-    if (!pickedByOutline(el) || el.locked) continue;
+    if (!pickedByOutline(el)) continue;
     if (!opensInlineLabelEditor(el.shape)) continue;
     if (pointInsideOutline(el, p, 0)) return el;
   }

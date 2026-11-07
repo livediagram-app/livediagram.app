@@ -13,16 +13,12 @@ The editor's one layout tidier, **Auto-align**, is reached through the Tidy Up b
 recomputes them from the graph, is the engine's (above). Auto-align is editor-only (it mutates) and runs a single
 undoable operation.
 
-## Locked elements stay put
+## No locks
 
-Neither tidier moves or resizes a **locked element**: a lock means "protected from moves and resizes",
-and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
-(`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
-Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
-not edges and it is never placed, and a locked arrow keeps its anchors. The editor's Tidy Up
-treats a locked box like any box it does not move: the laid-out block steps clear of it, and
-arrows route around it (graph input still lays out as if it were not there). A box holding a
-locked element is never a [unit](#what-moves-together).
+livehuddle has no element or tab lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)),
+so a cleanup moves every element it reaches and Auto-align takes no protected ids. The layout
+engine in `packages/document` (`auto-layout.ts`, `auto-layout-tidy.ts`) keeps its generic
+`lockedIds` option, as livediagram's shared copy has it: no livehuddle caller passes it.
 
 ## Auto-align (grid snap)
 
@@ -211,8 +207,7 @@ drawing apart:
 - **A unit** is a box that holds wired shapes: a department panel, a lane, a group card, a state
   machine's composite state. It moves as one rigid block with everything inside it, keeping its
   inner layout; the arrows into it, or into the shapes it holds, are its edges, and an arrow
-  inside it moves with it as drawn. Only the outermost such box is a unit, and one holding a
-  locked element is not one.
+  inside it moves with it as drawn. Only the outermost such box is a unit.
 - **A rider** goes with a free node: a smaller unwired box overlapping it (an icon badge, a "Usually
   1 day" chip, a caption laid over it), moved exactly as the node moved.
 - **A dashed or dotted arrow** is a secondary link by convention (a dotted-line report, an async
@@ -294,8 +289,6 @@ strip's other buttons (one open at a time, a second press or a press outside clo
   Tidy Up and Theme strip, then Fit. There is no hover on touch, so a tap on the row is the
   press; the popover fits the screen's width.
 - **Not during the welcome flow**: the strip itself is hidden there.
-- **A locked tab** shows the button, with Auto-align inert under a "This tab is locked" note, since
-  unlocking it is the one step that makes it work.
 
 ### Share roles
 

@@ -41,7 +41,7 @@ export function fileSlug(name: string, id: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .slice(0, SLUG_MAX)
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-|-$/g, '');
   return slug || id.slice(0, ID_SLUG_LENGTH);
 }
 

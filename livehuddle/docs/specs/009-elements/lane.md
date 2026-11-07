@@ -145,5 +145,5 @@ for the work.
 
 ## Element tour
 
-The **Lane tour** is on the footer's **Start Lane Tour** button while a lane is selected, for an Editor on an unlocked element, and walks through
+The **Lane tour** is on the footer's **Start Lane Tour** button while a lane is selected, for an Editor, and walks through
 it on the element itself ([Element tours](../007-editor/element-tours.md) "The Lane tour").

@@ -94,8 +94,8 @@ by, at, color? }`, where `by` is the pinner's adder key (an Editor without one w
   note's id and its signer's `by`, and removes the note only while that is still its signer. A whole-element update
   (an Editor moving the board, say) keeps every receiver's own notes, so one sent in the same moment as somebody's
   pin can no longer carry the old list over the new note, on screens or in the store; two people pinning at once
-  both land, in the room's order. A board's 50-note cap, a duplicate id and a locked board are checked where the
-  delta is applied, on every screen alike: a pin past the cap, a replayed note or a pin on a locked board changes
+  both land, in the room's order. A board's 50-note cap and a duplicate id are checked where the
+  delta is applied, on every screen alike: a pin past the cap or a replayed note changes
   nothing.
 - **A Participant pins and unpins as itself** ([Share roles](../013-workspace/share-roles.md)): the room relays a
   Participant's `notice-pin` only when the note's `by` is the sender's server-verified adder key, and its
@@ -374,7 +374,7 @@ at }`, where `ms` is how long the run played (paused time not counted), `by` the
   whole-element update keeps every receiver's own table, so an Editor moving the machine never carries an old table
   over a new score. Where the delta is applied, on every screen and in the store alike, the table is put in order
   and cut to ten: a score that does not make it, a replay of an id the table holds, or one that fails the checks
-  below changes nothing. A locked machine still takes scores (a lock fixes where it stands, as a Timer's does).
+  below changes nothing.
 - **Trust**: the game runs on the player's screen alone, so a score is that screen's word, held to what a run could
   score. A score is a whole number from 1 to the run's ceiling: letters appear at most one every 0.9 seconds after
   the three a run starts with, each worth at most 50 (×5), so a run of `ms` scores at most

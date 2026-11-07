@@ -59,7 +59,7 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
 ## Share roles
 
 - **Editor**: places, moves, resizes, turns, recolours and deletes corridors, and the Doors in them.
-- **Participant**: has no palette; walks the corridor like everyone, and opens and closes its unlocked Doors.
+- **Participant**: has no palette; walks the corridor like everyone, and opens and closes its Doors.
 - **Viewer**: walks it like everyone; cannot swing a Door.
 
 ## Export and agents

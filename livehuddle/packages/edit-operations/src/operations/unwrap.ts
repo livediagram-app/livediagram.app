@@ -23,5 +23,6 @@ export function applyUnwrap(
       details: [`${target}: ${refsOf(state).refOf(el.id)} is not a boundary or a lane`],
       hint: 'unwrap a boundary or lane; rm removes anything else',
     };
-  return removeOne(state, el, false, operation, { unwrapped: true });
+  removeOne(state, el, false, operation, { unwrapped: true });
+  return null;
 }

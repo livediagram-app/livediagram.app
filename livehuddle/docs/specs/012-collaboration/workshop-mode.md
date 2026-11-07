@@ -125,7 +125,7 @@ Following [Gate a feature by share role](../../instructions/gate-a-feature-by-sh
 | **Participant** | Always walks; sits, talks and hears; comments and reacts; pins notes, swings doors, runs Timers        |
 | **Viewer**      | Walks, sits, talks and hears; no palette; sees a running Timer or Stopwatch read-only                  |
 
-Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab behaves for an editor as for a viewer.
+Every gate reads the session's `can`, never `isReadOnly` alone.
 
 ## Agents, MCP and the CLI
 

@@ -16,10 +16,6 @@ const withElements = (...extra: Element[]): Tab => {
   const tab = checkoutFlow();
   return { ...tab, elements: [...tab.elements, ...extra] };
 };
-const lockedCopy = (tab: Tab, id: string): Tab => ({
-  ...tab,
-  elements: tab.elements.map((el) => (el.id === id ? { ...el, locked: true } : el)),
-});
 
 describe('rm', () => {
   it('removes the element and the arrows pinned to it, listing them', () => {
@@ -101,18 +97,6 @@ describe('rm', () => {
     const outcome = run([rm('t1', true)]);
     expect(applied(outcome).warnings).toEqual([]);
     expect(lines(outcome)).toEqual(['- t1  text "Retry up to 3 times"']);
-  });
-
-  it('refuses a locked target, a locked pinned arrow, and a locked arrow to free', () => {
-    expect(refused(run([rm('n4')], lockedCopy(checkoutFlow(), 'n4'))).details[1]).toBe(
-      '  n4  square "Address" (element)',
-    );
-    expect(refused(run([rm('n4')], lockedCopy(checkoutFlow(), 'a4'))).details[1]).toBe(
-      '  a4  arrow n4→n5 (element)',
-    );
-    expect(refused(run([rm('n4', true)], lockedCopy(checkoutFlow(), 'a3'))).details[1]).toBe(
-      '  a3  arrow n3→n4 (element)',
-    );
   });
 
   it('cannot find an element an earlier operation removed (E3)', () => {

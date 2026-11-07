@@ -27,7 +27,7 @@ export function sanitizeFilename(name: string): string {
     .replace(/-+/g, '-')
     .replace(/\s+/g, ' ')
     .trim()
-    .replace(/^-+|-+$/g, '')
+    .replace(/^-|-$/g, '')
     .trim();
 }
 

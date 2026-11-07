@@ -108,8 +108,8 @@ not the normal element update:
   receiver's own `pieceTimer` (`mergeIncomingElement`), and a change to `pieceTimer` alone sends no element update
   (`elementChangeIsDeltaOnly`), so a stale copy can never undo a press.
 - **Last press wins.** The delta replaces the state whole, applied on every screen in the room's order, so two
-  people pressing at once land on the same state everywhere (the later press). It applies to a Timer or Stopwatch
-  whether or not the piece is locked: locking fixes it in place, it does not freeze its clock. A malformed state, or
+  people pressing at once land on the same state everywhere (the later press). It applies to any Timer or Stopwatch.
+  A malformed state, or
   a delta on any other kind, changes nothing.
 - **Kept in the ledger.** The room's collaboration ledger keeps each piece's latest `piece-timer` state and seq, so an
   Editor's save snapshotted before a press merges it, and a Participant's press reaches the store.

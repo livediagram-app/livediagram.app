@@ -10,6 +10,7 @@
 
 import { INDEX_API_PATH, INDEX_APP_HEADER, isLevel, type Level } from './constants';
 import { IndexError, type IndexAppClientOptions } from './client';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export type ItemNotice =
   { type: 'shared'; actorId: string } | { type: 'joined'; personId: string; level: Level };
@@ -42,7 +43,7 @@ export async function countOwnedItems(
   personId: string,
   limit: number,
 ): Promise<number> {
-  const base = (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`);
   const capped = Math.max(1, Math.min(OWNED_COUNT_MAX, Math.floor(limit)));
   const res = await (doFetch ?? fetch)(
     `${base}/app/people/${encodeURIComponent(personId)}/count?limit=${capped}`,

@@ -5,6 +5,7 @@ import {
   quickSwatchColor,
   type ArrowElement,
   type Element,
+  type PathElement,
   type ShapeElement,
   type StickyElement,
   type TextElement,
@@ -103,11 +104,10 @@ describe('quickStyleView: which sections show', () => {
     ]);
   });
 
-  it('leaves locked elements alone, and shows nothing when all are locked', () => {
-    expect(quickStyleView([shape('a', { locked: true })], forest)).toBeNull();
-    expect(quickStyleView([shape('a', { locked: true }), arrow('b')], forest)?.targetIds).toEqual([
-      'b',
-    ]);
+  // not-in-livehuddle.md "Element and Tab Locking": an element saved locked styles like any other.
+  it('styles elements saved locked with the rest', () => {
+    const old = shape('a', { locked: true } as Partial<ShapeElement>);
+    expect(quickStyleView([old, arrow('b')], forest)?.targetIds).toEqual(['a', 'b']);
   });
 
   it('ignores non-shape elements in a mixed selection', () => {
@@ -353,8 +353,10 @@ describe('Text colour: text elements', () => {
     expect(sections([shape('a')])).not.toContain('textColour');
   });
 
-  it('leaves a locked text element alone', () => {
-    expect(quickStyleView([text('t', { locked: true })], forest)).toBeNull();
+  it('styles a text element saved locked', () => {
+    expect(
+      quickStyleView([text('t', { locked: true } as Partial<TextElement>)], forest),
+    ).not.toBeNull();
   });
 
   it('binds a slot, and reads it back as the row value', () => {
@@ -443,8 +445,8 @@ describe('a path (docs/specs/023-draw-mode/path-tool.md "Style")', () => {
     expect(cleared).not.toHaveProperty('strokeWidth');
   });
 
-  it('is left alone when locked', () => {
-    expect(quickStyleView([{ ...open, locked: true }], forest)).toBeNull();
+  it('styles a path saved locked', () => {
+    expect(quickStyleView([{ ...open, locked: true } as PathElement], forest)).not.toBeNull();
   });
 });
 

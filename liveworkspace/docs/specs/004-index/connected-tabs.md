@@ -34,10 +34,12 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 From an editor's start screen, **Connect liveworkspace File** lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
-- **Role**: the level the pass grants, Editor first and chosen, then the target app's other offered levels
-  (`APP_LINK_LEVELS`). The line under it says plainly what it means: "Anyone who can open this file can edit
-  <target>."
+- **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked
+  before the file, so the line under it says plainly what it means for whichever file is tapped: "Anyone who can open
+  this <host kind> can edit the file you connect." A file whose app does not offer the chosen role (livehuddle has no
+  Viewer) is listed but cannot be picked while it is chosen, saying so ("livehuddle has no Viewer role").
 - **Add connection to both files**: off by default.
+- **Find a file**: narrows the list by name as the person types.
 
 One tap on an item connects it. The host gains a connected tab at the end of its tab bar, loose, and it opens in the
 host at once as a tab would. An item the host is already connected to is marked Connected; a tap on it goes to that
@@ -96,6 +98,46 @@ A connected tab that opens nothing says why, in place of the target, with what c
 
 Connect Again makes a new connection to the same target in the same tab, under the same rules as connecting.
 
+## How it looks
+
+Every app draws the connected tab and the Connect list from one shared place (`packages/workbench`), so they look
+and behave alike everywhere.
+
+**The tab.** A tab like its neighbours, in the same shape and slots, led by the target app's logo (its Living Prism,
+the size of a tab's padlock) before the name. A target in another app carries a small arrow after the name, saying
+it opens in a new browser tab; one in the same app carries none. A tab that opens nothing carries a small amber dot
+in place of the arrow, so a broken connection shows without opening it. Its name is never renamed by hand, so a
+double-click does nothing; a screen reader hears "<name>, connected <app> file, opens in a new tab" (or "connected
+file, needs attention"). It is dragged, foldered and opened like any tab, and its menu offers Remove Tab and, when it
+opens nothing, Connect Again, never Duplicate.
+
+**The tab's page.** Opened, a connected tab shows one calm card in place of a canvas, the target app's logo over the
+target's name and a line:
+
+| State                                | Line                                         | Actions (an Editor)       |
+| ------------------------------------ | -------------------------------------------- | ------------------------- |
+| Opening                              | "Opening <name> in <app>…", the logo turning | none                      |
+| Opened in a new tab (another app)    | "<name> is open in a new tab."               | Open Again                |
+| Opened in place (the same app)       | the target itself; no card                   | none                      |
+| The target in the Trash, or gone     | "This file is no longer there."              | Remove Tab                |
+| Its pass deleted or lapsed           | "This connection's link was removed."        | Connect Again, Remove Tab |
+| A copy's, an export's or an import's | "Connect this copy to <name>."               | Connect Again, Remove Tab |
+| Offline                              | "Connected files open when you are online."  | none                      |
+| Anything else (the network, limits)  | "<name> could not be opened just now."       | Try Again                 |
+
+Open Again exists because a browser may block a new tab it did not see a click make. A Participant or Viewer sees the
+same card without Remove Tab or Connect Again (Remove Tab takes the tab away and never touches the file), and is
+told "Ask an editor to connect it again" where only an editor can mend it; Open Again and Try Again are everyone's.
+
+**The Connect list.** On the start screen's Connect liveworkspace File, in the start panel's own colours: the title,
+the role as a three-way switch with its line, the both-ways switch with its line ("The file you connect gets a tab
+back to this <host kind>." when allowed, else why not), Find a file, then Recent, one row per file: its app's logo on a tile, its
+name, and its app and when it was last opened. A row is pressed once to connect. While it connects it shows a spinner
+and the rest wait; a row already connected says Connected and goes to its tab; a row that cannot be picked is dimmed
+and says why; a failure says why on the row, in words ("This file has too many links already."), and leaves the list
+as it was. Loading shows quiet placeholder rows; nothing recent says so with a way to the Explorer; a failed load says
+so with Try Again.
+
 ## Removing
 
 Removing a connected tab (its tab menu's Remove, the same as any tab) removes the tab and nothing of the target. The
@@ -112,8 +154,8 @@ rather than reading as a copy's.
 Undoing a removal never restores access (Work Tracker #572): a grace period before the pass goes would leave a live
 share link nobody can see. The tab comes back offering Connect Again.
 
-A pass can also be deleted from the target's Share dialog, where it is listed as "Connected from <host>": the
-connected tab then offers Connect Again.
+A pass can also be deleted from the target's Share dialog, where it is listed as "Connected from <host>" (the host
+app's logo and the host's title, on the pass under its link): the connected tab then offers Connect Again.
 
 ## Security
 

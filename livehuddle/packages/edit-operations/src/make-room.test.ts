@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { applied, lines } from './fixtures/outcomes';
-import { boxIn, flowWith, lockedFlow, run } from './fixtures/run';
+import { boxIn, flowWith, run } from './fixtures/run';
 
 describe('make room', () => {
   // Each inserted box is sized 140×120 here, so the shifts read in its height plus the gap (160).
@@ -32,36 +32,19 @@ describe('make room', () => {
     expect(boxIn(tab, 't1')).toEqual(boxIn(checkoutFlow(), 't1'));
   });
 
-  it('passes a locked unit by, and the rest still shift (E17)', () => {
+  it('shifts a container with everything it carries (EO47)', () => {
     const tab = applied(
-      run('insert square width=140 height=120 between n5 n6', lockedFlow('n7')),
+      run('insert diamond width=140 height=120 between n2 n3', checkoutFlow()),
     ).tab;
-    expect(boxIn(tab, 'n7')).toEqual(boxIn(checkoutFlow(), 'n7'));
-    expect(boxIn(tab, 'n8')[1]).toBe(720 + 160);
-  });
-
-  it('leaves a locked container and everything in it where they are (EO47)', () => {
-    const tab = applied(
-      run('insert diamond width=140 height=120 between n2 n3', lockedFlow('f2')),
-    ).tab;
-    for (const id of ['f2', 'n4', 'n5']) expect(boxIn(tab, id)).toEqual(boxIn(checkoutFlow(), id));
-    expect(boxIn(tab, 'n3')[1]).toBe(boxIn(checkoutFlow(), 'n3')[1] + 160);
-  });
-
-  it('leaves a locked element carried inside a shifted container where it is (EO47)', () => {
-    const tab = applied(
-      run('insert diamond width=140 height=120 between n2 n3', lockedFlow('n4')),
-    ).tab;
-    expect(boxIn(tab, 'n4')).toEqual(boxIn(checkoutFlow(), 'n4'));
-    for (const id of ['f2', 'n5'])
+    for (const id of ['f2', 'n4', 'n5'])
       expect(boxIn(tab, id)[1]).toBe(boxIn(checkoutFlow(), id)[1] + 160);
   });
 
-  it('leaves a locked container ungrown (EO47)', () => {
-    const tab = applied(
-      run('insert square width=140 height=120 between n4 n5', lockedFlow('f2')),
-    ).tab;
-    expect(boxIn(tab, 'f2')).toEqual(boxIn(checkoutFlow(), 'f2'));
+  it('grows the container an insert lands in, and shifts what lies past it (EO47)', () => {
+    const before = checkoutFlow();
+    const tab = applied(run('insert square width=140 height=120 between n4 n5', before)).tab;
+    expect(boxIn(tab, 'f2')[3]).toBeGreaterThan(boxIn(before, 'f2')[3]);
+    expect(boxIn(tab, 'n5')[1]).toBe(boxIn(before, 'n5')[1] + 160);
   });
 
   it('grows nested containers outward and shifts what lies past the outer one', () => {

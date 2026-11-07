@@ -1,10 +1,9 @@
 // The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
-// "Attributes", VW14): icon, link, alt, locked, action or actions, note, comments, then style.
+// "Attributes", VW14): icon, link, alt, action or actions, note, comments, then style.
 import type { Element } from '@livehuddle/document';
 import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
 import {
   arrayField,
-  flagField,
   isObject,
   objectField,
   stringField,
@@ -87,7 +86,6 @@ export function attributesOf(el: Element, context: AttributeContext): ViewAttrib
     ...(iconId === null ? [] : [{ key: 'icon', value: iconId, text: `icon=${attrValue(iconId)}` }]),
     ...linkAttribute(el, context.tabRefOf),
     ...(el.type === 'image' ? cutAttribute('alt', textField(el, 'alt'), ALT_CUT_CHARS) : []),
-    ...(flagField(el, 'locked') ? [flagAttribute('locked')] : []),
     ...actionAttributes(el),
     ...cutAttribute('note', textField(el, 'note'), NOTE_CUT_CHARS),
     ...commentsAttribute(el),

@@ -65,6 +65,7 @@ import {
   type ConnectionMade,
   type ConnectionOpen,
 } from './connections';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export class IndexError extends Error {
   readonly status: number;
@@ -139,7 +140,7 @@ export function createIndexClient({
   headers: fixedHeaders,
   fetch: doFetch,
 }: IndexClientOptions) {
-  const base = baseUrl.replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl);
 
   async function call<T>(path: string, options: CallOptions = {}): Promise<T> {
     const res = await send(path, options);
@@ -373,7 +374,7 @@ export function createIndexDelegateClient({
   fetch: doFetch,
 }: IndexDelegateOptions): IndexClient {
   return createIndexClient({
-    baseUrl: (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, ''),
+    baseUrl: withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`),
     getToken: () => key,
     headers: {
       [INDEX_APP_HEADER]: app,
@@ -395,7 +396,7 @@ export type IndexAppClientOptions = {
 
 // What an app's server (its api Worker or an item's Durable Object) pushes about an item.
 export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: IndexAppClientOptions) {
-  const base = (baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`).replace(/\/+$/, '');
+  const base = withoutTrailingSlashes(baseUrl || `https://www.liveworkspace.app${INDEX_API_PATH}`);
   const failed = async (res: Response): Promise<IndexError> => {
     const parsed = (await res.json().catch(() => null)) as { error?: unknown } | null;
     return new IndexError(res.status, typeof parsed?.error === 'string' ? parsed.error : 'unknown');

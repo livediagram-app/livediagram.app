@@ -69,9 +69,6 @@ describe('arcade-score and arcade-clear', () => {
     const sticky = { id: 's', type: 'sticky', x: 0, y: 0, width: 1, height: 1 } as never;
     expect(applyElementDelta(sticky, post(score('a', 30)))).toBe(sticky);
   });
-  it('takes a score on a locked machine (a lock fixes where it stands)', () => {
-    expect(ids(apply(machine({ locked: true }), post(score('a', 30))))).toEqual(['a']);
-  });
   it('empties the table on a clear, and a clear of an empty one changes nothing', () => {
     const cleared = apply(machine({ arcadeScores: ten }), CLEAR);
     expect(cleared.arcadeScores).toBeUndefined();

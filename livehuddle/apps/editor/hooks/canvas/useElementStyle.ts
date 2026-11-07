@@ -60,7 +60,7 @@ type EditorElementStyleDeps = {
   // The active tab — read for its theme (resetColors) and id.
   activeTab: Tab;
   activeId: string;
-  // True when edits are disallowed (read-only role / locked tab). The
+  // True when edits are disallowed (a read-only role, a tab still loading). The
   // colour + opacity setters no-op when set.
   editsBlocked: boolean;
   // History-aware element mutator (snapshots + emits the log).
@@ -122,17 +122,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     tickTabs,
     checkpointBurst,
   });
-
-  const toggleLockSelected = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    const source = selectionPrimary();
-    if (!source) return;
-    const shouldLock = !(source.locked === true);
-    const ids = currentSelectionIds();
-    commit((els) => els.map((el) => (ids.has(el.id) ? { ...el, locked: shouldLock } : el)));
-    track('Element', shouldLock ? 'Locked' : 'Unlocked');
-  };
 
   const toggleAspectLockSelected = () => {
     const { selectedId } = readSelection();
@@ -277,7 +266,6 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     ...shapeStyle,
     ...textStyle,
     ...colorStyle,
-    toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,
     sendSelectedToBack,

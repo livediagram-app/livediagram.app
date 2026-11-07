@@ -51,7 +51,7 @@ export type EditorKeyboardShortcutsDeps = {
   redo: () => void;
   copySelection: () => void;
   // Canvas tool setter: E / V edit and W walks, the Edit | Walk toggle's keys (docs/specs/008-canvas/avatar-mode.md
-  // "The Edit | Walk toggle"). Before the read-only gate, so an Editor on a locked tab has them too; a session held
+  // "The Edit | Walk toggle"). Before the read-only gate, so a read-only session has them too; a session held
   // walking is refused every tool but Avatar by useCanvasTool's hold.
   setCanvasTool: (t: CanvasTool) => void;
   // Active canvas tool. Read by the Escape handler so Escape exits the
@@ -63,10 +63,6 @@ export type EditorKeyboardShortcutsDeps = {
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
-  // Cmd/Ctrl+Shift+L: toggle lock on the current selection (single or
-  // multi). On Shift+L rather than plain Cmd+L so it never fights the
-  // browser's "focus the address bar" binding.
-  onToggleLock: () => void;
   // Cmd/Ctrl+A: select every element on the active tab at once.
   onSelectAll: () => void;
   // Cmd/Ctrl+D: duplicate the current selection (single or multi). The
@@ -255,13 +251,6 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     live.onDuplicate();
     return true;
   }
-  // Lock on Cmd/Ctrl+Shift+L (not plain Cmd+L, which the browser
-  // reserves for the address bar).
-  if (lower === 'l' && e.shiftKey) {
-    e.preventDefault();
-    live.onToggleLock();
-    return true;
-  }
   if (lower === 'a') {
     e.preventDefault();
     live.onSelectAll();
@@ -285,7 +274,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
 
 // What a key does on a canvas that may not take it (a Viewer's or a Participant's, docs/specs/013-workspace/share-roles.md):
 // `run` leaves the canvas alone (undo, redo, search, the mode switch, Escape) and is handled as usual; `swallow`
-// is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it is
+// is a canvas chord the browser would act on in its place (duplicate, select-all, z-order, zoom), so it is
 // prevented and does nothing; `ignore` is every other key, left to the browser.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
 export function coveredKeyRole(
@@ -297,7 +286,6 @@ export function coveredKeyRole(
     if (
       lower === 'd' ||
       lower === 'a' ||
-      (lower === 'l' && e.shiftKey) ||
       e.key === '=' ||
       e.key === '+' ||
       e.key === '-' ||

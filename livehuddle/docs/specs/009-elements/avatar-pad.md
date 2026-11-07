@@ -36,7 +36,7 @@ like them it is somewhere a character goes. The tile reads
 - **It lies on the floor.** Like a [rug or a room](office.md), it goes in behind everything when added, so
   furniture and characters stand on it. A character walks over it freely (it never blocks), and standing on it
   does not ring it as "the element you are on": the arrival is the pad's highlight.
-- Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
+- Otherwise an ordinary element: move, resize, rotate, copy, delete, export.
 - **One drawing, on the canvas and in an export**: both paint the same vector table in `@livehuddle/document`.
   The export draws the pad as it stands, ring lit; the shimmer and the arrival are the canvas's.
 

@@ -184,7 +184,7 @@ describe('the participant content rule never leaks', () => {
       { name: 'Renamed' },
       { mode: 'draw' },
       { theme: 'dark' },
-      { locked: true },
+      { templateChosen: true },
     ]) {
       expect(participantTabChange(tab, { ...tab, ...meta }, ME), JSON.stringify(meta)).toBeNull();
     }

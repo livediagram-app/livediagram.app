@@ -73,7 +73,6 @@ async function drop(ctx: DocumentRouteContext, id: string, tabId: string): Promi
   const tab = await getTab(ctx.env, id, tabId);
   const box = tab?.elements.find((el) => el.id === elementId);
   if (!box || box.type !== 'shape' || box.shape !== 'suggestion-box') return notFound();
-  if (box.locked === true) return conflict('box_closed');
   const where = { documentId: id, tabId, elementId };
   if ((await countSuggestions(ctx.env, where)) >= SUGGESTIONS_MAX) return conflict('box_full');
   await insertSuggestion(ctx.env, where, {

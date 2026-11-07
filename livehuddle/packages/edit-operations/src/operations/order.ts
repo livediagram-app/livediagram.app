@@ -5,7 +5,7 @@
 import type { EditRejection } from '@livehuddle/api-schema';
 import type { ElementId } from '@livehuddle/document';
 import { resolveOne } from '../selectors';
-import { refsOf, refuseLocked, reorder, touch, type EditState } from '../state';
+import { refsOf, reorder, touch, type EditState } from '../state';
 import type { OrderOperation } from '../types';
 
 type Place = { end: 'front' | 'back' } | { side: 'above' | 'below'; of: ElementId };
@@ -43,8 +43,6 @@ export function applyOrder(
   const resolved = resolveOne(state, operation.target, index);
   if ('rejection' in resolved) return resolved.rejection;
   const { el } = resolved;
-  const lock = state.locked.get(el.id);
-  if (lock) return refuseLocked(state, 'order', index, el, lock);
   const place = placeOf(state, operation, el.id, index);
   if ('rejection' in place) return place.rejection;
   const order = state.order.filter((id) => id !== el.id);

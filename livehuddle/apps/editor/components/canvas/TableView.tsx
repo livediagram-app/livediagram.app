@@ -118,7 +118,7 @@ export function TableView({
   const initialTextRef = useRef('');
   const typeToEditRef = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  const showControls = isSelected && !readOnly && !cellsOnly && !element.locked;
+  const showControls = isSelected && !readOnly && !cellsOnly;
   // Multi-cell selection + the per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md) — anchor,
   // shift-click extras, menu position, long-press opener, and the
   // whole-selection style / clear commits — live in useTableCellSelection.
@@ -142,7 +142,7 @@ export function TableView({
     gridRef,
     editing,
     isSelected,
-    disabled: readOnly || cellsOnly || element.locked === true,
+    disabled: readOnly || cellsOnly,
     onCommitTable,
   });
   // Hover-preview for the cell menu's colour rows: a patch shown over the
@@ -289,7 +289,7 @@ export function TableView({
     editing,
     setEditing,
     suspended: cellMenuPos !== null,
-    readOnly: readOnly || element.locked === true,
+    readOnly,
     addRow,
     selectionCells,
     onCommitTable,

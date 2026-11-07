@@ -6,6 +6,7 @@
 import { BRAND_APPS, type BrandApp } from '@liveworkspace/brand/svg';
 import { APP_SITES, LOCAL_PORTS, type AppSiteId, type SiteId } from '@liveworkspace/sites';
 import type { Env } from './env.ts';
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 export const INK = '#0f172a';
 export const MUTED = '#475569';
@@ -30,7 +31,7 @@ export type EmailBrand = {
   panelEdge: string;
 };
 
-const origin = (url: string) => url.replace(/\/+$/, '');
+const origin = (url: string) => withoutTrailingSlashes(url);
 
 // An app's address in this environment: its live site, staging's, or its local port (AGENTS.md).
 export function appUrl(env: Pick<Env, 'ENVIRONMENT'>, app: SiteId): string {

@@ -79,7 +79,6 @@ export function SuggestionBoxReader({
 
 const REFUSED: Record<string, string> = {
   box_full: 'The box is full. An Editor can empty it.',
-  box_closed: 'This box is closed.',
 };
 
 function refusalOf(err: unknown): string {
@@ -107,7 +106,6 @@ export function SuggestionBoxPanel({
         : level === 'participate'
           ? 'participant'
           : 'viewer';
-  const closed = element.locked === true;
 
   return (
     <div className={`${z.wrap} text-slate-800 dark:text-slate-100`}>
@@ -118,23 +116,19 @@ export function SuggestionBoxPanel({
         <Quiet z={z}>People taking part drop ideas in here, and Editors read them.</Quiet>
       ) : (
         <>
-          {closed ? (
-            <Quiet z={z}>This box is closed.</Quiet>
-          ) : (
-            <DropForm
-              z={z}
-              onDrop={(text) =>
-                apiDropSuggestion(
-                  place!.ownerId,
-                  place!.documentId,
-                  tabId!,
-                  element.id,
-                  text,
-                  place!.shareCode,
-                ).then(() => track('Element', 'Changed', 'Suggestion-box'))
-              }
-            />
-          )}
+          <DropForm
+            z={z}
+            onDrop={(text) =>
+              apiDropSuggestion(
+                place!.ownerId,
+                place!.documentId,
+                tabId!,
+                element.id,
+                text,
+                place!.shareCode,
+              ).then(() => track('Element', 'Changed', 'Suggestion-box'))
+            }
+          />
           {mode === 'editor' ? (
             <EditorNotes
               z={z}
