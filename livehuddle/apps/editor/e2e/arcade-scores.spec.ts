@@ -51,11 +51,16 @@ async function joinIfAsked(page: Page): Promise<void> {
   await expect(self(page)).toHaveCount(1, { timeout: 15_000 });
 }
 
-// Walk up to the machine (a click on the cabinet walks to its front) until its Insert Coin bubble shows.
-async function walkUp(page: Page): Promise<void> {
-  const box = (await machine(page).boundingBox())!;
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.8);
-  await expect(press(page)).toBeVisible({ timeout: 15_000 });
+// Walk up to the machine (a click on the cabinet walks to its front) until its Insert Coin bubble shows. The front is
+// wide enough for two side by side, but a walk ends beside anyone already standing where it aims: `at` picks the
+// spot across the cabinet (0 its left edge, 1 its right) so two people can stand at it at once.
+// A popover still open (the owner's Shared hint after a share) takes the first click, so the click is tried again.
+async function walkUp(page: Page, at = 0.5): Promise<void> {
+  await expect(async () => {
+    const box = (await machine(page).boundingBox())!;
+    await page.mouse.click(box.x + box.width * at, box.y + box.height * 0.85);
+    await expect(press(page)).toBeVisible({ timeout: 6_000 });
+  }).toPass({ timeout: 30_000 });
 }
 
 // Start a run and hop between the orbits until a letter scores (or the run ends), then close the panel, which ends
@@ -114,7 +119,7 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   const guestPage = await personIn(browser, baseURL!, null);
   await guestPage.goto(`/document/shared?s=${code}`);
   await joinIfAsked(guestPage);
-  await walkUp(guestPage);
+  await walkUp(guestPage, 0);
   await expect(best(guestPage)).toHaveCount(0);
   await press(guestPage).click();
   await expect(panel(guestPage).getByRole('button', { name: 'Start' })).toBeVisible({
@@ -124,15 +129,17 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   await expect(best(guestPage)).toContainText(`Best ${posted}`);
   const line = (await best(guestPage).textContent())!;
 
-  // The owner's machine shows the same best.
-  await walkUp(ownerPage);
+  // The owner, beside the Participant, sees the same best, then switches to Edit (its character leaves the floor).
+  await walkUp(ownerPage, 1);
   await expect(best(ownerPage)).toHaveText(line, { timeout: 10_000 });
+  await ownerPage.keyboard.press('e');
+  await expect(self(ownerPage)).toHaveCount(0);
 
   // A Viewer sees the table, never the game.
   const viewerPage = await personIn(browser, baseURL!, null);
   await viewerPage.goto(`/document/shared?s=${viewCode}`);
   await joinIfAsked(viewerPage);
-  await walkUp(viewerPage);
+  await walkUp(viewerPage, 1);
   await press(viewerPage).click();
   await expect(panel(viewerPage).getByText('Viewers See the Scores')).toBeVisible({
     timeout: 15_000,
@@ -141,10 +148,9 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   await expect(panel(viewerPage).locator('[data-arcade-scores] li')).toHaveCount(1);
   await expect(panel(viewerPage).locator('[data-arcade-scores]')).toContainText(posted);
   await viewerPage.screenshot({ path: test.info().outputPath('viewer.png') });
+  await expect(best(guestPage)).toHaveText(line);
 
   // The owner clears it from the element menu: Edit, a right-click on the machine, Tools, High Scores.
-  await ownerPage.keyboard.press('e');
-  await expect(self(ownerPage)).toHaveCount(0);
   await machine(ownerPage).click({ button: 'right' });
   await ownerPage.getByRole('button', { name: 'Tools', exact: true }).click();
   await ownerPage.getByRole('button', { name: 'High Scores', exact: true }).click();
