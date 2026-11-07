@@ -119,14 +119,14 @@ recoloured, refurnished or emptied like any room, and its pieces like any piece.
 - Each preset but the plain Room brings its furnishings, laid out inside its walls and clear of its Door's swing
   (DEFAULTS.md D222):
 
-  | Preset    | Furnishings                                                                                                  |
-  | --------- | ------------------------------------------------------------------------------------------------------------ |
-  | Room      | None: the empty room to furnish from scratch                                                                 |
-  | Office    | A desk against the back wall, a plant and a bookshelf                                                        |
-  | Boardroom | Two Meeting Tables end to end (sixteen seats), plants in the back corners, a water cooler and coffee machine |
-  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing  |
-  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler          |
-  | Lounge    | A fireplace on the back wall, a Round rug, two sofas facing in across it, plants either side of the door     |
+  | Preset    | Furnishings                                                                                                                                         |
+  | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Room      | None: the empty room to furnish from scratch                                                                                                        |
+  | Office    | A desk against the back wall, a plant and a bookshelf                                                                                               |
+  | Boardroom | A Long Table for sixteen down the middle, a Screen on the back wall above its head, plants in the back corners, a water cooler and a coffee machine |
+  | Open Plan | Five pods of two desks face to face; a printer, a coffee machine, a water cooler and two plants in the wing                                         |
+  | Kitchen   | A fridge, a sink, a counter with a microwave and a coffee machine; three bar stools; a water cooler                                                 |
+  | Lounge    | A fireplace on the back wall, a Bordered rug, two sofas facing in across it, plants either side of the door                                         |
 
   A room placed bigger or smaller than its preset (dragged out to a size) spreads its pieces with it; each keeps its
   own size.
@@ -148,6 +148,20 @@ A table with six chairs round it, every seat facing the table.
   (which seat rides their presence, `seat.index`) and names the sitters in a pill above it ([Chair](chair.md)
   "Occupancy is presence").
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
+
+### Long Table
+
+The Meeting Table's `long` type (`variant: 'long'`, the stored type field doors and rugs use): a boardroom table drawn to
+its width, the Boardroom preset's table.
+
+- Its top runs the box's width less 40 px each end, the same 168 px deep drawing as the Meeting Table's. Chairs stand
+  along both sides, as many as fit at 60 px apart between 86 px in from each end (seats per side: the room left over
+  divided by 60, plus one), spaced evenly, and one chair at each end in profile. At 560 wide, seven a side and two
+  ends: **sixteen seats**.
+- Every seat sits as the Meeting Table's do: the far side faces down, the near side up, the ends inward; nearest free
+  seat, one sitter each, rings and the sitters' pill (`@liveworkspace/avatar/seats`, `longTableGrid`).
+- Not aspect locked: dragged wider it takes more chairs, narrower fewer (never under two a side). Its drawing keeps its
+  proportions; a box of other proportions is drawn as wide as that depth allows. Default 560 × 168.
 
 ## Plant, Bookshelf
 

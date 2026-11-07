@@ -65,6 +65,9 @@ Notes:
 - `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.
+- The Long Table (office.md "Long Table") is the Meeting Table's `long` variant: `@liveworkspace/avatar/seats`
+  `longTableGrid(width, height)` lays its seats (`seatPoints` reads `variant`), and `office.ts` `longTableArt` draws the
+  chairs on that same grid (cached by grid width), for `FurnitureView` and the export's `furnitureArt`.
 - A corridor's arm is `min(CORRIDOR_ARM, the box's shorter side)`; its walls are polylines along each arm's sides at
   `ROOM_WALL / 2` in, stopping at the open ends; the drawing's walls are the same lines, stroked as a room's.
 - The palette drag hands the preview its `variant` (`PaletteDragPreview.variant`), so a dragged preset previews at
