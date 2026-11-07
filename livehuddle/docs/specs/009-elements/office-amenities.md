@@ -144,9 +144,10 @@ The palette's **Restroom** tile places a whole restroom in one go, a [Room](offi
   them and two **Washbasins** at the right, all clear of the doorway.
 - Outside, beside the door on the corridor side: a [Room Sign](screen-and-room-sign.md#room-sign) that reads the
   room, **Restroom**, and shows Free or In Use (and has its Knock).
-- Everything is ordinary elements: one change, so one undo takes the whole restroom away; the room is selected and each
-  piece can be moved or deleted on its own. It is placed however a Room is (a tap or a press with the tile armed, or a
-  drop from the palette) and lines up with other rooms as a Room does. The preset draws its cubicles, basins and sign in
+- Everything is ordinary elements: one change, so one undo takes the whole restroom away; every piece lands
+  selected, so one drag moves the whole restroom ([Office](office.md#placing-selects-every-piece) "Placing selects
+  every piece"), and each piece can still be moved or deleted on its own. It is placed however a Room is (a tap or a
+  press with the tile armed, or a drop from the palette) and lines up with other rooms as a Room does. The preset draws its cubicles, basins and sign in
   the room's stroke, so a themed room keeps its pieces in step.
 - The armed tile's preview is the room alone (the room's default size), as the Room tile's.
 

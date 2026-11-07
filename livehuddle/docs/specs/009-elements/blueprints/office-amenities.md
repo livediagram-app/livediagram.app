@@ -43,7 +43,7 @@ Derived from [Office amenities](../office-amenities.md).
   hand dryer `(230, 64)`; washbasins `(290, 44)`, `(370, 44)`, below the room's name plate; the Room Sign 88 wide at
   `(room centre + 64, height + 10)`, below the front wall to the right of the Door. Companions carry the room's `strokeColor` when it has one.
 - `withDoorPiece(el, 'restroom')` returns `[room, door, ...companions]`; any other variant (or none) is unchanged. The
-  Room Sign comes last. Placing sets one commit.
+  Room Sign comes last. Placing sets one commit, then one selection write: `placedSelection` of every piece.
 
 ## Interfaces and contracts
 
