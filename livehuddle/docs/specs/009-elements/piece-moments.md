@@ -1,56 +1,113 @@
 # Piece moments
 
-Status: **approved** (owner, Work Tracker #600, 2026-11-07). Small, occasional surprises the still pieces of a Space
-play when your character walks right up to them: a tree you brush past rocks and drops a few leaves, a pebble plops
-into a pond, a fire you stand at is stoked and throws up sparks. They are the [Office](office.md) and
-[Social](social-pieces.md) pieces as they are, plus a moment now and then; nothing about them is stored.
+Status: **approved** (owner, Work Tracker #600, 2026-11-07; **every time, on every still piece**, owner 2026-11-07).
+Small surprises the still pieces of a Space play when your character walks right up to them: a tree you brush past
+rocks and drops a few leaves, a pebble plops into a pond, a kettle puffs steam, the books on a shelf shuffle. They are
+the [Office](office.md), [Social](social-pieces.md), [Amenities](office-amenities.md), [Venue](venue-pieces.md) and
+[Team](team-pieces.md) pieces as they are, plus a moment each time you arrive; nothing about them is stored.
+
+The owner's request (2026-11-07): "we have lots of delightful events that happen for many static elements, like trees
+etc. at the moment they happen "Some of the time", I want them to happen every time. Also do a review of other
+elements like these to make sure all the static non interactible elements do something when I am next to them".
 
 ## Why
 
-A Space full of trees, ponds and fireplaces that never respond feels like a picture of a place. A real garden rustles
-when you brush it. A moment that answers your walk, only sometimes, makes the Space feel alive and rewards wandering,
-without asking anything of anyone or getting in the way of a meeting.
+A Space full of trees, shelves and kettles that never respond feels like a picture of a place. A real garden rustles
+when you brush it, every time. A moment that answers every arrival makes the Space feel alive, rewards wandering and is
+never one that "doesn't work", without asking anything of anyone or getting in the way of a meeting.
 
-## The moments
+## Which pieces have a moment
 
-Each moment is short (under three seconds), soft and drawn over the piece's own art. Nothing flashes, nothing makes a
-sound, and the piece is back exactly as it was when the moment ends.
+Every piece you place is one of three:
 
-| Piece           | Moment                                                                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tree            | **Brushed**: the tree rocks gently away from your side and settles, and five leaves (one turned yellow) flutter down to the ground and fade |
-| Outdoor Plant   | **Rustled**: the bush shivers and a pink butterfly, then a little yellow one, flutter up out of it and away                                 |
-| Plant           | **Rustled**: the pot plant shivers and one leaf drifts down beside its pot                                                                  |
-| Pond            | **A pebble**: a pebble arcs in from your side, plops into the water with a few droplets, and two rings ripple out and fade                  |
-| Fountain        | **A coin**: a coin flips up from your side, drops into the basin with a glint of light and a small ring on the water                        |
-| Fireplace       | **Stoked**: the flames flare up and settle, a handful of sparks rise in the firebox, and the glow on the hearth brightens for a moment      |
-| Campfire        | **Stoked**: the flames flare up and settle, sparks rise and drift above the fire, and the glow on the ground brightens                      |
-| Vending Machine | **A can drops**: a can tips off a shelf behind the glass and drops to the pickup flap, and the little display blinks                        |
+- **Interactive**: it already does something when you click it or walk up to it (you sit, get a drink, travel, ring,
+  play, read). It plays no moment: its own answer is the feedback.
+- **Structural**: it is the building or the ground (a room, a wall, a floor, a rug). It plays no moment.
+- **Static**: everything else, which just sits there. **Every static piece has a moment of its own.**
 
-The side a moment plays from is yours: a tree rocks away from where you stand, and a pebble or a coin comes from your
-side of the water.
+| Piece                                                                                                                                                                                             | Kind        | When you are next to it                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Chair, Desk, Sofa, Meeting Table, Long Table, Bar Stool, Bench, Picnic Table, Hammock, Bean Bag, Reading Nook, Office Pod, Nap Pod, Treadmill, Weight Bench, Phone Booth, Standing Desk, Hot Desk | Interactive | You sit or stand in it (and some set your status)                                                                         |
+| Ping-Pong Table                                                                                                                                                                                   | Interactive | You take an end and play                                                                                                  |
+| Water Cooler, Coffee Machine, Drinks Cabinet, Drinks Fridge                                                                                                                                       | Interactive | You get a drink, and the machine answers (bubbles, a drip)                                                                |
+| Arcade Machine                                                                                                                                                                                    | Interactive | Insert Coin shows                                                                                                         |
+| Reception Desk                                                                                                                                                                                    | Interactive | Welcome shows, and its bell rings on a press                                                                              |
+| Pet Bed                                                                                                                                                                                           | Interactive | Its dog wanders the room and is patted                                                                                    |
+| Jukebox                                                                                                                                                                                           | Interactive | Its music plays in its room; its button plays and stops it                                                                |
+| Door                                                                                                                                                                                              | Interactive | It swings when you go through                                                                                             |
+| Portal, Avatar Pad, Elevator, Stairs, Directory, Signpost                                                                                                                                         | Interactive | You travel, or a press takes you                                                                                          |
+| Notice Board, World Clock, Calendar Wall, Suggestion Box                                                                                                                                          | Interactive | A press opens it                                                                                                          |
+| Screen, Room Sign, Timer, Stopwatch, Mode Button, Focus Button, Link Card, Video                                                                                                                  | Interactive | A press uses it, or its face is live                                                                                      |
+| Window                                                                                                                                                                                            | Interactive | It lets light in; walked up to like the floor                                                                             |
+| Room, Corridor, Stage, Rug, Grass, Garden Path, Garden Fence, Fence                                                                                                                               | Structural  | Nothing                                                                                                                   |
+| Tree                                                                                                                                                                                              | Static      | **Brushed**: it rocks away from you and settles, and five leaves (one turned yellow) flutter down and fade                |
+| Outdoor Plant                                                                                                                                                                                     | Static      | **Rustled**: the bush shivers and a pink butterfly, then a little yellow one, flutter up and away                         |
+| Plant                                                                                                                                                                                             | Static      | **Rustled**: the pot plant shivers and one leaf drifts down beside its pot                                                |
+| Pond                                                                                                                                                                                              | Static      | **A pebble**: a pebble arcs in from your side, plops in with a few droplets, and two rings ripple out                     |
+| Fountain                                                                                                                                                                                          | Static      | **A coin**: a coin flips up from your side and drops into the basin with a glint and a ring                               |
+| Fireplace                                                                                                                                                                                         | Static      | **Stoked**: the flames flare and settle, sparks rise in the firebox, the hearth's glow brightens                          |
+| Campfire                                                                                                                                                                                          | Static      | **Stoked**: the flames flare and settle, sparks rise above the fire, the glow on the ground brightens                     |
+| Vending Machine                                                                                                                                                                                   | Static      | **A can drops**: a can tips off a shelf and drops to the pickup flap, and the display blinks                              |
+| Bookshelf                                                                                                                                                                                         | Static      | **Shuffled**: a wave runs along the middle and bottom shelves from your side, each book hopping and settling              |
+| Bar                                                                                                                                                                                               | Static      | **Clink**: the three glasses on the bar hop in turn, each catching a glint of light                                       |
+| Garden Umbrella                                                                                                                                                                                   | Static      | **A breeze**: the canopy rocks away from you on its pole and its scalloped edge ripples                                   |
+| Pool Table                                                                                                                                                                                        | Static      | **A break**: the cue ball rolls into the rack, the balls jostle, and the cue ball draws back to its spot                  |
+| Foosball Table                                                                                                                                                                                    | Static      | **A goal**: the ball shoots into the goal away from you, the goal flashes, the figures jiggle, the ball is back at centre |
+| Dartboard                                                                                                                                                                                         | Static      | **Thunk**: a dart flies in from your side and lands near the bull, the board shudders, the dart fades                     |
+| Printer                                                                                                                                                                                           | Static      | **A page**: a printed page slides out of the slot, the paper stack dips as it feeds, the light blinks                     |
+| Copier                                                                                                                                                                                            | Static      | **A copy**: a light bar sweeps under the lid, the display blinks, and a copy slides onto the top tray                     |
+| Lockers                                                                                                                                                                                           | Static      | **A note**: the bank rattles and a folded note slips out of the vent of the locker nearest you and flutters down          |
+| Coat Rack                                                                                                                                                                                         | Static      | **Swinging**: the coats and the scarf swing from their hooks away from you, and the hat hops                              |
+| Umbrella Stand                                                                                                                                                                                    | Static      | **Rattled**: the three umbrellas jiggle in turn in the stand, and a raindrop drips from it onto the floor                 |
+| Kitchen Counter                                                                                                                                                                                   | Static      | **Ajar**: the cupboard door nearest you swings open a little and shuts with a bounce                                      |
+| Kitchen Sink                                                                                                                                                                                      | Static      | **A drip**: the tap drips three drops into the sink, each with a ring, and the tea towel sways                            |
+| Fridge                                                                                                                                                                                            | Static      | **A cold puff**: a puff of cold air spills from the door seal, and the notes on the door flutter                          |
+| Microwave                                                                                                                                                                                         | Static      | **Ding**: the window glows warm, the display blinks, and a little sparkle pings over its corner                           |
+| Kettle                                                                                                                                                                                            | Static      | **Boiled**: three puffs of steam rise from the spout and the lid rattles                                                  |
+| Toilet Cubicle                                                                                                                                                                                    | Static      | **Flushed**: the cistern's button dips and the water in the bowl swirls in and settles                                    |
+| Washbasin                                                                                                                                                                                         | Static      | **A drip**: the tap drips into the basin with a ring, and a light sweeps across the mirror                                |
+| Hand Dryer                                                                                                                                                                                        | Static      | **Whoosh**: it hums, its light blinks, and three lines of warm air blow down from the nozzle                              |
+| Car Park                                                                                                                                                                                          | Static      | **Unlocked**: the car nearest you flashes its headlights twice                                                            |
+| Bike Rack                                                                                                                                                                                         | Static      | **A spin**: the front wheel of the bike nearest you spins and slows, and its bell glints                                  |
+| Swimming Pool                                                                                                                                                                                     | Static      | **A duck**: a rubber duck bobs up in the water on your side, rides two ripples and dips away                              |
+| Stage Curtains                                                                                                                                                                                    | Static      | **Rustled**: the two drapes sway from the rail and their tassels swing                                                    |
+| Podium                                                                                                                                                                                            | Static      | **Mic check**: the microphone bobs, sound rings out of it, and its red light blinks                                       |
+| Team Photo Wall                                                                                                                                                                                   | Static      | **Say cheese**: a camera flash goes off across the wall, with a glint on its plate                                        |
+| Pillar                                                                                                                                                                                            | Static      | **Catching the light**: a soft band of light slides down its shaft                                                        |
+| Column                                                                                                                                                                                            | Static      | **A sparrow**: a sparrow drops onto the capital, hops, and flies off away from you                                        |
 
-A Fireplace or a Vending Machine plays its moment only facing down, on the front drawing its flames and shelves are
-in; turned to show its back or its side ([furniture-facing.md](furniture-facing.md)) it stays still.
+Each moment is short (under three seconds), soft and drawn over the piece's own art. Nothing flashes hard, nothing
+makes a sound, and the piece is back exactly as it was when the moment ends.
+
+The side a moment plays from is yours: a tree, a coat rack or an umbrella's canopy rocks away from where you stand; a
+pebble, a coin or a dart comes from your side; a wave of books starts at your end; the locker, cupboard, car or bike
+that moves is the one nearest you; a sparrow flies off away from you.
+
+**Turned pieces.** A moment's art sits on the front drawing (a fire's flames, a book on its shelf). A piece turned to
+show its back or its side ([furniture-facing.md](furniture-facing.md)) plays a **nudge** instead: the whole drawing
+gives a small bump and settles, as if you had brushed it, so it still answers. A Tree, an Outdoor Plant and a Plant
+look the same from every side and play their own moment at every facing.
 
 ## When one plays
 
 - **Walking right next to the piece**: your character's feet come within **24 px** of the piece's base (the strip
-  from part way down its drawing to just below it; all round a pond or a campfire, which you walk round). The
-  moment is decided on the step you arrive, never while you stand there.
-- **Occasionally**: an arrival plays a moment **one time in two**. A piece that has stayed still twice in a row plays
-  on your third arrival, so it is never one that "doesn't work".
-- **Rested**: one piece asks again at most once every **20 seconds**, whatever the answer, and no moment plays within
-  **4 seconds** of the last one anywhere on the tab, so a walk through a wood is a rustle now and then, not a cascade.
+  from part way down its drawing to just below it; all round a pond, a campfire or a swimming pool, which you walk
+  round). A piece on a wall (a Dartboard, a Hand Dryer, a Team Photo Wall, Stage Curtains) reaches **56 px** below
+  it, to the floor in front of the wall, and one standing on a counter (a Microwave, a Kettle) **96 px**, to the floor
+  in front of the counter. The moment is decided on the step you arrive, never while you stand there.
+- **Every time**: every arrival plays the piece's moment. Walk away and come back, and it plays again.
+- **Not over itself**: a piece whose moment is still playing does not start it again. Step out and back in before it
+  ends and nothing restarts; once it has ended, the next arrival plays.
+- **Every piece you reach**: arriving at two pieces on one step (a coat rack beside an umbrella stand) plays both.
 - **Only in Avatar mode**, walking. Out of it nothing plays. There is no press: walking up is the whole interaction
-  (a click on a piece while walking still walks you to it, and arriving can play its moment).
+  (a click on a piece while walking still walks you to it, and arriving plays its moment).
 
 ## Who sees it
 
 **Only you.** A moment plays on your screen alone; it is never sent to the room and never stored. Others see your
 character walk up to the tree, not the leaves. Why: the moment is a small reward for your own walk, and sending one
 would put a message on the room's presence fan-out for something that changes nothing about the Space. A shared
-moment (one `piece-moment` presence op, rate-limited by the rests above) is a follow-up if the owner wants it
+moment (one `piece-moment` presence op) is a follow-up if the owner wants it
 ([Future work](../005-project-roadmap/future-work.md)).
 
 ## Share roles
@@ -73,6 +130,8 @@ stands in for it. The pieces' own resting loops already hold still there ([Socia
 
 ## Not in scope
 
-- Sound, shared moments, moments on a press, and moments for other pieces (a bookshelf's book, the hammock swaying):
-  follow-ups.
+- Sound, shared moments and moments on a press: follow-ups.
+- Moments for interactive and structural pieces. An interactive piece with no walk-up answer of its own (the Notice
+  Board, the World Clock, the Calendar Wall, the Suggestion Box, the Window) is a follow-up
+  ([Future work](../005-project-roadmap/future-work.md)).
 - A moment in an export or a still image.
