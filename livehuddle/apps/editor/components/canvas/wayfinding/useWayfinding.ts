@@ -16,7 +16,12 @@ import {
   type WayPoint,
   type WayTab,
 } from '@/lib/wayfinding';
-import { createWayfindingStore, type WalkTarget, type Wayfinding } from './wayfinding-store';
+import {
+  createWayfindingStore,
+  type WalkTarget,
+  type Wayfinding,
+  type WayfindingActions,
+} from './wayfinding-store';
 
 // The Directory's, the Elevator's and the Stairs' half of the canvas (docs/specs/009-elements/directory.md,
 // elevator.md, stairs.md; blueprints/wayfinding.md): fills the store the faces read (the space's tabs and who is
@@ -212,6 +217,32 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
     [],
   );
 
+  // A jump (the Directory's Go, a ride, a climb's travel), the one the actions share.
+  const goTo: WayfindingActions['go'] = ({ tabId, point, ignoreId, then }) => {
+    const {
+      walking: on,
+      activeTabId: tabNow,
+      avatar: walk,
+      onFollowLink,
+      onTravelToTab,
+    } = latest.current;
+    pendingWalkRef.current = null;
+    // Travel keeps Avatar mode (avatar-mode.md "Changing tab"): the character is placed at the destination in
+    // the same update as the switch, so the new tab never draws it anywhere else.
+    if (on) {
+      ignoreRef.current = ignoreId ?? null;
+      walk.teleportTo(point, ignoreId);
+    }
+    if (!tabNow || tabId === tabNow) {
+      centreOn(point);
+      arrive(ignoreId);
+      return;
+    }
+    pendingGoRef.current = { tabId, point, ignoreId, then };
+    if (onTravelToTab) onTravelToTab(tabId);
+    else onFollowLink({ kind: 'tab', tabId });
+  };
+
   const [wayfinding] = useState<Wayfinding>(() => ({
     store,
     actions: {
@@ -224,30 +255,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
         pendingWalkRef.current = to;
         latest.current.enterWalking();
       },
-      go: ({ tabId, point, ignoreId, then }) => {
-        const {
-          walking: on,
-          activeTabId: tabNow,
-          avatar: walk,
-          onFollowLink,
-          onTravelToTab,
-        } = latest.current;
-        pendingWalkRef.current = null;
-        // Travel keeps Avatar mode (avatar-mode.md "Changing tab"): the character is placed at the destination in
-        // the same update as the switch, so the new tab never draws it anywhere else.
-        if (on) {
-          ignoreRef.current = ignoreId ?? null;
-          walk.teleportTo(point, ignoreId);
-        }
-        if (!tabNow || tabId === tabNow) {
-          centreOn(point);
-          arrive(ignoreId);
-          return;
-        }
-        pendingGoRef.current = { tabId, point, ignoreId, then };
-        if (onTravelToTab) onTravelToTab(tabId);
-        else onFollowLink({ kind: 'tab', tabId });
-      },
+      go: goTo,
       climb: ({ from, flight }) => {
         const { walking: on, avatar: walk } = latest.current;
         const moving = on && !prefersReducedMotion();
@@ -256,7 +264,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
         const travel = () => {
           if (climbTimerRef.current !== null) window.clearTimeout(climbTimerRef.current);
           climbTimerRef.current = null;
-          wayfinding.actions.go(
+          goTo(
             moving && landing.top
               ? {
                   tabId: flight.tabId,

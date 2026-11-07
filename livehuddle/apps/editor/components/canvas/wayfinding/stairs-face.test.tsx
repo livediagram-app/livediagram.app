@@ -5,7 +5,7 @@ import { createShape, type BoxedElement, type ShapeElement } from '@livehuddle/d
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import { stairsFlights, type WayTab } from '@/lib/wayfinding';
 import { createWayfindingStore, type Wayfinding } from './wayfinding-store';
-import { StairsPanel } from './StairsFace';
+import { StairsFace, StairsPanel } from './StairsFace';
 import { FLOOR_WAIT_MS } from './useFloorsOnOpen';
 
 // docs/specs/009-elements/stairs.md "The panel", and that every role may take them
@@ -87,7 +87,9 @@ describe('the Stairs panel', () => {
       expect(loadFloors).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('status').textContent).toBe('Loading this floor');
       expect(screen.queryByRole('button', { name: 'Up to Level 2' })).toBeNull();
-      act(() => vi.advanceTimersByTime(FLOOR_WAIT_MS));
+      act(() => {
+        vi.advanceTimersByTime(FLOOR_WAIT_MS);
+      });
       expect(screen.getByRole('button', { name: 'Up to Level 2' })).toBeTruthy();
     } finally {
       vi.useRealTimers();
@@ -130,6 +132,14 @@ function face(readOnly: boolean, wayfinding: Wayfinding) {
   );
 }
 
+describe('without the canvas', () => {
+  it('draws the button but opens nothing (a preview, an export)', () => {
+    render(<StairsFace element={stairs} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Stairs' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
 describe('every role may take them', () => {
   it.each([
     ['an Editor', false],
@@ -147,7 +157,9 @@ describe('every role may take them', () => {
     const { w } = makeWayfinding(TABS, 'g');
     face(true, w);
     expect(screen.queryByRole('dialog', { name: 'Stairs' })).toBeNull();
-    act(() => w.store.set({ openPanelId: 'stairs-1' }));
+    act(() => {
+      w.store.set({ openPanelId: 'stairs-1' });
+    });
     expect(screen.getByRole('dialog', { name: 'Stairs' })).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(w.actions.closePanel).toHaveBeenCalledTimes(1);

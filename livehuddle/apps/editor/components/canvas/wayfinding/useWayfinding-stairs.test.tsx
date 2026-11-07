@@ -68,22 +68,30 @@ describe('taking the Stairs', () => {
     climb();
     expect(walkTo).toHaveBeenCalledWith(stairsTopPoint(down), expect.any(Function));
     expect(onTravelToTab).not.toHaveBeenCalled();
-    act(() => walkTo.mock.calls[0]![1]());
+    act(() => {
+      (walkTo.mock.calls[0]![1] as () => void)();
+    });
     expect(teleportTo).toHaveBeenCalledWith(stairsTopPoint(up), up.id);
     expect(onTravelToTab).toHaveBeenCalledWith('l2');
     showUpstairs();
     expect(walkTo).toHaveBeenLastCalledWith(stairsFootPoint(up));
     // The fallback never travels a second time.
-    act(() => vi.advanceTimersByTime(CLIMB_MAX_MS));
+    act(() => {
+      vi.advanceTimersByTime(CLIMB_MAX_MS);
+    });
     expect(onTravelToTab).toHaveBeenCalledTimes(1);
   });
 
   it('travels after CLIMB_MAX_MS when the climb never arrives', () => {
     const { onTravelToTab, climb } = setup();
     climb();
-    act(() => vi.advanceTimersByTime(CLIMB_MAX_MS - 1));
+    act(() => {
+      vi.advanceTimersByTime(CLIMB_MAX_MS - 1);
+    });
     expect(onTravelToTab).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(1));
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(onTravelToTab).toHaveBeenCalledWith('l2');
   });
 
@@ -136,7 +144,9 @@ describe('taking the Stairs', () => {
     const { hook, onTravelToTab, climb } = setup();
     climb();
     hook.unmount();
-    act(() => vi.advanceTimersByTime(CLIMB_MAX_MS));
+    act(() => {
+      vi.advanceTimersByTime(CLIMB_MAX_MS);
+    });
     expect(onTravelToTab).not.toHaveBeenCalled();
   });
 

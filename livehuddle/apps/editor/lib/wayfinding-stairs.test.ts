@@ -25,7 +25,9 @@ describe('the Stairs', () => {
     expect(top.y).toBeLessThan(flight.y + flight.height / 2);
     const foot = stairsFootPoint(flight);
     expect(foot.x).toBe(148);
-    expect(foot.y - avatarFigureHeight(avatarScale('regular'))).toBeGreaterThanOrEqual(flight.y + flight.height);
+    expect(foot.y - avatarFigureHeight(avatarScale('regular'))).toBeGreaterThanOrEqual(
+      flight.y + flight.height,
+    );
   });
 
   it('goes up to the next tab and down to the one before, nothing past the ends', () => {
