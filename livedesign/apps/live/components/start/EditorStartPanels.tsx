@@ -27,8 +27,9 @@ export function EditorStartPanels() {
     tabId: activeTab.id,
     tabHasContent: activeTab.elements.length > 0,
   });
+  // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
   const templateStart = templateStartMode({
-    hydrated,
+    hydrated: hydrated && !ctx.activeTabConnected,
     zen: zenMode,
     embed: embedMode,
     readOnly: isReadOnly,

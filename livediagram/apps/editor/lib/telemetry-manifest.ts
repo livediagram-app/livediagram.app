@@ -140,6 +140,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Session·Deleted',
   'Session·Opened',
   'Session·SignedOut',
+  'Tab·Added',
   'Tab·Aligned',
   'Tab·Changed',
   'Tab·Cleared',

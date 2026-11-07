@@ -1,4 +1,4 @@
-import type { ComponentProps, Dispatch, SetStateAction } from 'react';
+import type { ComponentProps, Dispatch, MouseEvent, SetStateAction } from 'react';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import type { Tab } from '@livedocuments/document';
 import type { Participant } from '@/lib/identity';
@@ -14,6 +14,8 @@ import { TAB_RENAME_FIELD_CLASS } from '@liveworkspace/workbench/components/chro
 import { TabFrame } from '@liveworkspace/workbench/components/chrome/TabFrame';
 import type { CanvasMenuActions } from './TabBar';
 import type { AccessLevel } from '@livedocuments/api-schema';
+import { ConnectedTab } from '@liveworkspace/workbench/components/chrome/ConnectedTab';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 // One tab in the bar: this app's pieces (its rename field, presence avatars, menu and split view mark) in the
 // shared TabFrame, which draws the tab alike in every editor ("How a tab looks" in the editor spec). Loose tabs and
@@ -91,6 +93,58 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
   }
   const isActive = tab.id === activeId;
   const isEditing = editingId === tab.id;
+  const presenceStack = (
+    <TabPresenceStack
+      participants={participantsByTab.get(tab.id) ?? []}
+      selfId={selfId}
+      selfRole={selfRole}
+      followingId={followingId}
+      followerCount={followerCount}
+      onOpenCollaborators={onOpenCollaborators}
+    />
+  );
+  const onContextMenu = readOnly
+    ? undefined
+    : (e: MouseEvent) => {
+        // Right-click anywhere on the tab (name, gap, avatars, menu button) opens the tab menu, switching to
+        // the clicked tab first so the menu's open-tab actions target what was pointed at.
+        e.preventDefault();
+        if (!isActive) onSelect(tab.id);
+        setMenuFor(tab.id);
+      };
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): its file's app logo and
+  // name, never renamed by hand, dragged, foldered and opened like any tab.
+  const connection = connectionOf(tab);
+  if (connection) {
+    return (
+      <ConnectedTab
+        key={tab.id}
+        id={tab.id}
+        name={tab.name}
+        active={isActive}
+        readOnly={readOnly}
+        connection={connection}
+        hostApp="livedocuments"
+        caret={reorderDrag.caretFor(tab.id)}
+        dragging={reorderDrag.isDragging(tab.id)}
+        dragHandlers={reorderDrag.handlersFor(tab.id)}
+        onSelect={() => onSelect(tab.id)}
+        onContextMenu={onContextMenu}
+        hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
+        presence={presenceStack}
+        menu={
+          isActive && !readOnly ? (
+            <EllipsisMenuButton
+              open={menuFor === tab.id}
+              onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}
+              onClose={() => setMenuFor(null)}
+              {...tabMenuProps(tab, () => setMenuFor(null))}
+            />
+          ) : null
+        }
+      />
+    );
+  }
   return (
     <TabFrame
       key={tab.id}
@@ -113,17 +167,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
       }
       onSelect={() => onSelect(tab.id)}
       onRequestRename={() => setEditingId(tab.id)}
-      onContextMenu={
-        readOnly
-          ? undefined
-          : (e) => {
-              // Right-click anywhere on the tab (name, gap, avatars, menu button) opens the tab menu, switching to
-              // the clicked tab first so the menu's open-tab actions target what was pointed at.
-              e.preventDefault();
-              if (!isActive) onSelect(tab.id);
-              setMenuFor(tab.id);
-            }
-      }
+      onContextMenu={onContextMenu}
       renameField={
         isEditing ? (
           <NameEditor
@@ -147,16 +191,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         ) : null
       }
       hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
-      presence={
-        <TabPresenceStack
-          participants={participantsByTab.get(tab.id) ?? []}
-          selfId={selfId}
-          selfRole={selfRole}
-          followingId={followingId}
-          followerCount={followerCount}
-          onOpenCollaborators={onOpenCollaborators}
-        />
-      }
+      presence={presenceStack}
       menu={
         isActive && !isEditing && !readOnly ? (
           <EllipsisMenuButton

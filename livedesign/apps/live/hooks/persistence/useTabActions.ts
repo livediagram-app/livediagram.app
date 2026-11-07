@@ -24,6 +24,7 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { apiLinkTab } from '@/lib/api-client';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -179,7 +180,9 @@ export function useTabActions(deps: TabActionsDeps) {
 
   const duplicateTab = (id: string) => {
     const src = tabs.find((t) => t.id === id);
-    if (!src) return;
+    // A connected tab is never duplicated (connected-tabs.md "How it looks"): a copy would hold a connection the index
+    // opens only in its own tab.
+    if (!src || connectionOf(src)) return;
     // A still-loading source is an empty placeholder — copying it (and
     // marking the copy loaded below) would persist a permanently empty
     // tab. The lazy fetch resolves in well under a second; asking the

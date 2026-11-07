@@ -54,6 +54,7 @@ import {
 } from './start-planning-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { ImportPicture } from './ImportPicture';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 import { COMMUNITY_START_GROUP, communityStartTiles } from './community-start-cards';
 
 const RAIL_ICONS: Record<Exclude<StartCategory, 'import'>, ReturnType<typeof lucideGlyph>> = {
@@ -194,6 +195,8 @@ export function StartPlanning({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  const connect = useConnectStart();
   // How the Community's tiles draw here: all in Inspiration, the credit in the panel's muted ink.
   const tiles = communityStartTiles(palette);
   const plan = usePlan();
@@ -297,6 +300,7 @@ export function StartPlanning({
       onChoose={choose}
       // Where the new plan lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(p) => <StartSaveSwitch palette={p} />}
+      connect={connect}
     />
   );
 }

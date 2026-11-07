@@ -43,6 +43,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'presenter-controls': '#8b5cf6',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
+  'connected-files': '#4f46e5',
   'auto-align': '#22c55e',
   'auto-layout': '#2563eb',
   about: '#0891b2',

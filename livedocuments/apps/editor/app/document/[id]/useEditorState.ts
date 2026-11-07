@@ -104,7 +104,16 @@ import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
-import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
+import {
+  apiNotifyActionAssigned,
+  apiSaveDocumentMeta,
+  apiSaveSelf,
+  apiSaveTab,
+} from '@/lib/api-client';
+import { documentGrant } from '@/lib/api/document-grants';
+import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { getSessionSharePassword } from '@/lib/api/core';
+import { useConnectedTabActions } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useDocumentList } from '@/hooks/persistence/useDocumentList';
 import { useDocumentShareState } from '@/hooks/persistence/useDocumentShareState';
@@ -1504,6 +1513,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // tick / element-add helpers all consult this early-return guard
   // so a single check covers drag, edit, paint, delete, etc.
   const activeTabLocked = activeTab.locked === true;
+  // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md) holds no content: every edit is shut on it.
+  const activeTabConnected = connectionOf(activeTab) !== null;
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md). Until the active tab's content has
   // landed it's an empty placeholder, NOT its real server row. The canvas
   // shows a blocking overlay over this state — but that overlay only
@@ -1533,7 +1544,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // checks so a viewer can still select and inspect.
   // A Participant commits too: every one of its commits passes participant.guardCommit.
   const editsBlocked =
-    activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+    activeTabLocked ||
+    activeTabConnected ||
+    (isReadOnly && !participant.participating) ||
+    activeTabLoadState !== 'ready';
   // What a picture swap answers to (docs/specs/009-elements/images.md "Locked images"): all of the above but the
   // tab's lock, which holds every element's place, not an image's picture.
   const pictureBlocked =
@@ -1846,6 +1860,31 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onSlidesImported: slideDeck.adoptImportedSlides,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
+    toast,
+  });
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new
+  // tab, the host's grant for opening one, and Connect Again.
+  const connectedTabs = useConnectedTabActions({
+    tabs,
+    hostKind: 'document',
+    hostId: documentId,
+    // The share code and its password, as the room asks with: a renewal without the password is refused.
+    grantFor: async (id) =>
+      (
+        await documentGrant(
+          id,
+          sessionShareCode ? { code: sessionShareCode, password: getSessionSharePassword() } : null,
+        )
+      )?.grant ?? null,
+    createTab,
+    saveTab: (tab) => apiSaveTab(selfParticipant.id, documentId ?? '', tab, sessionShareCode),
+    commitTabs,
+    markTabLoaded,
+    openTab: (id) => {
+      setActiveId(id);
+      setSelectedId(null);
+      setEditingId(null);
+    },
     toast,
   });
   // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
@@ -2659,6 +2698,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ...realtime,
     activeTab,
     activeTabLocked,
+    activeTabConnected,
+    connectedTabs,
     // Layers (docs/specs/006-document/layers.md): the normalised stack, the session-scoped active
     // layer, per-layer element counts, the interaction-gate id sets, and
     // the panel / context-menu ops.

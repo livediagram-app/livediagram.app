@@ -16,6 +16,13 @@ are, the panel draws them.
 - **Rail:** **Recommended**, then the groups, each with its glyph and count; long names wrap beside the glyph on a
   wide rail. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on its own
   tint fell under WCAG AA.
+- **Connect liveworkspace File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
+  the rail's last entry, stuck to its very bottom under a hairline (the shared `ConnectRailEntry`), the other apps'
+  logos fanned at its end; on a phone the last chip. Chosen, the content area shows the shared Connect list (Recent
+  across every app, the role, both ways) in the panel's colours, its code loaded only then (`useConnectStart`). A
+  press connects the file: the design gains the connected tab, which takes the place of this empty tab unless it is
+  the design's only tab, and opens ready. Offered only to a signed-in Editor of a design on the server, outside a
+  tab-scoped link, an embed and a workbench.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the panel picks no theme, so
   the scaffold takes the colours the tab already wears (its own theme, or the one a new tab inherited from the tab it

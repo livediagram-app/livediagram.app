@@ -1105,6 +1105,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Opened|SideBySideDrag':
     'Someone dragged a tab to the right edge of the screen to open it beside the tab they were editing.',
   'Tab|Opened|SideBySideMenu': "Someone opened a tab side by side from the tab's menu.",
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md), sent by the shared workbench code.
+  'Tab|Added|Connected':
+    'Someone connected a file from a liveworkspace app to this diagram as a tab, one way.',
+  'Tab|Added|ConnectedBoth':
+    'Someone connected a file to this diagram both ways, so each file gained a tab opening the other.',
+  'Tab|Added|ConnectedAgain':
+    'Someone mended a connected tab that opened nothing with Connect Again.',
+  'Tab|Opened|Connected': 'Someone opened the file a connected tab stands for.',
   'Tab|Selected|SideBySideClick':
     'Someone clicked into the other side by side pane, moving the editor (its toolbars and panels) there.',
   'Tab|Selected|SideBySideHover':
@@ -2640,6 +2648,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Session|SignedIn': 'A visitor just signed in to their account.',
   'Session|SignedOut': 'A visitor just signed out.',
   'Session|SignedUp': 'A visitor just created an account.',
+  'Tab|Added': 'Someone connected a file from a liveworkspace app to this diagram as a tab.',
   'Tab|Aligned':
     "Someone tidied a tab's layout with Auto Layout, arranging its elements automatically.",
   'Tab|Changed': "Someone changed a tab-wide setting, such as the tab's default font or text size.",

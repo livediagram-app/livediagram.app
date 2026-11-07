@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Connected Files',
+  description:
+    'Connect a file from any liveworkspace app as a tab in your design: a diagram, a plan, a document or another design, one tap away from the work it belongs to.',
+  path: '/help/tabs/connected-files/',
+});
+
+<ArticleLayout title="Connected Files" description="Add a tab that opens a file from any liveworkspace app, so every part of a project is one tap away." categoryTitle="Tabs" categorySlug="tabs">
+
+A project rarely lives in one file. The screens are a design, the architecture is a livediagram canvas, the delivery plan is in liveplanner and the brief is a livedocuments document. A **connected file** is a tab in your design's tab bar that stands for one of those files. It shows the file's app logo and its name, and pressing it opens the file.
+
+## Connecting a file
+
+<Step n={1}>
+  Add a tab with the **+** at the end of the tab bar (or open a design's empty tab). Its start
+  screen opens.
+</Step>
+
+<Step n={2}>
+  Press **Connect liveworkspace File**, the last entry at the very bottom of the start screen's
+  sidebar. Your most recent files from every liveworkspace app are listed, newest first, each with
+  its app's logo. **Find a file** narrows the list by name.
+</Step>
+
+<Step n={3}>
+  Choose the **Role** anyone opening the tab gets on that file: **Editor** (chosen unless you change
+  it), **Participant** or **Viewer**. The line under it says what that means.
+</Step>
+
+<Step n={4}>
+  Press the file. The connected tab takes the empty tab's place at the end of the tab bar, and
+  opens.
+</Step>
+
+Connecting makes a share link on the file you connect, at the role you chose, so everyone who can open your design can open it from the tab, even if they could not open it before. It is listed in that file's **Share** dialog as **Connected from** your design, where its owner can see it and end it. You can only connect files you could share yourself: your own, or your team's.
+
+### Both ways
+
+Turn on **Add connection to both files** before you press a file, and that file gains a tab back to this design too. It needs you to be able to share this design as well (its owner, or a member of its team). If the other file cannot be reached just then, its tab back is not made and a message says so; your design keeps its connected tab.
+
+## Opening a connected file
+
+Press the connected tab. A file in another app opens in a new browser tab (the tab carries a small arrow for that), and another design opens in place. The tab's page stays behind with **Open Again**, in case your browser held the new tab back.
+
+A connected tab only opens its file when you press it. Opening the design on a connected tab, or connecting one, shows its page with **Open** instead, so nothing opens by itself.
+
+The tab's name follows the file's: when the file is renamed, the tab takes the new name the next time an editor opens it. A connected tab holds no pages of its own.
+
+## Arranging and removing
+
+A connected tab is a tab like any other: drag it to reorder, and put it in a [tab folder](/help/tabs/tab-folders/) from its menu (**⋯** on the open tab, or right-click it) with **Organise in Tab Folder**.
+
+**Remove Tab** in its menu removes the tab and nothing else: the file stays exactly as it was. Its share link is deleted with it, so anyone it let in is let out again. Undo brings the tab back, without its link: it offers **Connect Again**.
+
+## When a connected tab needs attention
+
+A small amber dot on the tab means it opens nothing just now. Its page says why:
+
+- **This file is no longer there.** The file was moved to the Trash or deleted. Remove the tab.
+- **This connection's link was removed.** The file's owner ended its link from its Share dialog. **Connect Again** makes a new one.
+- **Connect this copy.** The tab came with a copy of the design or an import, so it does not open the file yet. **Connect Again** connects it here.
+- **Connected files open when you are online.** A design saved only in this browser, or no network.
+
+## Who can do what
+
+- **Editors** connect files, reorder, folder and remove connected tabs, and use Connect Again.
+- **Participants** and **Viewers** see connected tabs and open them; the file opens at the role the tab was connected with.
+
+Connected tabs are made from the editor only. Agents and the CLI can see a connected tab's app and name, never where it leads, and cannot make one.
+
+</ArticleLayout>

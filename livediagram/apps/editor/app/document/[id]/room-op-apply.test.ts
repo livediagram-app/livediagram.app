@@ -172,6 +172,27 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]).toBe(two);
     expect(next[2]!.elements).toEqual([]);
   });
+
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the index's reverse tab arrives in the outline.
+  it("document-meta carries a connected tab's connection, and keeps one a summary leaves out", () => {
+    const connection = {
+      id: 'cn_abcdefghijklmnopqrstuvwx',
+      app: 'liveplanner',
+      itemId: 'p1',
+    } as const;
+    const held = { ...tab(), connection } as Tab;
+    const next = applyRoomOpToTabs([held], {
+      kind: 'document-meta',
+      name: 'D',
+      tabs: [
+        // A rename relayed for an agent names the tab without its connection.
+        { id: 't1', name: 'Tab 1', orderIndex: 0 },
+        { id: 't9', name: 'Launch plan', orderIndex: 1, connection },
+      ],
+    });
+    expect(next[0]).toBe(held);
+    expect((next[1] as Tab & { connection?: unknown }).connection).toEqual(connection);
+  });
 });
 
 // docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people press the same done check in the same

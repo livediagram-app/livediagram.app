@@ -31,7 +31,8 @@ exports, copies, offline copies, Community copies, agents' reads and every tab l
 
 ## Connecting
 
-From an editor's start screen, **Connect liveworkspace File** lists the person's most recent items across every app
+From an editor's start screen, **Connect liveworkspace File** (the last entry of the start screen's sidebar, pinned
+to its very bottom under a hairline, apart from the categories; on a phone the last chip of the row) lists the person's most recent items across every app
 (the index's Recent, the host itself left out), each with its app's logo. Above the list:
 
 - **Role**: the level the pass grants, Editor first and chosen, then Participant and Viewer. The role is picked
@@ -41,9 +42,17 @@ From an editor's start screen, **Connect liveworkspace File** lists the person's
 - **Add connection to both files**: off by default.
 - **Find a file**: narrows the list by name as the person types.
 
-One tap on an item connects it. The host gains a connected tab at the end of its tab bar, loose, and it opens in the
-host at once as a tab would. An item the host is already connected to is marked Connected; a tap on it goes to that
-tab rather than making a second.
+One tap on an item connects it. The host gains a connected tab at the end of its tab bar, loose, and it becomes the
+open tab at once, showing its page ready to open the file (below). The empty tab the start screen was on gives way to
+it (one change, so undo brings that tab back), unless it is the item's only tab, so a tab added only to connect a file
+leaves no blank tab behind. An item the host is already connected to is marked
+Connected; a tap on it goes to that tab rather than making a second. When both ways was asked and the other file
+could not be reached, a toast says so ("<name> could not be reached, so it has no tab back here."); the host's tab
+stands.
+
+The entry shows only where connecting can work: the person is signed in, the item is on the server (not a This
+Browser item), and the session may change its tabs (an Editor's, not a tab-scoped link's, an embed's, a workbench's
+or a Community visitor's). Elsewhere the sidebar has no such entry.
 
 Who may connect:
 
@@ -87,6 +96,11 @@ a connected tab can only ever lead to one of our apps. A target in another app o
 same app opens in place. When the name the index answers differs from the tab's, an Editor's editor renames the tab
 to match.
 
+A connected tab opens its file only when a person asks: a press on its tab (the open tab included, which opens it
+again), or Open on its page. A connected tab that becomes the open tab any other way (the editor loading on it, the
+tab just connected, a tab closed beside it, undo) shows its page **ready**, with Open, and goes nowhere by itself, so
+reloading a host whose open tab is connected to the same app never sends the reader away in a loop.
+
 A connected tab that opens nothing says why, in place of the target, with what can be done:
 
 | Why                                                      | Shown                                                       |
@@ -112,10 +126,12 @@ file, needs attention"). It is dragged, foldered and opened like any tab, and it
 opens nothing, Connect Again, never Duplicate.
 
 **The tab's page.** Opened, a connected tab shows one calm card in place of a canvas, the target app's logo over the
-target's name and a line:
+target's name and a line. A visitor whose share link lands on a connected tab is asked for their name first, as on any
+tab, and sees the card once they have joined:
 
 | State                                | Line                                         | Actions (an Editor)       |
 | ------------------------------------ | -------------------------------------------- | ------------------------- |
+| Ready (not yet opened)               | "A connected <app> file."                    | Open (everyone)           |
 | Opening                              | "Opening <name> in <app>…", the logo turning | none                      |
 | Opened in a new tab (another app)    | "<name> is open in a new tab."               | Open Again                |
 | Opened in place (the same app)       | the target itself; no card                   | none                      |
@@ -124,6 +140,9 @@ target's name and a line:
 | A copy's, an export's or an import's | "Connect this copy to <name>."               | Connect Again, Remove Tab |
 | Offline                              | "Connected files open when you are online."  | none                      |
 | Anything else (the network, limits)  | "<name> could not be opened just now."       | Try Again                 |
+
+A connected tab holds no content: its page stands where the canvas would be, so nothing is drawn, typed or pasted
+onto it (the editor blocks every edit on it, as on a locked tab), and the empty tab's start screen never shows on it.
 
 Open Again exists because a browser may block a new tab it did not see a click make. A Participant or Viewer sees the
 same card without Remove Tab or Connect Again (Remove Tab takes the tab away and never touches the file), and is
@@ -156,6 +175,13 @@ share link nobody can see. The tab comes back offering Connect Again.
 
 A pass can also be deleted from the target's Share dialog, where it is listed as "Connected from <host>" (the host
 app's logo and the host's title, on the pass under its link): the connected tab then offers Connect Again.
+
+## Telemetry
+
+Each editor counts, under its own app, through the shared workbench code: `Tab·Added·Connected` (a file connected one
+way), `Tab·Added·ConnectedBoth` (both ways asked), `Tab·Added·ConnectedAgain` (Connect Again) and
+`Tab·Opened·Connected` (a person opened a connected tab). Never a name, an id or an app: the question is whether
+people connect files and follow them.
 
 ## Security
 

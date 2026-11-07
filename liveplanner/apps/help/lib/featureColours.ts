@@ -33,6 +33,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'session-tools': '#f43f5e',
   'locking-tabs': '#64748b',
   'side-by-side': '#0ea5e9',
+  'connected-files': '#4f46e5',
   about: '#0891b2',
   settings: '#475569',
   // Canvas sub-article guides

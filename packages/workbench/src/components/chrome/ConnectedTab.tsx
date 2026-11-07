@@ -10,6 +10,7 @@ import { lucideArrowUpRight } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { TabFrame, type TabFrameProps } from './TabFrame';
 import { connectedTabPhrase } from '../connect/connect-words';
+import { pickConnectedTab, useConnectedTabBroken } from '../connect/connected-tab-store';
 
 const ArrowGlyph = lucideGlyph(lucideArrowUpRight, 11);
 
@@ -20,15 +21,29 @@ export type ConnectedTabProps = Omit<
   connection: TabConnection;
   // The app this tab bar belongs to: a target in the same app opens in place, so it carries no arrow.
   hostApp: App;
-  // The last open said it opens nothing (gone, its link removed, a copy's): the amber dot.
+  // The last open said it opens nothing (gone, its link removed, a copy's): the amber dot. Absent, the page's last
+  // open says (connected-tab-store).
   broken?: boolean;
 };
 
-export function ConnectedTab({ connection, hostApp, broken = false, ...frame }: ConnectedTabProps) {
+export function ConnectedTab({
+  connection,
+  hostApp,
+  broken: brokenProp,
+  ...frame
+}: ConnectedTabProps) {
   const sameApp = connection.app === hostApp;
+  const brokenSeen = useConnectedTabBroken(connection.id);
+  const broken = brokenProp ?? brokenSeen;
+  const { onSelect, id } = frame;
   return (
     <TabFrame
       {...frame}
+      // A press is the person asking: the tab's page opens the file (the open tab included, which opens it again).
+      onSelect={() => {
+        pickConnectedTab(id);
+        onSelect();
+      }}
       lead={<BrandMark app={connection.app} className="size-3.5" />}
       afterName={
         <>

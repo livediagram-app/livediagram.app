@@ -35,6 +35,16 @@ describe('createTab', () => {
 });
 
 describe('placeholdersFromSummaries', () => {
+  it("carries a connected tab's connection, so it shows as one from the first paint", () => {
+    const connection = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'livedesign', itemId: 'd1' };
+    const [plain, connected] = placeholdersFromSummaries([
+      { id: 'a', name: 'Overview' },
+      { id: 'b', name: 'Screens', connection },
+    ]);
+    expect('connection' in plain!).toBe(false);
+    expect((connected as { connection?: unknown }).connection).toEqual(connection);
+  });
+
   it('materialises a fresh Tab 1 when the API returns zero summaries (never empty)', () => {
     // An empty tabs array makes activeTab undefined and crashes the
     // editor on first elements read, so this guard is load-bearing.

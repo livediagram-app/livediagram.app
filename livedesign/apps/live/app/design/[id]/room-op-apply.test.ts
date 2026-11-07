@@ -118,6 +118,35 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]).toBe(two);
     expect(next[2]!.elements).toEqual([]);
   });
+
+  // liveworkspace/docs/specs/004-index/connected-tabs.md: the outline op carries a connected tab's connection.
+  const connection = {
+    id: 'cn_abcdefghijklmnopqrstuvwx',
+    app: 'liveplanner',
+    itemId: 'plan1',
+  } as const;
+
+  it('design-meta carries a connection onto a new placeholder', () => {
+    const next = applyRoomOpToTabs([tab()], {
+      kind: 'design-meta',
+      name: 'D',
+      tabs: [
+        { id: 't1', name: 'Tab 1', orderIndex: 0 },
+        { id: 't2', name: 'Plan', orderIndex: 1, connection },
+      ],
+    });
+    expect((next[1] as Tab & { connection?: unknown }).connection).toEqual(connection);
+  });
+
+  it('design-meta keeps a local tab connection when the summary has none', () => {
+    const local = { ...tab(), connection } as Tab;
+    const next = applyRoomOpToTabs([local], {
+      kind: 'design-meta',
+      name: 'D',
+      tabs: [{ id: 't1', name: 'Tab 1', orderIndex: 0 }],
+    });
+    expect(next[0]).toBe(local);
+  });
 });
 
 // docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people tick different rows of one checklist

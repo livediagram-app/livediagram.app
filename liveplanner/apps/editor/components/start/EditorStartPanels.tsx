@@ -51,8 +51,10 @@ export function EditorStartPanels() {
   // An empty tab: Start Planning, in the middle of the canvas, for someone who can edit. Anything already drawn (a
   // board, a shape, a view) hides it.
   const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
+  // A connected tab is empty but shows its own page, never a start (connected-tabs.md "How it looks").
   const showPlanBoardPicker =
     hydrated &&
+    !ctx.activeTabConnected &&
     !zenMode &&
     !embedMode &&
     !isReadOnly &&

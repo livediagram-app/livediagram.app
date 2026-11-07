@@ -443,6 +443,54 @@ export const SIDE_BY_SIDE: MetricStack = {
   members: [SIDE_BY_SIDE_OPENED, SIDE_BY_SIDE_FOCUSED, SIDE_BY_SIDE_CLOSED],
 };
 
+// Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): a file from any app connected as a tab, one
+// way or both, connected again, and a connected tab opened. Sent by the shared workbench code.
+export const FILES_CONNECTED: Metric = {
+  category: 'Tab',
+  action: 'Added',
+  type: 'Connected',
+  title: 'Files Connected',
+  blurb: 'A file from any liveworkspace app connected as a tab, one way.',
+};
+
+export const FILES_CONNECTED_BOTH_WAYS: Metric = {
+  category: 'Tab',
+  action: 'Added',
+  type: 'ConnectedBoth',
+  title: 'Connected Both Ways',
+  blurb: 'A file connected with Add connection to both files, so it gained a tab back here too.',
+};
+
+export const FILES_CONNECTED_AGAIN: Metric = {
+  category: 'Tab',
+  action: 'Added',
+  type: 'ConnectedAgain',
+  title: 'Connected Again',
+  blurb:
+    'A connected tab mended with Connect Again, after its link was removed or it came with a copy.',
+};
+
+export const CONNECTED_TABS_OPENED: Metric = {
+  category: 'Tab',
+  action: 'Opened',
+  type: 'Connected',
+  title: 'Connected Tabs Opened',
+  blurb: 'Someone opened the file a connected tab stands for. Read against files connected.',
+};
+
+export const CONNECTED_TABS: MetricStack = {
+  stack: true,
+  title: 'Connected Tabs',
+  blurb: 'Files from other apps (or this one) connected as tabs, and how often people follow them.',
+  headline: FILES_CONNECTED,
+  members: [
+    FILES_CONNECTED,
+    FILES_CONNECTED_BOTH_WAYS,
+    FILES_CONNECTED_AGAIN,
+    CONNECTED_TABS_OPENED,
+  ],
+};
+
 // Elements added, one chart per palette tab (Palette tab ranks inside each),
 // plus every kind the catalogue doesn't list, so together they cover every
 // Element·Added exactly once and the stack's total is every element added.

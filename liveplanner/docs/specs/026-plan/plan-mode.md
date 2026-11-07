@@ -77,6 +77,13 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     **Boards**, **Spreadsheets** and **Dashboards**, each with its glyph and how many it holds (a count badge, tinted with the chosen one), the chosen one tinted in
     the brand colour; then, under a hairline, **Inspiration** (as the others). The arrow keys move along the rail. It opens on
     Recommended each time.
+  - **Connect liveworkspace File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
+    the rail's last entry, stuck to its very bottom under a hairline (the shared `ConnectRailEntry`), the other apps'
+    logos fanned at its end; on a phone the last chip. Chosen, the grid's place shows the shared Connect list (Recent
+    across every app, the role, both ways) in the panel's colours, its code loaded only then (`useConnectStart`). A
+    press connects the file: the plan gains the connected tab, which takes the place of this empty tab unless it is
+    the plan's only tab, and opens ready. Offered only to a signed-in Editor of a plan on the server, outside a
+    tab-scoped link, an embed and a workbench.
   - **The grid** beside the rail: the chosen category's heading and line, then its cards, three a row (two on a narrow
     panel, one on a phone), cascading in when the category changes (the shared cascade, within the motion budget; the
     first paint does not animate), scrolled back to its top each time.

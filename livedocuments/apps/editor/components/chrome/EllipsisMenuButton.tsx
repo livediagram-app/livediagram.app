@@ -4,6 +4,7 @@ import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
+import type { ConnectedTabMenu } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.
@@ -29,6 +30,7 @@ export function EllipsisMenuButton({
   onToggleLock,
   onDelete,
   selfId,
+  connected,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -55,6 +57,8 @@ export function EllipsisMenuButton({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
+  // A connected tab: its own short menu (TabPortalMenu).
+  connected?: ConnectedTabMenu | undefined;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -95,6 +99,7 @@ export function EllipsisMenuButton({
             onDelete={onDelete}
             canDelete={canDelete}
             canClearContent={canClearContent}
+            connected={connected}
           />
         </MenuErrorBoundary>
       ) : null}

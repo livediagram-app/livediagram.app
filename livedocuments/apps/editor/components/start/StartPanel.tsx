@@ -38,6 +38,7 @@ import {
 } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { usePalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { focusIsFree } from '@liveworkspace/workbench/lib/focus-is-free';
+import { ConnectRailEntry } from '@liveworkspace/workbench/components/connect/ConnectRailEntry';
 
 const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
@@ -72,6 +73,7 @@ export function StartPanel<C extends string>({
   search,
   onChoose,
   footer,
+  connect,
 }: {
   titleId: string;
   title: string;
@@ -95,6 +97,9 @@ export function StartPanel<C extends string>({
   // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
   // (save-locations.md "On the start screen").
   footer?: ((palette: StartPalette) => ReactNode) | undefined;
+  // Connect liveworkspace File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting"): the rail's last entry,
+  // at its very bottom, and what the content area shows once it is chosen. Absent where connecting cannot work.
+  connect?: ((palette: StartPalette) => ReactNode) | undefined;
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
@@ -105,6 +110,8 @@ export function StartPanel<C extends string>({
   const [calm, setCalm] = useState(swapped);
   useEffect(() => () => noteStartPanelLeft(), []);
   const [category, setCategory] = useState<C>(initialCategory);
+  // Connect liveworkspace File chosen in the rail: its list stands in the cards' place until a category is picked.
+  const [connecting, setConnecting] = useState(false);
   // A search handed over by /new?q= (start-query.ts), else none.
   const [query, setQuery] = useState(() => takeStartQuery());
   const rail = useRef<HTMLDivElement>(null);
@@ -129,6 +136,7 @@ export function StartPanel<C extends string>({
   const pick = (next: C) => {
     setCalm(false);
     setQuery('');
+    setConnecting(false);
     setCategory(next);
     if (cardsScroller.current) cardsScroller.current.scrollTop = 0;
     // On a phone the rail is a row of chips: the chosen one scrolls fully into view.
@@ -150,7 +158,7 @@ export function StartPanel<C extends string>({
   };
   const railButton = (c: StartPanelCategory<C>) => {
     const Icon = c.icon;
-    const on = !searching && c.id === category;
+    const on = !searching && !connecting && c.id === category;
     return (
       <button
         key={c.id}
@@ -351,6 +359,27 @@ export function StartPanel<C extends string>({
               >
                 {categories.map(railButton)}
               </div>
+              {connect ? (
+                <ConnectRailEntry
+                  hostApp="livedocuments"
+                  on={!searching && connecting}
+                  onPick={() => {
+                    setCalm(false);
+                    setQuery('');
+                    setConnecting(true);
+                    if (cardsScroller.current) cardsScroller.current.scrollTop = 0;
+                  }}
+                  colours={{
+                    text: palette.text,
+                    border: palette.border,
+                    card: palette.card,
+                    chosenText: palette.focus,
+                    chosenTint: startTint(palette, 14),
+                    hoverTint: startTint(palette, 7),
+                    chosenHoverTint: startTint(palette, 18),
+                  }}
+                />
+              ) : null}
             </nav>
           </div>
           <div
@@ -375,6 +404,8 @@ export function StartPanel<C extends string>({
                   {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
                 </>
               )
+            ) : connect && connecting ? (
+              connect(palette)
             ) : (
               <section key={shown.id} aria-label={shown.name}>
                 <h3 className="text-[16px] font-semibold">{shown.name}</h3>

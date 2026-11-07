@@ -4,6 +4,8 @@ import { IndexError, type App } from '@liveworkspace/index-client';
 import { appName } from './connect-words';
 
 export type ConnectedTabView =
+  // Not opened yet: the tab became the open one without a person asking (a load, a connect, undo), so it waits for Open.
+  | { state: 'ready' }
   | { state: 'opening' }
   // Opened in a new browser tab (another app); `href` for Open Again.
   | { state: 'opened'; href: string }
@@ -45,6 +47,8 @@ export function connectedTabCopy(
 ): ConnectedTabCopy {
   const ask = canEdit ? '' : ' Ask an editor to connect it again.';
   switch (state) {
+    case 'ready':
+      return { title: name, line: `A connected ${appName(app)} file.` };
     case 'opening':
       return { title: name, line: `Opening ${name} in ${appName(app)}…` };
     case 'opened':

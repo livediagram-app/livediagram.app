@@ -40,6 +40,7 @@ describe('connectedTabCopy', () => {
     connectedTabCopy(state, 'Launch plan', 'liveplanner', canEdit);
 
   it('says the spec words for each state', () => {
+    expect(copy('ready')).toEqual({ title: 'Launch plan', line: 'A connected liveplanner file.' });
     expect(copy('opening').line).toBe('Opening Launch plan in liveplanner…');
     expect(copy('opened').line).toBe('Launch plan is open in a new tab.');
     expect(copy('gone').title).toBe('This file is no longer there.');

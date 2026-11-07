@@ -10,8 +10,8 @@ import { ZOOM_MAX } from './lib/zoom-range';
  * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
  * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
  */
-export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'UI';
-export type WorkbenchTelemetryAction = 'Client' | 'Toggled' | 'Zoomed';
+export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'Tab' | 'UI';
+export type WorkbenchTelemetryAction = 'Added' | 'Client' | 'Opened' | 'Toggled' | 'Zoomed';
 export type WorkbenchTrack = (
   category: WorkbenchTelemetryCategory,
   action: WorkbenchTelemetryAction,

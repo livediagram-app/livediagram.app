@@ -39,6 +39,7 @@ import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/sta
 import { startClosedKey } from './start-closed-key';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 
 // A Community post's live card image: this app's api's, since the document is this app's.
 const communityImage = (shareCode: string) => `${API_BASE}${communityImagePath(shareCode)}`;
@@ -87,6 +88,8 @@ export function StartFromTemplates({
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
+  // Connect liveworkspace File at the rail's foot, where connecting can work (useConnectStart).
+  const connect = useConnectStart();
   // How the Community's tiles draw here: this app's card image, the credit in the panel's muted ink.
   const tiles: CommunityStartTileOptions = {
     imageUrl: communityImage,
@@ -174,6 +177,7 @@ export function StartFromTemplates({
       onClose={closeToBlank}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}
+      connect={connect}
     />
   );
 }

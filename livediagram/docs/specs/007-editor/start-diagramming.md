@@ -20,6 +20,13 @@ draws them.
   and 2.7:1 in light. The chosen group's name is the accent leaned toward the ink just far enough to read at 4.5:1 on
   its tint and its hover's (`chosenLabel`): light's brand accent on its tint read 3.3:1, so light wears a darker
   accent there (5.2:1); dark's accent already reads (6.4:1) and is kept.
+- **Connect liveworkspace File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
+  the rail's last entry, stuck to its very bottom under a hairline (the shared `ConnectRailEntry`), the other apps'
+  logos fanned at its end; on a phone the last chip. Chosen, the content area shows the shared Connect list (Recent
+  across every app, the role, both ways) in the panel's colours, its code loaded only then (`useConnectStart`). A
+  press connects the file: the canvas gains the connected tab, which takes the place of this empty tab unless it is
+  the canvas's only tab, and opens ready. Offered only to a signed-in Editor of a canvas on the server, outside a
+  tab-scoped link, an embed and a workbench.
 - **Cards:** each template's preview on a soft plate, its name and its description in full. Choosing a card lands
   the template on the tab at once (`chooseTemplate`), painted in the **tab's theme**: the
   panel picks no theme, so the scaffold takes the colours the tab already wears (its own theme, or the one a new

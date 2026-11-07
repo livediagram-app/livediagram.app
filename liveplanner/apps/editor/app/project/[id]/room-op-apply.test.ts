@@ -144,6 +144,32 @@ describe('applyRoomOpToTabs', () => {
     expect(next[0]).toBe(two);
     expect(next[2]!.elements).toEqual([]);
   });
+
+  // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the outline op carries a connection.
+  const CONNECTION = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'livediagram', itemId: 'd1' };
+
+  it("project-meta carries a summary's connection onto a new placeholder", () => {
+    const next = applyRoomOpToTabs([tab()], {
+      kind: 'project-meta',
+      name: 'D',
+      tabs: [
+        { id: 't1', name: 'Tab 1', orderIndex: 0 },
+        { id: 'c1', name: 'Architecture', orderIndex: 1, connection: CONNECTION },
+      ] as never,
+    });
+    expect((next[1] as { connection?: unknown }).connection).toEqual(CONNECTION);
+  });
+
+  it("project-meta keeps a local tab's connection when the summary carries none", () => {
+    const local = { ...tab({ id: 'c1', name: 'Architecture' }), connection: CONNECTION } as never;
+    const next = applyRoomOpToTabs([local], {
+      kind: 'project-meta',
+      name: 'D',
+      tabs: [{ id: 'c1', name: 'Architecture', orderIndex: 0 }],
+    });
+    expect(next[0]).toBe(local);
+    expect((next[0] as { connection?: unknown }).connection).toEqual(CONNECTION);
+  });
 });
 
 // docs/specs/012-collaboration/collab-race-hardening.md, end to end: two people answer the same temperature check in

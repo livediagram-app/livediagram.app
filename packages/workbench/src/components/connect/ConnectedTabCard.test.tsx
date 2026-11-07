@@ -78,4 +78,38 @@ describe('ConnectedTabCard', () => {
     fireEvent.click(button('Try Again')!);
     expect(h.onRetry).toHaveBeenCalled();
   });
+
+  it('offers everyone Open while ready, naming the other app it opens in', () => {
+    const onOpen = vi.fn();
+    render(
+      <ConnectedTabCard
+        view={{ state: 'ready' }}
+        name="Launch plan"
+        app="liveplanner"
+        canEdit={false}
+        away
+        onOpen={onOpen}
+        {...handlers()}
+      />,
+    );
+    expect(screen.getByText('A connected liveplanner file.')).toBeTruthy();
+    fireEvent.click(button('Open in liveplanner')!);
+    expect(onOpen).toHaveBeenCalled();
+    cleanup();
+    show({ state: 'ready' }, true);
+    // Without an Open handler, nothing to press.
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+    cleanup();
+    render(
+      <ConnectedTabCard
+        view={{ state: 'ready' }}
+        name="Launch plan"
+        app="livediagram"
+        canEdit
+        onOpen={vi.fn()}
+        {...handlers()}
+      />,
+    );
+    expect(button('Open')).toBeTruthy();
+  });
 });

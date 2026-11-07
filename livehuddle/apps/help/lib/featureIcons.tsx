@@ -509,6 +509,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // User Interface guides. With these the catalogue is fully drawn, and the
   // category fallback becomes a safety net for cards not yet written rather than
   // something a reader actually sees.
+  // A tab with a link running out of it to another file: a tab that opens a file elsewhere.
+  'connected-files': (
+    <Glyph>
+      <path d="M3 9h5l1.5-2H14v2" />
+      <path d="M3 9v9a2 2 0 002 2h6" />
+      <path d="M15 17.5l2.5-2.5a2.12 2.12 0 013 3L18 20.5" />
+      <path d="M13.5 19l-.5.5a2.12 2.12 0 01-3-3l2.5-2.5" />
+      <path d="M14.5 17.5l2-2" />
+    </Glyph>
+  ),
   // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
   'side-by-side': (
     <Glyph>

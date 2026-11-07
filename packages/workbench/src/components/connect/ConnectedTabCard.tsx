@@ -2,7 +2,7 @@
 
 // A connected tab's page (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): one calm card in place of
 // a canvas, the target app's logo over its words and what can be done. Remove and Connect Again only for someone who
-// may edit the host (`canEdit`, the session's `can('edit')`); Open Again and Try Again are everyone's.
+// may edit the host (`canEdit`, the session's `can('edit')`); Open, Open Again and Try Again are everyone's.
 import type { App } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { Button, buttonClassName, lucideGlyph } from '@liveworkspace/ui';
@@ -13,6 +13,7 @@ import {
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
 import { connectedTabCopy, isBrokenState, type ConnectedTabView } from './connected-tab-view';
+import { appName } from './connect-words';
 
 const ArrowGlyph = lucideGlyph(lucideArrowUpRight, 14);
 const LinkGlyph = lucideGlyph(lucideLink, 14);
@@ -24,6 +25,8 @@ export function ConnectedTabCard({
   name,
   app,
   canEdit,
+  away = false,
+  onOpen,
   onRemove,
   onConnectAgain,
   onRetry,
@@ -33,6 +36,10 @@ export function ConnectedTabCard({
   name: string;
   app: App;
   canEdit: boolean;
+  // The target is in another app, so Open goes to a new browser tab.
+  away?: boolean;
+  // Ready: the person's Open (a press, so a new browser tab is never blocked).
+  onOpen?: () => void;
   onRemove: () => void;
   onConnectAgain: () => void;
   onRetry: () => void;
@@ -74,6 +81,12 @@ export function ConnectedTabCard({
         >
           {copy.line}
         </p>
+        {state === 'ready' && onOpen ? (
+          <Button variant="primary" size="sm" className="mt-5" onClick={onOpen}>
+            {away ? <ArrowGlyph /> : null}
+            {away ? `Open in ${appName(app)}` : 'Open'}
+          </Button>
+        ) : null}
         {view.state === 'opened' ? (
           <a
             href={view.href}

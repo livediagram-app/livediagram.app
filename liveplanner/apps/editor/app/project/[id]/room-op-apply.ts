@@ -1,3 +1,4 @@
+import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
 import {
   applyDashboardPatch,
   settleTabFields,
@@ -142,15 +143,21 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // placeholder a follow-up `tab` op fills. Unchanged tabs keep identity
       // (the autosave keys off it); project-meta owns folder membership.
       const localById = new Map(tabs.map((t) => [t.id, t] as const));
+      // A summary's connection (a connected tab the index added, or connected again) lands on the tab; one that
+      // carries none (an agent's rename relay) leaves the tab's own (carryConnection).
       return op.tabs.map((summary) => {
         const local = localById.get(summary.id);
         if (local) {
           const folder = summary.folder;
-          return (local.folder ?? undefined) === (folder ?? undefined)
-            ? local
-            : { ...local, folder };
+          return carryConnection(
+            (local.folder ?? undefined) === (folder ?? undefined) ? local : { ...local, folder },
+            summary,
+          );
         }
-        return { id: summary.id, name: summary.name, elements: [], folder: summary.folder };
+        return carryConnection(
+          { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+          summary,
+        );
       });
     }
     default:
