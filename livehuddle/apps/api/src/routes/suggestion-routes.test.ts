@@ -15,7 +15,7 @@ const OWNER = 'guest_00000000-0000-4000-8000-000000000001';
 const VISITOR = 'guest_00000000-0000-4000-8000-000000000002';
 let sql: SqliteD1;
 let pending: Promise<unknown>[];
-let info: ReturnType<typeof vi.spyOn>;
+let info: { mock: { calls: unknown[][] } };
 
 const box = (id: string, extra: Record<string, unknown> = {}): Element =>
   ({
@@ -181,7 +181,8 @@ describe('reading and removing', () => {
     expect((await call({ method: 'DELETE', path, owner: VISITOR, code: 'TAKE' })).status).toBe(403);
     expect((await call({ method: 'DELETE', path })).status).toBe(204);
     expect((await call({ method: 'DELETE', path })).status).toBe(404);
-    expect(((await (await list()).json()) as SuggestionsResponse).suggestions).toEqual([]);
+    const after: SuggestionsResponse = await (await list()).json();
+    expect(after.suggestions).toEqual([]);
   });
 
   it('answers other methods as not allowed', async () => {
