@@ -92,3 +92,40 @@ export function parseDragPreviewPatches(raw: unknown): DragPreviewPatch[] | null
   }
   return out;
 }
+
+// docs/specs/008-canvas/blueprints/DEFAULTS.md D127: the most riding ids one ride names. 5,000 element ids
+// (36-character UUIDs) fit in the room's 256 KiB message; past it collaborators see that gesture on release.
+export const DRAG_PREVIEW_MAX_RIDE_IDS = 5000;
+// The longest element id a ride names; a longer one drops the op.
+const MAX_RIDE_ID_LEN = 200;
+
+// A very large move on the wire (docs/specs/008-canvas/drag-preview.md "Live movement for collaborators"): the
+// one offset most of its elements ride, from where the gesture found them, instead of a patch each. `ids`, the
+// elements riding it, comes on the gesture's first message, when the set changes, and at least once a second
+// (DRAG_PREVIEW_RIDE_IDS_MS); a message without it moves the ids last named. `patches` are the changed elements
+// that do not ride it, at most DRAG_PREVIEW_MAX_ELEMENTS.
+export type DragPreviewRide = {
+  dx: number;
+  dy: number;
+  ids?: string[];
+  patches: DragPreviewPatch[];
+};
+
+// The ride a received op carries, or null when it is malformed or too large (the whole op is then dropped).
+export function parseDragPreviewRide(raw: unknown): DragPreviewRide | null {
+  if (!obj(raw) || !num(raw.dx) || !num(raw.dy)) return null;
+  const patches = parseDragPreviewPatches(raw.patches ?? []);
+  if (!patches) return null;
+  const ride: DragPreviewRide = { dx: raw.dx, dy: raw.dy, patches };
+  if (raw.ids !== undefined) {
+    const ids = raw.ids;
+    if (
+      !Array.isArray(ids) ||
+      ids.length > DRAG_PREVIEW_MAX_RIDE_IDS ||
+      !ids.every((id) => typeof id === 'string' && id.length <= MAX_RIDE_ID_LEN)
+    )
+      return null;
+    ride.ids = ids as string[];
+  }
+  return ride;
+}
