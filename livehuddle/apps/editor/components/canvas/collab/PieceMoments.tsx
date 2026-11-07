@@ -158,7 +158,7 @@ function Butterfly({
   dx,
   delay,
   wing,
-  size = 1,
+  size = 1.3,
 }: {
   x: number;
   y: number;
@@ -190,7 +190,7 @@ function Butterflies({ side }: { side: Side }) {
   return (
     <>
       <Butterfly x={38} y={30} dx={away * 36} delay={0.15} wing={GARDEN_TONES.pink} />
-      <Butterfly x={28} y={36} dx={away * 24} delay={0.45} wing={GARDEN_TONES.yellow} size={0.75} />
+      <Butterfly x={28} y={36} dx={away * 24} delay={0.45} wing={GARDEN_TONES.yellow} size={1} />
     </>
   );
 }
