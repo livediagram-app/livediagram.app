@@ -72,7 +72,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
   'collab-travel': 8,
   'collab-seating': 8,
-  'collab-rooms': 15,
+  'collab-rooms': 16,
   // Office, Kitchen and Restroom (docs/specs/009-elements/office-amenities.md "Where they live").
   'collab-amenities': 19,
   // Play holds the bar and the social pieces, the Garden the outdoor ones (docs/specs/009-elements/social-pieces.md,

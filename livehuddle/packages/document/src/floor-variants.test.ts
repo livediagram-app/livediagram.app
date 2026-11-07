@@ -40,10 +40,11 @@ const at = (el: ShapeElement, x: number, y: number): ShapeElement => ({ ...el, x
 const face = (el: ShapeElement) => svgBehaviourFace(el, '', '#000', '#334155') ?? '';
 
 describe('a piece type (variant)', () => {
-  it('is stored by a Door, a Rug and a Corridor, and nothing else', () => {
-    expect(['door', 'rug', 'corridor'].every(storesVariant)).toBe(true);
-    expect(storesVariant('room')).toBe(false);
-    expect(variantsOf('room')).toEqual([]);
+  it('is stored by a Door, a Rug, a Corridor and a Room (its walls), and nothing else', () => {
+    expect(['door', 'rug', 'corridor', 'room'].every(storesVariant)).toBe(true);
+    expect(storesVariant('window')).toBe(false);
+    expect(variantsOf('window')).toEqual([]);
+    expect(variantsOf('room')).toEqual(['solid', 'glass']);
     expect(variantsOf('door')).toEqual(DOOR_VARIANTS);
   });
 
@@ -51,7 +52,9 @@ describe('a piece type (variant)', () => {
     expect(pieceVariant({ shape: 'door' })).toBe('swing');
     expect(pieceVariant({ shape: 'rug', variant: 'persian' })).toBe('persian');
     expect(pieceVariant({ shape: 'rug', variant: 'tartan' })).toBe('oval');
-    expect(pieceVariant({ shape: 'room', variant: 'office' })).toBe('');
+    // A room preset's name is never its wall style: an Office's walls are Solid.
+    expect(pieceVariant({ shape: 'room', variant: 'office' })).toBe('solid');
+    expect(pieceVariant({ shape: 'window', variant: 'bay' })).toBe('');
   });
 
   it('is validated as 1 to 32 lowercase letters and hyphens', () => {
@@ -254,6 +257,7 @@ describe('room presets', () => {
       'open-plan',
       'kitchen',
       'lounge',
+      'meeting-booth',
     ]);
   });
 });

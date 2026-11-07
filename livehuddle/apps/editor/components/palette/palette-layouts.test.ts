@@ -105,6 +105,7 @@ describe('palette layouts', () => {
       'tools:room-builder',
       'tools:corridor',
       'tools:wall-door',
+      'tools:window',
       'tools:fence',
       'tools:stage',
       // The Stage's curtains and podium beside it; the pillar and column after the rug
@@ -120,9 +121,7 @@ describe('palette layouts', () => {
       'tools:column',
     ]);
     const rooms = paletteCategories().find((c) => c.id === 'collab-rooms')!;
-    expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual([
-      'tools:wall-door',
-    ]);
+    expect(rooms.tiles!.filter((t) => t.dividerAfter).map((t) => t.id)).toEqual(['tools:window']);
     // Amenities in three named groups (docs/specs/009-elements/office-amenities.md "Where they live").
     expect(tileIds('collab-amenities')).toEqual([
       'tools:plant',

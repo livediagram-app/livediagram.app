@@ -1,7 +1,7 @@
 // A piece's type within its kind (docs/specs/009-elements/room-builder.md "Door types", office.md "Rug types",
-// corridor.md): the stored `variant` a Door, a Rug and a Corridor draw from. General on purpose: the windows and glass
-// walls that follow keep theirs here too. Absent is a kind's first type, and a value its kind does not take draws as
-// the first, so an unknown value never breaks a drawing.
+// corridor.md, office.md "Glass walls"): the stored `variant` a Door, a Rug, a Corridor and a Room's walls draw from.
+// Absent is a kind's first type, and a value its kind does not take draws as the first, so an unknown value never
+// breaks a drawing.
 //
 // A LEAF module: types only from './index'.
 
@@ -31,8 +31,13 @@ export const RUG_VARIANTS = [
   'doormat',
 ] as const;
 
+/** A Room's wall styles (office.md "Glass walls"), the first the one an absent `variant` draws. */
+export const ROOM_WALL_VARIANTS = ['solid', 'glass'] as const;
+
 /** The kinds whose drawing reads a stored `variant`, each with its types in order. */
 const STORED_VARIANTS: Readonly<Record<string, readonly string[]>> = {
+  // A Room's walls (office.md "Glass walls"): Solid or Glass. Its presets are not stored (room-preset-shapes).
+  room: ROOM_WALL_VARIANTS,
   // The Meeting Table and its Long Table (office.md "Long Table").
   'meeting-table': ['standard', 'long'],
   door: DOOR_VARIANTS,

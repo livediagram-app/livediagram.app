@@ -10,6 +10,7 @@ import {
 } from '@/components/canvas/collab/FurnitureView';
 import { GardenFenceView, GardenPathView, GrassView } from '@/components/canvas/collab/GardenViews';
 import { CorridorView, DoorView } from '@/components/canvas/collab/RoomBuilderViews';
+import { WindowView } from '@/components/canvas/collab/WindowView';
 import { PondView } from '@/components/canvas/collab/PondView';
 import { SwimmingPoolView } from '@/components/canvas/collab/SwimmingPoolView';
 import { hasSocialFace, SocialFace } from '@/components/canvas/collab/SocialFaces';
@@ -38,6 +39,8 @@ export function hasPieceArt(kind: string): boolean {
     // The Corridor (docs/specs/009-elements/corridor.md), drawn to its size.
     kind === 'corridor' ||
     kind === 'door' ||
+    // The Window (docs/specs/009-elements/room-builder.md "Window"), with its light.
+    kind === 'window' ||
     kind === 'stage' ||
     kind === 'garden-path' ||
     kind === 'grass' ||
@@ -143,6 +146,9 @@ export function PieceArt({
     // A Door (room-builder.md "Door"): a doorway turned onto its wall.
     case 'door':
       return <DoorView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
+    // A Window (room-builder.md "Window"): glass in its wall and the light it lets in.
+    case 'window':
+      return <WindowView element={element} stroke={stroke} floor={fill} animClass={animClass} />;
     // A stage (office.md "Stage"): its top, front edge and plate; its name is the ordinary label on the plate.
     case 'stage':
       return (

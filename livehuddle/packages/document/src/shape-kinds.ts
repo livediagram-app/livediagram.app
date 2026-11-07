@@ -127,6 +127,8 @@ export const SHAPE_KINDS = new Set<string>([
   'photo-wall',
   // Door (docs/specs/009-elements/room-builder.md "Door").
   'door',
+  // Window (docs/specs/009-elements/room-builder.md "Window").
+  'window',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md).
   'directory',
   'elevator',

@@ -45,6 +45,7 @@ import {
   // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
   RoomMenuSection,
+  RoomWallsMenuSection,
 } from '@/components/palette/CollabMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
@@ -142,6 +143,8 @@ export function ElementDataSections({
     isPortal ||
     isChair ||
     (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
+    // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
+    shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
@@ -236,6 +239,14 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetDoor={props.onSetRoomDoor}
+            />
+          ) : null}
+          {/* Every room's walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls"). */}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomWallsMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetWalls={props.onSetRoomWalls}
             />
           ) : null}
           {shapeTarget?.shape === 'stage' ? (
