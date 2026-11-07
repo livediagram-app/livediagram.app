@@ -6,12 +6,14 @@ EXPORT_KEY_ACCOUNTS=dev-export-accounts-key
 INDEX_KEY_EXPORT=dev-index-export-key
 MEDIA_KEY_EXPORT=dev-media-export-key
 # Each the same as that app's api DATA_EXPORT_KEY.
-DATA_EXPORT_KEY_LIVEDIAGRAM=dev-livediagram-export-key
-DATA_EXPORT_KEY_LIVEPLANNER=dev-liveplanner-export-key
-DATA_EXPORT_KEY_LIVEDOCUMENTS=dev-livedocuments-export-key
-DATA_EXPORT_KEY_LIVEDESIGN=dev-livedesign-export-key
+DATA_EXPORT_KEY_LIVEDIAGRAM=dev-livediagram-data-export-key
+DATA_EXPORT_KEY_LIVEPLANNER=dev-liveplanner-data-export-key
+DATA_EXPORT_KEY_LIVEDOCUMENTS=dev-livedocuments-data-export-key
+DATA_EXPORT_KEY_LIVEDESIGN=dev-livedesign-data-export-key
+DATA_EXPORT_KEY_LIVEHUDDLE=dev-livehuddle-data-export-key
 # Each app, locally: its router, which forwards /api/internal to its api.
 APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
 APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
+APP_ORIGIN_LIVEHUDDLE=http://localhost:3500

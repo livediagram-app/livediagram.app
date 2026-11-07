@@ -30,7 +30,7 @@ export function useTableEditing({
   setSelectedCell,
 }: TableEditingDeps) {
   const beginEdit = (r: number, c: number) => {
-    if (readOnly || element.locked) return;
+    if (readOnly) return;
     initialTextRef.current = element.cells[r]?.[c] ?? '';
     setSelectedCell(null);
     setEditing({ r, c });

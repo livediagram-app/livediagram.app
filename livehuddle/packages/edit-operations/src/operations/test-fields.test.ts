@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { applied, refused } from '../fixtures/outcomes';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow } from '../fixtures/checkout-flow';
-import { flowWith, lockedFlow, run } from '../fixtures/run';
+import { flowWith, run } from '../fixtures/run';
 
 describe('test', () => {
   it('passes when the element holds the values, and changes nothing', () => {
@@ -56,8 +56,15 @@ describe('test', () => {
     ]);
   });
 
-  it('tests a locked element, and refuses a field the element lacks', () => {
-    expect(applied(run('test n3 label=Login', lockedFlow('n3')))).toBeTruthy();
+  it('tests an element, and refuses a field the element lacks', () => {
+    expect(
+      applied(
+        run(
+          'test n3 label=Login',
+          flowWith((el) => el),
+        ),
+      ),
+    ).toBeTruthy();
     expect(refused(run('test n3 bogus=1')).code).toBe('unknown_field');
     expect(refused(run('test nowhere label=x')).code).toBe('target_not_found');
   });

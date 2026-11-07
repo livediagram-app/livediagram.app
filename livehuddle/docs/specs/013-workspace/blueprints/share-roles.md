@@ -92,18 +92,18 @@ correction: ElementOp | null, reason }`:
 A Participant changes no element but through a piece ([A Participant walks](../share-roles.md#a-participant-walks),
 owner 2026-11-05): before, it added stickies, text and images and wrote on others' elements; those rows are gone.
 
-| Op        | Applied when                                       | Result                                                                                           | Refusal correction                       |
-| --------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| `add`     | never (`not-addable`)                              | n/a                                                                                              | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked` | Stored, with the piece fields below copied from incoming; its own earlier element no differently | `update` with the stored element         |
-| `remove`  | never (`not-own`, or `locked` when held)           | n/a                                                                                              | `add` of the stored element at its index |
-| `reorder` | never                                              | n/a                                                                                              | `reorder` with the stored ids            |
+| Op        | Applied when                         | Result                                                                                           | Refusal correction                       |
+| --------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `add`     | never (`not-addable`)                | n/a                                                                                              | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type | Stored, with the piece fields below copied from incoming; its own earlier element no differently | `update` with the stored element         |
+| `remove`  | never (`not-own`)                    | n/a                                                                                              | `add` of the stored element at its index |
+| `reorder` | never                                | n/a                                                                                              | `reorder` with the stored ids            |
 
 Piece fields a Participant may change, on anyone's element:
 
 | Element                 | Fields                                                                                                |
 | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| `shape` `door`          | `doorClosed` (not when the door is `locked`, which refuses the whole update)                          |
+| `shape` `door`          | `doorClosed`                                                                                          |
 | `shape` `notice-board`  | `noticeNotes`, through `mergeNoticeNotes`: notes signed with its adder key added or removed, no other |
 | `shape` `calendar-wall` | `noticeNotes`, as a `notice-board` (`holdsNotes`)                                                     |
 
@@ -147,17 +147,17 @@ Editor state:
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
-| Flag            | participate             | view  |
-| --------------- | ----------------------- | ----- |
-| `takePart`      | true                    | false |
-| `addContent`    | false                   | false |
-| `writeText(el)` | false                   | false |
-| `move(el)`      | false                   | false |
-| `resize(el)`    | false                   | false |
-| `recolour(el)`  | false                   | false |
-| `remove(el)`    | false                   | false |
-| `swingDoor(el)` | true unless `el.locked` | false |
-| `alwaysWalks`   | true                    | false |
+| Flag            | participate | view  |
+| --------------- | ----------- | ----- |
+| `takePart`      | true        | false |
+| `addContent`    | false       | false |
+| `writeText(el)` | false       | false |
+| `move(el)`      | false       | false |
+| `resize(el)`    | false       | false |
+| `recolour(el)`  | false       | false |
+| `remove(el)`    | false       | false |
+| `swingDoor(el)` | true        | false |
+| `alwaysWalks`   | true        | false |
 
 `roleGates(can, runBlocked)` answers the canvas's role gates from `can`, never from `isReadOnly`: `run` is
 `level === 'edit' && !runBlocked` (start, end, reveal or configure a session tool; Bring Focus), `shape` is
@@ -228,13 +228,11 @@ export type ParticipantOpResult =
   | { result: 'applied'; tab: Tab; op: ElementOp; changed: boolean }
   | { result: 'refused'; correction: ElementOp | null; reason: ParticipantRefusal };
 export type ParticipantRefusal =
-  | 'tab-locked'
   | 'not-addable'
   | 'no-adder'
   | 'id-taken'
   | 'missing'
   | 'type-changed'
-  | 'locked'
   | 'not-own'
   | 'reorder'
   | 'invalid';
@@ -300,7 +298,6 @@ lands in a new document, where no adder key matches it.
   sender gets the merged element. One that rewrites a label or moves a sticky: applied with nothing changed.
 - **E6** A Participant edits an element an Editor deleted meanwhile: refused `missing`, no correction (the Editor's
   remove reaches the sender too).
-- **E7** A Participant edits a locked element: refused `locked`, correction the stored element.
 - **E8** The write loses the compare-and-swap `TAB_CAS_MAX_ATTEMPTS` times, the tab is gone, or the tab is over its
   cap: the sender gets `catchup { resync: true }`; nothing is relayed.
 - **E9** A Participant socket without an adder key pins a note: the merge keeps the stored notes (no note is its own).

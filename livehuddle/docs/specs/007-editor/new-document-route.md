@@ -321,14 +321,19 @@ space"**; everything else stays put.
   life, drawn in the house art: the canvas's room and furniture pieces (warm
   floor, ten-unit walls with a slate outline, slate-tinted furniture, the
   marketing hero's line weights) and the Avatar's pixel character
-  ([Avatar mode](../008-canvas/avatar-mode.md) "The character"). One loop, in
+  ([Avatar mode](../008-canvas/avatar-mode.md) "The character"). One loop of
+  nine seconds, front-loaded because most loads finish within a second or two:
+  the room draws, the door opens and the furniture lands in the first second,
+  overlapping, and the first character is already walking in by about 0.6
+  seconds, so even a fast load shows people arriving, never an empty box. In
   order:
-  1. **The room draws:** the floor fades up, then the walls draw one by one
-     round the room (top, right, the two halves of the bottom wall either side
+  1. **The room draws:** the floor fades up, then the walls draw in quick
+     overlapping strokes round the room (top, right, the two halves of the bottom wall either side
      of the doorway, left), and the room's name band, **Huddle Room**, settles in
      along the top wall.
   2. **It is furnished:** a rug, a meeting table with two chairs on each long side,
-     a bookshelf, a coffee machine and two plants pop in, one after another.
+     a bookshelf, a coffee machine and two plants pop in, one after another,
+     while the people are already on their way in.
   3. **The door opens:** the door leaf swings inward on its hinge, its dashed
      swing arc fading in behind it, as on the canvas.
   4. **People arrive:** two characters walk in through the doorway, one a beat

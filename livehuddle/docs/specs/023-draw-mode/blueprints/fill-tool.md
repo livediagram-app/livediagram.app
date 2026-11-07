@@ -33,7 +33,7 @@ Scope, by file:
 | Fill choice       | `FillChoice`                    | What this browser stored: a colour, `transparent`, or null (the default) |
 | Marker loop       | `isOpenMarkerLoop(el)`          | An open marker stroke whose ends meet (`isStrokeLoop`)                   |
 | Filled loop       | `isFilledPenLoop(el)`           | A marker stroke with `closed: true` and a visible `fillColor`            |
-| Target            | `BucketTarget`                  | `fill` (set a fill), `loop` (close and fill), `locked`, `none`           |
+| Target            | `BucketTarget`                  | `fill` (set a fill), `loop` (close and fill), `none`                     |
 | Press             | `beginFillPress`                | A pointer down and up within `FILL_PRESS_SLOP_PX`, one pointer           |
 
 Banned synonyms: "flood fill" (nothing floods: one element is filled), "paint" for the action in
@@ -61,7 +61,7 @@ code (it is a fill or a pour), "Transparent" in copy (the picker's option is **N
   - `shape`: outside `pointInsideOutline` through; `supportsQuickSection(el, 'background')` fill,
     else stop (a chart, a Sankey).
   - Everything else (sticky, image, table, embed): stop.
-- The first non-through element: `locked` when it is locked, else its verdict.
+- The first non-through element: its verdict.
 
 ### `pourBucket(target, colour)`
 
@@ -74,7 +74,7 @@ code (it is a fill or a pour), "Transparent" in copy (the picker's option is **N
 
 ### `usePaintBucket.paintBucket(point)`
 
-Order: the intent must be `fill`; `editsBlocked` refuses silently; the target; `none` or `locked`
+Order: the intent must be `fill`; `editsBlocked` refuses silently; the target; `none`
 shows its hint (`toast.info`) and reports `FillMissed`; `canRecolour(el)` false refuses silently;
 `pourBucket` null changes nothing; else one `commit` mapping that id, then `FillLoop` or
 `FillBucket`. Each refusal writes a `[fill]` debug line.
@@ -127,7 +127,6 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - A loop whose ends already touch (gap at most 0.5 px): closed without a new point.
 - A rotated element: the box test grows to the circumscribed circle; `pointInsideOutline` handles
   the rotation for shapes.
-- A press on a locked element: its hint.
 - A colour equal to the current one, or No fill on an open loop: no commit, no undo step.
 
 ## Security and trust
@@ -153,7 +152,7 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 - The flyout **Fill** holds `FillColourPicker`: `noColour('transparent', 'No fill')`, the theme's
   fills deduplicated (`themeOptions`), `standardGroup('soft', board, 'hex')`, document colours.
 - Cursor: a tipping bucket glyph via `drawCursorFromGlyph`, hotspot the shared draw anchor.
-- Hints: `FILL_MISSED_HINT`, `FILL_LOCKED_HINT` (spec copy).
+- Hints: `FILL_MISSED_HINT` (spec copy).
 
 ## Accessibility
 

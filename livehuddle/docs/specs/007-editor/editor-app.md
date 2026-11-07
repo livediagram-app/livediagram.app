@@ -55,12 +55,12 @@ The tabs read as tabs, not buttons, and every editor draws them alike from `pack
 - **The others are quiet.** No fill, no dividers between them, medium-weight slate ink readable whatever the tab's theme. Hovering one fills a soft rounded wash inset inside it and darkens its ink.
 - **Long names truncate** with an ellipsis past 14rem; a truncated name shows in full in a Tooltip.
 - **Focus** draws a 2 px brand ring inside the tab's name.
-- **Locked** tabs carry a small padlock before the name, in the tab's own ink. **Renaming** swaps the name for a field the same height, inside the tab's own shape.
+- **Renaming** swaps the name for a field the same height, inside the tab's own shape.
 - **Dragging** dims the dragged tab, and a 2 px brand caret, rounded, stands in the gap where it will land.
 - **Add tab** is a quiet `+` after the last tab, with the same inset wash on hover.
 - A tab outside a tab-scoped share stands the same way, outlined dashed. Folders open in place in the strip: [Tab folders](../006-document/tab-folders.md#tab-bar-rendering).
 - **No `Tabs` label** before the tabs: the row is plainly tabs, and the room goes to them.
-- **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. A lock still marks a locked tab, and the open tab keeps its menu button.
+- **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. The open tab keeps its menu button.
 
 ## Role pill
 
@@ -89,7 +89,7 @@ The **role pill** says whether you are editing, participating in or viewing this
 ## What the editor supports today
 
 - Boxed elements (shape, text, sticky), arrows (straight / curved / angled, optional label, configurable line thickness + arrowhead size), groups, multi-select via marquee + plain-click + shift-click.
-- Per-element format painter, lock, link-to-tab, comment threads.
+- Per-element format painter, link-to-tab, comment threads.
 - Real-time presence + selection + cursor broadcast via the per-document Durable Object room (see [11-api.md](../015-api/api.md)).
 - Undo and redo (snapshot-based, personal to each editor; there is no per-tab Activity panel, see [Collaboration](../012-collaboration/README.md#no-activity-panel)).
 - Folders in the Explorer (see [15-folders.md](../013-workspace/folders.md)).
@@ -108,7 +108,7 @@ To cut down on two people fighting over the same element, an element another par
 - **Where it's enforced.** All local selection choke points respect it: single-click select, shift multi-select, and marquee (which filters locked ids out of its hit set), plus the element's own pointer-down / double-click-to-edit. A locked element shows a `not-allowed` cursor and the existing remote-selector badge's hover card reads "Locked to <name>" (each disc takes the pointer so the card opens; presses still reach the element).
 - **A Viewer's selection holds nothing.** A Viewer only looks, so their selection shows its disc and border but locks nothing: the element stays selectable and editable, and the disc's hover card reads "Selected by <name>" with "They're only viewing, so you can still edit it." Every lock check reads the selector's `holds` flag (false for a Viewer).
 - **The facilitator can free one.** "Auto-releases" covers the holder deselecting or leaving, but not the person still connected who wandered off with something selected, and a session can stop dead on an element nobody may touch. Right-clicking a locked element opens a one-item menu for whoever is running the session ([Facilitator](../012-collaboration/facilitator.md) "Freeing somebody's lock"); it still opens nothing for everybody else. The room tells the holder alone, the holder drops the selection, and the lock then clears everywhere through the ordinary `select` op, so this adds no server-side enforcement and leaves the lock exactly as advisory as it was.
-- The user-set element **lock** (`element.locked`, the padlock badge) is a separate, persisted feature; this concurrent-selection lock is ephemeral and presence-only.
+- livehuddle has no user-set element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)); this concurrent-selection lock is ephemeral and presence-only.
 
 ## SEO and indexing
 
@@ -221,9 +221,9 @@ Its confirm button is the brand primary button for every action, a delete includ
 A dialog or popover opened for one element (its link, a table cell's link, line data, code, a
 Sequence, a picture's image picker, comments, an action, a note) shows only while it can be shown for that element:
 the element is on the active tab, of the kind the dialog edits, and the session may still use it. The moment that
-stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the element locks, the
+stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the
 session turns read-only), the dialog **closes**, rather than hiding with its element still named, so it never
-reopens by itself when the element, the lock or the role comes back (`useCloseVanishedDialogs`, with each dialog's own
+reopens by itself when the element or the role comes back (`useCloseVanishedDialogs`, with each dialog's own
 check).
 
 ## Toasts

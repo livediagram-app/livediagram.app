@@ -33,7 +33,7 @@ The Callout has since become a preset of the Card ([The card](card.md)): its row
 `callout` kind that the read migration turns into a card with `cardMedia: 'badge'`.
 
 Each is a `ShapeElement` kind except the Hero, which is an image (see below). All of them keep
-the ordinary element behaviours for free: move, resize, rotate, lock, colours, font,
+the ordinary element behaviours for free: move, resize, rotate, colours, font,
 shadow, comments, links, copy / paste, undo.
 
 | Kind          | Text                                                    | Rows (bounded)                        |

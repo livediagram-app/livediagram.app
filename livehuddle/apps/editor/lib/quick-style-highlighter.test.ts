@@ -24,9 +24,9 @@ const highlight = (over: Record<string, unknown> = {}) =>
 const sketch = highlight({ id: 's', pen: undefined, strokeColor: '#000000' });
 
 describe('isHighlightStroke', () => {
-  it('takes unlocked highlights only', () => {
+  it('takes highlights, one saved locked too', () => {
     expect(isHighlightStroke(highlight())).toBe(true);
-    expect(isHighlightStroke(highlight({ locked: true }))).toBe(false);
+    expect(isHighlightStroke(highlight({ locked: true }))).toBe(true);
     expect(isHighlightStroke(sketch)).toBe(false);
   });
 });

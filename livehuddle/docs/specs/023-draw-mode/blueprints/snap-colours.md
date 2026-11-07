@@ -45,7 +45,7 @@ no theme; the colours are stock colours), "default colour" for Ink in code (it i
 
 ### `snapTabColours(elements, skip?) → { elements, colours, changed }`
 
-- Walks `elements` once. An element is **eligible** when it is not `locked`, and a `SNAP_COLOUR_FIELDS` row applies to it.
+- Walks `elements` once. An element is **eligible** when a `SNAP_COLOUR_FIELDS` row applies to it.
 - For each applying row whose hex field holds a custom colour: the hex field and the row's
   `clear` fields (`strokeSwatch`, the quick-swatch binding that would re-derive a hex) are
   removed; the named field is set to the target, or removed for `'ink'`.
@@ -179,7 +179,7 @@ export function snapTabColours(
 | Each field-table row snaps; Ink removes the named field              | `snap-colours.test.ts`                         |
 | Text, path, unfilled label and arrow label rows; text on a fill kept | `snap-colours.test.ts`                         |
 | Untouched elements by identity; counts                               | same                                           |
-| Highlighter, stock, ink, locked, skipped, fills, text on a fill kept | same                                           |
+| Highlighter, stock, ink, skipped, fills, text on a fill kept         | same                                           |
 | `strokeSwatch` cleared                                               | same                                           |
 | Snappable colours: distinct, lower-cased, newest first               | same                                           |
 

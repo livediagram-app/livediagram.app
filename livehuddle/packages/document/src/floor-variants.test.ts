@@ -20,13 +20,11 @@ import {
   withAttachedDoors,
   withDoorPiece,
   DOOR_VARIANTS,
-  LOCKED_DOOR_SHADE,
   ROOM_PRESETS,
   createOutlinedRoom,
   isLongTable,
   longTableArt,
   turnPiece,
-  doorLockCentre,
   outlineNameAlign,
   pointInPolygon,
   RUG_VARIANTS,
@@ -42,10 +40,11 @@ const at = (el: ShapeElement, x: number, y: number): ShapeElement => ({ ...el, x
 const face = (el: ShapeElement) => svgBehaviourFace(el, '', '#000', '#334155') ?? '';
 
 describe('a piece type (variant)', () => {
-  it('is stored by a Door, a Rug and a Corridor, and nothing else', () => {
-    expect(['door', 'rug', 'corridor'].every(storesVariant)).toBe(true);
-    expect(storesVariant('room')).toBe(false);
-    expect(variantsOf('room')).toEqual([]);
+  it('is stored by a Door, a Rug, a Corridor and a Room (its walls), and nothing else', () => {
+    expect(['door', 'rug', 'corridor', 'room'].every(storesVariant)).toBe(true);
+    expect(storesVariant('window')).toBe(false);
+    expect(variantsOf('window')).toEqual([]);
+    expect(variantsOf('room')).toEqual(['solid', 'glass']);
     expect(variantsOf('door')).toEqual(DOOR_VARIANTS);
   });
 
@@ -53,7 +52,9 @@ describe('a piece type (variant)', () => {
     expect(pieceVariant({ shape: 'door' })).toBe('swing');
     expect(pieceVariant({ shape: 'rug', variant: 'persian' })).toBe('persian');
     expect(pieceVariant({ shape: 'rug', variant: 'tartan' })).toBe('oval');
-    expect(pieceVariant({ shape: 'room', variant: 'office' })).toBe('');
+    // A room preset's name is never its wall style: an Office's walls are Solid.
+    expect(pieceVariant({ shape: 'room', variant: 'office' })).toBe('solid');
+    expect(pieceVariant({ shape: 'window', variant: 'bay' })).toBe('');
   });
 
   it('is validated as 1 to 32 lowercase letters and hyphens', () => {
@@ -256,6 +257,7 @@ describe('room presets', () => {
       'open-plan',
       'kitchen',
       'lounge',
+      'meeting-booth',
     ]);
   });
 });
@@ -297,16 +299,6 @@ describe('doorArt', () => {
     expect(doorArt(96, 24, 'double').filter((p) => p.openOnly)).toHaveLength(2);
   });
 
-  it('adds a padlock mid-doorway when locked, on its disc, drawn last', () => {
-    const locked = doorArt(96, 24, 'sliding', true);
-    const lock = locked.filter((p) => p.lock);
-    expect(locked.length - doorArt(96, 24, 'sliding').length).toBe(4);
-    expect(locked.slice(-4)).toEqual(lock);
-    expect(lock[0]).toMatchObject({ tag: 'circle', paint: 'plate', cx: 48, cy: 12, r: 10 });
-    expect(lock[2]).toMatchObject({ tag: 'rect', paint: 'ink', w: 9 });
-    expect(doorLockCentre(144, 24)).toEqual({ x: 72, y: 12 });
-  });
-
   it('writes a pose as a transform, nothing for the rest pose', () => {
     expect(doorPoseTransform({ rotate: 0, dx: 0 }, { x: 1, y: 2 })).toBe('');
     expect(doorPoseTransform({ rotate: -90, dx: 0 }, { x: 1, y: 2 })).toBe('rotate(-90 1 2)');
@@ -327,7 +319,7 @@ describe('the export of doors and corridors', () => {
     expect(shut).toContain('rotate(-90');
   });
 
-  it('draws each type, a locked one shaded and padlocked', () => {
+  it('draws each type', () => {
     expect(doorSvg(door({ variant: 'sliding', width: 120 }), '#fff', '#000')).toContain(
       'translate(-50 0)',
     );
@@ -337,14 +329,10 @@ describe('the export of doors and corridors', () => {
     expect(doorSvg(door({ variant: 'sliding', width: 120 }), '#fff', '#000')).toContain(
       'fill-opacity',
     );
-    const locked = doorSvg(door({ locked: true, doorClosed: true }), '#fff', '#000');
-    expect(locked).toContain(`opacity="${LOCKED_DOOR_SHADE}"`);
-    expect(locked).toContain('stroke-linecap="round"');
-    expect(locked).not.toContain('<g transform="rotate');
-    // Turned onto its wall, its padlock is turned back upright about the doorway's middle.
-    expect(doorSvg(door({ locked: true, rotation: 90 }), '#fff', '#000')).toContain(
-      '<g transform="rotate(-90 48 12)">',
-    );
+    // A door saved locked before locking left draws as any other, no padlock and no shade
+    // (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab Locking").
+    const old = { ...door({ doorClosed: true }), locked: true } as Parameters<typeof doorSvg>[0];
+    expect(doorSvg(old, '#fff', '#000')).toBe(doorSvg(door({ doorClosed: true }), '#fff', '#000'));
   });
 
   it('draws a corridor floor and walls, and routes both kinds through the face export', () => {

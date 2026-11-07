@@ -1,5 +1,5 @@
 // The OAuth provider's resource seed on a cold Worker (liveworkspace/docs/specs/003-accounts/sign-in.md "Deploys"):
-// patches/@better-auth__oauth-provider@1.7.14.patch looks every configured resource up in one D1 call, where the
+// patches/@better-auth__oauth-provider@1.7.16.patch looks every configured resource up in one D1 call, where the
 // plugin made one call per resource, one after another. The audience a token carries is unchanged, so every app's
 // sign-in and refresh still give a token its API takes.
 import { betterAuth } from 'better-auth';

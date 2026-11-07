@@ -78,7 +78,7 @@ moment; placed before the Map existed, the panel sat over its header.
   choices. The panel shows from the `sm` breakpoint up.
 - **It stands down** while an element or multi-selection context menu is open (two style surfaces at
   once repeat each other, and the menu may open at the right edge), in embeds, while
-  presenting, and when edits are blocked (a view-only visitor or a locked tab).
+  presenting, and when edits are blocked (a view-only visitor).
 
 ### Turning it off
 
@@ -278,7 +278,6 @@ over, never refused, so they never hide the panel from the rest.
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
   arrow.
 - **One undo step** per choice, however many elements it touched.
-- Locked elements are left alone; a selection of only locked elements shows no panel.
 
 ## Style memory
 

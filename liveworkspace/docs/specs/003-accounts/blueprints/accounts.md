@@ -423,7 +423,7 @@ read D1's schema before a Worker's first answer. `src/schema-check.test.ts` runs
 
 The OAuth provider's resource seed (`seedResources`, run in the plugin's `init`) is patched to look every configured
 resource up in one `findMany` with an `in` query (chunks of 50 identifiers) instead of a `findOne` per resource:
-`patches/@better-auth__oauth-provider@1.7.14.patch`, registered in the root `package.json`
+`patches/@better-auth__oauth-provider@1.7.16.patch`, registered in the root `package.json`
 `pnpm.patchedDependencies`. Inserts of missing rows, the `resourceSeedMode` updates and
 `configuredResourceIdentifiers` (the audiences a token may carry) are unchanged. A cold instance makes 1 D1 call before
 answering discovery (`src/seed-resources.test.ts`). The patch is tied to the exact version: a Better Auth upgrade must

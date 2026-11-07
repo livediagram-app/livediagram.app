@@ -1,7 +1,7 @@
-diff --git a/dist/authorize-B1Bc3IL6.mjs b/dist/authorize-B1Bc3IL6.mjs
+diff --git a/dist/authorize-BnSO_Slc.mjs b/dist/authorize-BnSO_Slc.mjs
 index b60fcb71b9818b580a7407f301f237f430647486..c911f3242c5c5a8003eb036abd66f1639937c2f2 100644
---- a/dist/authorize-B1Bc3IL6.mjs
-+++ b/dist/authorize-B1Bc3IL6.mjs
+--- a/dist/authorize-BnSO_Slc.mjs
++++ b/dist/authorize-BnSO_Slc.mjs
 @@ -1172,6 +1172,7 @@ async function seedResources(ctx, opts) {
  	if (inputs.length === 0) return;
  	const mode = opts.resourceSeedMode ?? "insertOnly";

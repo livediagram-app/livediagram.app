@@ -47,6 +47,16 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Draw', 'Changed', 'PenWidth')).toBe(false);
   });
 
+  // Work Tracker #625: element and tab locking left livehuddle; the facilitator's unlock is another feature.
+  it('retires element and tab locking, not the facilitator baton', () => {
+    expect(isRetiredEvent('Element', 'Locked', null)).toBe(true);
+    expect(isRetiredEvent('Element', 'Unlocked', null)).toBe(true);
+    expect(isRetiredEvent('Tab', 'Locked', null)).toBe(true);
+    expect(isRetiredEvent('Tab', 'Unlocked', null)).toBe(true);
+    expect(isRetiredEvent('Facilitator', 'Changed', 'Unlocked')).toBe(false);
+    expect(isRetiredEvent('Element', 'Changed', 'AspectLock')).toBe(false);
+  });
+
   it('retires the palette Favourites events', () => {
     expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);

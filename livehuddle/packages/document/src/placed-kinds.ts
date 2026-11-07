@@ -15,6 +15,8 @@ const PLACED_KINDS: ReadonlySet<string> = new Set([
   'avatar-pad',
   'portal',
   'door',
+  // The Window (docs/specs/009-elements/room-builder.md "Window"): placed on a wall like a Door.
+  'window',
   'focus-button',
   // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md).
   'screen',

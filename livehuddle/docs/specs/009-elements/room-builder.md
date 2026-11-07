@@ -14,7 +14,7 @@ and doors that go anywhere on any wall decide how people walk between rooms rath
 ## Where they live
 
 Both in the palette's **Rooms** group, beside the Room, the Corridor, the Rug and the Fence: the **Room Builder** tool
-tile and the **Door** tile. The Door tile opens its [door types](#door-types) as presets, the way the Card tile opens
+tile and the **Door** tile, with the [Window](#window) tile after the Door. The Door tile opens its [door types](#door-types) as presets, the way the Card tile opens
 its ([Card presets](card.md#card-presets)). Editors only (see [Share roles](#share-roles)).
 
 ## The Room Builder tool
@@ -119,12 +119,9 @@ closes, and a closed one blocks walking). Only its drawing and its width differ.
 
 ### Locked doors
 
-A Door locked with the element's Lock (the element menu's Lock, `locked`) shows it, on every type: a padlock in the middle
-of its doorway, on a floor-coloured disc ringed in its stroke, always upright however the door is turned on its wall, and
-its leaves, panes or wings drawn half a stroke darker. Unlocked, no padlock. The canvas's own lock badge (the round one
-at an element's top left) is not drawn on a Door: its padlock says it, and a badge turning with the wall would hide it. The rule it shows is the
-one below: a Participant cannot swing a locked door, so a locked shut door is a door only an Editor opens; a locked
-open one stays open.
+A Door no longer locks: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)),
+so no door draws a padlock or darker leaves, and anyone who may swing a door swings any one. A door stored with
+`locked: true` loads as an ordinary door.
 
 ### Opening and closing
 
@@ -143,17 +140,50 @@ A Door is open or closed, and anyone taking part can swing it.
   across the opening, flush with the wall, and the arc is gone. The leaf turns between the two over 180 ms with the
   canvas motion stylesheet's easing, and jumps straight there under reduced motion.
 - **Undo**: a swing is one change on the swinger's history, like any edit. Telemetry: `Canvas · Used · Door`.
-- **Share roles**: an Editor and a Participant open and close any door that is not locked (a Participant changes
+- **Share roles**: an Editor and a Participant open and close any door (a Participant changes
   `doorClosed` and nothing else about a door, by the participant content rule); a Viewer walks through open doors
-  but cannot swing one. A locked door stays as it is for a Participant.
+  but cannot swing one.
 - For the click policy: `toggleDoor(doorId)` (the editor's, from `useDoorToggle`) swings a door and returns whether
   it did; `isNextToDoor(feet, door)` (in `@livehuddle/document`) says whether a character can reach it.
 
+## Window
+
+A window in a wall: light comes in, people do not. Work Tracker #538.
+
+- **A shape kind of its own**, `window`, 120 x 24 canvas px, one type. It sits in the palette's **Rooms** Build group
+  after the Door, a placed piece like the Door (dropped at its own size, no resize handles). Editors only.
+- **It goes on a wall exactly as a Door does**, through the same wall code: dropped or moved within 48 canvas px of a
+  Room's, a custom room's or a Corridor's wall it snaps onto it (centred on the wall's centre line, turned to the
+  wall's angle, slid along the wall as you drag, clear of the wall's ends, in its room's floor colour); Cmd / Ctrl
+  places it freely; the placement preview shows where it lands, on the wall in the brand outline or free and dashed.
+  It **rides its room** (a moved room carries it, a resized one keeps it at its fraction along its wall, turning with
+  the wall, one undo with the resize), derived at the time as a Door's is (`doorsFollowRooms`, `withAttachedDoors`).
+- **It faces in.** On a wall, a window is turned so its light falls inside the room (or the corridor): the snap turns
+  it to the wall's angle, and half a turn more when the inside lies the other way. Away from every wall it stands free,
+  its light falling below it.
+- **It still blocks walking.** A window never cuts its wall: the wall's collision runs straight through it, so a
+  character slides along a window as along the wall, and walking, the path finder and a Walk There are unchanged. A
+  window not on a wall blocks nothing (as a free Door). It is not a destination, never swings, and a click on it in
+  Avatar mode walks you there like any floor piece.
+- **Drawn** in the wall's band: a frame in the room's floor colour outlined in its stroke, a pane of glass (the stroke's
+  glass wash) with a mullion across its middle, and a sill on the inside face. On the inside, a **patch of light** falls
+  on the floor: a soft trapezoid as wide as the pane where it meets the wall, spreading a little and fading to nothing
+  about as deep as the window is wide (drawn past the window's box, as a Revolving Door's drum is; the box is what
+  selects it). On light paper it is warm sunlight; on dark paper a cool moonlight, fainter (DEFAULTS.md D228). The
+  patch is translucent over the floor and never blocks or selects. A window paints with the floors, after its room and
+  rugs but under the furniture, so its light lies on the floor beneath a sofa or desk whichever was placed first
+  ([Layers](../006-document/layers.md#stacking)).
+- **Calls**: a window changes nothing. A room with windows keeps its call inside exactly as before
+  ([Meeting rooms and the stage](../012-collaboration/meeting-rooms-and-stage.md)).
+- **Export** draws the frame, pane and light patch as the canvas does, in the export's paper.
+- **Share roles**: an Editor places, moves and deletes windows; a Participant and a Viewer see them and walk past them.
+- Telemetry: `Element · Added · Window`.
+
 ## Share roles
 
-- **Editor**: arms the Room Builder, draws rooms, places, moves and deletes doors; opens and closes them.
+- **Editor**: arms the Room Builder, draws rooms, places, moves and deletes doors and windows; opens and closes doors.
 - **Participant**: has no palette, so places neither; always walking, it walks through open doors like everyone, and
-  opens and closes doors that are not locked.
+  opens and closes any door.
 - **Viewer**: walks through open doors like everyone (walking is presence); cannot open or close one.
 
 ## Telemetry
@@ -163,7 +193,8 @@ A Door is open or closed, and anyone taking part can swing it.
 
 ## Not in scope
 
-- Doors that open only for some people (a lock is the element's Lock, an Editor's; see [Locked doors](#locked-doors)).
+- Doors that open only for some people, or that lock ([Locked doors](#locked-doors)).
+- Window types (a bay, a skylight) and windows that open; a window you can climb through.
 - Changing a placed door's type from its element menu (place another type instead; a follow-up).
 - Editing a custom room's corners after it is drawn (redraw it; corner editing is a follow-up).
 - Walls that are not part of a closed room (the Fence draws those).

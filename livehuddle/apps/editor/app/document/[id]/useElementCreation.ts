@@ -12,6 +12,7 @@ import {
   type ShapeKind,
   type Tab,
   withVariantColours,
+  isWallPiece,
   snapDoorToWall,
 } from '@livehuddle/document';
 import { withPlacingFacing } from '@/lib/placing-facing';
@@ -270,11 +271,9 @@ export function useElementCreation(opts: {
         variant: art?.choice,
         style: (el) => {
           const styled = styleNewElement(el);
-          // A dropped door lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door").
-          const placed =
-            styled.type === 'shape' && styled.shape === 'door'
-              ? snapDoorToWall(styled, activeTab.elements)
-              : styled;
+          // A dropped door or window lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door",
+          // "Window").
+          const placed = isWallPiece(styled) ? snapDoorToWall(styled, activeTab.elements) : styled;
           return (
             placed.type === 'shape' ? withVariantColours(placed, art?.choice) : placed
           ) as typeof el;
@@ -286,7 +285,7 @@ export function useElementCreation(opts: {
 
   const handleCanvasDoubleClick = (x: number, y: number) => {
     // Same creation gate as every other add path (addShape, addSticker, ...):
-    // a locked/loading tab or a view-only session silently no-ops.
+    // a loading tab or a view-only session silently no-ops.
     if (editsBlocked) return;
     const TEXT_W = 160;
     const TEXT_H = 48;

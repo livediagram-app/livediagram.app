@@ -37,6 +37,8 @@ export type TabFrameProps = {
   accent?: string;
   // A padlock before the name.
   lockIcon?: ReactNode;
+  // Before the name and the padlock, at full strength: a connected tab's app logo (ConnectedTab).
+  lead?: ReactNode;
   // After the name, inside its button (the side by side mark).
   afterName?: ReactNode;
   // Inside the tab after the name: presence avatars, then the menu button.
@@ -68,6 +70,7 @@ export function TabFrame({
   renameField,
   accent,
   lockIcon,
+  lead,
   afterName,
   presence,
   hasPresence,
@@ -107,6 +110,7 @@ export function TabFrame({
           name={name}
           active={active}
           lockIcon={lockIcon}
+          lead={lead}
           afterName={afterName}
           onSelect={onSelect}
           onDoubleClick={readOnly || !active ? undefined : onRequestRename}
@@ -132,6 +136,7 @@ function TabName({
   name,
   active,
   lockIcon,
+  lead,
   afterName,
   onSelect,
   onDoubleClick,
@@ -139,6 +144,7 @@ function TabName({
   name: string;
   active: boolean;
   lockIcon?: ReactNode;
+  lead?: ReactNode;
   afterName?: ReactNode;
   onSelect: () => void;
   onDoubleClick?: () => void;
@@ -169,6 +175,7 @@ function TabName({
       onDoubleClick={onDoubleClick}
       className={TAB_NAME_BUTTON_CLASS}
     >
+      {lead ? <span className="flex shrink-0">{lead}</span> : null}
       {lockIcon ? <span className="flex shrink-0 opacity-70">{lockIcon}</span> : null}
       <span ref={label} className={TAB_NAME_CLASS}>
         {name}

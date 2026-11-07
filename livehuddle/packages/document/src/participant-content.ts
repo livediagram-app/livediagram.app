@@ -11,15 +11,7 @@ import { isValidElement } from './validate';
 import { holdsNotes, mergeNoticeNotes } from './office-social';
 
 export type ParticipantRefusal =
-  | 'tab-locked'
-  | 'not-addable'
-  | 'id-taken'
-  | 'missing'
-  | 'type-changed'
-  | 'locked'
-  | 'not-own'
-  | 'reorder'
-  | 'invalid';
+  'not-addable' | 'id-taken' | 'missing' | 'type-changed' | 'not-own' | 'reorder' | 'invalid';
 
 export type ParticipantOpResult =
   // `op` is what actually happened to the stored tab (the merge, for an update); `changed` is false when the
@@ -38,11 +30,6 @@ export function addedByAdder(el: Element, adderKey: string | null): boolean {
 
 function sameValue(a: unknown, b: unknown): boolean {
   return a === b || JSON.stringify(a) === JSON.stringify(b);
-}
-
-// A locked element is held: a participant may not change it.
-function isHeld(el: Element): boolean {
-  return (el as Bag).locked === true;
 }
 
 // Copy one field from incoming onto the merge, an absent incoming value removing it.
@@ -106,26 +93,13 @@ export function applyParticipantOp(
   const index = elements.findIndex((e) => e.id === id);
   if (index < 0) return refuse('missing', null);
   const stored = elements[index]!;
-  if (tab.locked === true) {
-    return refuse(
-      'tab-locked',
-      op.kind === 'remove'
-        ? { kind: 'add', element: stored, at: index }
-        : { kind: 'update', element: stored },
-    );
-  }
   // A Participant removes nothing, its own earlier stickies included.
   if (op.kind === 'remove') {
-    return refuse(isHeld(stored) ? 'locked' : 'not-own', {
-      kind: 'add',
-      element: stored,
-      at: index,
-    });
+    return refuse('not-own', { kind: 'add', element: stored, at: index });
   }
   const incoming = op.element;
   const restore: ElementOp = { kind: 'update', element: stored };
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
-  if (isHeld(stored)) return refuse('locked', restore);
   const merged = mergePieces(stored, incoming, adderKey);
   if (!isValidElement(merged)) return refuse('invalid', restore);
   const changed = !sameValue(merged, stored);

@@ -153,9 +153,7 @@ describe('a Calendar Wall takes the Notice Board’s deltas', () => {
     ).toBe(el);
   });
 
-  it('takes nothing while locked, and nothing on a piece that holds no notes', () => {
-    const locked = calendar({ locked: true });
-    expect(applyElementDelta(locked, pin)).toBe(locked);
+  it('takes nothing on a piece that holds no notes', () => {
     const box = calendar({ shape: 'suggestion-box' });
     expect(applyElementDelta(box, pin)).toBe(box);
   });

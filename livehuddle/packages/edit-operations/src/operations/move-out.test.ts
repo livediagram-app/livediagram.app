@@ -60,15 +60,7 @@ describe('move out of a frame', () => {
     expect(lines(outcome).some((l) => /narrower/.test(l))).toBe(true);
   });
 
-  it('leaves a locked container, and one left empty, at its size', () => {
-    const grown = applied(run('add square id=es label=Search below:b', architecture())).tab;
-    const locked: Tab = {
-      ...grown,
-      elements: grown.elements.map((e) => (e.id === 'svc' ? { ...e, locked: true } : e)),
-    };
-    expect(box(applied(run('move es below:svc', locked)).tab, 'svc').height).toBe(
-      box(grown, 'svc').height,
-    );
+  it('leaves a container left empty at its size', () => {
     const alone = applied(run('move a below:svc\nmove b below:a', architecture())).tab;
     expect(box(alone, 'svc').height).toBe(box(architecture(), 'svc').height);
   });

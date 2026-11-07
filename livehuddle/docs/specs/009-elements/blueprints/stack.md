@@ -72,12 +72,11 @@ Validation: direction and align one of their lists; columns an integer 2 to 6; g
 
 ## Errors and edge cases
 
-| #   | Case                          | Handling                                                          |
-| --- | ----------------------------- | ----------------------------------------------------------------- |
-| E1  | A child bigger than the stack | Not contained (strictly greater area rule); it stays outside      |
-| E2  | Locked child                  | Laid out like any other (the lock stops the user, not the layout) |
-| E3  | Child is a container          | Moves with its own contents                                       |
-| E4  | Rotated child                 | Laid out by its unrotated box                                     |
+| #   | Case                          | Handling                                                     |
+| --- | ----------------------------- | ------------------------------------------------------------ |
+| E1  | A child bigger than the stack | Not contained (strictly greater area rule); it stays outside |
+| E3  | Child is a container          | Moves with its own contents                                  |
+| E4  | Rotated child                 | Laid out by its unrotated box                                |
 
 ## Security and trust
 

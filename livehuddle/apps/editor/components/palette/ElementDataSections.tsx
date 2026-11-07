@@ -41,10 +41,12 @@ import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import { JukeboxMenuSection, WorldClockMenuSection } from '@/components/palette/SocialMenuSections';
 import { ScreenMenuSection } from '@/components/palette/ScreenMenuSection';
+import { ArcadeMenuSection } from '@/components/palette/ArcadeMenuSection';
 import {
   // The office pieces' settings: a chair's facing and a room's doorway.
   ChairMenuSection,
   RoomMenuSection,
+  RoomWallsMenuSection,
 } from '@/components/palette/CollabMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
@@ -142,10 +144,13 @@ export function ElementDataSections({
     isPortal ||
     isChair ||
     (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
+    // Every room's Walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls").
+    shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
     shapeTarget?.shape === 'world-clock' ||
-    shapeTarget?.shape === 'jukebox';
+    shapeTarget?.shape === 'jukebox' ||
+    (shapeTarget?.shape === 'arcade-machine' && !!props.onClearArcadeScores);
   return (
     <>
       {showTools ? (
@@ -238,6 +243,14 @@ export function ElementDataSections({
               onSetDoor={props.onSetRoomDoor}
             />
           ) : null}
+          {/* Every room's walls, Solid or Glass (docs/specs/009-elements/office.md "Glass walls"). */}
+          {shapeTarget?.shape === 'room' ? (
+            <RoomWallsMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onSetWalls={props.onSetRoomWalls}
+            />
+          ) : null}
           {shapeTarget?.shape === 'stage' ? (
             <StageMenuSection
               target={shapeTarget}
@@ -257,6 +270,14 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onSetSource={props.onSetJukeboxSource}
+            />
+          ) : null}
+          {shapeTarget?.shape === 'arcade-machine' && props.onClearArcadeScores ? (
+            <ArcadeMenuSection
+              target={shapeTarget}
+              sectionProps={sectionProps}
+              onClear={() => props.onClearArcadeScores!(shapeTarget.id)}
+              onCloseMenu={props.onClose}
             />
           ) : null}
           {shapeTarget?.shape === 'screen' && props.onSetScreenUrl ? (

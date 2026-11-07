@@ -1,40 +1,15 @@
 // Shared building blocks used by all boxed element views (shape, text, sticky).
 // Kept here to avoid duplication across the three view components.
 
-import { useElementIndicatorsSuppressed } from './ElementIndicatorStyleContext';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
-import { LockIcon, SOLID_BRAND_DARK } from '@livehuddle/ui';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@liveworkspace/workbench/lib/double-press';
-import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';
 import { BoxGripsPortal } from '@/components/canvas/SelectionGripsLayer';
 import {
   FLOATING_CONTROL_CLASS,
   FLOATING_CONTROL_HOVER_CLASS,
 } from '@liveworkspace/workbench/components/chrome/floating-controls';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-
-// --- Lock badge ------------------------------------------------------------
-
-export function LockBadge() {
-  const zoom = useCanvasZoom();
-  // Editor chrome: an embed shows none (SuppressElementIndicators).
-  const suppressed = useElementIndicatorsSuppressed();
-  if (suppressed) return null;
-  // Scales with the canvas and hides at overview zooms, like the other
-  // on-element adornments (element-badges.tsx). The resize handles below
-  // KEEP their counter-scaling: interaction grips need a constant hit size.
-  if (zoom < ADORNMENT_MIN_ZOOM) return null;
-  return (
-    <div
-      aria-hidden
-      data-lock-badge=""
-      className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white shadow-sm ${SOLID_BRAND_DARK}`}
-    >
-      <LockIcon size={11} />
-    </div>
-  );
-}
 
 // --- Resize handles --------------------------------------------------------
 

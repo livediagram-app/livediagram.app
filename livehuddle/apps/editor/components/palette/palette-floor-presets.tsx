@@ -101,6 +101,17 @@ export const ROOM_PRESET_TILES: readonly PaletteTileDef[] = [
       <circle cx="12" cy="12" r="3" opacity="0.5" />
     </>,
   ),
+  room(
+    'meeting-booth',
+    'Meeting Booth',
+    'Glass walls, a table for six',
+    'A meeting booth with glass walls: everyone outside sees who is meeting, nobody outside hears them. A meeting table for six and a plant, its door in the front wall. Any room can be glass from its menu.',
+    <>
+      <path d="M10 19H4V6h16v13h-6" opacity="0.55" />
+      <path d="M4 9h16M8 6v13M16 6v13" opacity="0.3" />
+      <rect x="9" y="11.5" width="6" height="3.5" rx="1" />
+    </>,
+  ),
 ];
 
 const corridor = preset('corridor', 'corridor', 'Corridor');

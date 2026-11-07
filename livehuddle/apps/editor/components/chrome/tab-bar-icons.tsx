@@ -1,7 +1,7 @@
 // Icons of the tab bar, the tab / folder context menus and the chrome controls
 // (docs/specs/004-interface-design/iconography.md). Menu glyphs render at the menu size step.
 
-import { Glyph, LockIcon, lucideGlyph, SearchIcon } from '@livehuddle/ui';
+import { Glyph, lucideGlyph, SearchIcon } from '@livehuddle/ui';
 import {
   lucideBrushCleaning,
   lucideEyeOff,
@@ -12,13 +12,7 @@ import {
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
-// A locked tab (the pill badge; the menu toolbar sizes its own buttons).
-export function TabLockIcon() {
-  return <LockIcon size={12} />;
-}
-
 // A tab that isn't shared with this visitor (docs/specs/013-workspace/tab-scoped-share-links.md).
-// Deliberately not the padlock, which marks a tab its editors have locked.
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
 export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);

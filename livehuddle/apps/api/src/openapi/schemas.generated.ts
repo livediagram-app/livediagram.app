@@ -123,9 +123,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "note": {
         "type": "string"
       },
@@ -396,9 +393,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "opacity": {
         "type": "number"
@@ -2696,9 +2690,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "note": {
         "type": "string"
       },
@@ -3069,9 +3060,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "naturalHeight": {
         "type": "number"
@@ -3472,9 +3460,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "meta": {
         "$ref": "#/components/schemas/LinkCardMeta"
@@ -4157,9 +4142,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "nodes": {
         "items": {
@@ -5070,9 +5052,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "marker": {
         "$ref": "#/components/schemas/ShapeMarker"
       },
@@ -5460,6 +5439,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "signpost",
       "photo-wall",
       "door",
+      "window",
       "directory",
       "elevator",
       "stairs",
@@ -5927,9 +5907,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "note": {
         "type": "string"
       },
@@ -6105,9 +6082,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "kind": {
         "$ref": "#/components/schemas/TabKind"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "name": {
         "type": "string"
       },
@@ -6227,9 +6201,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "kind": {
         "$ref": "#/components/schemas/TabKind"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "name": {
         "type": "string"
@@ -6441,9 +6412,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "note": {
         "type": "string"
@@ -7032,9 +7000,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "link": {
         "$ref": "#/components/schemas/ElementLink"
       },
-      "locked": {
-        "type": "boolean"
-      },
       "note": {
         "type": "string"
       },
@@ -7326,9 +7291,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
       },
       "note": {
         "type": "string"

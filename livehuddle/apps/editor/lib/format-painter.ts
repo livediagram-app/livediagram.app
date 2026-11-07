@@ -7,7 +7,7 @@
 //
 // Why explicit per-field listing instead of "spread the source":
 // some fields (id, type, shape, label, link, commentThread,
-// locked, position x / y) are identity or content and must NOT be
+// position x / y) are identity or content and must NOT be
 // copied. A spread that omitted those would still drag along future
 // fields silently. Listing each painted field by name makes a future
 // addition to BoxedElement / ArrowElement an active, deliberate
@@ -121,7 +121,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   if (SHADOW_KINDS.has(kind)) {
     (base as { shadow?: ElementShadow }).shadow = (source as { shadow?: ElementShadow }).shadow;
   }
-  // ImageElement is a boxed element (move / resize / lock) but
+  // ImageElement is a boxed element (move / resize) but
   // renders no colour / text / padding, so its projection stops at the
   // fields above.
   if (kind === 'image') return base;

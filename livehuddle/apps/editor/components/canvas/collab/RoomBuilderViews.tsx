@@ -4,8 +4,6 @@ import type { SVGProps } from 'react';
 import {
   corridorPaths,
   doorArt,
-  doorLockCentre,
-  LOCKED_DOOR_SHADE,
   FURNITURE_PANEL_STROKE,
   FURNITURE_RAIL_OPACITY,
   FURNITURE_RAIL_STROKE,
@@ -95,11 +93,7 @@ function doorPaint(p: DoorArtPart, floor: string, stroke: string): SVGProps<SVGE
     case 'track':
       return { fill: 'none', stroke, strokeWidth: 1, opacity: FURNITURE_RAIL_OPACITY };
     case 'ink':
-      return p.tag === 'path'
-        ? { fill: 'none', stroke, strokeWidth: 1.5, strokeLinecap: 'round' }
-        : { fill: stroke };
-    case 'plate':
-      return { fill: floor, stroke, strokeWidth: 1.5 };
+      return { fill: stroke };
   }
 }
 
@@ -126,9 +120,9 @@ function DoorPartView({ part, props }: { part: DoorArtPart; props: SVGProps<SVGE
 }
 
 // A Door (docs/specs/009-elements/room-builder.md "Door", "Door types"): the gap it paints over its wall in the floor's
-// colour, its jambs, and its type's leaves, panes or wings, open or shut; a locked one shows its padlock and its leaves
-// a shade darker ("Locked doors"). Turned onto its wall by the element's rotation. A moving part eases between its open
-// and shut poses (the 180 ms door transition in canvas-motion.css), and a swing arc fades.
+// colour, its jambs, and its type's leaves, panes or wings, open or shut. Turned onto its wall by the element's
+// rotation. A moving part eases between its open and shut poses (the 180 ms door transition in canvas-motion.css),
+// and a swing arc fades.
 export function DoorView({
   element,
   stroke,
@@ -142,10 +136,7 @@ export function DoorView({
 }) {
   const { width, height } = element;
   const closed = element.doorClosed === true;
-  const locked = element.locked === true;
-  const parts = doorArt(width, height, element.variant, locked);
-  const lock = parts.filter((p) => p.lock);
-  const centre = doorLockCentre(width, height);
+  const parts = doorArt(width, height, element.variant);
   return (
     <div className={`pointer-events-none absolute inset-0 ${animClass ?? ''}`}>
       <svg
@@ -153,57 +144,32 @@ export function DoorView({
         preserveAspectRatio="none"
         className="absolute inset-0 h-full w-full overflow-visible"
         role="img"
-        aria-label={
-          locked
-            ? `Locked ${closed ? 'closed' : 'open'} door`
-            : `${closed ? 'Closed' : 'Open'} door`
-        }
+        aria-label={`${closed ? 'Closed' : 'Open'} door`}
       >
-        {parts
-          .filter((p) => !p.lock)
-          .map((p, i) => {
-            const pose = p.motion ? (closed ? p.motion.shut : p.motion.open) : null;
-            const moving: SVGProps<SVGElement> & { 'data-door-closed'?: string } = p.motion
-              ? {
-                  className: 'lh-door-leaf',
-                  'data-door-closed': closed ? '' : undefined,
-                  style: {
-                    transformBox: 'view-box',
-                    transformOrigin: `${p.motion.origin.x}px ${p.motion.origin.y}px`,
-                    transform:
-                      pose && (pose.dx !== 0 || pose.rotate !== 0)
-                        ? `translateX(${pose.dx}px) rotate(${pose.rotate}deg)`
-                        : 'none',
-                  },
-                }
-              : p.openOnly
-                ? { className: 'lh-door-swing', opacity: closed ? 0 : FURNITURE_RAIL_OPACITY }
-                : {};
-            return (
-              <g key={i}>
-                <DoorPartView part={p} props={{ ...doorPaint(p, floor, stroke), ...moving }} />
-                {locked && p.shades ? (
-                  <DoorPartView
-                    part={p}
-                    props={{ fill: stroke, opacity: LOCKED_DOOR_SHADE, ...moving }}
-                  />
-                ) : null}
-              </g>
-            );
-          })}
-        {lock.length ? (
-          // The padlock stands upright, turned back by the door's rotation ("Locked doors").
-          <g
-            data-door-lock=""
-            transform={
-              element.rotation ? `rotate(${-element.rotation} ${centre.x} ${centre.y})` : undefined
-            }
-          >
-            {lock.map((p, i) => (
-              <DoorPartView key={i} part={p} props={doorPaint(p, floor, stroke)} />
-            ))}
-          </g>
-        ) : null}
+        {parts.map((p, i) => {
+          const pose = p.motion ? (closed ? p.motion.shut : p.motion.open) : null;
+          const moving: SVGProps<SVGElement> & { 'data-door-closed'?: string } = p.motion
+            ? {
+                className: 'lh-door-leaf',
+                'data-door-closed': closed ? '' : undefined,
+                style: {
+                  transformBox: 'view-box',
+                  transformOrigin: `${p.motion.origin.x}px ${p.motion.origin.y}px`,
+                  transform:
+                    pose && (pose.dx !== 0 || pose.rotate !== 0)
+                      ? `translateX(${pose.dx}px) rotate(${pose.rotate}deg)`
+                      : 'none',
+                },
+              }
+            : p.openOnly
+              ? { className: 'lh-door-swing', opacity: closed ? 0 : FURNITURE_RAIL_OPACITY }
+              : {};
+          return (
+            <g key={i}>
+              <DoorPartView part={p} props={{ ...doorPaint(p, floor, stroke), ...moving }} />
+            </g>
+          );
+        })}
       </svg>
     </div>
   );

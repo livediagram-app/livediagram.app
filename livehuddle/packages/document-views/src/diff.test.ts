@@ -51,20 +51,33 @@ describe('diffView (R17, VW36)', () => {
       checklistItems: [{ text: 'x', done: false }],
     });
     const c = shapeAt('square', 'c', 600, 0, 100, 50, { note: 'old' });
+    // A flag attribute (an action turned done) diffs as none → on.
+    const task = (status: 'open' | 'done') => ({
+      id: 'a',
+      name: 'Ship',
+      description: '',
+      assignee: null,
+      teamId: null,
+      assignerId: 'u',
+      assignerName: null,
+      status,
+      createdAt: 0,
+      updatedAt: 0,
+    });
     expect(
       changeLines(
-        [frame, a, b, c],
+        [frame, a, b, { ...c, action: task('open') } as unknown as Element],
         [
           frame,
           { ...a, shape: 'circle', label: undefined, note: undefined, x: 900 },
           { ...b, checklistItems: [{ text: 'x', done: true }] },
-          { ...c, note: 'new', locked: true, label: 'C' },
+          { ...c, note: 'new', label: 'C', action: task('done') } as unknown as Element,
         ],
       ),
     ).toEqual([
       '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
       '~ checklist b done=0/1 → done=1/1',
-      '~ square c label none → "C" · note changed · locked none → on',
+      '~ square c label none → "C" · note changed · done none → on',
     ]);
     expect(
       changeLines(

@@ -192,12 +192,10 @@ export function arrowReferencesAny(arrow: ArrowElement, ids: ReadonlySet<string>
 // to one of THOSE, and so on (docs/specs/008-canvas/arrow-to-arrow.md "deleting a target arrow cascade-deletes the
 // arrows attached to it"). One pass of arrowReferencesAny stopped a level short: deleting a box took its connector
 // but left an arrow hung off that connector, its end naming an arrow that was gone (drawn at the canvas origin and
-// saved). A protected arrow (a locked one) is never taken, nor what hangs off it. Linear in the
-// elements: each arrow is indexed under what it attaches to and visited once.
+// saved). Linear in the elements: each arrow is indexed under what it attaches to and visited once.
 export function withAttachedArrows(
   elements: readonly Element[],
   ids: ReadonlySet<ElementId>,
-  isProtected: (el: Element) => boolean = () => false,
 ): Set<ElementId> {
   const out = new Set(ids);
   const attached = new Map<ElementId, ArrowElement[]>();
@@ -216,7 +214,7 @@ export function withAttachedArrows(
   const queue = [...out];
   for (let id = queue.pop(); id !== undefined; id = queue.pop()) {
     for (const arrow of attached.get(id) ?? []) {
-      if (out.has(arrow.id) || isProtected(arrow)) continue;
+      if (out.has(arrow.id)) continue;
       out.add(arrow.id);
       queue.push(arrow.id);
     }

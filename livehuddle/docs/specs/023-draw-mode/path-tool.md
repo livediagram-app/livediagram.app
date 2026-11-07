@@ -36,7 +36,7 @@ optional incoming and outgoing **handle**, and a `closed` flag. Freehand strokes
 their points carry no handles and are not edited point by point.
 
 - Nodes and handles are stored normalised to the element's box, like freehand points, so resizing
-  scales the whole path, handles included. Rotation, lock, opacity, links, comments and the
+  scales the whole path, handles included. Rotation, opacity, links, comments and the
   rest of the boxed-element fields apply as to any boxed element.
 - Each node has a **handle mode**:
   - **Corner**: no handles, or handles that move independently (a cusp).

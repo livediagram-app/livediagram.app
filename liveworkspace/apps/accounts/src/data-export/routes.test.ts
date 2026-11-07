@@ -412,6 +412,10 @@ describe('the service’s call back', () => {
     expect(sent[0]!.to).toBe('ada@example.com');
     expect(sent[0]!.subject).toBe('Your liveworkspace data is ready');
     expect(sent[0]!.text).toContain('2.4 MB');
+    // Every app's items are in it, livehuddle's Spaces too (Work Tracker #447).
+    expect(sent[0]!.text).toContain(
+      'Everything you own in livediagram, liveplanner, livedocuments, livedesign and livehuddle',
+    );
     expect(sent[0]!.text).toContain(
       '/api/account/data-export/download?key=personal%3Auser_ada&id=ex_1',
     );
@@ -421,6 +425,9 @@ describe('the service’s call back', () => {
   it('names the team, and says when one failed', async () => {
     await ready({ ...call, key: 'team:team-design', teamName: 'Design' });
     expect(sent[0]!.subject).toBe('Design’s liveworkspace data is ready');
+    expect(sent[0]!.text).toContain(
+      'Everything Design owns in livediagram, liveplanner, livedocuments, livedesign and livehuddle',
+    );
     await ready({ ...call, status: 'failed', expiresAt: null });
     expect(sent[1]!.subject).toBe('Your liveworkspace data couldn’t be downloaded');
     expect(sent[1]!.text).toContain('/explorer?settings=data');

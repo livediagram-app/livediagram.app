@@ -71,7 +71,7 @@ describe('useElementStyle selection-wide setters on a multi-selection', () => {
 });
 
 describe('useElementStyle Reset Aspect Ratio', () => {
-  it('resets every unlocked shape of a multi-selection, keeping a locked one', () => {
+  it('resets every shape of a multi-selection, one saved locked included', () => {
     const a = { ...createShape('square', 0, 0), width: 300, height: 100 };
     const b = { ...createShape('square', 400, 0), width: 100, height: 300 };
     const locked = { ...createShape('square', 800, 0), width: 300, height: 100, locked: true };
@@ -83,7 +83,7 @@ describe('useElementStyle Reset Aspect Ratio', () => {
     expect(ra!.width).not.toBe(300);
     expect(rb!.height).not.toBe(300);
     expect(ra!.width / ra!.height).toBeCloseTo(rb!.width / rb!.height, 1);
-    expect([rl!.width, rl!.height]).toEqual([300, 100]);
+    expect([rl!.width, rl!.height]).not.toEqual([300, 100]);
   });
 });
 

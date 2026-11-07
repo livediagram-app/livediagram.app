@@ -31,7 +31,6 @@ const noop = () => {};
 const INERT_HANDLERS: CommandHandlers = {
   deleteSelection: noop,
   duplicateSelection: noop,
-  toggleLockSelection: noop,
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
@@ -81,8 +80,6 @@ export function useEditorCommands(open: boolean): {
     deleteMultiSelected,
     duplicateSelected,
     duplicateMultiSelected,
-    toggleLockSelected,
-    toggleLockMultiSelected,
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
@@ -147,7 +144,6 @@ export function useEditorCommands(open: boolean): {
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
   const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
-  const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -164,7 +160,6 @@ export function useEditorCommands(open: boolean): {
       canShare: canShareDocument,
       isOffline,
       canvasTool,
-      tabLocked,
     }),
     [
       isReadOnly,
@@ -181,7 +176,6 @@ export function useEditorCommands(open: boolean): {
       canShareDocument,
       isOffline,
       canvasTool,
-      tabLocked,
     ],
   );
 
@@ -189,7 +183,6 @@ export function useEditorCommands(open: boolean): {
   const handlers: CommandHandlers = {
     deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
     duplicateSelection: () => (isMulti ? duplicateMultiSelected() : duplicateSelected()),
-    toggleLockSelection: () => (isMulti ? toggleLockMultiSelected() : toggleLockSelected()),
     // Layer-order handlers already act on the whole selection (single +
     // multi), so they need no per-mode branch.
     bringToFront: bringSelectedToFront,

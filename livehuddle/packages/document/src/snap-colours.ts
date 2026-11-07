@@ -44,8 +44,6 @@ export const SNAP_COLOUR_FIELDS: readonly SnapColourField[] = [
 
 type Fields = Record<string, unknown>;
 
-const isProtected = (el: Element) => el.locked === true;
-
 // The custom colours an element would give up, by row.
 function customFieldsOf(el: Element): { row: SnapColourField; hex: string }[] {
   const out: { row: SnapColourField; hex: string }[] = [];
@@ -58,14 +56,12 @@ function customFieldsOf(el: Element): { row: SnapColourField; hex: string }[] {
 }
 
 /**
- * The distinct custom colours (lower-cased) a snap would convert, most recently drawn first. Locked
- * elements are left out.
+ * The distinct custom colours (lower-cased) a snap would convert, most recently drawn first.
  */
 export function snappableCustomColours(elements: readonly Element[]): string[] {
   const out = new Set<string>();
   for (let i = elements.length - 1; i >= 0; i--) {
     const el = elements[i]!;
-    if (isProtected(el)) continue;
     for (const { hex } of customFieldsOf(el)) out.add(hex);
   }
   return [...out];
@@ -84,7 +80,6 @@ export function snapTabColours(elements: readonly Element[]): {
   const colours = new Set<string>();
   let changed = 0;
   const next = elements.map((el) => {
-    if (isProtected(el)) return el;
     const fields = customFieldsOf(el);
     if (fields.length === 0) return el;
     const patched: Fields = { ...el };

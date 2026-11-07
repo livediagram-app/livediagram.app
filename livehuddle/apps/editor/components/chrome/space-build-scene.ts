@@ -6,7 +6,9 @@
 // Coordinates are the canvas's own units (a ten-unit wall, a 56-unit character), so the pieces are drawn at the
 // same size and line weight as on the canvas and in the marketing hero. Every moment is a percentage of one loop.
 
-export const LOOP_MS = 12_000;
+// Front-loaded: most loads finish within a second or two, so the room is built, the door open and the first
+// character walking by about 0.6s (1% is 90ms). A slow build would only ever show an empty box.
+export const LOOP_MS = 9_000;
 
 export type Point = readonly [number, number];
 export type View = 'up' | 'left' | 'right';
@@ -29,15 +31,15 @@ export const PATHS: Record<'you' | 'sam', readonly Point[]> = {
 
 // When each walk starts and ends (% of the loop). Sam is a beat behind.
 export const WALKS: Record<'you' | 'sam', readonly [number, number]> = {
-  you: [35, 61],
-  sam: [40, 66],
+  you: [7, 35],
+  sam: [11, 39],
 };
 
-// The build, in order: floor, the walls round the room, the name band, the furniture, the door.
-export const FLOOR_IN = 4;
-// Each wall's draw window, drawn clockwise from the top-left corner. `origin` is the end it grows from.
+// The build, overlapping: floor, the walls round the room, the door, the name band, the furniture.
+export const FLOOR_IN = 3;
+// Each wall's draw window, drawn clockwise from the top-left corner in quick overlapping strokes. `origin` is the end it grows from.
 export const WALLS = [
-  { id: 'top', x: 0, y: 0, w: ROOM.w, h: ROOM.wall, axis: 'X', origin: '0px 0px', at: [3, 8] },
+  { id: 'top', x: 0, y: 0, w: ROOM.w, h: ROOM.wall, axis: 'X', origin: '0px 0px', at: [0, 2.5] },
   {
     id: 'right',
     x: ROOM.w - ROOM.wall,
@@ -46,7 +48,7 @@ export const WALLS = [
     h: ROOM.h,
     axis: 'Y',
     origin: `${ROOM.w}px 0px`,
-    at: [8, 12.5],
+    at: [1, 3.5],
   },
   {
     id: 'bottom-right',
@@ -56,7 +58,7 @@ export const WALLS = [
     h: ROOM.wall,
     axis: 'X',
     origin: `${ROOM.w}px ${ROOM.h}px`,
-    at: [12.5, 15],
+    at: [2, 4],
   },
   {
     id: 'bottom-left',
@@ -66,7 +68,7 @@ export const WALLS = [
     h: ROOM.wall,
     axis: 'X',
     origin: `${DOOR.x0}px ${ROOM.h}px`,
-    at: [16, 18.5],
+    at: [3, 5],
   },
   {
     id: 'left',
@@ -76,29 +78,29 @@ export const WALLS = [
     h: ROOM.h,
     axis: 'Y',
     origin: `0px ${ROOM.h}px`,
-    at: [18.5, 23],
+    at: [3.5, 6],
   },
 ] as const;
-export const POSTS_AT = 15;
-export const BAND_AT = 22;
-// Furniture pops in one piece after another.
+export const POSTS_AT = 2;
+export const BAND_AT = 5;
+// Furniture pops in one piece after another, while the people are already on their way in.
 export const PIECES = {
-  rug: 23,
-  table: 24.5,
-  shelf: 26,
-  coffee: 27.5,
-  plantL: 28.5,
-  plantR: 29.5,
+  rug: 5,
+  table: 6,
+  shelf: 7.5,
+  coffee: 9,
+  plantL: 10.5,
+  plantR: 12,
 } as const;
-export const DOOR_OPEN: readonly [number, number] = [31, 36];
+export const DOOR_OPEN: readonly [number, number] = [3, 8];
 // Seated across the table, they meet: the ring, then each talks in turn.
-export const RING_IN = 66;
+export const RING_IN = 39;
 export const TALK: Record<'you' | 'sam', readonly [number, number]> = {
-  you: [68, 78],
-  sam: [77, 88],
+  you: [41, 58],
+  sam: [57, 76],
 };
 // The whole Space dissolves at the end of the loop and everything resets unseen.
-export const OUT: readonly [number, number] = [92, 97];
+export const OUT: readonly [number, number] = [90, 96];
 
 // The stride: two frames, swapped on a short loop of their own (only seen while a character walks).
 export const STEP_MS = 360;

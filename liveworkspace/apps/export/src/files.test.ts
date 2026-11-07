@@ -129,6 +129,10 @@ describe('readme', () => {
   it('describes a personal export', () => {
     const text = readme(base);
     expect(text).toContain('Everything you owned');
+    // Five apps, livehuddle's Spaces among them (Work Tracker #447).
+    expect(text).toContain('livediagram, liveplanner, livedocuments, livedesign and livehuddle on');
+    expect(text).toContain('livediagram/, liveplanner/, livedocuments/, livedesign/, livehuddle/');
+    expect(text).toContain('.livedesign or .livehuddle file');
     expect(text).toContain('2026-11-01: 2 items, 1 comment and 1 image.');
     expect(text).toContain('profile.json');
     expect(text).toContain('Import as a copy');

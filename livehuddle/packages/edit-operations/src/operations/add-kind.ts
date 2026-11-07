@@ -188,7 +188,6 @@ export function createKind(
 function growInto(state: EditState, placed: Placed, held: ElementId, operation: number): void {
   if (!placed.grow) return;
   const { container, height } = placed.grow;
-  if (container.type === 'arrow' || state.locked.has(container.id)) return;
   const { x, y, width } = container;
   growContainer(state, container, { x, y, width, height }, held, operation);
 }
@@ -233,7 +232,7 @@ function growToHold(
   // Placement refuses an arrow as its reference (placement.ts), so a relative placement's ref is always a box.
   const holderId = holdersOf(state).get(ref!.id);
   const holder = holderId ? state.byId.get(holderId) : undefined;
-  if (!holder || holder.type === 'arrow' || state.locked.has(holder.id)) return;
+  if (!holder || holder.type === 'arrow') return;
   const right = Math.max(holder.x + holder.width, el.x + el.width + HOLD_PAD);
   const bottom = Math.max(holder.y + holder.height, el.y + el.height + HOLD_PAD);
   const x = Math.min(holder.x, el.x - HOLD_PAD);

@@ -13,6 +13,7 @@ import { dropRetiredPlan } from './retired-plan';
 import { dropRetiredLayers } from './retired-layers';
 import { dropRetiredVote } from './retired-vote';
 import { dropRetiredTimer } from './retired-timer';
+import { dropRetiredLocks } from './retired-locks';
 import { migrateStoredElements } from './stored-elements';
 import { settleDiagramKeys } from './diagram-key';
 import { settleStacks } from './stack';
@@ -27,9 +28,12 @@ export function migrateStoredTab<
   // A former Pages tab (./retired-pages) opens as an ordinary meeting board, its pages, articles and page-only elements
   // dropped, and a former Plan tab (./retired-plan) the same way, its dashboard, form and Plan-only elements dropped.
   // A tab saved with layers (./retired-layers) loses them, so every element is visible and free to pick, and one
-  // saved with a dot vote (./retired-vote) or a Session strip timer (./retired-timer) loses that.
+  // saved with a dot vote (./retired-vote), a Session strip timer (./retired-timer) or a lock on the tab or its
+  // elements (./retired-locks) loses that.
   return upgradeStoredTab(
-    dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
+    dropRetiredLocks(
+      dropRetiredTimer(dropRetiredVote(dropRetiredLayers(dropRetiredPlan(dropRetiredPages(tab))))),
+    ),
   );
 }
 

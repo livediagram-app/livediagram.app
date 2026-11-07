@@ -66,7 +66,7 @@
       "body-parser@2": "^2.4.0"
     },
     "patchedDependencies": {
-      "@better-auth/oauth-provider@1.7.14": "patches/@better-auth__oauth-provider@1.7.14.patch"
+      "@better-auth/oauth-provider@1.7.16": "patches/@better-auth__oauth-provider@1.7.16.patch"
     }
   }
 }

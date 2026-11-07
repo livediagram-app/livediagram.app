@@ -31,7 +31,6 @@ function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
     readOnly,
     canvasTool: 'select',
     onDuplicateSelected: vi.fn(),
-    onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
     onOpenComments: vi.fn(),
     onBeginEdit: vi.fn(),
@@ -44,7 +43,6 @@ function renderToolbars(multi: boolean, over: Partial<CanvasProps> = {}) {
     elements,
     editingId: null,
     isPaintMode: false,
-    tabLocked: false,
     readOnly,
   };
   return render(
@@ -122,13 +120,13 @@ describe('the Rotate buttons', () => {
     expect(onTurnSelected.mock.calls).toEqual([[-1], [1]]);
   });
 
-  it('show disabled on a locked piece', () => {
+  it('stay live on a piece saved locked before locking left', () => {
     renderToolbars(false, {
-      elements: [{ ...sofa, locked: true }, plant],
+      elements: [{ ...sofa, locked: true } as typeof sofa, plant],
       onTurnSelected: vi.fn(),
     });
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Rotate Left' }).disabled).toBe(
-      true,
+      false,
     );
   });
 
