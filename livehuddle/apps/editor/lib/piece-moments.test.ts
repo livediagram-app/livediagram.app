@@ -2,52 +2,86 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  COUNTER_REACH,
   createMomentTrigger,
   hasMoment,
   inMomentReach,
-  MOMENT_GAP_MS,
   MOMENT_KINDS,
-  MOMENT_PIECE_REST_MS,
+  MOMENT_MS,
   MOMENT_REACH,
+  MOMENT_TOP,
+  momentPiece,
   playMoment,
   resetPieceMoments,
   swaysOnMoment,
   usePieceMoment,
+  WALL_REACH,
   type MomentPiece,
 } from './piece-moments';
 
 // docs/specs/009-elements/piece-moments.md "When one plays".
-const tree: MomentPiece = { id: 't', kind: 'tree', x: 100, y: 100, width: 120, height: 160 };
-const pond: MomentPiece = { id: 'p', kind: 'pond', x: 500, y: 100, width: 240, height: 152 };
+const tree: MomentPiece = momentPiece({
+  id: 't',
+  kind: 'tree',
+  x: 100,
+  y: 100,
+  width: 120,
+  height: 160,
+});
+const pond: MomentPiece = momentPiece({
+  id: 'p',
+  kind: 'pond',
+  x: 500,
+  y: 100,
+  width: 240,
+  height: 152,
+});
 const away = { x: 0, y: 0 };
 const atTree = { x: 90, y: 250 };
-const atPond = { x: 600, y: 90 };
 
-// A trigger on a clock the test moves, with rolls it hands out in turn.
-function setup(rolls: number[] = [0]) {
+// A trigger on a clock the test moves.
+function setup() {
   let t = 1_000_000;
-  let i = 0;
-  const trigger = createMomentTrigger({ now: () => t, random: () => rolls[i++ % rolls.length]! });
+  const trigger = createMomentTrigger({ now: () => t });
   return {
     trigger,
     tick: (ms: number) => {
       t += ms;
     },
-    // Walk away, then back up to the piece: one arrival.
+    // Walk away, then back up to the piece: one arrival, and what it played (copied: the array is reused).
     arrive: (at = atTree, pieces = [tree]) => {
       trigger.step(away, pieces);
-      return trigger.step(at, pieces);
+      return [...trigger.step(at, pieces)];
     },
   };
 }
 
 describe('which pieces have a moment', () => {
-  it('names the eight kinds, and the three whose drawing rocks', () => {
-    expect(MOMENT_KINDS).toHaveLength(8);
+  it('names every static piece, and the three that play at every facing', () => {
+    expect(MOMENT_KINDS).toHaveLength(35);
     for (const k of MOMENT_KINDS) expect(hasMoment(k)).toBe(true);
-    expect(hasMoment('chair')).toBe(false);
+    // Interactive and structural pieces have none (piece-moments.md "Which pieces have a moment").
+    for (const k of [
+      'chair',
+      'water-cooler',
+      'arcade-machine',
+      'reception-desk',
+      'room',
+      'rug',
+      'door',
+    ])
+      expect(hasMoment(k)).toBe(false);
     expect(['tree', 'outdoor-plant', 'plant'].every(swaysOnMoment)).toBe(true);
     expect(swaysOnMoment('pond')).toBe(false);
+  });
+
+  it('plays every kind for under three seconds, and starts its reach inside its box', () => {
+    for (const k of MOMENT_KINDS) {
+      expect(MOMENT_MS[k]).toBeGreaterThan(0);
+      expect(MOMENT_MS[k]).toBeLessThan(3000);
+      expect(MOMENT_TOP[k]).toBeGreaterThanOrEqual(0);
+      expect(MOMENT_TOP[k]).toBeLessThan(1);
+    }
   });
 });
 
@@ -65,78 +99,83 @@ describe('the reach', () => {
     expect(inMomentReach({ x: 600, y: 100 - MOMENT_REACH }, pond)).toBe(true);
     expect(inMomentReach({ x: 600, y: 100 - MOMENT_REACH - 1 }, pond)).toBe(false);
   });
+
+  it('reaches the floor in front of a wall piece and in front of the counter under a kettle', () => {
+    const board = momentPiece({ id: 'd', kind: 'dartboard', x: 0, y: 0, width: 80, height: 96 });
+    expect(inMomentReach({ x: 40, y: 96 + WALL_REACH }, board)).toBe(true);
+    expect(inMomentReach({ x: 40, y: 96 + WALL_REACH + 1 }, board)).toBe(false);
+    const kettle = momentPiece({ id: 'k', kind: 'kettle', x: 0, y: 0, width: 32, height: 36 });
+    expect(inMomentReach({ x: 16, y: 36 + COUNTER_REACH }, kettle)).toBe(true);
+    expect(inMomentReach({ x: 16, y: 36 + COUNTER_REACH + 1 }, kettle)).toBe(false);
+  });
 });
 
 describe('the trigger', () => {
   it('plays on arriving, from your side, and never again while you stand there', () => {
     const { trigger } = setup();
-    expect(trigger.step(away, [tree])).toBeNull();
-    expect(trigger.step(atTree, [tree])).toEqual({ id: 't', side: -1 });
-    expect(trigger.step({ x: 95, y: 255 }, [tree])).toBeNull();
+    expect(trigger.step(away, [tree])).toEqual([]);
+    expect(trigger.step(atTree, [tree])).toEqual([{ id: 't', side: -1 }]);
+    expect(trigger.step({ x: 95, y: 255 }, [tree])).toEqual([]);
   });
 
   it('says the right side when you come from the right', () => {
     const { trigger } = setup();
-    expect(trigger.step({ x: 230, y: 250 }, [tree])).toEqual({ id: 't', side: 1 });
+    expect(trigger.step({ x: 230, y: 250 }, [tree])).toEqual([{ id: 't', side: 1 }]);
   });
 
-  it('plays one arrival in two, and always the third after two refusals', () => {
-    const { arrive, tick } = setup([0.9]);
-    expect(arrive()).toBeNull();
-    tick(MOMENT_PIECE_REST_MS);
-    expect(arrive()).toBeNull();
-    tick(MOMENT_PIECE_REST_MS);
-    expect(arrive()).toEqual({ id: 't', side: -1 });
-    // The count starts again after a play.
-    tick(MOMENT_PIECE_REST_MS);
-    expect(arrive()).toBeNull();
+  it('plays every arrival, every time (owner 2026-11-07)', () => {
+    const { arrive, tick } = setup();
+    for (let i = 0; i < 6; i++) {
+      expect(arrive()).toEqual([{ id: 't', side: -1 }]);
+      tick(MOMENT_MS.tree);
+    }
   });
 
-  it('asks one piece at most once in its rest, whatever the answer', () => {
-    const { arrive, tick } = setup([0.9, 0]);
-    expect(arrive()).toBeNull();
-    tick(MOMENT_PIECE_REST_MS - 1);
-    // Inside the rest: not asked, so the 0 roll is still to come.
-    expect(arrive()).toBeNull();
+  it('never restarts a moment while it is still playing, and plays the arrival after it ends', () => {
+    const { arrive, tick } = setup();
+    expect(arrive()).toHaveLength(1);
+    tick(MOMENT_MS.tree - 1);
+    // Out and back in mid-moment: nothing restarts.
+    expect(arrive()).toEqual([]);
     tick(1);
-    expect(arrive()).toEqual({ id: 't', side: -1 });
+    expect(arrive()).toEqual([{ id: 't', side: -1 }]);
   });
 
-  it('plays nothing within the gap after the last moment, anywhere', () => {
-    const { trigger, arrive, tick } = setup();
-    expect(arrive()).not.toBeNull();
-    tick(MOMENT_GAP_MS - 1);
-    expect(arrive(atPond, [tree, pond])).toBeNull();
+  it('plays another piece straight away while one is still playing', () => {
+    const { trigger, arrive } = setup();
+    expect(arrive()).toHaveLength(1);
     trigger.step(away, [tree, pond]);
-    tick(1);
-    expect(trigger.step(atPond, [tree, pond])).toEqual({ id: 'p', side: -1 });
+    expect(trigger.step({ x: 600, y: 90 }, [tree, pond])).toEqual([{ id: 'p', side: -1 }]);
   });
 
-  it('asks only the first arrival of a step', () => {
-    const near = { ...tree, id: 'n', x: 150 };
+  it('plays both pieces you reach on one step', () => {
+    const near = momentPiece({ ...tree, id: 'n', x: 150 });
     const { trigger } = setup();
     const both = { x: 140, y: 250 };
-    expect(trigger.step(both, [tree, near])?.id).toBe('t');
-    expect(trigger.step(both, [tree, near])).toBeNull();
+    expect(trigger.step(both, [tree, near])).toEqual([
+      { id: 't', side: -1 },
+      { id: 'n', side: -1 },
+    ]);
+    expect(trigger.step(both, [tree, near])).toEqual([]);
   });
 
-  it('takes walking back in after a reset as an arrival', () => {
+  it('takes walking back in after a reset as an arrival, but keeps a moment from restarting', () => {
     const { trigger, tick } = setup();
-    expect(trigger.step(atTree, [tree])).not.toBeNull();
-    tick(MOMENT_PIECE_REST_MS);
-    expect(trigger.step(atTree, [tree])).toBeNull();
+    expect(trigger.step(atTree, [tree])).toHaveLength(1);
     trigger.reset();
-    expect(trigger.step(atTree, [tree])).not.toBeNull();
+    // Still playing: the reset does not restart it.
+    expect(trigger.step(atTree, [tree])).toEqual([]);
+    tick(MOMENT_MS.tree);
+    // Standing there since: no new arrival until a reset.
+    expect(trigger.step(atTree, [tree])).toEqual([]);
+    trigger.reset();
+    expect(trigger.step(atTree, [tree])).toHaveLength(1);
   });
 
-  it('uses the real clock and dice by default', () => {
+  it('uses the real clock by default', () => {
     const trigger = createMomentTrigger();
-    const seen = Array.from({ length: 3 }, (_, i) => {
-      const piece = { ...tree, id: `t${i}` };
-      return trigger.step(atTree, [piece]);
-    });
-    // The first arrival plays or refuses; the gap holds anything after a play.
-    expect(seen.filter(Boolean).length).toBeLessThanOrEqual(1);
+    const pieces = [0, 1, 2].map((i) => ({ ...tree, id: `t${i}` }));
+    expect(trigger.step(atTree, pieces)).toHaveLength(3);
   });
 });
 
