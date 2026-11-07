@@ -21,7 +21,8 @@ Derived from [Office](../office.md).
 | `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                                         |
 | `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                                  |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                                              |
-| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room, rug or stage goes in at the back                                                                   |
+| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room, rug or stage goes in at the back; a drop selects every piece it placed                             |
+| `apps/editor/lib/placed-selection.ts`                    | `placedSelection`: one piece alone, several as one multi-selection (also `useShapeDrawing`'s armed tap)    |
 | `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                                          |
 | `apps/editor/components/palette/StageMenuSection.tsx`    | `StageMenuSection`: Who Can Speak, Show Cameras                                                            |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`, `setStageSelected`                                                                  |

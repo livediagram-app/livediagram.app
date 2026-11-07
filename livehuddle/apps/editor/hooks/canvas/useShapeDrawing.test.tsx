@@ -29,6 +29,7 @@ function setup(commit = vi.fn<Commit>(), setCanvasTool = vi.fn()) {
         commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,
+        setSelection: selection.setSelection,
         setEditingId,
         zoomRef: { current: 1 },
         styleNewElement: (el) => el,
@@ -107,6 +108,7 @@ describe('useShapeDrawing Room Builder', () => {
         commit,
         setSelectedId: selection.setSelectedId,
         setMultiSelectedIds: selection.setMultiSelectedIds,
+        setSelection: selection.setSelection,
         setEditingId: vi.fn(),
         zoomRef: { current: 1 },
         styleNewElement: (el) => el,
@@ -136,7 +138,8 @@ describe('useShapeDrawing Room Builder', () => {
   });
 
   // docs/specs/009-elements/office.md "The doorway is a Door": a tapped or drawn Room comes with its Door, one commit.
-  it('adds a tapped Room with its Door on the front wall in one commit, the room selected', () => {
+  // docs/specs/009-elements/office.md "Placing selects every piece": the room and its Door land selected together.
+  it('adds a tapped Room with its Door on the front wall in one commit, both selected', () => {
     const { result, commit, selection } = roomSetup(false);
     act(() => result.current.commitDraw({ type: 'shape', kind: 'room' }, 500, 400, 500, 400));
     expect(commit).toHaveBeenCalledTimes(1);
@@ -145,11 +148,14 @@ describe('useShapeDrawing Room Builder', () => {
     expect(added[0]).toMatchObject({ shape: 'room', roomDoor: 'none', width: 480, height: 320 });
     expect(added[1]).toMatchObject({ shape: 'door' });
     expect((added[1] as { rotation?: number }).rotation ?? 0).toBe(0);
-    expect(selection.get().selectedId).toBe(added[0]!.id);
+    expect(selection.get()).toEqual({
+      selectedId: null,
+      multiSelectedIds: new Set([added[0]!.id, added[1]!.id]),
+    });
   });
 
   // docs/specs/009-elements/office-amenities.md "The Restroom preset": the room, its Door and its fittings, one commit.
-  it('adds a tapped Restroom furnished, with its Door and sign, in one commit, the room selected', () => {
+  it('adds a tapped Restroom furnished, with its Door and sign, in one commit, every piece selected', () => {
     const { result, commit, selection } = roomSetup(false);
     act(() =>
       result.current.commitDraw(
@@ -173,7 +179,32 @@ describe('useShapeDrawing Room Builder', () => {
       'room-sign',
     ]);
     expect(added[0]).toMatchObject({ label: 'Restroom' });
-    expect(selection.get().selectedId).toBe(added[0]!.id);
+    expect(selection.get().selectedId).toBeNull();
+    expect([...selection.get().multiSelectedIds]).toEqual(added.map((e) => e.id));
+  });
+
+  it('keeps a tapped lone piece a single selection', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.commitDraw({ type: 'shape', kind: 'plant' }, 500, 400, 500, 400));
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(1);
+    expect(selection.get()).toEqual({ selectedId: added[0]!.id, multiSelectedIds: new Set() });
+  });
+
+  it('keeps a tapped sticky a single selection', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.commitDraw({ type: 'sticky' }, 500, 400, 500, 400));
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(1);
+    expect(selection.get()).toEqual({ selectedId: added[0]!.id, multiSelectedIds: new Set() });
+  });
+
+  it('keeps a tapped Door a single selection, snapped onto the wall it landed by', () => {
+    const { result, commit, selection } = roomSetup(false);
+    act(() => result.current.commitDraw({ type: 'shape', kind: 'door' }, 500, 400, 500, 400));
+    const added = commit.mock.calls[0]![0]([]);
+    expect(added).toHaveLength(1);
+    expect(selection.get()).toEqual({ selectedId: added[0]!.id, multiSelectedIds: new Set() });
   });
 
   it('commits nothing for fewer than three corners', () => {

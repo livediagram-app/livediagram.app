@@ -10,6 +10,7 @@ import {
   type StickyElement,
   type Tab,
 } from '@livehuddle/document';
+import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@liveworkspace/workbench/lib/format-config';
 import { useElementHelpers } from './useElementHelpers';
 
@@ -30,6 +31,8 @@ const ROW: Element[] = [note('a', 0), note('b', 272), note('c', 544)];
 function harness(elements: Element[] = ROW) {
   const tab: Tab = { id: 't1', name: 'Tab 1', elements };
   const commitTabs = vi.fn();
+  const setSelection = vi.fn<(next: Selection) => void>();
+  const setEditingId = vi.fn();
   const { result } = renderHook(() =>
     useElementHelpers({
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
@@ -41,12 +44,12 @@ function harness(elements: Element[] = ROW) {
       getViewportCenter: () => ({ x: 0, y: 0 }),
       commit: vi.fn(),
       commitTabs,
-      setSelectedId: vi.fn(),
-      setEditingId: vi.fn(),
+      setSelection,
+      setEditingId,
       setFormatSourceId: vi.fn(),
     }),
   );
-  return { helpers: result.current, commitTabs, tab };
+  return { helpers: result.current, commitTabs, tab, setSelection, setEditingId };
 }
 
 // The x of every element on the tab the single commit produced.
@@ -64,8 +67,9 @@ describe('addBoxedAt', () => {
   });
 
   // docs/specs/009-elements/office.md "The doorway is a Door": a dropped Room brings its Door in the same change.
-  it('drops a Room behind everything with its Door in front, in one change, the room selected', () => {
-    const { helpers, commitTabs } = harness();
+  // office.md "Placing selects every piece": the room and its Door land selected together, one store write.
+  it('drops a Room behind everything with its Door in front, in one change, both selected', () => {
+    const { helpers, commitTabs, setSelection } = harness();
     helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y));
     expect(commitTabs).toHaveBeenCalledTimes(1);
     const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
@@ -76,11 +80,16 @@ describe('addBoxedAt', () => {
     expect(door.shape).toBe('door');
     expect(doorOnRoom(door, room)).toBe(true);
     expect(els).toHaveLength(ROW.length + 2);
+    expect(setSelection).toHaveBeenCalledTimes(1);
+    expect(setSelection).toHaveBeenCalledWith({
+      selectedId: null,
+      multiSelectedIds: new Set([room.id, door.id]),
+    });
   });
 
   // docs/specs/009-elements/office-amenities.md "The Restroom preset": a dropped Restroom brings its fittings too.
-  it('drops a Restroom with its Door, fittings and sign in front of it, in one change', () => {
-    const { helpers, commitTabs } = harness();
+  it('drops a Restroom with its Door, fittings and sign in front of it, in one change, all selected', () => {
+    const { helpers, commitTabs, setSelection } = harness();
     helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y), { variant: 'restroom' });
     expect(commitTabs).toHaveBeenCalledTimes(1);
     const updater = commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[];
@@ -95,6 +104,33 @@ describe('addBoxedAt', () => {
       'washbasin',
       'room-sign',
     ]);
+    const placed = [els[0]!, ...els.slice(-7)].map((e) => e.id);
+    expect(setSelection).toHaveBeenCalledTimes(1);
+    expect(setSelection).toHaveBeenCalledWith({
+      selectedId: null,
+      multiSelectedIds: new Set(placed),
+    });
+  });
+
+  it('keeps a dropped lone piece a single selection, with its caret', () => {
+    const { helpers, setSelection, setEditingId } = harness();
+    helpers.addBoxedAt(372, 100, (x) => note('new', x), { edit: true });
+    expect(setSelection).toHaveBeenCalledWith({ selectedId: 'new', multiSelectedIds: new Set() });
+    expect(setEditingId).toHaveBeenCalledWith('new');
+  });
+
+  it('opens no caret when a typed-label drop brings companions', () => {
+    const { helpers, setSelection, setEditingId } = harness();
+    helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y), { edit: true });
+    expect(setSelection.mock.calls[0]![0].multiSelectedIds.size).toBe(2);
+    expect(setEditingId).not.toHaveBeenCalled();
+  });
+
+  it('places without selecting when asked not to', () => {
+    const { helpers, commitTabs, setSelection } = harness();
+    helpers.addBoxedAt(600, 400, (x, y) => createShape('room', x, y), { select: false });
+    expect(commitTabs).toHaveBeenCalledTimes(1);
+    expect(setSelection).not.toHaveBeenCalled();
   });
 
   it('refuses to touch the board when edits are blocked', () => {
@@ -111,7 +147,7 @@ describe('addBoxedAt', () => {
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit: vi.fn(),
         commitTabs,
-        setSelectedId: vi.fn(),
+        setSelection: vi.fn(),
         setEditingId: vi.fn(),
         setFormatSourceId: vi.fn(),
       }),
@@ -147,7 +183,7 @@ describe('applyFormatFromSource', () => {
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit,
         commitTabs: vi.fn(),
-        setSelectedId: vi.fn(),
+        setSelection: vi.fn(),
         setEditingId: vi.fn(),
         setFormatSourceId,
       }),

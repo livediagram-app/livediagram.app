@@ -31,6 +31,7 @@ import {
 } from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { armedRoomSnap } from '@/lib/palette-drag-snap';
+import { placedSelection } from '@/lib/placed-selection';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { opensForTyping, type PendingDraw } from '@/lib/draw-mode';
@@ -60,6 +61,8 @@ type ShapeDrawingDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   setSelectedId: (id: string | null) => void;
   setMultiSelectedIds: (ids: Set<string>) => void;
+  // One write of the whole selection: a Room's pieces land selected in one store notify.
+  setSelection: (next: Selection) => void;
   setEditingId: (id: string | null) => void;
   // Live viewport zoom — scales the freehand simplification tolerance.
   zoomRef: React.RefObject<number>;
@@ -78,6 +81,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     commit,
     setSelectedId,
     setMultiSelectedIds,
+    setSelection,
     setEditingId,
     zoomRef,
     styleNewElement,
@@ -220,14 +224,15 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     // A door or window tapped or drawn near a wall lands on it (docs/specs/009-elements/room-builder.md "Door",
     // "Window"), against the live walls.
     // A new Room comes with its Door (docs/specs/009-elements/office.md "The doorway is a Door"), and a room preset's
-    // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo.
-    commit((els) => [
-      ...els,
-      ...(isWallPiece(sized)
-        ? [snapDoorToWall(sized, els)]
-        : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined)),
-    ]);
-    setSelectedId(sized.id);
+    // pieces with it (office-amenities.md "The Restroom preset"): one commit, one undo, and every piece selected
+    // (office.md "Placing selects every piece"). The pieces are built once, outside the updater, so the ids it
+    // commits are the ids selected.
+    const wallPiece = isWallPiece(sized) ? sized : null;
+    const pieces = wallPiece
+      ? [sized]
+      : withDoorPiece(sized, intent.type === 'shape' ? intent.variant : undefined);
+    commit((els) => [...els, ...(wallPiece ? [snapDoorToWall(wallPiece, els)] : pieces)]);
+    setSelection(placedSelection(pieces));
     // A freshly added text element drops straight into typing mode
     // (matches the double-click-to-add-text path in useElementCreation):
     // an empty text box is only useful once you type into it, so save the
