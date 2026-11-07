@@ -41,7 +41,7 @@ The **Copies** toggles are the setting most likely to be wrong later: someone le
 
 ## Locks
 
-A lock holds an element's look as well as its place. The Format tool never paints onto a locked element or anything on a locked tab: the tap does nothing, counts as no paint (no `Element·Changed·FormatPainter`), and leaves a Paint once brush loaded. A locked element can still be the source, since copying its look changes nothing. The Eraser protects the same locks ([Canvas and palette](canvas-and-palette.md) "Eraser").
+livehuddle has no element or tab lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)), so the Format tool paints onto any element the session may edit.
 
 ## Telemetry
 

@@ -159,7 +159,7 @@ export function clearOfFences(
 ## Data and persistence
 
 - **Persisted:** the ordinary boxed fields (`x`, `y`, `width`, `height`, `rotation`, `strokeColor`,
-  `opacity`, `locked`). No fence-specific field.
+  `opacity`). No fence-specific field.
 - **Never persisted:** fence segments, blocking, slides (I1).
 - **Export:** rails then posts in the stroke colour, rotated with the element.
 

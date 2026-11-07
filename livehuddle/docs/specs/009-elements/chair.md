@@ -36,7 +36,7 @@ meeting table.
   the backrest only reads as a control on the seat.
 - Its `label` is optional and renders under the chair: "Scribe", "Facilitator",
   "Alex": a chair that is somebody's chair.
-- Otherwise a completely ordinary element: move, resize, theme, group, lock, copy, export. It turns a quarter at a
+- Otherwise a completely ordinary element: move, resize, theme, group, copy, export. It turns a quarter at a
   time rather than rotating ([Turning furniture](furniture-facing.md) "No free rotation").
 - **One drawing, on the canvas and in an export.** The chair is a piece of the shared furniture table
   (`FURNITURE_ART` in `@livehuddle/document`) with the desk and the sofa: `FurnitureView` and the

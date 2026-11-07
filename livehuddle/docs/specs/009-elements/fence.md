@@ -31,7 +31,7 @@ the room, the stage and the rug: the pieces a floor is laid out with.
   it and nothing to set beyond its colour.
 - **Its colour is its stroke.** Unstyled it is a wood brown that reads on light and dark paper;
   the stroke colour picker recolours posts and rails together.
-- Otherwise an ordinary element: move, resize, rotate, group, lock, copy, theme, export.
+- Otherwise an ordinary element: move, resize, rotate, group, copy, theme, export.
 - **One drawing, on the canvas and in an export**: both draw from the shared fence geometry in
   `@livehuddle/document`.
 

@@ -51,7 +51,7 @@ replaced both the Selection Mode picker and the bottom-right cluster's Walk butt
 - **Where.** The very start of the strip, whichever strip shows: the [building strip](../007-editor/toolbar-layout.md)
   (Edit on) and the [avatar palette](#the-avatar-palette) (Walk on), a divider after it, so it stays put under the
   pointer as one strip gives way to the other. On a phone it is one of the strip's fixed items: it stays put while the
-  rail swipes. On a **locked tab** an Editor has no building strip, so the strip there holds the toggle alone.
+  rail swipes.
 - **What it does.** **Walk** enters Avatar mode exactly as Search's Walk does (the selection cleared, the tool before
   it remembered, `Canvas·Used·AvatarMode` counted), the character appearing wherever a fresh entry puts it (a pad, else
   where it was left, else the view's centre). **Edit** leaves it for the tool before it (Select on a desktop; on a
@@ -450,7 +450,7 @@ backdrop dismisses it, and focus stays inside it while it is open. Nothing walks
   link), and the two ways to fill it for whoever may. **Share Your Screen** is the call control's own Share action,
   shown and routed exactly as that button is: in a live call an Editor shares to the room; with no call, or as a
   Participant, it starts the local preview only you see ([Local preview](../012-collaboration/video-and-screen-bubbles.md#local-preview)).
-  It reads Stop Sharing while you share. **Set Link** (an Editor's, on an unlocked Screen) is the element menu's
+  It reads Stop Sharing while you share. **Set Link** (an Editor's) is the element menu's
   Video Link, judged the same way (a link that is not a YouTube, Vimeo or Loom video says so and is not saved) and
   saved to this Screen through the same patch (`setScreenUrlOf`). Someone who may do neither sees the empty state
   alone. (`components/canvas/collab/ScreenReaderBody.tsx`)
@@ -801,7 +801,7 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 - **`../packages/avatar/src/bindings.ts`** and **`apps/editor/lib/avatar-bindings.ts`**: the product's facts (telemetry, storage prefix, colour maths) and where this editor hands them over.
 - **`../packages/avatar/src/scene.ts`**: what the package reads of a board's elements (`AvatarSceneElement`, `isSceneShape`, `hasSceneBox`).
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@liveworkspace/api-schema/avatar`, re-exported by `@livehuddle/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livehuddle/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `palette-icons.tsx` (the mode's glyph), `lib/editor-commands.ts` (Search's Avatar Mode), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button), `components/palette/EditWalkToggle.tsx` (the [Edit | Walk toggle](#the-edit--walk-toggle), at the start of `ToolbarPalette.tsx` and `AvatarPalette.tsx`, and alone on a locked tab, shown when `walkToggle` is on: everywhere but an embed and an always-walking session, `EditorCanvasHost.tsx`), and `components/calls/CallStripGroup.tsx` (the avatar palette's call group, `AvatarPalette.tsx`).
+- Wiring, one small edit each: `palette-icons.tsx` (the mode's glyph), `lib/editor-commands.ts` (Search's Avatar Mode), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button), `components/palette/EditWalkToggle.tsx` (the [Edit | Walk toggle](#the-edit--walk-toggle), at the start of `ToolbarPalette.tsx` and `AvatarPalette.tsx`, shown when `walkToggle` is on: everywhere but an embed and an always-walking session, `EditorCanvasHost.tsx`), and `components/calls/CallStripGroup.tsx` (the avatar palette's call group, `AvatarPalette.tsx`).
 
 ## Telemetry
 

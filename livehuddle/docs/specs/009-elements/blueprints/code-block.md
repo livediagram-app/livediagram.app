@@ -89,7 +89,7 @@ A failed load renders plain text and retries on the next mount (D105).
 ### Edit
 
 1. Double-click on the card calls `onEditCode(id)` before any label edit, unless
-   `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [QE7].
+   `remotelyLocked`; read-only surfaces pass no handler.
 2. The Code section (Tools flyout): `CodeSummary` ("No code yet" or "n lines · language"), an
    **Edit Code** button opening the same dialog, and a **Wrap Long Lines** toggle
    (`setCodeWrapSelected`, `'CodeWrap'`). No language picker in the menu [QE5].

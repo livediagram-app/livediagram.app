@@ -86,7 +86,7 @@ States per marker: `hovering` (local `useState`), `isSelected`, `isEditing`.
 
 ### Everything else
 
-Move, recolour (Colours accordion), reorder, lock, link, comment, assign an action and delete follow
+Move, recolour (Colours accordion), reorder, link, comment, assign an action and delete follow
 the generic boxed paths. No quick-connect plus appears: livehuddle draws none on any element (D90, ../../002-project-scope/not-in-livehuddle.md#quick-connect) [QD11].
 The quick style panel does not open for an annotation: `isQuickStyleTarget` takes shapes, arrows
 and text only.
@@ -114,7 +114,6 @@ export type AnnotationElement = {
   strokeColor?: string; // ring + glyph
   textColor?: string; // declared, unused
   label?: string; // declared, no UI sets it
-  locked?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   action?: ElementAction;

@@ -88,8 +88,7 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 
 Guards:
 
-- The seam is interactive only when `onCommitHeaderSize` is wired: not read-only and not locked
-  [GA7]. It is interactive whether or not the lane is selected (`D20`).
+- The seam is interactive only when `onCommitHeaderSize` is wired: not read-only [GA7]. It is interactive whether or not the lane is selected (`D20`).
 - Snapping is skipped for `centre-x`.
 
 Invariants:
@@ -177,7 +176,6 @@ No migration.
 | E6  | `zoom` of 0                              | Treated as 1                                      |
 | E7  | Element straddling a lane edge           | Carried when its centre is inside                 |
 | E8  | Overlapping lanes and frames             | The smallest container owns (I4)                  |
-| E9  | Locked lane                              | Seam inert [GA7]                                  |
 
 ## Security and trust
 

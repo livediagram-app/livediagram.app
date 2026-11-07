@@ -58,7 +58,7 @@ New `ShapeKind` members only; no new fields. Older clients see an unknown kind a
 
 - A restroom room shrunk or moved later carries its pieces nowhere: they are separate elements (the Door rides; the rest
   do not, as any furniture).
-- A dropped preset on a locked tab: blocked by `editsBlocked` before anything is built.
+- A dropped preset in a read-only session: blocked by `editsBlocked` before anything is built.
 
 ## Security and trust
 

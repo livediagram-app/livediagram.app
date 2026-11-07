@@ -28,7 +28,7 @@ link.
   side wall's face rising with it and its handrail along it; facing right, mirrored, it climbs to the left.
 - **It carries no name.** Its hover card and panel say where it leads. No settings `…`. Proportions locked.
 - **It never blocks**: walking onto it is how you take it.
-- Otherwise an ordinary element: move, resize, turn, lock, copy, delete, export.
+- Otherwise an ordinary element: move, resize, turn, copy, delete, export.
 
 ## Floors
 

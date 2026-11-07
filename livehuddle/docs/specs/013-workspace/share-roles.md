@@ -80,7 +80,7 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
   in it always ([Always walking](#always-walking)).
 - **Only an Editor enters and leaves Avatar mode**, through the
   [Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle) at the start of the strip (building or
-  walking, and alone on a locked tab), so a board with no pad, Avatar button or opening walk still lets it walk. `W`
+  walking), so a board with no pad, Avatar button or opening walk still lets it walk. `W`
   and `E`, Search's **Walk** and **Edit**, and a Selection Mode button set to Avatar are its other ways in and out
   (owner, 2026-11-06: the Selection Mode picker and the cluster's Walk button gave way to the toggle).
 - **The call controls** (the microphone, the camera, Share Screen; the call itself joins by walking, a Viewer listening automatically) sit on the Call dock at the bottom
@@ -92,7 +92,8 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
   everyone in it, so `isReadOnly` cannot tell a Viewer from a walking Editor.
 - **The room enforces what the client hides**: it drops a Viewer's `avatar-say`, reaction and answer, and checks an
   Editor's element ops, as livediagram's room does.
-- **A locked tab** behaves for an Editor as for a Viewer, as in every product.
+- **No lock** makes an Editor read-only: livehuddle has no tab or element lock
+  ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)).
 
 ## A Participant walks
 
@@ -113,7 +114,7 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   they do while walking for anyone: the camera follows the character, the zoom controls stay.
 - **The pieces it keeps** are piece actions, not content edits: pinning a note on a Notice Board or a Calendar Wall and
   unpinning its own ([Social pieces](../009-elements/social-pieces.md#notice-board), [Team
-  pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, opening and closing a Door that is not locked
+  pieces](../009-elements/team-pieces.md#calendar-wall)), dropping a note in a Suggestion Box, opening and closing a Door
   ([Room Builder and Door](../009-elements/room-builder.md#opening-and-closing)), a Timer or Stopwatch
   ([Timer and Stopwatch](../009-elements/timer-and-stopwatch.md#share-roles)), playing the Arcade Machine and posting its
   own scores ([Social pieces](../009-elements/social-pieces.md#high-scores)), playing the Jukebox, knocking, sitting,
@@ -123,7 +124,7 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   longer write on, move, recolour or remove them (nor anything else on the canvas); an Editor can.
 - **The room holds the same line.** The participant content rule (`packages/document/src/participant-content.ts`)
   refuses every add and every remove from a Participant, and on an update keeps every field as stored except a
-  Door's `doorClosed` (an unlocked door) and a Notice Board's or a Calendar Wall's notes it signs. A refused op comes back with the
+  Door's `doorClosed` and a Notice Board's or a Calendar Wall's notes it signs. A refused op comes back with the
   correction that puts the sender's screen right, as before.
 - **A Viewer walks too** ([Always walking](#always-walking)).
 - **Previewing as a Participant** (an Editor's role pill) shows exactly this: the avatar palette, walking, no way out until
@@ -176,5 +177,5 @@ palettes (`stripPaletteFor`: building and avatar) and the selection modes). A ro
   nothing, never the reader.
 - **A Participant changes no element** but through a piece: a Notice Board's or a Calendar Wall's notes (it adds notes signed with its
   own adder key and removes those, and the participant content rule keeps every other note as stored) and a Door's
-  open or closed state (`doorClosed`: it opens and closes any Door that is not locked, and nothing else about it).
+  open or closed state (`doorClosed`: it opens and closes any Door, and nothing else about it).
   Every other field of every element, its own earlier stickies and text included, stays as stored.

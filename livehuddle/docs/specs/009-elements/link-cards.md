@@ -17,7 +17,7 @@ precedent): `isBoxed`, `createLinkCard` (280×120 default), the `colors.ts`
 defaults + `supportsColours`, `element-variant.ts` (a bordered, rounded card:
 `fillColor` background + `strokeColor` border), `search.ts`, `svg-render.ts`
 (exports as a rounded rect). It is **resizable** like a shape (not a fixed
-marker) and recolour / move / lock / reorder / delete like any element.
+marker) and recolour / move / reorder / delete like any element.
 
 - **URL source = `element.link` (`{ kind: 'url' }`)**: no new field. Editing
   reuses the existing `LinkPickerDialog` + `applyElementLink`; the empty card

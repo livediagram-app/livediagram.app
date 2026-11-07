@@ -82,8 +82,7 @@ Derived from [Social pieces](../social-pieces.md).
 
 - **Pinning**: the popover sends one delta through the editor's `applyElementDelta` (`useElementDeltas`), never a
   history commit: `{ kind: 'notice-pin', note }` or `{ kind: 'notice-unpin', noteId, by }`. `applyElementDelta`
-  (`element-deltas.ts`) applies it on the sender, every receiver and the store: only on a notice board that is not
-  locked, a pin only when the note passes `isNoticeNote`, its id is new and the board holds fewer than `NOTES_MAX`, an
+  (`element-deltas.ts`) applies it on the sender, every receiver and the store: only on a notice board, a pin only when the note passes `isNoticeNote`, its id is new and the board holds fewer than `NOTES_MAX`, an
   unpin only when the note's `by` matches. `mergeIncomingElement` keeps the receiver's `noticeNotes`,
   `elementChangeIsDeltaOnly` leaves them out of its comparison (so a notes-only change sends no `el` update), and
   `graftLiveTabState` carries them over an undo or redo. The room's ledger (`collab-ledger.ts`) records each pin and
@@ -224,7 +223,7 @@ Editor's Clear High Scores and the two-browser test.
 ### Arcade behaviour and state
 
 - **`arcade-score`** (`{ kind: 'arcade-score'; score: ArcadeScore }`): on a shape whose kind is `arcade-machine`,
-  locked or not, with `isArcadeScore(score)` and no score of that id on the table, `arcadeTableWith(table, score)`
+  with `isArcadeScore(score)` and no score of that id on the table, `arcadeTableWith(table, score)`
   inserts it in order and cuts to ten; when the new score is not among the ten the element comes back unchanged
   (the same object). Anything else: unchanged.
 - **`arcade-clear`** (`{ kind: 'arcade-clear' }`): on an `arcade-machine` with scores, drops `arcadeScores`; else
