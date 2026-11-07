@@ -359,7 +359,7 @@ ship steadily instead of blinking, and nothing flashes or shakes.
   scores on it, or better than its tenth). A tie keeps the earlier score above. One person may hold several places.
   The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
 - **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
-- **Clearing**: an Editor's element menu has an **Arcade Machine** section (under Tools) saying how many scores the
+- **Clearing**: an Editor's element menu has a **High Scores** section (under Tools, before the machine's facing) saying how many scores the
   table holds ("3 Scores on the table", or **No Scores Yet**) with **Clear High Scores**, off while the table is empty. It asks
   first ("Clear all 10 scores? This can't be undone.", "Clear 1 score?" for one) and empties the table for everyone,
   the machine's bubble and every open panel alike.

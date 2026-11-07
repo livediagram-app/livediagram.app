@@ -142,12 +142,12 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   await expect(panel(viewerPage).locator('[data-arcade-scores]')).toContainText(posted);
   await viewerPage.screenshot({ path: test.info().outputPath('viewer.png') });
 
-  // The owner clears it from the element menu: Edit, a right-click on the machine, Tools, Arcade Machine.
+  // The owner clears it from the element menu: Edit, a right-click on the machine, Tools, High Scores.
   await ownerPage.keyboard.press('e');
   await expect(self(ownerPage)).toHaveCount(0);
   await machine(ownerPage).click({ button: 'right' });
   await ownerPage.getByRole('button', { name: 'Tools', exact: true }).click();
-  await ownerPage.getByRole('button', { name: 'Arcade Machine', exact: true }).click();
+  await ownerPage.getByRole('button', { name: 'High Scores', exact: true }).click();
   await ownerPage.getByText('1 Score on the table').waitFor();
   await ownerPage.getByRole('button', { name: 'Clear High Scores' }).click();
   const confirm = ownerPage.getByRole('alertdialog').or(ownerPage.getByRole('dialog'));

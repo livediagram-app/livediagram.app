@@ -257,9 +257,11 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   same button, so the press is unchanged; the `sr-only` status reads "Insert Coin. Best 1,240 by Ann". Read from the
   element, so a posted score or a clear on any screen re-renders it as the delta lands.
 - **Clear High Scores** (`apps/editor/components/palette/ArcadeMenuSection.tsx`): in the
-  Editor's element menu, under Tools, for an `arcade-machine` when `onClearArcadeScores` is given (the host passes
+  Editor's element menu, under Tools, a **High Scores** section (the star glyph; the facing section after it already
+  carries the piece's name) for an `arcade-machine` when `onClearArcadeScores` is given (the host passes
   it only at `can.level === 'edit'`; a Participant's and a Viewer's menus are their own). It reads **3 Scores on the table**
-  (**1 Score on the table**) or **No Scores Yet**, and **Clear High Scores** (disabled while empty) asks `useConfirm` with the title
+  (**1 Score on the table**) or **No Scores Yet**, and **Clear High Scores** (disabled while empty) first closes the menu (`onClose`: the menu's
+  popover layer sits above the confirm's modal layer, so it would cover the confirm's buttons), then asks `useConfirm` with the title
   "Clear all 3 scores?" ("Clear 1 score?"), the message "This can't be undone. The table empties for everyone in
   the Space." and the confirm label **Clear High Scores**; confirmed, one
   `applyElementDelta(id, { kind: 'arcade-clear' })` and `track('Element', 'Changed', 'Arcade-machine')`.

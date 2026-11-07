@@ -22,13 +22,18 @@ const machine = (n: number): ShapeElement => ({
 });
 const open = () => ({ open: true, onToggle: () => {} });
 
-function renderSection(n: number, onClear = vi.fn()) {
+function renderSection(n: number, onClear = vi.fn(), onCloseMenu = vi.fn()) {
   render(
     <ConfirmProvider>
-      <ArcadeMenuSection target={machine(n)} sectionProps={open} onClear={onClear} />
+      <ArcadeMenuSection
+        target={machine(n)}
+        sectionProps={open}
+        onClear={onClear}
+        onCloseMenu={onCloseMenu}
+      />
     </ConfirmProvider>,
   );
-  return onClear;
+  return { onClear, onCloseMenu };
 }
 const clearButton = () => screen.getByRole('button', { name: 'Clear High Scores' });
 
@@ -50,9 +55,11 @@ describe('ArcadeMenuSection', () => {
   });
 
   it('asks first, and clears only once confirmed', async () => {
-    const onClear = renderSection(3);
+    const { onClear, onCloseMenu } = renderSection(3);
     expect(screen.getByText('3 Scores on the table')).toBeTruthy();
     fireEvent.click(clearButton());
+    // The menu closes before the confirm opens: it sits a layer above it.
+    expect(onCloseMenu).toHaveBeenCalledTimes(1);
     const dialog = await screen.findByRole('alertdialog').catch(() => screen.getByRole('dialog'));
     expect(dialog.textContent).toContain('Clear all 3 scores?');
     expect(dialog.textContent).toContain("This can't be undone.");

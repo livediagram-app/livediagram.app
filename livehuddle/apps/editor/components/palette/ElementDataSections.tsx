@@ -266,6 +266,7 @@ export function ElementDataSections({
               target={shapeTarget}
               sectionProps={sectionProps}
               onClear={() => props.onClearArcadeScores!(shapeTarget.id)}
+              onCloseMenu={props.onClose}
             />
           ) : null}
           {shapeTarget?.shape === 'screen' && props.onSetScreenUrl ? (

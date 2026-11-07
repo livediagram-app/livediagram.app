@@ -1,13 +1,14 @@
 'use client';
 
-// An Arcade Machine's section in the Editor's element menu (docs/specs/009-elements/social-pieces.md "High Scores",
-// "Clearing"): how many scores its table holds, and Clear High Scores, asked first. Only an Editor's menu renders it
-// (the host passes `onClear` only at `can.level === 'edit'`); a Participant's and a Viewer's menus are their own.
+// An Arcade Machine's High Scores section in the Editor's element menu (docs/specs/009-elements/social-pieces.md "High Scores",
+// "Clearing"): how many scores its table holds, and Clear High Scores, asked first. Titled High Scores, not the
+// piece's name, which its facing section (CollabMenuSections' ChairMenuSection) already takes. Only an Editor's menu
+// renders it (the host passes `onClear` only at `can.level === 'edit'`); a Participant's and a Viewer's menus are their own.
 
 import type { ShapeElement } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { RatingMenuGlyph } from '@/components/palette/context-menu-data-rows';
 
 type SectionProps = (id: string) => { open: boolean; onToggle: () => void };
 
@@ -29,14 +30,18 @@ export function ArcadeMenuSection({
   target,
   sectionProps,
   onClear,
+  onCloseMenu,
 }: {
   target: ShapeElement;
   sectionProps: SectionProps;
   onClear: () => void;
+  /** Closes the element menu first: it sits a layer above the confirm, so it would cover the confirm's buttons. */
+  onCloseMenu: () => void;
 }) {
   const confirm = useConfirm();
   const count = target.arcadeScores?.length ?? 0;
   const clear = async () => {
+    onCloseMenu();
     const ok = await confirm({
       title: arcadeClearQuestion(count),
       message: "This can't be undone. The table empties for everyone in the Space.",
@@ -46,8 +51,8 @@ export function ArcadeMenuSection({
   };
   return (
     <MenuAccordionSection
-      title="Arcade Machine"
-      icon={<ToolsMenuGlyph />}
+      title="High Scores"
+      icon={<RatingMenuGlyph />}
       {...sectionProps('arcade-machine')}
     >
       <div className="flex flex-col gap-1.5 px-3 pb-2 pt-1">
