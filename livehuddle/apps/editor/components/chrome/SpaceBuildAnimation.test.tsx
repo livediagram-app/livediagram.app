@@ -2,7 +2,17 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { SpaceBuildAnimation } from './SpaceBuildAnimation';
-import { PATHS, SCENE_CSS, SEATS, WALKS, segments } from './space-build-scene';
+import {
+  DOOR_OPEN,
+  LOOP_MS,
+  PATHS,
+  PIECES,
+  SCENE_CSS,
+  SEATS,
+  WALKS,
+  WALLS,
+  segments,
+} from './space-build-scene';
 
 // docs/specs/007-editor/new-document-route.md "The opening screen".
 
@@ -59,6 +69,21 @@ describe('SpaceBuildAnimation', () => {
         expect(['opacity', 'transform', 'animation-timing-function']).toContain(prop);
       }
     }
+  });
+});
+
+describe('the timeline', () => {
+  const ms = (pct: number) => (pct / 100) * LOOP_MS;
+
+  it('front-loads the action, since most loads finish within a second or two', () => {
+    // The room is up and the door open within the first 0.8s, and someone is walking in by 0.7s.
+    expect(Math.max(...WALLS.map((w) => ms(w.at[1])))).toBeLessThanOrEqual(800);
+    expect(ms(DOOR_OPEN[1])).toBeLessThanOrEqual(800);
+    expect(ms(Math.min(WALKS.you[0], WALKS.sam[0]))).toBeLessThanOrEqual(700);
+    // Every piece has landed (a pop takes 3.5% to settle) by 1.5s.
+    expect(Math.max(...Object.values(PIECES).map((at) => ms(at + 3.5)))).toBeLessThanOrEqual(1500);
+    // Nobody walks through a closed door: the leaf is open before the first walker reaches the doorway.
+    expect(DOOR_OPEN[1]).toBeLessThanOrEqual(segments(PATHS.you, WALKS.you)[0]!.t1);
   });
 });
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every open PR of the signed-in gh user, from ONE GraphQL call (pr-loop sections 1 and 2.6).
+"""Every open PR of the signed-in gh user and of Dependabot, from ONE GraphQL call (pr-loop sections 1 and 2.6).
 
   prs.py digest    one line per PR with what it needs; exit 0
   prs.py watch     wait for a change worth acting on, print it, exit (run as a background Bash command)
@@ -23,6 +23,7 @@ POLL = int(os.environ.get("WATCH_POLL_SECONDS", "60"))
 MAX_SECONDS = float(os.environ.get("WATCH_MAX_HOURS", "4")) * 3600
 FAILED = {"FAILURE", "CANCELLED", "TIMED_OUT", "ACTION_REQUIRED", "STARTUP_FAILURE", "ERROR"}
 BLOCKING = {"not-ready", "do-not-merge"}
+BOTS = {"dependabot"}  # bot authors whose PRs the loop also works (GraphQL login, no [bot])
 QUERY = """query($owner:String!,$name:String!){viewer{login}repository(owner:$owner,name:$name){
 pullRequests(states:OPEN,first:100,orderBy:{field:CREATED_AT,direction:ASC}){nodes{
 number title isDraft mergeable mergeStateStatus author{login} labels(first:20){nodes{name}}
@@ -42,12 +43,12 @@ def repo():
 
 
 def fetch(owner, name):
-    """Open PRs authored by the gh user, keyed by number."""
+    """Open PRs authored by the gh user or a BOTS author, keyed by number."""
     out = subprocess.run([GH, "api", "graphql", "-f", f"query={QUERY}", "-F", f"owner={owner}", "-F", f"name={name}"],
                          capture_output=True, text=True, check=True).stdout
     data = json.loads(out)["data"]
     me = data["viewer"]["login"]
-    return {p["number"]: p for p in data["repository"]["pullRequests"]["nodes"] if (p["author"] or {}).get("login") == me}
+    return {p["number"]: p for p in data["repository"]["pullRequests"]["nodes"] if (p["author"] or {}).get("login") in BOTS | {me}}
 
 
 def head(pr):
