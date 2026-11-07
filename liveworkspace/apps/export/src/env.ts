@@ -14,10 +14,12 @@ export interface Env {
   APP_ORIGIN_LIVEPLANNER?: string;
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
+  APP_ORIGIN_LIVEHUDDLE?: string;
   DATA_EXPORT_KEY_LIVEDIAGRAM?: string;
   DATA_EXPORT_KEY_LIVEPLANNER?: string;
   DATA_EXPORT_KEY_LIVEDOCUMENTS?: string;
   DATA_EXPORT_KEY_LIVEDESIGN?: string;
+  DATA_EXPORT_KEY_LIVEHUDDLE?: string;
   INDEX?: Fetcher;
   MEDIA?: Fetcher;
   ACCOUNTS?: Fetcher;
@@ -31,28 +33,29 @@ export function setting(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-// A held app (livehuddle) has no export door until it launches: no origin or key, so the service can't reach it.
-const ORIGIN_OF: Partial<Record<App, keyof Env>> = {
+// Every app's export door. One whose origin or key is unset is not reachable (sources.ts `reachable`): its items are
+// named in the README and the export carries on.
+const ORIGIN_OF: Record<App, keyof Env> = {
   livediagram: 'APP_ORIGIN_LIVEDIAGRAM',
   liveplanner: 'APP_ORIGIN_LIVEPLANNER',
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
+  livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
 };
 
-const KEY_OF: Partial<Record<App, keyof Env>> = {
+const KEY_OF: Record<App, keyof Env> = {
   livediagram: 'DATA_EXPORT_KEY_LIVEDIAGRAM',
   liveplanner: 'DATA_EXPORT_KEY_LIVEPLANNER',
   livedocuments: 'DATA_EXPORT_KEY_LIVEDOCUMENTS',
   livedesign: 'DATA_EXPORT_KEY_LIVEDESIGN',
+  livehuddle: 'DATA_EXPORT_KEY_LIVEHUDDLE',
 };
 
 export function appOrigin(env: Env, app: App): string | undefined {
-  const name = ORIGIN_OF[app];
-  const origin = name ? setting(env[name] as string | undefined) : undefined;
+  const origin = setting(env[ORIGIN_OF[app]] as string | undefined);
   return origin === undefined ? undefined : withoutTrailingSlashes(origin);
 }
 
 export function appKey(env: Env, app: App): string | undefined {
-  const name = KEY_OF[app];
-  return name ? setting(env[name] as string | undefined) : undefined;
+  return setting(env[KEY_OF[app]] as string | undefined);
 }

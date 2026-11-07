@@ -378,6 +378,9 @@ function testDocumentRooms(
               version: savedAt,
             };
       },
+      // The data export's comment threads (document-room.ts exportComments).
+      exportComments: async (documentId: string) =>
+        (await import('./document-room/document-comments')).exportDocumentComments(env, documentId),
       // The Drive file's two halves (document-room.ts exportFile and importFile).
       exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
         (await import('./document-room/document-file')).exportDocumentFile(

@@ -229,6 +229,15 @@ name = "EMAIL"
 #
 # Unset = the mirror cannot export or import canvases (the two doors take only the index's key).
 
+# DATA_EXPORT_KEY is livehuddle's secret on liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md
+# "The apps' doors"); the service holds the same value as DATA_EXPORT_KEY_LIVEHUDDLE. It opens the internal export
+# door alone, in every format (its `comments` format is the data export's own), nothing else. Never in [vars]:
+#
+#   - Local dev: `DATA_EXPORT_KEY=dev-livehuddle-data-export-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DATA_EXPORT_KEY` (and `--env staging`).
+#
+# Unset = Download All My Data cannot read Spaces: it names each one under Not included and carries on.
+
 # Proximity audio (docs/specs/012-collaboration/proximity-audio.md "The mint route"): REALTIME_APP_ID and
 # REALTIME_APP_TOKEN name the Cloudflare Realtime SFU app this worker mints sessions and tracks on, and TURN_KEY_ID and
 # TURN_KEY_API_TOKEN the TURN key it mints short-lived ICE credentials from. No binding: four secrets, the owner's to

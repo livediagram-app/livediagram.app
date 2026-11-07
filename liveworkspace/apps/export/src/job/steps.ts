@@ -77,6 +77,8 @@ export const ITEM_REQUESTS_MAX = 4 + EXPORT_TAB_PICTURES_MAX;
 // After this many failed tries to tell accounts an export finished, the email is given up on (the file stays).
 export const NOTIFY_TRIES_MAX = 5;
 export const NOTIFY_RETRY_MS = 60_000;
+// What the README says of an item whose app the service can't reach (its origin or key unset).
+export const UNREACHABLE_REASON = 'its app is not part of downloads yet';
 
 // ---------- Starting and stopping -------------------------------------------------------------------------------
 
@@ -325,11 +327,16 @@ async function twice<T>(call: () => Promise<T>): Promise<T> {
 }
 
 // An item's files: its whole file, a picture of each tab, its CSV (liveplanner) and its comments. An item gone since
-// the list adds nothing; one whose file the app can't answer is named in the README.
+// the list adds nothing; one whose file the app can't answer is named in the README, and so is one whose app the
+// service has no origin or key for (data-export.md "The apps"), without a request.
 async function itemFiles(ctx: RunContext, job: Job, row: QueueRow): Promise<Made> {
   const app = row.app!;
   const doors = ctx.sources.doors;
   const made: Made = { files: [], comments: [], problems: [] };
+  if (!ctx.sources.reachable(app)) {
+    made.problems.push({ app, name: row.name || row.ref, reason: UNREACHABLE_REASON });
+    return made;
+  }
   let file: { body: string } | null;
   try {
     file = await twice(() => doors.exportFile(app, row.ref));
