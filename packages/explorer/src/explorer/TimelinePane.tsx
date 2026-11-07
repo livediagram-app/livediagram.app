@@ -24,6 +24,7 @@ import {
 } from '@liveworkspace/index-client';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { RENAME_INPUT } from '../ui/classes';
+import { SHARE_LEVEL_WORDS } from '../timeline/share-levels';
 import { DismissIcon } from '../ui/icons';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { MenuActionRow, MenuHeader, PortalMenu } from '../ui/Menu';
@@ -82,12 +83,6 @@ type OpenMenu = {
   item: Item | null;
   stack: boolean;
   title: string;
-};
-
-const LEVEL_WORDS: Record<string, string> = {
-  view: 'Anyone with the link can view',
-  participate: 'Anyone with the link can take part',
-  edit: 'Anyone with the link can edit',
 };
 
 /** Who did it, as the reader should hear it. The index keeps no names: an app's report may carry one. */
@@ -224,7 +219,7 @@ export function renderTimelineEvent(
       break;
     }
     case 'shared':
-      meta = `${LEVEL_WORDS[detail.level ?? ''] ?? 'Shared by link'} · ${by}`;
+      meta = `${SHARE_LEVEL_WORDS[detail.level ?? ''] ?? 'Shared by link'} · ${by}`;
       break;
     case 'favourited':
       meta = undefined;
