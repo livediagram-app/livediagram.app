@@ -82,7 +82,6 @@ import {
   SIGN_UPS,
   STOPWATCHES,
   STALE_CHUNK_RELOADS,
-  TABLES,
   TAB_ACTIONS,
   TEAM_ACTIVITY,
   TIMERS,
@@ -271,7 +270,6 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
         metrics: [
           UNDO_AND_REDO,
           EXPORT_AND_IMPORT,
-          TABLES,
           SIDE_BY_SIDE,
           CONNECTED_TABS,
           EDITOR_SEARCH,

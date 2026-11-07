@@ -20,7 +20,6 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | Sticky set values        | `StickyAnimation`, `STICKY_ANIMATIONS`                                                                   |
 | Drawing set values       | `DrawingAnimation`, `DRAWING_ANIMATIONS`                                                                 |
 | Media set values         | `MediaAnimation`, `MEDIA_ANIMATIONS`                                                                     |
-| Table set values         | `TableAnimation`, `TABLE_ANIMATIONS`                                                                     |
 | Text set values          | `TextAnimation`, `TEXT_ANIMATIONS`, `isTextAnimation`                                                    |
 | a set's offered values   | `ANIMATION_SET_VALUES: Record<AnimationSetId, readonly string[]>`, `isAnimationInSet`                    |
 | reveal                   | `isRevealAnimation(set, value)`                                                                          |
@@ -40,7 +39,7 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | Module                                                           | Holds                                                                                                                                      |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/document/src/animation-sets.ts`                        | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                             | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `packages/document/src/animation.ts`                             | speed, `animLoops`, icon sets; re-exports `animation-sets`                                                                                 |
 | `packages/document/src/animation-membership.ts`                  | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/editor/lib/animation-set-writes.ts`                        | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/editor/lib/animation-classes.ts`                           | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |
@@ -55,7 +54,7 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | `apps/editor/components/canvas/drawing-animation.tsx`            | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
 | `apps/editor/app/motion-<set>.css`                               | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`)                                                                       |
 
-`canvas-motion.css` keeps arrow, icon, progress, rating and chart animations and the legacy text-native and
+`canvas-motion.css` keeps arrow and icon animations and the legacy text-native and
 sticker classes a kept Shape value still draws.
 
 ## Membership
@@ -66,31 +65,29 @@ sticker classes a kept Shape value still draws.
 | ---------------------------------------------------------------------- | -------------------- |
 | `sticky`                                                               | `sticky`             |
 | `freehand`, `path`                                                     | `drawing`            |
-| `image`, `video`                                                       | `media`              |
+| `image`                                                                | `media`              |
 | `text`                                                                 | undefined            |
-| `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
+| `shape` that is an icon                                                | undefined (own sets) |
 | `shape` that is the Timeline (words: Text)                             | undefined (own sets) |
 | any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
 
-`takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, and a `shape` with a set
+`takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, and a `shape` with a set
 of its own (`hasOwnShapeSet` or `hasOwnBodySet`) other than `icon`. `inAnimationSet('shape', el)` is
 `bodyAnimationSetOf(el) === 'shape' || takesShapeMotions(el)`, and `animationSetsOf` adds `shape` for such an element.
 `shapeAnimationsFor(el)` is `CONTAINER_ANIMATIONS` for a boundary, `SHAPE_ANIMATIONS` for any other Shape member,
 `SHAPE_MOTIONS` for an element that takes the motions, else `[]`.
 
 `animationSectionOf(el, value)` is `shape` when the element takes the motions and the value is a motion, or when it
-has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as the Shape section's kept tile); else
+has no body set and no `hasOwnBodySet` (an older Shape value, shown as the Shape section's kept tile); else
 `bodyAnimationSetOf(el)`.
 
 `carriesWords(el)`: `text` and `sticky` are true; a `shape` is true when `takesTypedLabel(el)`, not
-`selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
+`selfLabelled(el)`, not an icon, and not `chair` or `sticker`; everything else is false.
 
-`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, progress,
-rating, concept, arrow) to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, icon, chart, progress, rating, concept, text, arrow`. Concept
+`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, concept, arrow) to `animationSetsOf` and orders all by
+`shape, sticky, drawing, media, icon, concept, text, arrow`. Concept
 renders `ConceptAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
-through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
-`onSet*Anim*` handlers.
+through the menu's `elementStyle` ops.
 
 ## Data and persistence
 
@@ -133,7 +130,7 @@ trio onto a target without words.
 | text    | the label's content node (`lvd-tx lvd-tx-<v>`) and its unit spans            | `useLabelTextAnimation` + `renderUnits`            |
 | sticky  | the wrapper, and the layer for Peel, Lift and Slap                           | `bodySetClass(el, 'sticky')` in the hook           |
 | drawing | the main line, a mask or filters in its svg, and an overlay svg              | `useDrawingAnimation`                              |
-| media   | the image / video frame; its `img` / `iframe` child moves inside it          | `bodySetClass(el, 'media')`                        |
+| media   | the image frame; its `img` child moves inside it                             | `bodySetClass(el, 'media')`                        |
 
 `wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky
 the shared Pulse / Glow / Highlight (a note is a rectangle); a kept value (a motion among them) on any set;
@@ -182,7 +179,7 @@ keyframes.
 Rainbow) split letters; Words splits words; the rest are one block. Past `TEXT_ANIM_MAX_LETTERS` a letter animation
 runs on words (Scramble as Typewriter); past `TEXT_ANIM_MAX_WORDS` everything runs as one block (reveals as Focus,
 loops as Glow). Whitespace stays plain text; in letters mode each word is a no-wrap `lvd-tx-word`. Rich runs split in
-turn with a shared counter; a table's cells start where the previous cell ended (`unitCount`).
+turn with a shared counter (`unitCount`).
 
 A page's masthead (`PageMasthead`) plans its title and subtitle as one label and lays an animated copy over each
 `InlineTextLine` while it is not being edited. Auto-fit (`scale`) labels keep their SVG `<text>` to measure the fit, painted transparent, and draw the animated
@@ -226,20 +223,16 @@ Ken Burns, Zoom and Pan move the frame's `img` / `iframe`; Tilt turns the frame 
 10°; Develop, Focus,
 Wipe and Iris filter or clip the frame; Sheen sweeps the frame's `::after`.
 
-### Table specifics
-
-Deleted with tables (Work Tracker #459, part 2): `useTableAnimation`, `motion-table.css` and the `lvd-tbl-` classes.
-
 ## Interfaces and contracts
 
 `AnimationSetTiles` props: `set`, `values?` (the Shape section's `sharedShapeAnimations`), `current: string | null`, `speed`, `repeat`, `onSet`, `onSetSpeed`, `onSetRepeat`,
 `onPreview?`, `onPreviewEnd?`. The kept tile is captured at open (like the Speed gate) so hover previews never add or
-remove it, and a pick of anything else drops it. A Shape value outside `values` (a chart's older Pulse) is the kept
+remove it, and a pick of anything else drops it. A Shape value outside `values` (an older Pulse) is the kept
 tile too. It replaced `AnimationTiles`.
 
 `AnimationSections` props: `elements`, `keyPrefix: '' | 'm-'`, `sectionProps`, `flyoutProps`, `handlers` (a `Pick`
 of `EditorContextMenuProps`). It renders one `MenuFlyoutSection` titled Animation (key `<prefix>animation`) holding a
-`MenuAccordionSection` per category, named by `nameOf` (`ANIMATION_SET_NAME`, or Icon / Chart / Arrow); with one
+`MenuAccordionSection` per category, named by `nameOf` (`ANIMATION_SET_NAME`, or Icon / Concept / Arrow); with one
 category it renders that section alone, titled Animation. Section keys are `<prefix>animation-<category>`, and
 `<prefix>flow` for arrows.
 
@@ -257,7 +250,6 @@ category it renders that section alone, titled Animation. Section keys are `<pre
 | Text element with legacy `animation` and `textAnimation` | `textAnimation` wins; the legacy class is not applied                     |
 | Image loading, broken or placeholder                     | Media classes apply only to the loaded frame                              |
 | Freehand with fewer than two points                      | No centre line; no parts                                                  |
-| Table with one row or column                             | `n = 1`: the whole cascade in one turn                                    |
 | Rotated element                                          | Independent `translate` / `rotate` / `scale` compose with its `transform` |
 | Swing / Sway / Flutter on a rotated element              | Their top-centre origin also moves the rotation's pivot while they run    |
 
@@ -270,8 +262,8 @@ live only in pseudo-element `content`, so a label can never inject markup.
 
 - Pure CSS; no animation-frame loop and no timers beyond the existing pop-in drop-off. A board with no animation
   does no new work: every path is behind a value check.
-- Text and table cascades animate one registered number per element; the browser restyles that element's units
-  each frame. Bounded by 400 letter units (or 120 words) per label, counted across a table's cells.
+- Text cascades animate one registered number per element; the browser restyles that element's units
+  each frame. Bounded by 400 letter units (or 120 words) per label.
 - Splitting is memoised on the texts and the animation fields; 10 splits of a 400-letter Scramble label measured
   under 5 ms each in the budget test (well under 1 ms on a desktop).
 - `useTraceDashes` measures once per mount and on resize (96 `getPointAtLength` samples per copy).
@@ -307,7 +299,7 @@ in liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts.
 | One category per set present                                        | `apps/editor/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/editor/components/palette/AnimationSetTiles.test.tsx` |
 | Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`              |
-| A motion plays on a photo, a chart, the Timeline                    | `apps/editor/components/canvas/animation-routing.test.ts`   |
+| A motion plays on a photo, the Timeline                             | `apps/editor/components/canvas/animation-routing.test.ts`   |
 | Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                    |
 | Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`     |
 | New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                         |
