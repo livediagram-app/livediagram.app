@@ -37,6 +37,7 @@ import { atLeastInset } from '@livehuddle/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { CallDock } from '@/components/calls/CallDock';
+import { clusterRowLayout } from '@/components/calls/call-dock-row';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
@@ -337,6 +338,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
     </div>
   ) : null;
 
+  // The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): with the avatar palette, bottom centre; on a
+  // phone in the bottom-right cluster's row, on the zoom buttons' bottom line (owner, 2026-11-07, Work Tracker #642).
+  const callDockShown = strip === 'avatar' && stripShown;
+  const callDockInRow = callDockShown && isMobile;
+  const clusterRow = clusterRowLayout(callDockInRow);
+  const callDock = callDockShown ? (
+    <CallDock
+      doNotDisturb={props.avatarStatus === 'dnd'}
+      onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
+      inRow={callDockInRow}
+    />
+  ) : null;
+
   return (
     <>
       <StripMorph walking={walking} wrapperRef={wrapperRef} />
@@ -447,13 +461,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* The Call dock (docs/specs/008-canvas/avatar-mode.md "The Call dock"): the call's buttons, bottom centre,
-          while the avatar palette shows. */}
-      {strip === 'avatar' && stripShown ? (
-        <CallDock
-          doNotDisturb={props.avatarStatus === 'dnd'}
-          onClearDoNotDisturb={() => props.onSetAvatarStatus?.(null)}
-        />
-      ) : null}
+          while the avatar palette shows. On a phone it is in the cluster's row instead, below. */}
+      {callDockInRow ? null : callDock}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the
@@ -477,61 +486,68 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // width there is, PHONE_CLUSTER_BUTTON_WIDTH, from 36px up to their
         // usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
-        // pushed off the screen.
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
+        // pushed off the screen. While the Call dock is in the row (a phone, walking) the row is three columns: the
+        // dock in the middle one, centred on the screen while there is room, and the buttons, unwrapped, in the right
+        // one, which takes what they need first, so the dock gives way to the left rather than ever covering them.
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] ${clusterRow.row} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
-        {welcomeOpen ? null : (
-          <>
-            {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
-            {!chromeAway && !readOnly && !walking ? (
-              <UndoRedoClusterStrip
-                onUndo={onUndo}
-                onRedo={onRedo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-              />
-            ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
+        {callDockInRow ? callDock : null}
+        {/* The buttons: the row's right column beside the dock, or, with no dock in the row, laid out by the row
+            itself (`contents`). */}
+        <div data-cluster-buttons="" className={clusterRow.buttons}>
+          {welcomeOpen ? null : (
+            <>
+              {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
+              {/* Undo / Redo: see UndoRedoClusterStrip. An Editor's alone, and not while walking. */}
+              {!chromeAway && !readOnly && !walking ? (
+                <UndoRedoClusterStrip
+                  onUndo={onUndo}
+                  onRedo={onRedo}
+                  canUndo={canUndo}
+                  canRedo={canRedo}
+                />
+              ) : null}
+              {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
-            {!chromeAway &&
-            panelsOn.collaborate &&
-            (commentRows.length > 0 || actionRows.length > 0) ? (
-              <CollaborateClusterButton
-                openCount={kindCounts('open', commentRows, actionRows).all}
-                popoverOpen={activeDockPanel === 'collaborate'}
-                onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
-              />
-            ) : null}
-            {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
+              {!chromeAway &&
+              panelsOn.collaborate &&
+              (commentRows.length > 0 || actionRows.length > 0) ? (
+                <CollaborateClusterButton
+                  openCount={kindCounts('open', commentRows, actionRows).all}
+                  popoverOpen={activeDockPanel === 'collaborate'}
+                  onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
+                />
+              ) : null}
+              {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. Away while walking. */}
-            {!chromeAway && !walking ? (
-              <ThemeStrip
-                // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-                tidyUp={
-                  tidyUpOffered({
-                    actions: props.tidyUp,
-                    chromeAway: !!chromeAway,
-                  })
-                    ? {
-                        open: activeDockPanel === 'tidy-up',
-                        onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
-                      }
-                    : undefined
-                }
-                onOpenTheme={onOpenCanvasTheme}
+              {!chromeAway && !walking ? (
+                <ThemeStrip
+                  // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
+                  tidyUp={
+                    tidyUpOffered({
+                      actions: props.tidyUp,
+                      chromeAway: !!chromeAway,
+                    })
+                      ? {
+                          open: activeDockPanel === 'tidy-up',
+                          onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
+                        }
+                      : undefined
+                  }
+                  onOpenTheme={onOpenCanvasTheme}
+                />
+              ) : null}
+              <ViewZoomControls
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onSetZoom={handleSetZoom}
+                onFitToScreen={onFitToScreen}
+                pinchOnly={isMobile}
               />
-            ) : null}
-            <ViewZoomControls
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onSetZoom={handleSetZoom}
-              onFitToScreen={onFitToScreen}
-              pinchOnly={isMobile}
-            />
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );
