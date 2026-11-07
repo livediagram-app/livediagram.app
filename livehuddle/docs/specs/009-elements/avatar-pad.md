@@ -108,7 +108,7 @@ away when joining, for example in the middle of a key room, or the centre of a c
 | Company Campus   | The Auditorium, in the aisle between its first two rows                                 | 360        |
 | Conference Venue | The Main Hall, in the aisle between its first two rows                                  | 360        |
 | Startup HQ       | The Town Hall, in the aisle between its first two rows                                  | 360        |
-| School Quad      | The Lecture Hall, in the aisle between its first two rows                               | 320        |
+| School Quad      | The Lecture Hall, in the aisle between its first two rows                               | 360        |
 | Hotel and Suites | The lobby, before the reception desk, between the columns and the Directory             | 240        |
 | Co-working Tower | The lobby, between the Hot Desks' door and the Lifts                                    | 360        |
 | Expo Hall        | The aisle between the stage's two rows of chairs, the booths either side                | 360        |

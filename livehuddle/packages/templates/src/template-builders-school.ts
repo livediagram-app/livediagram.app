@@ -163,7 +163,7 @@ export function buildSchoolQuad(cx: number, cy: number): Element[] {
     arrival: {
       dx: 0,
       dy: -318,
-      hintW: 320,
+      hintW: 360,
       hint: 'You arrive on the Avatar Pad in the Lecture Hall. The Directory by the gate walks you to any room.',
     },
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 580, top + HALL.y + 60)],
