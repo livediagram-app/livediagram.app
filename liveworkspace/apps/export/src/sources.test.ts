@@ -36,9 +36,26 @@ describe('env', () => {
     expect(appKey(ENV, 'liveplanner')).toBe('dk');
   });
 
-  it('has no origin or key for a held app', () => {
+  it('reaches livehuddle once its origin and key are set, and not before', () => {
     expect(appOrigin(ENV, 'livehuddle')).toBeUndefined();
     expect(appKey(ENV, 'livehuddle')).toBeUndefined();
+    expect(createSources(ENV).reachable('livehuddle')).toBe(false);
+    const set: Env = {
+      ...ENV,
+      APP_ORIGIN_LIVEHUDDLE: 'https://www.livehuddle.app/',
+      DATA_EXPORT_KEY_LIVEHUDDLE: 'hk',
+    };
+    expect(appOrigin(set, 'livehuddle')).toBe('https://www.livehuddle.app');
+    expect(appKey(set, 'livehuddle')).toBe('hk');
+    expect(createSources(set).reachable('livehuddle')).toBe(true);
+    // An origin without a key (the key not set yet) is not enough, and nor is a key without one.
+    expect(createSources({ ...set, DATA_EXPORT_KEY_LIVEHUDDLE: ' ' }).reachable('livehuddle')).toBe(
+      false,
+    );
+    expect(
+      createSources({ ...set, APP_ORIGIN_LIVEHUDDLE: undefined }).reachable('livehuddle'),
+    ).toBe(false);
+    expect(createSources(set).reachable('liveplanner')).toBe(true);
   });
 });
 
