@@ -176,7 +176,7 @@ switch while a call is under way in it:
 Pausing is never an error. While the mode is `off` (from `/api/capabilities` when the page opens, from the room's
 push, or from a refused mint):
 
-- The audio control beside Avatar reads **Calls Paused**, with a pause icon, in the cluster's calm resting colour,
+- The audio control, first in the avatar palette's call group, reads **Calls Paused**, with a pause icon, in the strip's calm resting colour,
   never amber or red. Its hover card says "Calls are paused for now. Everything else in the Space carries on. Press
   to try again."
 - Pressing it tries to join: if calls are back on, you join, as Join Audio would; if not, it stays paused.

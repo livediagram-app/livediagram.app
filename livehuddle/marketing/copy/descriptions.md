@@ -112,8 +112,8 @@ detailed GitHub / Product Hunt write-up.
 > A Space is a floor plan of rooms and furniture: desks to sit at, a meeting
 > table to gather round, sofas, plants, a water cooler and a coffee machine.
 > Portals take everyone from one room or floor to the next, and an Avatar Pad
-> is the door everyone arrives at. A status above each head says whether you
-> are Available, Focusing, In a Meeting or Away, and speech bubbles carry a
+> is the door everyone arrives at. A status on each character says whether you
+> are Available, Focusing, Out to Lunch, Angry or one of seven more, and speech bubbles carry a
 > quick hello. Five moves (jumping jacks, a wave, a spin, a cheer and a dance)
 > say the rest.
 >

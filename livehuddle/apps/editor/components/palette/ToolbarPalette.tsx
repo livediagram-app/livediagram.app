@@ -1,7 +1,15 @@
 'use client';
 
 import type { Element } from '@livehuddle/document';
-import { useEffect, useEffectEvent, useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import { atLeastInset, safeInlinePadding } from '@livehuddle/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
@@ -11,8 +19,6 @@ import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
-import { PaletteDropdown } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
-import { CANVAS_TOOL_GROUP_LABELS } from './canvas-tool-options';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -33,23 +39,18 @@ import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
-// top centre of the canvas, the way Excalidraw's tool bar works. Selection mode on the left, then the category bar
-// (each category a button opening a flyout of its tiles, "The category bar"); Search, at the far right, finds any
-// element.
+// top centre of the canvas, the way Excalidraw's tool bar works. The Edit | Walk toggle on the left, then the
+// category bar (each category a button opening a flyout of its tiles, "The category bar"); Search, at the far
+// right, finds any element.
 //
 // The tiles, handlers and category bodies come from
 // usePaletteCatalogue, so this file is only layout.
 
-type Props = Pick<
-  PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onExitAvatarMode'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'themeTint'
-> &
+type Props = Pick<PaletteProps, 'canvasTool' | 'onExitAvatarMode' | 'pendingDraw' | 'themeTint'> &
   PaletteAddHandlers & {
+    // The Edit | Walk toggle (EditWalkToggle, docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"), first
+    // on the strip, a divider after it. Absent where the surface does not walk (an embed).
+    editWalk?: ReactNode;
     // The chrome is hidden (zen, the welcome flow). Hidden rather than
     // unmounted, so the strip keeps its state for the page load.
     hidden?: boolean;
@@ -63,13 +64,13 @@ type Props = Pick<
     tabElements?: readonly Element[];
   };
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
+export const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
 // held sideways there is no menu card and the strip starts at the gutter. Off a
 // phone, the strip alone, centred by its parent.
-function StripRow({
+export function StripRow({
   leading,
   leadingRef,
   children,
@@ -103,13 +104,39 @@ function StripRow({
 // Centred alone (desktop), the card is whole-pixel wide with the canvas's
 // parity (see SnapWidth). Beside the menu card (a phone) it is left-aligned
 // and may shrink to the row, its rail scrolling, so it is not snapped there.
-function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
+export function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
   if (swipe) return <div className="flex min-w-0">{children}</div>;
   return <SnapWidth matchParentParity>{children}</SnapWidth>;
 }
 
+// The strip's row across the top of the canvas, shared by the avatar palette (AvatarPalette): zoomed at its root, centred
+// (or at the right where crowded), and, while one of its popovers is open (a category's flyout, Search), risen to
+// the popover layer, so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
+export function stripRootLayout({
+  scale,
+  crowded,
+  popoverOpen,
+  hidden,
+}: {
+  scale: number;
+  crowded: boolean;
+  popoverOpen: boolean;
+  hidden?: boolean | undefined;
+}): { style: CSSProperties; className: string } {
+  return {
+    style: {
+      ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
+      alignItems: crowded ? 'flex-end' : 'center',
+      paddingRight: crowded ? '0.75rem' : 0,
+    },
+    className: `pointer-events-none absolute inset-x-0 top-3 ${
+      popoverOpen ? 'z-[var(--z-popover)]' : 'z-[var(--z-toolbar)]'
+    } flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`,
+  };
+}
+
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, themeTint, pendingDraw, leading } = props;
+  const { themeTint, pendingDraw, leading } = props;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   const hidden = props.hidden;
@@ -127,7 +154,7 @@ export function ToolbarPalette(props: Props) {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
   }, [popoverOpen]);
-  const { tabs, tileActions, canvasToolOptions, onCanvasToolChange } = usePaletteCatalogue({
+  const { tabs, tileActions } = usePaletteCatalogue({
     ...props,
     // A tile used from a flyout or the Search popover closes it, so the canvas is clear to draw on.
     onTileUsed: () => {
@@ -178,6 +205,15 @@ export function ToolbarPalette(props: Props) {
     if (hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
   }, [hidden]);
+  // Hidden (Walk switched on, Zen), the strip lets go of whatever hung from it, so a flyout or Search open at
+  // the switch is closed when the strip comes back rather than reappearing over the canvas.
+  const closeBar = bar.popover.setOpen;
+  const closeSearch = search.setOpen;
+  useEffect(() => {
+    if (!hidden) return;
+    closeBar(false);
+    closeSearch(false);
+  }, [hidden, closeBar, closeSearch]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -202,26 +238,10 @@ export function ToolbarPalette(props: Props) {
       // clicks through; the card and the popover take them.
       // Zoomed at the root, which still spans the canvas, so the card stays
       // centred; `top` is restated so the strip keeps its 12px from the top.
-      style={{
-        ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
-        alignItems: crowded ? 'flex-end' : 'center',
-        paddingRight: crowded ? '0.75rem' : 0,
-      }}
-      // While one of its popovers is open (a category's flyout, More, Search) the strip rises to the popover layer,
-      // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
-      className={`pointer-events-none absolute inset-x-0 top-3 ${
-        popoverOpen ? 'z-[var(--z-popover)]' : 'z-[var(--z-toolbar)]'
-      } flex-col [&>*]:pointer-events-auto ${hidden ? 'hidden' : 'flex'}`}
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        // Any press on the strip but the Selection Mode picker leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md
-        // "Reaching for the palette"); the picker shows Avatar as current and picks as usual.
-        if (
-          canvasTool === 'avatar' &&
-          !(e.target as HTMLElement | null)?.closest?.('[data-canvas-tool-picker]')
-        )
-          props.onExitAvatarMode?.();
-      }}
+      {...stripRootLayout({ scale, crowded, popoverOpen, hidden })}
+      // While walking this strip is hidden and the avatar palette shows instead (AvatarPalette,
+      // docs/specs/008-canvas/avatar-mode.md "The avatar palette").
+      onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -244,8 +264,8 @@ export function ToolbarPalette(props: Props) {
                   // Slides across with the rest of the chrome when a split moves the editor
                   // (docs/specs/007-editor/split-view.md).
                   data-split-chrome=""
-                  // Beside the menu card only the category bar gives way (and scrolls): the selection mode and
-                  // Search keep their size.
+                  // Beside the menu card only the category bar gives way (and scrolls): the Edit | Walk
+                  // toggle and Search keep their size.
                   className={
                     swipe
                       ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0`
@@ -253,25 +273,12 @@ export function ToolbarPalette(props: Props) {
                   }
                 >
                   <>
-                    <span data-canvas-tool-picker="" className="contents">
-                      <PaletteDropdown
-                        ariaLabel="Selection mode"
-                        dataTourId="canvas-tool"
-                        hoverCardTitle="Selection Mode"
-                        hoverCardDescription="Choose how the pointer acts on the canvas."
-                        value={canvasTool}
-                        variant="toolbar"
-                        iconOnly
-                        autoHeight
-                        grid
-                        menuClassName=""
-                        groupLabels={CANVAS_TOOL_GROUP_LABELS}
-                        onChange={onCanvasToolChange}
-                        options={canvasToolOptions}
-                      />
-                    </span>
-                    {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
-                    {swipe ? null : <Divider />}
+                    {props.editWalk ? (
+                      <>
+                        {props.editWalk}
+                        <Divider />
+                      </>
+                    ) : null}
                     <CategoryBarButtons
                       bar={bar}
                       categories={barCategories}

@@ -3,26 +3,20 @@ import type { ShapeKind } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
-export type CanvasTool =
-  | 'pan'
-  | 'select'
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking pixel character, read-only canvas.
-  | 'avatar'
-  | 'eraser'
-  | 'format';
+// The canvas tool (docs/specs/008-canvas/canvas-and-palette.md "Canvas tools"). Only two are picked, from the
+// Edit | Walk toggle: 'select' (Edit) and 'avatar' (Walk, docs/specs/008-canvas/avatar-mode.md). 'pan' is Edit on a
+// touch screen and in an embed (a drag on empty canvas pans), never picked; 'format' is held while the Format
+// painter, started from the selection toolbar, is on.
+export type CanvasTool = 'pan' | 'select' | 'avatar' | 'format';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.
 export type PaletteProps = {
   canvasTool: CanvasTool;
-  onSetCanvasTool: (tool: CanvasTool) => void;
   // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for whichever tool preceded it. Fired when
   // the user picks any palette tile while walking, so the add lands instead of
   // being swallowed by the read-only canvas. Omit outside the editor.
   onExitAvatarMode?: () => void;
-  // True when the active tab has no elements. Disables the canvas tools that
-  // need existing content (Eraser / Format).
-  canvasEmpty?: boolean;
   // `opts` carries the creation-time choice for the kinds that have one
   // (docs/specs/009-elements/mode-button.md modes), so a tile per choice places
   // that choice rather than the factory default.

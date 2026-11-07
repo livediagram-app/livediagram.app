@@ -9,7 +9,7 @@ import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
+  wayIn,
   type OfficePiece,
   type OfficeRoom,
 } from './template-office-parts';
@@ -84,10 +84,10 @@ export function buildRooftopBar(cx: number, cy: number): Element[] {
       subtitle:
         'Drinks after work: pull up a stool at the bar, or sink into a sofa under the trees.',
     },
-    walkIn(
+    wayIn(
       x0 + width,
-      y0 + SPACE_HEAD + ROOF_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) to come up. A stool or a sofa seats you, and the cabinet or the fridge gets you a drink.',
+      y0 + SPACE_HEAD + ROOF_H,
+      'You arrive on the Avatar Pad. A stool or a sofa seats you, and the cabinet or the fridge gets you a drink.',
     ),
   );
 }
@@ -142,10 +142,10 @@ export function buildCafe(cx: number, cy: number): Element[] {
       subtitle:
         'Meet for a coffee: a seat at the counter, a table to share, or the sofa in the corner.',
     },
-    walkIn(
+    wayIn(
       x0 + width,
-      y0 + SPACE_HEAD + CAFE_H + SPACE_BELOW / 2,
-      'Press Walk In (or W) to come in. The coffee machine makes a coffee, and any seat is yours.',
+      y0 + SPACE_HEAD + CAFE_H,
+      'You arrive on the Avatar Pad. The coffee machine makes a coffee, and any seat is yours.',
     ),
   );
 }

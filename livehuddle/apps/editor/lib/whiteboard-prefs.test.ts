@@ -147,12 +147,10 @@ describe('parseWhiteboardPrefs', () => {
   it('keeps valid choices and rejects unknown values', () => {
     const parsed = parseWhiteboardPrefs({
       activePenId: 'third',
-      eraserMode: 'x',
       recognise: 'yes',
     });
     expect(parsed).toMatchObject({
       activePenId: 'third',
-      eraserMode: 'stroke',
       recognise: false,
     });
   });

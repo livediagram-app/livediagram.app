@@ -146,9 +146,11 @@ held frames for one step. The editor's store is memory only and empties on leavi
 
 ## Presentation and UX
 
-- The cluster control, beside Avatar: **Join Audio** (headphones; Viewer: **Listen In**), then a strip of
-  **Mute**/**Unmute** (mic, struck mic when muted, amber struck mic when blocked) with the indicator, and
-  **Leave Audio** (headphones struck). Named beside the icon on a wide desktop, icon alone narrower.
+- The call group, first on the avatar palette (`components/calls/CallStripGroup.tsx`, placed by `AvatarPalette.tsx`):
+  **Join Audio** (mic; Viewer: **Listen In**, headphones), then **Mute**/**Unmute** (mic, struck mic when muted, amber
+  struck mic when blocked) with the indicator, and **Leave Audio** (headphones struck). Say's tinted strip buttons
+  (`STRIP_TINT_BUTTON` on `TOOLBAR_TRIGGER_TONE`, 36 px, 44 px wide on a phone; a live mic solid brand), named beside the icon while the bar shows names (`useBarLabels`, through `CallNamesContext`),
+  icon alone otherwise.
 - Bars: three 3 px rounded bars, 2 px apart, 12 px tall at most, the speaker's colour, 6 px above the name chip
   (`components/calls/TalkingBars.tsx`). They live in the canvas layer and zoom with the characters and their chips,
   and slide with a walking character's glide (`avatarGlides`), landing at once on a jump.
@@ -158,7 +160,7 @@ held frames for one step. The editor's store is memory only and empties on leavi
 ## Accessibility
 
 Buttons carry `aria-label` and `aria-pressed` (Mute). The bars button's `aria-label` is its hover text. Bars hold
-still under `prefers-reduced-motion`. Focus rings as every cluster button.
+still under `prefers-reduced-motion`. Focus rings as every strip button.
 
 ## Observability
 

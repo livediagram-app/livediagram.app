@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-While the **Format** painter ([Canvas and palette](canvas-and-palette.md)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The third mode panel, after [Avatar](avatar-mode.md) and [Eraser](eraser-panel.md).
+While the **Format** painter ([Canvas and palette](canvas-and-palette.md#format-painter)) is active, a **Format** panel is present: which parts of the copied style actually get painted, and whether the brush stays loaded after a paint. The painter starts from the selection toolbar's **Format Painter** button (owner, 2026-11-06: the palette's selection-mode picker, its old home, gave way to the [Edit | Walk toggle](avatar-mode.md#the-edit--walk-toggle)), the selected element loaded as the brush. The one tool panel livehuddle has (the [Eraser Panel](eraser-panel.md) is retired).
 
 ## Why
 

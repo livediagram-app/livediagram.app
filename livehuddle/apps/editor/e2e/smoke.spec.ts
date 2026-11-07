@@ -155,10 +155,13 @@ test.describe('mobile', () => {
     // aside, the cluster still one row, and leaving the mode brings them back.
     const redo = page.getByRole('button', { name: /^redo/i });
     const style = page.getByRole('button', { name: 'Theme and canvas' });
-    const walk = page.getByRole('button', { name: 'Walk', exact: true });
+    // The Edit | Walk toggle, first on the strip (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle").
+    const toggle = page.getByRole('group', { name: 'Edit or Walk' });
+    const walk = toggle.getByRole('button', { name: 'Walk', exact: true });
+    const edit = toggle.getByRole('button', { name: 'Edit', exact: true });
     await expect(style).toBeVisible();
     // A blank Space opens on Start a Space (docs/specs/007-editor/new-document-route.md "No welcome screen"), and on a
-    // phone that sheet lies over the cluster (docs/specs/007-editor/start-diagramming.md), so close it to reach Walk.
+    // phone that sheet lies over the canvas (docs/specs/007-editor/start-diagramming.md), so close it first.
     const start = page.getByRole('region', { name: /^Start a Space$/ });
     await start.getByRole('button', { name: 'Close' }).click();
     await start.waitFor({ state: 'detached' });
@@ -168,7 +171,8 @@ test.describe('mobile', () => {
     await expect(redo).toHaveCount(0);
     await expect(style).toHaveCount(0);
     expect(await rows()).toHaveLength(1);
-    await walk.click();
+    await edit.click();
+    await expect(edit).toHaveAttribute('aria-pressed', 'true');
     await expect(walk).toHaveAttribute('aria-pressed', 'false');
     await expect(undo).toBeVisible();
     await expect(redo).toBeVisible();

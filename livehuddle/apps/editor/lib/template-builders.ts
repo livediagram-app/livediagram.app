@@ -19,6 +19,7 @@ import { getTheme, recolourElementsForTheme } from './themes';
 export {
   templateFloors,
   buildTemplate,
+  isBlankTemplate,
   isDefaultDocumentName,
   templateCanvasOverrides,
   untitledNameForTemplate,

@@ -296,9 +296,9 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   },
   modes: {
     selection: SELECTION_MODES,
-    selectionSubtitle: 'Eraser, format painter, avatar',
-    option: /^(Eraser|Format)/,
-    optionsSubtitle: 'Settings inside a mode: eraser size and target, format painter copies',
+    selectionSubtitle: 'Format painter, avatar',
+    option: /^Format/,
+    optionsSubtitle: 'Settings inside a mode: what the format painter copies',
   },
   settings: [
     { title: 'All categories', metrics: [SETTINGS_CHANGED] },

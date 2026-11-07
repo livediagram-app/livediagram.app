@@ -7,8 +7,8 @@
 // (palette-layouts) and the flyout's taglines all read it, so a new category is one entry here.
 //
 // A new piece of furniture joins its category by carrying the group (`tileGroup: 'seating'` on its tile in
-// palette-tile-defs.tsx), and lands in catalogue order. A category with no tiles yet (Bar and Garden, until their
-// pieces land) is left off the palette rather than opening onto nothing.
+// palette-tile-defs.tsx), and lands in catalogue order. A category with no tiles yet is left off the palette rather
+// than opening onto nothing.
 //
 // No component imports beyond glyphs, so the identity list can import it without pulling in a category body.
 
@@ -16,7 +16,6 @@ import { Glyph, MoveGroupIcon, Prims } from '@livehuddle/ui';
 import {
   lucideArmchair,
   lucideCoffee,
-  lucideGamepad2,
   lucidePanelsTopLeft,
   lucideTreePine,
   lucideWine,
@@ -24,7 +23,7 @@ import {
 import { ScreenIcon } from './palette-icons-meeting';
 
 export type SpaceTileGroup =
-  'travel' | 'seating' | 'rooms' | 'amenities' | 'bar' | 'garden' | 'meeting' | 'recreation';
+  'travel' | 'seating' | 'rooms' | 'amenities' | 'garden' | 'meeting' | 'recreation';
 
 export type SpaceCategory = {
   id: `collab-${SpaceTileGroup}`;
@@ -66,7 +65,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
   {
     id: 'collab-seating',
     tileGroup: 'seating',
-    label: 'Seating',
+    label: 'Seats',
     description:
       'What people sit at: a chair, a desk, a sofa, a meeting table, a bean bag and a reading nook.',
     tagline: 'Somewhere to sit, alone or together.',
@@ -75,29 +74,23 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
   {
     id: 'collab-amenities',
     tileGroup: 'amenities',
-    label: 'Amenities',
+    label: 'Perks',
     description:
       'What makes a Space feel like a place: plants and shelves, a printer, a copier, lockers and a coat rack, a kitchen, and a restroom.',
     tagline: 'The touches that make it feel like a place.',
     icon: lucide(lucideCoffee),
   },
   {
-    id: 'collab-bar',
-    tileGroup: 'bar',
-    label: 'Bar',
-    description: 'A bar to gather round: the bar itself, stools, a drinks cabinet and a fridge.',
-    tagline: 'Somewhere to gather after the meeting.',
-    icon: lucide(lucideWine),
-  },
-  {
-    // The social pieces (docs/specs/009-elements/social-pieces.md).
+    // The bar and the social pieces (docs/specs/009-elements/social-pieces.md), one category since Bar merged in
+    // (docs/specs/010-palette/palette-top-level-categories.md "Play holds the Bar"). The wine glass is the
+    // glyph Start a Space's Recreation templates wear.
     id: 'collab-recreation',
     tileGroup: 'recreation',
-    label: 'Recreation',
+    label: 'Play',
     description:
-      'Somewhere to unwind: a jukebox, ping-pong, pool and foosball tables, an arcade machine, a dartboard and a fireplace.',
-    tagline: 'Somewhere to unwind between meetings.',
-    icon: lucide(lucideGamepad2),
+      'Somewhere to unwind: a bar with stools, a drinks cabinet and a fridge, ping-pong, pool and foosball tables, an arcade machine, a dartboard, a jukebox and a fireplace.',
+    tagline: 'A drink, a game, a seat by the fire.',
+    icon: lucide(lucideWine),
   },
   {
     id: 'collab-garden',
@@ -112,7 +105,7 @@ export const SPACE_CATEGORIES: readonly SpaceCategory[] = [
     // The meeting pieces (docs/specs/009-elements/screen-and-room-sign.md, timer-and-stopwatch.md).
     id: 'collab-meeting',
     tileGroup: 'meeting',
-    label: 'Meeting',
+    label: 'Meet',
     description:
       'What a meeting room needs: a screen on the wall, a sign by its door, a notice board, a world clock, a timer and a stopwatch.',
     tagline: 'Share on the wall, knock at the door.',

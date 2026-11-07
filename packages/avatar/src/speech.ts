@@ -11,13 +11,13 @@ import {
 } from '@liveworkspace/api-schema/avatar-say';
 import { AVATAR_FOLLOW_MARGIN, AVATAR_HEIGHT, type AvatarPoint } from './walk';
 
-// Flight time: 4 s up to two words, 0.15 s more for each further word, at most 10 s.
-const SPEECH_BASE_MS = 4000;
-const SPEECH_PER_WORD_MS = 150;
+// Flight time: 7 s up to two words, 0.25 s more for each further word, at most 16 s.
+const SPEECH_BASE_MS = 7000;
+const SPEECH_PER_WORD_MS = 250;
 const SPEECH_FREE_WORDS = 2;
-export const SPEECH_MAX_MS = 10_000;
+export const SPEECH_MAX_MS = 16_000;
 // The bubble rises at a steady pace, in screen px (it is drawn at reading size whatever the zoom).
-export const SPEECH_RISE_PX_PER_S = 18;
+export const SPEECH_RISE_PX_PER_S = 12;
 // "Swaying gently" (blueprint D108).
 export const SPEECH_SWAY_PX = 6;
 export const SPEECH_SWAY_PERIOD_MS = 2400;

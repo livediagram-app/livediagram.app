@@ -84,6 +84,10 @@ export type MicState = 'closed' | 'open' | 'blocked';
 export type CallSelf = {
   // Calls are on for this Space (capabilities, a shared room, Avatar mode).
   available: boolean;
+  // Why there is no call while walking, so Join Audio can say so rather than vanish (proximity-audio.md "No call
+  // here"): `unsynced`, a Space kept in This Browser has no shared room; `off`, this server has no calls. Null
+  // otherwise (a call is on offer, or you are not walking).
+  unavailableReason: 'unsynced' | 'off' | null;
   // This session may publish (an Editor or a Participant).
   canSpeak: boolean;
   phase: CallPhase;
@@ -129,6 +133,7 @@ export type CallActions = {
 const EMPTY_HEARD: ReadonlySet<string> = new Set();
 const OFF: CallSelf = {
   available: false,
+  unavailableReason: null,
   canSpeak: false,
   phase: 'off',
   mic: 'closed',

@@ -36,6 +36,10 @@ export type CanvasProps = {
   // A read-only session that still takes part (a Participant): it comments, reacts and speaks
   // (docs/specs/013-workspace/share-roles.md).
   takePart?: boolean;
+  // The session's level and whether it always walks (`can.level`, `can.alwaysWalks`): which palette strip it gets
+  // (lib/avatar-palette `stripPaletteFor`, docs/specs/008-canvas/avatar-mode.md "The avatar palette").
+  accessLevel?: import('@/lib/editor-capabilities').EditorCapabilities['level'];
+  alwaysWalks?: boolean;
   // An Editor: may share a screen in a call (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles").
   canShareScreen?: boolean;
   // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
@@ -122,13 +126,6 @@ export type CanvasProps = {
   // palette (any tile pick) and to a palette drag-drop, both of which are
   // edits the read-only mode would otherwise swallow.
   onExitAvatarMode?: () => void;
-  // The eraser's settings (docs/specs/008-canvas/eraser-panel.md). Owned in editor state, where the erase
-  // gesture lives; Canvas forwards them to the panel.
-  eraserConfig?: import('@/lib/eraser-config').EraserConfig;
-  onChangeEraserField?: <K extends keyof import('@/lib/eraser-config').EraserConfig>(
-    field: K,
-    value: import('@/lib/eraser-config').EraserConfig[K],
-  ) => void;
   // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
   // in editor state, where the paint happens; Canvas forwards them.
   formatConfig?: import('@liveworkspace/workbench/lib/format-config').FormatConfig;
@@ -140,10 +137,6 @@ export type CanvasProps = {
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): where it sits.
-  eraserPanelPosition?: { x: number; y: number } | null;
-  onMoveEraserPanel?: (x: number, y: number) => void;
-  onResetEraserPanel?: () => void;
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
@@ -190,9 +183,9 @@ export type CanvasProps = {
   // Avatar mode's camera (docs/specs/008-canvas/avatar-mode.md "The camera"): the canvas hands the editor a reader
   // of the character's live feet, for Fit, entering the mode and the zoom anchor.
   avatarAtRef?: import('@/hooks/canvas/useAvatarCamera').AvatarAtRef;
-  // The Walk button, every role's (docs/specs/008-canvas/avatar-mode.md "The Walk button"): on where the surface walks, off
-  // in an embed.
-  walkButton?: boolean;
+  // The Edit | Walk toggle (docs/specs/008-canvas/avatar-mode.md "The Edit | Walk toggle"), an Editor's: on where the
+  // surface walks and the session may leave the walk, off in an embed and for a session held walking.
+  walkToggle?: boolean;
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (
@@ -383,17 +376,6 @@ export type CanvasProps = {
   // menu anchored under it. Distinct from element right-clicks
   // (those go through BoxedElementView's onContextSelect).
   onCanvasContextMenu?: (screenX: number, screenY: number) => void;
-  // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a primary-button press while the eraser is
-  // active. The canvas intercepts it in the capture phase (before element
-  // select/drag) and hands the screen coords here to start an erase
-  // gesture; the gesture's move/release are tracked by useCanvasEraser.
-  // `frame`: reads where the canvas sits on screen, per sample of the sweep (the whiteboard's
-  // geometric erase, docs/specs/023-draw-mode/draw-mode.md; lib/erase-frame).
-  onEraseStart?: (
-    clientX: number,
-    clientY: number,
-    frame?: import('@/lib/erase-frame').EraseFrameReader,
-  ) => void;
   // Right-click on an element. Forwarded from BoxedElementView's
   // own context handler — the canvas selects the element and the
   // page opens an element context menu.
@@ -465,6 +447,8 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
+  // The selection toolbar's Format Painter: the painter on, `id` loaded as its brush. Absent where it may not paint.
+  onStartFormatPainter?: (id: string) => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in

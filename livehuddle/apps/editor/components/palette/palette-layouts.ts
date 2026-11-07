@@ -9,6 +9,7 @@
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { SPACE_CATEGORIES } from './space-categories';
+import { groupedSpaceTiles } from './space-category-groups';
 
 type PaletteLayoutEntry = {
   // A PALETTE_CATEGORIES id: the glyph, and the default label, blurb and band.
@@ -19,6 +20,9 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id. `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
+  // Search-only: left off the strip, the phone row and the tabs, while Search still offers its items here
+  // (docs/specs/010-palette/palette-top-level-categories.md "Stickers in search only").
+  searchOnly?: boolean;
 };
 
 // A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -43,16 +47,13 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [];
 // meeting in a Space. Light content to write with, the Space categories a Space is built from (one per question,
 // from their one list in space-categories.tsx; the Avatar button is in Travel), then the decorations. No diagram tools,
 // no frame and no Collaborate elements: those are livediagram's (docs/specs/002-project-scope/not-in-livehuddle.md).
-// Rooms opens on its Build group (docs/specs/010-palette/palette-top-level-categories.md "Rooms opens on Build"): the
-// Room, the Room Builder and the Door, then behind a divider the rest of the rooms pieces in catalogue order (Floor),
-// so a new rooms piece still joins by its tileGroup alone.
-export const ROOMS_BUILD = ['tools:room', 'tools:room-builder', 'tools:wall-door'] as const;
-function roomsTiles(): string[] {
-  const build: readonly string[] = ROOMS_BUILD;
-  const rest = tilesForCategory('collab-rooms')
-    .map((t) => t.id)
-    .filter((id) => !build.includes(id));
-  return [...ROOMS_BUILD, DIVIDE, ...rest];
+// Rooms, Play and Garden list their named groups (docs/specs/010-palette/palette-top-level-categories.md
+// "Groups in a flyout", space-category-groups.ts): Rooms opens on Build, then Floor; a divider between two groups,
+// and a piece no group lists joins the last, so a new piece still joins by its tileGroup alone.
+function spaceCategoryEntry(id: string): PaletteLayoutEntry {
+  const own = tilesForCategory(id).map((t) => t.id);
+  const tiles = groupedSpaceTiles(id, own, DIVIDE);
+  return tiles ? { id, tiles } : { id };
 }
 
 const MEETING: PaletteLayout = {
@@ -76,15 +77,13 @@ const MEETING: PaletteLayout = {
     },
     // Words and notes. No Pointer note, Table, Checklist, Page or Annotation.
     { id: 'write', description: 'Text and sticky notes.', tiles: ['tools:text', 'tools:sticky'] },
-    // Each Space category holds its group's tiles, in catalogue order; one with none yet is left off. Rooms leads
-    // with its Build group. Their order, and Travel's band of its own, are SPACE_CATEGORIES'
+    // Each Space category holds its group's tiles, in catalogue order or its named groups' order; one with none yet
+    // is left off. Their order, and Travel's band of its own, are SPACE_CATEGORIES'
     // (docs/specs/010-palette/palette-top-level-categories.md "The strip's order").
-    ...SPACE_CATEGORIES.map((c) =>
-      c.id === 'collab-rooms' ? { id: c.id, tiles: roomsTiles() } : { id: c.id },
-    ),
-    // Decoration: Stickers, last. No Icons and no Media (docs/specs/002-project-scope/not-in-livehuddle.md "Icons",
-    // "Media: Image and Link card").
-    { id: 'stickers' },
+    ...SPACE_CATEGORIES.map((c) => spaceCategoryEntry(c.id)),
+    // Decoration: Stickers, search-only (never on the strip). No Icons and no Media
+    // (docs/specs/002-project-scope/not-in-livehuddle.md "Icons", "Media: Image and Link card").
+    { id: 'stickers', searchOnly: true },
   ],
 };
 
@@ -134,13 +133,17 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
  *  whose pieces have not landed yet) is left off rather than opening onto nothing. */
 export function paletteCategories(): ResolvedPaletteCategory[] {
   return MEETING_PALETTE.categories
+    .filter((entry) => !entry.searchOnly)
     .map(resolve)
     .filter((c) => c.tiles === null || c.tiles.length > 0);
 }
 
 /** Whether the palette offers category `id`. */
 export function paletteCategoryOffered(id: string): boolean {
-  return paletteCategories().some((c) => c.id === id);
+  return (
+    paletteCategories().some((c) => c.id === id) ||
+    MEETING_PALETTE.categories.some((entry) => entry.searchOnly && entry.id === id)
+  );
 }
 
 /** The category the palette opens on. */
@@ -150,11 +153,11 @@ export function paletteLandingCategory(): string {
 
 // A Participant has no palette (docs/specs/013-workspace/share-roles.md "A Participant walks").
 
-// The selection modes a read-only session (a Viewer) presses on a Selection Mode button: look and walk around
-// (Build's Select and Hand, Interact's Avatar), never Edit's Eraser or Format Painter.
+// The canvas tools a read-only session (an Editor on a locked tab) presses on a Selection Mode button: the two sides
+// of the Edit | Walk toggle, neither of which writes. A Participant and a Viewer press none: they are always walking
+// (docs/specs/013-workspace/share-roles.md "Always walking").
 export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'select',
-  'pan',
   // Avatar is every role's (docs/specs/013-workspace/share-roles.md): walking writes nothing.
   'avatar',
 ];

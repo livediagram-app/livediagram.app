@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetSpeechBubbles, receivePeerSay, useSpeechBubbles } from '../speech-store';
-import { SPEECH_COOLDOWN_MS } from '../speech';
+import { flightMs, SPEECH_COOLDOWN_MS } from '../speech';
 import { useAvatarSpeech } from './useAvatarSpeech';
 
 // The product's telemetry reaches the package through its bindings.
@@ -169,7 +169,7 @@ describe('useAvatarSpeech (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"
     });
     expect(result.current.bubbles).toHaveLength(1);
     act(() => {
-      vi.advanceTimersByTime(4100);
+      vi.advanceTimersByTime(flightMs('hi') + 100);
     });
     expect(result.current.bubbles).toHaveLength(0);
   });

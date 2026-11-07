@@ -9,7 +9,7 @@ import {
   SPACE_BELOW,
   SPACE_HEAD,
   spacePlan,
-  walkIn,
+  wayIn,
   type OfficeRoom,
 } from './template-office-parts';
 
@@ -65,10 +65,10 @@ export function buildTrainingRoom(cx: number, cy: number): Element[] {
     },
     [
       focus,
-      ...walkIn(
+      ...wayIn(
         x0 + width,
-        y0 + SPACE_HEAD + ROOM_H + SPACE_BELOW / 2,
-        'Press Walk In (or W) and join a table. Whoever stands on the stage is heard by the whole room.',
+        y0 + SPACE_HEAD + ROOM_H,
+        'You arrive on the Avatar Pad: join a table. Whoever stands on the stage is heard by the whole room.',
       ),
     ],
   );

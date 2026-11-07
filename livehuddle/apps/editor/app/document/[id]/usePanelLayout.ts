@@ -12,11 +12,8 @@ type Pos = { x: number; y: number };
 export function usePanelLayout() {
   const [mapPosition, setMapPosition] = useState<Pos | null>(null);
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
-  // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): present only while the Eraser tool is active, so
-  // position only: there is nothing to minimise when leaving the tool dismisses the panel outright. (The Avatar
-  // panel opens over its own button, so it keeps no position: docs/specs/008-canvas/avatar-mode.md.)
-  const [eraserPanelPosition, setEraserPanelPosition] = useState<Pos | null>(null);
-  // Format Panel (docs/specs/008-canvas/format-panel.md): the same.
+  // Format Panel (docs/specs/008-canvas/format-panel.md): present only while the painter is on, so position only:
+  // there is nothing to minimise when leaving the tool dismisses the panel outright.
   const [formatPanelPosition, setFormatPanelPosition] = useState<Pos | null>(null);
 
   return {
@@ -24,8 +21,6 @@ export function usePanelLayout() {
     setMapPosition,
     commentsPanelPosition,
     setCommentsPanelPosition,
-    eraserPanelPosition,
-    setEraserPanelPosition,
     formatPanelPosition,
     setFormatPanelPosition,
   };

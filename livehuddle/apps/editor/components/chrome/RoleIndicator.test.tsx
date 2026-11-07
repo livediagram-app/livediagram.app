@@ -42,8 +42,8 @@ describe('RolePill', () => {
   });
 
   it('offers the way back while previewing', () => {
-    render(<RolePill role="view" ownerName="Ada" isSelf onToggle={() => {}} />);
-    const pill = screen.getByRole('button', { name: 'Viewing. Owned by you' });
+    render(<RolePill role="participate" ownerName="Ada" isSelf onToggle={() => {}} />);
+    const pill = screen.getByRole('button', { name: 'Participating. Owned by you' });
     expect(document.getElementById(pill.getAttribute('aria-describedby')!)?.textContent).toBe(
       'Switch to editing',
     );

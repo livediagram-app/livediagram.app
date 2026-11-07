@@ -25,6 +25,7 @@ export function SnapWidth({
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
+  const measureRef = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
     const inner = innerRef.current;
@@ -34,19 +35,37 @@ export function SnapWidth({
       // Inside a UI-scaled surface (docs/specs/007-editor/ui-scale.md) the
       // rects are screen px and the width written is the zoomed box's own px.
       const zoom = currentZoom(inner);
-      let w = Math.ceil(inner.getBoundingClientRect().width / zoom);
+      const box = inner.getBoundingClientRect();
+      // Not drawn (a strip hidden while another stands in): keep the width it had, so the box comes back where
+      // it was rather than a frame at zero, its content hanging off one side until the next measure.
+      if (box.width === 0 && inner.getClientRects().length === 0) return;
+      let w = Math.ceil(box.width / zoom);
       if (matchParentParity && parent) {
         const pw = Math.round(parent.getBoundingClientRect().width / zoom);
         if ((pw - w) % 2 !== 0) w += 1;
       }
+      // Written straight onto the box as well: a ResizeObserver runs before the paint but its state lands a frame
+      // later, and for that frame a content grown past the old width hung off one side of its centred box.
+      const outer = outerRef.current;
+      if (outer) outer.style.width = `${w}px`;
       setWidth((prev) => (prev === w ? prev : w));
     };
+    measureRef.current = measure;
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(inner);
     if (matchParentParity && parent) ro.observe(parent);
-    return () => ro.disconnect();
+    return () => {
+      measureRef.current = null;
+      ro.disconnect();
+    };
   }, [matchParentParity]);
+  // And again on every render of the box, in the same commit: content its host re-rendered (a strip's names
+  // going, a strip just shown) is measured before anything else in that frame reads where the box sits, where
+  // the observer alone reports it later in the frame. One rect read, only when the host renders.
+  useLayoutEffect(() => {
+    measureRef.current?.();
+  });
 
   return (
     <div ref={outerRef} className={`shrink-0 ${className}`} style={{ width: width ?? undefined }}>

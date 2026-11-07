@@ -235,6 +235,20 @@ const MODE_OPENS_IN_TYPES = new Set(['OpensInDiagram', 'OpensInDraw']);
 const POINTER_TOOL_TYPES = new Set(['Laser', 'Spotlight']);
 const POINTER_TOOL_OPTION = /^(Laser|Spotlight)[A-Z]/;
 
+// The Eraser (left as a mode with the Selection Mode picker, owner 2026-11-06; livehuddle/docs/specs/
+// 002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes"): picking it up, its panel's options, what
+// it deleted, and the whiteboard eraser's stroke modes. The Format Painter carries on from a selection's popover.
+const ERASER_OPTION = /^Eraser[A-Z]/;
+
+function isEraserEvent(category: string, action: string, type: string | null): boolean {
+  const t = type ?? '';
+  if (category === 'Canvas') return action === 'Used' && t === 'Eraser';
+  if (category === 'Element') return action === 'Deleted' && t === 'Eraser';
+  if (category === 'UI' || category === 'Draw')
+    return action === 'Changed' && ERASER_OPTION.test(t);
+  return false;
+}
+
 // What livehuddle inherited from livediagram and never had as its own, per the above.
 export function isInheritedEvent(category: string, action: string, type: string | null): boolean {
   const t = type ?? '';
@@ -249,6 +263,7 @@ export function isInheritedEvent(category: string, action: string, type: string 
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (AGENT_DOOR_CATEGORIES.has(category)) return true;
   if (isInheritedEvent(category, action, type)) return true;
+  if (isEraserEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === DRIVE_MIRROR_CATEGORY) return true;
   if (isTagsEvent(category, action, type)) return true;

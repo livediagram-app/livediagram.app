@@ -328,6 +328,9 @@ author sets on an element on purpose still plays.
 
 ## Eraser
 
+> Retired (6 November 2026): the whiteboard eraser left with the Eraser ([Eraser panel](../008-canvas/eraser-panel.md)).
+> What follows is kept as history.
+
 The eraser offers **both** modes (Stroke and Partial, not editor modes), switched in its flyout:
 
 - **Stroke** (default): touching a stroke removes the whole stroke. It is the
@@ -521,7 +524,7 @@ palette to mirror). livehuddle shows no dock, so these keys are not bound there 
 | 1      | Marker 1                                                |
 | 2      | Marker 2                                                |
 | 3      | Marker 3                                                |
-| E      | Eraser                                                  |
+| E      | Edit (the Eraser is retired)                            |
 | N      | Sticky note                                             |
 | T      | Text box                                                |
 | R      | Rectangle                                               |

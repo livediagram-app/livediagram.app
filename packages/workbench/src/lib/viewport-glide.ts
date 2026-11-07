@@ -31,7 +31,9 @@ export function glideViewport(
   const t0 = performance.now();
   let raf = 0;
   const step = (now: number) => {
-    const k = Math.min(1, (now - t0) / ms);
+    // A frame's timestamp is when the frame began, which can be before the glide was asked for: held at 0
+    // there, or the first frame would run backwards past the start (a zoom out first zooming in).
+    const k = Math.min(1, Math.max(0, (now - t0) / ms));
     const e = 1 - Math.pow(1 - k, 3); // ease-out cubic
     set.offset({
       x: from.offset.x + (to.offset.x - from.offset.x) * e,

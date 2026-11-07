@@ -18,13 +18,18 @@ six [rooms](../009-elements/office.md#room) either side of a corridor, every doo
 | Bottom | **Lounge**       | A bookshelf, a sofa on a rug, two chairs facing in, a plant                                                                                                                                                                        |
 | Bottom | **Focus Room**   | One desk on its own, a bookshelf and a plant                                                                                                                                                                                       |
 
-At the corridor's end: a [Selection Mode button](../009-elements/mode-button.md) set to Avatar, labelled **Walk In**,
-so one press puts a visitor's character at the door, and a line saying how to walk, talk, sit and get a coffee.
+At the corridor's end: an [Avatar Pad](../009-elements/avatar-pad.md), the office's entrance, where everyone arrives
+in a beam of light, and a line beside it saying how to walk, talk, sit and get a coffee.
 
-Every **Walk In** button in the office and the Spaces below has open floor under it: the character opens a full figure
-below the button ([Entering from a button](../008-canvas/avatar-mode.md)), so that spot is never furniture or a wall.
-The Virtual Office's corridor is deep enough for the button and that figure, and a test checks the spawn rectangle in
-all four templates.
+Every Space's pad stands on open floor, with room above it for the character standing on it: the character's feet go
+on the pad's core ([Entering on a pad](../008-canvas/avatar-mode.md#entering-on-a-pad)), so neither the pad nor that
+figure ever overlaps furniture or a wall. The pad stands `WAY_IN_CLEAR` (72 px) below the wall or fence above it, which
+clears a Regular character's head; a test checks the pad and the standing figure in every Space.
+
+Before 2026-11-06 the way in was a [Selection Mode button](../009-elements/mode-button.md) labelled **Walk In** in the
+pad's place, with the character opening below it. The pad replaced it (owner, 2026-11-06: "Make sure all templates and
+blank tabs gain an Avatar Pad - probably replace the old selection mode button"): walking is the default way to be in a
+Space, so the board needs an entrance, not a switch. A Space made before keeps its button, which still works.
 
 - The rooms are first in the tab, so they lie under the furniture; the rugs come next.
 - Every room keeps its name as its label, so renaming one is renaming the room.
@@ -33,7 +38,7 @@ all four templates.
 ## Spaces
 
 Nine siblings, built the same way (`template-office-parts.ts`: open-air floors such as grass and garden paths first,
-then rooms, rugs and stages, furniture after, and a **Walk In** button with a how-to line under the plan, beside it for the Team Pod). The first
+then rooms, rugs and stages, furniture after, and an **Avatar Pad** with a how-to line under the plan, beside it for the Team Pod). The first
 three (`template-builders-spaces.ts`):
 
 - **Coworking Space**: one open room of two desk clusters (four desks each pair facing across a shared bench), a coffee
@@ -41,10 +46,10 @@ three (`template-builders-spaces.ts`):
   **phone booths** along the right, small rooms with one chair each for a call away from the floor.
 - **Team Pod**: one room for a small team: a cluster of four desks, a meeting table for the stand-up, a coffee
   machine, a plant and a bookshelf, and beside it a **Team Board** of four stickies (This week, Blocked on, Wins,
-  Questions). Its Walk In waits **beside the pod, under the Team Board**, level with the pod's lower half, its how-to
+  Questions). Its Avatar Pad waits **beside the pod, under the Team Board**, level with the pod's lower half and low enough that someone standing on it stands clear of the board, its how-to
   line wrapped beside it in the board's column, not under the plan like the other Spaces' (Work Tracker #580). Seen
   at 100% from a desk or the table, the pod's bottom edge lies along the canvas's bottom, where the bottom-right
-  cluster floats, and a button under the pod sat under the cluster. Open floor lies under the button, and the door is
+  cluster floats, and a way in under the pod sat under the cluster. Open floor lies under the pad, and the door is
   a short walk round the pod's corner.
 - **All-Hands Hall**: one big room with a real [Stage](../009-elements/office.md#stage) up front (400 × 160,
   centred, with Show Cameras on; whoever speaks from it is heard by the whole hall,
@@ -73,7 +78,7 @@ And six more, one module a category (`template-builders-office-more.ts`, `templa
   middle, trees in each corner, two **Benches** facing the plaza, a **Picnic Table**, and a bandstand (a Stage) with
   four chairs facing it.
 
-The open-air Spaces have no walls round them: the fence and the trees hold the edge, and the Walk In waits under the
+The open-air Spaces have no walls round them: the fence and the trees hold the edge, and the Avatar Pad waits under the
 gate or the path, so walking in is walking up it.
 
 ## Campus Spaces
@@ -138,7 +143,7 @@ What every campus shares:
   of the room's name), so its centre is within the 64 px a sign reaches for its room's floor. A walk
   keeps far enough from the wall (110 px from a side wall, 72 px from a top or bottom one) that the sign stands clear of
   it.
-- **The arrival point.** The Walk In waits under the gate in the bottom fence, and a
+- **The arrival point.** The Avatar Pad waits under the gate in the bottom fence, and a
   [Directory](../009-elements/directory.md) stands just inside the gate beside the main path, listing every room with a
   Walk There. A site on one tab has no Elevator; a site with floors arrives on its first floor and rides between them
   ([Spaces with floors](#spaces-with-floors)).
@@ -156,9 +161,11 @@ What every campus shares:
 The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor per tab
 ([Templates by mode](../007-editor/templates-by-mode.md#a-template-with-floors)):
 
-- **The first floor arrives.** It has the Walk In at its entrance and a Directory beside it, like every Space. The
-  other floors have no Walk In: you arrive on them by [Elevator](../009-elements/elevator.md), and a Directory stands
-  beside each floor's Elevator.
+- **The first floor arrives.** It has the Avatar Pad at its entrance and a Directory beside it, like every Space. The
+  other floors are arrived at by [Elevator](../009-elements/elevator.md), and a Directory stands beside each floor's
+  Elevator. Each of them has an Avatar Pad too, by its Elevators and its Directory, on open floor: a ride steps you
+  out beside the Elevator as before, and someone who changes floor from the tab bar (a Participant or a Viewer, who
+  are always walking) arrives on the pad rather than in the middle of the view.
 - **Named Elevators.** Every floor has its Elevators named after the floor or their place ("Lobby Lift", "North
   Lift"), so the Elevator panel reads like a building's directory. The Co-working Tower's lifts stand in the same place
   on every floor.
@@ -172,7 +179,7 @@ The **Hotel and Suites** and the **Co-working Tower** are buildings, one floor p
   keynote **Stage** (with Stage Curtains and a Podium) with Bring Focus and twelve chairs on the open floor, four
   **Pillars** between the booths and the seats, aisles of at least 160 px between the rows; a
   **Food Court** (two counters with stools, coffee and tables), a **Speaker Lounge** and a **Meeting Room**, each closed
-  with a Door and a Room Sign; the Walk In at the entrance with a Directory beside it.
+  with a Door and a Room Sign; the Avatar Pad at the entrance with a Directory beside it.
 - **Beach Offsite** (Outdoor, also in Campus; one tab, sand): a **Beach Hut** to meet in (a table and a Screen) and a
   **Tiki Bar** (a bar with stools, a drinks fridge, a jukebox), each closed with a Door and a Room Sign, joined by
   stone paths across the sand to the gate; a campfire circle of benches, hammocks under the palms (trees), garden

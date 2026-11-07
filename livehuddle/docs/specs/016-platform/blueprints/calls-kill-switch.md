@@ -27,24 +27,24 @@ Derived from [Calls kill switch](../calls-kill-switch.md).
 
 ## Modules
 
-| File                                                 | Responsibility                                                                                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/api-schema/src/calls-mode.ts`           | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
-| `apps/api/src/calls/calls-mode.ts`                   | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
-| `apps/api/src/calls/calls-gate.ts`                   | `callsGate(env)`: secrets, then the switch; open answers the mode                                                               |
-| `apps/api/src/calls/calls-mode-watch.ts`             | `CallsModeWatch`: the room's throttled read and its push                                                                        |
-| `apps/api/src/routes/calls.ts`                       | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
-| `apps/api/src/routes/capabilities.ts`                | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
-| `apps/api/src/document-room/document-room.ts`        | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
-| `apps/editor/lib/calls/calls-store.ts`               | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
-| `apps/editor/lib/calls/proximity-call.ts`            | Ends the call into the paused state on a push or a `paused` refusal                                                             |
-| `apps/editor/components/calls/CallClusterButton.tsx` | The **Calls Paused** control                                                                                                    |
-| `apps/api/src/calls/realtime-usage.ts`               | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
-| `apps/api/src/calls/calls-budget.ts`                 | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
-| `apps/api/src/email/templates.ts`                    | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
-| `apps/api/src/index.ts`                              | The worker's `scheduled` handler runs `pollCallsBudget`                                                                         |
-| `apps/api/src/types.ts`                              | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                                                         |
-| `apps/api/wrangler.toml`                             | The cron, the thresholds, the account id and the (owner-created) KV binding                                                     |
+| File                                              | Responsibility                                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/api-schema/src/calls-mode.ts`        | `CallsMode`, `CallsMediaKind`, `callsModeAllows`, `callTrackKind`, `CallsModeOp`, `parseCallsModeOp`                            |
+| `apps/api/src/calls/calls-mode.ts`                | `callsMode`, its cache, `parseCallsMode`, `stricterCallsMode`; re-exports the shared rule                                       |
+| `apps/api/src/calls/calls-gate.ts`                | `callsGate(env)`: secrets, then the switch; open answers the mode                                                               |
+| `apps/api/src/calls/calls-mode-watch.ts`          | `CallsModeWatch`: the room's throttled read and its push                                                                        |
+| `apps/api/src/routes/calls.ts`                    | Every session and track checked with `callsModeAllows`; close allowed while paused                                              |
+| `apps/api/src/routes/capabilities.ts`             | `callsEnabled` (gate open or only paused) and `callsMode`                                                                       |
+| `apps/api/src/document-room/document-room.ts`     | Notes each relayed `avatar-voice` / `call-track`, and each consumed `calls-check`, to its `CallsModeWatch`; broadcasts the push |
+| `apps/editor/lib/calls/calls-store.ts`            | `CallSelf.mode`, `receiveCallsMode(op)`, `onCallsMode`                                                                          |
+| `apps/editor/lib/calls/proximity-call.ts`         | Ends the call into the paused state on a push or a `paused` refusal                                                             |
+| `apps/editor/components/calls/CallStripGroup.tsx` | The **Calls Paused** control                                                                                                    |
+| `apps/api/src/calls/realtime-usage.ts`            | `fetchRealtimeEgressBytes`, `monthStartUtc`, `realtimeCostUsd`                                                                  |
+| `apps/api/src/calls/calls-budget.ts`              | `budgetThresholds`, `budgetLevel`, `pollCallsBudget` and the trip record                                                        |
+| `apps/api/src/email/templates.ts`                 | `callsBudgetEmail`, kind `CallsBudget`                                                                                          |
+| `apps/api/src/index.ts`                           | The worker's `scheduled` handler runs `pollCallsBudget`                                                                         |
+| `apps/api/src/types.ts`                           | `CALLS_SWITCH`, the `CALLS_*` vars and secrets on `Env`                                                                         |
+| `apps/api/wrangler.toml`                          | The cron, the thresholds, the account id and the (owner-created) KV binding                                                     |
 
 ## Constants
 
@@ -104,7 +104,7 @@ from a Viewer or malformed, `room-op-gate.ts`), then noted and never relayed.
   (`VOICE_REFRESH_MS` plus two voice samples, 5.1 s: just past a talking speaker's level refresh, so a talker never
   checks). When it fires and the call still publishes a microphone, camera or screen, it sends
   `{ kind: 'calls-check' }`, which re-arms it. A listener never arms one. Teardown clears it.
-- `CallClusterButton` shows **Calls Paused** whenever the phase is `off` and the mode is `off`; pressing it runs
+- `CallStripGroup` shows **Calls Paused** whenever the phase is `off` and the mode is `off`; pressing it runs
   `join`, which tries a session. A stopped call (`ended`) never blocks a fresh join.
 - An `aria-live="polite"` region in the control says "Calls are paused" when the paused state appears.
 
@@ -119,16 +119,16 @@ store adds one listener set; the paused control is the same `Segment` as Join Au
 
 **Testing**:
 
-| Rule                                                                                                  | Test                                                      |
-| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Mode table per kind; track kinds; the push op's parser                                                | `../packages/api-schema/src/calls-mode.test.ts`           |
-| Gate: secrets before the switch; open carries mode                                                    | `apps/api/src/calls/calls-gate.test.ts`                   |
-| Routes: session, publish, subscribe, renegotiate refused when off; close allowed; mode on the session | `apps/api/src/routes/calls.test.ts`                       |
-| Watch: throttled, tells changes only, from `on`                                                       | `apps/api/src/calls/calls-mode-watch.test.ts`             |
-| Capabilities: enabled while paused, mode answered                                                     | `apps/api/src/routes/capabilities.test.ts`                |
-| Room drops a client's `calls-mode` op; drops a Viewer's or malformed `calls-check`                    | `apps/api/src/room-op-gate.test.ts`                       |
-| A `calls-check` reads the switch, tells everyone, and is never relayed                                | `apps/api/src/document-room-fanout.test.ts`               |
-| Store: push sets the mode, only from the system                                                       | `apps/editor/lib/calls/calls-store.test.ts`               |
-| Call: a push or a paused refusal ends it into the paused state                                        | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Call: a silent publisher checks every 5 s, a talking one never; a flip lands within one check         | `apps/editor/lib/calls/proximity-call.test.ts`            |
-| Button: Calls Paused, press tries again                                                               | `apps/editor/components/calls/CallClusterButton.test.tsx` |
+| Rule                                                                                                  | Test                                                   |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Mode table per kind; track kinds; the push op's parser                                                | `../packages/api-schema/src/calls-mode.test.ts`        |
+| Gate: secrets before the switch; open carries mode                                                    | `apps/api/src/calls/calls-gate.test.ts`                |
+| Routes: session, publish, subscribe, renegotiate refused when off; close allowed; mode on the session | `apps/api/src/routes/calls.test.ts`                    |
+| Watch: throttled, tells changes only, from `on`                                                       | `apps/api/src/calls/calls-mode-watch.test.ts`          |
+| Capabilities: enabled while paused, mode answered                                                     | `apps/api/src/routes/capabilities.test.ts`             |
+| Room drops a client's `calls-mode` op; drops a Viewer's or malformed `calls-check`                    | `apps/api/src/room-op-gate.test.ts`                    |
+| A `calls-check` reads the switch, tells everyone, and is never relayed                                | `apps/api/src/document-room-fanout.test.ts`            |
+| Store: push sets the mode, only from the system                                                       | `apps/editor/lib/calls/calls-store.test.ts`            |
+| Call: a push or a paused refusal ends it into the paused state                                        | `apps/editor/lib/calls/proximity-call.test.ts`         |
+| Call: a silent publisher checks every 5 s, a talking one never; a flip lands within one check         | `apps/editor/lib/calls/proximity-call.test.ts`         |
+| Button: Calls Paused, press tries again                                                               | `apps/editor/components/calls/CallStripGroup.test.tsx` |

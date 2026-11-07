@@ -24,7 +24,7 @@ Scope, by file:
 | `apps/editor/lib/path-draw.ts`                                         | Pure drawing state machine                                                                                                        |
 | `apps/editor/lib/path-edit.ts`                                         | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
 | `apps/editor/lib/path-edit-keys.ts`                                    | `pathEditKey`: what one key does in edit mode                                                                                     |
-| `apps/editor/lib/whiteboard-erase.ts`                                  | `pathsTouched`: the eraser takes a path whole                                                                                     |
+| `whiteboard-erase.ts` (retired with the Eraser)                        | `pathsTouched` went with it; `pathTouchesBrush` stays in the document package                                                     |
 | `apps/editor/lib/export-as-seen.ts`                                    | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
 | `apps/editor/lib/draw-mode.ts`                                         | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
 | `apps/editor/lib/whiteboard-tool.ts`                                   | `WhiteboardTool` gains `path`                                                                                                     |
@@ -516,7 +516,7 @@ numbers only).
 | Edit points                                                                                     | `apps/editor/components/canvas/SelectionPopover.test.tsx`                                                           |
 | A double-tap opens edit mode                                                                    | `apps/editor/components/canvas/useBoxedElementGestures.path.test.tsx`                                               |
 | No text cursor, no lift, no menu in edit mode                                                   | `apps/editor/components/canvas/element-variant.test.ts`, `apps/editor/hooks/canvas/useEditModeContextMenu.test.tsx` |
-| The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts`, `apps/editor/lib/whiteboard-erase.test.ts`                       |
+| The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts` (the editor's eraser is retired)                                  |
 | Export in the board's ink                                                                       | `apps/editor/lib/export-as-seen.test.ts`                                                                            |
 | End to end (every drawing and editing gesture, touch, cursors, overlay order, SVG / PNG export) | Playwright, Chromium and WebKit, dark and light, on the shared stack                                                |
 

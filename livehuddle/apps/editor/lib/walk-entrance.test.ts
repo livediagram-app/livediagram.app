@@ -37,6 +37,15 @@ describe('walkEntrance', () => {
     });
   });
 
+  // docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one": a blank tab's pad is its entrance, but
+  // there is nothing to walk round yet, so it opens on the tool.
+  it('offers no walk on a tab holding nothing but its pad, as Blank Space makes', () => {
+    expect(walkEntrance([pad('p')])).toBeNull();
+    expect(walkEntrance([pad('p'), pad('q')])).toBeNull();
+    expect(walkEntrance(buildTemplate('blank-session', 0, 0))).toBeNull();
+    expect(walkEntrance([pad('p'), square('a')])).toEqual({ kind: 'pad' });
+  });
+
   // Every Spaces template offers the walk, and no other template does: a Space made from one opens walking.
   it('opens every Spaces template walking, and no other', () => {
     const offering = TEMPLATES.map((t) => t.kind).filter(
@@ -49,22 +58,35 @@ describe('walkEntrance', () => {
     expect(offering.sort()).toEqual(spaces.sort());
   });
 
-  // Work Tracker #346: the opening character stood over the Walk In button and hid its label.
-  it('opens every Spaces template with the whole character clear of Walk In, at every size', () => {
+  // Every Space's way in is its Avatar Pad, which replaced the Walk In button (docs/specs/009-elements/avatar-pad.md
+  // "Every Space and blank tab has one"): a Space opens walking on its pad.
+  it('opens every Spaces template on its Avatar Pad, never a button', () => {
     const spaces = TEMPLATES.map((t) => t.kind).filter(
       (kind) => kind !== 'blank-session' && templateCategory(kind) !== null,
     );
     for (const kind of spaces) {
-      const entrance = walkEntrance(buildTemplate(kind, 0, 0));
-      if (entrance?.kind !== 'button') throw new Error(`${kind} opens without a Walk In button`);
-      const { button: walkInBox } = entrance;
-      for (const size of AVATAR_SIZES) {
-        const scale = avatarScale(size.id);
-        const feet = avatarSpawnBelow(walkInBox, scale);
-        const head = feet.y - avatarFigureHeight(scale);
-        expect(head, `${kind} at ${size.id}`).toBeGreaterThan(walkInBox.y + walkInBox.height);
-        expect(feet.x).toBe(walkInBox.x + walkInBox.width / 2);
-      }
+      const els = buildTemplate(kind, 0, 0);
+      expect(walkEntrance(els), kind).toEqual({ kind: 'pad' });
+      expect(
+        els.some((e) => e.type === 'shape' && e.shape === 'mode-button'),
+        kind,
+      ).toBe(false);
+    }
+  });
+
+  // Work Tracker #346: the opening character stood over a board's Walk In button and hid its label. A board made
+  // before the pads still opens below its button, the whole figure clear of it.
+  it('opens a board with a Walk In button with the whole character clear of it, at every size', () => {
+    const walkIn = { ...button('w', 300, 200, 'avatar'), label: 'Walk In' };
+    const entrance = walkEntrance([square('a'), walkIn]);
+    if (entrance?.kind !== 'button') throw new Error('opens without its Walk In button');
+    const { button: walkInBox } = entrance;
+    for (const size of AVATAR_SIZES) {
+      const scale = avatarScale(size.id);
+      const feet = avatarSpawnBelow(walkInBox, scale);
+      const head = feet.y - avatarFigureHeight(scale);
+      expect(head, size.id).toBeGreaterThan(walkInBox.y + walkInBox.height);
+      expect(feet.x).toBe(walkInBox.x + walkInBox.width / 2);
     }
   });
 });

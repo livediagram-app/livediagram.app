@@ -1,6 +1,15 @@
 # Eraser Panel
 
-Status: **implemented**.
+Status: retired (6 November 2026, owner: the Selection Mode picker gave way to the
+[Edit | Walk toggle](avatar-mode.md#the-edit--walk-toggle)).
+
+livehuddle has **no Eraser** any more ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#hand-eraser-and-format-as-modes)):
+select what should go and press Delete. The tool, this panel, its brush ring and cursor, and the `E` and `0` keys are
+gone. A browser's stored `livehuddle:v2:eraser-config` is left as it is and never read; the `Element·Deleted·Eraser`,
+`Canvas·Used·Eraser` and `UI·Changed·EraserMode` / `EraserSize` / `EraserTarget` rows stay on the dashboard as
+history. livediagram keeps its Eraser and this panel (its own `docs/specs/008-canvas/eraser-panel.md`).
+
+What follows is the panel as it was.
 
 While the **Eraser** tool ([Canvas and palette](canvas-and-palette.md)) is active, an **Eraser** panel is present: how it erases, how big it is, and what it is allowed to remove. The second mode panel, after [Avatar](avatar-mode.md).
 

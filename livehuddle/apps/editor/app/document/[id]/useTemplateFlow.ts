@@ -76,12 +76,14 @@ export function useTemplateFlow(opts: {
     setIdentityPromptOpen(false);
   };
 
-  const chooseTemplate = async (kind: TemplateKind) => {
+  // `counted: false` for the start's × (docs/specs/007-editor/start-diagramming.md "Bringing it back"): it lands the
+  // Blank Space's Avatar Pad, as choosing the blank does, but a close is not a pick, so it counts no Template·Used.
+  const chooseTemplate = async (kind: TemplateKind, opts: { counted?: boolean } = {}) => {
     // Applying a template REPLACES the tab's elements, and a start only shows on an empty tab, so a pick landing on a
     // tab with work on it (a collaborator drew first) touches nothing rather than wipe the tab.
     if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
-    track('Template', 'Used', titleCaseType(kind));
+    if (opts.counted !== false) track('Template', 'Used', titleCaseType(kind));
     confirmName();
     // Dynamic-import the heavy builders module only when the user
     // actually picks a template. The ~1700 lines of build* code stays
@@ -91,6 +93,7 @@ export function useTemplateFlow(opts: {
       buildTemplate,
       buildTemplatedFloorTabs,
       templateCanvasOverrides,
+      isBlankTemplate,
       isDefaultDocumentName,
       untitledNameForTemplate,
     } = await import('@/lib/template-builders');
@@ -137,18 +140,21 @@ export function useTemplateFlow(opts: {
       const at = next.findIndex((t) => t.id === activeId);
       return [...next.slice(0, at + 1), ...floors, ...next.slice(at + 1)];
     });
-    // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
-    // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
+    // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is: its one element is the
+    // Avatar Pad a little below the middle (docs/specs/009-elements/avatar-pad.md "Every Space and blank tab has one"),
+    // a tab still blank, so the tool in hand stays and nothing opens walking.
+    // A scaffold turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
     // put down, so its style panel doesn't sit over the board and the first click selects.
-    if (elements.length > 0) {
+    const blank = isBlankTemplate(kind);
+    if (elements.length > 0 && !blank) {
       requestFit();
       putToolDown();
       onLanded?.(activeId);
     }
     // Auto-select when a template produces a single element so the user can
-    // immediately rename or edit it. Multi-element templates — and the now
-    // truly-empty Blank template (zero elements) — leave the selection cleared.
-    setSelectedId(elements.length === 1 ? elements[0]!.id : null);
+    // immediately rename or edit it. Multi-element templates, and the blank (only its pad), leave the selection
+    // cleared.
+    setSelectedId(elements.length === 1 && !blank ? elements[0]!.id : null);
     setEditingId(null);
   };
 

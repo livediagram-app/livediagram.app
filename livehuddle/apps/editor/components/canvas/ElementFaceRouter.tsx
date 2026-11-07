@@ -194,7 +194,7 @@ function KnownElementFace({
           label={label}
           activeMode={activeMode}
           textColor={textColor}
-          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
+          // A mode a read-only session lacks (the Format Painter) draws an inert face for it.
           onPress={
             onPressModeButton &&
             (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))

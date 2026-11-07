@@ -108,10 +108,9 @@ describe('template search words', () => {
     expect(find('drinks')).toEqual(expect.arrayContaining(['rooftop-bar', 'cafe']));
     expect(find('garden')).toEqual(expect.arrayContaining(['garden-retreat', 'city-park']));
     expect(find('pub')).toContain('rooftop-bar');
-    // A category's search words find its templates: every Space by "avatar".
-    expect(find('avatar')).toEqual(
-      TEMPLATES.filter((t) => t.kind !== 'blank-session').map((t) => t.kind),
-    );
+    // A category's search words find its templates: every Space by "avatar", and the Blank Space by its own Avatar
+    // Pad.
+    expect(find('avatar')).toEqual(TEMPLATES.map((t) => t.kind));
     // Every word must match.
     expect(find('office zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);

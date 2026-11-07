@@ -4,8 +4,8 @@ import { categories } from './articles';
 import { site } from './help-site';
 
 // The features index's meta description names its areas (docs/specs/018-help/help-app.md "SEO"): every feature
-// category, in the registry's order, and nothing else. It once left out Selection Modes and Search Panel, which the
-// page itself lists.
+// category, in the registry's order, and nothing else. It once left out Selection Modes (now Edit or Walk) and Search
+// Panel, which the page itself lists. A category's title must not hold " and " or a comma, which the list splits on.
 // The description is made from the catalogue (featuresMetadata), so this holds the product's real one.
 describe('the features index description', () => {
   const description = String(featuresMetadata(site).description ?? '');

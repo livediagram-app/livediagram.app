@@ -20,6 +20,17 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'Helpful', 'activity-panel')).toBe(true);
   });
 
+  it('retires the Eraser, not the Format Painter', () => {
+    expect(isRetiredEvent('Canvas', 'Used', 'Eraser')).toBe(true);
+    expect(isRetiredEvent('Element', 'Deleted', 'Eraser')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'EraserSize')).toBe(true);
+    expect(isRetiredEvent('Draw', 'Changed', 'EraserStroke')).toBe(true);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('Element', 'Deleted', 'Key')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
+    expect(isRetiredEvent('Draw', 'Changed', 'PenWidth')).toBe(false);
+  });
+
   it('retires the palette Favourites events', () => {
     expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);
@@ -146,8 +157,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Changed', 'SpotlightDim')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'OpensInDiagram')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(true);
-    expect(isRetiredEvent('Canvas', 'Used', 'Eraser')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'EraserMode')).toBe(false);
+    expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'FormatPainterCopy')).toBe(false);
     expect(isRetiredEvent('UI', 'Changed', 'Laser')).toBe(false);
     expect(isRetiredEvent('Tab', 'Changed', 'Renamed')).toBe(false);
     expect(isRetiredEvent('Draw', 'Toggled', 'BreakShapeChip')).toBe(false);

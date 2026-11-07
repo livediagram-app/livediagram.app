@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe('useViewPreview', () => {
-  it('steps an edit session, owner or edit-link visitor, through Participating and Viewing and back', () => {
+  it('steps an edit session, owner or edit-link visitor, between Editing and Participating (no Viewing)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const onEnter = vi.fn();
     const { result } = renderHook(() => useViewPreview('edit', onEnter));
@@ -24,12 +24,9 @@ describe('useViewPreview', () => {
     expect(result.current.viewPreview).toBe(true);
     expect(onEnter).toHaveBeenCalledTimes(1);
     act(() => result.current.toggleViewPreview());
-    expect(result.current.previewLevel).toBe('view');
-    expect(onEnter).toHaveBeenCalledTimes(2);
-    act(() => result.current.toggleViewPreview());
     expect(result.current.previewLevel).toBe('edit');
     expect(result.current.viewPreview).toBe(false);
-    expect(onEnter).toHaveBeenCalledTimes(2);
+    expect(onEnter).toHaveBeenCalledTimes(1);
   });
 
   // The key pins its notes on a Notice Board; an add is refused it as the room refuses a real Participant's
@@ -68,8 +65,9 @@ describe('useViewPreview', () => {
     expect(edit.result.current.canEdit).toBe(true);
     act(() => edit.result.current.toggleViewPreview());
     expect(edit.result.current.canEdit).toBe(false);
+    // Participating steps back to Editing (no Viewing step).
     act(() => edit.result.current.toggleViewPreview());
-    expect(edit.result.current.canEdit).toBe(false);
+    expect(edit.result.current.canEdit).toBe(true);
     expect(renderHook(() => useViewPreview('view', vi.fn())).result.current.canEdit).toBe(false);
   });
 });

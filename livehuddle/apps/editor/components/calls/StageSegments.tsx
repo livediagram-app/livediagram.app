@@ -3,7 +3,7 @@
 // The call strip's stage pieces (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand", "The stage
 // line", "Do Not Disturb"): Raise Hand / Lower Hand for a live stage's audience, Speaking once let speak, the count of
 // raised hands for whoever speaks from a stage, the Do Not Disturb segment that clears the status, and the calm line
-// above the strip on a stage you may not speak from.
+// under the call group on a stage you may not speak from.
 import { lucideHand, lucideMic } from '@liveworkspace/icons/lucide';
 import type { IconPrim } from '@liveworkspace/icons';
 import { CountBadge, lucideGlyph } from '@livehuddle/ui';
@@ -40,7 +40,6 @@ export function HandSegment({ self, actions }: { self: CallSelf; actions: CallAc
         onClick={actions.lowerHand}
         pressed
         tone="live"
-        divided
       />
     );
   }
@@ -55,7 +54,6 @@ export function HandSegment({ self, actions }: { self: CallSelf; actions: CallAc
         onClick={actions.lowerHand}
         pressed
         tone="hand"
-        divided
       />
     );
   }
@@ -69,7 +67,6 @@ export function HandSegment({ self, actions }: { self: CallSelf; actions: CallAc
         icon={<HandIcon />}
         onClick={actions.raiseHand}
         pressed={false}
-        divided
       />
     );
   }
@@ -94,7 +91,6 @@ export function HandSegment({ self, actions }: { self: CallSelf; actions: CallAc
           </span>
         }
         tone="hand"
-        divided
       />
     );
   }
@@ -112,13 +108,11 @@ export function DoNotDisturbSegment({ onClear }: { onClear?: () => void }) {
       icon={<DndIcon />}
       onClick={onClear}
       tone="muted"
-      divided
     />
   );
 }
 
-/** Above the strip while you stand on a stage that does not let you speak. */
-/** Above the strip while you speak from a stage (meeting-rooms-and-stage.md "You are told you are on it"). */
+/** Under the call group while you speak from a stage (meeting-rooms-and-stage.md "You are told you are on it"). */
 export const ON_STAGE_LINE = "You're on stage. Everyone on this tab hears you.";
 
 export function StageLine({
@@ -133,7 +127,8 @@ export function StageLine({
     <span
       data-stage-line=""
       aria-live="polite"
-      className="pointer-events-none absolute right-0 bottom-full mb-2 whitespace-nowrap"
+      // Hung under the call group, clear of the strip's card (meeting-rooms-and-stage.md "The stage line").
+      className="pointer-events-none absolute top-full left-0 mt-3 whitespace-nowrap"
     >
       {barredBy ? (
         <span className="block rounded-md bg-slate-900/90 px-2.5 py-1 text-xs font-medium text-white shadow-md motion-safe:animate-card-rise dark:bg-slate-100/95 dark:text-slate-900">

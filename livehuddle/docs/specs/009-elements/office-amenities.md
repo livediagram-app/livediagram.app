@@ -17,7 +17,7 @@ a feature of its own: it is furniture, drawn well, that makes the rest believabl
 
 ## Where they live
 
-All in **Amenities** (`collab-amenities`), which splits into three named groups in the flyout, each ending on a divider
+All in **Perks** (`collab-amenities`), which splits into three named groups in the flyout, each ending on a divider
 ([Category flyout](../010-palette/palette-top-level-categories.md#the-space-categories)):
 
 | Group        | Tiles, in order                                                                                         |

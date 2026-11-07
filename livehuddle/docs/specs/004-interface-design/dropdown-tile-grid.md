@@ -4,9 +4,8 @@ Status: shipped
 
 ## What
 
-The **canvas-tool** picker (Select / Hand / Avatar / Eraser / Format) and the **palette category** picker
-(Popular / Shapes / Tools / Components / Devices / Icons / Technology) lay
-their options out as an icon-over-label **tile grid** instead of one long
+The **palette category** picker (Popular / Shapes / Tools / Components / Devices / Icons / Technology) lays
+its options out as an icon-over-label **tile grid** instead of one long
 vertical list.
 
 Nine tools in a single column is a lot of travel and a lot of reading for what
@@ -14,8 +13,14 @@ is a flat choice between equal-weight modes. The context menus already made
 this call: category contents there are `MenuTileGrid`, never a column of
 rows, so the two menu systems now read alike.
 
-Measured on the canvas-tool picker: **182px tall against roughly 360px**, at
+Measured on the canvas-tool picker, when there was one: **182px tall against roughly 360px**, at
 208px wide.
+
+**livehuddle has no canvas-tool picker** (owner, 2026-11-06): the Selection Mode picker gave way to the
+[Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle), a two-segment switch rather than a menu, and
+Select, Hand, Eraser and Format are no longer modes to pick. What follows about named bands, group bands and shortcut
+badges is the grid's mechanism as `PaletteDropdown` keeps it (`groupLabels`, an option's `group` and `shortcut`),
+used by the category picker's bands.
 
 ## When a grid, and when not
 
@@ -35,17 +40,14 @@ a grid is not always the better shape:
 
 ## Details that had to survive the change
 
-- **Band titles.** The canvas tool's three bands are named, in this order: **Build** (Select and Hand, the
-  ways of arranging the board and moving round it), **Edit** (Eraser and Format, the tools that change what is
-  drawn) and **Interact** (Avatar, being on the board yourself). Laser, Spotlight, Isometric and Zen are gone from
-  livehuddle ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). A named band doesn't
+- **Band titles.** A grid's bands may be named (the category picker's `CATEGORY_BANDS`). A named band doesn't
   also need a rule to say it started, so the title replaces the divider rather
   than sitting under it. Passed as a `groupLabels` map keyed by group index,
   NOT as a field on the first option: the selected option is filtered out of
   the menu, so a label hanging off an option would vanish exactly when that
   option was the current one.
-- **Group bands.** The canvas tool's options carry a `group` index that draws
-  a divider where the band changes: Build, then Edit, then Interact. In a grid that becomes a full-width rule
+- **Group bands.** Options carry a `group` index that draws
+  a divider where the band changes. In a grid that becomes a full-width rule
   between rows (`col-span-full`) rather than a rule between two items.
 - **Shortcut badges.** Kept, but tucked into the tile's top-right corner
   rather than taking a column of their own. A shortcut is worth discovering

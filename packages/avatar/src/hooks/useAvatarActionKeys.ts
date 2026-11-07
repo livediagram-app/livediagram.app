@@ -6,10 +6,10 @@
 import { useEffect } from 'react';
 import { isInMenuSurface } from '@liveworkspace/ui';
 import type { Reaction } from '../reaction-bursts';
-import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { avatarActionForKey } from '../action-keys';
 import type { AvatarReactionKind } from '../reactions';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
+import { walkInputBlocked } from '../walk-guard';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 export function useAvatarActionKeys({
@@ -25,7 +25,7 @@ export function useAvatarActionKeys({
   useEffect(() => {
     if (!active) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || isTypingTarget(e.target) || anyModalOpen()) return;
+      if (e.defaultPrevented || isTypingTarget(e.target) || walkInputBlocked()) return;
       if (isInMenuSurface(e.target)) return;
       const action = avatarActionForKey(e);
       if (!action) return;

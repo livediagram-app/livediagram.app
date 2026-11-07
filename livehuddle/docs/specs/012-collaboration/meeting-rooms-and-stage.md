@@ -2,7 +2,7 @@
 
 Status: **built** (Work Tracker #319, built in four parts; #436 folded into part 1). Part 1, **rooms are
 calls**, part 2, **the stage under the hood** (the element, its hearing and its role gate), part 3, **raise hand and
-Do Not Disturb** (with the line under the call strip for a stage you may not speak from), and part 4, **the stage's
+Do Not Disturb** (with the line under the call group for a stage you may not speak from), and part 4, **the stage's
 way in** (its palette tile, its settings, the All-Hands Hall on a real stage, and its help). Under the calls kill
 switch, and on wherever calls are ([Turning calls on](proximity-audio.md#turning-calls-on)).
 
@@ -89,7 +89,7 @@ and its hearing, and part 4 gives it its tile, its settings and the hall
   off, leaves Avatar mode, changes tab or drops off, and it works with calls off too. The spotlight fades in and out
   (off under reduced motion). Someone on a stage they may not speak from still lights it: it says who stands there;
   the mic indicator and the stage line say who is heard.
-- **You are told you are on it.** While you speak from a stage, a calm line sits above the call strip, where the stage
+- **You are told you are on it.** While you speak from a stage, a calm line hangs under the call group, where the stage
   line goes: **"You're on stage. Everyone on this tab hears you."** (the may-not-speak line keeps its place for a stage
   you may not speak from). It is an `aria-live="polite"` status, so it is announced once.
 - Implementation: `stageStanders` (`apps/editor/lib/calls/stage-presence.ts`) works out who stands on each stage from
@@ -131,7 +131,7 @@ A stage's audience asks to speak by raising a hand, and the stage lets them.
 
 ## The stage line (part 3, built)
 
-Standing on a stage you may not speak from, a calm line sits just above the call strip, right-aligned with it:
+Standing on a stage you may not speak from, a calm line hangs just under the call group (at the left of the avatar palette), left-aligned with it:
 **"Only Editors speak from this stage"** (or "Only Editors and Participants speak from this stage" for a Viewer on a
 stage that lets Participants speak). It goes the moment you step off. It is an `aria-live="polite"` status, so a
 screen reader hears it once on stepping on.
@@ -144,10 +144,10 @@ screen reader hears it once on stepping on.
   equalisers hide from you ([Proximity audio](proximity-audio.md#do-not-disturb)). The stage does not reach you either.
 - **You can still be heard** if you speak (your microphone keeps its own Mute), and your bars still show to others,
   so turning to a neighbour does not need the status cleared.
-- Set and cleared from the Avatar panel's Status row, like the others, for the session only. While you are in a call,
+- Set and cleared from the avatar palette's Status flyout, like the others, for the session only. While you are in a call,
   the call strip shows a **Do Not Disturb** segment beside the microphone; pressing it clears the status.
 - **Only livehuddle offers it.** The status vocabulary is shared with livediagram (`@liveworkspace/avatar`), which has
-  no calls: there the Avatar panel keeps offering the four, though a `dnd` status on the wire still parses and draws.
+  no calls: there the Avatar panel keeps offering the four (livehuddle's avatar palette offers the five), though a `dnd` status on the wire still parses and draws.
 
 ## The stage's way in (part 4, built)
 

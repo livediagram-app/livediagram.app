@@ -4,13 +4,14 @@ import { ADDER_KEY_LENGTH } from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/editor-app.md#role-pill): someone whose role allows editing can preview
-// the document as a Participant or as a Viewer, a press stepping Editing, Participating, Viewing and back to Editing.
+// the document as a Participant, a press stepping Editing, Participating and back. No Viewing step: livehuddle offers
+// Editor and Participant links only (Viewer survives on legacy links).
 // Local to this tab and visit; the session role itself, which presence reports, never changes. `canEdit` is the one
 // answer to "may this person edit right now?": the editor's read-only guard and the mode switch both read it
 // (docs/specs/007-editor/editor-modes.md "The mode switch").
 const NEXT: Record<AccessLevel, AccessLevel> = {
   edit: 'participate',
-  participate: 'view',
+  participate: 'edit',
   view: 'edit',
 };
 

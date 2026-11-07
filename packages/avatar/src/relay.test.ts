@@ -90,6 +90,15 @@ describe('createAvatarPacker', () => {
     expect(carries('t2', walking(1, { ...costume, hair: 'afro' }))).toBe(true);
   });
 
+  // livehuddle's Hair menu sets a hair colour: picking one must reach everyone, not wait for the refresh.
+  it('carries it again when only the hair colour changes', () => {
+    const { carries } = setup();
+    carries();
+    expect(carries('t1', walking(1, { ...costume, hairColour: 'blonde' }))).toBe(true);
+    expect(carries('t1', walking(1, { ...costume, hairColour: 'blonde' }))).toBe(false);
+    expect(carries('t1', walking(1, costume))).toBe(true);
+  });
+
   it('carries it every refresh interval while walking', () => {
     const { carries, tick } = setup();
     carries();

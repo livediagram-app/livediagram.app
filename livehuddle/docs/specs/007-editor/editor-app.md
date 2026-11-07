@@ -74,14 +74,14 @@ The **role pill** says whether you are editing, participating in or viewing this
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.
 - **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: each click steps **Editing**, then **Participating**, a preview of the document as a Participant sees and
-  works it ([Share roles](../013-workspace/share-roles.md)), then **Viewing**, a read-only preview as a view-link
-  visitor sees it, then back to Editing. The preview is local to this tab and this visit: it changes no one's role on
+  button: each click steps between **Editing** and **Participating**, a preview of the document as a Participant sees
+  and works it ([Share roles](../013-workspace/share-roles.md)). There is no Viewing step: livehuddle offers Editor and
+  Participant links only, and Viewer survives only on [legacy links](../013-workspace/share-roles.md#legacy-viewer-links). The preview is local to this tab and this visit: it changes no one's role on
   the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
   Participant does ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)): no palette, always
   walking, and nothing added, rewritten, moved or deleted. An Editor has no adder key from the room, so the preview
   pins notes on a Notice Board with its own (`preview-<participant id>`); no real Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
-  (as a Participant sees it)" / "Switch to viewing (read-only)" / "Switch to editing").
+  (as a Participant sees it)" / "Switch to editing").
 - **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
   can be read by keyboard.
 - Embeds hide it with the rest of the header.

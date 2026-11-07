@@ -58,7 +58,7 @@ function Lucide({ children }: { children: ReactNode }) {
     </g>
   );
 }
-/** An armchair, the Seating glyph. */
+/** An armchair, the Seats glyph. */
 function ArmchairGlyph() {
   return (
     <Lucide>
@@ -77,7 +77,7 @@ function PanelsGlyph() {
     </Lucide>
   );
 }
-/** A coffee cup, the Amenities glyph. */
+/** A coffee cup, the Perks glyph. */
 function CoffeeGlyph() {
   return (
     <Lucide>
@@ -107,14 +107,14 @@ function AvatarGlyph() {
 
 // --- Scenes ----------------------------------------------------------------
 
-/** The meeting palette's Meet band on the strip: **Travel**, **Seating**, **Rooms** and **Amenities**,
+/** The meeting palette's Meet band on the strip: **Travel**, **Seats**, **Rooms** and **Perks**,
  *  one of them open (the first named in `lit`, else Travel) with its elements in the flyout under it. */
 export function MeetingCategories({ lit = [] }: { lit?: readonly string[] }) {
   const categories: { label: string; icon: ReactNode; x: number; w: number }[] = [
     { label: 'Travel', icon: <DoorGlyph />, x: 22, w: 66 },
-    { label: 'Seating', icon: <ArmchairGlyph />, x: 92, w: 72 },
+    { label: 'Seats', icon: <ArmchairGlyph />, x: 92, w: 72 },
     { label: 'Rooms', icon: <PanelsGlyph />, x: 168, w: 66 },
-    { label: 'Amenities', icon: <CoffeeGlyph />, x: 238, w: 84 },
+    { label: 'Perks', icon: <CoffeeGlyph />, x: 238, w: 84 },
   ];
   const open = categories.find((c) => lit.includes(c.label)) ?? categories[0]!;
   return (

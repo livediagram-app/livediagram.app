@@ -15,19 +15,20 @@ The format painter copies the styling of one element and applies it to others, s
 
 ## Painting a style
 
-The format painter is the **Format** tool in the Palette's selection-mode dropdown (in its **Edit** group, beside Select, Hand and Eraser). Picking it opens the **Format** panel and walks you through two phases with an on-screen banner:
+The format painter is the **Format Painter** button on the selection toolbar, the small toolbar above an element you have selected. Pressing it opens the **Format** panel, and a message under the palette strip guides you:
 
 <Step n={1}>
-  First the banner reads "Select a base element to copy its style". Click the element whose look you
-  want to reuse. The panel's preview, which read "Nothing loaded", now shows it.
+  Select the element whose look you want to reuse, and press **Format Painter** on its toolbar. The
+  brush takes that element's style, and the panel's preview shows it.
 </Step>
 
 <Step n={2}>
-  The banner then reads "Tap elements to paint this style onto them". Every element you click now
-  takes on the base element's formatting, and the base stays loaded so you can keep going.
+  The message under the strip then asks you to tap elements to paint the style onto them. Every
+  element you click now takes on the base element's formatting, and the base stays loaded so you can
+  keep going.
 </Step>
 
-Click **Done** in the banner, or click empty canvas, to put the brush down and return to the tool you had before. `Escape` puts it down too and returns you to Select.
+Click **Done** in the message, press `Escape`, or click empty canvas to put the brush down.
 
 <Figure caption="The format painter lifts a styled element's look and paints it onto the next element you click.">
   <FormatPainter />
@@ -55,7 +56,7 @@ Arrows join in too: load an arrow as the source to copy its line colour, thickne
 
 One thing stays put by design: the painter never touches position, so where your elements sit on the canvas is never disturbed. Each paint is an ordinary edit, so `⌘Z` undoes it.
 
-Because it only changes elements, the format painter is available to Editors only: Participants and view-only visitors don't get it. It is greyed out on an empty canvas.
+Because it only changes elements, the format painter is available to Editors only: Participants and view-only visitors don't get it. It sits on the selection toolbar, so there is nothing to press until you have selected something.
 
 <Tip>
   Build one "reference" element with the exact colours, border, and text you want, then use the

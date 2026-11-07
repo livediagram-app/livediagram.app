@@ -16,16 +16,24 @@ import {
   type CallZone,
   type Element,
 } from '@livehuddle/document';
+import { placePoints, walkThereRoute } from '@/lib/wayfinding';
 import { podClosed, podDoorFront } from '@liveworkspace/avatar/pod';
 import { useToast } from '@/hooks/ui/useToast';
 import type { CallSignal } from '@/lib/calls/call-config';
 import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';
 import { track } from '@/lib/telemetry';
 import { onKnock } from './knock-inbox';
-import { noteKnocked, setKnocker, setMeetingLive, type MeetingLive } from './meeting-live';
+import {
+  noteKnocked,
+  setKnocker,
+  setMeetingLive,
+  setRoomWalker,
+  type MeetingLive,
+  type SignPerson,
+} from './meeting-live';
 
 type Point = { x: number; y: number };
-type Walker = { id: string; name: string; avatar: AvatarPresence };
+type Walker = { id: string; name: string; color?: string; avatar: AvatarPresence };
 
 export type MeetingPiecesDeps = {
   elements: readonly Element[];
@@ -38,7 +46,14 @@ export type MeetingPiecesDeps = {
   send?: (signal: CallSignal) => void;
   // Stands your character up (Let In at a closed pod, knock.md "Being knocked").
   standUp?: () => void;
+  // Your name and colour, for the sign's reader's Who's Inside.
+  selfPerson?: { name: string; color: string };
+  // Walks your character (the sign's reader's Walk In, screen-and-room-sign.md "The sign's reader").
+  walkTo?: (point: Point, onArrive?: () => void) => void;
 };
+
+// A colour for someone whose presence carries none: the identity fill's slate.
+const NO_COLOUR = '#64748b';
 
 type Piece = { id: string; kind: 'screen' | 'room-sign'; at: Point; roomId: string | null };
 
@@ -76,7 +91,9 @@ export function zonesOfWalkers<W extends { id: string; at: Point }>(
 }
 
 export function useMeetingPieces(deps: MeetingPiecesDeps): void {
-  const { elements, zones, walkers, inMode, self, selfSeatedOn, send } = deps;
+  const { elements, zones, walkers, inMode, self, selfSeatedOn, send, selfPerson } = deps;
+  const selfName = selfPerson?.name ?? 'You';
+  const selfColour = selfPerson?.color ?? NO_COLOUR;
   const toast = useToast();
 
   // The pieces and the room each belongs to: only when the board changes.
@@ -105,12 +122,15 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
       setMeetingLive(new Map());
       return;
     }
-    const people: { id: string; at: Point; name: string | null }[] = walkers.map((w) => ({
-      id: w.id,
-      at: { x: w.avatar.x, y: w.avatar.y },
-      name: w.name,
-    }));
-    if (inMode && self) people.push({ id: SELF_MEDIA_ID, at: self, name: null });
+    const people: { id: string; at: Point; name: string | null; color: string }[] = walkers.map(
+      (w) => ({
+        id: w.id,
+        at: { x: w.avatar.x, y: w.avatar.y },
+        name: w.name,
+        color: w.color ?? NO_COLOUR,
+      }),
+    );
+    if (inMode && self) people.push({ id: SELF_MEDIA_ID, at: self, name: null, color: selfColour });
     const byZone = zonesOfWalkers(people, zones);
     // A pod's door is shut while both seats are held (office.md "Office Pod"), by everyone's presence.
     const seated = new Map<string, number>();
@@ -135,8 +155,16 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
         continue;
       }
       const room = p.roomId ? (rooms.get(p.roomId) ?? null) : null;
-      const shut =
-        !!p.roomId && room?.shape === 'office-pod' && podClosed(seated.get(p.roomId) ?? 0);
+      const pod = room?.shape === 'office-pod';
+      const shut = !!p.roomId && pod && podClosed(seated.get(p.roomId) ?? 0);
+      // You first, then everyone else in presence order (the reader's Who's Inside).
+      const listed: SignPerson[] = inside.map((w) => ({
+        id: w.id,
+        name: w.name ?? selfName,
+        color: w.color,
+        self: w.id === SELF_MEDIA_ID,
+      }));
+      listed.sort((a, b) => Number(b.self) - Number(a.self));
       next.set(p.id, {
         roomId: p.roomId,
         name: roomSignName(room),
@@ -144,10 +172,12 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
         count: inside.length,
         since: inside.length > 0 && p.roomId ? (since.get(p.roomId) ?? now) : null,
         selfInside: inside.some((w) => w.id === SELF_MEDIA_ID),
+        pod,
+        people: listed,
       });
     }
     setMeetingLive(next);
-  }, [pieces, rooms, walkers, zones, inMode, self, selfSeatedOn]);
+  }, [pieces, rooms, walkers, zones, inMode, self, selfSeatedOn, selfName, selfColour]);
 
   // The latest of what the knock handlers read, so they subscribe once.
   const live = useRef(deps);
@@ -168,6 +198,34 @@ export function useMeetingPieces(deps: MeetingPiecesDeps): void {
     setKnocker((roomId: string) => sendKnock(lastKnock, send, roomId));
     return () => setKnocker(null);
   }, [inMode, send]);
+
+  // Walk In (screen-and-room-sign.md "The sign's reader"): the Directory's Walk There route, leg by leg, to just inside
+  // the room's doorway. Published only while walking with a walk to drive.
+  const canWalk = inMode && !!deps.walkTo;
+  useEffect(() => {
+    if (!canWalk) {
+      setRoomWalker(null);
+      return;
+    }
+    setRoomWalker((roomId: string) => {
+      const d = live.current;
+      const room = d.elements.find(
+        (el) =>
+          el.id === roomId &&
+          el.type === 'shape' &&
+          (el.shape === 'room' || el.shape === 'office-pod'),
+      );
+      if (!room || room.type !== 'shape' || !d.walkTo) return;
+      const walkTo = d.walkTo;
+      const { approach, arrival } = placePoints(room, d.elements);
+      const bounds = { x: room.x, y: room.y, width: room.width, height: room.height };
+      const route = walkThereRoute(d.self ?? arrival, { approach, arrival, bounds });
+      const leg = (i: number) =>
+        walkTo(route[i]!, i + 1 < route.length ? () => leg(i + 1) : undefined);
+      leg(0);
+    });
+    return () => setRoomWalker(null);
+  }, [canWalk]);
 
   // Knocks and answers that reach you (knock.md "Being knocked").
   useEffect(() => {

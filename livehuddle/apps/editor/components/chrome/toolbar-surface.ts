@@ -20,3 +20,19 @@ export const TOOLBAR_DIVIDER = 'mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-sl
 /** A control at rest. */
 export const TOOLBAR_CONTROL_REST =
   'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
+
+/** A tinted strip button's frame (Say's and the call group's, docs/specs/008-canvas/avatar-mode.md "The avatar
+ *  palette"): 36px tall (a 44px tap area), rounded, on the brand tint (`TOOLBAR_TRIGGER_TONE` at rest). */
+export const STRIP_TINT_BUTTON =
+  'relative flex h-9 shrink-0 touch-target-y items-center justify-center gap-1.5 rounded-md transition';
+
+/** A tinted strip button whose popover is open: a step deeper on the same tint. */
+export const STRIP_TINT_OPEN =
+  'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100';
+
+/** A strip button named beside its glyph, or the glyph alone (44px wide on a phone, for the thumb). */
+export const STRIP_CONTROL_NAMED = 'pl-2 pr-2.5';
+export const STRIP_CONTROL_GLYPH = 'w-9 phone:w-11';
+
+/** A strip button's name, beside its glyph. */
+export const STRIP_CONTROL_LABEL = 'text-[13px] font-medium leading-none';

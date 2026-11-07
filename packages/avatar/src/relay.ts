@@ -55,9 +55,11 @@ export type AvatarPacker = {
   reset(): void;
 };
 
-// A costume as one comparable string; '' for none.
+// A costume as one comparable string, every token in it (a new hair colour is a changed costume); '' for none.
 const costumeKey = (config: AvatarConfig | undefined): string =>
-  config ? `${config.gender}|${config.clothing}|${config.hair}|${config.size}` : '';
+  config
+    ? `${config.gender}|${config.clothing}|${config.hair}|${config.size}|${config.hairColour ?? ''}`
+    : '';
 
 export function createAvatarPacker(now: () => number = () => Date.now()): AvatarPacker {
   // What the last packet that carried the costume carried, where, when, and how many joins had been seen by then.

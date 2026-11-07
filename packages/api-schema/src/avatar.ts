@@ -57,11 +57,32 @@ export type AvatarHair =
 
 export type AvatarSize = 'small' | 'regular' | 'tall';
 
+// Hair colour (livehuddle's docs/specs/008-canvas/avatar-mode.md "Hair Colour"): natural colours first, then bold
+// ones. A look like the rest, never an identity: the shirt keeps the presence colour.
+export type AvatarHairColour =
+  | 'black'
+  | 'dark-brown'
+  | 'brown'
+  | 'auburn'
+  | 'ginger'
+  | 'blonde'
+  | 'platinum'
+  | 'grey'
+  | 'white'
+  | 'blue'
+  | 'pink'
+  | 'purple'
+  | 'green';
+
 export type AvatarConfig = {
   gender: AvatarGender;
   clothing: AvatarClothing;
   hair: AvatarHair;
   size: AvatarSize;
+  // Optional, so a config stored or sent by a build that predates it still type-checks and parses: absent draws
+  // Brown, the hair every character had before. An older receiver's parser rebuilds the config field by field and
+  // simply drops it.
+  hairColour?: AvatarHairColour;
 };
 
 // One participant's Avatar-mode character (docs/specs/008-canvas/avatar-mode.md), as it travels over the
@@ -74,14 +95,28 @@ export type AvatarConfig = {
 // ends of the wire read: the editor's picker and labels are keyed to it, so a status can never be sent that a
 // receiver's type does not name. `dnd` (Do Not Disturb) is livehuddle's call status (its
 // docs/specs/012-collaboration/meeting-rooms-and-stage.md): every product parses and draws it, only livehuddle offers it.
-export const AVATAR_STATUS_IDS = ['available', 'focus', 'meeting', 'away', 'dnd'] as const;
+// So do the rest after it (livehuddle's Need Help, Out to Lunch and its moods), appended so the list only grows: a
+// client that predates a token reads it as no status, never as an error.
+export const AVATAR_STATUS_IDS = [
+  'available',
+  'focus',
+  'meeting',
+  'away',
+  'dnd',
+  'help',
+  'lunch',
+  'angry',
+  'celebrating',
+  'thinking',
+  'sick',
+] as const;
 export type AvatarStatus = (typeof AVATAR_STATUS_IDS)[number];
 
 export type AvatarPresence = {
   x: number;
   y: number;
   facing: 'down' | 'up' | 'left' | 'right';
-  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size, each a
+  // The sender's costume (docs/specs/008-canvas/avatar-mode.md): gender / clothing / hair / size / hair colour, each a
   // preset token from a closed set. Optional: a lean packet leaves it out (AvatarPacket below) and the receiver keeps
   // the last one it saw from that peer, falling back to the default character for one it never saw. Purely
   // cosmetic, and never an identity claim.

@@ -2,7 +2,7 @@
 
 // A row of equal segments, one chosen, its highlight sliding between them (SegmentSlider): a
 // radiogroup of short choices (a guide strength, a number of copies).
-import { ACTIVE_SEGMENT, SEGMENT_TRACK } from '@liveworkspace/ui';
+import { ACTIVE_SEGMENT, SEGMENT_REST, SEGMENT_TRACK } from '@liveworkspace/ui';
 import { SegmentSlider } from './SegmentSlider';
 
 export function SegmentedRadio<T extends string | number>({
@@ -41,9 +41,7 @@ export function SegmentedRadio<T extends string | number>({
             aria-checked={on}
             onClick={() => onChange(o.id)}
             className={`relative z-10 rounded-md py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand-600 ${
-              on
-                ? 'text-white'
-                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100'
+              on ? 'text-white' : SEGMENT_REST
             }`}
           >
             {o.label}

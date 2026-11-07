@@ -80,7 +80,7 @@ export type SpaceSceneSpec = {
   id: string;
   template: TemplateKind;
   stage: Stage;
-  // The template's pieces the drawing leaves out besides its titles and hints (a sticker, the Walk In button).
+  // The template's pieces the drawing leaves out besides its titles and hints (a sticker, the Avatar Pad).
   cast: readonly CastMember[];
   speech: readonly SpeechLine[];
   // Light content the scene adds to the room, drawn by the editor's renderer with it.

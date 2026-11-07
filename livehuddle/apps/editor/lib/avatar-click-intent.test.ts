@@ -4,6 +4,8 @@ import { ELEMENT_TYPES, SHAPE_KINDS, type Element as CanvasElement } from '@live
 import {
   AVATAR_CLICK_INTENTS,
   avatarClickIntent,
+  avatarPressOutcome,
+  NO_READER_KINDS,
   ELEMENT_KIND_ATTR,
   elementClickKind,
   isInPlacePress,
@@ -146,6 +148,34 @@ describe('avatarClickIntent', () => {
       'directory',
     );
     expect(elementClickKind({ type: 'sticky' } as CanvasElement)).toBe('sticky');
+  });
+});
+
+describe('avatarPressOutcome', () => {
+  it('presses any use piece with a main action right now', () => {
+    for (const kind of IN_PLACE) expect(avatarPressOutcome(kind, true), kind).toBe('press');
+  });
+
+  it('does nothing on a control piece with no press of yours, never the reader', () => {
+    expect([...NO_READER_KINDS].sort()).toEqual(
+      ['focus-button', 'mode-button', 'stopwatch', 'timer'].sort(),
+    );
+    for (const kind of NO_READER_KINDS) {
+      expect(avatarClickIntent(kind), kind).toBe('use');
+      expect(avatarPressOutcome(kind, false), kind).toBe('nothing');
+    }
+  });
+
+  it('opens every other use piece with no main action in the reader (an idle Screen, a Room Sign)', () => {
+    for (const kind of IN_PLACE.filter((k) => !NO_READER_KINDS.has(k as never)))
+      expect(avatarPressOutcome(kind, false), kind).toBe('read');
+  });
+
+  it('reads a read kind and walks a walk kind, main or not', () => {
+    expect(avatarPressOutcome('sticky', false)).toBe('read');
+    expect(avatarPressOutcome('table', true)).toBe('read');
+    expect(avatarPressOutcome('chair', false)).toBe('walk');
+    expect(avatarPressOutcome(null, false)).toBe('walk');
   });
 });
 

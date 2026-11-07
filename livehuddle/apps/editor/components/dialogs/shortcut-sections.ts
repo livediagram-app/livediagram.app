@@ -43,10 +43,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Tools',
     rows: [
-      { keys: ['V'], label: 'Select Tool  (or 1)' },
-      { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
-      { keys: ['H'], label: 'Hand Tool' },
-      { keys: ['E'], label: 'Eraser, click / drag to delete  (or 0)' },
+      { keys: ['E'], label: 'Edit  (or V, or 1)' },
+      { keys: ['W'], label: 'Walk' },
+      { keys: ['S'], label: 'Search Elements  (Edit where there is no strip)' },
     ],
   },
   {

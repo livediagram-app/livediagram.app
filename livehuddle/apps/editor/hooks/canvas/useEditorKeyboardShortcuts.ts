@@ -100,7 +100,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
         // Avatar mode (docs/specs/008-canvas/avatar-mode.md): Escape puts the walking character away and
-        // hands editing back: Select on desktop, Hand on touch.
+        // hands editing back (on touch a drag on empty canvas pans, as Edit does there).
         if (liveRef.current.canvasTool === 'avatar') {
           liveRef.current.setCanvasTool(isMobileViewportSync() ? 'pan' : 'select');
         }
@@ -114,7 +114,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   }, [deps.enabled, deps.formatSourceId, deps.pendingDraw, deps.canvasTool, liveRef]);
 
   // Everything else: Delete / Backspace, Cmd-Z / Cmd-Y / Cmd-Shift-Z,
-  // Cmd-C / Cmd-V, V / H / L tool switches. One listener for the
+  // Cmd-C / Cmd-V, the E / V / W Edit and Walk keys. One listener for the
   // whole keyboard since they all share the typing-bailout + read-
   // only-bailout logic.
   useEffect(() => {
@@ -204,8 +204,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // --- Plain key tool + element-add shortcuts ---
       // Standards-aligned bindings (Excalidraw / tldraw / Figma / Miro),
       // dispatched via VIEW_TOOL_KEYS / EDIT_KEYS above:
-      //   V (S alias) = Select, H = Hand,
-      //   E = Eraser, P (F alias) = Pencil (tools)
+      //   E / V (S alias) = Edit, W = Walk (the Edit | Walk toggle)
       //   R = Rectangle, O = Oval, D = Diamond, C = Cylinder,
       //   G = Parallelogram, T = Text, N = Note, A = Arrow (elements)
       //   1-9/0 mirror the same actions (Excalidraw number row).
@@ -257,7 +256,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // firing the tool / add shortcuts below — the user kept selecting
       // a shape, typing, and accidentally dropping new elements. Space
       // is excluded (it stays the pan / tap-to-edit modifier). View-role
-      // never types (so viewers keep V / H / K). A non-labelable selection
+      // never types (so viewers keep their keys). A non-labelable selection
       // returns false and falls through to the shortcuts.
       if (
         !live.isReadOnly &&
@@ -274,7 +273,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md
       // "Keyboard actions", useAvatarActionKeys): S spins rather than searching, 1 throws confetti rather than
-      // picking Select. V / H / K / I / Z and Escape stay the way out.
+      // editing. E / V and Escape stay the way out.
       if (live.canvasTool === 'avatar' && avatarActionForKey(e)) return;
 
       // Non-mutating view tools (Select / Hand / Zen): before the read-only gate so view-role visitors get them.
@@ -287,13 +286,12 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       if (live.isReadOnly) return;
       // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only FOR THE PRESENTER too: the
-      // element-add / Eraser / Pencil keys stay dormant while walking, so a
+      // element-add keys stay dormant while walking, so a
       // stray keypress can't drop a shape mid-narration. The view tools above
-      // already ran, so V / H / K / I / Z remain the way out.
+      // already ran, so E / V remain the way out.
       if (live.canvasTool === 'avatar') return;
 
-      // Mutating tools / element adds (Eraser / Pencil / shapes / Text /
-      // Note / Arrow), editors only.
+      // Element adds (Text / Note), editors only.
       const editAction = EDIT_KEYS[lower];
       if (editAction) {
         e.preventDefault();

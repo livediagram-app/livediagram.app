@@ -59,9 +59,6 @@ export function canvasCursorClass(input: {
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): every click is "walk over there", so the pointer
   // cursor is the honest affordance. Space still pans, so defer to grab.
   if (canvasTool === 'avatar' && !spaceHeld) return 'cursor-pointer';
-  // Eraser shows a custom eraser glyph (see .cursor-eraser in globals.css),
-  // unless Space is held for a temporary pan.
-  if (canvasTool === 'eraser' && !spaceHeld) return 'cursor-eraser';
   // Format tool (docs/specs/008-canvas/canvas-and-palette.md): the copy cursor in both phases (picking a base
   // and painting onto targets) signals "this click acts on the element".
   if (canvasTool === 'format' && !spaceHeld) return 'cursor-copy';

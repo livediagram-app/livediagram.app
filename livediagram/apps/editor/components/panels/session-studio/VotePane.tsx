@@ -11,7 +11,7 @@ import { useState, type ReactNode } from 'react';
 import { VOTE_DOTS_RANGE } from '@livediagram/document';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';
-import { SOLID_BRAND_DARK, Glyph, Switch } from '@livediagram/ui';
+import { SOLID_BRAND_DARK, Glyph, Switch, SwitchRow } from '@livediagram/ui';
 
 type VotePaneProps = Pick<
   SessionToolsProps,
@@ -220,12 +220,12 @@ function ToggleCard({
   onToggle: () => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onToggle}
-      className={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition ${
+    // The whole card is the switch (@liveworkspace/ui SwitchRow), its own track drawn at the end.
+    <SwitchRow
+      checked={checked}
+      onChange={() => onToggle()}
+      track="none"
+      layout={`flex w-full items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition ${
         checked
           ? 'border-brand-300 bg-brand-50/60 dark:border-brand-500/50 dark:bg-brand-500/10'
           : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500'
@@ -247,7 +247,7 @@ function ToggleCard({
         <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">{hint}</span>
       </span>
       <Switch presentational size="sm" checked={checked} />
-    </button>
+    </SwitchRow>
   );
 }
 

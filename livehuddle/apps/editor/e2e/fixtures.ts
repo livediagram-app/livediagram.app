@@ -228,6 +228,14 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
             await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
           ).json()) as StoredTab;
           tab = got.tab ?? null;
+          // A blank tab saves its Avatar Pad just after it opens (docs/specs/009-elements/avatar-pad.md "Every
+          // Space and blank tab has one"): seeding before that save lands would be overwritten by it. So while the
+          // canvas shows a pad, wait for the saved tab to hold one.
+          const padShown = document.querySelector(
+            '[data-canvas-a11y-root] [role="img"][aria-label="Avatar pad"]',
+          );
+          const els = (tab?.elements ?? []) as { shape?: string }[];
+          if (padShown && !els.some((el) => el.shape === 'avatar-pad')) tab = null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }

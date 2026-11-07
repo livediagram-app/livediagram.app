@@ -214,7 +214,7 @@ export function buildCompanyCampus(cx: number, cy: number): Element[] {
         'The whole company on one site: offices, an auditorium, a bar and a games room, joined by a garden.',
     },
     gateAt: MID,
-    hint: 'Press Walk In (or W) and come in through the gate. The Directory by it walks you to any room.',
+    hint: 'You arrive on the Avatar Pad by the gate. The Directory by it walks you to any room.',
     // The presenter's Bring Focus, beside the stage.
     extra: (left, top) => [createShape('focus-button', left + HALL.x + 730, top + HALL.y + 64)],
   });

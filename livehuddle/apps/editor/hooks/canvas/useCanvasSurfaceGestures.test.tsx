@@ -415,6 +415,22 @@ describe('Avatar mode presses', () => {
     expect(walkTo).not.toHaveBeenCalled();
   });
 
+  // docs/specs/013-workspace/share-roles.md "Always walking": a control that is not yours to press (Bring Focus for a
+  // Participant or a Viewer) is a sign: no reader, no walk.
+  it.each(['focus-button', 'mode-button', 'timer', 'stopwatch'])(
+    'does nothing on a %s with no main action of yours: no reader, no walk',
+    (kind) => {
+      const onReadElement = vi.fn();
+      const { press, walkTo } = avatarSetup([], {
+        elements: [pieceAt('shape', 'room'), pieceAt('shape', kind)],
+        onReadElement,
+      });
+      press('mouse');
+      expect(onReadElement).not.toHaveBeenCalled();
+      expect(walkTo).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     ['sticky', undefined],
     ['text', undefined],

@@ -8,13 +8,31 @@ A strip pinned to the **top centre of the canvas** ([Toolbar layout](../007-edit
 
 ### Canvas tools
 
-The strip's first control, the selection-mode picker, holds the canvas-tool toggles:
+The strip's first control is the [Edit | Walk toggle](avatar-mode.md#the-edit--walk-toggle), an Editor's (owner,
+2026-11-06; it replaced the selection-mode picker). There are two ways to be on the canvas, and no other modes to pick:
 
-- **Select** (default on desktop, shortcut `V`, matching Figma / Excalidraw / Miro / tldraw; `S` is kept working as a legacy alias, except where the strip shows its Search, which `S` opens instead, [Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)): drag-on-empty draws a marquee for multi-select. Listed first in the palette.
-- **Hand** (the pan tool; default on mobile / touch viewports, shortcut `H`, the universal hand-tool key): drag-on-empty scrolls the canvas. Middle-click also pans from any tool.
-- **Avatar** (not in the picker and no shortcut: a [Selection Mode button](../009-elements/mode-button.md) on the board hands it out, and the picker shows it only as the current mode while you are in it, [Avatar mode](avatar-mode.md) "Where it lives"): a walking pixel character you steer around the canvas while narrating it (click to walk, arrow keys to steer, `Space` to hop and wave a flag, right-click the character to change who it is), with the canvas read-only for the duration and the character broadcast to peers so a whole room can walk around together. Full behaviour in [Avatar mode](avatar-mode.md).
-- **Format** (no keyboard shortcut; `P` is the Pencil): a persistent format-painter mode (the [Format painter](#format-painter) as a tool, so you can paint many targets without re-selecting). Sits next to Eraser in the tool dropdown, paintbrush icon. Picking it shows a guided two-phase mode banner: first **"Select a base element to copy its style"**, and once you click one, **"Tap elements to paint this style onto them"**: every subsequent element click applies the base's formatting and **keeps the base armed**, so you can format element after element. **Done** (or switching tools) exits; leaving the tool disarms the base. The cursor is the copy cursor in both phases. Editors only (it mutates). It stays on until dismissed, and it is the only way to paint a style: the selection popover carries no paintbrush. Which parts of the copied style actually travel (fill, border, text, effects, size) and whether the brush stays loaded after a paint come from the **Format Panel** ([Format Panel](format-panel.md)), which appears while the tool is active.
-- **Eraser** (shortcut `E`): deletion mode. A primary-button **press deletes whatever element is under the pointer**, and **holding and dragging deletes everything the drag passes over**: one press-drag is one undo. Hit-testing rides the DOM (`document.elementsFromPoint` + each wrapper's `data-element-id`), so it erases any element kind (shapes, arrows, text, images). Deleting a shape also drops arrows pinned to it, matching the normal delete. **Locked elements** (and everything on a **locked tab**) are protected and skipped (see Locking below). The whole gesture collapses to one undo via a checkpoint at press + un-checkpointed ticks per removal (the same pattern as a drag-move). The canvas shows a custom eraser cursor while the tool is active; holding **Space** still pans. The eraser only mutates for editors; view-role visitors don't get it. Implemented as the `useCanvasEraser` hook, invoked from the Canvas capture-phase pointerdown so it wins over an element's own select/drag. Its brush (Sweep or Tap, the radius, and what it is allowed to remove) comes from the **Eraser Panel** ([Eraser Panel](eraser-panel.md)), which appears while the tool is active; locked elements stay protected whatever it is set to. Arming anything to add (a palette tile or its key, such as `A` for an arrow) puts the eraser down for Select, as it does the Format painter, so the next drag draws what the banner says rather than erasing what it crosses.
+- **Edit** (shortcut `E`, and `V` as in Figma / Excalidraw / Miro / tldraw; `S` is kept working as a legacy alias,
+  except where the strip shows its Search, which `S` opens instead,
+  [Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)): selecting and building. On a desktop a
+  drag on empty canvas draws a marquee for multi-select. On a touch screen (a phone, a tablet) a drag on empty canvas
+  pans instead, as it always has there (`pan`, the device's default, `useCanvasTool`; an embed pans too), and a tap
+  still selects.
+- **Walk** (shortcut `W`, from Edit): [Avatar mode](avatar-mode.md), a walking pixel character you steer around the
+  canvas (click to walk, arrow keys to steer, `Space` to hop and wave a flag, right-click the character to change who
+  it is), with the canvas read-only for the duration and the character broadcast to peers so a whole room can walk
+  around together.
+
+**Panning needs no mode.** Hold `Space` and drag, scroll with a trackpad (two fingers) or the wheel, or drag with the
+middle button, from Edit; on a touch screen drag on empty canvas, and pinch to zoom. Hand left as a mode with the
+picker, and `H` does nothing.
+
+**There is no Eraser.** Select what should go and press `Delete` or `Backspace` (or the selection toolbar's Delete); a
+marquee takes many at once. The Eraser tool, its panel and its `E` and `0` keys left livehuddle with the picker
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#hand-eraser-and-format-as-modes)).
+
+**The Format painter** is not a mode to pick any more: it starts from the selection toolbar's **Format Painter**
+button, with the selected element as the style to copy ([Format painter](#format-painter)). While it is on it is held
+as the `format` canvas tool, as before, with its [Format Panel](format-panel.md).
 
 The **Highlighter** is not a canvas tool: it is a one-shot tile in the palette's **Draw** category beside the two pens ([Highlighter](highlighter.md)), because what it makes is an element. It was a held tool in this dropdown (with its own panel) for a while.
 
@@ -590,8 +608,8 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `apps/editor/lib
 `packages/templates/src/template-catalogue.test.ts`) is five templates, every one opening on a meeting board
 (Work Tracker #423, [Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)):
 
-- **Blank Space** (kind `blank-session`): an empty tab, the document named "Untitled Space".
-- Eighteen Spaces, furnished from what stays (the office pieces, the bar and garden pieces, furniture, a Walk In button,
+- **Blank Space** (kind `blank-session`): a tab holding only an [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one), the document named "Untitled Space".
+- Eighteen Spaces, furnished from what stays (the office pieces, the bar and garden pieces, furniture, an Avatar Pad,
   Bring Focus, sticky notes, text and a sticker), each on the dot grid ([Virtual Office
   template](../012-collaboration/virtual-office-template.md)): **Virtual Office**, **Coworking Space**, **Team Pod**,
   **Focus Library**, **All-Hands Hall**, **Training Room**, **Rooftop Bar**, **Cafe**, **Garden Retreat**,
@@ -662,13 +680,12 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 
 **Tools** (plain key, no modifier; non-mutating tools work for view-role visitors too):
 
-| Key       | Tool                                                                            |
-| --------- | ------------------------------------------------------------------------------- |
-| `V` / `S` | Select (`S` is a legacy alias; with the Toolbar strip's Search, `S` opens it)   |
-| `H`       | Hand (pan)                                                                      |
-| `E`       | Eraser                                                                          |
-| `P`       | Freehand pencil                                                                 |
-| `6`       | Shape Pen (the same stroke, recognised; [Stickers](../010-palette/stickers.md)) |
+| Key       | Tool                                                                               |
+| --------- | ---------------------------------------------------------------------------------- |
+| `E` / `V` | Edit (`S` is a legacy alias of `V`; with the Toolbar strip's Search, `S` opens it) |
+| `W`       | Walk ([Avatar mode](avatar-mode.md#the-edit--walk-toggle)), from Edit              |
+| `P`       | Freehand pencil                                                                    |
+| `6`       | Shape Pen (the same stroke, recognised; [Stickers](../010-palette/stickers.md))    |
 
 **Add elements** (plain key: drops the element, mirroring the palette tile):
 
@@ -683,9 +700,9 @@ The editor's global shortcuts are bound centrally in `useEditorKeyboardShortcuts
 | `N` | Note (sticky)      |
 | `A` | Arrow              |
 
-The remaining shape kinds (hexagon, stadium, document, cloud, …) have no single-key binding; like every reference tool, only the common flowchart vocabulary gets a letter; the rest stay a palette click away. (Hexagon previously sat on `H`; that key now belongs to Hand.)
+The remaining shape kinds (hexagon, stadium, document, cloud, …) have no single-key binding; like every reference tool, only the common flowchart vocabulary gets a letter; the rest stay a palette click away. (`H` belonged to Hand, which is no longer a mode, so it does nothing.)
 
-**Number keys** mirror the Excalidraw layout for quick tool reach: `1` Select, `2` Rectangle, `3` Diamond, `4` Oval, `5` Arrow, `7` Pencil, `8` Text, `9` Image, `0` Eraser. (As with the letter shortcuts, a number typed while a single label-bearing element is selected feeds the label editor instead; see Type-to-edit below.)
+**Number keys** mirror the Excalidraw layout for quick tool reach: `1` Select, `2` Rectangle, `3` Diamond, `4` Oval, `5` Arrow, `7` Pencil, `8` Text, `9` Image. (`0` was the Eraser, which is gone.) (As with the letter shortcuts, a number typed while a single label-bearing element is selected feeds the label editor instead; see Type-to-edit below.)
 
 **Edit** (with `⌘`):
 
@@ -738,7 +755,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 6. **Elements**: the open document's element text (editor only). Matches element labels; **tables match by cell text** (tables have no single label), surfacing the matching cell as the row label. Blank-labelled elements are unmatchable. Opening the panel triggers a **load-all-tabs prefetch**: per-tab lazy loading ([Per-tab storage](../006-document/per-tab-storage.md)) means unvisited tabs are empty placeholders locally, so search pulls every remaining tab's content in one parallel best-effort sweep; without it, element search silently misses tabs the user hasn't opened this session.
 7. **Actions**: synthetic, do-something results rather than navigation: a contextual **command palette** for keyboard-first use (editor only, non-empty query). The matcher (name + keywords, capped) lives in `lib/search.ts` as a generic `command` result kind; the editor supplies the applicable command list and a dispatcher via `useEditorCommands` (catalogue + applicability logic in `lib/editor-commands.ts`, unit-tested in `editor-commands.test.ts`). The group ranks **below** the navigation + element groups so picking an existing tab / element by name keeps the default Enter; commands are reached by typing their verb (e.g. "delete", "lock", "rotate", "share", "theme", "rename"). Each command reuses the exact same handler (and telemetry) as its menu/toolbar entry point, so behaviour can't drift. Commands never surface on an empty query (no catalogue dump); view-only (`view`-role) sessions keep only the view-safe subset (fit / export / Collaborators, plus the tools that only change how you look at the canvas), mirroring the palette's read-only gate.
 
-   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:avatar`, `tool:eraser`, `tool:format`), which were previously reachable only from the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Avatar is not offered (a board's Selection Mode button is its only door), and the two that write to the document (Eraser, Format painter) are withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other.
+   **Edit and Walk.** The catalogue also carries the two sides of the [Edit | Walk toggle](avatar-mode.md#the-edit--walk-toggle), **Edit** (`tool:select`) and **Walk** (`tool:avatar`), the one already in force dropped. Neither writes to the document, so both stay for a read-only Editor (a locked tab); a session held walking never sees Edit work (the hold refuses it).
 
    The catalogue is **contextual**:
    - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to Front**, **Send to Back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset Rotation** (not on an annotation marker), **Add / Edit Note**, **Add Comment**, plus **Clear Animation** (when the element has one) and, for a shape, **Clear Marker** (when set) / **Add … Marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
@@ -843,7 +860,7 @@ Text + duplication:
 - **Edit Text / Add Text**: enters inline text-edit mode on the selected element (the same path as a double-click). A serif-`T` icon. **Shown on every text-CAPABLE element** (`elementSupportsText` in `packages/document`: shapes minus the self-drawing data shapes, text / sticky / freehand / link-cards / arrows), including elements with no label yet, where it reads **Add Text** so the affordance teaches that text can be added; with a label it reads **Edit Text**. Absent for kinds with no `label` (tables, images, annotation markers, data shapes).
 - **Duplicate**: clones the selected element(s) in place (offset slightly). Arrows in the selection copy too (`duplicateElements` in `packages/document/src/duplicate.ts`): a free endpoint translates with the offset, a pinned endpoint follows its duplicate when the target was copied or else keeps its original pin (still a real element, so never orphaned); an arrow whose pinned target no longer exists (e.g. a cross-tab paste) is dropped rather than dangled. The same helper backs Cmd-C / Cmd-V (`useClipboard`), so copy-pasting a selection that includes arrows (including free-floating ones) now carries them with their styling + label intact.
 
-There is **no paintbrush** on the popover: the slot it once held went to **Edit Text** when the Format tool arrived, and copying a look is the Format tool's job ([Format painter](#format-painter)).
+- **Format Painter** (a paintbrush, beside Duplicate): copies this element's look onto others ([Format painter](#format-painter)). An Editor's, on a single selection; it is the painter's one way in since the selection-mode picker left (owner, 2026-11-06).
 
 Relationships:
 
@@ -867,7 +884,7 @@ The canvas can be **panned** to bring off-screen content into view.
 - A press-and-release of Space+drag without movement counts as a **click** and deselects, as before.
 - Double-click still drops a text element at the click position (now in the panned canvas-coordinate space).
 
-**Fit-to-screen** centres the viewport on the active tab's content and picks the largest zoom level that fits every element with a small margin. Empty tabs reset to (0, 0) at zoom 1. Same gesture as Figma / Excalidraw's "Zoom to fit". Also fires automatically **once per tab entry, when the tab's content has loaded** (on document open and again on each tab switch into a non-empty tab) so a saved tab loads framed rather than at the previous session's pan / zoom. An entry onto an empty tab is spent without fitting, so what the user then adds, the **first element included, stays exactly where it was placed**: the view never jumps to recentre it. Replacing a tab's content wholesale, by picking a template or importing, frames the new content (`requestFit` in `useTabEntryEffects`); the Blank template leaves the view alone.
+**Fit-to-screen** centres the viewport on the active tab's content and picks the largest zoom level that fits every element with a small margin. Empty tabs reset to (0, 0) at zoom 1. Same gesture as Figma / Excalidraw's "Zoom to fit". Also fires automatically **once per tab entry, when the tab's content has loaded** (on document open and again on each tab switch into a non-empty tab) so a saved tab loads framed rather than at the previous session's pan / zoom. An entry onto an empty tab is spent without fitting, and one onto a tab holding nothing but its [Avatar Pad](../009-elements/avatar-pad.md#every-space-and-blank-tab-has-one) (a blank tab) centres the view above the pad instead of fitting it, so the pad sits below the middle; either way what the user then adds, the **first element included, stays exactly where it was placed**: the view never jumps to recentre it. Replacing a tab's content wholesale, by picking a template or importing, frames the new content (`requestFit` in `useTabEntryEffects`); the Blank template leaves the view alone.
 
 The bottom-right `ZoomControls` dock is deliberately minimal. Three controls: **−10% / current % / +10%**. **Clicking the percentage readout fires Fit-to-screen** (there is no separate Fit button on desktop), and **hovering it opens a popover above** (`ZoomMenu`) with the preset levels **25% / 50% / 75% / 100% / 125% / 150%** plus a **Fit** entry; the active preset is highlighted. The popover is hover-and-focus driven (mouse enter or keyboard focus opens it, with a short close grace so the pointer can travel into it); on touch there is no hover and below `sm` the percentage readout is hidden anyway, so a plain **Fit** button stands in on mobile. Resetting to exactly 100% goes through the popover's 100% entry (or `⌘0`).
 
@@ -1007,11 +1024,11 @@ There are no groups ([Web components are elements; groups are gone](../009-eleme
 
 A way to copy an element's **formatting** (size, eventually colour and style) onto another element, same mental model as Word/Figma's format painter.
 
-The painter is the **Format** canvas tool in the palette tool dropdown (next to Eraser, see the tool list above). There is no one-off brush on the selection popover (that slot is **Edit Text**), so the tool is the single way in.
+The painter starts from the selection toolbar's **Format Painter** button: the selected element becomes the **source** at once, the selection is cleared so the toolbar steps out of the way, and the `format` canvas tool is held until you finish. It is the single way in: the palette's tool dropdown, which once held a **Format** tool, is gone ([Canvas tools](#canvas-tools)), and Search has no Format Painter entry.
 
 ### Using the Format tool
 
-- Picking the tool enters a **two-phase** mode driven by the top-centre banner. **Phase 1** (no source armed) reads "Select a base element to copy its style"; the first element clicked becomes the **source**.
+- The tool is a **two-phase** mode driven by the top-centre banner. It starts in **phase 2**, the pressed element armed. **Phase 1** (no source armed, after **Paint once** emptied the brush) reads "Select a base element to copy its style"; the next element clicked becomes the **source**.
 - **Phase 2** (source armed) reads "Tap elements to paint this style onto them"; each subsequent click on an element of the same kind (boxed → boxed, arrow → arrow) applies the source's formatting. With the [Format Panel](format-panel.md)'s **Keep the brush** (the default) the source **stays armed**, so the user can format target after target; with **Paint once** the brush empties after one apply and the banner returns to phase 1.
 - **Done** on the banner, **clicking the empty canvas**, pressing **Escape**, or switching to any other tool exits; leaving the tool **disarms** the source and **restores the tool that was active before Format** (falling back to Select). Clicking the source itself is a no-op but keeps the mode going.
 - The cursor is the copy cursor in both phases, on boxed elements and arrows alike.
