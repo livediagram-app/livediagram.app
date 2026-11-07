@@ -237,7 +237,8 @@ describe('glass walls', () => {
       ])!,
       id: 't',
     };
-    expect(roomZones([{ ...outlined, variant: 'glass' }])).toEqual(roomZones([outlined]));
+    const glassOutlined: ShapeElement = { ...outlined, variant: 'glass' };
+    expect(roomZones([glassOutlined])).toEqual(roomZones([outlined]));
   });
 
   it("draw a rectangle's walls as panes with mullions and a glinting back face", () => {
