@@ -33,8 +33,6 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
-  ChartPaletteId,
-  CodeThemeId,
   Element,
   TablePreset,
   IconAnimation,
@@ -57,8 +55,6 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
-  applyChartPaletteToEl,
-  applyCodeThemeToEl,
   applyColorPresetToEl,
   applyTablePresetToEl,
   applyFillColorToEl,
@@ -224,15 +220,6 @@ export function useStylePreview(deps: {
     previewTablePreset: (p: TablePreset) => previewStyle((el) => applyTablePresetToEl(el, p)),
     commitTablePreset: (p: TablePreset) =>
       commitStyle((el) => applyTablePresetToEl(el, p), 'TablePreset'),
-    // Chart palette (docs/specs/009-elements/pie-chart.md): the chart's flavour of preset.
-    previewChartPalette: (id: ChartPaletteId | null) =>
-      previewStyle((el) => applyChartPaletteToEl(el, id)),
-    commitChartPalette: (id: ChartPaletteId | null) =>
-      commitStyle((el) => applyChartPaletteToEl(el, id), 'ChartPalette'),
-    // Code-block scheme (docs/specs/009-elements/code-block.md): the code block's flavour of preset.
-    previewCodeTheme: (id: CodeThemeId) => previewStyle((el) => applyCodeThemeToEl(el, id)),
-    commitCodeTheme: (id: CodeThemeId) =>
-      commitStyle((el) => applyCodeThemeToEl(el, id), 'CodeTheme'),
     // Arrow preset
     previewArrowPreset: (p: ArrowPreset) => previewStyle((el) => applyArrowPresetToEl(el, p)),
     commitArrowPreset: (p: ArrowPreset) =>

@@ -29,10 +29,10 @@ describe('elementTelemetryType', () => {
     expect(elementTelemetryType(box({ shape: 'diamond' }))).toBe('Diamond');
   });
 
-  // Not 'Code-Block': titleCase capitalises at the hyphen, which would split
-  // the feature across two dashboard tokens (the Changed events say CodeBlock).
-  it('reports a code block as one token', () => {
-    expect(elementTelemetryType(box({ shape: 'code-block' }))).toBe('CodeBlock');
+  // Not 'Mode-Button': titleCase capitalises at the hyphen, which would split
+  // the feature across two dashboard tokens (the Changed events say ModeButton).
+  it('reports a mode button as one token', () => {
+    expect(elementTelemetryType(box({ shape: 'mode-button' }))).toBe('ModeButton');
   });
 
   it('reports every non-shape kind', () => {

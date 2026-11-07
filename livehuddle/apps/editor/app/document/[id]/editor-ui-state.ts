@@ -54,13 +54,6 @@ export function useEditorUiState(
   // The visitor name prompt (IdentityPrompt, docs/specs/007-editor/new-document-route.md): a visitor joining someone
   // else's document confirms the name others will see. The editor shows no other picker over the canvas.
   const [identityPromptOpen, setIdentityPromptOpen] = useState(false);
-  // Which line-chart's data modal is open (docs/specs/009-elements/pie-chart.md), or null. The context menu's
-  // Data category opens it (the 2-D grid is too wide for the menu).
-  const [lineDataOpenForId, setLineDataOpenForId] = useState<string | null>(null);
-  // Which code block's edit dialog is open (docs/specs/009-elements/code-block.md), or null. Opened by
-  // double-click on the card and by the context menu's Code category (a
-  // multi-line editor is too big for the menu, like the line chart's grid).
-  const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -77,9 +70,5 @@ export function useEditorUiState(
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,
-    lineDataOpenForId,
-    setLineDataOpenForId,
-    codeEditOpenForId,
-    setCodeEditOpenForId,
   };
 }

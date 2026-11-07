@@ -1,12 +1,11 @@
 // @vitest-environment jsdom
 // The colour wells that used to be the OS colour input, now the one colour picker
-// (docs/specs/004-interface-design/colour-picker.md): the canvas and pattern colours, the pie and
-// legend rows, and the rich-text toolbar's text colour.
+// (docs/specs/004-interface-design/colour-picker.md): the canvas and pattern colours, and the
+// rich-text toolbar's text colour.
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { penColourHex, standardColours } from '@livehuddle/document';
 import { ColorSwatch } from './palette-controls';
-import { LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 
 describe('ColorSwatch (canvas and pattern colours)', () => {
@@ -39,37 +38,6 @@ describe('ColorSwatch (canvas and pattern colours)', () => {
       'button',
     );
     expect(yours[0]!.getAttribute('aria-label')).toBe('#cbd5e1');
-  });
-});
-
-describe('pie and legend rows', () => {
-  it('recolour one slice from the picker', () => {
-    const onChange = vi.fn();
-    render(
-      <PieDataEditor
-        slices={[
-          { label: 'A', value: 1 },
-          { label: 'B', value: 2, color: '#111111' },
-        ]}
-        onChange={onChange}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Slice 2 colour' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Teal' }));
-    expect(onChange).toHaveBeenCalledWith([
-      { label: 'A', value: 1 },
-      { label: 'B', value: 2, color: penColourHex('teal', 'light') },
-    ]);
-  });
-
-  it('recolour one legend row from the picker', () => {
-    const onChange = vi.fn();
-    render(<LegendDataEditor items={[{ label: 'Done' }]} onChange={onChange} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Legend row 1 colour' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Pink' }));
-    expect(onChange).toHaveBeenCalledWith([
-      { label: 'Done', color: penColourHex('pink', 'light') },
-    ]);
   });
 });
 

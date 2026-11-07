@@ -1,4 +1,3 @@
-import type { EmbedProvider } from '@livehuddle/document';
 import type { ShapeKind } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
@@ -39,17 +38,11 @@ export type PaletteProps = {
   onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See docs/specs/009-elements/link-cards.md.
   onAddLinkCard: () => void;
-  onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
-  // Banner / Callout / Stat row / Process need no image and always show; Hero
-  // / Header (and the Tools-tab Avatar) carry an image, so they're gated on
+  // Callout needs no image and always shows; Hero (and the Tools-tab Avatar) carry an image, so they're gated on
   // image upload being available (onAddImage present).
-  onAddBanner: () => void;
   onAddHero: () => void;
-  onAddHeader: () => void;
   onAddCallout: () => void;
-  onAddStatRow: () => void;
-  onAddProcess: () => void;
   onAddAvatar: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the

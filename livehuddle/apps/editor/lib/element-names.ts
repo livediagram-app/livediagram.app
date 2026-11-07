@@ -4,8 +4,6 @@
 // they can't drift.
 
 import {
-  CHART_TYPE_LABELS,
-  chartTypeOf,
   isRetiredElement,
   retiredElementName,
   type BoxedElement,
@@ -32,15 +30,10 @@ export function kindLabel(el: Element): string {
   }
   if (el.type === 'path') return 'Path';
   if (el.type === 'link-card') return 'Link card';
-  if (el.type === 'video') return 'Embed';
   // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") reads by the name its
   // placeholder shows ('Q&A Board', a session button's 'Timer'), not its stored kind word.
   if (isRetiredElement(el)) return retiredElementName(el);
-  if (el.type === 'shape') {
-    // A chart is named by its chart type, as the palette names it: 'Column chart', not its kind's 'Bar chart'.
-    const chart = chartTypeOf(el);
-    return chart ? `${CHART_TYPE_LABELS[chart]} chart` : shapeKindLabel(el.shape);
-  }
+  if (el.type === 'shape') return shapeKindLabel(el.shape);
   return 'Element';
 }
 
@@ -134,15 +127,12 @@ export function elementAriaLabel(el: Element): string {
   return label ? `${kind} "${label}"` : kind;
 }
 
-// The kinds whose face carries controls of its own: a checklist's ticks, a mode button, a
-// Bring Focus button, a portal's settings and a page's title and subtitle lines. A retired element's placeholder
+// The kinds whose face carries controls of its own: a mode button, a Bring Focus button and a portal's settings. A retired element's placeholder
 // holds none, so it is a picture.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
-  'checklist',
   'mode-button',
   'focus-button',
   'portal',
-  'page',
   // Wayfinding (docs/specs/009-elements/directory.md, elevator.md): a button over the drawing.
   'directory',
   'elevator',
@@ -156,8 +146,11 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
  *  commands, docs/specs/008-canvas/element-indicators.md), which are controls on its face too. */
 export function elementRole(el: Element, hasIndicators = false): 'img' | 'group' {
   if (hasIndicators) return 'group';
+  // A retired element's placeholder holds an Editor's Delete button (docs/specs/002-project-scope/not-in-livehuddle.md
+  // "Retired elements"), a control on its face.
+  if (isRetiredElement(el)) return 'group';
   // A table's cells edit in place and, selected, it shows its column and row options buttons.
-  if (el.type === 'video' || el.type === 'link-card' || el.type === 'table') return 'group';
+  if (el.type === 'link-card' || el.type === 'table') return 'group';
   if (el.type === 'image') return el.imageId ? 'img' : 'group';
   if (el.type === 'shape' && CONTROL_FACE_SHAPES.has(el.shape)) return 'group';
   return 'img';

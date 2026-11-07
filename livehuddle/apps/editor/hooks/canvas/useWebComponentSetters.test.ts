@@ -6,10 +6,10 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
-  createComponent,
+  CARD_TAGS_MAX,
   createImage,
+  createShape,
   HERO_DEFAULT_CAPTION,
-  PROCESS_MAX_STEPS,
   type Element,
   type ImageElement,
   type ShapeElement,
@@ -22,8 +22,6 @@ vi.mock('@/lib/telemetry', () => ({
 }));
 
 import { useWebComponentSetters } from './useWebComponentSetters';
-
-const colors = { accent: '#000', surface: '#fff', ink: '#111' };
 
 function harness(elements: Element[], selection: string[] = []) {
   let current = elements;
@@ -41,27 +39,27 @@ function harness(elements: Element[], selection: string[] = []) {
 }
 
 describe('useWebComponentSetters (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-  const stat = () => createComponent('stat', 0, 0, colors) as ShapeElement;
-  const process = () => createComponent('process', 0, 0, colors) as ShapeElement;
+  const card = () => ({ ...createShape('card', 0, 0), tags: ['Design'] }) as ShapeElement;
+  const timeline = () => createShape('timeline-rail', 0, 0);
 
   it('setWebRows writes one element by id, bounded', () => {
-    const a = stat();
-    const b = stat();
+    const a = card();
+    const b = card();
     const h = harness([a, b]);
-    h.setters.setWebRows(a.id, { stats: [{ value: ' 7 ', caption: 'Days' }] });
-    expect((h.get(a.id) as ShapeElement).stats).toEqual([{ value: '7', caption: 'Days' }]);
-    expect((h.get(b.id) as ShapeElement).stats).toEqual(b.stats);
+    h.setters.setWebRows(a.id, { tags: [' Q3   plan '] });
+    expect((h.get(a.id) as ShapeElement).tags).toEqual(['Q3 plan']);
+    expect((h.get(b.id) as ShapeElement).tags).toEqual(b.tags);
   });
 
   it('appendWebRowTo adds a row until the cap', () => {
-    const p = process();
+    const p = card();
     const h = harness([p]);
-    for (let i = 0; i < PROCESS_MAX_STEPS + 3; i++) h.setters.appendWebRowTo(p.id);
-    expect((h.get(p.id) as ShapeElement).processSteps).toHaveLength(PROCESS_MAX_STEPS);
+    for (let i = 0; i < CARD_TAGS_MAX + 3; i++) h.setters.appendWebRowTo(p.id);
+    expect((h.get(p.id) as ShapeElement).tags).toHaveLength(CARD_TAGS_MAX);
   });
 
   it('appendWebRowTo reports a row it adds even when the commit runs later, and nothing at the cap', () => {
-    const p = process();
+    const p = card();
     const kept: ((els: Element[]) => Element[])[] = [];
     const { result } = renderHook(() =>
       useWebComponentSetters({
@@ -75,19 +73,19 @@ describe('useWebComponentSetters (docs/specs/009-elements/web-components-and-no-
     expect(kept).toHaveLength(1);
     expect(track).toHaveBeenCalledTimes(1);
     const full = harness([p]);
-    for (let i = 0; i < PROCESS_MAX_STEPS + 3; i++) full.setters.appendWebRowTo(p.id);
+    for (let i = 0; i < CARD_TAGS_MAX + 3; i++) full.setters.appendWebRowTo(p.id);
     track.mockClear();
     full.setters.appendWebRowTo(p.id);
     expect(track).not.toHaveBeenCalled();
   });
 
   it('setWebRowsSelected lands each field only on its own kind', () => {
-    const s = stat();
-    const p = process();
+    const s = timeline();
+    const p = card();
     const h = harness([s, p], [s.id, p.id]);
-    h.setters.setWebRowsSelected({ processSteps: ['x', 'y'] });
-    expect((h.get(p.id) as ShapeElement).processSteps).toEqual(['x', 'y']);
-    expect((h.get(s.id) as ShapeElement).processSteps).toBeUndefined();
+    h.setters.setWebRowsSelected({ tags: ['x', 'y'] });
+    expect((h.get(p.id) as ShapeElement).tags).toEqual(['x', 'y']);
+    expect((h.get(s.id) as ShapeElement).tags).toBeUndefined();
   });
 
   it('the Caption Card toggle adds and removes a hero caption on any image', () => {

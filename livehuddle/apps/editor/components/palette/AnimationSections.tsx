@@ -6,15 +6,8 @@
 import {
   ANIMATION_SET_NAME,
   DEFAULT_ANIMATION_SPEED,
-  PIE_LOOPING_ANIMS,
-  PROGRESS_LOOPING_ANIMS,
-  RATING_LOOPING_ANIMS,
-  animLoops,
   animationSetsOf,
-  isChartShape,
   isConceptShape,
-  isProgressShape,
-  isRatingShape,
   type ConceptShape,
   type AnimationSetId,
   type Element,
@@ -27,8 +20,6 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
-import { PieAnimTiles } from '@/components/palette/context-menu-rows';
-import { ProgressAnimTiles, RatingAnimTiles } from '@/components/palette/context-menu-data-rows';
 import { ConceptAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
@@ -45,26 +36,17 @@ type Handlers = Pick<
   | 'onSetIconAnimationSpeed'
   | 'onSetIconAnimationRepeat'
   | 'onPreviewIconAnimation'
-  | 'onSetPieAnim'
-  | 'onSetPieAnimSpeed'
-  | 'onSetPieAnimRepeat'
   | 'onSetArrowFlow'
   | 'onSetFlowSpeed'
   | 'onSetFlowRepeat'
   | 'onPreviewArrowFlow'
-  | 'onSetProgressAnim'
-  | 'onSetProgressAnimSpeed'
-  | 'onSetProgressAnimRepeat'
-  | 'onSetRatingAnim'
-  | 'onSetRatingAnimSpeed'
-  | 'onSetRatingAnimRepeat'
   | 'elementStyle'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory = 'icon' | 'chart' | 'progress' | 'rating' | 'concept' | 'arrow';
+type OwnCategory = 'icon' | 'concept' | 'arrow';
 type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
@@ -73,18 +55,12 @@ const ORDER: readonly Category[] = [
   'media',
   'table',
   'icon',
-  'chart',
-  'progress',
-  'rating',
   'concept',
   'text',
   'arrow',
 ];
 const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
-  chart: 'Chart',
-  progress: 'Progress',
-  rating: 'Rating',
   concept: 'Concept',
   arrow: 'Arrow',
 };
@@ -94,9 +70,6 @@ function ownCategoryOf(el: Element): OwnCategory | undefined {
   if (el.type === 'arrow') return 'arrow';
   if (el.type !== 'shape') return undefined;
   if (el.shape === 'icon') return 'icon';
-  if (isChartShape(el.shape)) return 'chart';
-  if (isProgressShape(el.shape)) return 'progress';
-  if (isRatingShape(el.shape)) return 'rating';
   if (isConceptShape(el.shape)) return 'concept';
   return undefined;
 }
@@ -191,43 +164,6 @@ function CategoryBody({
         onSetRepeat={h.onSetIconAnimationRepeat}
         onPreview={h.onPreviewIconAnimation}
         onPreviewEnd={h.onAnimationPreviewEnd}
-      />
-    );
-  }
-  if (category === 'chart') {
-    const chart = elements.find(
-      (el): el is ShapeElement => el.type === 'shape' && isChartShape(el.shape),
-    )!;
-    return (
-      <PieAnimTiles
-        anim={chart.pieAnim ?? null}
-        speed={chart.pieAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-        repeat={animLoops(chart.pieAnim, chart.pieAnimRepeat, PIE_LOOPING_ANIMS)}
-        onSet={h.onSetPieAnim}
-        onSetSpeed={h.onSetPieAnimSpeed}
-        onSetRepeat={h.onSetPieAnimRepeat}
-      />
-    );
-  }
-  if (category === 'progress' || category === 'rating') {
-    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === category)!;
-    return category === 'progress' ? (
-      <ProgressAnimTiles
-        anim={el.progressAnim ?? null}
-        speed={el.progressAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-        repeat={animLoops(el.progressAnim, el.progressAnimRepeat, PROGRESS_LOOPING_ANIMS)}
-        onSet={h.onSetProgressAnim}
-        onSetSpeed={h.onSetProgressAnimSpeed}
-        onSetRepeat={h.onSetProgressAnimRepeat}
-      />
-    ) : (
-      <RatingAnimTiles
-        anim={el.ratingAnim ?? null}
-        speed={el.ratingAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-        repeat={animLoops(el.ratingAnim, el.ratingAnimRepeat, RATING_LOOPING_ANIMS)}
-        onSet={h.onSetRatingAnim}
-        onSetSpeed={h.onSetRatingAnimSpeed}
-        onSetRepeat={h.onSetRatingAnimRepeat}
       />
     );
   }

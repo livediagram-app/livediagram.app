@@ -4,7 +4,7 @@
 // elements"): drawn from the one layout the export uses, untyped (no label editor, no settings, no controls), and
 // deletable by an Editor like any element while a Viewer only sees it (docs/specs/013-workspace/share-roles.md).
 
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   RETIRED_ELEMENT_NOTE,
@@ -17,7 +17,11 @@ import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { useElementSelectionActions as buildSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
 import { CanvasSurfaceProvider } from './CanvasSurfaceContext';
 import { ElementFaceRouter } from './ElementFaceRouter';
-import { RetiredElementFace } from './RetiredElementFace';
+import {
+  RETIRED_DELETE_MIN_HEIGHT,
+  RETIRED_DELETE_MIN_WIDTH,
+  RetiredElementFace,
+} from './RetiredElementFace';
 
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 
@@ -127,6 +131,103 @@ describe('RetiredElementFace', () => {
   });
 });
 
+// A diagram tool's embed as stored before #459 part 1: a retired element TYPE, not a shape kind.
+const embed = (over: Record<string, unknown> = {}) =>
+  ({
+    id: 'yt',
+    type: 'video',
+    x: 0,
+    y: 0,
+    width: 480,
+    height: 270,
+    label: 'Launch video',
+    link: { kind: 'url', url: 'https://www.youtube.com/watch?v=abc' },
+    embedProvider: 'youtube',
+    ...over,
+  }) as unknown as Element & { width: number; height: number };
+
+describe('RetiredElementFace on a retired type', () => {
+  it('draws an embed as the same card, named Embed', () => {
+    const { container } = render(
+      <RetiredElementFace
+        element={embed() as Parameters<typeof RetiredElementFace>[0]['element']}
+      />,
+    );
+    const svg = container.querySelector('svg[data-retired-element="video"]')!;
+    expect(svg).not.toBeNull();
+    expect(lines(svg)).toEqual([
+      ['name', 'Embed'],
+      ['note', RETIRED_ELEMENT_NOTE],
+      ['label', 'Launch video'],
+    ]);
+  });
+});
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it": the placeholder's one action, an Editor's alone.
+describe('the placeholder Delete button', () => {
+  const button = (root: ParentNode) =>
+    root.querySelector<HTMLButtonElement>('button[data-retired-delete]');
+
+  it('deletes the element by id, named for what it was, without starting a drag', () => {
+    const onDelete = vi.fn();
+    const onPointerDown = vi.fn();
+    const { container } = render(
+      <div onPointerDown={onPointerDown}>
+        <RetiredElementFace element={board()} onDelete={onDelete} />
+      </div>,
+    );
+    const b = button(container)!;
+    expect(b.getAttribute('aria-label')).toBe('Delete Q&A Board');
+    fireEvent.pointerDown(b);
+    expect(onPointerDown).not.toHaveBeenCalled();
+    fireEvent.click(b);
+    expect(onDelete).toHaveBeenCalledWith('qa');
+  });
+
+  it('shows on hover and focus, and stays shown while selected (a touch has no hover)', () => {
+    const idle = render(<RetiredElementFace element={board()} onDelete={() => {}} />);
+    const quiet = button(idle.container)!.className;
+    expect(quiet).toContain('opacity-0');
+    expect(quiet).toContain('group-hover/el:opacity-100');
+    expect(quiet).toContain('focus-visible:opacity-100');
+    cleanup();
+    const picked = render(<RetiredElementFace element={board()} selected onDelete={() => {}} />);
+    expect(button(picked.container)!.className).toContain('opacity-100');
+    expect(button(picked.container)!.className).not.toContain('opacity-0');
+  });
+
+  it('leaves a box too small to hold it with words only', () => {
+    const narrow = render(
+      <RetiredElementFace
+        element={board({ width: RETIRED_DELETE_MIN_WIDTH - 1 })}
+        onDelete={() => {}}
+      />,
+    );
+    expect(button(narrow.container)).toBeNull();
+    cleanup();
+    const short = render(
+      <RetiredElementFace
+        element={board({ height: RETIRED_DELETE_MIN_HEIGHT - 1 })}
+        onDelete={() => {}}
+      />,
+    );
+    expect(button(short.container)).toBeNull();
+    cleanup();
+    const fits = render(
+      <RetiredElementFace
+        element={board({ width: RETIRED_DELETE_MIN_WIDTH, height: RETIRED_DELETE_MIN_HEIGHT })}
+        onDelete={() => {}}
+      />,
+    );
+    expect(button(fits.container)).not.toBeNull();
+  });
+
+  it('is not there without a delete handler', () => {
+    const { container } = render(<RetiredElementFace element={board()} />);
+    expect(button(container)).toBeNull();
+  });
+});
+
 describe('ElementFaceRouter on a retired element', () => {
   // Untyped: even while "editing" it offers no label editor, no settings button and nothing to press.
   it('routes to the placeholder ahead of every kind face, with no control in it', () => {
@@ -139,6 +240,35 @@ describe('ElementFaceRouter on a retired element', () => {
     const { container } = render(<ElementFaceRouter {...props} />);
     expect(container.querySelector('[data-retired-element="qa-board"]')).not.toBeNull();
     expect(container.querySelector('textarea, input, button, [contenteditable]')).toBeNull();
+  });
+
+  it('routes a retired type to the placeholder too', () => {
+    const props = {
+      element: embed(),
+      isEditing: false,
+      readOnly: false,
+      fontFamily: undefined,
+    } as unknown as Parameters<typeof ElementFaceRouter>[0];
+    const { container } = render(<ElementFaceRouter {...props} />);
+    expect(container.querySelector('[data-retired-element="video"]')).not.toBeNull();
+  });
+
+  it('hands the Delete button on to an editable surface, and holds it back from a read-only one', () => {
+    const onDeleteRetired = vi.fn();
+    const props = (readOnly: boolean) =>
+      ({
+        element: board(),
+        isEditing: false,
+        isSelected: true,
+        readOnly,
+        onDeleteRetired,
+      }) as unknown as Parameters<typeof ElementFaceRouter>[0];
+    const editable = render(<ElementFaceRouter {...props(false)} />);
+    fireEvent.click(editable.container.querySelector('button[data-retired-delete]')!);
+    expect(onDeleteRetired).toHaveBeenCalledWith('qa');
+    cleanup();
+    const readOnly = render(<ElementFaceRouter {...props(true)} />);
+    expect(readOnly.container.querySelector('button')).toBeNull();
   });
 });
 
@@ -165,6 +295,27 @@ describe('a retired element and the share roles', () => {
     });
     actions.deleteSelected();
     expect(after).toEqual([]);
+  });
+
+  it('the placeholder Delete removes it by id, whatever is selected, as one change', () => {
+    const el = board();
+    const other = board({ id: 'keep' });
+    const commits: Element[][] = [];
+    const actions = buildSelectionActions({
+      currentSelectionIds: () => new Set(['keep']),
+      readSelection: () => ({ selectedId: 'keep', multiSelectedIds: new Set<string>() }),
+      activeTab: { id: 't', name: 'T', elements: [el, other] },
+      commit: (map) => {
+        commits.push(map([el, other]));
+      },
+      setSelectedId: () => {},
+      setEditingId: () => {},
+      setMultiSelectedIds: () => {},
+      setFormatSourceId: () => {},
+      lockedByOther: () => false,
+    });
+    actions.deleteElementById('qa');
+    expect(commits).toEqual([[other]]);
   });
 
   it('a Viewer sees it and may change nothing on it', () => {

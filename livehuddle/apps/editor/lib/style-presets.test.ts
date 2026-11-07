@@ -13,8 +13,6 @@ import {
   applyBorderRadiusToEl,
   applyBorderStrokeToEl,
   applyBorderStyleToEl,
-  applyChartPaletteToEl,
-  applyCodeThemeToEl,
   applyColorPresetToEl,
   applyLabelFillToEl,
   applyTablePresetToEl,
@@ -125,46 +123,6 @@ describe('applyTablePresetToEl', () => {
   it('is a no-op on anything that is not a table', () => {
     const shape = el('shape');
     expect(applyTablePresetToEl(shape, p)).toBe(shape);
-  });
-});
-
-describe('applyChartPaletteToEl', () => {
-  // docs/specs/009-elements/pie-chart.md "Legend": a legend sets its own palette, and can follow the theme again.
-  it('sets a legend palette, clears it with null, and leaves a plain shape alone', () => {
-    const legend = el('shape', { shape: 'legend' });
-    const set = applyChartPaletteToEl(legend, 'berry');
-    expect(set).toMatchObject({ chartPalette: 'berry' });
-    expect(
-      (applyChartPaletteToEl(set, null) as { chartPalette?: string }).chartPalette,
-    ).toBeUndefined();
-    const square = el('shape', { shape: 'square' });
-    expect(applyChartPaletteToEl(square, 'berry')).toBe(square);
-  });
-
-  it('sets the palette on a chart without touching its data', () => {
-    const chart = el('shape', { shape: 'pie-chart', pieSlices: [{ label: 'A', value: 1 }] });
-    const applied = applyChartPaletteToEl(chart, 'ocean');
-    expect(applied).toMatchObject({ chartPalette: 'ocean' });
-    // The ramp is resolved at render, so a slice the user coloured on purpose
-    // is never rewritten.
-    expect(applied).toMatchObject({ pieSlices: [{ label: 'A', value: 1 }] });
-  });
-
-  it('is a no-op on a shape that is not a chart', () => {
-    const square = el('shape', { shape: 'square' });
-    expect(applyChartPaletteToEl(square, 'ocean')).toBe(square);
-  });
-});
-
-describe('applyCodeThemeToEl', () => {
-  it('sets the scheme on a code block and nothing else', () => {
-    const block = el('shape', { shape: 'code-block' });
-    expect(applyCodeThemeToEl(block, 'paper')).toMatchObject({ codeTheme: 'paper' });
-  });
-
-  it('is a no-op on any other shape', () => {
-    const square = el('shape', { shape: 'square' });
-    expect(applyCodeThemeToEl(square, 'paper')).toBe(square);
   });
 });
 

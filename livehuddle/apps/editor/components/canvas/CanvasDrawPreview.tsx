@@ -232,11 +232,9 @@ export function CanvasDrawPreview({
             // their corner-fold preview here because the preview is
             // very small and a peeled corner just reads as noise.
             const radius =
-              pendingDraw.type === 'shape' &&
-              (pendingDraw.kind === 'circle' || pendingDraw.kind === 'progress-ring')
+              pendingDraw.type === 'shape' && pendingDraw.kind === 'circle'
                 ? '50%'
-                : pendingDraw.type === 'shape' &&
-                    (pendingDraw.kind === 'stadium' || pendingDraw.kind === 'progress-bar')
+                : pendingDraw.type === 'shape' && pendingDraw.kind === 'stadium'
                   ? '9999px'
                   : '4px';
             return (

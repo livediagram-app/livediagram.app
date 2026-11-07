@@ -136,8 +136,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       target.type === 'arrow' ||
       target.type === 'table' ||
       target.type === 'image' ||
-      target.type === 'link-card' ||
-      target.type === 'video';
+      target.type === 'link-card';
     const showCollaborateGroup = boxed;
     return (
       <ContextMenu

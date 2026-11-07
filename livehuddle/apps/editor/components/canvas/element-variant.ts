@@ -285,12 +285,16 @@ export function describeVariant(
         },
       };
     }
+    // A retired embed (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") paints its own
+    // placeholder card, as a retired shape does: the wrapper carries only the selection ring.
+    case 'video':
+      return {
+        className: `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim(),
+        style: { borderRadius: '4px' },
+      };
     // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded; the favicon,
-    // title and image render as the child content (LinkCardView). A video
-    // (docs/specs/009-elements/youtube-video.md): the poster or player fills the box edge to edge, so the same
-    // frame reads as a dark rounded one with a hairline, not a padded card. overflow-hidden clips either to the radius.
-    case 'link-card':
-    case 'video': {
+    // title and image render as the child content (LinkCardView). overflow-hidden clips it to the radius.
+    case 'link-card': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
         // Square and flat under Professional, no shadow under Marker (docs/specs/008-canvas/finish.md "Faces").

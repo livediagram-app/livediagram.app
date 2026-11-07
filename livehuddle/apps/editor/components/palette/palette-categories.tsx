@@ -10,7 +10,6 @@
 import {
   BuildTabIcon,
   ComponentsTabIcon,
-  DataTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   MediaTabIcon,
@@ -94,7 +93,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Components',
     group: 1,
     description:
-      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block and checklist. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the Callout and the Hero. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
   },
   {
@@ -111,14 +110,6 @@ export const PALETTE_CATEGORIES: {
     group: 2,
     description: 'Pictures and figures: an uploaded image or a circular avatar.',
     icon: <MediaTabIcon />,
-  },
-  {
-    id: 'data',
-    label: 'Data',
-    group: 3,
-    description:
-      'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
-    icon: <DataTabIcon />,
   },
   // The meeting elements (docs/specs/010-palette/palette-top-level-categories.md "The Space categories"): the Space
   // categories, from their one list. Their own band, one category per group, with no parent category. Their tiles:

@@ -210,10 +210,8 @@ export function ElementContentSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {/* Link — set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md), or
-          a video's YouTube URL (docs/specs/009-elements/youtube-video.md). Both keep their URL in `link`, so
-          both use this one section rather than a second URL editor. */}
-      {target.type === 'link-card' || target.type === 'video' ? (
+      {/* Link: set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md). */}
+      {target.type === 'link-card' ? (
         <MenuAccordionSection title="Link" icon={<LinkMenuIcon />} {...sectionProps('link')}>
           {hasLink ? (
             <MenuTileGrid cols={2}>

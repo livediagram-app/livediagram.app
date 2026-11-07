@@ -38,10 +38,10 @@ describe('shapeToEditAt', () => {
 
   it('edits a shape saved locked, and passes over one with no label to edit', () => {
     const locked = shape('square', 0, 0, { locked: true });
-    const chart = shape('pie-chart', 0, 0);
+    const plant = shape('plant', 0, 0);
     const p = { x: 100, y: 50 };
     expect(shapeToEditAt([locked], p)).not.toBeNull();
-    expect(shapeToEditAt([chart], p)).toBeNull();
+    expect(shapeToEditAt([plant], p)).toBeNull();
   });
 
   it('leaves notes and text boxes to their own double-click: they catch it on their whole box', () => {

@@ -31,7 +31,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   trapezoid: 'manual operation',
   star: 'favourite highlight rating',
   'speech-bubble': 'comment callout chat note',
-  page: 'document doc write article heading',
   lane: 'swimlane band row track process',
   card: 'node service component box tile persona tag title',
   badge: 'tag pill label chip status version beta new count',
@@ -141,16 +140,7 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'focus-button':
     'look here attention bring everyone jump navigate spotlight point show gather focus',
   actor: 'person stick figure user role uml',
-  'progress-bar': 'bar meter percent loading completion',
-  'progress-ring': 'donut ring percent gauge dial',
   'timeline-rail': 'timeline roadmap milestones track history plan dates schedule',
-  rating: 'stars score review out of five',
-  legend: 'key colour code swatch label caption guide colour key',
-  'pie-chart': 'donut doughnut ring share split proportion chart',
-  'bar-chart': 'column bar horizontal histogram chart graph',
-  'line-chart': 'trend series graph chart plot area scatter xy',
-  'code-block': 'code snippet syntax monospace program',
-  checklist: 'todo tasks tick checkbox list',
 };
 
 /** A tile's search keywords: for a shape, its kind's synonyms; for any other tile, its label and

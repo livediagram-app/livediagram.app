@@ -53,7 +53,6 @@ export function ElementColourBorderSections({
   target,
   boxed,
   isIcon,
-  isChart,
   borderable,
   onClose,
   sectionProps,
@@ -68,7 +67,6 @@ export function ElementColourBorderSections({
   target: EditorContextMenuProps['elements'][number];
   boxed: boolean;
   isIcon: boolean;
-  isChart: boolean;
   borderable: boolean;
   onClose: () => void;
   sectionProps: Scaffold['sectionProps'];
@@ -135,7 +133,7 @@ export function ElementColourBorderSections({
           </div>
         </MenuAccordionSection>
       ) : null}
-      {boxed && supportsColours(target) && !isChart ? (
+      {boxed && supportsColours(target) ? (
         <>
           <MenuAccordionSection
             title="Colours"
@@ -220,7 +218,7 @@ export function ElementColourBorderSections({
       ) : null}
       {/* Border — strength / pattern / radius. Pie charts have no box border
             to style, so they're excluded. */}
-      {borderable && !isChart ? (
+      {borderable ? (
         <>
           <MenuAccordionSection title="Border" icon={<BorderGlyph />} {...sectionProps('border')}>
             <BorderControls

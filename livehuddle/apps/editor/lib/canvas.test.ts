@@ -125,29 +125,20 @@ describe('inheritedSizeFor', () => {
     });
   });
 
-  it('keeps a chart, a meter, a rating, a timeline rail and a legend their own size', () => {
-    const legend = { ...createShape('legend', 0, 0), width: 200, height: 170 } as BoxedElement;
-    for (const kind of [
-      'progress-bar',
-      'progress-ring',
-      'rating',
-      'pie-chart',
-      'bar-chart',
-      'line-chart',
-      'legend',
-      'timeline-rail',
-    ] as const) {
+  it('keeps a sticker, a timeline rail and the office scenery their own size', () => {
+    const big = { ...createShape('square', 0, 0), width: 200, height: 170 } as BoxedElement;
+    for (const kind of ['sticker', 'timeline-rail', 'plant', 'rug', 'fence'] as const) {
       const fresh = createShape(kind, 0, 0) as BoxedElement;
-      expect(inheritedSizeFor(fresh, legend), kind).toEqual({
+      expect(inheritedSizeFor(fresh, big), kind).toEqual({
         width: fresh.width,
         height: fresh.height,
       });
     }
   });
 
-  it('never hands a chart or meter size on to the next shape', () => {
+  it('never hands a self-drawing size on to the next shape', () => {
     const square = createShape('square', 0, 0);
-    for (const kind of ['progress-bar', 'rating', 'legend'] as const) {
+    for (const kind of ['sticker', 'plant', 'rug'] as const) {
       const donor = createShape(kind, 0, 0);
       expect(inheritedSizeFor(square, donor), kind).toEqual({
         width: square.width,

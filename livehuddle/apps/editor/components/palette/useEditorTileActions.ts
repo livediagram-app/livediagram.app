@@ -24,23 +24,14 @@ export function useEditorTileActions(): PaletteTileActions {
     addImage,
     addAnnotation,
     addLinkCard,
-    addVideo,
     addAvatar,
-    addBanner,
     addHero,
-    addHeader,
     addCallout,
-    addStatRow,
-    addProcess,
   } = useEditorContext();
   const byComponent = {
     avatar: addAvatar,
-    banner: addBanner,
     hero: addHero,
-    header: addHeader,
     callout: addCallout,
-    stat: addStatRow,
-    process: addProcess,
   } as const;
   return {
     addShape,
@@ -56,7 +47,6 @@ export function useEditorTileActions(): PaletteTileActions {
     addImage: () => addImage?.(),
     addAnnotation,
     addLinkCard,
-    addVideo,
     addSticker,
     addComponent: (kind) => byComponent[kind](),
     hasImage: !!addImage,

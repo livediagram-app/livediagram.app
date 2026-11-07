@@ -5,20 +5,11 @@ import {
   ANIMATION_SET_VALUES,
   ARROW_FLOWS,
   ICON_ANIMATIONS,
-  PIE_ANIMS,
-  PROGRESS_ANIMS,
-  RATING_ANIMS,
   type AnimationSetId,
 } from '@livehuddle/document';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 import { AnimationSetPreview, previewFrame } from './animation-set-previews';
-import {
-  ArrowFlowPreview,
-  IconAnimationPreview,
-  PieAnimPreview,
-  ProgressAnimPreview,
-  RatingAnimPreview,
-} from './animation-previews-existing';
+import { ArrowFlowPreview, IconAnimationPreview } from './animation-previews-existing';
 import { useFrozenAnimations } from '@liveworkspace/workbench/components/palette/useFrozenAnimations';
 import { renderHook } from '@testing-library/react';
 
@@ -46,12 +37,6 @@ describe('animation tile miniatures', () => {
       expect(renderToStaticMarkup(<ArrowFlowPreview flow={f} />)).toContain('<svg');
     for (const a of ICON_ANIMATIONS)
       expect(renderToStaticMarkup(<IconAnimationPreview animation={a} />)).toContain('lvd-icon-');
-    for (const a of PROGRESS_ANIMS)
-      expect(renderToStaticMarkup(<ProgressAnimPreview anim={a} />)).toContain('lvd-prog-');
-    for (const a of RATING_ANIMS)
-      expect(renderToStaticMarkup(<RatingAnimPreview anim={a} />)).toContain('lvd-rating-');
-    for (const a of PIE_ANIMS)
-      expect(renderToStaticMarkup(<PieAnimPreview anim={a} />)).toContain('lvd-pie-');
   });
 
   it('rest None at its start and an option on its listed frame', () => {

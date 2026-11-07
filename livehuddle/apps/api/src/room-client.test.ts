@@ -19,18 +19,35 @@ import {
 const card: ShapeElement = {
   id: 'card',
   type: 'shape',
-  shape: 'checklist',
+  shape: 'square',
   x: 0,
   y: 0,
   width: 100,
   height: 100,
-  checklistItems: [{ text: 'a', done: false }],
 };
 const tab: Tab = { id: 't1', name: 'T', elements: [card] };
 
-// The room's answer: the first row ticked at seq 5.
+// The room's answer: a comment added at seq 5.
 const ledger: TabLedger = {
-  elements: { card: { ticks: { '0\u0000a': { done: true, seq: 5 } } } },
+  elements: {
+    card: {
+      comments: {
+        adds: {
+          c1: {
+            comment: {
+              id: 'c1',
+              text: 'Ship it',
+              createdAt: 1,
+              authorName: 'Bea',
+              authorColor: '#f00',
+            },
+            seq: 5,
+          },
+        },
+        removes: {},
+      },
+    },
+  },
 };
 
 function envWith(fetch: (url: string, init?: RequestInit) => Promise<Response>) {
@@ -52,7 +69,9 @@ describe('the room ledger merge (docs/specs/012-collaboration/collab-race-harden
   it("merges the room's answers the saver hadn't seen", async () => {
     const { env, stubFetch } = envWith(async () => Response.json(ledger));
     const { tab: merged } = await mergeRoomLedger(env, 'd1', tab, 'ep:4');
-    expect((merged.elements[0] as ShapeElement).checklistItems?.map((r) => r.done)).toEqual([true]);
+    expect((merged.elements[0] as ShapeElement).commentThread?.comments.map((c) => c.id)).toEqual([
+      'c1',
+    ]);
     expect(stubFetch.mock.calls[0]![0]).toBe('https://room/ledger?tab=t1&epoch=ep');
   });
 

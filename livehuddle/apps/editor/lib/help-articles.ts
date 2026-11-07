@@ -25,10 +25,6 @@ export const HELP_ARTICLES = {
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
-  // The diagram tools left livehuddle (Work Tracker #423 part 3, docs/specs/002-project-scope/not-in-livehuddle.md):
-  // their articles went, but a stored element of a leaving kind still draws and its surfaces still link, so these keys
-  // land on the nearest article that stays (the router redirects the old addresses the same way).
-  embedElements: 'canvas/links',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   // One key per tool panel, so every mode's panel can point at the article that explains it
@@ -74,7 +70,6 @@ export const HELP_ARTICLES = {
   recent: 'explorer/recent',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
-  dataElements: 'palette/tools',
   // The Portal tour's closing card (docs/specs/007-editor/element-tours.md).
   portals: 'palette/tools/portals',
   palette: 'palette',
@@ -118,10 +113,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   community: {
     title: 'Learn about the Community',
     description: 'Sharing a space publicly, and how people find and copy it.',
-  },
-  embedElements: {
-    title: 'Learn about links',
-    description: 'Links to tabs, spaces and the web.',
   },
   alignmentGuides: {
     title: 'Learn about alignment guides',
@@ -243,10 +234,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerPage: {
     title: 'Learn about the Explorer',
     description: 'The library every liveworkspace app shares: sections, views and search.',
-  },
-  dataElements: {
-    title: 'Learn about the palette',
-    description: 'Where each element lives, category by category.',
   },
   portals: {
     title: 'Learn about portals',

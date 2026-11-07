@@ -7,7 +7,6 @@ import {
   defaultPadding,
   defaultStrokeColor,
   isBoxed,
-  takesChartPalette,
   isSelfDrawingShape,
   supportsMarkers,
   supportsTextAlign,
@@ -115,12 +114,9 @@ export function MultiSelectionContextMenu({
         // active-tile highlight reads off the first matching member.
         const presetShapeSrc = sel.find(shapeSupportsPresets);
         // Colour swatches show for the members whose SINGLE menus would
-        // show Colours: boxed, colour-supporting, not a chart (charts
-        // colour per-slice via their Data category). Arrows colour their
+        // show Colours: boxed and colour-supporting. Arrows colour their
         // label via the content Text section, matching the single menu.
-        const colourSrcs = boxedSel.filter(
-          (el) => supportsColours(el) && !(el.type === 'shape' && takesChartPalette(el.shape)),
-        );
+        const colourSrcs = boxedSel.filter((el) => supportsColours(el));
         // An arrow-only selection still gets Colours (the Line swatch) —
         // matching the single-arrow menu. Mixed selections don't need a
         // separate row: the Border swatch's setter recolours arrows too.

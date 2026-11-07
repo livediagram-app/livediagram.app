@@ -31,7 +31,6 @@ export function useBoxedElementGestures({
   onBeginDrag,
   onBeginEdit,
   onEditLink,
-  onOpenEditDialog,
   onOpenNote,
   imageContext,
   onContextSelect,
@@ -45,7 +44,6 @@ export function useBoxedElementGestures({
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
-  | 'onOpenEditDialog'
   | 'onOpenNote'
   | 'imageContext'
   | 'onContextSelect'
@@ -162,22 +160,19 @@ export function useBoxedElementGestures({
     // Tables edit per-cell (TableView handles the cell double-click),
     // so the element-level label editor never applies.
     if (element.type === 'table') return;
-    // Neither a link card nor a video has an inline label — double-click
-    // opens the link picker to set / change its URL (docs/specs/009-elements/link-cards.md, docs/specs/009-elements/youtube-video.md).
-    if (element.type === 'link-card' || element.type === 'video') {
+    // A link card has no inline label: double-click opens the link picker to set / change its URL
+    // (docs/specs/009-elements/link-cards.md).
+    if (element.type === 'link-card') {
       onEditLink?.(element.id);
       return;
     }
+    // A retired embed (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") takes no typed label and
+    // opens nothing.
+    if (element.type === 'video') return;
     // An annotation has no inline label either — double-click opens its note
     // editor (docs/specs/009-elements/annotations.md). A single click just selects it now.
     if (isAnnotation) {
       onOpenNote?.(element.id);
-      return;
-    }
-    // A code block has no inline label: double-click opens its edit dialog (docs/specs/009-elements/code-block.md),
-    // the way a link card opens the link picker.
-    if (element.type === 'shape' && element.shape === 'code-block') {
-      onOpenEditDialog?.(element.id);
       return;
     }
     // The self-drawing data components (progress / rail / rating / charts /

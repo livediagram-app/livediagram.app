@@ -2,7 +2,6 @@ import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   createAnnotation,
-  type EmbedProvider,
   applyShapeVariant,
   createShape,
   createText,
@@ -127,16 +126,6 @@ export function useElementCreation(opts: {
     beginDraw({ type: 'link-card' });
   };
 
-  // An embed (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md), drawn to size and empty. Same shape as the
-  // link card above, and deliberately so: both keep their URL in `link`, and
-  // double-clicking either opens the one link picker. The provider rides the
-  // intent so the tile the user pressed is the service they get; the 16:9
-  // lock means the drag picks the scale, not the ratio (see draw-commit).
-  const addVideo = (provider?: EmbedProvider) => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'video', ...(provider ? { provider } : {}) });
-  };
-
   // An empty image placeholder (docs/specs/009-elements/images.md), drawn to size. Lives here rather
   // than in useEditorImages (which owns the picker, the gallery, and the
   // fill/clear mutators) because arming a draw needs `beginDraw`, and that
@@ -156,29 +145,13 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw, so these are thin "arm the intent" wrappers.
   // Avatar rides the same gesture though it lives in the Tools tab (it's a
   // single circular image, not a composite — see addAvatar / the palette).
-  const addBanner = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'banner' });
-  };
   const addHero = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'hero' });
   };
-  const addHeader = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'header' });
-  };
   const addCallout = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'callout' });
-  };
-  const addStatRow = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'stat' });
-  };
-  const addProcess = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'process' });
   };
   const addAvatar = () => {
     if (editsBlocked) return;
@@ -309,14 +282,9 @@ export function useElementCreation(opts: {
     addTable,
     addAnnotation,
     addLinkCard,
-    addVideo,
     addImage,
-    addBanner,
     addHero,
-    addHeader,
     addCallout,
-    addStatRow,
-    addProcess,
     addAvatar,
     dropPaletteItem,
     addText,

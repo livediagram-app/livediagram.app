@@ -17,10 +17,9 @@ type WebComponentSetterDeps = {
   elements: () => Element[];
 };
 
-// The web components' writes (docs/specs/009-elements/web-components-and-no-groups.md): the rows of a stat row / process /
-// header, and a hero image's caption card. Two addressing styles, like the
-// checklist's: the canvas edits ONE element by id (an inline edit, the "+" at
-// the end of a row), the context menu edits the selection.
+// The web components' writes (docs/specs/009-elements/web-components-and-no-groups.md): a card's tags, a concept's
+// rows, and a hero image's caption card. Two addressing styles: the canvas edits ONE element by id (an inline edit,
+// the "+" at the end of a row), the context menu edits the selection.
 export function useWebComponentSetters({
   currentSelectionIds,
   commit,
@@ -54,19 +53,7 @@ export function useWebComponentSetters({
     commit((els) =>
       els.map((el) => (ids.has(el.id) && el.type === 'shape' ? withWebRows(el, rows) : el)),
     );
-    track(
-      'Element',
-      'Changed',
-      rows.stats
-        ? 'StatRow'
-        : rows.processSteps
-          ? 'ProcessSteps'
-          : rows.tags
-            ? 'Card'
-            : rows.conceptRows
-              ? 'ConceptRows'
-              : 'Header',
-    );
+    track('Element', 'Changed', rows.tags ? 'Card' : 'ConceptRows');
   };
 
   // A hero caption line, edited in place on the card.

@@ -45,15 +45,18 @@ const shape = (kind: string, finish?: string) =>
     ...(finish ? { finish } : {}),
   }) as BoxedElement;
 
+// A card draws more than a label (a title, its rows), so Sketch splits its face.
+const card = (finish?: string) => ({ ...shape('card', finish), label: 'Launch' }) as BoxedElement;
+
 describe('a sketched face', () => {
-  it('splits a progress bar into its ink and its words under Sketch', () => {
-    const { container } = draw(shape('progress-bar', 'sketch'));
+  it('splits a card into its ink and its words under Sketch', () => {
+    const { container } = draw(card('sketch'));
     expect(container.querySelector('[data-sketch-ink]')).not.toBeNull();
-    expect(container.querySelector('[data-sketch-words]')?.textContent).toContain('%');
+    expect(container.querySelector('[data-sketch-words]')?.textContent).toContain('Launch');
   });
 
-  it('leaves a progress bar whole in any other finish', () => {
-    const { container } = draw(shape('progress-bar', 'professional'));
+  it('leaves a card whole in any other finish', () => {
+    const { container } = draw(card('professional'));
     expect(container.querySelector('[data-sketch-ink], [data-sketch-words]')).toBeNull();
   });
 
@@ -77,9 +80,9 @@ describe('in WebKit', () => {
 
   it('draws a sketched face as it is, with no live wobble', () => {
     inWebKit();
-    const { container } = draw(shape('progress-bar', 'sketch'));
+    const { container } = draw(card('sketch'));
     expect(container.querySelector('[data-sketch-ink], [data-sketch-words]')).toBeNull();
-    expect(container.textContent).toContain('%');
+    expect(container.textContent).toContain('Launch');
   });
 
   it("draws a sketched icon's art into a still picture, not through a live filter", () => {
@@ -92,22 +95,22 @@ describe('in WebKit', () => {
   it('keeps the live wobble on icons and the split on faces elsewhere', () => {
     expect(liveWobble(draw(shape('icon', 'sketch')).container)).not.toBeNull();
     cleanup();
-    const { container } = draw(shape('progress-bar', 'sketch'));
+    const { container } = draw(card('sketch'));
     expect(container.querySelector('[data-sketch-ink]')).not.toBeNull();
   });
 });
 
 describe("an element's words", () => {
   it("are all in the element's face, so a face that writes its own wears it", () => {
-    const { container } = draw(shape('checklist'), "'Caveat', cursive");
-    const wrapper = container.querySelector<HTMLElement>('[data-element-id="checklist"]');
+    const { container } = draw(card(), "'Caveat', cursive");
+    const wrapper = container.querySelector<HTMLElement>('[data-element-id="card"]');
     expect(wrapper?.style.fontFamily).toContain('Caveat');
   });
 
   it('keep the editor default when nothing picks a face', () => {
-    const { container } = draw(shape('checklist'));
-    expect(
-      container.querySelector<HTMLElement>('[data-element-id="checklist"]')?.style.fontFamily,
-    ).toBe('');
+    const { container } = draw(card());
+    expect(container.querySelector<HTMLElement>('[data-element-id="card"]')?.style.fontFamily).toBe(
+      '',
+    );
   });
 });

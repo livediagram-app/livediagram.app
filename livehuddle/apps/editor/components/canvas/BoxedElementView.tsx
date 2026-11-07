@@ -39,7 +39,6 @@ import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
@@ -100,13 +99,12 @@ function BoxedElementViewImpl({
   onCommitTable,
   onCommitHeaderSize,
   onSnapSeam,
-  onToggleChecklistItem,
+  onDeleteRetired,
   onSetPageHeading,
   onSetWebRows,
   onSetPointerTip,
   onSetHeroCaptionLine,
   stackGlide,
-  chartPalette,
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
@@ -120,7 +118,6 @@ function BoxedElementViewImpl({
   onOpenAction,
   onOpenNote,
   onEditLink,
-  onOpenEditDialog,
   onLinkCell,
   imageContext,
   onContextSelect,
@@ -218,7 +215,6 @@ function BoxedElementViewImpl({
       onBeginDrag,
       onBeginEdit,
       onEditLink,
-      onOpenEditDialog,
       onOpenNote,
       imageContext,
       onContextSelect,
@@ -243,11 +239,6 @@ function BoxedElementViewImpl({
   // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
   const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  // Accent for the data-element fills (progress bar / ring, rating stars): a
-  // remote selector colour wins, else the element's own stroke, else the theme
-  // default stroke. Shared by the ProgressView / RatingView branches below so
-  // they all read the same accent.
-  const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
   const variant = describeVariant(
@@ -464,14 +455,8 @@ function BoxedElementViewImpl({
             element={element}
             isEditing={isEditing}
             artAnimClass={artAnimClass}
-            accent={accent}
-            textColor={textColor}
             remoteBorderColor={remoteBorderColor}
             isSelected={isSelected}
-            readOnly={readOnly}
-            onToggleChecklistItem={onToggleChecklistItem}
-            chartPalette={chartPalette}
-            fontFamily={fontFamily}
             svgAnim={svgAnim}
           />
           {/* CSS-rendered shapes (square / circle / stadium / browser) paint
@@ -531,15 +516,6 @@ function BoxedElementViewImpl({
               alignY={alignY}
             />
           ) : null}
-          {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
-          {element.type === 'shape' && element.shape === 'page' ? (
-            <PageCornerFold
-              width={element.width}
-              height={element.height}
-              fill={element.fillColor ?? '#ffffff'}
-              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-            />
-          ) : null}
 
           {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
@@ -564,6 +540,7 @@ function BoxedElementViewImpl({
             onSetWebRows={onSetWebRows}
             onSetHeroCaptionLine={onSetHeroCaptionLine}
             onOpenElementSettings={onOpenElementSettings}
+            onDeleteRetired={onDeleteRetired}
             label={label}
             labelNode={labelNode}
             // Clear of the indicators and on the label body (a cylinder's, under its lid).

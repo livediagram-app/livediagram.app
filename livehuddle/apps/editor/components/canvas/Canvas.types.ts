@@ -8,7 +8,7 @@ import type { Dispatch, SetStateAction } from 'react';
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type { EmbedProvider, Finish, FrameHandle } from '@livehuddle/document';
+import type { Finish, FrameHandle } from '@livehuddle/document';
 import type {
   BackgroundPattern,
   Element,
@@ -214,15 +214,10 @@ export type CanvasProps = {
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
-  onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
-  onAddBanner: () => void;
   onAddHero: () => void;
-  onAddHeader: () => void;
   onAddCallout: () => void;
-  onAddStatRow: () => void;
-  onAddProcess: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
@@ -415,8 +410,9 @@ export type CanvasProps = {
     >,
   ) => void;
   onCancelEdit: () => void;
-  // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
-  onToggleChecklistItem?: (elementId: string, index: number) => void;
+  // Delete a retired element from its placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it").
+  // An Editor's alone: omitted in read-only.
+  onDeleteRetired?: (elementId: string) => void;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
@@ -430,9 +426,6 @@ export type CanvasProps = {
     field: keyof import('@livehuddle/document').HeroCaption,
     value: string,
   ) => void;
-  // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
-  // by pie charts for slices without an explicit colour.
-  chartPalette: readonly string[];
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;
@@ -462,9 +455,6 @@ export type CanvasProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md).
-  // Omitted for read-only viewers.
-  onOpenEditDialog?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-document surface (where Canvas mounts before

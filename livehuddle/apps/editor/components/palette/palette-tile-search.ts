@@ -37,8 +37,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return 'path';
     case 'arrow':
       return a.ends === 'none' ? 'arrow:none' : 'arrow:';
-    case 'video':
-      return `video:${a.provider ?? ''}`;
     case 'text':
     case 'table':
     case 'image':
@@ -61,8 +59,6 @@ export function elementSignature(el: Element): string {
       return `freehand:${el.pen ?? ''}`;
     case 'arrow':
       return el.arrowEnds === 'none' ? 'arrow:none' : 'arrow:';
-    case 'video':
-      return `video:${el.embedProvider ?? ''}`;
     default:
       return el.type;
   }

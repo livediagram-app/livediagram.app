@@ -8,8 +8,6 @@
 // id), so the same section works for one element or many.
 
 import {
-  takesChartPalette,
-  isCodeBlockShape,
   STICKY_PRESETS,
   supportsColours,
   type ArrowFlow,
@@ -20,13 +18,7 @@ import {
   type ShapeKind,
 } from '@livehuddle/document';
 import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
-import {
-  ArrowPresets,
-  ChartPalettePresets,
-  CodeThemePresets,
-  ShapePresets,
-  TablePresets,
-} from '@/components/palette/StylePresets';
+import { ArrowPresets, ShapePresets, TablePresets } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
@@ -34,8 +26,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 type AccordionProps = { open: boolean; onToggle: () => void; flush: boolean };
 
 // A shape carries presets unless it's the dedicated icon glyph (no fill / border
-// to preset) or a pie / line chart (which styles per-slice via its Data
-// category). The single and multi menus share this eligibility test.
+// to preset). The single and multi menus share this eligibility test.
 export function shapeSupportsPresets(el: Element): el is ShapeElement {
   if (el.type !== 'shape') return false;
   // A preset is nothing but fill + stroke + text colours, so a shape that
@@ -44,10 +35,9 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
   // (docs/specs/010-palette/stickers.md) paints its own plate and showed a full Presets grid where every
   // tile did nothing, because this list had never heard of stickers.
   if (!supportsColours(el)) return false;
-  // The ones that DO take colours but still can't show a preset: an icon is
-  // line art with no fill, and a chart paints its series from its own palette:
-  // every preset tile changed nothing a viewer could see.
-  return el.shape !== 'icon' && !takesChartPalette(el.shape);
+  // The one that DOES take colours but still can't show a preset: an icon is line art with no fill, so every
+  // preset tile changed nothing a viewer could see.
+  return el.shape !== 'icon';
 }
 
 // Presets (docs/specs/010-palette/style-presets.md) — one-click theme-colour + border looks for a shape, plus a
@@ -135,40 +125,10 @@ export function ArrowPresetsSection({
   );
 }
 
-// Code-block schemes (docs/specs/009-elements/code-block.md). A code block paints its own card and takes no
-// element colours, so its Presets grid is the colour SCHEME rather than the
-// shape looks: same accordion, same hover-preview, different vocabulary.
-function CodeThemePresetsSection({
-  current,
-  props,
-  accordion,
-}: {
-  current: string | undefined;
-  props: EditorContextMenuProps;
-  accordion: AccordionProps;
-}) {
-  return (
-    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
-      <CodeThemePresets
-        current={current}
-        onApply={props.onApplyCodeTheme}
-        onPreview={props.onPreviewCodeTheme}
-        onPreviewEnd={props.onPreviewStyleEnd}
-      />
-    </MenuAccordionSection>
-  );
-}
-
 /** Whether `TargetPresetsSection` would render anything for this element. */
 export function hasStylePresets(el: Element): boolean {
-  // The code-block test leads for the same reason it does in the component:
-  // `shapeSupportsPresets` narrows shapes away when it fails.
   return (
-    (el.type === 'shape' && (isCodeBlockShape(el.shape) || takesChartPalette(el.shape))) ||
-    shapeSupportsPresets(el) ||
-    el.type === 'table' ||
-    el.type === 'sticky' ||
-    el.type === 'arrow'
+    shapeSupportsPresets(el) || el.type === 'table' || el.type === 'sticky' || el.type === 'arrow'
   );
 }
 
@@ -203,40 +163,9 @@ function TablePresetsSection({
   );
 }
 
-// Chart palettes (docs/specs/009-elements/pie-chart.md). A chart styles per slice / series from its Data
-// category, so its Presets grid is the RAMP those fall back to: one pick for
-// the whole chart, and it keeps applying as rows are added.
-function ChartPalettePresetsSection({
-  current,
-  props,
-  accordion,
-  onClose,
-}: {
-  current: string | undefined;
-  props: EditorContextMenuProps;
-  accordion: AccordionProps;
-  onClose: () => void;
-}) {
-  return (
-    <MenuAccordionSection title="Presets" icon={<PresetsMenuGlyph />} {...accordion}>
-      <ChartPalettePresets
-        current={current}
-        onApply={props.onApplyChartPalette}
-        onPreview={props.onPreviewChartPalette}
-        onPreviewEnd={props.onPreviewStyleEnd}
-        onReset={() => {
-          props.onResetColors();
-          onClose();
-        }}
-      />
-    </MenuAccordionSection>
-  );
-}
-
-// Which Presets grid an element gets. Four answers, and the choice is its own
-// question, so it lives with the sections rather than inside the appearance
-// menu's render: a shape's theme looks, a sticky's pad of note colours, a code
-// block's colour scheme, or an arrow's line looks. Elements with none of them
+// Which Presets grid an element gets, and the choice is its own question, so it lives with the sections rather than
+// inside the appearance menu's render: a shape's theme looks, a table's looks, a sticky's pad of note colours, or an
+// arrow's line looks. Elements with none of them
 // render nothing, which is why the caller can mount this unconditionally.
 export function TargetPresetsSection({
   target,
@@ -249,25 +178,6 @@ export function TargetPresetsSection({
   accordion: AccordionProps;
   onClose: () => void;
 }) {
-  // Checked before the shape branch: `shapeSupportsPresets` is a type
-  // predicate, so a failing call narrows every shape out of `target` and a
-  // later `type === 'shape'` test would be unreachable.
-  if (target.type === 'shape' && isCodeBlockShape(target.shape)) {
-    return (
-      <CodeThemePresetsSection current={target.codeTheme} props={props} accordion={accordion} />
-    );
-  }
-  // Charts style per slice and a Sankey per node, so the grid is their palette rather than a look.
-  if (target.type === 'shape' && takesChartPalette(target.shape)) {
-    return (
-      <ChartPalettePresetsSection
-        current={target.chartPalette}
-        props={props}
-        accordion={accordion}
-        onClose={onClose}
-      />
-    );
-  }
   if (target.type === 'table') {
     return (
       <TablePresetsSection

@@ -104,7 +104,7 @@ describe('buildDrawnComponent', () => {
   });
 
   it('sizes to the dragged box, per axis, so the layout re-flows (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-    const out = buildDrawnComponent('stat', 10, 20, 910, 220, themed);
+    const out = buildDrawnComponent('callout', 10, 20, 910, 220, themed);
     expect(out).toMatchObject({ x: 10, y: 20, width: 900, height: 200 });
   });
 
@@ -192,31 +192,7 @@ describe('buildDrawnBoxed', () => {
     expect(out).toMatchObject({ type: 'link-card', x: 10, y: 10, width: 200, height: 100 });
   });
 
-  it('carries the embed provider through the gesture, so the tile you pressed is what lands', () => {
-    const out = buildDrawnBoxed({ type: 'video', provider: 'figma' }, 0, 0, 3, 3, null, tab());
-    expect(out).toMatchObject({ type: 'video', embedProvider: 'figma' });
-  });
-
-  it('fits an embed to 16:9 inside the drawn box rather than stretching it (docs/specs/009-elements/youtube-video.md)', () => {
-    // A tall, narrow drag: width is the binding constraint.
-    const tall = buildDrawnBoxed({ type: 'video' }, 0, 0, 320, 400, null, tab());
-    expect(tall.width).toBeCloseTo(320, 5);
-    expect(tall.height).toBeCloseTo(180, 5);
-    // A wide, short drag: height binds instead.
-    const wide = buildDrawnBoxed({ type: 'video' }, 0, 0, 800, 180, null, tab());
-    expect(wide.width).toBeCloseTo(320, 5);
-    expect(wide.height).toBeCloseTo(180, 5);
-    expect(wide.width / wide.height).toBeCloseTo(16 / 9, 5);
-  });
-
-  it('centres the fitted embed in the box the user drew, not in one corner', () => {
-    const out = buildDrawnBoxed({ type: 'video' }, 0, 0, 320, 400, null, tab());
-    // 180 tall inside a 400 tall drag = 110 of slack on each side.
-    expect(out.y).toBeCloseTo(110, 5);
-    expect(out.x).toBeCloseTo(0, 5);
-  });
-
-  it('leaves every other kind anchored at the drawn top-left, uncentred', () => {
+  it('anchors a dragged image at the drawn top-left, uncentred', () => {
     const out = buildDrawnBoxed({ type: 'image' }, 40, 60, 240, 160, null, tab());
     expect({ x: out.x, y: out.y, width: out.width, height: out.height }).toEqual({
       x: 40,

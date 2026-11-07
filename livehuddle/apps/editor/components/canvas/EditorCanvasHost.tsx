@@ -27,13 +27,7 @@ import {
 
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import {
-  getTheme,
-  resolveTabBackdrop,
-  themeChartPalette,
-  themeViewMap,
-  type ThemeId,
-} from '@/lib/themes';
+import { getTheme, resolveTabBackdrop, themeViewMap, type ThemeId } from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -62,19 +56,14 @@ export function EditorCanvasHost() {
     addAnnotation,
     addArrow,
     addAvatar,
-    addBanner,
     addCallout,
     beginArrowBend,
     beginArrowScale,
-    addHeader,
     addHero,
     addSticker,
     addImage,
     addLinkCard,
-    addVideo,
-    addProcess,
     addShape,
-    addStatRow,
     addSticky,
     dropBoardFile,
     addTable,
@@ -204,13 +193,12 @@ export function EditorCanvasHost() {
     setEditingId,
     setExportOpen,
     setExportScope,
-    setCodeEditOpenForId,
     setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
     setMultiSelectedIds,
     setSelectedId,
-    toggleChecklistItem,
+    deleteElementById,
     setPageHeading,
     setWebRows,
     setHeroCaptionLine,
@@ -267,11 +255,11 @@ export function EditorCanvasHost() {
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
-  // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md).
-  const openEditDialog = (id: string) => {
+  // A retired element's placeholder Delete (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it"):
+  // an Editor's alone, read off `can` like every content gate, and the ordinary removal (one undo step).
+  const deleteRetired = (id: string) => {
     const el = activeTab.elements.find((e) => e.id === id);
-    if (!el || el.type !== 'shape') return;
-    if (el.shape === 'code-block') setCodeEditOpenForId(id);
+    if (el && can.remove(el)) deleteElementById(id);
   };
   const backdrop = resolveTabBackdrop(activeTab, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
@@ -474,13 +462,8 @@ export function EditorCanvasHost() {
           onAddTable={addTable}
           onAddAnnotation={addAnnotation}
           onAddLinkCard={addLinkCard}
-          onAddVideo={addVideo}
-          onAddBanner={addBanner}
           onAddHero={addHero}
-          onAddHeader={addHeader}
           onAddCallout={addCallout}
-          onAddStatRow={addStatRow}
-          onAddProcess={addProcess}
           onAddAvatar={addAvatar}
           onAddText={addText}
           onAddSticky={addSticky}
@@ -689,12 +672,11 @@ export function EditorCanvasHost() {
           onCommitLabel={commitLabel}
           onCommitTable={commitTable}
           onCommitHeaderSize={commitHeaderSize}
-          onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
+          onDeleteRetired={isReadOnly ? undefined : deleteRetired}
           onSetPageHeading={setPageHeading}
           onSetWebRows={isReadOnly ? undefined : setWebRows}
           onSetPointerTip={isReadOnly ? undefined : setPointerTip}
           onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
-          chartPalette={themeChartPalette(activeTheme)}
           onCancelEdit={cancelEdit}
           onBeginEndpointDrag={beginEndpointDrag}
           onBeginArrowTranslate={beginArrowTranslate}
@@ -714,7 +696,6 @@ export function EditorCanvasHost() {
           onOpenAction={openActionPopover}
           onOpenNote={openNote}
           onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
-          onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
           imageContext={imageContext}
           // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
           // participant row, so there's no 403, and they should set a name before others see them in presence.

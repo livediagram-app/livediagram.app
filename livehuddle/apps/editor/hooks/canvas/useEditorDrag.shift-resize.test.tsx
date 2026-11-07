@@ -12,7 +12,6 @@ import {
   createSticky,
   createTable,
   createText,
-  createVideo,
   isBoxed,
   type Element,
   type Tab,
@@ -49,7 +48,6 @@ const KINDS: [string, () => Element][] = [
   ['image', () => createImage(0, 0)],
   ['table', () => createTable(0, 0)],
   ['link card', () => createLinkCard(0, 0)],
-  ['video', () => createVideo(0, 0)],
   ['annotation', () => createAnnotation(0, 0)],
   [
     'freehand stroke',
@@ -75,7 +73,7 @@ const KINDS: [string, () => Element][] = [
         false,
       ),
   ],
-  ['banner component', () => createComponent('banner', 200, 100, COLOURS)],
+  ['hero component', () => createComponent('hero', 200, 100, COLOURS)],
   ['avatar component', () => createComponent('avatar', 200, 100, COLOURS)],
 ];
 
