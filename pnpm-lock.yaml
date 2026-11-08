@@ -7901,7 +7901,7 @@ importers:
   packages/workbench:
     dependencies:
       '@liveworkspace/api-kit':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../api-kit
       '@liveworkspace/api-schema':
         specifier: workspace:*
