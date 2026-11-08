@@ -20,6 +20,8 @@ export function AddCardTypeButton({
     <DashedAddButton
       {...itemProps}
       label="Add Card Type"
+      // The Card Types tour rings it (docs/specs/026-plan/plan-tour.md "Boards: Card Types").
+      data-add-card-type=""
       onClick={onClick}
       tone={palette ? { line: palette.cardBorder, muted: palette.muted } : undefined}
     />

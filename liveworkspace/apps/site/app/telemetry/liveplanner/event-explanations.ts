@@ -1465,6 +1465,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show me Workshop on the welcome tour's closing card, going straight into the Workshop tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Workshop.",
   'UI|Selected|PlanTourKeepCards':
     'Someone finished the Practice Sprint and kept its practice cards as real cards on their board.',
+  'UI|Selected|PlanTourPutBack':
+    'Someone finished the Plan tour\'s Card Types or Board Setup track and pressed Put It Back, undoing the type or board changes it had them make.',
   'UI|Selected|PlanTourKeepSheet':
     'Someone finished Five Small Wins and kept the practice sheet as a new Sheet tab, Practice Budget.',
   'UI|Selected|PlanTourBoards':
@@ -1546,8 +1548,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Yes on the Forms tour's first card, beginning its walkthrough of the form builder.",
   'UI|Started|WorkshopTour':
     "Someone pressed Show me around on the Workshop tour's first card, beginning its walkthrough of the session kit.",
+  'UI|Opened|PlanTourStart':
+    'Someone pressed Start Tour for the Plan tour on a board or Sheet, opening its start panel (on a board, the choice of Using a Board, Card Types and Board Setup). Nothing runs until a track is picked.',
+  'UI|Opened|DashboardTourStart':
+    'Someone pressed Start Tour on a dashboard, opening the Dashboards tour\'s start panel. Layout View draws only once they press Show the Grid.',
+  'UI|Started|PlanTourCardTypes':
+    'Someone picked Card Types on the Boards tour\'s start panel, beginning its missions: make a type, give it a field, use it on the board.',
+  'UI|Started|PlanTourBoardSetup':
+    'Someone picked Board Setup on the Boards tour\'s start panel, beginning its missions: rename a column, set a WIP limit, add a widget.',
   'UI|Started|PlanTour':
-    'Someone started the Plan tour from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
+    'Someone started the Plan tour\'s Using a Board track (the Practice Sprint) or Five Small Wins from its start panel (since November 2026); before that, from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1818,6 +1828,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Boards Tour" in Settings, so the Plan tour\'s boards track is offered again.',
   'UI|Toggled|BoardsTourSeenOn':
     'Someone switched off Tours › "Boards Tour" in Settings, marking the Plan tour\'s boards track as answered.',
+  'UI|Toggled|CardTypesTourSeenOff':
+    'Someone switched on Tours › "Card Types Tour" in Settings, so the Boards tour offers its Card Types track again.',
+  'UI|Toggled|CardTypesTourSeenOn':
+    'Someone switched off Tours › "Card Types Tour" in Settings, marking the Card Types track as answered.',
+  'UI|Toggled|BoardSetupTourSeenOff':
+    'Someone switched on Tours › "Board Setup Tour" in Settings, so the Boards tour offers its Board Setup track again.',
+  'UI|Toggled|BoardSetupTourSeenOn':
+    'Someone switched off Tours › "Board Setup Tour" in Settings, marking the Board Setup track as answered.',
   'UI|Toggled|SheetsTourSeenOff':
     'Someone switched on Tours › "Sheets Tour" in Settings, so the Plan tour\'s sheets track is offered again.',
   'UI|Toggled|SheetsTourSeenOn':
@@ -2207,6 +2225,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Plan tour\'s Practice Sprint reached its "Open One" mission, asking the person to open a practice card.',
   'UI|View|PlanTourStepDueDate':
     'The Plan tour\'s Practice Sprint reached its "Give It a Date" mission, asking for a due date on a practice card.',
+  'UI|View|PlanTourStepAddCard':
+    'The Plan tour\'s Practice Sprint reached its "Add a Card" mission, asking the person to add a card from a column\'s Add card (it becomes a practice card).',
+  'UI|View|PlanTourStepMakeType':
+    'The Plan tour\'s Card Types track reached its "Make a Card Type" mission, asking the person to add a card type from Types.',
+  'UI|View|PlanTourStepEditType':
+    'The Plan tour\'s Card Types track reached its "Give It a Field" mission, asking the person to add a field to their new type.',
+  'UI|View|PlanTourStepUseType':
+    'The Plan tour\'s Card Types track reached its "Add One to the Board" mission, asking the person to add a card of their new type (a practice card).',
+  'UI|View|PlanTourStepRenameColumn':
+    'The Plan tour\'s Board Setup track reached its "Rename a Column" mission.',
+  'UI|View|PlanTourStepSetWip':
+    'The Plan tour\'s Board Setup track reached its "Set a WIP Limit" mission.',
+  'UI|View|PlanTourStepAddWidget':
+    'The Plan tour\'s Board Setup track reached its "Add a Widget" mission, asking the person to add a widget to the board\'s header.',
   'UI|View|PlanTourStepShipCard':
     'The Plan tour\'s Practice Sprint reached its "Ship It" mission, asking the person to drag a practice card into the done column.',
   'UI|View|PlanTourStepTypeValue':

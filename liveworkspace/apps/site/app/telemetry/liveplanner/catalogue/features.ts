@@ -528,6 +528,13 @@ export const PLAN_TOUR_OFFERED = opened(
   (t) => t === 'PlanTourOffer',
 );
 
+// The Plan tours' start panel (docs/specs/026-plan/plan-tour.md "Starting a tour"): a press on Start Tour opens it.
+export const PLAN_TOUR_START_OPENED = opened(
+  'Plan Tour Start Panel',
+  'The start panel a press on Start Tour opens, on a board or Sheet (its tracks) and on a dashboard.',
+  (t) => t === 'PlanTourStart' || t === 'DashboardTourStart',
+);
+
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
 export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',

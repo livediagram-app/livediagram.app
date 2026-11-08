@@ -9,6 +9,7 @@ import {
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from '@/components/plan/dashboard/DashboardSettings';
+import { DashboardTourStage, useDashboardTour } from './DashboardTour';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(() => {
@@ -160,7 +161,10 @@ describe('Dashboard Show Me: Layout View', () => {
     });
     await settle();
     expect(strip().textContent).toContain('a row’s spans always add up to twelve');
+    // The lesson stays until Next.
     await settle(1700);
+    expect(screen.getByRole('img', { name: 'Mission 1 of 3' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     expect(screen.getByRole('img', { name: 'Mission 2 of 3' })).toBeTruthy();
     expect(strip().textContent).toContain('Change a Row’s Height');
   });
@@ -192,11 +196,11 @@ describe('Dashboard Show Me: Layout View', () => {
     };
     setLayout(resized);
     await settle();
-    await settle(1700);
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     const r0 = resized.rows[0]!;
     setLayout({ ...resized, rows: [{ ...r0, height: r0.height + 40 }, ...resized.rows.slice(1)] });
     await settle();
-    await settle(1700);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
     expect(screen.getByRole('img', { name: 'All 2 done' })).toBeTruthy();
     expect(strip().textContent).toContain('That’s the grid.');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
@@ -214,5 +218,60 @@ describe('Dashboard Show Me: Layout View', () => {
     setCanEdit(true);
     await settle();
     expect(screen.queryByRole('region', { name: 'Layout View' })).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/plan-tour.md "Starting a tour": the footer's Start Tour opens a start panel first.
+describe('Dashboards tour start panel', () => {
+  function Stage({ layout }: { layout: DashboardLayout }) {
+    const { tour } = useDashboardTour(false);
+    return (
+      <>
+        <button type="button" onClick={() => tour.start(true)}>
+          Footer Start
+        </button>
+        <button type="button" onClick={() => tour.start()}>
+          Show Me Start
+        </button>
+        <DashboardTourStage tour={tour} layout={layout} />
+      </>
+    );
+  }
+
+  it('shows the start panel before the grid, then Show the Grid runs Layout View', async () => {
+    const layout = held();
+    drawPage(layout);
+    render(<Stage layout={layout} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Footer Start' }));
+    const panel = screen.getByRole('region', { name: 'Dashboards Tour' });
+    expect(panel.textContent).toContain('Layout View');
+    expect(document.querySelector('[data-layout-span]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Show the Grid' }));
+    await settle();
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+    expect(screen.queryByRole('region', { name: 'Dashboards Tour' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Layout View' })).toBeTruthy();
+    expect(document.querySelector('[data-layout-span]')).not.toBeNull();
+  });
+
+  it('closes on Not Now, with nothing started', () => {
+    const layout = held();
+    drawPage(layout);
+    render(<Stage layout={layout} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Footer Start' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Not Now Dashboards Tour' }));
+    expect(screen.queryByRole('region', { name: 'Dashboards Tour' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Layout View' })).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+  });
+
+  it('goes straight to the grid for Show Me', async () => {
+    const layout = held();
+    drawPage(layout);
+    render(<Stage layout={layout} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me Start' }));
+    await settle();
+    expect(screen.queryByRole('region', { name: 'Dashboards Tour' })).toBeNull();
+    expect(screen.getByRole('region', { name: 'Layout View' })).toBeTruthy();
   });
 });

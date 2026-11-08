@@ -41,7 +41,7 @@ export function PlanSetupBoard({
   // The board's element id: its title id, and its draft's key.
   boardId: string;
   open?: boolean;
-  // Not now, Cancel, Close, Escape or the backdrop: the board stays as it is.
+  // When run again: Cancel, Close, Escape or the backdrop; the board stays as it is. A new board's setup has none.
   onClose: () => void;
   returnFocus?: () => void;
   // The project's card types, offered in step 1 (none picked to start, unless run again on a set-up board).
@@ -101,6 +101,7 @@ export function PlanSetupBoard({
     <SetupDialog
       open={open}
       onClose={onClose}
+      dismissible={!!initial}
       returnFocus={returnFocus}
       titleId={`setup-board-${boardId}`}
       title="Set up your board"
@@ -127,9 +128,12 @@ export function PlanSetupBoard({
             <span />
           )}
           <span className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              {initial ? 'Cancel' : 'Not now'}
-            </Button>
+            {/* A new board's setup has no way out but Create Board: left, it would be a board with no columns. */}
+            {initial ? (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                Cancel
+              </Button>
+            ) : null}
             {/* Create Board (or Save Board) is the Layout step's alone; Columns leads on to it. The step starts from
                 the board's layout, so pressing straight through keeps it. */}
             <Button variant="primary" size="sm" disabled={!primary} onClick={primary}>

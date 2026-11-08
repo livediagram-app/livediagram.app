@@ -6,6 +6,7 @@ import type { ItemUndoStep } from './item-undo-journal';
 
 // docs/specs/026-plan/plan-tour.md "Practice cards": made in this screen's store alone; no write touching one is
 // sent or undoable; a fresh read keeps them; Keep sends them as real cards in one undo step, Clear takes them away.
+// While the sprint captures (plan-tour.md "Add a Card"), a card added on its board is a practice card too.
 
 const api = vi.hoisted(() => ({
   fetchItems: vi.fn(),
@@ -143,6 +144,65 @@ describe('usePlanItems practice cards', () => {
     );
     expect(sent.creates.every((c) => !('status' in c.fields))).toBe(true);
     expect(steps).toHaveLength(1);
+    expect(result.current.practiceIds.size).toBe(0);
+  });
+
+  it('makes a matching new card a practice card while capturing, and lets others through', async () => {
+    const { result, steps } = await mount();
+    const onBoard = (c: { place?: { status?: string } }) => c.place?.status === 'todo';
+    act(() => result.current.capturePractice(onBoard));
+    const added = {
+      id: 'add-1',
+      type: 'task',
+      fields: { title: 'Mine' },
+      place: { status: 'todo' },
+    };
+    const elsewhere = {
+      id: 'add-2',
+      type: 'task',
+      fields: { title: 'Real' },
+      place: { status: 'other' },
+    };
+    expect(result.current.capturesPractice(added)).toBe(true);
+    expect(result.current.capturesPractice(elsewhere)).toBe(false);
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.write({ kind: 'create', creates: [added] });
+    });
+    expect(ok).toBe(true);
+    expect(result.current.practiceIds.has('add-1')).toBe(true);
+    expect(result.current.items.get('add-1')?.key).toBe(PRACTICE_KEY);
+    expect(api.writeItem).not.toHaveBeenCalled();
+    expect(steps).toHaveLength(0);
+    // A card elsewhere goes through as ever.
+    await act(async () => {
+      await result.current.write({ kind: 'create', creates: [elsewhere] });
+    });
+    expect(api.writeItem).toHaveBeenCalledTimes(1);
+    expect(result.current.practiceIds.has('add-2')).toBe(false);
+    // Stopped, a matching card is real again.
+    act(() => result.current.capturePractice(null));
+    expect(result.current.capturesPractice(added)).toBe(false);
+  });
+
+  it('stops capturing as practice ends, so the kept cards are written as real', async () => {
+    const { result } = await mount();
+    act(() => result.current.capturePractice(() => true));
+    await act(async () => {
+      await result.current.write({
+        kind: 'create',
+        creates: [
+          { id: 'add-1', type: 'task', fields: { title: 'Mine' }, place: { status: 'todo' } },
+        ],
+      });
+    });
+    expect(api.writeItem).not.toHaveBeenCalled();
+    await act(async () => result.current.endPractice(true));
+    expect(result.current.capturesPractice({ type: 'task', fields: {} })).toBe(false);
+    expect(api.writeItem).toHaveBeenCalledTimes(1);
+    const sent = api.writeItem.mock.calls[0]![1] as { kind: string; creates: { id: string }[] };
+    expect(sent.kind).toBe('create');
+    expect(sent.creates.map((c) => c.id)).toEqual(['add-1']);
     expect(result.current.practiceIds.size).toBe(0);
   });
 

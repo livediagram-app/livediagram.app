@@ -560,7 +560,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
           keywords:
             'tour walkthrough onboarding tutorial plan board kanban sheet spreadsheet all replay',
-          description: 'Every Plan tour at once: boards, sheets and dashboards.',
+          description: 'Every Plan tour at once: boards, card types, board setup, sheets and dashboards.',
           helpArticle: 'planTour',
         },
       ),
@@ -568,7 +568,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Boards Tour',
         event: { category: 'UI', on: 'BoardsTourSeenOff', off: 'BoardsTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial plan board kanban cards columns replay',
-        description: 'On a board in Plan: cards, columns, the card panel and card types.',
+        description: 'Using a Board: add, move, open, date and ship practice cards.',
+        helpArticle: 'planTour',
+      }),
+      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'card-types', {
+        label: 'Card Types Tour',
+        event: { category: 'UI', on: 'CardTypesTourSeenOff', off: 'CardTypesTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial plan board card types fields replay',
+        description: 'On a board in Plan: make a card type, give it a field and use it.',
+        helpArticle: 'planTour',
+      }),
+      tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'board-setup', {
+        label: 'Board Setup Tour',
+        event: { category: 'UI', on: 'BoardSetupTourSeenOff', off: 'BoardSetupTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial plan board columns wip widgets settings replay',
+        description: 'On a board in Plan: rename a column, set a WIP limit and add a widget.',
         helpArticle: 'planTour',
       }),
       tourTrackSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTrackSeen, 'sheets', {

@@ -86,6 +86,8 @@ SetupDialog.tsx          the setup dialog Setup Board and Setup Sheet share, on 
                          SetupStepper, the step (alone scrolls), sticky footer; Enter presses `onPrimary` unless the
                          target owns Enter (`entersPrimary`); its events stop at it, but Escape (the Dialog's);
                          `useSetupPalette` (the app's light or dark PlanPalette); `returnFocus` a frame after close
+                         `dismissible={false}` (a new board, every Setup Sheet): no Close, and Escape, the backdrop
+                         and the sheet drag call a no-op instead of onClose
 SetupPlaceholder.tsx     a board's or Sheet's placeholder while not set up: glyph, title, "Not set up yet", the
                          Set up button (or the viewer's line)
 useSetupDialog.ts        one element's dialog life: opens when unset, may edit and placed here; closes with the
@@ -881,7 +883,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Cursors per role: card hand, Viewer pointer, body arrow        | `apps/editor/components/plan/board-cursors.test.ts`                                                                                                            |
 | Fill Tab: which board, deletion, copy                          | `apps/editor/components/plan/fill-tab.test.ts`                                                                                                                 |
 | Setup Board Layout step, stepper, Fill Tab                     | `apps/editor/components/plan/PlanSetupBoard.test.tsx`                                                                                                          |
-| Setup Board as a dialog: opens, Escape, placeholder, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                          |
+| Setup Board as a dialog: opens, cannot be dismissed, toast     | `apps/editor/components/plan/SetupBoardHost.test.tsx`                                                                                                          |
 | Layout read from and written to the board                      | `apps/editor/components/plan/setup-board.test.ts`                                                                                                              |
 | Accounts marked in the picker's list only                      | `apps/editor/components/plan/PersonPicker.test.tsx`                                                                                                            |
 | Maximised/filled insets from the chrome                        | `apps/editor/lib/canvas-layer-insets.test.ts`, `apps/editor/hooks/ui/useCanvasLayerInsets.test.ts`                                                             |

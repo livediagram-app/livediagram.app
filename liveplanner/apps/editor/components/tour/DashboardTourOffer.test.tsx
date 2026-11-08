@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // The Dashboards tour's way in (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): the footer's Start Tour button,
-// while an Editor has a dashboard open in Plan, until it is taken; a press starts it, never beside another tour, and its
-// track is taken however it ends. It never starts on its own.
+// while an Editor has a dashboard open in Plan, until it is taken; a press opens its start panel, never beside another
+// tour; Start runs it and takes its track, Not Now closes it still on offer. It never starts on its own.
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setActiveTour } from '@/lib/tour-active';
@@ -64,12 +64,37 @@ describe('useDashboardTourOffer', () => {
     expect(result.current.active).toBe(false);
   });
 
-  it('starts from the button', () => {
+  it('opens its start panel from the button, and starts on Start', () => {
     const { result } = renderHook(() => useOffered(true));
     act(() => tourOffer()!.start());
     expect(result.current.active).toBe(true);
+    expect(result.current.intro).toBe(true);
     expect(result.current.n).toBe(1);
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'DashboardTourStart');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+    expect(writeUserPreferences).not.toHaveBeenCalled();
+    act(() => result.current.begin());
+    expect(result.current.intro).toBe(false);
+    expect(result.current.active).toBe(true);
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+  });
+
+  it('closes on Not Now, recording nothing and staying on offer', () => {
+    const { result } = renderHook(() => useOffered(true));
+    act(() => tourOffer()!.start());
+    act(() => result.current.cancel());
+    expect(result.current.active).toBe(false);
+    expect(result.current.intro).toBe(false);
+    expect(writeUserPreferences).not.toHaveBeenCalled();
+    expect(track.mock.calls.some((c) => c[1] === 'Ended' || c[1] === 'Started')).toBe(false);
+    expect(tourOffer()?.name).toBe('Dashboards');
+  });
+
+  it('goes straight in for Show Me, with no start panel', () => {
+    const { result } = renderHook(() => useOffered(true));
+    act(() => result.current.start());
+    expect(result.current.active).toBe(true);
+    expect(result.current.intro).toBe(false);
   });
 
   it('counts an end once, as completed or skipped', () => {
@@ -86,10 +111,22 @@ describe('useDashboardTourOffer', () => {
     let hidden = false;
     const { result, rerender } = renderHook(() => useOffered(true, hidden));
     act(() => tourOffer()!.start());
+    act(() => result.current.begin());
     hidden = true;
     rerender();
     expect(result.current.active).toBe(false);
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
+  });
+
+  it('closes its start panel when the page is covered, recording nothing', () => {
+    let hidden = false;
+    const { result, rerender } = renderHook(() => useOffered(true, hidden));
+    act(() => tourOffer()!.start());
+    hidden = true;
+    rerender();
+    expect(result.current.active).toBe(false);
+    expect(track.mock.calls.some((c) => c[1] === 'Ended')).toBe(false);
+    expect(writeUserPreferences).not.toHaveBeenCalled();
   });
 
   it('records nothing for a Show Me run', () => {
@@ -102,6 +139,7 @@ describe('useDashboardTourOffer', () => {
   it('takes the track however it ends', () => {
     const { result } = renderHook(() => useOffered(true));
     act(() => tourOffer()!.start());
+    act(() => result.current.begin());
     act(() => result.current.end('skipped'));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
     const written = writeUserPreferences.mock.calls[0]![0] as { planTourTracks?: string[] };
@@ -118,9 +156,10 @@ describe('useDashboardTourOffer', () => {
     expect(tourOffer()?.name).toBe('Dashboards');
   });
 
-  it('records the track taken as a press starts it', () => {
-    renderHook(() => useOffered(true));
+  it('records the track taken as Start begins it', () => {
+    const { result } = renderHook(() => useOffered(true));
     act(() => tourOffer()!.start());
+    act(() => result.current.begin());
     expect(writeUserPreferences).toHaveBeenCalledTimes(1);
     const written = writeUserPreferences.mock.calls[0]![0] as { planTourTracks?: string[] };
     expect(written.planTourTracks).toEqual(['dashboards']);

@@ -655,8 +655,8 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**,
-  **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
+  **Tours** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**, **Card
+  Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
   **Learn more** to its article, under one **Offer Again** section note. Every tour is started from the footer's
   Start Tour button, which offers a tour until it is taken ([Editor tours](editor-tour.md) "Where it appears"); the
   switches are the record of which have been taken, and switching one back on puts its tour back on the button. Switch one back on and close Settings to take it
@@ -668,7 +668,8 @@ and the dialog stays as the one complete, browsable index of them.
   The Plan tour is a tour of several tracks (`apps/editor/lib/tour-tracks.ts`): **Plan Tours** is one switch over all
   of them (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets
   every answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself:
-  **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
+  **Boards Tour**, **Card Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour**
+  (`tourTrackSwitch`, keys `planTourSeen-boards`, `planTourSeen-card-types`, `planTourSeen-board-setup`,
   `planTourSeen-sheets`, `planTourSeen-dashboards`). A track's row is on while its track is owed; off adds its track
   to `planTourTracks`, on removes it alone, and both clear the single `planTourSeen`, so only
   the list speaks for the tracks. It needs no handoff flag (the Plan tour is on the button once a
