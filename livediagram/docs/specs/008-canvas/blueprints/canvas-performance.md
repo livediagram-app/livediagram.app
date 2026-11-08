@@ -28,7 +28,8 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/editor/hooks/canvas/useEdgeAwarePlacement.ts`                    | Takes `suspended`; never measures while suspended                                                               |
 | `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`            | `toolbarsStale` includes `selectionMoving`                                                                      |
 | `../packages/workbench/src/hooks/canvas/useCanvasLongTaskLog.ts`       | The `[canvas-perf] long task` debug log                                                                         |
-| `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
+| `../packages/workbench/src/components/canvas/CanvasArrivalContext.tsx` | `CanvasArrivalProvider`, `useArrivesWithBoard()`, `ARRIVAL_BURST`: what a tab opens with, and a burst           |
+| `apps/editor/hooks/ui/useLayerThumbnails.ts`                           | `enabled`: no renderer pass while the Layers panel is closed (`NO_THUMBNAILS`)                                  |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts`            | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
 | `apps/editor/app/globals.css`                                          | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
 | `../packages/workbench/src/lib/sticky-peel-image.ts`                   | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
@@ -234,12 +235,27 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - The editor fade-in rule in `globals.css` lists `[data-floating-panel]`, `[data-editor-tabbar]`
   and `[data-zoom-cluster]` only; the canvas world carries no marker and no animation.
 - `CanvasArrivalProvider` (`CanvasArrivalContext.tsx`) wraps the element layer in `Canvas`, given
-  `activeTabId`. It holds `settledTab`, a ref set in an effect after each commit that shows a tab
-  (`useEffect(() => { settledTab.current = tabId }, [tabId])`). Its context value is
-  `{ settledTab, tabId }`, memoised, so it changes only on a tab switch.
+  `activeTabId` and `count` (`elements.length`). It holds `settledTab`, a ref set in an effect after
+  each commit that shows a tab (`useEffect(() => { settledTab.current = tabId }, [tabId])`), and
+  `burst`, a ref it writes as it renders: `count` minus the count of the last commit (a ref written
+  in an effect) is more than `ARRIVAL_BURST` (24). Derived only from a prop and an effect-written
+  ref, so a render React discards and redoes writes the same value. Its context value is
+  `{ settledTab, burst, tabId }`, memoised, so it changes only on a tab switch and no element view
+  renders for a burst.
 - `useArrivesWithBoard()` reads, once per element mount (a `useState` initialiser),
-  `settledTab.current !== tabId`: true for the elements in the commit that shows the tab, false
-  for any element mounted later. Outside a provider it reads false (an element alone pops in).
+  `settledTab.current !== tabId || burst.current`: true for the elements in the commit that shows
+  the tab and for those mounting in a burst, false for any other element mounted later. The
+  elements a commit mounts render after the provider, so they read that render's `burst`. Outside a
+  provider it reads false (an element alone pops in). Every editor's canvas (livediagram,
+  livedocuments, livedesign, liveplanner, livehuddle) passes `count`.
+
+### A closed panel draws nothing of the board
+
+- `LayersPanel` stays mounted once opened (`useCanvasChromePanels`: `layersOpened`), and passes
+  `popoverOpen` as `useLayerThumbnails`' `enabled`. Disabled, the hook returns `NO_THUMBNAILS`, one
+  shared empty value, and runs no renderer pass; opening the panel draws the previews once, and
+  while it is open they follow the board as before. The context menu's `MoveToLayerRow` mounts
+  only while its menu is open and draws as it always did.
 - `useBoxedElementAnimation`: `entered` starts as `still || arrivesWithBoard`. Only an element
   that starts not entered arms the 400 ms timer that drops `animate-element-pop-in`; an element
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
@@ -547,6 +563,8 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | Reference board deterministic, mix as specced    | `reference-board.test.ts`                                                                                                                                                                                                                                                                                                   |
 | Budget evaluation and table                      | `budget.test.ts`                                                                                                                                                                                                                                                                                                            |
 | Opening counts every long frame                  | `interactive.test.ts`: tasks and frames merged, overlaps, a gap of exactly 500 ms, nothing after the response                                                                                                                                                                                                               |
+| Adding many elements animates nothing            | `CanvasArrivalContext.test.tsx` (workbench): a commit adding more than `ARRIVAL_BURST` elements mounts them arrived, a handful still pop, the context value keeps its identity                                                                                                                                              |
+| A closed panel draws nothing of the board        | `useLayerThumbnails.test.ts`: disabled, no renderer pass and the one empty value; enabled again, the previews are drawn                                                                                                                                                                                                     |
 | Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                                                                                                             |
 | Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                                                                                             |
 | The budget holds                                 | The nightly probe                                                                                                                                                                                                                                                                                                           |

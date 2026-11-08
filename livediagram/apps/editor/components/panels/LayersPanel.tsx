@@ -110,7 +110,14 @@ export function LayersPanel({
 
   // Per-row layer previews — shared with the context menu's Move-to-layer
   // tiles via useLayerThumbnails.
-  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
+  // Drawn only while the panel is open: it stays mounted once opened, and drawing the previews for every
+  // change to the board while it is closed cost a drag's release on a big board (useLayerThumbnails).
+  const { thumbMarkup, thumbViewBox } = useLayerThumbnails(
+    elements,
+    layers,
+    tabFont,
+    popoverOpen !== false,
+  );
 
   // Row context menu (docs/specs/006-document/layers.md): which layer it targets + where to hang
   // it (the panel's left edge at the clicked row).
