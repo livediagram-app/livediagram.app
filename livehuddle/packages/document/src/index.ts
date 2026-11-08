@@ -262,7 +262,8 @@ export function elementHasText(element: Element): boolean {
 // affordance teaches that text can be added).
 export function elementSupportsText(element: Element): boolean {
   // A deleted shape kind takes no typed label (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
-  if (element.type === 'shape') return !isSelfDrawingShape(element.shape) && !isRetiredElement(element);
+  if (element.type === 'shape')
+    return !isSelfDrawingShape(element.shape) && !isRetiredElement(element);
   return element.type === 'text' || element.type === 'sticky';
 }
 

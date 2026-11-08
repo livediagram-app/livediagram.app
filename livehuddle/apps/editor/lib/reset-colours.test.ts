@@ -68,7 +68,12 @@ describe('resetElementColours', () => {
 // kept exactly as stored, so a selection-wide Reset to Theme on a themed tab writes nothing into it.
 describe('resetElementColours on a retired element', () => {
   it('keeps a deleted shape kind exactly as stored', () => {
-    const themed = { ...theme, elementFill: '#123456', elementStroke: '#234567', elementText: '#345678' };
+    const themed = {
+      ...theme,
+      elementFill: '#123456',
+      elementStroke: '#234567',
+      elementText: '#345678',
+    };
     const qa = {
       id: 'q',
       type: 'shape',
