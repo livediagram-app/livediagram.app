@@ -8,6 +8,7 @@ import {
   stepBack,
   stacksWithoutRedo,
   stepForward,
+  withPresent,
   withRemoteOp,
   type RebasingHistory,
 } from '@liveworkspace/workbench/lib/remote-op-log';
@@ -89,8 +90,7 @@ export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Hist
 // writing's layout ticks on every keystroke (useArticles onLayout), and a new object each time
 // re-rendered the whole editor per key on a long article.
 export function historyTick(h: History, mapTabs: (tabs: Tab[]) => Tab[]): History {
-  const present = mapTabs(h.present);
-  return present === h.present ? h : { ...h, present };
+  return withPresent(h, mapTabs(h.present));
 }
 
 export function historyMarkCheckpoint(h: History): History {
