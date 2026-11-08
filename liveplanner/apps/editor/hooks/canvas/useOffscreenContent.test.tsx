@@ -3,6 +3,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createArrow, createShape, type Element } from '@liveplanner/project';
+import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 import { useOffscreenContent } from './useOffscreenContent';
 
 beforeEach(() =>
@@ -60,5 +61,18 @@ describe('useOffscreenContent', () => {
       useOffscreenContent([square], { x: -5000, y: 0 }, 1, () => {}),
     );
     expect(result.current).toBe(false);
+  });
+
+  // A Dashboard tab's page (or a board or Sheet filling its tab) hides the canvas, so its view says nothing about what
+  // is on screen: no "Nothing's in view" over a Dashboard's own slots.
+  it('is false while something covers the canvas', () => {
+    try {
+      setPlanCover({ fillTabId: null, fillTabKind: null, planKind: 'dashboard' });
+      expect(offscreen([square], { x: -5000, y: 0 }).result.current).toBe(false);
+      setPlanCover({ fillTabId: 'b1', fillTabKind: 'Board', planKind: 'board' });
+      expect(offscreen([square], { x: -5000, y: 0 }).result.current).toBe(false);
+    } finally {
+      setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null });
+    }
   });
 });
