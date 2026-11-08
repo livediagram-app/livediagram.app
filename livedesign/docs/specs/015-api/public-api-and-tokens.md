@@ -402,6 +402,6 @@ Every full token inherits the owner's read+write access; finer grants come
 later if demand appears.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
-Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
-items, and a team's admins for the team's, per document, from the document's ⋯ menu in the Explorer (**Webhooks**); a share
-link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
+Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. Anyone signed in who can edit the whole design adds one
+from the design's ⋯ menu in the Explorer (**Webhooks**): its owner, its team's people, or an Editor link to every
+tab; a Viewer, a Participant or a one-tab link never can, and a webhook reports on that design alone. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).
