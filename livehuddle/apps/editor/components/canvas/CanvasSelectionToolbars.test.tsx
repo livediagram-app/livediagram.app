@@ -105,6 +105,15 @@ describe('the Format Painter button', () => {
     renderToolbars(false, { readOnly: true, onStartFormatPainter: vi.fn() });
     expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
   });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a retired element lends no look and takes
+  // no typed label, so neither the Format Painter nor Add Text is offered on one.
+  it('is not offered, nor Add Text, on a retired element', () => {
+    const qa = { ...shape, id: 'qa', shape: 'qa-board' } as unknown as typeof shape;
+    renderToolbars(false, { elements: [qa, other], onStartFormatPainter: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Format Painter' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Add Text|Edit Text/ })).toBeNull();
+  });
 });
 
 // docs/specs/009-elements/furniture-facing.md "Turning a placed piece".
