@@ -14,7 +14,7 @@ import {
   undoneCopy,
   type ChangesetToast,
 } from './changeset-toast';
-import { applyRoomOpToTabs } from './room-op-apply';
+import { remoteRoomOp } from './room-op-apply';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 
 // What an editor does with a relayed changeset (docs/specs/024-agents/agent-changesets.md "In the
@@ -86,7 +86,7 @@ export function useChangesetFeed(opts: {
       // Applied as a peer's op, to the tabs on screen and to the save baseline alike
       // (docs/specs/012-collaboration/collab-race-hardening.md), in one batch with the seen revision
       // so a save never claims it before its content is on screen (useChangesetSeen).
-      applyRemoteOp((prev) => applyRoomOpToTabs(prev, op));
+      applyRemoteOp(remoteRoomOp(op));
       foldRemoteOpIntoBaseline(saveBaseline, op);
       countAppliedOp();
       if (op.tab && !loadedTabIdsRef.current.has(op.tabId)) markTabLoaded(op.tabId);

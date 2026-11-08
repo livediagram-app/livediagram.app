@@ -7,7 +7,9 @@ import {
   ACTION_SIGN_IN_NUDGE,
   EDITOR_REASONS_OPENED,
   EXPLORER_REASONS_OPENED,
-  AVATAR_TOUR_OFFERED,
+  RECEPTIONIST_ASKED,
+  RECEPTIONIST_BELLS,
+  RECEPTIONIST_WELCOMES,
   ELEMENT_TOURS_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -132,52 +134,28 @@ export const WELCOME_DIALOG_CLOSED = chart(
   { types: ['Welcome'] },
 );
 
-// The Avatar tour (docs/specs/008-canvas/avatar-tour.md): its own funnel.
-export const AVATAR_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Avatar Tours Started',
-  'The Avatar tour started.',
-  { types: ['AvatarTour'] },
-);
-
-export const AVATAR_TOUR_STEPS_VIEWED = chart(
+// The Receptionist (docs/specs/008-canvas/receptionist.md "Telemetry"), the Avatar tour's successor: his welcome,
+// each ask, each bell he answers for its ringer, and the topics he is asked about.
+export const RECEPTIONIST_TOPICS_VIEWED = chart(
   'UI',
   'View',
-  'Avatar Tour Steps Viewed',
-  'A step of the Avatar tour shown.',
-  { typeIn: (t) => (t ?? '').startsWith('AvatarTourStep') },
+  'Receptionist Topics Viewed',
+  'A topic\u2019s answer shown in the Receptionist\u2019s bubble.',
+  { typeIn: (t) => (t ?? '').startsWith('ReceptionistTopic') },
 );
 
-export const AVATAR_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Completed',
-  'The Avatar tour run to its last step.',
-  { types: ['AvatarTourCompleted'] },
-);
-
-export const AVATAR_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Avatar Tours Skipped',
-  'The Avatar tour closed before its end.',
-  { types: ['AvatarTourSkipped'], rising: 'neutral' },
-);
-
-export const AVATAR_TOUR: MetricStack = {
+export const RECEPTIONIST: MetricStack = {
   stack: true,
-  title: 'Avatar Tour',
+  title: 'Receptionist',
   blurb:
-    'The first time in Avatar mode: the Avatar tour offered, stepped through, finished or skipped.',
+    'The Receptionist on the Avatar Pad: his welcome, each time he is asked over, bells he answers, and the topics asked about.',
   members: [
-    AVATAR_TOUR_OFFERED,
-    AVATAR_TOURS_STARTED,
-    AVATAR_TOUR_STEPS_VIEWED,
-    AVATAR_TOURS_COMPLETED,
-    AVATAR_TOURS_SKIPPED,
+    RECEPTIONIST_WELCOMES,
+    RECEPTIONIST_ASKED,
+    RECEPTIONIST_BELLS,
+    RECEPTIONIST_TOPICS_VIEWED,
   ],
-  headline: AVATAR_TOURS_STARTED,
+  headline: RECEPTIONIST_WELCOMES,
 };
 
 // Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
@@ -294,7 +272,7 @@ export const ONBOARDING_TOURS: MetricStack = {
   title: 'Onboarding Tours',
   blurb:
     'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
-  members: [AVATAR_TOURS_STARTED, ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
+  members: [RECEPTIONIST_WELCOMES, ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
   seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
 };
 
@@ -359,6 +337,9 @@ export const SIGN_IN_PROMPTS: MetricStack = {
   members: [
     EXPLORER_BANNER_SIGN_INS,
     EXPLORER_REASONS_OPENED,
+    RECEPTIONIST_ASKED,
+    RECEPTIONIST_BELLS,
+    RECEPTIONIST_WELCOMES,
     EXPLORER_BANNER_DISMISSED,
     EDITOR_BANNER_SIGN_INS,
     EDITOR_REASONS_OPENED,

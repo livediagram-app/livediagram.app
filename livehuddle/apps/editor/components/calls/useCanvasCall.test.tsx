@@ -2,6 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import {
   callLetByMe,
   callMaximised,
@@ -17,10 +18,11 @@ vi.mock('@/lib/telemetry', () => telemetry);
 const toast = vi.hoisted(() => ({ info: vi.fn() }));
 vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
+const remoteAvatars = [
+  { id: 'p1', name: 'Sam', color: '#f00', glideMs: 33, avatar: { x: 500, y: 0, config: {} } },
+] as unknown as RemoteAvatarRow[];
+
 const props = {
-  remoteAvatars: [
-    { id: 'p1', name: 'Sam', color: '#f00', glideMs: 33, avatar: { x: 500, y: 0, config: {} } },
-  ],
   imageContext: { ownerId: 'o', documentId: 'd', shareCode: 'sc' },
   takePart: true,
   onCallSignal: vi.fn(),
@@ -37,6 +39,7 @@ describe('useCanvasCall', () => {
     const walkTo = vi.fn();
     const { result } = renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props,
         canvasTool: 'avatar',
         avatar: { pos: { x: 0, y: 0 }, walkTo },
@@ -67,6 +70,7 @@ describe('useCanvasCall', () => {
   it('out of the mode, you are nowhere and the bars only show', () => {
     const { result } = renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props: { ...props, imageContext: undefined, takePart: false },
         canvasTool: 'select',
         avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
@@ -90,6 +94,7 @@ describe('useCanvasCall', () => {
     }) =>
       renderHook(() =>
         useCanvasCall({
+          remoteAvatars,
           props: { ...props, canShareScreen: true },
           canvasTool: 'avatar',
           avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
@@ -133,6 +138,7 @@ describe('useCanvasCall', () => {
     const offset = { x: width / 2 - me.x, y: height / 2 - me.y };
     renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props,
         canvasTool: 'avatar',
         avatar: { pos: me, walkTo: vi.fn() },
@@ -167,6 +173,7 @@ describe('useCanvasCall', () => {
     });
     renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props: {
           ...props,
           elements: [
@@ -195,6 +202,7 @@ describe('useCanvasCall', () => {
     const send = vi.fn();
     const { result } = renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props: { ...props, canShareScreen: true, onCallSignal: send },
         canvasTool: 'avatar',
         avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
@@ -220,6 +228,7 @@ describe('useCanvasCall', () => {
   it('gives a Participant off every stage no Let Speak', () => {
     const { result } = renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props,
         canvasTool: 'avatar',
         avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
@@ -236,6 +245,7 @@ describe('useCanvasCall', () => {
     const run = (extra: Partial<CanvasProps>, canvasTool: 'avatar' | 'select' = 'avatar') =>
       renderHook(() =>
         useCanvasCall({
+          remoteAvatars,
           props: { ...props, onCallSignal: send, ...extra },
           canvasTool,
           avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },
@@ -260,6 +270,7 @@ describe('useCanvasCall', () => {
   it('tells you which Editor stopped your share, or that an Editor did', () => {
     renderHook(() =>
       useCanvasCall({
+        remoteAvatars,
         props,
         canvasTool: 'avatar',
         avatar: { pos: { x: 0, y: 0 }, walkTo: vi.fn() },

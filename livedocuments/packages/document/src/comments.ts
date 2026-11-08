@@ -196,9 +196,12 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 // them and would silently wipe them for the whole room (autosave persists +
 // broadcasts the restored tab).
 export function graftLiveTabState(from: Tab[], onto: Tab[]): Tab[] {
+  if (from === onto) return onto;
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
+    // The same tab object: nothing live can differ, so no element is walked (an undo leaves most tabs untouched).
+    if (src === tab) return tab;
     const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
     const liveFields = new Map<string, LiveFieldBag>(
       src.elements.map((el) => {

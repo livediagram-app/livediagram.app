@@ -148,7 +148,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Agent', 'Applied', 'Api')).toBe(false);
   });
 
-  it('retires the Diagram, Workshop and Draw tours, not the Avatar, element or Show Me tours', () => {
+  it('retires the Diagram, Workshop, Draw and Avatar tours, not the element or Show Me tours', () => {
     for (const type of ['Tour', 'TourOffer', 'TourStepPalette', 'TourCompleted', 'TourSeenOn'])
       expect(isRetiredEvent('UI', 'Started', type), type).toBe(true);
     for (const type of [
@@ -158,8 +158,14 @@ describe('isRetiredEvent', () => {
       'DrawTourSeenOff',
     ])
       expect(isRetiredEvent('UI', 'View', type), type).toBe(true);
-    expect(isRetiredEvent('UI', 'Started', 'AvatarTour')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'AvatarTourOffer')).toBe(false);
+    // The Avatar tour went for the Receptionist; his events and the tour's shared switch carry on.
+    expect(isRetiredEvent('UI', 'Started', 'AvatarTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'AvatarTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'AvatarTourStepPick')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'AvatarTourSkipped')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'ReceptionistWelcome')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'ReceptionistTopicRooms')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'AvatarTourSeenOff')).toBe(false);
     expect(isRetiredEvent('UI', 'View', 'PortalTourStepOpen')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOff')).toBe(false);
   });
@@ -255,7 +261,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Editor', 'Changed', 'ModeWorkshop')).toBe(false);
     expect(isRetiredEvent('Tab', 'Changed', 'Locked')).toBe(false);
     expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'AvatarTourStepPick')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'ElementTourStepPick')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'editor-modes')).toBe(false);
   });
 });

@@ -107,9 +107,19 @@ test('two people play ping-pong to 11 and both see the same score', async ({
   await ownerPage.goto(await serverNewUrl(ownerPage, `/new?template=${SPACE}`));
   await ownerPage.locator(CANVAS).waitFor({ timeout: 30_000 });
   await expect(self(ownerPage)).toHaveCount(1, { timeout: 15_000 });
-  // A pad to arrive on and a table above it, nothing in the way.
+  // A pad to arrive on and a table above it, nothing in the way: the pad's Receptionist is asked to leave, as his
+  // welcome bubble (docs/specs/008-canvas/receptionist.md) would open over the table and take the clicks.
   await seedTab(ownerPage, [
-    { id: 'pad', type: 'shape', shape: 'avatar-pad', x: 360, y: 420, width: 96, height: 64 },
+    {
+      id: 'pad',
+      type: 'shape',
+      shape: 'avatar-pad',
+      x: 360,
+      y: 420,
+      width: 96,
+      height: 64,
+      receptionistLeft: true,
+    },
     {
       id: TABLE,
       type: 'shape',

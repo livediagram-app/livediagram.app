@@ -1,7 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { expandAvatarPacket, type AvatarPacket, type AvatarPresence } from '@livehuddle/api-schema';
+import { expandAvatarPacket, type AvatarPacket } from '@livehuddle/api-schema';
+import type { CursorPos, PeerAvatar } from '@/lib/peer-motion';
 
-export type CursorPos = { tabId: string; x: number; y: number } | null;
+export type { CursorPos } from '@/lib/peer-motion';
 // A character as it arrives: full or lean (docs/specs/008-canvas/avatar-mode.md "The costume rides only when it is
 // needed"). The flush fills a lean one back out with the costume last seen from that peer.
 export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
@@ -10,8 +11,10 @@ export type AvatarEntry = { tabId: string; avatar: AvatarPacket } | null;
 // 30 Hz per peer, and committing state per packet re-rendered the
 // whole editor tree per message (~90 renders/s with three peers,
 // while the local user is idle). Buffer them in refs and commit ONE
-// Map update per animation frame — the same rAF pattern the pan and
-// snap-guide paths use.
+// Map update per animation frame, the same rAF pattern the pan and
+// snap-guide paths use. The commit lands in the peer-motion store
+// (lib/peer-motion.ts), so even that one per frame renders only the
+// cursor layer and the canvas, never the editor root.
 //
 // One coalescer per room connection, created inside the effect so a
 // reconnect starts clean, and cancelled with it.
@@ -37,9 +40,7 @@ export function createPresenceCoalescer({
   setRemoteAvatars,
 }: {
   setRemoteCursors: Dispatch<SetStateAction<Map<string, CursorPos>>>;
-  setRemoteAvatars: Dispatch<
-    SetStateAction<Map<string, { tabId: string; avatar: AvatarPresence }>>
-  >;
+  setRemoteAvatars: Dispatch<SetStateAction<Map<string, PeerAvatar>>>;
 }): PresenceCoalescer {
   const pendingCursors = new Map<string, CursorPos>();
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): the latest character snapshot per peer, or null

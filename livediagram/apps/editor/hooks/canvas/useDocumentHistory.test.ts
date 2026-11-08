@@ -264,17 +264,17 @@ describe('historyApplyRemoteOp', () => {
     expect(h.present.map((t) => t.id)).toEqual(['a', 'p']);
   });
 
-  it('keeps the history itself when the op changes nothing', () => {
-    const h: History = { past: [[tab('a')]], present: [tab('a')], future: [] };
+  it('keeps the history itself when the op changes nothing and no snapshot is held', () => {
+    const h: History = { past: [], present: [tab('a')], future: [] };
     expect(historyApplyRemoteOp(h, (ts) => ts)).toBe(h);
   });
 });
 
-// A peer op costs one pass per snapshot (measured 12 ms for 500 steps on a 2,000-element tab): linear in the
-// history, never worse. Counted, not timed: the op runs once on the present and once on every undo and redo
-// snapshot, each exactly once. (A CPU-time ratio here swung with garbage collection on CI and turned main red.)
+// A peer op costs one pass over the present, however deep the history (applied to every snapshot on arrival it
+// cost 12 ms per op for 500 steps on a 2,000-element tab). Counted, not timed: the snapshots take it when restored,
+// each only the ops it lacks. The CPU-time guards on realistic sizes are in the history's perf test.
 describe('historyApplyRemoteOp cost', () => {
-  it('runs the op once per snapshot, so it grows linearly with the history', () => {
+  it('runs the op on the present alone, and on a snapshot only when it is restored', () => {
     const board = (n: number): Tab[] => [{ id: 'a', name: `${n}`, elements: [] }];
     const h: History = {
       past: Array.from({ length: 300 }, (_, i) => board(i)),
@@ -286,10 +286,12 @@ describe('historyApplyRemoteOp cost', () => {
       seen.push(ts);
       return ts.map((t) => ({ ...t, name: `${t.name}!` }));
     });
-    expect(seen).toHaveLength(401);
-    expect(new Set(seen).size).toBe(401);
-    expect(next.past).toHaveLength(300);
-    expect(next.future).toHaveLength(100);
+    expect(seen).toHaveLength(1);
+    expect(next.past).toBe(h.past);
+    expect(next.future).toBe(h.future);
     expect(next.present[0]!.name).toBe('300!');
+    const undone = historyUndo(next);
+    expect(seen).toHaveLength(2);
+    expect(undone.present[0]!.name).toBe('299!');
   });
 });

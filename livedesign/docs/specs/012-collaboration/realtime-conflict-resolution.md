@@ -214,6 +214,14 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    undoing takes back your own edits alone, never a collaborator's element or a
    tab they added, and the resulting element ops are broadcast as yours. A
    resync's re-read content replaces only what is on screen.
+   A snapshot takes the ops when it is restored, not when they arrive: the history keeps the peer ops in
+   arrival order (`@liveworkspace/workbench/lib/remote-op-log`) and the log position each snapshot was
+   taken at, and Undo, Redo or a cancelled gesture applies only the ops that snapshot lacks, in order, which
+   is exactly what applying them on arrival gave. A run of element ops on one tab (peers' `el` ops, a
+   changeset that creates no tab) is applied in one pass over the tab. The log reaches back only to the
+   oldest snapshot still held and keeps at most `REMOTE_OP_LOG_LIMIT` (500) ops; past that, the snapshots
+   behind take its oldest half and it is dropped. So a peer op costs one pass over the present however deep
+   the history, snapshots keep sharing their unchanged tabs, and a restore replays at most 500 ops.
 2. **The stored tabs are the system of record.** The design's Durable Object keeps them in its SQLite beside the
    room's ordering and collaboration state (epoch + seq, the op log, the collaboration ledger); the room never holds a
    live in-memory copy of the design. REST reads, exports, and offline durability read the stored tabs.

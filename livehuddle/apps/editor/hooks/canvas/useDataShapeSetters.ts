@@ -84,6 +84,22 @@ export function useDataShapeSetters({
       commit,
       matches: (kind) => kind === 'screen',
     })({ screenUrl: url }, 'Screen');
+  // An Avatar Pad's Receptionist (docs/specs/008-canvas/receptionist.md "Asking him to leave"): the menu's switch on
+  // the selected pad, and Ask Receptionist to Leave on his pad by id. Here clears the flag; leaving sets it.
+  const receptionistPatch = (here: boolean) => ({ receptionistLeft: here ? undefined : true });
+  const setReceptionistSelected = makeShapePatcher({
+    currentSelectionIds,
+    commit,
+    matches: (kind) => kind === 'avatar-pad',
+  });
+  const setPadReceptionistSelected = (here: boolean) =>
+    setReceptionistSelected(receptionistPatch(here), 'AvatarPad');
+  const setPadReceptionistOf = (id: string, here: boolean) =>
+    makeShapePatcher({
+      currentSelectionIds: () => new Set([id]),
+      commit,
+      matches: (kind) => kind === 'avatar-pad',
+    })(receptionistPatch(here), 'AvatarPad');
   // A World Clock's zones and a Jukebox's source (docs/specs/009-elements/social-pieces.md); undefined clears them.
   const patchClocks = makeShapePatcher({
     currentSelectionIds,
@@ -108,6 +124,8 @@ export function useDataShapeSetters({
     setStageSelected,
     setScreenUrlSelected,
     setScreenUrlOf,
+    setPadReceptionistSelected,
+    setPadReceptionistOf,
     setClockZonesSelected,
     setJukeboxSourceSelected,
   };

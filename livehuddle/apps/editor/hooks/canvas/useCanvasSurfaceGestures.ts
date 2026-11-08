@@ -9,6 +9,7 @@ import { peerPushTarget } from '@liveworkspace/avatar/walk';
 import { walkInputBlocked } from '@liveworkspace/avatar/walk-guard';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
 import type { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
@@ -40,8 +41,12 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
-/** What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode). */
-const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call-maximised]';
+/**
+ * What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode): the Receptionist and his
+ * bubble too (docs/specs/008-canvas/receptionist.md "Asking the Receptionist").
+ */
+const CHROME_OVER_CANVAS =
+  '[data-talking-bars], [data-call-bubbles], [data-call-maximised], [data-receptionist], [data-receptionist-bubble]';
 
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase
@@ -92,7 +97,7 @@ export function useCanvasSurfaceGestures({
   setMarquee: PanAndMarquee['setMarquee'];
   avatar: ReturnType<typeof useAvatarWalk>;
   // Peers' characters on this tab (docs/specs/008-canvas/avatar-mode.md), so a click can land on one.
-  peerAvatars: CanvasProps['remoteAvatars'];
+  peerAvatars: RemoteAvatarRow[];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   // The tab's elements, for the Door under a walking click (lib/avatar-door-press), and the swing it may ask for:

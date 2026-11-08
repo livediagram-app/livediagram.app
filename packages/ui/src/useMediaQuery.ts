@@ -22,20 +22,19 @@ export function useMediaQuery(query: string): boolean {
   // Memoised on `query` so the subscription survives re-renders. Fresh function
   // identities here would make useSyncExternalStore tear down and re-add the
   // listener on every single render.
-  const [subscribe, getSnapshot] = useMemo(
-    () =>
-      [
-        (cb: () => void) => {
-          const mql = typeof window === 'undefined' ? null : window.matchMedia?.(query);
-          if (!mql) return () => {};
-          mql.addEventListener('change', cb);
-          return () => mql.removeEventListener('change', cb);
-        },
-        () =>
-          typeof window === 'undefined' ? false : (window.matchMedia?.(query).matches ?? false),
-      ] as const,
-    [query],
-  );
+  // One MediaQueryList per query: matchMedia parses the query and builds a new list each call, and getSnapshot runs on
+  // every render and every store check.
+  const [subscribe, getSnapshot] = useMemo(() => {
+    const list = typeof window === 'undefined' ? null : (window.matchMedia?.(query) ?? null);
+    return [
+      (cb: () => void) => {
+        if (!list) return () => {};
+        list.addEventListener('change', cb);
+        return () => list.removeEventListener('change', cb);
+      },
+      () => list?.matches ?? false,
+    ] as const;
+  }, [query]);
 
   return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

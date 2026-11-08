@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { computeViewportCanvasRect } from '@liveworkspace/workbench/lib/viewport';
 import { avatarScale, parseAvatarConfig } from '@liveworkspace/avatar/config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { ViewRect } from '@/lib/calls/bubbles';
 import { walkTowards, type Point } from '@/lib/calls/hearing';
@@ -39,6 +40,8 @@ type WalkingSelf = {
 
 export function useCanvasCall(deps: {
   props: CanvasProps;
+  // Peers' characters on this tab, read from the peer-motion store by the canvas (hooks/collab/usePeerRows).
+  remoteAvatars: RemoteAvatarRow[];
   canvasTool: CanvasTool;
   avatar: WalkingSelf;
   avatarScale: number;
@@ -47,7 +50,7 @@ export function useCanvasCall(deps: {
   // Your status is Do Not Disturb (meeting-rooms-and-stage.md "Do Not Disturb").
   doNotDisturb?: boolean;
 }) {
-  const { props, canvasTool, avatar } = deps;
+  const { props, remoteAvatars, canvasTool, avatar } = deps;
   const inMode = canvasTool === 'avatar';
   const ownerId = props.imageContext?.ownerId;
   const documentId = props.imageContext?.documentId;
@@ -55,7 +58,7 @@ export function useCanvasCall(deps: {
 
   const peers: TalkingBarsPeer[] = useMemo(
     () =>
-      props.remoteAvatars.map((p) => ({
+      remoteAvatars.map((p) => ({
         id: p.id,
         name: p.name,
         color: p.color,
@@ -65,7 +68,7 @@ export function useCanvasCall(deps: {
         glideMs: p.glideMs,
         walking: p.avatar.walking,
       })),
-    [props.remoteAvatars],
+    [remoteAvatars],
   );
   const caller = useMemo(
     () => (ownerId && documentId ? { ownerId, documentId, shareCode } : null),
@@ -91,7 +94,7 @@ export function useCanvasCall(deps: {
   useMeetingPieces({
     elements: props.elements,
     zones,
-    walkers: props.remoteAvatars,
+    walkers: remoteAvatars,
     inMode,
     self,
     selfSeatedOn: avatar.seatedOn ?? null,
@@ -109,7 +112,7 @@ export function useCanvasCall(deps: {
     zones,
     inMode,
     self,
-    walkers: props.remoteAvatars,
+    walkers: remoteAvatars,
     doNotDisturb: deps.doNotDisturb === true,
     send: props.onCallSignal,
   });
@@ -133,7 +136,7 @@ export function useCanvasCall(deps: {
     doNotDisturb: deps.doNotDisturb,
     // An Editor stopped your share (video-and-screen-bubbles.md "Share roles", #504): say who, by their presence name.
     onShareStopped: (by) =>
-      toast.info(shareStoppedNotice(props.remoteAvatars.find((p) => p.id === by)?.name)),
+      toast.info(shareStoppedNotice(remoteAvatars.find((p) => p.id === by)?.name)),
   });
 
   // Let Speak (meeting-rooms-and-stage.md "Raise hand"): an Editor anywhere, or whoever speaks from a stage.

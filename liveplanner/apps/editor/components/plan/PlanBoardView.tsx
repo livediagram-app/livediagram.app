@@ -25,6 +25,7 @@ import {
   itemStatus,
   cardIsFaceDown,
   normaliseBoardSetup,
+  isQuickFilterEmpty,
   projectBoard,
   type Item,
   type LaneHead,
@@ -43,6 +44,7 @@ import { cellStatus, laneMove } from './plan-board-moves';
 import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import {
   cardsMovingRefused,
+  columnCardMoves,
   cardsStayedMessage,
   moveStatusRefusal,
   typeStatusRefusal,
@@ -207,9 +209,18 @@ export function PlanBoardView({
     [statusNames, items, types],
   );
   // What the header's widgets count: the items the board shows, before the quick filter.
+  // With no quick filter on (the usual case) the board's own projection already holds them: no second projection.
+  const quickOn = !isQuickFilterEmpty(applied);
   const shownItems = useMemo(
-    () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
-    [setup, items, types, statusNames],
+    () =>
+      !setup
+        ? []
+        : boardItems(
+            quickOn || !projection
+              ? projectBoard(setup, items, undefined, types, statusNames)
+              : projection,
+          ),
+    [setup, items, types, statusNames, quickOn, projection],
   );
   // Selected (alone or with others): the header shows its move handle.
   const selected = useSelectionOf(
@@ -801,8 +812,12 @@ export function PlanBoardView({
                     if (!plan) return;
                     const moving = [...items.values()].filter((it) => itemStatus(it) === from);
                     const stay = cardsMovingRefused(moving, plan.types, to);
-                    for (const it of moving)
-                      if (!stay.has(it.id)) plan.moveItem(it.id, { status: to, before: null });
+                    // One write, one undo step and one room op for the whole column, never one per card.
+                    const moves = columnCardMoves(moving, stay, to);
+                    if (plan.moveItems && moves.length) {
+                      plan.moveItems(moves);
+                      track('Plan', 'Moved', 'Board');
+                    } else for (const m of moves) plan.moveItem(m.id, m.move);
                     // One announcement for the cards whose type leaves the status out, never one each.
                     if (stay.size) plan.announce(cardsStayedMessage(stay.size, columnName(to)));
                   }}

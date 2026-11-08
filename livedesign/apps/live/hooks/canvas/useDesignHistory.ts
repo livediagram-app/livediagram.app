@@ -2,6 +2,15 @@
 
 import { useCallback, useState } from 'react';
 import { graftLiveTabState, type Tab } from '@livedesign/design';
+import {
+  clearedStacks,
+  stacksAfterStep,
+  stepBack,
+  stacksWithoutRedo,
+  stepForward,
+  withRemoteOp,
+  type RebasingHistory,
+} from '@liveworkspace/workbench/lib/remote-op-log';
 
 // Bounded undo/redo over the tabs array. See docs/specs/008-canvas/canvas-and-palette.md ("Undo / Redo").
 //
@@ -18,10 +27,9 @@ import { graftLiveTabState, type Tab } from '@livedesign/design';
 // measured ~8 MB of heap. Safe range: 1 to ~2,000.
 export const HISTORY_LIMIT = 500;
 
-export type History = {
-  past: Tab[][];
-  present: Tab[];
-  future: Tab[][];
+// The stacks take a peer's op lazily (RebasingHistory): logged with the position each snapshot was taken at, and
+// applied to a snapshot only when undo, redo or a cancel restores it.
+export type History = RebasingHistory<Tab[]> & {
   // How many steps lie behind the present, uncapped (the cap drops the oldest snapshots, never
   // this count), and which branch of edits the present is on (raised by every new step, which
   // clears redo). Item undo steps sit between snapshots by these two counters
@@ -69,9 +77,9 @@ export function historyCommit(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Hist
   // pushing it made Undo appear to do nothing and cleared the redo stack.
   if (sameTabs(h.present, present)) return h;
   return {
-    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
+    ...h,
+    ...stacksAfterStep(h, HISTORY_LIMIT),
     present,
-    future: [],
     depth: depthOf(h) + 1,
     branch: branchOf(h) + 1,
   };
@@ -83,9 +91,8 @@ export function historyTick(h: History, mapTabs: (tabs: Tab[]) => Tab[]): Histor
 
 export function historyMarkCheckpoint(h: History): History {
   return {
-    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
-    present: h.present,
-    future: [],
+    ...h,
+    ...stacksAfterStep(h, HISTORY_LIMIT),
     depth: depthOf(h) + 1,
     branch: branchOf(h) + 1,
   };
@@ -93,7 +100,7 @@ export function historyMarkCheckpoint(h: History): History {
 
 // A new step that is not a snapshot (an item change, useItemUndo): the redo side is gone.
 function historyClearRedo(h: History): History {
-  return { ...h, future: [], branch: branchOf(h) + 1 };
+  return { ...h, ...stacksWithoutRedo(h), branch: branchOf(h) + 1 };
 }
 
 // Undo / redo re-graft the LIVE non-undoable state onto the restored
@@ -104,11 +111,11 @@ function historyClearRedo(h: History): History {
 
 export function historyUndo(h: History): History {
   if (h.past.length === 0) return h;
-  const prev = h.past[h.past.length - 1]!;
+  const { snapshot, stacks } = stepBack(h, HISTORY_LIMIT, true);
   return {
-    past: h.past.slice(0, -1),
-    present: graftLiveTabState(h.present, prev),
-    future: [h.present, ...h.future].slice(0, HISTORY_LIMIT),
+    ...h,
+    ...stacks,
+    present: graftLiveTabState(h.present, snapshot),
     depth: depthOf(h) - 1,
     branch: branchOf(h),
   };
@@ -121,11 +128,11 @@ export function historyUndo(h: History): History {
 // exactly as undo does.
 export function historyCancel(h: History): History {
   if (h.past.length === 0) return h;
-  const prev = h.past[h.past.length - 1]!;
+  const { snapshot, stacks } = stepBack(h, HISTORY_LIMIT, false);
   return {
-    past: h.past.slice(0, -1),
-    present: graftLiveTabState(h.present, prev),
-    future: h.future,
+    ...h,
+    ...stacks,
+    present: graftLiveTabState(h.present, snapshot),
     depth: depthOf(h) - 1,
     branch: branchOf(h),
   };
@@ -133,11 +140,11 @@ export function historyCancel(h: History): History {
 
 export function historyRedo(h: History): History {
   if (h.future.length === 0) return h;
-  const next = h.future[0]!;
+  const { snapshot, stacks } = stepForward(h, HISTORY_LIMIT);
   return {
-    past: [...h.past, h.present].slice(-HISTORY_LIMIT),
-    present: graftLiveTabState(h.present, next),
-    future: h.future.slice(1),
+    ...h,
+    ...stacks,
+    present: graftLiveTabState(h.present, snapshot),
     depth: depthOf(h) + 1,
     branch: branchOf(h),
   };
@@ -145,7 +152,7 @@ export function historyRedo(h: History): History {
 
 export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {
   const next = typeof tabs === 'function' ? tabs(h.present) : tabs;
-  return { past: [], present: next, future: [], depth: 0, branch: branchOf(h) + 1 };
+  return { ...clearedStacks<Tab[]>(), present: next, depth: 0, branch: branchOf(h) + 1 };
 }
 
 // Replace the present with content from elsewhere (a resync's fetched tabs) WITHOUT touching the undo / redo stacks. A peer's op goes through historyApplyRemoteOp
@@ -158,25 +165,12 @@ export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => T
 // A peer's (or an agent's) op, applied to the present AND to every undo and redo snapshot
 // (docs/specs/012-collaboration/realtime-conflict-resolution.md "Undo"): undo then restores the
 // person's own earlier state with the peer's change still in it, so it takes back only their own
-// edits, never a collaborator's (a peer's element, a tab they added). `apply` is the pure op
-// (applyRoomOpToTabs), returning its input when the op changes nothing there, so an untouched
-// snapshot keeps its identity and nothing re-renders for it.
+// edits, never a collaborator's (a peer's element, a tab they added). The present takes it now; the
+// snapshots take it when one is restored (withRemoteOp), so an op costs one pass over the present
+// however deep the history, and the snapshots keep sharing their tabs. `apply` is the pure op
+// (applyRoomOpToTabs), returning its input when the op changes nothing there.
 export function historyApplyRemoteOp(h: History, apply: (tabs: Tab[]) => Tab[]): History {
-  const present = apply(h.present);
-  let changed = present !== h.present;
-  const each = (stack: Tab[][]) => {
-    let moved = false;
-    const out = stack.map((tabs) => {
-      const next = apply(tabs);
-      if (next !== tabs) moved = true;
-      return next;
-    });
-    if (moved) changed = true;
-    return moved ? out : stack;
-  };
-  const past = each(h.past);
-  const future = each(h.future);
-  return changed ? { ...h, present, past, future } : h;
+  return withRemoteOp(h, apply);
 }
 
 type DesignHistory = {

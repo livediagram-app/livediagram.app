@@ -207,6 +207,9 @@ export type ShapeElement = {
   // A Door's swing (docs/specs/009-elements/room-builder.md "Opening and closing"): true is shut; absent or false
   // is open, so every door starts open.
   doorClosed?: boolean;
+  // An Avatar Pad's Receptionist (docs/specs/008-canvas/receptionist.md "Asking him to leave"): true once an Editor
+  // asked him to leave this pad for good; absent or false, he is there.
+  receptionistLeft?: boolean;
   // A piece's type within its kind (docs/specs/009-elements/room-builder.md "Door types"): a Door's (Double, Sliding,
   // Revolving), a Rug's pattern (office.md "Rug types"), a Corridor's shape (corridor.md). Absent is the kind's first
   // type; a value its kind does not take draws as the first (piece-variants.ts).
