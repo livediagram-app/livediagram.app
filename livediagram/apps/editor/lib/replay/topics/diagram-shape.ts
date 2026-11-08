@@ -51,9 +51,14 @@ export type ShapeLayout = {
   readonly lettered: ShapeElement;
 };
 
-const flyout = (text: string): CursorTarget => ({
+// A section row in the flyout (replay-dom.ts MENU_ROWS), and a tile inside the open section.
+const row = (text: string): CursorTarget => ({
   kind: 'find',
-  selector: '[data-menu-flyout] button',
+  selector: `[data-menu-flyout] button[data-menu-section="${text}"]`,
+});
+const tile = (text: string): CursorTarget => ({
+  kind: 'find',
+  selector: '[data-menu-flyout] button:not([aria-expanded])',
   text,
 });
 
@@ -103,24 +108,24 @@ export const shape: Topic<ShapeLayout> = {
     const id = CHAPTERS[index]?.id ?? 'shape-border';
     if (id === 'shape-shadow') {
       return [
-        { at: SHADOW.open, to: flyout('Shadow'), press: true },
-        { at: SHADOW.pick, to: flyout(SHADOW_PICK.label), press: true },
+        { at: SHADOW.open, to: row('Shadow'), press: true },
+        { at: SHADOW.pick, to: tile(SHADOW_PICK.label), press: true },
       ];
     }
     if (id === 'shape-font') {
       return [
         { at: FONT.text, to: { kind: 'menu', name: 'Text' }, press: true },
-        { at: FONT.font, to: flyout('Font'), press: true },
-        { at: FONT.pick, to: flyout(FONT_PICK.label), press: true },
+        { at: FONT.font, to: row('Font'), press: true },
+        { at: FONT.pick, to: tile(FONT_PICK.label), press: true },
         { at: FONT.close + 400, to: { kind: 'element', id: SHAPE_ID } },
       ];
     }
     return [
       { at: BORDER.menu, to: { kind: 'element', id: SHAPE_ID }, press: true },
       { at: BORDER.style, to: { kind: 'menu', name: 'Style' }, press: true },
-      { at: BORDER.border, to: flyout('Border'), press: true },
-      { at: BORDER.thick, to: flyout('Thick'), press: true },
-      { at: BORDER.dashed, to: flyout('Dashed'), press: true },
+      { at: BORDER.border, to: row('Border'), press: true },
+      { at: BORDER.thick, to: tile('Thick'), press: true },
+      { at: BORDER.dashed, to: tile('Dashed'), press: true },
     ];
   },
 };

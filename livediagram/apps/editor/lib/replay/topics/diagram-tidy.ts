@@ -37,11 +37,11 @@ export const MESS = { every: 450 } as const;
 export const TIDY = { open: 1300, pick: 3000, glide: [3300, 4900] } as const;
 
 const STEPS = [
-  { id: 'wib-tidy-start', label: 'Start', kind: 'circle', w: 90, h: 90, dx: -170, dy: -250 },
-  { id: 'wib-tidy-form', label: 'Fill in form', kind: 'square', w: 170, h: 64, dx: 60, dy: -205 },
-  { id: 'wib-tidy-check', label: 'Complete?', kind: 'diamond', w: 150, h: 100, dx: -120, dy: -95 },
-  { id: 'wib-tidy-fix', label: 'Ask for more', kind: 'square', w: 170, h: 64, dx: 170, dy: -60 },
-  { id: 'wib-tidy-done', label: 'Approved', kind: 'circle', w: 110, h: 110, dx: -10, dy: 40 },
+  { id: 'wib-tidy-start', label: 'Start', kind: 'circle', w: 90, h: 90, dx: -170, dy: -330 },
+  { id: 'wib-tidy-form', label: 'Fill in form', kind: 'square', w: 170, h: 64, dx: 60, dy: -285 },
+  { id: 'wib-tidy-check', label: 'Complete?', kind: 'diamond', w: 150, h: 100, dx: -120, dy: -175 },
+  { id: 'wib-tidy-fix', label: 'Ask for more', kind: 'square', w: 170, h: 64, dx: 170, dy: -140 },
+  { id: 'wib-tidy-done', label: 'Approved', kind: 'square', w: 150, h: 64, dx: -10, dy: -40 },
 ] as const;
 const JOINS = [
   [0, 1],
@@ -55,8 +55,8 @@ const TIDY_KIND: CursorTarget = { kind: 'find', selector: '[data-tidy-kind="smar
 
 export type TidyLayout = {
   readonly mess: readonly Element[];
-  // The same shapes where Tidy Up puts them, by id.
-  readonly tidy: ReadonlyMap<string, { readonly x: number; readonly y: number }>;
+  // The same elements as Tidy Up leaves them, by id: the shapes moved, the arrows' ends chosen again.
+  readonly tidy: ReadonlyMap<string, Element>;
 };
 
 export const tidy: Topic<TidyLayout> = {
@@ -64,8 +64,8 @@ export const tidy: Topic<TidyLayout> = {
   chapters: CHAPTERS,
 
   layout({ centre, size, tab }) {
-    // A phone gets the same flow, drawn smaller.
-    const k = size.width < 700 ? 0.6 : 1;
+    // A phone gets the same flow, drawn smaller; tidied, it runs four rows down, so it starts high.
+    const k = size.width < 700 ? 0.6 : 0.85;
     const shapes = STEPS.map((s) =>
       boxedShape(tab, s.id, s.label, s.w * k, s.h * k, centre.x + s.dx * k, centre.y + s.dy * k, s.kind),
     );
@@ -82,11 +82,7 @@ export const tidy: Topic<TidyLayout> = {
       };
     });
     const mess: Element[] = [...shapes, ...arrows];
-    const placed = new Map<string, { x: number; y: number }>();
-    for (const el of cleanupElements(mess, 'smart')) {
-      if (el.type !== 'arrow' && 'x' in el) placed.set(el.id, { x: el.x, y: el.y });
-    }
-    return { mess, tidy: placed };
+    return { mess, tidy: new Map(cleanupElements(mess, 'smart').map((e) => [e.id, e])) };
   },
 
   frame(index, ms, layout) {
@@ -109,7 +105,9 @@ export const tidy: Topic<TidyLayout> = {
     const p = between(ms, TIDY.glide[0], TIDY.glide[1]);
     const els = layout.mess.map((e) => {
       const to = layout.tidy.get(e.id);
-      if (!to || e.type !== 'shape' || p === 0) return e;
+      if (!to || p === 0) return e;
+      // The arrows take their tidied ends as the glide starts; the shapes slide there.
+      if (e.type !== 'shape' || to.type !== 'shape') return to;
       return { ...e, x: lerp(e.x, to.x, p), y: lerp(e.y, to.y, p) };
     });
     return frameOf(els, { open: ms >= TIDY.open && ms < TIDY.pick + 250 ? ['tidy-up'] : [] });
@@ -125,7 +123,7 @@ export const tidy: Topic<TidyLayout> = {
       ];
     }
     return [
-      { at: 600, to: { kind: 'element', id: STEPS[1].id } },
+      { at: 900, to: { kind: 'element', id: STEPS[0].id } },
       { at: 2600, to: { kind: 'element', id: STEPS[3].id } },
     ];
   },

@@ -17,7 +17,7 @@ const words = (el: Element) =>
   [el.textContent ?? '', el.getAttribute('aria-label') ?? ''].map((w) => w.trim().toLowerCase());
 
 // The first match by its words: the exact words first, then words it ends with (a preset's swatch draws an "A" before
-// its name), then words it starts with.
+// its name), then words it starts with, then words it holds (a look card's preview draws its own sample words first).
 function byWords<T extends Element>(nodes: T[], text: string): T | null {
   const want = text.toLowerCase();
   const some = (n: T, test: (w: string) => boolean) => words(n).some((w) => w !== '' && test(w));
@@ -25,6 +25,7 @@ function byWords<T extends Element>(nodes: T[], text: string): T | null {
     nodes.find((n) => some(n, (w) => w === want)) ??
     nodes.find((n) => some(n, (w) => w.endsWith(want))) ??
     nodes.find((n) => some(n, (w) => w.startsWith(want))) ??
+    nodes.find((n) => some(n, (w) => w.includes(want))) ??
     null
   );
 }
@@ -113,9 +114,10 @@ export const OPENABLES: Record<string, Openable> = {
   },
 };
 
-/** Open what `want` names and close what the replay opened that it no longer names. */
+/** Open what `want` names and close what the replay opened that it no longer names: the last opened first, so a panel
+ *  inside a dialog closes before the dialog does (closing the dialog first, the panel's Back would reopen its home). */
 export function syncOpen(want: readonly string[], opened: Set<string>) {
-  for (const id of opened) {
+  for (const id of [...opened].reverse()) {
     if (want.includes(id)) continue;
     const o = OPENABLES[id];
     if (o?.isOpen()) o.toggle();
@@ -129,10 +131,16 @@ export function syncOpen(want: readonly string[], opened: Set<string>) {
   }
 }
 
+// A section row of the element menu or its flyouts (a flyout, an accordion: data-menu-section, the workbench's
+// MenuFlyoutSection and MenuAccordionSection), so a control with the same words inside a section (Colours' "Border"
+// colour, which opens its own picker) is never taken for the Border section's row.
+export const MENU_ROWS =
+  '[data-context-menu] button[data-menu-section], [data-menu-flyout] button[data-menu-section]';
+
 /** The element menu opened as far as `path` goes, each row pressed by its words when not yet expanded. */
 export function openMenuPath(path: readonly string[]) {
   for (const name of path) {
-    const button = menuButton(name);
+    const button = findNode(MENU_ROWS, name);
     if (button && button.getAttribute('aria-expanded') !== 'true') button.click();
   }
 }

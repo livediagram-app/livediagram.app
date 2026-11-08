@@ -180,7 +180,7 @@ export const look: Topic<LookLayout> = {
       ];
     }
     return [
-      { at: 300, to: { kind: 'element', id: LOOK_IDS.b } },
+      { at: 900, to: { kind: 'element', id: LOOK_IDS.b } },
       { at: OPEN.press, to: { kind: 'tour', id: 'canvas-theme' }, press: true },
     ];
   },

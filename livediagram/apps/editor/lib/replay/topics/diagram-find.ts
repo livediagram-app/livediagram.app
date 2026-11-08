@@ -44,14 +44,14 @@ const WORDS = { first: 'database', second: 'decision' } as const;
 const PANEL = '[data-toolbar-search]';
 const QUERY = `${PANEL} input`;
 const SEARCH_BUTTON: CursorTarget = { kind: 'find', selector: '[data-toolbar-search-button]' };
-// A result tile by its caption (PaletteTileGrid.tsx's IconButton), the shape the word finds.
+// A result tile by its caption (PaletteTileGrid.tsx's IconButton): the flowchart shape the word names.
 const result = (caption: string): CursorTarget => ({
   kind: 'find',
   selector: `${PANEL} button`,
   text: caption,
 });
-const CYLINDER = result('Cylinder');
-const DIAMOND = result('Diamond');
+const CYLINDER = result('Database');
+const DIAMOND = result('Decision');
 
 export type FindLayout = {
   readonly db: ShapeElement;

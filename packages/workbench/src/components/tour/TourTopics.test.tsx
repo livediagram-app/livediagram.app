@@ -24,6 +24,11 @@ describe('TourTopics', () => {
     expect(rows[1]!.textContent).not.toContain('Done');
   });
 
+  it('carries each id in the attribute asked for', () => {
+    render(<TourTopics heading="H" line="L" topics={topics} onPick={() => {}} idAttribute="data-tour-track" />);
+    expect(screen.getAllByRole('button').map((r) => r.getAttribute('data-tour-track'))).toEqual(['basics', 'look']);
+  });
+
   it('picks a topic by its row, a taken one too', () => {
     const onPick = vi.fn();
     render(<TourTopics heading="H" line="L" topics={topics} onPick={onPick} />);
