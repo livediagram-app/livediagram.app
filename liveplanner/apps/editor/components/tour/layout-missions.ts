@@ -42,7 +42,9 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
     why: 'Drag the bar between two slots, and watch the spans snap.',
     lesson: 'Slots snap to twelfths, and a row’s spans always add up to twelve.',
     hints: [
-      { text: 'Hover between two slots for the bar, then drag it. Or focus it and use the arrow keys.' },
+      {
+        text: 'Hover between two slots for the bar, then drag it. Or focus it and use the arrow keys.',
+      },
       { text: 'This bar.', ring: () => DIVIDER },
     ],
     done: (c) => spans(c.now) !== spans(c.start),
@@ -64,7 +66,9 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
     why: 'Drag a row’s bottom edge up or down.',
     lesson: 'Rows can be as tall as their work needs: a tall one suits a board or a Gantt.',
     hints: [
-      { text: 'Hover a row’s bottom edge for the handle, then drag it. Or focus it and use the arrow keys.' },
+      {
+        text: 'Hover a row’s bottom edge for the handle, then drag it. Or focus it and use the arrow keys.',
+      },
       { text: 'This edge.', ring: () => ROW_EDGE },
     ],
     done: (c) => heights(c.now) !== heights(c.start),

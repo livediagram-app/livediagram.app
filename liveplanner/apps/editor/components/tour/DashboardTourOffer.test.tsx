@@ -42,7 +42,6 @@ function useOffered(canWork: boolean, hidden = false) {
 
 const wait = (ms = 1000) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
 
-
 beforeEach(() => {
   vi.useFakeTimers();
   editor();

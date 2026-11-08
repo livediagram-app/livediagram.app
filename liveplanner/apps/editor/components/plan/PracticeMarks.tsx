@@ -6,7 +6,9 @@ const CheckIcon = lucideGlyph(lucideCheck, 11);
 
 // Where the Practice Sprint's cards ship (docs/specs/026-plan/plan-tour.md "Boards: Practice Sprint"): the board's
 // first done column, else its rightmost. Undefined for a board with no columns.
-export function practiceShipColumn(setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>): PlanColumn | undefined {
+export function practiceShipColumn(
+  setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>,
+): PlanColumn | undefined {
   return firstDoneColumn(setup) ?? setup.columns.at(-1);
 }
 

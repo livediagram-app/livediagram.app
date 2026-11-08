@@ -30,12 +30,20 @@ type RowBox = {
   fill: boolean;
 };
 
-// Where each row and slot is on screen now, with its span and height from the layout.
+// Where each row and slot is on screen now, with its span and height from the layout: two queries a measure, however
+// many rows and slots.
 function measure(layout: DashboardLayout): RowBox[] {
+  const rects = (attr: string) => {
+    const out = new Map<string, DOMRect>();
+    for (const el of document.querySelectorAll<HTMLElement>(`[${attr}]`))
+      out.set(el.getAttribute(attr) ?? '', el.getBoundingClientRect());
+    return out;
+  };
+  const rowRects = rects('data-dashboard-row');
+  const slotRects = rects('data-dashboard-slot');
   const out: RowBox[] = [];
   for (const row of layout.rows) {
-    const el = document.querySelector(`[data-dashboard-row="${CSS.escape(row.id)}"]`);
-    const r = el?.getBoundingClientRect();
+    const r = rowRects.get(row.id);
     if (!r || r.width === 0) continue;
     out.push({
       id: row.id,
@@ -46,9 +54,7 @@ function measure(layout: DashboardLayout): RowBox[] {
       heightPx: row.height,
       fill: row.fill === true,
       slots: row.slots.flatMap((s) => {
-        const sr = document
-          .querySelector(`[data-dashboard-slot="${CSS.escape(s.id)}"]`)
-          ?.getBoundingClientRect();
+        const sr = slotRects.get(s.id);
         return sr ? [{ id: s.id, left: sr.left, top: sr.top, span: s.span }] : [];
       }),
     });
@@ -89,10 +95,11 @@ export function LayoutView({
 
   const [boxes, setBoxes] = useState<RowBox[]>([]);
   useEffect(() => {
-    const tick = () => setBoxes((prev) => {
-      const next = measure(layout);
-      return sameBoxes(prev, next) ? prev : next;
-    });
+    const tick = () =>
+      setBoxes((prev) => {
+        const next = measure(layout);
+        return sameBoxes(prev, next) ? prev : next;
+      });
     tick();
     const id = window.setInterval(tick, TRACK_MS);
     window.addEventListener('scroll', tick, true);
@@ -105,7 +112,11 @@ export function LayoutView({
   return (
     <>
       <Portal>
-        <div aria-hidden data-layout-view-overlay="" className="pointer-events-none fixed inset-0 z-[var(--z-overlay)]">
+        <div
+          aria-hidden
+          data-layout-view-overlay=""
+          className="pointer-events-none fixed inset-0 z-[var(--z-overlay)]"
+        >
           {boxes.map((row) => (
             <RowGuides key={row.id} row={row} condensed={condensed} />
           ))}
@@ -150,7 +161,13 @@ function RowGuides({ row, condensed }: { row: RowBox; condensed: boolean }) {
       {condensed ? null : (
         <div
           className="absolute flex animate-fade-in"
-          style={{ left: row.left, top: row.top, width: row.width, height: row.height, gap: DASHBOARD_GAP_PX }}
+          style={{
+            left: row.left,
+            top: row.top,
+            width: row.width,
+            height: row.height,
+            gap: DASHBOARD_GAP_PX,
+          }}
         >
           {Array.from({ length: DASHBOARD_SPANS }, (_, i) => (
             <span

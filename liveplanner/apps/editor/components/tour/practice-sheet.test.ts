@@ -5,7 +5,12 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { sheetMissions } from './plan-tour-steps';
-import { keptSheetSeed, practiceSheetCtx, PRACTICE_TITLE, startPracticeSheet } from './practice-sheet';
+import {
+  keptSheetSeed,
+  practiceSheetCtx,
+  PRACTICE_TITLE,
+  startPracticeSheet,
+} from './practice-sheet';
 
 const fetchSpy = vi.spyOn(globalThis, 'fetch');
 const sinks = () => ({ undo: vi.fn(), toast: vi.fn() });

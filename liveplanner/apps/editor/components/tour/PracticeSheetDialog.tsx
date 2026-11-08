@@ -36,7 +36,12 @@ import { MissionStrip } from './MissionStrip';
 import { useMissions } from './missions';
 import { LearnMore } from './LearnMore';
 import { FINISH_STEP, planTourStepTelemetryType, sheetMissions } from './plan-tour-steps';
-import { keptSheetSeed, practiceSheetCtx, PRACTICE_TITLE, startPracticeSheet } from './practice-sheet';
+import {
+  keptSheetSeed,
+  practiceSheetCtx,
+  PRACTICE_TITLE,
+  startPracticeSheet,
+} from './practice-sheet';
 import { PracticeChart, type PracticeSeries } from './PracticeChart';
 
 type Practice = { store: SheetStore; tabId: string; sheetId: string };
@@ -99,7 +104,9 @@ export function PracticeSheetDialog({
       >
         <header className="flex items-start gap-3 border-b border-slate-200 px-5 pb-3 pt-4 dark:border-slate-800">
           <div className="min-w-0 flex-1">
-            <h2 className="text-[16px] font-semibold text-slate-900 dark:text-white">Practice Sheet</h2>
+            <h2 className="text-[16px] font-semibold text-slate-900 dark:text-white">
+              Practice Sheet
+            </h2>
             <p className="mt-0.5 text-[13px] text-slate-500 dark:text-slate-400">
               A small budget to practise on. Nothing here is saved unless you keep it.
             </p>
@@ -154,7 +161,11 @@ function PracticeBody({
 
   const missions = useMemo(() => sheetMissions(touch), [touch]);
   // Read afresh each render (a new version is a new sheet to read): the checks are a handful of cell reads.
-  const check = practiceSheetCtx(sheet, (r, col) => workbook.value(sheetId, r, col), chart !== null);
+  const check = practiceSheetCtx(
+    sheet,
+    (r, col) => workbook.value(sheetId, r, col),
+    chart !== null,
+  );
   const run = useMissions({
     missions,
     ctx: check,
@@ -169,7 +180,8 @@ function PracticeBody({
   const current = run.mission ? missions.find((m) => m.id === run.mission!.id) : null;
   const marks = useMemo(() => {
     const out = new Map<string, CellMark>();
-    if (current) for (const a1 of current.cells) out.set(a1, run.phase === 'lesson' ? 'ok' : 'glow');
+    if (current)
+      for (const a1 of current.cells) out.set(a1, run.phase === 'lesson' ? 'ok' : 'glow');
     return out;
   }, [current, run.phase]);
 
@@ -181,7 +193,10 @@ function PracticeBody({
       id: crypto.randomUUID(),
       name: PRACTICE_TITLE,
       elements: [
-        { ...createShape('plan-sheet', 0, 0), planSheet: { sheetId: newPlanSheetId(), copyOf: seed.id } },
+        {
+          ...createShape('plan-sheet', 0, 0),
+          planSheet: { sheetId: newPlanSheetId(), copyOf: seed.id },
+        },
       ],
       defaultTextSize: 'sm',
       kind: 'sheet',
@@ -273,7 +288,12 @@ const shown = (v: unknown): string =>
   typeof v === 'string' || typeof v === 'number' ? String(v) : '';
 
 // The picked cells as a chart's series: the first column's words as labels, up to two columns of numbers.
-function seriesOf(store: SheetStore, sheetId: string, tabId: string, pick: ChartPick): PracticeSeries {
+function seriesOf(
+  store: SheetStore,
+  sheetId: string,
+  tabId: string,
+  pick: ChartPick,
+): PracticeSeries {
   const sheet = store.sheet(sheetId)!;
   const wb = store.workbook(tabId);
   const ix = layoutIndex(sheet.layout);

@@ -103,7 +103,11 @@ describe('overWipColumn', () => {
   it('names the first column over its limit, or null', () => {
     expect(overWipColumn(cols, [card('a', { status: 'doing' })])).toBeNull();
     expect(
-      overWipColumn(cols, [card('a', { status: 'doing' }), card('b', { status: 'doing' }), card('c', {})]),
+      overWipColumn(cols, [
+        card('a', { status: 'doing' }),
+        card('b', { status: 'doing' }),
+        card('c', {}),
+      ]),
     ).toEqual({ name: 'Doing', limit: 1 });
   });
   it('says what the amber count means', () => {
@@ -124,7 +128,17 @@ describe('sheetMissions', () => {
     currency: (a1) => currency.includes(a1),
     charted,
   });
-  const BASE = { B2: 1200, C2: 1200, B3: 400, C3: 436, B4: 150, B5: 200, C5: 265, B6: 500, C6: 500 };
+  const BASE = {
+    B2: 1200,
+    C2: 1200,
+    B3: 400,
+    C3: 436,
+    B4: 150,
+    B5: 200,
+    C5: 265,
+    B6: 500,
+    C6: 500,
+  };
 
   it('runs the five challenges in order, each with its cells', () => {
     const m = sheetMissions(false);
@@ -180,7 +194,8 @@ describe('tour subject', () => {
     document.body.innerHTML = '<div data-plan-sheet="s0"></div><div data-plan-sheet="s1"></div>';
     expect(visiblePlanWork(['s0', 's1'], sheetRoot)).toBe('s0');
     const s1 = document.querySelector('[data-plan-sheet="s1"]')!;
-    s1.getBoundingClientRect = () => ({ left: 0, top: 0, right: 10, bottom: 10, width: 10, height: 10 }) as DOMRect;
+    s1.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 10, bottom: 10, width: 10, height: 10 }) as DOMRect;
     expect(visiblePlanWork(['s0', 's1'], sheetRoot)).toBe('s1');
   });
 

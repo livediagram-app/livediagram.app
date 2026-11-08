@@ -12,7 +12,8 @@ import { emptyCount, layoutMissions } from './layout-missions';
 let n = 0;
 const id = () => `id${n++}`;
 const note = { type: 'note', title: 'N', text: '' } as const;
-const ids = (l: DashboardLayout, condensed = false) => layoutMissions(l, condensed).map((m) => m.id);
+const ids = (l: DashboardLayout, condensed = false) =>
+  layoutMissions(l, condensed).map((m) => m.id);
 const ctx = (start: DashboardLayout, now: DashboardLayout) => ({ start, now });
 const fillAll = (l: DashboardLayout) =>
   l.rows.flatMap((r) => r.slots).reduce((acc, s) => setDashboardContent(acc, s.id, note), l);
@@ -23,7 +24,11 @@ const oneSlot = (l: DashboardLayout): DashboardLayout => ({
 
 describe('layoutMissions', () => {
   it('resizes, changes a row and fills a slot on a dashboard of pairs', () => {
-    expect(ids(dashboardFromPreset('two-by-two', id))).toEqual(['resize-slots', 'row-height', 'fill-slot']);
+    expect(ids(dashboardFromPreset('two-by-two', id))).toEqual([
+      'resize-slots',
+      'row-height',
+      'fill-slot',
+    ]);
   });
 
   it('adds a slot where no row has two, and skips filling when nothing is empty', () => {
@@ -34,7 +39,10 @@ describe('layoutMissions', () => {
 
   it('skips the row height when every row fills the page', () => {
     const base = dashboardFromPreset('two-by-two', id);
-    const filling: DashboardLayout = { ...base, rows: base.rows.map((r) => ({ ...r, fill: true as const })) };
+    const filling: DashboardLayout = {
+      ...base,
+      rows: base.rows.map((r) => ({ ...r, fill: true as const })),
+    };
     expect(ids(filling)).toEqual(['resize-slots', 'fill-slot']);
   });
 
@@ -57,7 +65,10 @@ describe('layoutMissions', () => {
       ],
     };
     expect(resize!.done(ctx(start, resized))).toBe(true);
-    const taller = { ...start, rows: [{ ...row0, height: row0.height + 40 }, ...start.rows.slice(1)] };
+    const taller = {
+      ...start,
+      rows: [{ ...row0, height: row0.height + 40 }, ...start.rows.slice(1)],
+    };
     expect(row!.done(ctx(start, start))).toBe(false);
     expect(row!.done(ctx(start, taller))).toBe(true);
     expect(fill!.done(ctx(start, setDashboardContent(start, row0.slots[0]!.id, note)))).toBe(true);

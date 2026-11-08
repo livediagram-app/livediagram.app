@@ -111,9 +111,7 @@ export function PracticeSprint({
           }),
     [items, plan.practiceIds],
   );
-  const live: SprintCtx | null = shape
-    ? { ...shape, practice, openItemId: plan.openItemId }
-    : null;
+  const live: SprintCtx | null = shape ? { ...shape, practice, openItemId: plan.openItemId } : null;
   const run = useMissions({
     missions,
     ctx: live as SprintCtx,

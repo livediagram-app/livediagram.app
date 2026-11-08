@@ -77,7 +77,9 @@ describe('useMissions', () => {
   });
 
   it('finishes at once with no missions, and is idle while inactive', () => {
-    const none = renderHook(() => useMissions({ missions: [], ctx: { a: false, b: false }, active: true }));
+    const none = renderHook(() =>
+      useMissions({ missions: [], ctx: { a: false, b: false }, active: true }),
+    );
     expect(none.result.current.phase).toBe('finish');
     const off = renderHook(() =>
       useMissions({ missions: MISSIONS, ctx: { a: true, b: false }, active: false }),
@@ -123,7 +125,9 @@ describe('MissionStrip', () => {
 
   it('shows a lesson once done, a note in place of the why, and the finish', () => {
     const { rerender } = render(<Strip ctx={{ a: true, b: false }} placement="dialog" />);
-    expect(screen.getByRole('region', { name: 'Practice Sprint' }).textContent).toContain('Learned one');
+    expect(screen.getByRole('region', { name: 'Practice Sprint' }).textContent).toContain(
+      'Learned one',
+    );
     act(() => void vi.advanceTimersByTime(LESSON_MS));
     rerender(<Strip ctx={{ a: true, b: false }} placement="dialog" />);
     expect(screen.getByRole('region').textContent).toContain('Do two');

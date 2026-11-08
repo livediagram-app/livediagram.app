@@ -67,7 +67,13 @@ function show(layout: DashboardLayout, canEdit = true) {
     setCanEdit: (edit: boolean) => r.rerender(page(edit)),
     setLayout: (next: DashboardLayout) =>
       r.rerender(
-        <DashboardSettings canvas={canvas} canEdit name="Overview" layout={next} actions={actions} />,
+        <DashboardSettings
+          canvas={canvas}
+          canEdit
+          name="Overview"
+          layout={next}
+          actions={actions}
+        />,
       ),
   };
 }
@@ -119,7 +125,9 @@ describe('Dashboard Show Me: Layout View', () => {
     expect(document.querySelector('[data-dashboard]')?.hasAttribute('data-layout-view')).toBe(true);
     const spans = [...document.querySelectorAll('[data-layout-span]')].map((e) => e.textContent);
     expect(spans).toEqual(layout.rows.flatMap((r) => r.slots.map((s) => `${s.span} / 12`)));
-    const heights = [...document.querySelectorAll('[data-layout-height]')].map((e) => e.textContent);
+    const heights = [...document.querySelectorAll('[data-layout-height]')].map(
+      (e) => e.textContent,
+    );
     expect(heights).toEqual(layout.rows.map((r) => `${r.height} px`));
     expect(screen.getByRole('img', { name: 'Mission 1 of 3' })).toBeTruthy();
     expect(strip().textContent).toContain('Resize two slots');
@@ -162,7 +170,9 @@ describe('Dashboard Show Me: Layout View', () => {
     await startShowMe();
     fireEvent.click(screen.getByRole('button', { name: 'End Layout View' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
-    expect(document.querySelector('[data-dashboard]')?.hasAttribute('data-layout-view')).toBe(false);
+    expect(document.querySelector('[data-dashboard]')?.hasAttribute('data-layout-view')).toBe(
+      false,
+    );
     expect(document.querySelector('[data-layout-span]')).toBeNull();
   });
 

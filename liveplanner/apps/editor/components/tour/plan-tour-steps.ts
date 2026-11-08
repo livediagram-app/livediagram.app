@@ -92,7 +92,8 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
     why: shape.phone
       ? `Hold a dashed practice card, then drag it into ${shape.nextName}.`
       : `Drag a dashed practice card into ${shape.nextName}.`,
-    lesson: 'That is the whole idea: work moves left to right. On a real card, everyone sees it move.',
+    lesson:
+      'That is the whole idea: work moves left to right. On a real card, everyone sees it move.',
     hints: [
       {
         text: shape.phone
@@ -148,12 +149,7 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   // A board of one column has nowhere to move a card to: only the card's own missions.
   const flows = shape.nextStatus !== shape.firstStatus;
-  return [
-    ...(flows ? [move] : []),
-    open,
-    ...(shape.hasDue ? [due] : []),
-    ...(flows ? [ship] : []),
-  ];
+  return [...(flows ? [move] : []), open, ...(shape.hasDue ? [due] : []), ...(flows ? [ship] : [])];
 }
 
 // The first column whose WIP limit the board has gone over, by name and limit, or null.

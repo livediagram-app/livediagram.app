@@ -339,4 +339,3 @@ function NameField({ name, onRename }: { name: string; onRename: (name: string) 
     />
   );
 }
-

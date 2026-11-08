@@ -132,7 +132,12 @@ export function MissionStrip<Ctx>({
             <span className="flex-1" />
           )}
           {run.moreHints ? (
-            <Button variant="secondary" size="xs" className="shrink-0 gap-1.5" onClick={run.showHint}>
+            <Button
+              variant="secondary"
+              size="xs"
+              className="shrink-0 gap-1.5"
+              onClick={run.showHint}
+            >
               <HintIcon />
               {run.hintLevel === 0 ? 'Hint' : 'More Help'}
             </Button>
@@ -150,11 +155,7 @@ export function MissionStrip<Ctx>({
         className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex justify-center ${
           phone ? '' : 'px-4'
         }`}
-        style={
-          coveredBelow
-            ? { top: 0 }
-            : { bottom: phone ? clearance : clearance + STRIP_GAP_PX }
-        }
+        style={coveredBelow ? { top: 0 } : { bottom: phone ? clearance : clearance + STRIP_GAP_PX }}
       >
         <div className={phone ? 'w-full' : 'w-[26rem] max-w-full'}>{body}</div>
       </div>

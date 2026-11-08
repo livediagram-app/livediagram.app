@@ -27,7 +27,10 @@ export function PracticeChart({ series }: { series: PracticeSeries }) {
   const bar = Math.max(3, Math.min(10, (group - 6) / count - 2));
   const plot = H - AXIS;
   const summary = series.rows
-    .map((r) => `${r.label}: ${r.values.map((v, i) => `${series.names[i] || 'value'} ${v}`).join(', ')}`)
+    .map(
+      (r) =>
+        `${r.label}: ${r.values.map((v, i) => `${series.names[i] || 'value'} ${v}`).join(', ')}`,
+    )
     .join('; ');
   return (
     <figure className="m-0 flex shrink-0 flex-col gap-1">
@@ -82,7 +85,10 @@ export function PracticeChart({ series }: { series: PracticeSeries }) {
         <figcaption className="flex gap-3 text-[11px] text-slate-600 dark:text-slate-300">
           {series.names.map((name, i) => (
             <span key={i} className="inline-flex items-center gap-1">
-              <span aria-hidden className={`h-2 w-2 rounded-sm ${SERIES_SWATCH[i] ?? SERIES_SWATCH[0]}`} />
+              <span
+                aria-hidden
+                className={`h-2 w-2 rounded-sm ${SERIES_SWATCH[i] ?? SERIES_SWATCH[0]}`}
+              />
               {name || `Series ${i + 1}`}
             </span>
           ))}

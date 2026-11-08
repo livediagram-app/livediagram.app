@@ -51,16 +51,23 @@ export function useDashboardTour(hidden: boolean): {
   const ctxRef = useLatest(ctx);
   // Whether a run is on, read at its end so an end counts once.
   const activeRef = useRef(false);
-  const end = useCallback((outcome: 'completed' | 'skipped') => {
-    if (!activeRef.current) return;
-    activeRef.current = false;
-    setActive(false);
-    if (offeredRef.current && ctxRef.current) {
-      offeredRef.current = false;
-      markDashboardsTaken(ctxRef.current);
-    }
-    track('UI', 'Ended', outcome === 'completed' ? 'DashboardTourCompleted' : 'DashboardTourSkipped');
-  }, [ctxRef]);
+  const end = useCallback(
+    (outcome: 'completed' | 'skipped') => {
+      if (!activeRef.current) return;
+      activeRef.current = false;
+      setActive(false);
+      if (offeredRef.current && ctxRef.current) {
+        offeredRef.current = false;
+        markDashboardsTaken(ctxRef.current);
+      }
+      track(
+        'UI',
+        'Ended',
+        outcome === 'completed' ? 'DashboardTourCompleted' : 'DashboardTourSkipped',
+      );
+    },
+    [ctxRef],
+  );
   const start = useCallback(() => {
     activeRef.current = true;
     setRun((n) => n + 1);
