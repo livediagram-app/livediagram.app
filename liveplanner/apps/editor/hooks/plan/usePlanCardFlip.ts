@@ -11,6 +11,7 @@
 // not news. Reduced motion snaps.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
+import { markNear, runIsNear } from './useCardRunReveal';
 
 // The most cards that glide in one change; past it the board snaps.
 export const FLIP_CARDS_MAX = 40;
@@ -41,23 +42,17 @@ function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: numb
 // The cards to measure. A busy board draws its cards in runs (components/plan/card-runs.ts), and the browser skips a run
 // out of view: reading a place in one lays all its cards out again, so on a 2,000-card board one drop laid out the whole
 // board. Only the runs within a view's length of the body's view are read; a card further off never glides, as none
-// would see it.
+// would see it. Each run read is drawn first (useCardRunReveal): the flip runs in React's commit, before the reveal's
+// own pass, and a far run's cards would read as boxes of 0.
 export function cardsToMeasure(body: HTMLElement): HTMLElement[] {
   const runs = body.querySelectorAll<HTMLElement>('[data-plan-run]');
   if (runs.length === 0) return [...body.querySelectorAll<HTMLElement>('[data-plan-card]')];
   const view = body.getBoundingClientRect();
-  const my = view.height;
-  const mx = view.width;
+  const near: HTMLElement[] = [];
+  for (const run of runs) if (runIsNear(run.getBoundingClientRect(), view)) near.push(run);
   const cards: HTMLElement[] = [];
-  for (const run of runs) {
-    const r = run.getBoundingClientRect();
-    if (
-      r.bottom < view.top - my ||
-      r.top > view.bottom + my ||
-      r.right < view.left - mx ||
-      r.left > view.right + mx
-    )
-      continue;
+  for (const run of near) {
+    markNear(run);
     for (const card of run.querySelectorAll<HTMLElement>('[data-plan-card]')) cards.push(card);
   }
   return cards;

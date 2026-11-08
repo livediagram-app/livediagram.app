@@ -1315,7 +1315,13 @@ theme, with the page answering throughout.
 - **Cards out of view wait.** A busy board's cards out of view are not styled, laid out or painted until they come
   near the view, a few cards at a time, and each keeps its last drawn height meanwhile (one never drawn takes the
   usual height of its size), so the board scrolls as before. Every browser does so, Safari and the iPad included,
-  and none cuts a card's shadow, ring or hover glow at its box.
+  and none cuts a card's shadow, ring or hover glow at its box. "Near" is within one view's length of the board's
+  visible part on every side; a card a person reaches by the keyboard comes near first, so focus always lands on a
+  drawn card. Cards that arrive out of view (a filter widening, a column expanding, a swimlane change, the board
+  opening) wait too, so the change costs the cards in view, not the whole board: on a 2,000-card board on an iPad,
+  each letter typed in the Filter, and expanding a column, answers within a few tenths of a second, never seconds.
+  Find a Card and the Filter reach every card, near or not; the browser's own find in page and a screen reader's
+  reading cursor reach the cards near the view.
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:
   picking a card up and letting it go redraw only that card (its copy appearing over the page never restyles the
   board), a drop gap opening or closing in a long column slides the cards below it rather than redrawing them, the
