@@ -49,6 +49,7 @@ import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
 import type { Reaction } from '@livehuddle/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
+import type { RemoteAvatarRow } from '@/lib/presence-rows';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { bindAvatar } from '@/lib/avatar-bindings';
@@ -61,6 +62,8 @@ bindAvatar();
 
 type CanvasAvatarInput = {
   props: CanvasProps;
+  // Peers' characters on this tab, read from the peer-motion store by the canvas (hooks/collab/usePeerRows).
+  remoteAvatars: RemoteAvatarRow[];
   canvasTool: CanvasProps['canvasTool'];
   elements: CanvasProps['elements'];
   mainRef: CanvasProps['mainRef'];
@@ -76,6 +79,7 @@ type CanvasAvatarInput = {
 // travel (docs/specs/009-elements/portal-element.md). Composed into Canvas, which draws what it returns.
 export function useCanvasAvatar({
   props,
+  remoteAvatars,
   canvasTool,
   elements,
   mainRef,
@@ -146,13 +150,27 @@ export function useCanvasAvatar({
   );
   // The peers on this tab as the seat rules read them (docs/specs/009-elements/chair.md "Occupancy is presence"):
   // where they stand, what they sit on and their claim. Rebuilt only when presence changes.
-  const seatPeers = useMemo(
-    () => props.remoteAvatars.map((peer) => peer.avatar),
-    [props.remoteAvatars],
-  );
+  const seatPeers = useMemo(() => remoteAvatars.map((peer) => peer.avatar), [remoteAvatars]);
   // An Office Pod whose two seats peers hold has its door shut (docs/specs/009-elements/office.md "Office Pod"): the
   // walk's copy of the board says so, so its doorway blocks. The same array while no pod is full.
-  const walkScene = useMemo(() => closePods(walkElements, seatPeers), [walkElements, seatPeers]);
+  // Keyed on who sits where, by value: presence flushes many times a second while anyone walks, and a new walk
+  // scene each flush would rebuild the walls and the route grid while a pod is full.
+  const seatedKey = useMemo(
+    () =>
+      seatPeers
+        .flatMap((peer) => (peer.seatedOn ? [peer.seatedOn] : []))
+        .sort()
+        .join('\n'),
+    [seatPeers],
+  );
+  const walkScene = useMemo(
+    () =>
+      closePods(
+        walkElements,
+        seatedKey ? seatedKey.split('\n').map((seatedOn) => ({ seatedOn })) : [],
+      ),
+    [walkElements, seatedKey],
+  );
   const avatar = useAvatarWalk({
     active: canvasTool === 'avatar',
     // livehuddle's camera keeps the character in the middle (docs/specs/008-canvas/avatar-mode.md "The camera").
@@ -263,7 +281,7 @@ export function useCanvasAvatar({
   const padArrivals = useAvatarPadArrivals({
     self: avatar.pos,
     selfColor: props.selfParticipant.color,
-    peers: props.remoteAvatars,
+    peers: remoteAvatars,
     elements: walkElements,
   });
   // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
@@ -304,7 +322,7 @@ export function useCanvasAvatar({
     seatedOn: avatar.seatedOn,
     seatClaim: avatar.seatClaim,
     takePart: !!props.takePart,
-    peers: props.remoteAvatars,
+    peers: remoteAvatars,
     seatsOf,
     send: props.onCallSignal,
   });
@@ -319,13 +337,13 @@ export function useCanvasAvatar({
           seat: avatar.seatClaim,
           scale: selfScale,
         },
-        props.remoteAvatars.map((peer) => seatedPeer(peer)),
+        remoteAvatars.map((peer) => seatedPeer(peer)),
         seatsOf,
       );
       const onStage = stageStanders(
         stages,
         avatar.pos ? { at: avatar.pos, color: props.selfParticipant.color } : null,
-        props.remoteAvatars.map((peer) => ({
+        remoteAvatars.map((peer) => ({
           name: peer.name,
           color: peer.color,
           at: { x: peer.avatar.x, y: peer.avatar.y },
@@ -340,7 +358,7 @@ export function useCanvasAvatar({
       seatsOf,
       avatar.pos,
       stages,
-      props.remoteAvatars,
+      remoteAvatars,
       props.selfParticipant.color,
     ]),
     sameSitters,
@@ -401,7 +419,7 @@ export function useCanvasAvatar({
     elements,
     self: props.selfParticipant,
     selfConfig: avatarLook.config,
-    remoteAvatars: props.remoteAvatars,
+    remoteAvatars,
     tabPresence: props.tabPresence,
     avatar,
     enterWalking: () => {

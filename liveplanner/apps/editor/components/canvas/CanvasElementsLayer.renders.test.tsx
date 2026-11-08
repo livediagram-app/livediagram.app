@@ -82,6 +82,7 @@ vi.mock(
   },
 );
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import { createPeerMotion } from '@/lib/peer-motion';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
@@ -101,7 +102,13 @@ const STABLE = {
   collab: { selfKey: 'me' },
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
-  remoteCursors: [],
+  peers: {
+    motion: createPeerMotion(),
+    livePresenceById: new Map(),
+    selfId: 'me',
+    activeId: 't1',
+    cursorsHidden: false,
+  },
   remoteSelectionsByElement: new Map(),
   selectionInput: {
     elements: BOARD,

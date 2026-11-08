@@ -11,6 +11,7 @@ import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { StartViewTransition } from '@/components/start/StartViewTransition';
 import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
+import { useReplayState } from '@/lib/replay/replay-store';
 
 // The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
 // an empty tab offers one, never on the editor's first load.
@@ -29,8 +30,10 @@ export function EditorStartPanels() {
   // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
   // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
   // sits at the bottom, clear of it, so the two show together.
+  // Not under Watch It Built's demo either: the tab is still empty, but the canvas is showing shapes.
+  const replaying = useReplayState().active;
   const showEmptyCanvasBanner = showsEmptyCanvasCard({
-    hydrated: hydrated && !connected,
+    hydrated: hydrated && !connected && !replaying,
     zen: zenMode,
     embed: embedMode,
     drawToolArmed: !!pendingDraw,
@@ -88,13 +91,16 @@ export function EditorStartPanels() {
               }}
               onOtherModeTemplate={chooseFromOtherMode}
             />
-            {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-            <StartAgainTray
-              key={`tray:${activeTab.id}:${templateStart}`}
-              mode={templateStart}
-              tabId={activeTab.id}
-              tabName={activeTab.name}
-            />
+            {/* Closed, it can be brought back from the palette tray (StartAgainTray). Not while Watch It Built's
+                demo fills the canvas. */}
+            {replaying ? null : (
+              <StartAgainTray
+                key={`tray:${activeTab.id}:${templateStart}`}
+                mode={templateStart}
+                tabId={activeTab.id}
+                tabName={activeTab.name}
+              />
+            )}
           </>
         ) : showEmptyCanvasBanner ? (
           <EmptyCanvasBanner

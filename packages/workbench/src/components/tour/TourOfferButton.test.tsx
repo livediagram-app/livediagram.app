@@ -63,6 +63,36 @@ describe('TourOfferButton', () => {
     expect(buttons[at + 1]?.getAttribute('aria-label')).toBe('Search');
   });
 
+  it("reads a tour's own words when it gives them, as its name too", () => {
+    render(<Footer />);
+    act(() =>
+      publishTourOffer('diagram', {
+        ...offer('diagram', 'Diagram', TOUR_OFFER_RANK.mode),
+        label: 'Watch It Built',
+        description: 'A cursor builds a small diagram while you watch.',
+      }),
+    );
+    const button = screen.getByRole('button', { name: 'Watch It Built' });
+    expect(button.textContent).toBe('Watch It Built');
+  });
+
+  it("carries a host's own words through to the button, and republishes when they change", () => {
+    const { rerender } = renderHook(
+      ({ label }: { label: string }) =>
+        useOfferTour('diagram', {
+          name: 'Diagram',
+          label,
+          description: 'Watch.',
+          rank: TOUR_OFFER_RANK.mode,
+          start: () => {},
+        }),
+      { initialProps: { label: 'Watch It Built' } },
+    );
+    expect(tourOffer()).toMatchObject({ label: 'Watch It Built', description: 'Watch.' });
+    rerender({ label: 'Watch Again' });
+    expect(tourOffer()?.label).toBe('Watch Again');
+  });
+
   // The play triangle inks right of its viewBox centre by design; the glyph is moved back by a transform, so the two
   // sit within 0.1px of the disc's centre (optical-alignment.md). A pixel of padding instead (pl-px) moved it a
   // whole CSS px, the browser snapping the svg's box, and the editors' optical audits read it up to 1.4px off.

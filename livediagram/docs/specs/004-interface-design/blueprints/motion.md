@@ -152,7 +152,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
   - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
     `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
-  - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
+  - `long`: `TourPopover`, the Watch It Built fade, `PresentationHud`.
   - Inline: the `CanvasSelectionToolbars` fades take `micro`. `QuickConnectRing` takes `micro`
     for the plus and opacity, and `short` for the ring's transform. `explorer-icons` takes `micro`.
 - **`packages/ui`**: `SiteSwitcher` takes `micro` for the chevron and the sites card. `Brand` takes

@@ -24,7 +24,7 @@ const DRAW_TOUR_COPY = {
 
 const NO_API: DrawTourApi = {};
 
-// Orchestrates the Draw tour (docs/specs/023-draw-mode/draw-tour.md). Mounted once in EditorView beside TourHost.
+// Orchestrates the Draw tour (docs/specs/023-draw-mode/draw-tour.md). Mounted once in EditorView beside WatchItBuiltHost.
 // While the person is in Draw mode with an editor they can use, it offers the tour on the footer's Start Tour button
 // ("Start Draw Tour"); a press there, or the Settings row, starts it. Mirrors WorkshopTourHost. It places nothing: its
 // steps point at the dock.

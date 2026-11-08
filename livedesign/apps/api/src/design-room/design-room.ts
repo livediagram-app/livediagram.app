@@ -63,7 +63,11 @@ import { gateClientOp } from '../room-op-gate';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
-import { rosterFrames, type RosterEntry } from '../room-roster';
+import {
+  helloChangesRoster,
+  rosterFrames,
+  type RosterEntry,
+} from '@liveworkspace/api-kit/room-roster';
 import {
   sessionMatchesAccessClose,
   type AccessCloseMatch,
@@ -1324,8 +1328,12 @@ export class DesignRoom extends DurableObject<Env> {
       // older than it offers a reload. With the live build id (docs/specs/016-platform/stale-builds.md).
       const build = parseBuildId(this.roomEnv?.BUILD_ID);
       this.sendTo(ws, { kind: 'format', format: DESIGN_FORMAT, ...(build ? { build } : {}) });
-      this.broadcastPresence();
-      this.noteMultiplayer();
+      // A repeat hello that changes nothing on the roster sends nobody a new one, so one socket cannot make the
+      // room rebuild every roster at the frame-rate cap. Nobody new is present either, so no multiplayer note.
+      if (helloChangesRoster(session.presence, presence)) {
+        this.broadcastPresence();
+        this.noteMultiplayer();
+      }
       return;
     }
     if (msg.kind === 'facilitator') {
@@ -1689,7 +1697,8 @@ export class DesignRoom extends DurableObject<Env> {
     }
   }
 
-  // Send each client the roster minus its own entry (room-roster.ts).
+  // Send each client the roster minus its own entry (@liveworkspace/api-kit/room-roster): the
+  // `{ kind: 'presence', participants, agents }` ServerMessage, serialised there.
   broadcastPresence(except?: WebSocket): void {
     const entries: RosterEntry[] = [];
     for (const ws of this.state.getWebSockets()) {
@@ -1707,9 +1716,9 @@ export class DesignRoom extends DurableObject<Env> {
     const agentEntries = this.agents.live().filter((r) => r.expiresAt > now);
     if (agentEntries.length < this.agents.live().length)
       void this.agents.sweep().then(() => this.armAlarm());
-    for (const { ws, participants, agents } of rosterFrames(entries, agentEntries)) {
+    for (const { ws, frame } of rosterFrames(entries, agentEntries)) {
       try {
-        ws.send(JSON.stringify({ kind: 'presence', participants, agents } satisfies ServerMessage));
+        ws.send(frame);
       } catch {
         // Dead socket: the runtime reaps it from getWebSockets(); we only
         // shed the in-memory rate entry so the map can't leak.

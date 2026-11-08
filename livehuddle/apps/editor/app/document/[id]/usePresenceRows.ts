@@ -13,12 +13,11 @@ import {
 import type { Tab } from '@livehuddle/document';
 import type { Participant } from '@/lib/identity';
 import type { PresenceClock } from './usePresenceState';
-import type { AgentPresence, AvatarPresence } from '@livehuddle/api-schema';
+import type { AgentPresence } from '@livehuddle/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
+import type { PeerMotion, PeerRowsSource } from '@/lib/peer-motion';
 import {
   buildParticipantsByTab,
-  buildRemoteAvatarRows,
-  buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   type RemoteSelection,
 } from '@/lib/presence-rows';
@@ -35,10 +34,10 @@ type PresenceRowsDeps = {
   liveAgents: AgentPresence[];
   presenceClock: PresenceClock;
   remoteTabFocus: Map<string, string>;
-  remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), latest snapshot each.
-  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>;
+  // Peers' cursors and Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md): never read here, only handed on
+  // to the canvas, which subscribes (lib/peer-motion.ts).
+  peerMotion: PeerMotion;
 };
 
 export function usePresenceRows(deps: PresenceRowsDeps) {
@@ -52,9 +51,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     liveAgents,
     presenceClock,
     remoteTabFocus,
-    remoteCursors,
     remoteSelections,
-    remoteAvatars,
+    peerMotion,
   } = deps;
 
   // Per-element remote-selection map. Looks up each participant id
@@ -94,45 +92,52 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     () => (ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant),
     [ownPicture, selfParticipant],
   );
-  const participantsByTab = foldAgentPresence({
-    participantsByTab: buildParticipantsByTab({
-      documentShareable,
-      documentTeamId,
-      agentsPresent: liveAgents.length > 0,
-      activeId,
-      selfParticipant: shownSelf,
-      tabs,
-      remoteTabFocus,
-      remoteBesideTabs,
-      selfBesideTabId,
-      livePresence,
-      livePresenceById,
-      lastSeen: presenceClock.lastSeen,
-      now: presenceClock.now,
-    }),
-    agents: liveAgents,
-    tabIds: tabs.map((tab) => tab.id),
-    now: presenceClock.now,
-  });
-  // Cursor rows joined with presence so we get a fresh colour + name on
-  // every render and don't have to denormalise them into each `cursor`
-  // op payload. Filter to the active tab so cursors of teammates
-  // looking at a different tab don't bleed onto this one.
-  const remoteCursorRows = useMemo(
-    () => buildRemoteCursorRows(remoteCursors, livePresenceById, selfParticipant.id, activeId),
-    [remoteCursors, livePresenceById, selfParticipant.id, activeId],
-  );
-  // Peer characters for the avatar layer (docs/specs/008-canvas/avatar-mode.md).
-  const remoteAvatarRows = useMemo(
-    () =>
-      buildRemoteAvatarRows(
-        remoteAvatars,
-        livePresenceById,
-        selfParticipant.id,
+  // Built once per change of what it reads, not once per editor render: an edit renders the root but moves nobody.
+  // Only the tabs' ids are read, so it is keyed on them, not on the tabs (which change with every edit).
+  const tabIdsKey = tabs.map((tab) => tab.id).join('\n');
+  const participantsByTab = useMemo(() => {
+    const tabIds = tabIdsKey ? tabIdsKey.split('\n') : [];
+    return foldAgentPresence({
+      participantsByTab: buildParticipantsByTab({
+        documentShareable,
+        documentTeamId,
+        agentsPresent: liveAgents.length > 0,
         activeId,
+        selfParticipant: shownSelf,
+        tabs: tabIds.map((id) => ({ id })),
         remoteTabFocus,
-      ),
-    [remoteAvatars, livePresenceById, selfParticipant.id, activeId, remoteTabFocus],
+        remoteBesideTabs,
+        selfBesideTabId,
+        livePresence,
+        livePresenceById,
+        lastSeen: presenceClock.lastSeen,
+        now: presenceClock.now,
+      }),
+      agents: liveAgents,
+      tabIds,
+      now: presenceClock.now,
+    });
+  }, [
+    documentShareable,
+    documentTeamId,
+    liveAgents,
+    activeId,
+    shownSelf,
+    tabIdsKey,
+    remoteTabFocus,
+    remoteBesideTabs,
+    selfBesideTabId,
+    livePresence,
+    livePresenceById,
+    presenceClock,
+  ]);
+  // What the canvas draws peers' cursors and characters from (hooks/collab/usePeerRows): the moving store with the
+  // coarse facts it is joined with, so a colour or a name is fresh without riding in every packet, and only the
+  // active tab's peers show. Kept while none of those change, so a frame of movement renders the canvas alone.
+  const selfId = selfParticipant.id;
+  const peerRows = useMemo<PeerRowsSource>(
+    () => ({ motion: peerMotion, livePresenceById, selfId, activeId, tabFocus: remoteTabFocus }),
+    [peerMotion, livePresenceById, selfId, activeId, remoteTabFocus],
   );
   const remoteSelectionsByElement = useMemo(
     () =>
@@ -170,8 +175,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   return {
     livePresenceById,
     participantsByTab,
-    remoteCursorRows,
-    remoteAvatarRows,
+    peerRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,

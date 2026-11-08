@@ -20,6 +20,7 @@ import {
   fenceSegments,
   fenceStalled,
   fenceStep,
+  sameFences,
   type FenceSegment,
 } from '../collision';
 import { avatarScale, type AvatarConfig } from '../config';
@@ -215,6 +216,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The route grid, built when someone walks after the walls changed (never per frame, never while nobody walks).
   const navRef = useRef<{
     fences: readonly FenceSegment[];
+    shutDoors: readonly FenceSegment[];
     reach: number;
     grid: NavGrid | null;
   } | null>(null);
@@ -224,9 +226,20 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (fences.length === 0) return null;
     const reach = fenceReachFor(avatarScale(config.size));
     const nav = navRef.current;
-    if (nav && nav.fences === fences && nav.reach === reach) return nav.grid;
+    // By value: an edit that moves no wall (typing on a sticky, a peer dragging a card) makes new lists of the same
+    // lines, and the grid built over them still stands rather than being built again (~20 ms on a big office).
+    if (
+      nav &&
+      nav.reach === reach &&
+      sameFences(nav.fences, fences) &&
+      sameFences(nav.shutDoors, shutDoors)
+    ) {
+      nav.fences = fences;
+      nav.shutDoors = shutDoors;
+      return nav.grid;
+    }
     const grid = buildNavGrid(fences, reach, shutDoors);
-    navRef.current = { fences, reach, grid };
+    navRef.current = { fences, shutDoors, reach, grid };
     return grid;
   };
   const stopWalk = () => {

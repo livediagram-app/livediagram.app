@@ -137,23 +137,11 @@ export type CanvasProps = {
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
   remoteSelectionsByElement: Map<string, RemoteSelector[]>;
-  // Live cursor positions for remote participants — canvas-coords +
-  // participant identity. Rendered inside the transformed wrapper so
-  // they pan and zoom with the canvas.
-  remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
-  // Peers' Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md) on the active tab, with their
-  // name + presence colour. Rendered inside the transformed wrapper beside the
-  // local character, so everyone sees everyone walking around.
-  remoteAvatars: {
-    id: string;
-    name: string;
-    color: string;
-    avatar: import('@livehuddle/api-schema').AvatarPresence;
-    // How long the character slides to each new position (docs/specs/008-canvas/avatar-mode.md "A busy room").
-    glideMs: number;
-    // Their share role, when the room stamped one: only an Editor or a Participant plays at a game piece.
-    role?: import('@livehuddle/api-schema').AccessLevel;
-  }[];
+  // Peers' live cursors and Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), as a store the canvas
+  // subscribes to where it draws them (hooks/collab/usePeerRows), joined with their name + presence colour and
+  // kept to the active tab. Drawn inside the transformed wrapper so they pan and zoom with the canvas. A frame of
+  // their movement renders the cursor layer and the canvas, not the editor (canvas-performance.md).
+  peers: import('@/lib/peer-motion').PeerRowsSource;
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared document has no room to publish to.
   onAvatarPresence?: (avatar: import('@livehuddle/api-schema').AvatarPresence | null) => void;

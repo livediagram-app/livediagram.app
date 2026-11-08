@@ -268,9 +268,9 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md). True once a run has ended
+  // The Diagram tour's taken record, now Watch It Built (docs/specs/007-editor/watch-it-built.md). True once a run has ended
   // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
-  // does not offer the tour; Settings' Tours › "Diagram Tour" row (inverted) clears it, and turning
+  // does not offer the tour; Settings' Tours › "Watch It Built" row (inverted) clears it, and turning
   // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
@@ -738,7 +738,7 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Diagram Tour** (the [Diagram tour](editor-tour.md)) is inverted
+  **Watch It Built** (the Diagram tab's tour, [Watch It Built](watch-it-built.md); "Diagram Tour" until 8 November 2026) is inverted
   against the stored `tourSeen`. Turning it on from off and closing the dialog relaunches the tour in place
   on a Diagram tab where it is on offer (`livediagram:tour-relaunch`); on a tab in another mode it does
   nothing, and the button offers it on a Diagram tab. **Workshop Tour** is inverted against

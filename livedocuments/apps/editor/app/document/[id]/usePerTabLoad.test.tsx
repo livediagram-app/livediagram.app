@@ -17,6 +17,7 @@ const startEditorTiming = vi.hoisted(() => vi.fn(() => timing));
 vi.mock('@/lib/timing', () => ({ startEditorTiming }));
 
 import { historyApplyRemoteOp, type History } from '@/hooks/canvas/useDocumentHistory';
+import { rebasedSnapshot } from '@liveworkspace/workbench/lib/remote-op-log';
 import { usePerTabLoad } from './usePerTabLoad';
 
 // A failed tab load retries only on Retry (the nonce) or a genuine change.
@@ -491,10 +492,14 @@ describe('usePerTabLoad keeps the undo history', () => {
     await flush();
     expect(history.past).toHaveLength(1);
     expect(history.present.find((t) => t.id === 't2')!.elements).toHaveLength(1);
-    expect(history.past[0]!.find((t) => t.id === 't2')!.elements).toHaveLength(1);
+    expect(rebasedSnapshot(history, 'past', 0).find((t) => t.id === 't2')!.elements).toHaveLength(
+      1,
+    );
     // The drawn tab keeps its own content in the present, and its empty undo state stays as it was.
     expect(history.present.find((t) => t.id === 't1')).toBe(drawn);
-    expect(history.past[0]!.find((t) => t.id === 't1')!.elements).toHaveLength(0);
+    expect(rebasedSnapshot(history, 'past', 0).find((t) => t.id === 't1')!.elements).toHaveLength(
+      0,
+    );
     hook.unmount();
   });
 });

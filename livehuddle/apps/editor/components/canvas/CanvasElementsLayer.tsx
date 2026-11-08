@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
-import { identityVars } from '@livehuddle/ui';
+import { PeerCursors } from '@/components/canvas/PeerCursors';
 
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { arrowViewGeometry } from './arrow-view-frame';
@@ -105,7 +104,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     canvasTool,
     onEnterPortal,
     onPressAvatarPad,
-    remoteCursors,
+    peers,
     remoteSelectionsByElement,
     shiftDupGhostIds,
     tabFont,
@@ -327,7 +326,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           above the elements, beneath the remote cursors. */}
         <AgentFocusOverlay elements={elements} />
 
-        <RemoteCursors cursors={remoteCursors} paint={identityVars} />
+        <PeerCursors peers={peers} />
 
         {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}

@@ -163,8 +163,7 @@ export function EditorCanvasHost() {
     openNote,
     pendingDraw,
     redo,
-    remoteAvatarRows,
-    remoteCursorRows,
+    peerRows,
     remoteSelectionsByElement,
 
     retryActiveTabLoad,
@@ -343,8 +342,7 @@ export function EditorCanvasHost() {
         shiftDupGhostIds={shiftDupGhostIds}
         snapGuideStore={snapGuideStore}
         remoteSelectionsByElement={remoteSelectionsByElement}
-        remoteCursors={remoteCursorRows}
-        remoteAvatars={remoteAvatarRows}
+        peers={peerRows}
         onAvatarPresence={broadcastAvatar}
         // Who could see a character standing still: alone, its heartbeat rests (docs/specs/008-canvas/avatar-mode.md).
         avatarPeers={livePresence.length}

@@ -270,7 +270,10 @@ without an outline or a toast. A failed read logs `[changeset] join-check-failed
 
 `apply` runs through the existing mutation branch: `applyRemoteTabs(prev => applyRoomOpToTabs(prev, op))`,
 `foldRemoteOpIntoBaseline`, `countAppliedOp`. `applyRoomOpToTabs` case `changeset`: append `op.tab` when it names
-a tab not in the list, then each element op exactly as case `el` (`mergeOpOverLocal`). `refetch` calls the resync
+a tab not in the list, then the element ops through `applyElementRun`: `applyMergedElementOps` (workbench
+`lib/merged-element-ops`) merges each add or update over the element as the ops before it left it
+(`mergeIncomingElement`) through one id index and applies them with `applyElementOps`, exactly the one-op-at-a-time
+loop of case `el`, linear in the tab plus the ops. `refetch` calls the resync
 with `tabIds: [op.tabId]`, which moves the tabs, the baseline and the seen revision together. Undo history is not
 touched: `applyRemoteTabs` preserves the stacks, so Ctrl+Z never reaches a changeset. Every admitted op (catch-up
 included) starts a reveal and a toast.

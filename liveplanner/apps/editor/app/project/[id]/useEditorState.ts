@@ -512,7 +512,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteTabFocus,
     remoteSelections,
     setRemoteSelections,
-    remoteCursors,
+    peerMotion,
     setRemoteCursors,
   } = usePresenceState();
   // Dismissing a "shared with you" row lives in useProjectListActions
@@ -1165,7 +1165,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // See usePresenceRows.
   const {
     participantsByTab,
-    remoteCursorRows,
+    peerRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,
@@ -1179,8 +1179,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     liveAgents,
     presenceClock,
     remoteTabFocus,
-    remoteCursors,
     remoteSelections,
+    peerMotion,
     cursorsHidden: voteCursorsHidden,
   });
   // Comment-bearing element rows for the floating Comments panel.
@@ -2864,7 +2864,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openNote,
     participantsByTab,
     redo,
-    remoteCursorRows,
+    // Peers' cursors, for the cursor layer to subscribe to (lib/peer-motion.ts).
+    peerRows,
     remoteSelectionsByElement,
     renameTab,
     renameTabFolder,
