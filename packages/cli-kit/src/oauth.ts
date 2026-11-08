@@ -180,9 +180,10 @@ export async function loginWithDevice(
   const deviceCode = started.field('device_code');
   if (!started.ok || typeof deviceCode !== 'string')
     throw authError(`device sign-in could not start (${started.text('error') ?? 'no code'})`);
+  // Never a link with the code in it: the person types the code this terminal shows, so a link someone else sends
+  // can't bring one to approve (the device page reads no code from its address).
   io.stderr(
-    `Open ${String(started.field('verification_uri'))} and enter ${String(started.field('user_code'))}. Waiting for approval…\n` +
-      `Or open ${String(started.field('verification_uri_complete'))}\n`,
+    `Open ${String(started.field('verification_uri'))} and enter ${String(started.field('user_code'))}. Waiting for approval…\n`,
   );
   // A server's interval is trusted only as a number within bounds: "soon" or 0 would poll in a tight loop.
   let interval = devicePollInterval(started.field('interval'));

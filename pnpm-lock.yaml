@@ -7900,6 +7900,9 @@ importers:
 
   packages/workbench:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../api-kit
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema

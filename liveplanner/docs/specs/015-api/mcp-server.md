@@ -95,7 +95,7 @@ This implements the OAuth flow Manager Toolkit uses:
    `@liveplanner/api-schema`), stored in KV with a TTL.
    Rate-limited per IP, an IPv6 caller by its /64 (`clientRateKey`, as the api keys its limiters). Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
-   The token endpoint refuses a code presented with another `client_id`.
+   The token endpoint requires `client_id` and `redirect_uri` and refuses a code presented with another value of either (RFC 6749 §4.1.3). A name that reads as a liveworkspace app is refused (`400 invalid_client_metadata`), and so is one that reads as Claude, ChatGPT or Cursor unless every redirect URI is a loopback one or on that tool's own domains; at registration and again at authorize (`reservedNameRefusal`, `../packages/mcp-kit/src/oauth-names.ts`).
 3. **Authorize**: `GET /oauth/authorize` creates a short-lived session in KV and
    redirects to a **consent page in `apps/editor`** (e.g. `/oauth/authorize` or an
    Explorer "Connect an app" screen), passing the session id. The user is
@@ -121,10 +121,10 @@ This implements the OAuth flow Manager Toolkit uses:
    **name** is never a trust signal either way (it is whatever was registered, kept without bidi
    controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
    nothing, so it can neither turn the screen's words around nor look blank);
-   the host is the fact to check, which is why it must come from the server. A
+   the host is the fact to check, which is why it must come from the server. Every client that is not built in (so every registered one) wears an **Unverified App** badge beside its name, with "{name} is not made by liveworkspace, and we can't check who made it.", and the screen puts the redirect host first, "Access will be sent to {host}"; the lookup's `verified` decides it. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
-   `apps/editor/lib/mcp-consent-session.ts`. The screen is never frameable
+   `../packages/workbench/src/lib/mcp-consent-session.ts` and `../packages/workbench/src/components/oauth/OauthConsentPage.tsx` (with its test). The screen is never frameable
    (`X-Frame-Options: DENY`, [Embeds](../013-workspace/embeds.md)), so the
    Connect click can't be clickjacked from an attacker's page.
 4. **Consent + mint**: on approve, `apps/editor` calls `POST /api/oauth/exchange`

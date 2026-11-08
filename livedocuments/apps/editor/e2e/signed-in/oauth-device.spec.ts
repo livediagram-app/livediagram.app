@@ -19,7 +19,13 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
   const completed: unknown[] = [];
   await page.route(`${MCP}/oauth/device/session/*`, (route) =>
     route.request().url().endsWith('/BCDF-GHJK')
-      ? route.fulfill({ json: { clientName: 'livedocuments CLI' } })
+      ? route.fulfill({
+          json: {
+            clientName: 'livedocuments CLI',
+            startedAt: Date.now() - 60_000,
+            startedIn: { city: 'Dublin', country: 'IE' },
+          },
+        })
       : route.fulfill({ status: 404, json: { error: 'invalid_code' } }),
   );
   await page.route(`${MCP}/oauth/device/complete`, async (route) => {
@@ -27,8 +33,11 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
     await route.fulfill({ json: { ok: true } });
   });
 
-  await page.goto('/oauth/device?code=bcdf-zzzz');
+  // A code in the address is never filled in: the person types the one their terminal shows.
+  await page.goto('/oauth/device?code=BCDF-GHJK');
   await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
+  await expect(page.getByLabel('Code shown in your terminal')).toHaveValue('');
+  await page.getByLabel('Code shown in your terminal').fill('bcdf-zzzz');
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'We couldn’t find that code yet' })).toBeVisible();
   await page.getByRole('button', { name: 'Try again' }).click();
@@ -36,6 +45,12 @@ test('a signed-in person connects the CLI with the code their terminal shows', a
   await page.getByLabel('Code shown in your terminal').fill('bcdf ghjk');
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByRole('heading', { name: 'Connect livedocuments CLI' })).toBeVisible();
+  await expect(page.getByRole('note')).toContainText(
+    'Only connect if you started this in your own terminal just now.',
+  );
+  await expect(page.getByRole('note')).toContainText(
+    'Started 1 min ago, from near Dublin, Ireland.',
+  );
   await page.screenshot({ path: test.info().outputPath('oauth-device-consent.png') });
 
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
@@ -56,7 +71,8 @@ test('cancelling refuses the code, so the terminal stops waiting', async ({ page
     denied.push(route.request().postDataJSON());
     await route.fulfill({ json: { ok: true } });
   });
-  await page.goto('/oauth/device?code=BCDF-GHJK');
+  await page.goto('/oauth/device');
+  await page.getByLabel('Code shown in your terminal').fill('BCDF-GHJK');
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByRole('heading', { name: 'Connection cancelled' })).toBeVisible();

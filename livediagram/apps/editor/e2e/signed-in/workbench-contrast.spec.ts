@@ -60,8 +60,9 @@ for (const scheme of ['dark', 'light'] as const) {
       await page.route(`${MCP}/oauth/device/session/*`, (route) =>
         route.fulfill({ json: { clientName: 'livediagram CLI' } }),
       );
-      await page.goto('/oauth/device?code=bcdf-ghjk');
+      await page.goto('/oauth/device');
       await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
+      await page.getByLabel('Code shown in your terminal').fill('bcdf-ghjk');
       await expectScheme(page, scheme);
       expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
 

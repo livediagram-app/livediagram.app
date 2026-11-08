@@ -46,7 +46,7 @@ function host(script: Script = {}) {
           device_code: 'dev-1',
           user_code: 'BCDF-GHJK',
           verification_uri: 'https://www.liveplanner.app/oauth/device',
-          verification_uri_complete: 'https://www.liveplanner.app/oauth/device?code=BCDF-GHJK',
+          verification_uri_complete: 'https://www.liveplanner.app/oauth/device',
           interval: 5,
           ...script.device,
         });
@@ -170,6 +170,9 @@ describe('auth login --device', () => {
     expect(io.err()).toContain(
       'Open https://www.liveplanner.app/oauth/device and enter BCDF-GHJK. Waiting for approval…',
     );
+    // Only the code to type, never a link carrying it.
+    expect(io.err()).not.toContain('?code=');
+    expect(io.err()).not.toContain('Or open');
     expect(io.slept).toEqual([5000, 5000, 10000, 10000]);
     expect(
       forms

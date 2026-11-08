@@ -30,9 +30,31 @@ type DeviceRecord = {
   // Epoch ms the record ends; KV's own TTL is set from it on every rewrite.
   endsAt: number;
   status: 'pending' | 'approved' | 'denied';
+  // When, and roughly where, the grant started, so the page can say so beside its warning. The place is Cloudflare's
+  // city and country for the caller, never its address; absent when the request carries none (local development).
+  startedAt?: number;
+  startedIn?: StartedIn;
   token?: string;
   expiresAt?: number;
 };
+
+type StartedIn = { city?: string; country?: string };
+
+// The caller's approximate place, from Cloudflare's `request.cf`; undefined when there is none.
+function startedInOf(req: Request): StartedIn | undefined {
+  const cf: unknown = Reflect.get(req, 'cf');
+  if (typeof cf !== 'object' || cf === null) return undefined;
+  const text = (key: string) => {
+    const v: unknown = Reflect.get(cf, key);
+    return typeof v === 'string' && v ? v.slice(0, 80) : undefined;
+  };
+  const place: StartedIn = {};
+  const city = text('city');
+  const country = text('country');
+  if (city) place.city = city;
+  if (country) place.country = country;
+  return city || country ? place : undefined;
+}
 
 // KV refuses a TTL under a minute.
 const KV_MIN_TTL_S = 60;
@@ -128,6 +150,7 @@ export function registerDeviceRoutes<E extends OauthEnv>(
       return c.json({ error: 'rate_limited' }, 429);
     const deviceCode = randomBase64Url(32);
     const userCode = newUserCode(randomBytes);
+    const startedIn = startedInOf(c.req.raw);
     const record: DeviceRecord = {
       clientId,
       clientName: client.clientName,
@@ -135,6 +158,8 @@ export function registerDeviceRoutes<E extends OauthEnv>(
       interval: DEVICE_POLL_INTERVAL_S,
       endsAt: Date.now() + DEVICE_CODE_TTL_S * 1000,
       status: 'pending',
+      startedAt: Date.now(),
+      ...(startedIn ? { startedIn } : {}),
     };
     await save(c.env, deviceCode, record);
     await c.env.OAUTH_KV.put(userCodeKey(userCode), deviceCode, {
@@ -146,19 +171,24 @@ export function registerDeviceRoutes<E extends OauthEnv>(
       device_code: deviceCode,
       user_code: formatUserCode(userCode),
       verification_uri: page,
-      verification_uri_complete: `${page}?code=${formatUserCode(userCode)}`,
+      // The plain page, never one with the code in it: the page never reads a code from its address, so a link
+      // someone else sends (having started a grant themselves) can't bring a code to approve. Kept only because
+      // published CLIs print it.
+      verification_uri_complete: page,
       expires_in: DEVICE_CODE_TTL_S,
       interval: DEVICE_POLL_INTERVAL_S,
     });
   });
 
-  // What the device page shows before approval: which client asks. The user code is the read capability.
+  // What the device page shows before approval: which client asks, and when and roughly where it started. The user
+  // code is the read capability.
   app.get('/oauth/device/session/:userCode', async (c) => {
     if (await overLimit(c.env, 'device-lookup', ipOf(c), LOOKUP_LIMIT))
       return c.json({ error: 'rate_limited' }, 429);
     const found = await pendingByUserCode(c.env, c.req.param('userCode'));
     if (!found) return c.json({ error: 'invalid_code' }, 404);
-    return c.json({ clientName: found.record.clientName });
+    const { clientName, startedAt, startedIn } = found.record;
+    return c.json({ clientName, startedAt: startedAt ?? null, startedIn: startedIn ?? null });
   });
 
   // The signed-in device page posts the token it minted for this code.

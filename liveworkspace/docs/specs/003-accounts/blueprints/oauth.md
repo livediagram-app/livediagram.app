@@ -19,6 +19,7 @@ Scope, by file:
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
 | `packages/auth-client/src/sign-out.ts`                                          | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
 | `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`         | The device grant each app's MCP server runs for CLIs                                     |
+| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                               | Registration, authorize and the token each app's MCP server runs for MCP clients         |
 
 ## Domain and naming
 
@@ -98,15 +99,36 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
 For a CLI without a browser (RFC 8628), built-in clients only, state in the app's `OAUTH_KV`:
 
 1. `POST /oauth/device_authorization`: `400 invalid_client`; limited 20 an hour per IP (`429 rate_limited`); writes
-   `device:<device code>` and `usercode:<user code>` for 600 s; answers the codes, `expires_in` 600, `interval` 5.
-2. `GET /oauth/device/session/:userCode` (30 per 10 minutes, shared with complete and deny): which client asks, or
-   `404 invalid_code`.
+   `device:<device code>` (with `startedAt` and `startedIn`, the caller's approximate city and country from
+   Cloudflare's `request.cf`, never its address) and `usercode:<user code>` for 600 s; answers the codes,
+   `expires_in` 600, `interval` 5. `verification_uri_complete` is the plain page, the same as `verification_uri`:
+   the page never takes the code from its address, so a link someone else sends can't carry a code to approve.
+   It stays in the answer only because published CLIs print it.
+2. `GET /oauth/device/session/:userCode` (30 per 10 minutes, shared with complete and deny): which client asks, when
+   and roughly where it started (`{ clientName, startedAt, startedIn }`), or `404 invalid_code`. The page shows
+   both beside "Only connect if you started this in your own terminal just now".
 3. The signed-in page posts `POST /oauth/device/complete` with the token it minted, or `/oauth/device/deny`; the user
    code key goes.
 4. `POST /oauth/token` with `urn:ietf:params:oauth:grant-type:device_code`: `authorization_pending`, `slow_down` (the
    interval grows by 5 s; only `devicepoll:` is written by polls), `access_denied`, `expired_token`, or the token.
 
 User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
+
+### Registered clients (each app's MCP server, `mcp-kit`)
+
+Registration (`POST /oauth/register`, RFC 7591) is open, so a registered client's name is never a trust signal:
+
+- `GET /oauth/session/:id` answers `verified: true` only for a built-in client; the consent page marks every other
+  one Unverified App, says it is not made by liveworkspace, and shows the redirect host first.
+- A name that reads as a product or the platform (`liveworkspace`, `livediagram`, `liveplanner`, `livedocuments`,
+  `livepages`, `livedesign`, `livehuddle`) is refused, `400 invalid_client_metadata`, at registration and again
+  at `/oauth/authorize` for a client registered before the rule. A name that reads as a well-known AI tool (Claude
+  or Anthropic, ChatGPT or OpenAI, Cursor) is refused unless every redirect URI is a loopback one or on that
+  tool's own domains (`claude.ai`, `claude.com`, `anthropic.com`; `chatgpt.com`, `openai.com`; `cursor.com`,
+  `cursor.sh`). "Reads as" is case-insensitive, after NFKC, at any word start, across spaces, punctuation and
+  camel case (`Live Diagram`, `my-Claude`, `C.l.a.u.d.e`) (`reservedNameRefusal`, `oauth-names.ts`).
+- `POST /oauth/token` with `authorization_code` requires `client_id` and `redirect_uri`, each equal to the one the
+  code was issued for (RFC 6749 §4.1.3); a missing one is `400 invalid_request`.
 
 ## Data and persistence
 
@@ -148,6 +170,7 @@ User codes are 8 characters of `BCDFGHJKLMNPQRSTVWXZ`.
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (33)                                          | client credentials and vouching |
 | `packages/auth-client/src/oauth.test.ts`, `silent.test.ts`, `verify.test.ts`, `return-path.test.ts` | the app side                    |
 | `packages/mcp-kit/src/oauth-device.test.ts`                                                         | the device grant                |
+| `packages/mcp-kit/src/oauth.test.ts`, `oauth-names.test.ts`                                         | registration and the token      |
 
 ## Constants and configuration
 
