@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AgentPresence, AvatarPresence } from '@livehuddle/api-schema';
+import type { AgentPresence } from '@livehuddle/api-schema';
+import { createPeerMotion } from '@/lib/peer-motion';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';
@@ -12,7 +13,8 @@ import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
 // peer's last-seen timestamp, and their tab focus / selection / cursor /
 // walking character (docs/specs/008-canvas/avatar-mode.md). useRoomConnection writes these through the returned
 // setters; useEditorState reads them (via lib/presence-rows) to build the
-// avatar / cursor / selection rows the editor renders.
+// selection and tab rows the editor renders. Cursors and characters go to the
+// peer-motion store, which the canvas reads (hooks/collab/usePeerRows).
 export function usePresenceState() {
   // Live presence: the participants connected to this document's
   // Durable Object room right now. Includes ourselves once our `hello`
@@ -82,24 +84,18 @@ export function usePresenceState() {
   // in BoxedElementView so users can see in real time what others are
   // working on.
   const [remoteSelections, setRemoteSelections] = useState<Map<string, RemoteSelection>>(new Map());
-  // Live cursor positions for every remote participant. Stored in
-  // canvas-coords (pre-transform) so they pan / zoom correctly with
-  // the canvas. `null` cursor means the participant moved off the
-  // canvas surface; we keep the entry around (vs deleting) so the
-  // last-seen position can still inform analytics later if needed.
-  const [remoteCursors, setRemoteCursors] = useState<
-    Map<string, { tabId: string; x: number; y: number } | null>
-  >(new Map());
-  // Per-participant Avatar-mode characters (docs/specs/008-canvas/avatar-mode.md), keyed by participant
-  // id: the latest presence snapshot each peer published, or absent once they
-  // leave the mode (an `avatar: null` op deletes the entry). Scoped per tab in
-  // the op itself, like cursors.
+  // Live cursor positions for every remote participant, and their Avatar-mode characters
+  // (docs/specs/008-canvas/avatar-mode.md), held in the peer-motion store rather than here: they change
+  // up to once a frame, and state here would render the whole editor for each frame
+  // (docs/specs/008-canvas/canvas-performance.md "A collaborator moving renders what shows them, not the
+  // editor"). Cursors are in canvas-coords (pre-transform) so they pan / zoom with the canvas; a `null`
+  // cursor means the participant moved off the canvas surface. A character is the latest snapshot each
+  // peer published, absent once they leave the mode (an `avatar: null` op deletes the entry). Both are
+  // scoped per tab in the op itself. One store per editor, so its setters keep their identity.
+  const [peerMotion] = useState(createPeerMotion);
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): where each peer is looking. Unsolicited, so it is
   // collected for everyone and read only while somebody is being followed.
   const [remoteViewports, setRemoteViewports] = useState<Map<string, RemoteViewport>>(new Map());
-  const [remoteAvatars, setRemoteAvatars] = useState<
-    Map<string, { tabId: string; avatar: AvatarPresence }>
-  >(new Map());
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id, as the
   // room tells this socket alone.
   const [followerIds, setFollowerIds] = useState<readonly string[]>([]);
@@ -116,12 +112,11 @@ export function usePresenceState() {
     setRemoteTabFocus,
     remoteSelections,
     setRemoteSelections,
-    remoteCursors,
-    setRemoteCursors,
-    remoteAvatars,
+    peerMotion,
+    setRemoteCursors: peerMotion.cursors.set,
     remoteViewports,
     setRemoteViewports,
-    setRemoteAvatars,
+    setRemoteAvatars: peerMotion.avatars.set,
     followerIds,
     setFollowerIds,
   };

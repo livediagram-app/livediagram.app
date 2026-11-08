@@ -15,9 +15,9 @@ import { useOwnPicture } from '@/lib/own-picture';
 import type { PresenceClock } from './usePresenceState';
 import type { AgentPresence } from '@liveplanner/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
+import type { PeerMotion, PeerRowsSource } from '@/lib/peer-motion';
 import {
   buildParticipantsByTab,
-  buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   type RemoteSelection,
 } from '@/lib/presence-rows';
@@ -34,8 +34,9 @@ type PresenceRowsDeps = {
   liveAgents: AgentPresence[];
   presenceClock: PresenceClock;
   remoteTabFocus: Map<string, string>;
-  remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>;
   remoteSelections: Map<string, RemoteSelection>;
+  // Peers' cursors: never read here, only handed on to the cursor layer, which subscribes (lib/peer-motion.ts).
+  peerMotion: PeerMotion;
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): true while a hide-cursors vote is open on the
   // active tab. Peer cursors are withheld from the render so nobody can watch
   // the room converge on a favourite. Presence / selection badges are untouched
@@ -55,8 +56,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
     liveAgents,
     presenceClock,
     remoteTabFocus,
-    remoteCursors,
     remoteSelections,
+    peerMotion,
     cursorsHidden,
   } = deps;
   // Our own entry shows our Google picture to us whatever Show My Google Picture says: it is our screen.
@@ -96,36 +97,52 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in each person's other pane.
   const remoteBesideTabs = useRemoteBesideTabs();
   const selfBesideTabId = useLocalBesideTab();
-  const participantsByTab = foldAgentPresence({
-    participantsByTab: buildParticipantsByTab({
-      projectShareable,
-      projectTeamId,
-      agentsPresent: liveAgents.length > 0,
-      activeId,
-      selfParticipant,
-      tabs,
-      remoteTabFocus,
-      remoteBesideTabs,
-      selfBesideTabId,
-      livePresence,
-      livePresenceById,
-      lastSeen: presenceClock.lastSeen,
+  // Built once per change of what it reads, not once per editor render: an edit renders the root but moves nobody.
+  // Only the tabs' ids are read, so it is keyed on them, not on the tabs (which change with every edit).
+  const tabIdsKey = tabs.map((tab) => tab.id).join('\n');
+  const participantsByTab = useMemo(() => {
+    const tabIds = tabIdsKey ? tabIdsKey.split('\n') : [];
+    return foldAgentPresence({
+      participantsByTab: buildParticipantsByTab({
+        projectShareable,
+        projectTeamId,
+        agentsPresent: liveAgents.length > 0,
+        activeId,
+        selfParticipant,
+        tabs: tabIds.map((id) => ({ id })),
+        remoteTabFocus,
+        remoteBesideTabs,
+        selfBesideTabId,
+        livePresence,
+        livePresenceById,
+        lastSeen: presenceClock.lastSeen,
+        now: presenceClock.now,
+      }),
+      agents: liveAgents,
+      tabIds,
       now: presenceClock.now,
-    }),
-    agents: liveAgents,
-    tabIds: tabs.map((tab) => tab.id),
-    now: presenceClock.now,
-  });
-  // Cursor rows joined with presence so we get a fresh colour + name on
-  // every render and don't have to denormalise them into each `cursor`
-  // op payload. Filter to the active tab so cursors of teammates
-  // looking at a different tab don't bleed onto this one.
-  const remoteCursorRows = useMemo(
-    () =>
-      cursorsHidden
-        ? []
-        : buildRemoteCursorRows(remoteCursors, livePresenceById, selfParticipant.id, activeId),
-    [cursorsHidden, remoteCursors, livePresenceById, selfParticipant.id, activeId],
+    });
+  }, [
+    projectShareable,
+    projectTeamId,
+    liveAgents,
+    activeId,
+    selfParticipant,
+    tabIdsKey,
+    remoteTabFocus,
+    remoteBesideTabs,
+    selfBesideTabId,
+    livePresence,
+    livePresenceById,
+    presenceClock,
+  ]);
+  // What the cursor layer draws peers' cursors from (hooks/collab/usePeerRows): the moving store with the coarse
+  // facts it is joined with, so a colour or a name is fresh without riding in every packet, and only the active
+  // tab's cursors show. Kept while none of those change, so a frame of movement renders the cursor layer alone.
+  const selfId = selfParticipant.id;
+  const peerRows = useMemo<PeerRowsSource>(
+    () => ({ motion: peerMotion, livePresenceById, selfId, activeId, cursorsHidden }),
+    [peerMotion, livePresenceById, selfId, activeId, cursorsHidden],
   );
   const remoteSelectionsByElement = useMemo(
     () =>
@@ -163,7 +180,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   return {
     livePresenceById,
     participantsByTab,
-    remoteCursorRows,
+    peerRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,

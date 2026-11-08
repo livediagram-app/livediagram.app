@@ -134,14 +134,19 @@ export type DistributionGuide = {
 
 export type DistributionSpan = { from: number; to: number; cross: number; axis?: 'x' | 'y' };
 
-type DistAxisItem = { low: number; high: number; crossLow: number; crossHigh: number };
 type DistAxisSpan = { from: number; to: number } | (DistributionSpan & { axis: 'x' | 'y' });
 type DistAxisResult = { delta: number; gap: number; spans: DistAxisSpan[] };
 
-// The gaps an item keeps with its nearest neighbour on each side along
-// one axis (only neighbours overlapping it on the cross axis, so a real
-// row / column). Each comes with the span that draws it.
-type ItemGap = { gap: number; span: DistributionSpan & { axis: 'x' | 'y' } };
+// The other elements' edges, one array per edge, read along one axis: `low` / `high` on it and `crossLow` /
+// `crossHigh` across it. X and Y share the four arrays (X's cross edges are Y's own), so index i is the same element on
+// both. Flat arrays rather than an object per element: a snap reads them thousands of times per move.
+type Axis = {
+  axis: 'x' | 'y';
+  low: Float64Array;
+  high: Float64Array;
+  crossLow: Float64Array;
+  crossHigh: Float64Array;
+};
 
 // Per-axis equal-spacing search. `cand` is the moving element's interval
 // on the primary axis (low + size) plus its span on the cross axis;
@@ -150,103 +155,311 @@ type ItemGap = { gap: number; span: DistributionSpan & { axis: 'x' | 'y' } };
 // horizontal row, Y-spacing a vertical column). Returns the smallest snap
 // within `threshold` that makes a gap equal, or null.
 //
-// `crossGaps(i)` lends item i's gaps on the OTHER axis: the candidate
+// `across` lends each item's gaps on the OTHER axis: the candidate
 // sitting one of those gaps beyond item i keeps spacing consistent across
 // axes (two boxes side by side, a third dropped under one of them).
 function distributeAxis(
   cand: { low: number; size: number; crossLow: number; crossHigh: number },
-  items: DistAxisItem[],
+  items: Axis,
   threshold: number,
-  crossGaps: (index: number) => ItemGap[],
+  across: NearestNeighbours,
 ): DistAxisResult | null {
-  const row = items.filter((n) => n.crossLow < cand.crossHigh && n.crossHigh > cand.crossLow);
+  const { low, high, crossLow, crossHigh } = items;
+  const inRow = new Int32Array(low.length);
+  let rowLength = 0;
+  for (let i = 0; i < low.length; i++)
+    if (crossLow[i]! < cand.crossHigh && crossHigh[i]! > cand.crossLow) inRow[rowLength++] = i;
+  const row = inRow.subarray(0, rowLength);
   const cHigh = cand.low + cand.size;
   let best: DistAxisResult | null = null;
-  const consider = (delta: number, gap: number, spans: DistAxisSpan[]) => {
-    if (gap < 1 || Math.abs(delta) > threshold) return;
-    if (!best || Math.abs(delta) < Math.abs(best.delta)) best = { delta, gap, spans };
-  };
+  // Whether a snap of `delta` making `gap` beats the best so far; the caller builds its spans only when it does.
+  const beats = (delta: number, gap: number) =>
+    !(gap < 1 || Math.abs(delta) > threshold) && (!best || Math.abs(delta) < Math.abs(best.delta));
+  // The row in order of `low`, ties in row order. Sorted once, it serves both searches below.
+  const sorted = sortIndices(low, row);
   // Equidistant: a neighbour P to the left and Q to the right; centre the
-  // candidate in the gap so the two facing gaps are equal.
-  for (const P of row) {
-    if (P.high > cand.low + threshold) continue;
-    for (const Q of row) {
-      if (Q.low < cHigh - threshold || Q.low <= P.high) continue;
-      const gap = (Q.low - P.high - cand.size) / 2;
-      const targetLow = P.high + gap;
-      consider(targetLow - cand.low, gap, [
-        { from: P.high, to: targetLow },
-        { from: targetLow + cand.size, to: Q.low },
-      ]);
+  // candidate in the gap so the two facing gaps are equal. The centred snap is within the threshold only for a Q whose
+  // low lies within twice the threshold of 2 * cand.low + cand.size - P.high, so each P looks up just those Qs in the
+  // sorted row (taking them in row order, as a scan of the whole row did) rather than pairing every P with every Q: a
+  // tall lane overlaps nearly the whole board, which made each move quadratic.
+  const qsStart = firstAtLeast(sorted, low, cHigh - threshold, 0);
+  // Widened by a hair so rounding never drops a Q `beats` would take; `beats` still judges each exactly.
+  const reach = 2 * threshold + 1e-6;
+  const near: number[] = [];
+  for (const p of row) {
+    if (high[p]! > cand.low + threshold) continue;
+    const centre = 2 * cand.low + cand.size - high[p]!;
+    near.length = 0;
+    for (let k = firstAtLeast(sorted, low, centre - reach, qsStart); k < sorted.length; k++) {
+      if (low[sorted[k]!]! > centre + reach) break;
+      near.push(sorted[k]!);
+    }
+    near.sort((a, b) => a - b);
+    for (const q of near) {
+      if (low[q]! <= high[p]!) continue;
+      const gap = (low[q]! - high[p]! - cand.size) / 2;
+      const targetLow = high[p]! + gap;
+      if (beats(targetLow - cand.low, gap))
+        best = {
+          delta: targetLow - cand.low,
+          gap,
+          spans: [
+            { from: high[p]!, to: targetLow },
+            { from: targetLow + cand.size, to: low[q]! },
+          ],
+        };
     }
   }
   // Equal extension: an adjacent neighbour pair (P, Q) defines a gap;
   // snap the candidate one gap beyond Q (to the right) or before P (left).
-  const sorted = [...row].sort((a, b) => a.low - b.low);
   for (let i = 0; i + 1 < sorted.length; i++) {
-    const P = sorted[i]!;
-    const Q = sorted[i + 1]!;
-    if (Q.low <= P.high) continue;
-    const gap = Q.low - P.high;
-    if (cand.low + cand.size / 2 > Q.high) {
-      const targetLow = Q.high + gap;
-      consider(targetLow - cand.low, gap, [
-        { from: P.high, to: Q.low },
-        { from: Q.high, to: targetLow },
-      ]);
+    const p = sorted[i]!;
+    const q = sorted[i + 1]!;
+    if (low[q]! <= high[p]!) continue;
+    const gap = low[q]! - high[p]!;
+    if (cand.low + cand.size / 2 > high[q]!) {
+      const targetLow = high[q]! + gap;
+      if (beats(targetLow - cand.low, gap))
+        best = {
+          delta: targetLow - cand.low,
+          gap,
+          spans: [
+            { from: high[p]!, to: low[q]! },
+            { from: high[q]!, to: targetLow },
+          ],
+        };
     }
-    if (cand.low + cand.size / 2 < P.low) {
-      const targetLow = P.low - gap - cand.size;
-      consider(targetLow - cand.low, gap, [
-        { from: targetLow + cand.size, to: P.low },
-        { from: P.high, to: Q.low },
-      ]);
+    if (cand.low + cand.size / 2 < low[p]!) {
+      const targetLow = low[p]! - gap - cand.size;
+      if (beats(targetLow - cand.low, gap))
+        best = {
+          delta: targetLow - cand.low,
+          gap,
+          spans: [
+            { from: targetLow + cand.size, to: low[p]! },
+            { from: high[p]!, to: low[q]! },
+          ],
+        };
     }
   }
   // Cross-axis: the neighbour N the candidate faces in this row already
-  // keeps a gap on the other axis; sit that same gap beyond (or before) N.
+  // keeps a gap on the other axis (to its nearest neighbour on each side); sit that same gap beyond (or before) N.
+  const other = across.items;
   const candMid = cand.low + cand.size / 2;
-  items.forEach((N, i) => {
-    if (!(N.crossLow < cand.crossHigh && N.crossHigh > cand.crossLow)) return;
-    const after = candMid > N.high;
-    const before = candMid < N.low;
-    if (!after && !before) return;
-    for (const { gap, span } of crossGaps(i)) {
-      const targetLow = after ? N.high + gap : N.low - gap - cand.size;
-      consider(targetLow - cand.low, gap, [
-        after ? { from: N.high, to: targetLow } : { from: targetLow + cand.size, to: N.low },
-        span,
-      ]);
-    }
-  });
+  // N's gap of `gap` to neighbour M on the other axis, drawn from `from` to `to` there.
+  const offer = (n: number, after: boolean, m: number, gap: number, from: number, to: number) => {
+    const targetLow = after ? high[n]! + gap : low[n]! - gap - cand.size;
+    if (!beats(targetLow - cand.low, gap)) return;
+    // The span sits at the middle of the pair's shared extent across the other axis.
+    const cross =
+      (Math.max(other.crossLow[m]!, other.crossLow[n]!) +
+        Math.min(other.crossHigh[m]!, other.crossHigh[n]!)) /
+      2;
+    best = {
+      delta: targetLow - cand.low,
+      gap,
+      spans: [
+        after ? { from: high[n]!, to: targetLow } : { from: targetLow + cand.size, to: low[n]! },
+        { axis: other.axis, from, to, cross },
+      ],
+    };
+  };
+  for (const n of row) {
+    const after = candMid > high[n]!;
+    if (!after && !(candMid < low[n]!)) continue;
+    const left = across.leftOf(n);
+    if (left >= 0)
+      offer(n, after, left, other.low[n]! - other.high[left]!, other.high[left]!, other.low[n]!);
+    const right = across.rightOf(n);
+    if (right >= 0)
+      offer(n, after, right, other.low[right]! - other.high[n]!, other.high[n]!, other.low[right]!);
+  }
   return best;
 }
 
-// Item i's gap to its nearest neighbour on each side along one axis,
-// among the items overlapping it on the cross axis. The span is drawn on
-// `axis` at the middle of the pair's shared cross-axis extent.
-function nearestGaps(items: DistAxisItem[], i: number, axis: 'x' | 'y'): ItemGap[] {
-  const N = items[i]!;
-  let left: DistAxisItem | null = null;
-  let right: DistAxisItem | null = null;
-  for (let j = 0; j < items.length; j++) {
-    const M = items[j]!;
-    if (j === i || !(M.crossLow < N.crossHigh && M.crossHigh > N.crossLow)) continue;
-    if (M.high <= N.low && (!left || M.high > left.high)) left = M;
-    if (M.low >= N.high && (!right || M.low < right.low)) right = M;
+// The first position from `from` in `order` (indices sorted by `key`) whose key is at least `value`.
+function firstAtLeast(order: Int32Array, key: Float64Array, value: number, from: number): number {
+  let lo = from;
+  let hi = order.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (key[order[mid]!]! < value) lo = mid + 1;
+    else hi = mid;
   }
-  const cross = (M: DistAxisItem) =>
-    (Math.max(M.crossLow, N.crossLow) + Math.min(M.crossHigh, N.crossHigh)) / 2;
-  const out: ItemGap[] = [];
-  if (left) {
-    const span = { axis, from: left.high, to: N.low, cross: cross(left) };
-    out.push({ gap: N.low - left.high, span });
+  return lo;
+}
+
+// Each item's nearest neighbour on either side along `items`' axis, among the items overlapping it across (a real row
+// or column): the one whose high is the greatest at most its low (left), and whose low is the least at least its high
+// (right), ties to the earlier item. -1 when there is none.
+type NearestNeighbours = {
+  items: Axis;
+  leftOf: (i: number) => number;
+  rightOf: (i: number) => number;
+};
+
+// Indexed once per snap, on the first question: the cross axis cut into buckets about an item wide, each listing the
+// items that reach into it sorted by high (and again by low). An item's neighbours share a bucket with it, so it looks
+// in just its own buckets, walking each outward from where it stands until an item that shares its row. A walk over the
+// whole board sorted by high crossed every other column's items on the way (a tall lane asks for nearly every item).
+function nearestNeighbours(items: Axis): NearestNeighbours {
+  const { low, high, crossLow, crossHigh } = items;
+  const count = low.length;
+  const shares = (i: number, j: number) =>
+    j !== i && crossLow[j]! < crossHigh[i]! && crossHigh[j]! > crossLow[i]!;
+  let index: {
+    first: Int32Array;
+    last: Int32Array;
+    start: Int32Array;
+    byHigh: Int32Array;
+    byLow: Int32Array;
+  } | null = null;
+  const build = () => {
+    // Buckets as wide as the average item (so each spans one or two), and never more buckets than items. Two items
+    // that overlap across share a point, so they share that point's bucket: each item goes into every bucket from its
+    // smaller cross edge to its larger.
+    let min = Infinity;
+    let max = -Infinity;
+    let total = 0;
+    for (let i = 0; i < count; i++) {
+      min = Math.min(min, crossLow[i]!, crossHigh[i]!);
+      max = Math.max(max, crossLow[i]!, crossHigh[i]!);
+      total += Math.abs(crossHigh[i]! - crossLow[i]!);
+    }
+    const width = Math.max(total / count, (max - min) / count);
+    // NaN (no extent, or edges that are not numbers) falls back to one bucket, which is a walk over every item.
+    const buckets = Math.min(count, Math.floor((max - min) / width) + 1) || 1;
+    const bucketOf = (c: number) => {
+      const b = (c - min) / width;
+      return b >= buckets ? buckets - 1 : b > 0 ? Math.floor(b) : 0;
+    };
+    const first = new Int32Array(count);
+    const last = new Int32Array(count);
+    const start = new Int32Array(buckets + 1);
+    for (let i = 0; i < count; i++) {
+      first[i] = bucketOf(Math.min(crossLow[i]!, crossHigh[i]!));
+      last[i] = bucketOf(Math.max(crossLow[i]!, crossHigh[i]!));
+      for (let b = first[i]!; b <= last[i]!; b++) start[b + 1]!++;
+    }
+    for (let b = 0; b < buckets; b++) start[b + 1]! += start[b]!;
+    // Filled in sorted order, each bucket comes out sorted too.
+    const fill = (order: Int32Array) => {
+      const out = new Int32Array(start[buckets]!);
+      const at = start.slice(0, buckets);
+      for (const i of order) for (let b = first[i]!; b <= last[i]!; b++) out[at[b]!++] = i;
+      return out;
+    };
+    const all = new Int32Array(count);
+    for (let i = 0; i < count; i++) all[i] = i;
+    // By high, ties latest first, so a walk down meets the earliest; by low, ties earliest first.
+    const byLow = fill(sortIndices(low, all));
+    const byHigh = fill(sortIndices(high, all.reverse()));
+    return { first, last, start, byHigh, byLow };
+  };
+  return {
+    items,
+    leftOf: (i) => {
+      const { first, last, start, byHigh } = (index ??= build());
+      let best = -1;
+      for (let b = first[i]!; b <= last[i]!; b++) {
+        // The last place in this bucket whose high is at most this item's low, walking down.
+        let lo = start[b]!;
+        let hi = start[b + 1]!;
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          if (high[byHigh[mid]!]! <= low[i]!) lo = mid + 1;
+          else hi = mid;
+        }
+        for (let k = lo - 1; k >= start[b]!; k--) {
+          const j = byHigh[k]!;
+          // Past the best another bucket found, nothing further down beats it.
+          if (best >= 0 && (high[j]! < high[best]! || (high[j] === high[best] && j > best))) break;
+          if (shares(i, j)) {
+            best = j;
+            break;
+          }
+        }
+      }
+      return best;
+    },
+    rightOf: (i) => {
+      const { first, last, start, byLow } = (index ??= build());
+      let best = -1;
+      for (let b = first[i]!; b <= last[i]!; b++) {
+        // The first place in this bucket whose low is at least this item's high, walking up.
+        let lo = start[b]!;
+        let hi = start[b + 1]!;
+        while (lo < hi) {
+          const mid = (lo + hi) >> 1;
+          if (low[byLow[mid]!]! < high[i]!) lo = mid + 1;
+          else hi = mid;
+        }
+        for (let k = lo; k < start[b + 1]!; k++) {
+          const j = byLow[k]!;
+          if (best >= 0 && (low[j]! > low[best]! || (low[j] === low[best] && j > best))) break;
+          if (shares(i, j)) {
+            best = j;
+            break;
+          }
+        }
+      }
+      return best;
+    },
+  };
+}
+
+// A double's bits as two unsigned words, for sorting by them. Which word is the high one depends on the machine's
+// byte order: 1 is 0x3ff00000 in the high word.
+const bits = new Float64Array(1);
+const words = new Uint32Array(bits.buffer);
+bits[0] = 1;
+const HIGH_WORD = +(words[1] === 0x3ff00000);
+const LOW_WORD = 1 - HIGH_WORD;
+
+// `indices` sorted by `key[index]`, ties in the order given (stable). A radix sort on the keys' bits: linear, and it
+// calls no comparator, which was most of a snap's time when it sorted the board several times per move.
+function sortIndices(key: Float64Array, indices: Int32Array): Int32Array {
+  const n = indices.length;
+  let src = Int32Array.from(indices);
+  if (n < 2) return src;
+  // Each key's bits, flipped so unsigned order is numeric order: a negative number's all, a positive one's sign. The
+  // same pass counts each of the eight bytes' values, one table of 256 per byte.
+  const lowBits = new Uint32Array(key.length);
+  const highBits = new Uint32Array(key.length);
+  const counts = new Int32Array(8 * 256);
+  for (const i of indices) {
+    bits[0] = key[i]! + 0; // -0 joins 0, as a comparator's a - b ties them
+    const flip = -(words[HIGH_WORD]! >>> 31) >>> 0;
+    const lowWord = (words[LOW_WORD]! ^ flip) >>> 0;
+    const highWord = (words[HIGH_WORD]! ^ (flip | 0x80000000)) >>> 0;
+    lowBits[i] = lowWord;
+    highBits[i] = highWord;
+    for (let b = 0; b < 4; b++) {
+      counts[(b << 8) | ((lowWord >>> (b * 8)) & 255)]!++;
+      counts[((b + 4) << 8) | ((highWord >>> (b * 8)) & 255)]!++;
+    }
   }
-  if (right) {
-    const span = { axis, from: N.high, to: right.low, cross: cross(right) };
-    out.push({ gap: right.low - N.high, span });
+  let dst = new Int32Array(n);
+  for (let pass = 0; pass < 8; pass++) {
+    const word = pass < 4 ? lowBits : highBits;
+    const shift = (pass & 3) * 8;
+    const base = pass << 8;
+    // A byte every key shares leaves the order as it is.
+    if (counts[base | ((word[src[0]!]! >>> shift) & 255)] === n) continue;
+    for (let d = 0, sum = 0; d < 256; d++) {
+      const c = counts[base | d]!;
+      counts[base | d] = sum;
+      sum += c;
+    }
+    for (let k = 0; k < n; k++) {
+      const i = src[k]!;
+      dst[counts[base | ((word[i]! >>> shift) & 255)]!++] = i;
+    }
+    const sortedSoFar = dst;
+    dst = src;
+    src = sortedSoFar;
   }
-  return out;
+  return src;
 }
 
 // Snap a dragged element to EQUAL spacing with its neighbours (so three
@@ -261,20 +474,19 @@ export function distributionSnap(
   threshold: number,
 ): { dx: number; dy: number; guides: DistributionGuide[] } {
   const boxed = elements.filter((el): el is BoxedElement => isBoxed(el) && !excludeIds.has(el.id));
-  const xItems = boxed.map((el) => ({
-    low: el.x,
-    high: el.x + el.width,
-    crossLow: el.y,
-    crossHigh: el.y + el.height,
-  }));
-  const yItems = boxed.map((el) => ({
-    low: el.y,
-    high: el.y + el.height,
-    crossLow: el.x,
-    crossHigh: el.x + el.width,
-  }));
-  // Same index in both lists is the same element, so X-spacing borrows an
-  // element's vertical gaps and Y-spacing its horizontal ones.
+  const left = new Float64Array(boxed.length);
+  const right = new Float64Array(boxed.length);
+  const top = new Float64Array(boxed.length);
+  const bottom = new Float64Array(boxed.length);
+  boxed.forEach((el, i) => {
+    left[i] = el.x;
+    right[i] = el.x + el.width;
+    top[i] = el.y;
+    bottom[i] = el.y + el.height;
+  });
+  const xItems: Axis = { axis: 'x', low: left, high: right, crossLow: top, crossHigh: bottom };
+  const yItems: Axis = { axis: 'y', low: top, high: bottom, crossLow: left, crossHigh: right };
+  // X-spacing borrows an element's vertical gaps and Y-spacing its horizontal ones.
   const xs = distributeAxis(
     {
       low: candidate.x,
@@ -284,7 +496,7 @@ export function distributionSnap(
     },
     xItems,
     threshold,
-    (i) => nearestGaps(yItems, i, 'y'),
+    nearestNeighbours(yItems),
   );
   const ys = distributeAxis(
     {
@@ -295,7 +507,7 @@ export function distributionSnap(
     },
     yItems,
     threshold,
-    (i) => nearestGaps(xItems, i, 'x'),
+    nearestNeighbours(xItems),
   );
   const dx = xs?.delta ?? 0;
   const dy = ys?.delta ?? 0;

@@ -483,9 +483,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setRemoteTabFocus,
     remoteSelections,
     setRemoteSelections,
-    remoteCursors,
+    peerMotion,
     setRemoteCursors,
-    remoteAvatars,
     setRemoteAvatars,
     remoteViewports,
     setRemoteViewports,
@@ -1222,8 +1221,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // See usePresenceRows.
   const {
     participantsByTab,
-    remoteCursorRows,
-    remoteAvatarRows,
+    peerRows,
     remoteSelectionsByElement,
     agentFocusByElement,
     lockedByOther,
@@ -1237,9 +1235,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     liveAgents,
     presenceClock,
     remoteTabFocus,
-    remoteCursors,
     remoteSelections,
-    remoteAvatars,
+    peerMotion,
   });
   // Comment-bearing element rows for the floating Comments panel.
   // Only the boxed elements carry threads (arrows can't), so the
@@ -2346,8 +2343,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pendingDraw,
     redo,
     refreshRecentImages,
-    remoteAvatarRows,
-    remoteCursorRows,
+    // Peers' cursors and characters, for the canvas to subscribe to (lib/peer-motion.ts).
+    peerRows,
     remoteSelectionsByElement,
     removeImageFromElement,
     renameTab,

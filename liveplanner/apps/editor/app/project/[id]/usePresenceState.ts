@@ -3,6 +3,7 @@ import type { AgentPresence } from '@liveplanner/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';
+import { createPeerMotion } from '@/lib/peer-motion';
 
 // What presence statuses render from: each peer's last-seen instant and the clock they are read at.
 export type PresenceClock = { now: number; lastSeen: ReadonlyMap<string, number> };
@@ -81,14 +82,14 @@ export function usePresenceState() {
   // in BoxedElementView so users can see in real time what others are
   // working on.
   const [remoteSelections, setRemoteSelections] = useState<Map<string, RemoteSelection>>(new Map());
-  // Live cursor positions for every remote participant. Stored in
-  // canvas-coords (pre-transform) so they pan / zoom correctly with
-  // the canvas. `null` cursor means the participant moved off the
-  // canvas surface; we keep the entry around (vs deleting) so the
-  // last-seen position can still inform analytics later if needed.
-  const [remoteCursors, setRemoteCursors] = useState<
-    Map<string, { tabId: string; x: number; y: number } | null>
-  >(new Map());
+  // Live cursor positions for every remote participant, held in the peer-motion store rather than here:
+  // they change up to once a frame, and state here would render the whole editor for each frame
+  // (docs/specs/008-canvas/canvas-performance.md "A collaborator moving renders what shows them, not the
+  // editor"). Stored in canvas-coords (pre-transform) so they pan / zoom correctly with the canvas. A `null`
+  // cursor means the participant moved off the canvas surface; we keep the entry around (vs deleting) so
+  // the last-seen position can still inform analytics later if needed. One store per editor, so its
+  // setter keeps its identity.
+  const [peerMotion] = useState(createPeerMotion);
 
   return {
     livePresence,
@@ -102,7 +103,7 @@ export function usePresenceState() {
     setRemoteTabFocus,
     remoteSelections,
     setRemoteSelections,
-    remoteCursors,
-    setRemoteCursors,
+    peerMotion,
+    setRemoteCursors: peerMotion.cursors.set,
   };
 }

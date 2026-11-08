@@ -4,15 +4,23 @@ import { renderHook } from '@testing-library/react';
 import type { Tab } from '@livehuddle/document';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { Participant } from '@/lib/identity';
+import { createPeerMotion } from '@/lib/peer-motion';
+import { usePeerAvatarRows, usePeerCursorRows } from '@/hooks/collab/usePeerRows';
 import { usePresenceRows } from './usePresenceRows';
 
 const p = (id: string): Participant => ({ id, name: id, color: '#123456', status: 'online' });
 const self = p('me');
 const peer = p('peer');
 
+const motion = createPeerMotion();
+motion.cursors.set(new Map([['peer', { tabId: 't1', x: 10, y: 20 }]]));
+motion.avatars.set(
+  new Map([['peer', { tabId: 't1', avatar: { x: 5, y: 6 } as unknown as AvatarPresence }]]),
+);
+
 const rows = () =>
-  renderHook(() =>
-    usePresenceRows({
+  renderHook(() => {
+    const presence = usePresenceRows({
       documentShareable: true,
       documentTeamId: null,
       activeId: 't1',
@@ -22,13 +30,14 @@ const rows = () =>
       liveAgents: [],
       presenceClock: { now: 1000, lastSeen: new Map([['peer', 1000]]) },
       remoteTabFocus: new Map([['peer', 't1']]),
-      remoteCursors: new Map([['peer', { tabId: 't1', x: 10, y: 20 }]]),
       remoteSelections: new Map(),
-      remoteAvatars: new Map([
-        ['peer', { tabId: 't1', avatar: { x: 5, y: 6 } as unknown as AvatarPresence }],
-      ]),
-    }),
-  ).result.current;
+      peerMotion: motion,
+    });
+    return {
+      remoteCursorRows: usePeerCursorRows(presence.peerRows),
+      remoteAvatarRows: usePeerAvatarRows(presence.peerRows),
+    };
+  }).result.current;
 
 describe('usePresenceRows', () => {
   it("shows a peer's cursor and character on the active tab", () => {

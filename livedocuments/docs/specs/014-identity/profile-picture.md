@@ -26,7 +26,7 @@ livedocuments' half: how the picture reaches the editor, the room and the avatar
   share-link visitor carry none), and only when it passes `isProfilePictureUrl`
   (`@liveworkspace/sites/picture`: Google's image host, https, at most 512 characters). It is refused whole, never
   clamped: a cut URL is a broken image. Anything else is dropped and logged (`[profile-picture] rejected`).
-- The roster (`rosterFrames`, `room-roster.ts`) sends pictures only to account sessions. Everyone else gets the same
+- The roster (`rosterFrames`, `@liveworkspace/api-kit/room-roster`) sends pictures only to account sessions. Everyone else gets the same
   roster with every picture removed, so the URL never reaches an anonymous visitor.
 - `identity` frames go through the same rules and are ignored before the session's hello.
 

@@ -652,6 +652,21 @@ export function boardTakesType(
   return boardAddTypes(setup, types).some((t) => t.id === typeId);
 }
 
+// A quick filter that lets every card through (none set, or every part empty): a board projected with it shows
+// the same cards as one projected with none, so a caller can reuse that projection rather than project twice.
+export function isQuickFilterEmpty(quick: QuickFilter | undefined): boolean {
+  return (
+    !quick ||
+    (!quick.mine &&
+      !quick.person &&
+      !quick.priority &&
+      !quick.type &&
+      !quick.due &&
+      !quick.text?.trim() &&
+      !quick.filters?.length)
+  );
+}
+
 export function quickFilterMatches(
   quick: QuickFilter | undefined,
   item: Item,

@@ -137,10 +137,10 @@ export type CanvasProps = {
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
   remoteSelectionsByElement: Map<string, RemoteSelector[]>;
-  // Live cursor positions for remote participants — canvas-coords +
-  // participant identity. Rendered inside the transformed wrapper so
-  // they pan and zoom with the canvas.
-  remoteCursors: { id: string; name: string; color: string; x: number; y: number }[];
+  // Peers' live cursors, as a store the cursor layer subscribes to (hooks/collab/usePeerRows), joined with their
+  // name + presence colour and kept to the active tab. Drawn inside the transformed wrapper so they pan and zoom
+  // with the canvas. A frame of their movement renders the cursor layer, not the editor (canvas-performance.md).
+  peers: import('@/lib/peer-motion').PeerRowsSource;
   // `target` is what the pointer is over, so a paste can tell the canvas from
   // a floating panel lying on top of it (@liveworkspace/workbench/lib/canvas-pointer.ts).
   onCanvasPointerMove: (

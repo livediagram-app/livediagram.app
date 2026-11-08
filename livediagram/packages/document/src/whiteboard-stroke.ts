@@ -122,10 +122,42 @@ function boxesApart(pts: Point[], a: Point, b: Point, reach: number): boolean {
   );
 }
 
+// Whether the brush's swept box, grown by `reach`, misses the element's box: the box itself unturned, else the circle
+// round its centre that holds it at any turn.
+function brushClearOfBox(
+  el: { x: number; y: number; width: number; height: number; rotation?: number },
+  a: Point,
+  b: Point,
+  reach: number,
+): boolean {
+  let minX = el.x;
+  let minY = el.y;
+  let maxX = el.x + el.width;
+  let maxY = el.y + el.height;
+  if ((el.rotation ?? 0) % 360 !== 0) {
+    const cx = el.x + el.width / 2;
+    const cy = el.y + el.height / 2;
+    const half = Math.hypot(el.width, el.height) / 2;
+    minX = cx - half;
+    maxX = cx + half;
+    minY = cy - half;
+    maxY = cy + half;
+  }
+  return (
+    Math.max(a.x, b.x) + reach < minX ||
+    Math.min(a.x, b.x) - reach > maxX ||
+    Math.max(a.y, b.y) + reach < minY ||
+    Math.min(a.y, b.y) - reach > maxY
+  );
+}
+
 /** True when a brush of radius `r` swept from `a` to `b` touches the stroke's ink. */
 export function strokeTouchesBrush(el: FreehandElement, a: Point, b: Point, r: number): boolean {
-  const pts = freehandAbsolutePoints(el);
   const reach = r + inkHalfWidth(el);
+  // Every point lies in the stroke's box (normalised to it), so a brush clear of that box (of its circle, turned) misses
+  // without decoding a point: the eraser asks this of every stroke on the board on every move.
+  if (brushClearOfBox(el, a, b, reach)) return false;
+  const pts = freehandAbsolutePoints(el);
   if (pts.length === 0 || boxesApart(pts, a, b, reach)) return false;
   if (pts.length === 1) return distToSegment(pts[0]!, a, b) <= reach;
   for (let i = 1; i < pts.length; i++) {

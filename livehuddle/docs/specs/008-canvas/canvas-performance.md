@@ -79,6 +79,12 @@ large move rides as one layer").
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
+- **A collaborator moving renders what shows them, not the editor.** Peers' cursors and characters
+  (Avatar mode) are held in one peer-motion store per editor, not as the editor's render state. A
+  frame of their movement (up to 60 a second in a small room) renders the cursor layer (for a cursor)
+  or the canvas that draws the characters (for a character) and nothing else: the editor root, the
+  panels and the chrome do not render for it. What reads presence coarsely (who is on which tab, the
+  people lists) is kept by value and changes only when someone joins, leaves or changes tab.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry

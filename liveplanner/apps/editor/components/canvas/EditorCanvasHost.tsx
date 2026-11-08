@@ -139,7 +139,7 @@ export function EditorCanvasHost() {
     openNote,
     pauseTimer,
     redo,
-    remoteCursorRows,
+    peerRows,
     remoteSelectionsByElement,
     resetTimer,
     resumeTimer,
@@ -360,7 +360,7 @@ export function EditorCanvasHost() {
             shiftDupGhostIds={shiftDupGhostIds}
             snapGuideStore={snapGuideStore}
             remoteSelectionsByElement={remoteSelectionsByElement}
-            remoteCursors={remoteCursorRows}
+            peers={peerRows}
             onCanvasPointerMove={(x, y, target) => {
               canvasPointerRef.current = pastePointer(x, y, target ?? null);
               broadcastCursor(x !== null && y !== null ? { x, y } : null);

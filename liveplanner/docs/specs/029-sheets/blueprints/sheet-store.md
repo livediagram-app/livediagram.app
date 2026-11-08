@@ -73,7 +73,7 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
 - `apps/api/src/db/sheets.ts`: `listSheets` (sheets then their cells, two queries), `listSheetHeads`,
   `readSheetHead` (the row without cells), `readCells`, `readFormulaCells`, `existingCells`, `usedSheetRows`,
   `insertSheetStatements`, `copySheetStatements`, `cellWriteStatements`, `axisDeleteStatement`,
-  `headWriteStatement` (the rev raise with a new layout or title, under the rev guard), `recountStatement`,
+  `headWriteStatement` (the rev raise with a new layout or title, under the rev guard), `recountStatement`, `cellCountDeltaStatement`,
   `projectSavedStatement`, `deleteSheetStatement` and `projectSheetTotals`; re-exported from `db/index.ts`. Row ↔
   `Sheet` in the same file (`headFromRow`, `headToJson`).
 - **Cell writes by `json_each`**: the changed cells go as one JSON parameter per statement, so a 5,000-cell
@@ -103,13 +103,21 @@ The triggers find the sheet's project through `plan_tabs` for the row's tab, and
   Rows or columns deleted remove their cells with `DELETE ... AND row_id IN (SELECT value FROM json_each(?3))`.
 
 - Every write is one `batch` in the plan's store: `UPDATE sheets SET rev = rev + 1, write_nonce = ?, updated_at = ?, updated_by = ?
-[, layout = ?] [, title = ?] WHERE plan_id = ? AND id = ? AND rev = ? RETURNING rev`, then the cell statements,
-  then the
-  recount `UPDATE sheets SET cell_count = (SELECT COUNT(*) ...), cell_bytes = (SELECT COALESCE(SUM(length(input)) +
-SUM(length(format)), 0) ...)`. Each later statement runs only `WHERE EXISTS (... write_nonce = ?)`, this write's
+[, layout = ?] [, title = ?] WHERE plan_id = ? AND id = ? AND rev = ? RETURNING rev`, then the cell statements
+  with the count statements around them (**Counts** below). Each later statement runs only `WHERE EXISTS (... write_nonce = ?)`, this write's
   own random nonce, so a write that lost the `rev` race (no row returned) changes nothing even if another write
   reached the same rev number meanwhile; it retries from a fresh read up to `SHEET_WRITE_RETRIES`, then
   `409 sheet_busy`.
+- **Counts**: `cell_count` and `cell_bytes` (the `COUNT(*)` and `SUM(length(input) + length(format))` of the sheet's
+  cells) are kept exact by every write, without reading the whole sheet on an ordinary one. A cell write (and a
+  layout write's cell rewrites) moves them by delta: `cellCountDeltaStatement` with `-1` before the cell statements
+  takes the named cells' stored count and bytes off, and with `+1` after them adds back what those cells hold now, so
+  a new cell, an overwrite that grows or shrinks, a format SQLite patched and a cell the write removed all land
+  exactly; two primary-key lookups per named cell, whatever the sheet's size (measured on a 50,000-cell sheet: 8.6 ms
+  of CPU for a one-cell write with the whole-sheet recount, 0.3 ms with the delta). Rows or columns deleted remove
+  cells nobody names, so that write ends with the whole recount instead (`recountStatement`, a `COUNT(*)` and a `SUM` over every cell of the sheet), as do a sheet inserted or
+  imported (`insertSheetStatements`); a copy carries its source's counts. A write with no cells (a title, rows
+  inserted) changes neither.
 - **Caps**: before writing, `cell_count + cellsAddedUpperBound(applied) > SHEET_CELLS_MAX` reads the touched keys'
   existence (`readCells`) for the exact delta; over → `413 sheet_full`. Bytes the same against `cell_bytes`.
   Project totals from `projectSheetTotals` (one `COUNT` and `SUM`) for `PROJECT_CELLS_MAX` and `PROJECT_SHEETS_MAX`.

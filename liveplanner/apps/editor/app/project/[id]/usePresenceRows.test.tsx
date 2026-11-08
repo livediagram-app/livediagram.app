@@ -3,15 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type { Tab } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
+import { createPeerMotion } from '@/lib/peer-motion';
+import { usePeerCursorRows } from '@/hooks/collab/usePeerRows';
 import { usePresenceRows } from './usePresenceRows';
 
 const p = (id: string): Participant => ({ id, name: id, color: '#123456', status: 'online' });
 const self = p('me');
 const peer = p('peer');
 
+const motion = createPeerMotion();
+motion.cursors.set(new Map([['peer', { tabId: 't1', x: 10, y: 20 }]]));
+
 const rows = (cursorsHidden: boolean) =>
-  renderHook(() =>
-    usePresenceRows({
+  renderHook(() => {
+    const presence = usePresenceRows({
       projectShareable: true,
       projectTeamId: null,
       activeId: 't1',
@@ -21,11 +26,12 @@ const rows = (cursorsHidden: boolean) =>
       liveAgents: [],
       presenceClock: { now: 1000, lastSeen: new Map([['peer', 1000]]) },
       remoteTabFocus: new Map([['peer', 't1']]),
-      remoteCursors: new Map([['peer', { tabId: 't1', x: 10, y: 20 }]]),
       remoteSelections: new Map(),
+      peerMotion: motion,
       cursorsHidden,
-    }),
-  ).result.current;
+    });
+    return { remoteCursorRows: usePeerCursorRows(presence.peerRows) };
+  }).result.current;
 
 // The hide-cursors vote (docs/specs/012-collaboration/session-tools.md) sets cursorsHidden.
 describe('usePresenceRows cursorsHidden', () => {

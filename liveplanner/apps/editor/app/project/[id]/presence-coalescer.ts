@@ -1,13 +1,16 @@
 import type { Dispatch, SetStateAction } from 'react';
+import type { CursorPos } from '@/lib/peer-motion';
 
-export type CursorPos = { tabId: string; x: number; y: number } | null;
+export type { CursorPos } from '@/lib/peer-motion';
 
 // Presence-packet coalescing: cursor ops arrive at up to 30 Hz per
 // peer, and committing state per packet re-rendered the whole editor
 // tree per message (~90 renders/s with three peers, while the local
 // user is idle). Buffer them in refs and commit ONE Map update per
-// animation frame — the same rAF pattern the pan and snap-guide
-// paths use.
+// animation frame, the same rAF pattern the pan and snap-guide
+// paths use. The commit lands in the peer-motion store
+// (lib/peer-motion.ts), so even that one per frame renders only the
+// cursor layer, never the editor root.
 //
 // One coalescer per room connection, created inside the effect so a
 // reconnect starts clean, and cancelled with it.

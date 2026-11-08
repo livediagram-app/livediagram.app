@@ -323,5 +323,36 @@ describe('distributionSnap', () => {
       const out = distributionSnap(box(200, 195, 100, 100), [a, b], new Set(['a']), 10);
       expect(out.dy).toBe(0); // B has no other-axis neighbour left
     });
+
+    // Two boxes level above (or below) `n`, both overlapping it across: its gap to either is 50, and the copied span
+    // sits under whichever comes first on the board, however the search indexes them.
+    const n = shape('n', { x: 50, y: 100, width: 100, height: 50 });
+    const borrowed = (els: ShapeElement[]) =>
+      distributionSnap(box(203, 100, 50, 50), els, new Set(), 10).guides.find((g) => g.axis === 'x')
+        ?.spans[1];
+
+    it('borrows from the earlier of two equally near neighbours above', () => {
+      const left = shape('left', { x: 0, y: 0, width: 90, height: 50 });
+      const right = shape('right', { x: 100, y: 0, width: 100, height: 50 });
+      expect(borrowed([left, right, n])).toEqual({ axis: 'y', from: 50, to: 100, cross: 70 });
+      expect(borrowed([right, left, n])).toEqual({ axis: 'y', from: 50, to: 100, cross: 125 });
+    });
+
+    it('borrows from the earlier of two equally near neighbours below', () => {
+      const left = shape('left', { x: 0, y: 200, width: 90, height: 50 });
+      const right = shape('right', { x: 100, y: 200, width: 100, height: 50 });
+      expect(borrowed([left, right, n])).toEqual({ axis: 'y', from: 150, to: 200, cross: 70 });
+      expect(borrowed([right, left, n])).toEqual({ axis: 'y', from: 150, to: 200, cross: 125 });
+    });
+
+    it('finds no gap to borrow among boxes with no width', () => {
+      const a = shape('a', { x: 0, y: 0, width: 0, height: 50 });
+      const b = shape('b', { x: 0, y: 100, width: 0, height: 50 });
+      expect(distributionSnap(box(47, 100, 50, 50), [a, b], new Set(), 10)).toEqual({
+        dx: 0,
+        dy: 0,
+        guides: [],
+      });
+    });
   });
 });

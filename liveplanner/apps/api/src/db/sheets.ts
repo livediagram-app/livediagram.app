@@ -396,7 +396,9 @@ export function projectSavedStatement(
   ).bind(projectId, sheetId, now, nonce);
 }
 
-// Keep cell_count and cell_bytes exact after a write.
+// Keep cell_count and cell_bytes exact after a write that changes cells beyond the ones it names: rows or columns
+// deleted, a sheet inserted or imported. Reads every cell of the sheet, so an ordinary cell write moves the counts by
+// delta instead (cellCountDeltaStatement).
 export function recountStatement(
   env: PlanEnv,
   projectId: string,
@@ -409,6 +411,29 @@ export function recountStatement(
                        FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2)
      WHERE plan_id = ?1 AND id = ?2`,
   ).bind(projectId, sheetId);
+}
+
+// One side of a cell write's count delta, under the write's nonce (blueprint sheet-store.md "Counts"): `sign` -1
+// before the cell statements takes the named cells' stored count and bytes off, +1 after them adds back what those
+// cells hold now. A cell the write removes is no longer there to add back, a new one was not there to take off, and a
+// format SQLite patched is measured as stored, so the counts stay exactly what recountStatement would give. Two
+// primary-key lookups per named cell, whatever the sheet's size.
+export function cellCountDeltaStatement(
+  env: PlanEnv,
+  projectId: string,
+  sheetId: string,
+  nonce: string,
+  keys: readonly string[],
+  sign: 1 | -1,
+): D1PreparedStatement {
+  const named = `FROM sheet_cells WHERE plan_id = ?1 AND sheet_id = ?2 AND ${cellsNamedBy('?3')}`;
+  return env.PLAN_DB.prepare(
+    `UPDATE sheets SET
+       cell_count = cell_count + ?5 * (SELECT COUNT(*) ${named}),
+       cell_bytes = cell_bytes + ?5 * (SELECT COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0)
+                                         ${named})
+     WHERE plan_id = ?1 AND id = ?2 AND write_nonce = ?4`,
+  ).bind(projectId, sheetId, JSON.stringify(keys), nonce, sign);
 }
 
 // JSON arrays of `items`, each at most about `max` bytes.
