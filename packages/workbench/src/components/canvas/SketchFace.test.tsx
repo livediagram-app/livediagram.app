@@ -65,7 +65,7 @@ describe('SketchFace', () => {
     expect(container.innerHTML).toBe('<span>face</span>');
   });
 
-  it('puts an inert, hidden ink copy under the live face', () => {
+  it('puts an inert, hidden ink copy under the live face, before it is first painted', async () => {
     const { container } = render(
       <SketchFace active>
         <svg>
@@ -74,6 +74,8 @@ describe('SketchFace', () => {
         <span>words</span>
       </SketchFace>,
     );
+    // Taken with the board's other faces at the end of the task that mounted it (face-take-batch.ts).
+    await Promise.resolve();
     const [ink, live] = Array.from(container.children);
     expect(ink!.hasAttribute('data-sketch-ink')).toBe(true);
     expect(ink!.getAttribute('aria-hidden')).toBe('true');
@@ -104,6 +106,7 @@ describe('SketchFace', () => {
       </SketchFace>,
     );
     const ink = container.firstElementChild!;
+    await act(async () => {});
     expect(ink.querySelectorAll('rect')).toHaveLength(1);
     await act(async () => count.bump());
     await act(async () => count.bump());
@@ -111,6 +114,9 @@ describe('SketchFace', () => {
     await act(async () => vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS - 1));
     expect(ink.querySelectorAll('rect')).toHaveLength(1);
     await act(async () => vi.advanceTimersByTime(1));
+    // Settled: copied at the next frame, with the board's other faces.
+    expect(ink.querySelectorAll('rect')).toHaveLength(1);
+    await act(async () => vi.advanceTimersToNextFrame());
     expect(ink.querySelectorAll('rect')).toHaveLength(3);
     expect(renders).toBe(3);
   });
@@ -211,6 +217,7 @@ describe('the ink copy’s animations', () => {
       liveFan = [fakeAnimation(a!, 'fan', 300), fakeAnimation(b!, 'fan', 220)];
       await act(async () => count.bump());
       await act(async () => vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS));
+      await act(async () => vi.advanceTimersToNextFrame());
       const [inkA, inkB] = Array.from(ink!.querySelectorAll('button'));
       expect(copied.get(inkA!)!.map((x) => x.currentTime)).toEqual([300, 0]);
       expect(copied.get(inkB!)!.map((x) => x.currentTime)).toEqual([220, 0]);

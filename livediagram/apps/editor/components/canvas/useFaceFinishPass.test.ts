@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
+import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { clearMarkerFace, drawMarkerFace } from './useFaceFinishPass';
+import { clearMarkerFace, drawMarkerFace, useFaceFinishPass } from './useFaceFinishPass';
 
 // docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes". jsdom lays nothing out, so each box is given
 // its size through data-w / data-h.
@@ -114,5 +115,109 @@ describe('drawMarkerFace', () => {
   it('shades only shapes in pencil under Sketch, leaving frames to the wobble', () => {
     const root = face(card());
     expect(drawMarkerFace(root, 'el', 'pencil')).toBe(0);
+  });
+});
+
+// docs/specs/008-canvas/finish.md "Performance": a board's faces take together, so mounting a board reads every face
+// before it writes into any. A read after a write is a layout the browser is forced to run.
+describe('useFaceFinishPass on a board', () => {
+  function board(n: number): HTMLElement[] {
+    document.body.innerHTML = Array.from(
+      { length: n },
+      (_, i) =>
+        `<div class="face" data-i="${i}" data-w="300" data-h="200" style="position:absolute">${card()}</div>`,
+    ).join('');
+    return [...document.querySelectorAll<HTMLElement>('.face')];
+  }
+
+  // Counts reads of a layout size made after a write since the last read: each one a forced layout.
+  function countForcedLayouts(): { forced: () => number; reset: () => void; restore: () => void } {
+    let dirty = false;
+    let forced = 0;
+    const read = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth')!;
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        if (dirty) forced++;
+        dirty = false;
+        return read.get!.call(this) as number;
+      },
+    });
+    const original = {
+      appendChild: Node.prototype.appendChild,
+      setAttribute: Element.prototype.setAttribute,
+      after: Element.prototype.after,
+    };
+    Node.prototype.appendChild = function <T extends Node>(this: Node, child: T): T {
+      dirty = true;
+      return original.appendChild.call(this, child) as T;
+    };
+    Element.prototype.setAttribute = function (this: Element, name: string, value: string) {
+      dirty = true;
+      original.setAttribute.call(this, name, value);
+    };
+    Element.prototype.after = function (this: Element, ...nodes: (Node | string)[]) {
+      dirty = true;
+      original.after.apply(this, nodes);
+    };
+    return {
+      forced: () => forced,
+      reset: () => {
+        dirty = false;
+        forced = 0;
+      },
+      restore: () => {
+        Object.defineProperty(HTMLElement.prototype, 'offsetWidth', read);
+        Object.assign(Node.prototype, { appendChild: original.appendChild });
+        Object.assign(Element.prototype, {
+          setAttribute: original.setAttribute,
+          after: original.after,
+        });
+      },
+    };
+  }
+
+  it('reads every face before it draws any, so mounting forces no layout per face', async () => {
+    for (const n of [1, 12, 40]) {
+      const faces = board(n);
+      const probe = countForcedLayouts();
+      try {
+        const hooks = faces.map((el, i) =>
+          renderHook(() => useFaceFinishPass({ current: el }, 'marker', `el-${i}`)),
+        );
+        // Taken at the end of the task that mounted them, before the board is first painted.
+        expect(document.querySelector('[data-marker-ink]')).toBeNull();
+        probe.reset();
+        await Promise.resolve();
+        expect(document.querySelectorAll('[data-marker-ink]')).toHaveLength(n);
+        expect(probe.forced()).toBe(0);
+        for (const hook of hooks) hook.unmount();
+        // Taken one face at a time, as before, each face after the first forced one.
+        probe.reset();
+        for (const [i, el] of faces.entries()) drawMarkerFace(el, `el-${i}`);
+        expect(probe.forced()).toBe(n - 1);
+      } finally {
+        probe.restore();
+      }
+    }
+  });
+
+  it('draws what a single take draws', async () => {
+    const [el] = board(1);
+    const { unmount } = renderHook(() => useFaceFinishPass({ current: el! }, 'marker', 'el'));
+    await Promise.resolve();
+    const batched = el!.innerHTML;
+    unmount();
+    expect(el!.querySelector('[data-marker-ink]')).toBeNull();
+    drawMarkerFace(el!, 'el');
+    expect(el!.innerHTML).toBe(batched);
+  });
+
+  it('never draws a face that unmounted before its take', async () => {
+    const [el] = board(1);
+    const { unmount } = renderHook(() => useFaceFinishPass({ current: el! }, 'marker', 'el'));
+    unmount();
+    await Promise.resolve();
+    expect(el!.querySelector('[data-marker-ink]')).toBeNull();
   });
 });
