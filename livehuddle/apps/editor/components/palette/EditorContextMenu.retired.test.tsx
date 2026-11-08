@@ -48,7 +48,15 @@ const qaBoard = {
   label: 'Questions',
 } as unknown as Element;
 const square = { ...createShape('square', 0, 0), id: 's', label: 'Box' } as Element;
-const image = { id: 'i', type: 'image', x: 300, y: 0, width: 100, height: 80, imageId: null } as Element;
+const image = {
+  id: 'i',
+  type: 'image',
+  x: 300,
+  y: 0,
+  width: 100,
+  height: 80,
+  imageId: null,
+} as Element;
 
 describe('a retired shape’s element menu', () => {
   it('offers no Shape, Opacity or Style', () => {
@@ -74,7 +82,7 @@ describe('a selection holding a retired shape', () => {
   });
 
   it('offers no Style when only retired members are selected', () => {
-    open({ mode: 'multi', x: 10, y: 10 }, [qaBoard, { ...qaBoard, id: 'q2' } as Element]);
+    open({ mode: 'multi', x: 10, y: 10 }, [qaBoard, { ...qaBoard, id: 'q2' }]);
     expect(button('Style')).toBe(false);
   });
 });
