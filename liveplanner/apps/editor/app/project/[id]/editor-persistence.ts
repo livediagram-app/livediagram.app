@@ -29,12 +29,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     itemTypes: null,
     itemTypesRev: 0,
   });
-  // Reflect the project name in the browser tab so users with many
-  // tabs open can spot the right one. Falls back to the bare brand
-  // until hydration lands the real name.
-  useEffect(() => {
-    document.title = projectName ? `${projectName} | liveplanner` : 'liveplanner';
-  }, [projectName]);
+  // The browser tab's title follows projectName in editor-page.tsx (useBrowserTabTitle).
 
   // Brief error string surfaced by the Import-tab flow when the
   // picked file is malformed or its schema is newer than this
