@@ -391,7 +391,7 @@ export const articles: Article[] = [
     title: 'Copy and Paste',
     description: 'Move elements between tabs, spaces and windows through the system clipboard.',
     keywords:
-      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard canvas space spaces',
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset system clipboard canvas space spaces',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -1572,8 +1572,8 @@ export const articles: Article[] = [
   {
     slug: 'multicolour-themes',
     title: 'Multicolour Themes',
-    description: 'Tint each branch of a hierarchy its own hue.',
-    keywords: 'multicolor rainbow branch hue tint colorful colourful',
+    description: 'Give each element the next hue in a palette.',
+    keywords: 'multicolor rainbow hue tint colorful colourful palette',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

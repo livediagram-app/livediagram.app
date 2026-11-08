@@ -91,7 +91,7 @@ curl -X POST https://livehuddle.app/api/documents/$DOC/tabs/$TAB/comments/$COMME
 - Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
 - Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
 - `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
-- Arrows cannot carry a thread; every boxed element can.
+- Every element can carry a thread.
 
 Everyone with the space open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
 

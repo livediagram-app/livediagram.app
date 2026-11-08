@@ -6,45 +6,42 @@ import { MulticolourTheme } from '@/components/illustrations/canvas';
 export const metadata = helpMetadata({
   title: 'Multicolour Themes',
   description:
-    'Tint each branch of a hierarchy a different hue with a multicolour theme, so a tree of ideas reads as colourful at a glance.',
+    'Give each element on a board the next hue in a palette with a multicolour theme, so a wall of notes reads as colourful at a glance.',
   path: '/help/canvas/themes/multicolour-themes/',
 });
 
 <ArticleLayout
   title="Multicolour Themes"
-  description="Give each branch of a hierarchy its own hue with a multicolour theme, so a tree of ideas reads as colourful at a glance."
+  description="Give each element its own hue with a multicolour theme, so a wall of notes reads as colourful at a glance."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "Themes", slug: "themes" }}
   subArticles={getSubArticles("themes").filter((a) => a.slug !== "multicolour-themes")}
 >
 
-Most themes paint every element one colour. A multicolour theme is different: it carries a palette of several colours and gives each branch of your board a different one, so each main branch has a distinct hue. They are perfect for brainstorms, trees and any board where colour helps you tell one limb from another.
+Most themes paint every element one colour. A multicolour theme is different: it carries a palette of several colours and gives each element on your board the next one in turn, so a board of scattered notes and boxes gets a spread of hues rather than collapsing to one. They are perfect for brainstorms and any board where colour helps you tell one thing from another.
 
 ## What They Are
 
-A multicolour theme holds an ordered palette of colours plus a neutral trunk colour. Branches cycle through the palette, so a board with more branches than colours simply repeats hues rather than running out. The backdrop (the canvas background and pattern) works exactly as it does for any other theme; only the element colours change with the branch.
+A multicolour theme holds an ordered palette of colours plus a neutral trunk colour. Elements cycle through the palette, so a board with more elements than colours simply repeats hues rather than running out. The backdrop (the canvas background and pattern) works exactly as it does for any other theme; only the element colours change.
 
 livehuddle ships three multicolour themes in the [Tab Style dialog](/help/canvas/themes/changing-theme/): a saturated **Rainbow** spectrum, a soft **Pastel** version and a bright, summery **Tropical** palette. A tab saved on the retired Autumn or Jewel themes opens on Tropical or Rainbow, with any colours you picked yourself kept.
 
-## How a Branch Is Decided
+## How the Colours Are Given Out
 
-livehuddle works out the branches from your arrows. An arrow whose ends are both pinned to elements defines a parent-to-child link. The roots of the hierarchy (the central topic, or the top of a tree) take the trunk colour, and each of a root's direct children starts a fresh branch hue that flows down the whole subtree beneath it. So a top-level limb and all of its sub-topics share one colour.
+When you pick a multicolour theme, each element on the tab takes the next colour of the palette in turn. Sticky notes and images keep their own colours, as they do under every theme, and a colour you set by hand is kept.
 
-<Figure caption="A multicolour theme gives the neutral root a trunk colour and tints each branch its own hue.">
+<Figure caption="A multicolour theme gives each element the next hue of its palette.">
   <MulticolourTheme />
 </Figure>
 
-Elements that no arrow touches each pick up the next colour in turn, so even a flat board of scattered shapes gets a spread of hues rather than collapsing to one. Shapes caught in a loop with no root (A to B to C and back to A) take the trunk colour, since a loop has no natural limb. Arrows take the colour of the branch they feed into, so each connector matches its limb.
+## Adding to a Multicolour Board
 
-## Adding to a Multicolour Diagram
-
-A brand-new element you drop on a multicolour tab is not wired into the hierarchy yet, so it takes the neutral trunk colour. Once you connect it in with an arrow, give it the limb's hue by painting a neighbour's look onto it with the [Format Painter](/help/tips-and-tricks/format-painter/). (Re-picking the theme does not do it: by then the trunk colour counts as one you chose, so it is kept.) This is deliberate: livehuddle does not silently re-rainbow your whole canvas every time you draw an arrow, which would fight any hand-colouring you have done.
+A brand-new element you drop on a multicolour tab takes the neutral trunk colour. To give it a hue, paint a neighbour's look onto it with the [Format Painter](/help/tips-and-tricks/format-painter/). (Re-picking the theme does not do it: by then the trunk colour counts as one you chose, so it is kept.) This is deliberate: livehuddle does not silently re-colour your whole canvas every time you add something, which would fight any hand-colouring you have done.
 
 <Tip>
-  Each theme card previews a small diagram in that theme's colours. On a multicolour theme each node
-  of the preview wears a different hue, so you can spot the rainbow themes in the picker at a
-  glance.
+  Each theme card previews a small board in that theme's colours. On a multicolour theme each box of
+  the preview wears a different hue, so you can spot the rainbow themes in the picker at a glance.
 </Tip>
 
 </ArticleLayout>

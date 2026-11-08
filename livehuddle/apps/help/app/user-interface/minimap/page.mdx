@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out miniature of every element and arrow in its real colours (labels left out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
+When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out miniature of every element in its real colours (labels left out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
 
 <Figure caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
   <Minimap />
@@ -28,7 +28,7 @@ When the canvas grows past one screenful, the **Map** in the bottom-left corner 
 - **Drag** across it to pan continuously: the view box follows your pointer.
 - **Scroll** on the Map to zoom the canvas in or out, centred where you scroll.
 
-The view box updates live as you pan and zoom by any means, so the Map doubles as a constant "you are here" indicator. The shapes use their real outlines (a circle reads as a circle), and arrows show as connecting lines, so the overview is a faithful miniature rather than a grid of blocks.
+The view box updates live as you pan and zoom by any means, so the Map doubles as a constant "you are here" indicator. The shapes use their real outlines (a circle reads as a circle), so the overview is a faithful miniature rather than a grid of blocks.
 
 ## When it shows, and turning it off
 

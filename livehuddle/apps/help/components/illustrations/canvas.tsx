@@ -160,7 +160,7 @@ export function FormatPainter() {
   );
 }
 
-/** Multi-colour theme: each branch of a hierarchy tinted its own hue. */
+/** Multi-colour theme: each element takes the next hue of the palette in turn. */
 export function MulticolourTheme() {
   return (
     <Scene w={420} h={220}>
@@ -169,9 +169,9 @@ export function MulticolourTheme() {
         y={92}
         w={76}
         h={40}
-        fill="fill-slate-100"
-        stroke="stroke-slate-400"
-        label="Root"
+        fill="fill-sky-100"
+        stroke="stroke-sky-600"
+        label="E"
         labelTone="strong"
       />
       <Shape
@@ -213,26 +213,6 @@ export function MulticolourTheme() {
         stroke="stroke-rose-600"
         label="D"
         labelTone="strong"
-      />
-      <Arrow
-        from={[172, 104]}
-        to={[110, 50]}
-        colour={{ stroke: 'stroke-emerald-600', fill: 'fill-emerald-600' }}
-      />
-      <Arrow
-        from={[172, 120]}
-        to={[110, 170]}
-        colour={{ stroke: 'stroke-violet-600', fill: 'fill-violet-600' }}
-      />
-      <Arrow
-        from={[248, 104]}
-        to={[310, 50]}
-        colour={{ stroke: 'stroke-amber-600', fill: 'fill-amber-600' }}
-      />
-      <Arrow
-        from={[248, 120]}
-        to={[310, 170]}
-        colour={{ stroke: 'stroke-rose-600', fill: 'fill-rose-600' }}
       />
     </Scene>
   );
