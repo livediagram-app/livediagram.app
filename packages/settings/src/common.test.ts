@@ -50,10 +50,21 @@ describe('the common settings', () => {
       }
     }
     const inSeveral = [...appsByKey].filter(([, apps]) => apps.size > 1).map(([key]) => key);
+    // The Layers panel's settings are livediagram's alone since livedocuments and livedesign retired the panel
+    // (8 November 2026, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"). They stay common, so
+    // a value a person set keeps living in `all` rather than moving scope.
+    const layersPanelKeys = [
+      'layersPanelEnabled',
+      'layersShowPreview',
+      'layersShowCount',
+      'layerHoverPreview',
+    ];
+    for (const key of layersPanelKeys) {
+      expect([key, [...appsByKey.get(key)!]]).toEqual([key, ['livediagram.app']]);
+    }
     // notifyDocumentJoin is livediagram's and livedocuments' own: each app's "someone joins my …" email.
-    expect(inSeveral.filter((key) => key !== 'notifyDocumentJoin').sort()).toEqual(
-      [...COMMON_SETTING_KEYS].sort(),
-    );
+    const shared = inSeveral.filter((key) => key !== 'notifyDocumentJoin');
+    expect([...shared, ...layersPanelKeys].sort()).toEqual([...COMMON_SETTING_KEYS].sort());
     expect(isAllSetting('notifyDocumentJoin')).toBe(false);
   });
 

@@ -4,13 +4,12 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { resolveLayerId, tagColoursOf } from '@livedocuments/document';
+import { tagColoursOf } from '@livedocuments/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
-import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
 // first right-click, not with the page.
@@ -33,7 +32,6 @@ const ReadOnlyElementMenuHost = dynamic(
 export function EditorContextMenuHost() {
   const {
     contextMenu,
-    userPreferences,
     activeTab,
     isReadOnly,
     setTagColour,
@@ -55,8 +53,6 @@ export function EditorContextMenuHost() {
     previewTextAlign,
     bringSelectedToFront,
     sendSelectedToBack,
-    layers,
-    moveSelectedToLayer,
     toggleAspectLockSelected,
     setOpacitySelected,
     setTextColorSelected,
@@ -215,17 +211,6 @@ export function EditorContextMenuHost() {
         }
       : undefined;
 
-  // The selection's layer for the Layer section's move-to dropdown
-  // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
-  // when the selection spans layers.
-  const ctxLayerIds = new Set(
-    ctxMemberIds
-      .map((id) => activeTab.elements.find((e) => e.id === id))
-      .filter((e): e is NonNullable<typeof e> => e != null)
-      .map((el) => resolveLayerId(el.layerId, layers)),
-  );
-  const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
-
   return (
     <EditorContextMenu
       // Remount when the menu changes target: a right-click on a DIFFERENT
@@ -238,7 +223,6 @@ export function EditorContextMenuHost() {
       menu={contextMenu}
       editingId={editingId}
       elements={activeTab.elements}
-      tabFont={activeTab.font}
       onClose={closeContextMenu}
       onLinkElement={openLinkPicker}
       onRemoveIcon={removeIconFromElement}
@@ -256,13 +240,6 @@ export function EditorContextMenuHost() {
       onPreviewTextAlign={previewTextAlign}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
-      layers={layers}
-      selectionLayerId={selectionLayerId}
-      // "Move to layer" goes with the Layers panel's Settings switch
-      // (docs/specs/007-editor/user-preferences.md); layers keep applying either way.
-      onMoveSelectionToLayer={
-        panelEnabled(userPreferences, 'layersPanelEnabled') ? moveSelectedToLayer : undefined
-      }
       onToggleAspectLock={toggleAspectLockSelected}
       onSetOpacity={setOpacitySelected}
       onSetTextColor={setTextColorSelected}

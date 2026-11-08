@@ -698,8 +698,8 @@ export const EXPORT_OPTIONS = chart(
   'UI',
   'Toggled',
   'Export Options',
-  'Image export options: the canvas pattern, hidden layers.',
-  { types: ['PatternExport', 'HiddenLayersExport'] },
+  'Image export options: the canvas pattern.',
+  { types: ['PatternExport'] },
 );
 
 export const TAB_IMPORTS = chart(

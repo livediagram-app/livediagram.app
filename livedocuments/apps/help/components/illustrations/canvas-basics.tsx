@@ -257,7 +257,7 @@ function TabStylePanel({
 
 /** The canvas with the menu button and tab name top-left, the palette strip across the top
  *  (the selection mode, the category bar and Search) and the bottom-right
- *  cluster (Undo and Redo, Layers, then the zoom controls). */
+ *  cluster (Undo and Redo, the Style brush, then the zoom controls). */
 export function CanvasPaletteOverview() {
   const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
@@ -269,7 +269,7 @@ export function CanvasPaletteOverview() {
       <Shape x={168} y={146} w={76} h={36} accent label="Done" />
       <Arrow from={[136, 93]} to={[176, 93]} />
       <Arrow from={[206, 120]} to={[206, 146]} />
-      {/* Bottom-right cluster: Undo and Redo, Layers, then the zoom controls. */}
+      {/* Bottom-right cluster: Undo and Redo, the Style brush, then the zoom controls. */}
       <rect
         x={150}
         y={198}
@@ -291,11 +291,15 @@ export function CanvasPaletteOverview() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      {/* The Style brush: a painter's palette with its paint wells. */}
       <path
-        d="M228 211 L235 208 L242 211 L235 214 Z M228 215 L235 218 L242 215"
+        d="M235 206 a7 7 0 1 0 0 14 c1.5 0 2 -1 1.5 -2 s0 -2.5 1.5 -2.5 h2 a2.5 2.5 0 0 0 2.5 -2.5 a7 7 0 0 0 -7.5 -7 Z"
         {...ink}
         strokeLinejoin="round"
       />
+      <circle cx={231.5} cy={211} r={1} className="fill-slate-500" />
+      <circle cx={235.5} cy={209.5} r={1} className="fill-slate-500" />
+      <circle cx={239} cy={211.5} r={1} className="fill-slate-500" />
       <rect
         x={259}
         y={198}

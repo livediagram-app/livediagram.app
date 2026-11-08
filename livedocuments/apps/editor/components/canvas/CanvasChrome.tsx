@@ -27,7 +27,7 @@ import {
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
-import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
+import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
@@ -192,9 +192,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // buttons with them (Undo / Redo stay). Read once here and handed to
   // useCanvasChromePanels, so a button and its panel share one value.
   const panelsOn = {
-    // Not in Pages mode: a page is laid out by its pages, not layers
-    // (docs/specs/007-editor/pages-mode.md).
-    layers: panelEnabled(settings, 'layersPanelEnabled') && !props.pagesMode,
     collaborate: panelEnabled(settings, 'collaboratePanelEnabled'),
   };
 
@@ -237,7 +234,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const {
     panelEls,
     explorerEl,
-    layersEl,
     collaborateEl,
     contentsPopoverEl,
     contentsSidebarEl,
@@ -390,16 +386,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       <TopCenterChrome {...props} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
-          (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
-          button. */}
-      {!zenMode ? (
-        <>
-          {explorerEl}
-          {layersEl}
-        </>
-      ) : null}
+          (zen hides it, the welcome flow doesn't). */}
+      {!zenMode ? explorerEl : null}
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
-          against the canvas, so it renders outside the corner layer, as Layers does. */}
+          against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
       {contentsSidebarEl}
       {contentsPopoverEl}
@@ -439,7 +429,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the mode's own strip (Contents), the
-          Collaborate button (only while the tab has a thread or an action), the Layers and
+          Collaborate button (only while the tab has a thread or an action), the
           Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
           above them (docs/specs/007-editor/editor-app.md). */}
       <div
@@ -463,7 +453,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               }
         }
         // On a phone the cluster stays one row: its buttons share the width there is, PHONE_CLUSTER_BUTTON_WIDTH,
-        // from 36px up to their usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
+        // from 36px up to their usual 44px (always 44px tall to tap), so Undo, Contents, Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
         // pushed off the screen.
         className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${clusterLeft === null ? '' : 'flex-wrap-reverse justify-end'} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
@@ -497,7 +487,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onGo={props.pagesMode.focusPage}
               />
             ) : null}
-            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode, where Layers would be,
+            {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode,
                 for every role and on a phone too. The deck is built from its rows' menus ("Slides"). */}
             {!zenMode && props.pagesMode ? (
               <PagesClusterStrip
@@ -512,7 +502,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }
               />
             ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before the brush, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
             {!zenMode &&
@@ -524,22 +514,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
-                (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
-                pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? (
-              <LayersThemeStrip
-                layers={
-                  !readOnly && panelsOn.layers
-                    ? {
-                        open: activeDockPanel === 'layers',
-                        onToggle: (button) => handleDockButtonClick('layers', button, true),
-                      }
-                    : undefined
-                }
-                onOpenTheme={onOpenCanvasTheme}
-              />
-            ) : null}
+            {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
+                read-only sessions pass no handler): see ThemeStrip. */}
+            {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}

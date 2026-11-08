@@ -1710,8 +1710,8 @@ The Export dialog exports **pages**, not the tab's content bounds.
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
 - The Background pattern option is not offered: a page is its own background.
-- The Hidden layers option is not offered: Pages has no Layers, so a hidden layer's
-  elements stay out of the export as they stay off its canvas.
+- There is no Hidden layers option (retired with the Layers panel, [Layers](../006-document/layers.md) "Retired: the
+  Layers panel"): a hidden layer's elements stay out of the export as they stay off its canvas.
 
 ## Import
 
@@ -1861,8 +1861,9 @@ separate pages. It is explicit: never run on opening a tab.
 
 - **Contents button**: in the bottom-right cluster, left of the brush, while Contents is minimised
   (above). There is no Slides button beside it ("Retired: the Slide Deck panel").
-- **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
-  layers); a tab's stored layers are left untouched.
+- **No Layers**: there is no Layers button or panel (a page is arranged by its pages, not layers; the panel was
+  removed on 8 November 2026, [Layers](../006-document/layers.md) "Retired: the Layers panel"); a tab's stored
+  layers are left untouched and keep shaping the canvas.
 
 ## Retired: the Slide Deck panel
 

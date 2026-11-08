@@ -16,9 +16,9 @@ each be sized on their own (see "The setting"):
 **Panels** (`panels`):
 
 - **Every panel**: each `MovablePanel`, docked into a corner,
-  dragged, or open as a popover (the Explorer, the Layers /
+  dragged, or open as a popover (the Explorer, the Contents /
   Collaborate cluster popovers).
-  That covers the Explorer, AI, Layers, Map, Collaborate
+  That covers the Explorer, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
 - **The Tab Style panel** ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md)), flown out of the Theme &
@@ -33,7 +33,7 @@ each be sized on their own (see "The setting"):
 **Corner buttons** (`cornerButtons`):
 
 - **The bottom-right cluster**: Undo / Redo, the
-  Layers and Collaborate buttons, the Theme & Canvas button, the Zoom
+  Contents and Collaborate buttons, the Theme & Canvas button, the Zoom
   controls and the off-screen content hint.
 
 Nothing else scales: not the canvas or its elements (the canvas has its
@@ -86,7 +86,7 @@ value as a percentage ("110%"):
 | UI Scale             | "Makes the panels, the toolbar and the buttons in the bottom-right corner bigger or smaller. The canvas, dialogs and menus stay as they are. Sets all three; adjust one on its own below." | `UiScale`              |
 | Panel Scale          | "Every panel, docked or opened from a button, and the Quick Style panel."                                                                                                                  | `UiScalePanels`        |
 | Toolbar Scale        | "The toolbar strip and its menu button."                                                                                                                                                   | `UiScaleToolbar`       |
-| Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, Layers, theme and zoom."                                                                                                           | `UiScaleCornerButtons` |
+| Corner Buttons Scale | "The buttons in the bottom-right corner: Undo and Redo, Style and zoom."                                                                                                                   | `UiScaleCornerButtons` |
 
 - A part's slider shows its own value, or the master's while it has none.
 - Desktop only (each row's `desktopOnly` note, shown on a phone): "UI Scale

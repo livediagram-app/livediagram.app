@@ -150,7 +150,29 @@ const ISOMETRIC_VIEW = new Set([
 ]);
 const ISOMETRIC_HELP_ID = 'isometric-mode';
 
+// The Layers panel (removed 2026-11-08, livedesign docs/specs/006-design/layers.md "Retired: the Layers panel"): every
+// `Layer` event the panel and the element menus' Move to Layer sent (added, selected, renamed by hand, deleted,
+// toggled, merged, opacity, cleared, reordered, moved, the panel opened), its four Settings switches and the image
+// export's Hidden layers option. Smart naming, Layer·Renamed·Adopted, is still sent and carries on.
+const LAYERS_PANEL_UI = new Set([
+  'Toggled|LayersPanelOn',
+  'Toggled|LayersPanelOff',
+  'Toggled|LayerPreviewOn',
+  'Toggled|LayerPreviewOff',
+  'Toggled|LayerCountOn',
+  'Toggled|LayerCountOff',
+  'Toggled|LayerHoverPreviewOn',
+  'Toggled|LayerHoverPreviewOff',
+  'Toggled|HiddenLayersExport',
+]);
+
+function isRetiredLayersPanel(category: string, action: string, type: string | null): boolean {
+  if (category === 'Layer') return !(action === 'Renamed' && type === 'Adopted');
+  return category === 'UI' && LAYERS_PANEL_UI.has(`${action}|${type ?? ''}`);
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredLayersPanel(category, action, type)) return true;
   if (ISOMETRIC_VIEW.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (
     (category === 'Help' || (category === 'UI' && action === 'Opened')) &&

@@ -18,7 +18,6 @@ import type {
   CodeThemeId,
   ElementShadow,
   Finish,
-  Layer,
   LegendItem,
   AnimationSetId,
   IconAnimation,
@@ -61,9 +60,6 @@ export type EditorContextMenuProps = {
   // The active tab's elements — used to resolve the clicked element
   // (for the element menu) and read its link / note state.
   elements: Element[];
-  // The tab default face (docs/specs/004-interface-design/fonts.md), so the layer previews in here paint
-  // what the canvas paints.
-  tabFont?: string;
   onClose: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
   // alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) the target's label is still uncommitted
@@ -87,13 +83,6 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
-  // Layer section's move-to dropdown, the selection's resolved layer
-  // (null when members span layers), and the selection-wide move. The move
-  // is absent while the Layers panel is off in Settings, and its tiles with it.
-  layers: Layer[];
-  selectionLayerId: string | null;
-  onMoveSelectionToLayer?: (layerId: string) => void;
   // Toggle aspect-ratio lock + set opacity on the clicked element (boxed
   // only). Read the current values off the target below.
   onToggleAspectLock: () => void;

@@ -55,8 +55,8 @@ fetched once the page is idle.
 
 - **Content a board may draw on open**: the pages and their writing, and tables. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
   request, so a document that has one finds its code already in, while the first load does not carry it.
-- **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
-  then kept, so their state survives), search, the quick style panel, the tool panels and presenting. Fetched once the opened document has rendered and the page is idle.
+- **Surfaces someone opens**: the Explorer popover (mounted from its first opening on,
+  then kept, so its state survives), search, the quick style panel, the tool panels and presenting. Fetched once the opened document has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys

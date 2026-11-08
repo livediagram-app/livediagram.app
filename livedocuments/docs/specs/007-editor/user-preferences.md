@@ -27,7 +27,7 @@ table of its own for them.
   motion, the notification switches, panel opacity, UI scale, middle-
   mouse pan, dock button names,
   custom swatches, and the editor settings two or more apps have:
-  the Home banner, the Collaborate, Quick Style, Layers and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover, Pages' Contents and Presenting) lives in `all`, so changing it here changes it in
+  the Home banner, the Collaborate, Quick Style and Map panels, alignment guides, auto-attach arrows, element indicators, quick-add on hover, Pages' Contents and Presenting) lives in `all`, so changing it here changes it in
   every app that has it; every other key is livedocuments' own. The api
   joins the two (`joinSettings`) on read and splits a patch
   (`splitSettings`) on write, so the editor only ever sees one flat set.
@@ -186,7 +186,7 @@ type UserPreferences = {
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
   // `data-panel-translucent`: MovablePanel in both its docked and its
-  // popover branch (so the Explorer, Layers and Collaborate
+  // popover branch (so the Explorer and Collaborate
   // popovers follow it too), the Map, the Quick style panel and the
   // Toolbar strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
@@ -213,12 +213,6 @@ type UserPreferences = {
   // Turning a panel off removes the panel and every piece of chrome that
   // exists to reach or mirror it, but never the feature underneath:
   //
-  // `layersPanelEnabled` false: no Layers panel, no Layers cluster button,
-  // no "Move to layer" tiles in the element menus, no "Hidden layers" row
-  // in the image export. Layers keep working: a tab's layers, their
-  // order, visibility, lock and opacity still shape the canvas, and new
-  // elements still land on the active layer.
-  layersPanelEnabled?: boolean;
   // `collaboratePanelEnabled` false: no Collaborate panel and no
   // Collaborate cluster button, even while the tab has comment threads or
   // actions (the only time either shows when on). Comments and actions
@@ -368,14 +362,14 @@ Missing key === undefined === default behaviour. Concretely:
   reads as 1, out-of-range values clamp ([UI scale](ui-scale.md)). Emits
   `UI`/`Changed`/`UiScale` (or `UiScalePanels`, `UiScaleToolbar`,
   `UiScaleCornerButtons`) on release.
-- `layersPanelEnabled` / `collaboratePanelEnabled` /
-  `quickStylePanelEnabled` undefined / true → the panel is on (the
-  default). `false` removes it and the chrome that reaches it, leaving the
-  feature working (see the data model). Emits `UI`/`Toggled`/
-  `LayersPanel{On,Off}`, `CollaboratePanel{On,Off}`
-  and `QuickStylePanel{On,Off}`.
+- `collaboratePanelEnabled` / `quickStylePanelEnabled` undefined / true →
+  the panel is on (the default). `false` removes it and the chrome that
+  reaches it, leaving the feature working (see the data model). Emits
+  `UI`/`Toggled`/`CollaboratePanel{On,Off}` and `QuickStylePanel{On,Off}`.
 - **Keys this editor does not read.** A stored key the preferences type does not name (`activityPanelEnabled`,
-  `skipLocationStep`, and the keys livediagram stores for its other modes, such as `infographicModeEnabled`,
+  `skipLocationStep`, the Layers panel's `layersPanelEnabled`, `layersShowPreview`, `layersShowCount` and
+  `layerHoverPreview` (the panel retired on 8 November 2026, [Layers](../006-document/layers.md) "Retired: the
+  Layers panel"; they stay common settings for livediagram), and the keys livediagram stores for its other modes, such as `infographicModeEnabled`,
   `planModeEnabled`, `recogniseShapes`, `tourSeen`, `workshopTourSeen`, `drawTourSeen`, the `whiteboard…` dock keys
   and `drawPattern`) is read by nothing; the blob keeps unknown keys as they are (`readUserPreferences`), for
   another client that may have written them. Undo and Redo always show in the
@@ -431,7 +425,7 @@ stored for this owner, is therefore the "everything on" state.
 that is the only control.
 
 - The **Settings dialog** lists all of them, grouped and searchable by eye.
-  It is the answer to "I half-remember a setting about layer previews" from
+  It is the answer to "I half-remember a setting about the map's size" from
   someone who does not know which panel owns it, and the place a new reader
   goes to see what the editor can be told to do.
 - **One setting, one control.** Every preference has its row in the dialog,
@@ -543,7 +537,7 @@ and the dialog stays as the one complete, browsable index of them.
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings"), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
-  collapsible groups), **Panels** (panel opacity, then a section per panel: **Layers**, **Quick Style**, **Map** and
+  collapsible groups), **Panels** (panel opacity, then a section per panel: **Quick Style**, **Map** and
   **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md))),
   **Accessibility** (reduce motion), **Getting Started** (one switch per guided tour, see **Getting Started** below),
   **Explorer** (once its own **Documents** category, id kept: **Automatically Open Explorer** (`autoOpenExplorer`, common, off by default: the homepage opens the Explorer, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-on-the-explorer)), **Show Home Banner**, then a **Default Folders** section with one row per
@@ -598,7 +592,8 @@ and the dialog stays as the one complete, browsable index of them.
   `livedocuments.app:pages`, are aliases of Editor, so a remembered category or a `?settings=pages` link lands on
   Editor.) **Presenting** is a top-level category with its own tile (a white screen with a play mark on rose), not a
   sub-category: presenting is its own activity, not a mode's tweak. A category with no rows is never shown. **Panels** has none either: each panel is a section of it, and the old sub-category ids (`layers`, `quickStyle`, `map`, `collaborate`) are aliases of
-  Panels, so `?settings=map` still lands there. Only **Account** holds **Notifications** and
+  Panels, so `?settings=map` still lands there (and `?settings=layers`, though Layers has no section since its panel
+  retired). Only **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
@@ -616,8 +611,8 @@ and the dialog stays as the one complete, browsable index of them.
   for API Tokens. A workbench has neither.
 
   Panels holds Panel Opacity, then a section per panel,
-  Layers, Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
-  switch** ("Enable Layers Panel", "Enable Map",
+  Quick Style, Map, then Collaborate. Each section opens with that panel's **Enable
+  switch** ("Enable Map",
   "Enable Collaborate Panel", "Enable Quick Style Panel"; see the panel
   switches in the data model). The panel's other rows nest beneath the
   switch (`parent`) and are offered only while it is on: a setting for a
@@ -685,7 +680,7 @@ and the dialog stays as the one complete, browsable index of them.
   Settings whose effect is **visual** carry a small **before/after
   illustration** drawn from the real editor, which **rings the state
   currently in force** so the picture doubles as a readout: the minimap,
-  alignment guides, layer thumbnails, and the minimap's dimming.
+  alignment guides, and the minimap's dimming.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed

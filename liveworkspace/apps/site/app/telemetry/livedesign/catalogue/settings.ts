@@ -175,29 +175,8 @@ export const KEYBOARD_SETTINGS = settingsStack(
 
 export const PANELS_SETTINGS = settingsStack(
   'Panels Settings',
-  'What the Layers and minimap panels show.',
+  'What the minimap shows.',
   [
-    toggle(
-      'UI',
-      'LayerPreviewOn',
-      'LayerPreviewOff',
-      'Layer Thumbnails',
-      'Thumbnails in the Layers panel.',
-    ),
-    toggle(
-      'UI',
-      'LayerCountOn',
-      'LayerCountOff',
-      'Layer Element Counts',
-      'Element counts on each layer.',
-    ),
-    toggle(
-      'UI',
-      'LayerHoverPreviewOn',
-      'LayerHoverPreviewOff',
-      'Preview Layer on Hover',
-      'Highlighting a layer\u2019s elements on hover.',
-    ),
     toggle(
       'UI',
       'MapDimOn',
@@ -206,13 +185,6 @@ export const PANELS_SETTINGS = settingsStack(
       'The minimap dimming what is off screen.',
     ),
     changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-    toggle(
-      'UI',
-      'LayersPanelOn',
-      'LayersPanelOff',
-      'Layers Panel',
-      'The Layers panel switched on or off.',
-    ),
   ],
 );
 

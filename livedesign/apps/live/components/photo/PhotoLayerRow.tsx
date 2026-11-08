@@ -9,7 +9,6 @@
 // (photo-tools.md "Accessibility"), so its name is the row's own button, the list's tab stop on the active row.
 import { useMemo, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { RowDropAt } from '@/components/primitives/useRowPointerDrag';
-import { GripIcon } from '@/components/panels/layers-panel-icons';
 import {
   lucideArrowDownToLine,
   lucideArrowUpToLine,
@@ -25,6 +24,7 @@ import {
   lucideFolder,
   lucideFolderX,
   lucideGrid3x3,
+  lucideGripVertical,
   lucideGroup,
   lucideImage,
   lucideLassoSelect,
@@ -97,8 +97,10 @@ export type LayerRowMenu = {
 };
 
 const g = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
+// The row's drag grip, at 14px as the retired canvas Layers panel drew it.
+const GripIcon = lucideGlyph(lucideGripVertical, 14);
 
-// A row's menu, as the canvas's own Layers panel menu reads (LayerRowMenu): a header naming the layer, then each verb
+// A row's menu: a header naming the layer, then each verb
 // a row with its icon, in groups (arrange, merge, mask and clipping, pixels), and Delete Layer last on its own. Each
 // runs with the layer made active. Verbs for what a layer has not got (a mask's, a group's) are left out.
 export const ROW_MENU: readonly LayerRowMenu[] = [
@@ -312,7 +314,7 @@ export function PhotoLayerRow({
       {editable && drag ? (
         // On a touch screen a finger dragging a row would scroll the list instead (the system takes the
         // pointer), so a row restacks from its grip, which keeps the finger's travel for the drag
-        // (photo-layers.md "Reordering", as the canvas's Layers panel shows its grip on touch).
+        // (photo-layers.md "Reordering").
         <span
           aria-hidden
           data-layer-grip=""

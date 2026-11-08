@@ -140,7 +140,7 @@ help button that moves around teaches people not to look for it. It renders in
 both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
-Wired: Palette, Explorer, Activity, Layers, Map, and the tool panels
+Wired: Palette, Explorer, Activity, Layers (until the panel retired), Map, and the tool panels
 (Laser, Spotlight, Format; the Slide Deck's until it was retired). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.

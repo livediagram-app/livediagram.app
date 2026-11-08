@@ -60,8 +60,7 @@ lets you jump the viewport anywhere with a tap or drag.
   the paper keeps that dependency in ONE shared value both renderers read,
   and a drift test
   (`svg-render-surface.test.ts`) fails if any kind without a stored fill
-  paints a light base on dark paper. The Layers panel's previews follow the
-  same rule.
+  paints a light base on dark paper.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags

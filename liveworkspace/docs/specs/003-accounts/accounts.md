@@ -823,7 +823,9 @@ Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels 
 object). Each has the same type, values and default in every app that has it. A key is shared only when it does
 mean the same everywhere: `notifyDocumentJoin` stays livediagram's and livedocuments' own, one of each app's
 "someone joins my …" emails beside liveplanner's `notifyProjectJoin` and livedesign's `notifyDesignJoin`, which
-someone may well want from one app and not another.
+someone may well want from one app and not another. The Layers panel's four keys are livediagram's alone since
+livedocuments and livedesign retired the panel (8 November 2026); they stay in `COMMON_SETTING_KEYS`, so a value a
+person set keeps living in `all` rather than moving scope, and the common-settings test allows them in one app.
 
 These keys were each app's own until October 2026, so a person's values for them may still sit in an app's scope.
 Nothing is lost: `joinSettings` takes a shared key from `all` when `all` has it, and otherwise from the app's own

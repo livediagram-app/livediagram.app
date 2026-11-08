@@ -18,7 +18,7 @@ Scope, by file:
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`                                               | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
 | `apps/editor/lib/canvas-selection.ts`                                                                 | Toolbar anchors span each selected arrow's selection extent                              |
 | `apps/editor/lib/export-tab.ts`                                                                       | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
-| `apps/editor/hooks/ui/usePageThumbnails.ts`, `useLayerThumbnails.ts`, `components/canvas/Minimap.tsx` | One pass each, with their own mask-id prefix                                             |
+| `apps/editor/hooks/ui/usePageThumbnails.ts`, `components/canvas/Minimap.tsx`                         | One pass each, with their own mask-id prefix                                             |
 | `apps/editor/components/canvas/ArrowView.tsx`                                                         | Knockout mask on the line + halo; renders the layout it is given                         |
 | `apps/editor/components/canvas/ArrowLabel.tsx`                                                        | Multi-line SVG caption; textarea editor laid out by the same engine                      |
 

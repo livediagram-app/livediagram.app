@@ -1,4 +1,4 @@
-// Which features carry the work: layers, the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
+// Which features carry the work: the palette and canvas modes, look and feel, search, dialogs, chrome, notes, actions, organisation (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { isHelpArticleType, isSettingsCategory } from '../../_shared/opened-types';
@@ -9,25 +9,14 @@ import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
 
-export const LAYERS_RENAMED = chart(
+// The one layer event still sent since the Layers panel went (2026-11-08, docs/specs/006-document/layers.md
+// "Retired: the Layers panel"): a layer named from the first labelled element put on it (smart naming).
+export const LAYERS_NAMED = chart(
   'Layer',
   'Renamed',
-  'Layers Renamed',
-  'A layer renamed by hand, or named automatically from the first labelled element put on it (smart naming).',
-);
-
-export const LAYERS_SELECTED = chart(
-  'Layer',
-  'Selected',
-  'Layers Selected',
-  'A layer made the active one.',
-);
-
-export const LAYERS_REORDERED = chart(
-  'Layer',
-  'Reordered',
-  'Layers Reordered',
-  'Layers dragged into a new order.',
+  'Layers Named',
+  'A layer named automatically from the first labelled element put on it (smart naming).',
+  { types: ['Adopted'] },
 );
 
 export const FOLDERS_RENAMED = chart(
@@ -73,29 +62,6 @@ export const ACTIONS_REOPENED = chart(
   'Actions Reopened',
   'A completed action marked not done again.',
   { rising: 'neutral' },
-);
-
-export const LAYER_OPACITY = chart(
-  'Layer',
-  'Changed',
-  'Layer Opacity',
-  'A layer’s opacity changed.',
-);
-
-export const LAYERS_CLEARED = chart(
-  'Layer',
-  'Cleared',
-  'Layers Cleared',
-  'A layer emptied but kept.',
-  { rising: 'neutral' },
-);
-
-export const LAYERS_MERGED = chart(
-  'Layer',
-  'Removed',
-  'Layers Merged',
-  'A layer merged into the one above or below.',
-  { types: ['MergedDown', 'MergedUp'] },
 );
 
 export const TABS_UNFILED = chart(
@@ -325,67 +291,6 @@ export const PAGE_WORK: MetricStack = {
   headline: PAGES,
 };
 
-// Layers (docs/specs/006-document/layers.md): made, used, and looked at.
-export const LAYERS_CREATED: Metric = {
-  category: 'Layer',
-  action: 'Added',
-  type: null,
-  title: 'Layers Created',
-  blurb: 'A new layer on a tab.',
-};
-
-export const LAYER_TOGGLES: Metric = {
-  category: 'Layer',
-  action: 'Toggled',
-  allTypes: true,
-  title: 'Visibility & Lock Toggles',
-  blurb:
-    'The eye and the padlock, across hide / show / lock / unlock. The gesture layers are actually for.',
-};
-
-export const LAYER_MOVES: Metric = {
-  category: 'Layer',
-  action: 'Moved',
-  type: null,
-  title: 'Selections Moved to a Layer',
-  blurb: 'Elements sent to another layer: layers being used to organise, not just to hide.',
-};
-
-export const LAYERS_DELETED: Metric = {
-  rising: 'neutral',
-  category: 'Layer',
-  action: 'Deleted',
-  type: null,
-  title: 'Layers Deleted',
-};
-
-export const LAYERS_PANEL_OPENED: Metric = {
-  category: 'Layer',
-  action: 'Opened',
-  allTypes: true,
-  title: 'Layers Panel Opened',
-  blurb: 'Read against the layer counts: a panel opened far more often than used is a hint.',
-};
-
-export const LAYERS_FEATURE: MetricStack = {
-  stack: true,
-  title: 'Layers Feature',
-  blurb: 'Every layer interaction: layers made, toggled, filled, deleted, and the panel opened.',
-  members: [
-    LAYERS_CREATED,
-    LAYER_TOGGLES,
-    LAYER_MOVES,
-    LAYERS_DELETED,
-    LAYERS_PANEL_OPENED,
-    LAYERS_RENAMED,
-    LAYERS_SELECTED,
-    LAYERS_REORDERED,
-    LAYER_OPACITY,
-    LAYERS_MERGED,
-    LAYERS_CLEARED,
-  ],
-};
-
 // ---- Editing tab -------------------------------------------------------------
 // Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
@@ -518,7 +423,7 @@ export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made, nested and deleted in the Explorer, default folders, tab folders inside a document with tabs filed into and out of them, and the Explorer’s filters.',
+    'Folders made, nested and deleted in the Explorer, default folders, tab folders inside a document with tabs filed into and out of them, layers named from their labels, and the Explorer’s filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
@@ -528,6 +433,7 @@ export const ORGANISATION: MetricStack = {
     TAB_FOLDERS_CREATED,
     TABS_FILED,
     FOLDERS_RENAMED,
+    LAYERS_NAMED,
     TABS_UNFILED,
     EXPLORER_FILTERS_PICKED,
   ],

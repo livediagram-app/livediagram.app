@@ -842,10 +842,10 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5.5 7.5h1.5M5.5 9.5h1.5" />
     </Glyph>
   ),
-  // Canvas guides. The four layer entries are deliberately NOT four variations
-  // on a stack of sheets: three of them would be indistinguishable at 24px, so
-  // each draws the thing its article is about instead — the stack itself, then
-  // an eye, a merge, and a reorder.
+  // Canvas guides. The two layer entries are deliberately NOT two variations
+  // on a stack of sheets: they would be indistinguishable at 24px, so each
+  // draws the thing its article is about instead, the stack itself and a
+  // reorder.
   'follow-along': (
     <Glyph>
       <path d="M8 4l6.5 15 1.4-6 6-1.6z" />
@@ -1188,21 +1188,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3l8 4.5-8 4.5-8-4.5z" />
       <path d="M4 12.5l8 4.5 8-4.5" />
       <path d="M4 17l8 4.5 8-4.5" />
-    </Glyph>
-  ),
-  'layers-visibility-and-locking': (
-    <Glyph>
-      <path d="M2.5 11.5S5.5 6 11 6s8.5 5.5 8.5 5.5S16.5 17 11 17s-8.5-5.5-8.5-5.5z" />
-      <circle cx="11" cy="11.5" r="2.5" />
-      <rect x="16" y="16.5" width="6" height="5" rx="1" />
-      <path d="M17.5 16.5v-1.2a1.5 1.5 0 013 0v1.2" />
-    </Glyph>
-  ),
-  'layers-organising': (
-    <Glyph>
-      <rect x="4" y="3.5" width="11" height="6" rx="1.5" />
-      <rect x="9" y="14.5" width="11" height="6" rx="1.5" />
-      <path d="M12 10.5v3M10.5 12l1.5 1.5L13.5 12" />
     </Glyph>
   ),
 };

@@ -18,7 +18,6 @@ describe('the design page’s first load', () => {
     ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
     ['app/design/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
-    ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],

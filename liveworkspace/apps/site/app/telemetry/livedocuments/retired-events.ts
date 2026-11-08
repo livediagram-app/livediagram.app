@@ -161,7 +161,29 @@ const EMPTY_PAGE_LAYOUT_EVENTS = new Set([
   'UI|Opened|EmptyPageInvite',
 ]);
 
+// The Layers panel (removed 2026-11-08, livedocuments docs/specs/006-document/layers.md "Retired: the Layers panel"): every
+// `Layer` event the panel and the element menus' Move to Layer sent (added, selected, renamed by hand, deleted,
+// toggled, merged, opacity, cleared, reordered, moved, the panel opened), its four Settings switches and the image
+// export's Hidden layers option. Smart naming, Layer·Renamed·Adopted, is still sent and carries on.
+const LAYERS_PANEL_UI = new Set([
+  'Toggled|LayersPanelOn',
+  'Toggled|LayersPanelOff',
+  'Toggled|LayerPreviewOn',
+  'Toggled|LayerPreviewOff',
+  'Toggled|LayerCountOn',
+  'Toggled|LayerCountOff',
+  'Toggled|LayerHoverPreviewOn',
+  'Toggled|LayerHoverPreviewOff',
+  'Toggled|HiddenLayersExport',
+]);
+
+function isRetiredLayersPanel(category: string, action: string, type: string | null): boolean {
+  if (category === 'Layer') return !(action === 'Renamed' && type === 'Adopted');
+  return category === 'UI' && LAYERS_PANEL_UI.has(`${action}|${type ?? ''}`);
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredLayersPanel(category, action, type)) return true;
   if (isRetiredTabWindow(category, action, type)) return true;
   if (isRetiredLinksAndNotes(category, action, type)) return true;
   if (SLIDE_DECK_PANEL_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;

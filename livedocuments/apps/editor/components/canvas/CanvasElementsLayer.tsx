@@ -77,7 +77,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     editingId,
     elements,
     tabLayers,
-    layerPreviewId,
     handleArrowSelect,
     handleElementClick,
     handleElementContextSelect,
@@ -202,22 +201,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // contents so they stay clickable). Hidden layers' elements drop out
   // here entirely — no DOM, so no hit-testing either. Same banding the
   // exporters use. Each element carries its band's opacity so per-layer
-  // opacity multiplies over the element's own. While a Layers-panel row
-  // is hovered (`layerPreviewId`, docs/specs/006-document/layers.md hover-solo) ONLY that band
-  // renders — hidden or not — at full band opacity so the preview is
-  // legible. Memoised for the same reason as the index (stable identity
+  // opacity multiplies over the element's own. Memoised for the same reason as the index (stable identity
   // when inputs are).
-  const ordered = useMemo(() => {
-    if (layerPreviewId) {
-      return layerBands(elements, tabLayers, { includeHidden: true })
-        .filter((band) => band.layer.id === layerPreviewId)
-        .flatMap((band) => band.elements.map((element) => ({ element, layerOpacity: 1 })));
-    }
-    return layerBands(elements, tabLayers).flatMap((band) => {
-      const layerOpacity = layerOpacityOf(band.layer);
-      return band.elements.map((element) => ({ element, layerOpacity }));
-    });
-  }, [elements, tabLayers, layerPreviewId]);
+  const ordered = useMemo(
+    () =>
+      layerBands(elements, tabLayers).flatMap((band) => {
+        const layerOpacity = layerOpacityOf(band.layer);
+        return band.elements.map((element) => ({ element, layerOpacity }));
+      }),
+    [elements, tabLayers],
+  );
   // The palette arrives as a fresh array each render (themeChartPalette): keyed by its colours, so the views
   // re-render only when the colours change.
   const paletteKey = chartPalette?.join('|') ?? '';

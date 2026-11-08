@@ -159,8 +159,8 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // Bring to Front / Send to Back are LAYER moves (docs/specs/006-design/layers.md): the
   // selection lands on the top (resp. bottom) layer, minting a fresh
   // edge layer when the current one holds anything else and pruning any
-  // layer the move emptied. These two buttons are how layers accrue for
-  // users who never open the Layers panel.
+  // layer the move emptied. These two buttons are how layers accrue (there
+  // is no Layers panel, docs/specs/006-design/layers.md).
   const bringSelectedToFront = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;

@@ -702,11 +702,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'dockButtonNames',
         keywords:
-          'button labels names text captions bottom bar corner buttons zoom layers style tidy up icons only',
+          'button labels names text captions bottom bar corner buttons zoom style tidy up icons only',
         section: 'Interface',
         label: 'Button Labels',
         description:
-          'Names the buttons along the bottom (Search, Settings, the theme, Layers, Style) beside their icons.',
+          'Names the buttons along the bottom (Search, Settings, the theme, Style) beside their icons.',
         desktopOnly:
           'Phones always show these buttons as icons. Your choice still applies on a larger screen.',
         read: (p) => p.dockButtonNames !== false,
@@ -732,7 +732,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
       uiScalePartRow('panels', {
         label: 'Panel Scale',
-        keywords: 'panels explorer palette layers popover size bigger smaller zoom panel scale',
+        keywords: 'panels explorer palette popover size bigger smaller zoom panel scale',
         description: 'Every panel, docked or opened from a button.',
         changed: 'UiScalePanels',
       }),
@@ -744,8 +744,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       }),
       uiScalePartRow('cornerButtons', {
         label: 'Corner Buttons Scale',
-        keywords: 'undo redo zoom controls layers theme corner buttons size bigger smaller scale',
-        description: 'Undo and Redo, Layers, Style and zoom.',
+        keywords: 'undo redo zoom controls theme corner buttons size bigger smaller scale',
+        description: 'Undo and Redo, Style and zoom.',
         changed: 'UiScaleCornerButtons',
       }),
     ],
@@ -779,8 +779,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'panels',
     label: 'Panels',
-    // Each panel's settings were a sub-category of their own (Panels › Layers) until they became its sections: their
-    // old ids still land here.
+    // Each panel's settings were a sub-category of their own (Panels › Map) until they became its sections: their
+    // old ids still land here. `layers` too, though the Layers panel and its section retired on 8 November 2026
+    // (docs/specs/006-document/layers.md "Retired: the Layers panel"), so an old link still opens Panels.
     aliases: ['layers', 'quickStyle', 'map', 'collaborate'],
     rows: [
       {
@@ -798,51 +799,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.panelOpacity ?? 1,
         write: (p, v) => ({ ...p, panelOpacity: v }),
         event: { category: 'UI', changed: 'PanelOpacity' },
-      },
-      panelSwitch('layersPanelEnabled', {
-        section: 'Layers',
-        label: 'Enable Layers Panel',
-        keywords: 'layers panel enable hide show turn off remove move to layer',
-        description:
-          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
-        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
-      }),
-      {
-        section: 'Layers',
-        kind: 'toggle',
-        key: 'layersShowPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'thumbnail preview layer picture',
-        illustration: 'layerThumbnails',
-        label: 'Layer Thumbnails',
-        description: 'A small preview of what each layer holds.',
-        read: (p) => p.layersShowPreview !== false,
-        write: (p, v) => ({ ...p, layersShowPreview: v }),
-        event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
-      },
-      {
-        section: 'Layers',
-        kind: 'toggle',
-        key: 'layersShowCount',
-        parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer element counts',
-        label: 'Layer Element Counts',
-        description: 'How many elements each layer holds, beside its name.',
-        read: (p) => p.layersShowCount !== false,
-        write: (p, v) => ({ ...p, layersShowCount: v }),
-        event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
-      },
-      {
-        section: 'Layers',
-        kind: 'toggle',
-        key: 'layerHoverPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview solo',
-        label: 'Preview Layer on Hover',
-        description: 'Shows only that layer on the canvas while you rest on its row.',
-        read: (p) => p.layerHoverPreview !== false,
-        write: (p, v) => ({ ...p, layerHoverPreview: v }),
-        event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
       },
       panelSwitch('quickStylePanelEnabled', {
         section: 'Quick Style',

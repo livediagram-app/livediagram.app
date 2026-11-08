@@ -420,19 +420,18 @@ describe('settings sub-categories', () => {
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     expect(panels.rows[0]!.key).toBe('panelOpacity');
     expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
-      'Layers',
       'Quick Style',
       'Map',
       'Collaborate',
     ]);
-    // Their old sub-category ids still land on Panels.
+    // Their old sub-category ids still land on Panels, the retired Layers panel's too
+    // (docs/specs/006-document/layers.md "Retired: the Layers panel").
     expect(panels.aliases).toEqual(['layers', 'quickStyle', 'map', 'collaborate']);
   });
 
   it('opens every panel section with its Enable switch, on by default', () => {
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     const switches: Record<string, [string, string]> = {
-      Layers: ['layersPanelEnabled', 'Enable Layers Panel'],
       'Quick Style': ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
       Map: ['showMinimap', 'Enable Map'],
       Collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
@@ -452,13 +451,6 @@ describe('settings sub-categories', () => {
         .find((c) => c.id === 'panels')!
         .rows.filter((r) => r.section === section)
         .map((r) => r.key);
-    expect(rows('Layers', {})).toEqual([
-      'layersPanelEnabled',
-      'layersShowPreview',
-      'layersShowCount',
-      'layerHoverPreview',
-    ]);
-    expect(rows('Layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
     expect(rows('Map', { showMinimap: false })).toEqual(['showMinimap']);
     expect(rows('Map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
   });

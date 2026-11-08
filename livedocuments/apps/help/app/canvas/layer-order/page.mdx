@@ -2,7 +2,6 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LayerOrder } from '@liveworkspace/help-site/art/illustrations/element-properties';
-import { ElementLayerMenuScene } from '@liveworkspace/help-site/art/illustrations/layers';
 
 export const metadata = helpMetadata({
   title: 'Layer Order and Opacity',
@@ -26,11 +25,7 @@ Right-click an element and open the **Layer** category:
 - **Bring to Front** moves the element onto the tab's top [layer](/help/canvas/layers/), so nothing overlaps it. If the top layer holds anything else, a fresh layer is created above it first.
 - **Send to Back** mirrors that at the bottom: the element lands on (or below) the bottom layer, so other elements paint over it.
 
-These two buttons are how layers accumulate; a layer they empty out is removed automatically. Once the tab has more than one layer (and **Enable Layers Panel** is on in Settings, as it is by default), the same category also shows **Move to layer** tiles, one per layer with a preview of what is on it, for placing the selection on a specific layer.
-
-<Figure caption="The Layer category of the element menu: Bring to Front and Send to Back, the Move to layer tiles, and the Opacity slider.">
-  <ElementLayerMenuScene />
-</Figure>
+These two buttons are how layers accumulate; a layer they empty out is removed automatically.
 
 Both also work from the keyboard while an element is selected (Ctrl in place of Cmd on Windows and Linux):
 

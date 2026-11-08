@@ -173,7 +173,7 @@ export function MiniWindow({
 }
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
-// the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
+// the undo cluster, a layer plane and an eye, a photograph and its selection
 // handles, and a palette tile with its key.
 
 // One tab pill in the bottom bar: the mode glyph (a small diagram mark) in the tab's accent, its
@@ -275,7 +275,7 @@ export function Plane({
   );
 }
 
-// An eye in the Layers panel: open, or struck through once the layer is hidden.
+// An eye: open, or struck through once the layer is hidden.
 export function Eye({ x, y, hides = false }: { x: number; y: number; hides?: boolean }) {
   return (
     <g

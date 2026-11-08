@@ -56,9 +56,7 @@ export function EditorCanvasHost() {
     presentingElements,
     presentingPageId,
     layers,
-    activeLayerId,
     layerInertIds,
-    layerCounts,
     laserPanelPosition,
     spotlightPanelPosition,
     setSpotlightPanelPosition,
@@ -70,19 +68,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    setActiveLayer,
-    addLayer,
-    renameLayer,
-    removeLayer,
-    toggleLayerVisibility,
-    toggleLayerLock,
-    reorderLayer,
-    mergeActiveLayer,
-    setLayerOpacityLive,
-    clearLayer,
-    hideOtherLayersOp,
-    layerPreviewId,
-    setLayerPreviewId,
     addArrow,
     addAvatar,
     addBanner,
@@ -503,8 +488,6 @@ export function EditorCanvasHost() {
             }
             onResetMap={() => setMapPosition((p) => (p === null ? p : null))}
             layers={layers}
-            activeLayerId={activeLayerId}
-            layerCounts={layerCounts}
             userPreferences={userPreferences}
             laserPanelPosition={laserPanelPosition}
             spotlightPanelPosition={spotlightPanelPosition}
@@ -545,19 +528,6 @@ export function EditorCanvasHost() {
                     track('UI', 'Opened', 'ThemePicker');
                   }
             }
-            onSelectLayer={setActiveLayer}
-            onAddLayer={addLayer}
-            onRemoveLayer={removeLayer}
-            onRenameLayer={renameLayer}
-            onToggleLayerVisibility={toggleLayerVisibility}
-            onToggleLayerLock={toggleLayerLock}
-            onReorderLayer={reorderLayer}
-            onMergeLayer={mergeActiveLayer}
-            onSetLayerOpacity={setLayerOpacityLive}
-            onClearLayer={clearLayer}
-            onHideOtherLayers={hideOtherLayersOp}
-            layerPreviewId={layerPreviewId}
-            onPreviewLayer={setLayerPreviewId}
             commentRows={commentRows}
             commentsPanelPosition={commentsPanelPosition}
             onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}

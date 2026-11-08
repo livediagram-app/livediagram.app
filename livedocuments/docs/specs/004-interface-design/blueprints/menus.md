@@ -27,7 +27,6 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
-| `apps/editor/components/panels/LayerRowMenu.tsx`                            | Layer control menu                                                                                                          |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
 | `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
@@ -141,7 +140,6 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `MenuFlyoutSection`                                              | The parent tree's kind                               | Its row is the trigger            |
 | `ContextMenu`                                                    | Control, `label` prop                                | None: the focused element at open |
 | `TabPortalMenu` `PortalMenu`                                     | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
-| `LayerRowMenu`                                                   | Control, "<layer> layer menu"                        | None                              |
 | Custom colour menu (`ColourPicker`)                              | Command, "<colour> menu"                             | The swatch                        |
 | `LockedElementMenu`                                              | Command, labelled by "In use"                        | None                              |
 | `ZoomMenu`                                                       | Command, `initialFocus` `none` on hover              | The percentage button             |

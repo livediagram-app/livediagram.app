@@ -2,14 +2,15 @@
 // "Contents", "A page's place in the deck lives in Contents"): Present From Here while its slide is shown, then
 // Hide in Slides or Show in Slides on any page the deck has a slide of; Add to Slides on any page it has none of.
 import type { PageRowAction } from '@liveworkspace/workbench/components/canvas/PageRowMenu';
-import { lucidePlay } from '@liveworkspace/icons/lucide';
+import { lucideEye, lucideEyeOff, lucidePlay } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedocuments/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
-import { EyeIcon, EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
 import type { ContentsRow } from '@/lib/page-contents';
 
 const PresentIcon = lucideGlyph(lucidePlay, 13);
+const EyeIcon = lucideGlyph(lucideEye, 13);
+const EyeOffIcon = lucideGlyph(lucideEyeOff, 13);
 
 export function pageRowSlides(
   row: ContentsRow,

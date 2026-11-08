@@ -21,7 +21,6 @@ function open(target: Element) {
   const given: Record<string, unknown> = {
     menu: { mode: 'element', elementId: target.id, x: 10, y: 10 },
     elements: [target],
-    layers: [],
     theme: undefined,
     onSetImageAlt,
   };

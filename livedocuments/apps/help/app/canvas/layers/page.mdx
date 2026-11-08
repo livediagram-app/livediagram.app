@@ -5,15 +5,15 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Layers',
   description:
-    'How a tab stacks its elements in layers: Bring to Front and Send to Back make them, and Move to Layer in the element menu places a selection on one.',
+    'How a tab stacks its elements in layers: Bring to Front and Send to Back make them, and a tab keeps the layers it was saved with.',
   path: '/help/canvas/layers/',
 });
 
-<ArticleLayout title="Layers" description="How a tab stacks its elements in layers, made by Bring to Front and Send to Back, and how to place a selection on one." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
+<ArticleLayout title="Layers" description="How a tab stacks its elements in layers, made by Bring to Front and Send to Back." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("layers")}>
 
 Every tab starts with a single layer, and for most pages that's all it ever has. Layers are stacking bands: everything on a higher layer paints above everything on a lower one. They are saved with the tab and sync live, so everyone sees the same stack.
 
-You don't manage layers in a panel. A tab is laid out by its pages, so livedocuments has no Layers panel; the stack builds itself as you bring things forward and send them back.
+You don't manage layers yourself. A tab is laid out by its pages, so livedocuments has no Layers panel and no setting for one; the stack builds itself as you bring things forward and send them back.
 
 ## How Layers Are Made
 
@@ -21,11 +21,9 @@ You don't manage layers in a panel. A tab is laid out by its pages, so livedocum
 
 The **Bring to Front** and **Send to Back** buttons on the selection's floating toolbar are different: they restack the selection within its own layer and never move it to another. See [Layer Order and Opacity](/help/canvas/layer-order/).
 
-## Moving a Selection to a Layer
+## Layers a Tab Already Has
 
-Once the tab has more than one layer, the right-click menu's **Layer** category also shows **Move to layer**: one tile per layer, top of the stack first, each with a small preview of what that layer holds. The selection's own layer is the highlighted tile; choose another to move the whole selection there. The menu stays open, so you can keep adjusting.
-
-**Enable Layers Panel**, in [Settings](/help/user-interface/settings/) under **Panels** then **Layers**, turns the **Move to layer** tiles off. Your layers keep their order either way.
+A tab that came with layers (from a template, an import, or another app) keeps them exactly as saved: their order, and any layer that was hidden or locked. A hidden layer stays off the page and out of every export; what sits on a locked layer can't be selected. New elements go on the top layer that is neither hidden nor locked.
 
 ## Who Can Change Layers
 

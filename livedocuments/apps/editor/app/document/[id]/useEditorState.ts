@@ -1668,16 +1668,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     if (before && after && !editsBlocked) styleMemory.recordEdit(before, after);
   };
 
-  // Layers domain slice (docs/specs/006-document/layers.md): the active layer, the panel /
-  // context-menu ops, and the hidden / locked element-id sets every
-  // interaction gate below reads.
+  // Layers domain slice (docs/specs/006-document/layers.md): the active layer, smart naming, and the
+  // hidden / locked element-id sets every interaction gate below reads.
   const layersState = useLayersState({
     activeId,
     activeTab,
     editsBlocked: structureBlocked,
-    commitActiveTab,
     tickTabs,
-    markCheckpoint,
     toastInfo: toast.info,
     extraInertIds: canvasInertIds,
   });
@@ -2700,9 +2697,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTabLocked,
     activeTabConnected,
     connectedTabs,
-    // Layers (docs/specs/006-document/layers.md): the normalised stack, the session-scoped active
-    // layer, per-layer element counts, the interaction-gate id sets, and
-    // the panel / context-menu ops.
+    // Layers (docs/specs/006-document/layers.md): the normalised stack, the active layer and the
+    // interaction-gate id sets.
     layers,
     activeLayerId,
     activeLayerBlocked,
@@ -2713,24 +2709,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,
-    layerCounts: layersState.layerCounts,
-    setActiveLayer: layersState.setActiveLayer,
-    addLayer: layersState.addLayer,
-    renameLayer: layersState.renameLayer,
-    removeLayer: layersState.removeLayer,
-    toggleLayerVisibility: layersState.toggleLayerVisibility,
-    toggleLayerLock: layersState.toggleLayerLock,
-    reorderLayer: layersState.reorderLayer,
-    mergeActiveLayer: layersState.mergeActiveLayer,
-    setLayerOpacityLive: layersState.setLayerOpacityLive,
-    clearLayer: layersState.clearLayer,
-    hideOtherLayersOp: layersState.hideOthers,
-    layerPreviewId: layersState.previewLayerId,
-    setLayerPreviewId: layersState.setPreviewLayerId,
-    // Menu-facing wrapper: moves the CURRENT selection
-    // onto the picked layer.
-    moveSelectedToLayer: (layerId: string) =>
-      layersState.moveSelectionToLayer(currentSelectionIds(), layerId),
     addArrow,
     addComment,
     replaceCommentId,

@@ -5,7 +5,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useRowPointerDrag } from './useRowPointerDrag';
 
 // docs/specs/031-photo/photo-layers.md "The Layers tab": a row dragged onto another lands above it, below it, or into
-// it where it holds others (a group); the canvas's Layers panel uses the same drag (useLayerRowDrag).
+// it where it holds others (a group).
 
 // Rows 40px each: group 0-40, pixel 40-80.
 function list() {

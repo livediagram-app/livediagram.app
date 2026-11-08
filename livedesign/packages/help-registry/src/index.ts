@@ -144,7 +144,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 25,
+    articleCount: 23,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
@@ -1682,31 +1682,11 @@ export const articles: Article[] = [
   {
     slug: 'layers',
     title: 'Layers',
-    description: 'Split a tab into stacking layers you can hide, lock, rename, and restack.',
-    keywords: 'photoshop stack hide lock organise organize panel z order',
+    description: 'How Bring to Front and Send to Back stack a tab in layers.',
+    keywords: 'photoshop stack layer front back organise organize z order hidden locked opacity',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',
-  },
-  {
-    slug: 'layers-visibility-and-locking',
-    title: 'Hiding, Locking, and Dimming Layers',
-    description: 'Hide, lock, dim, or solo a whole layer, and preview one on hover.',
-    keywords: 'show visibility solo preview toggle eye protect',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
-  },
-  {
-    slug: 'layers-organising',
-    title: 'Organising and Merging Layers',
-    description: 'Rename, restack, merge, clear, and move elements between layers.',
-    keywords: 'organize rename reorder merge move clear manage',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Layers and Locking',
-    parentSlug: 'layers',
   },
   // ---- Sub-articles: Canvas ----
   {

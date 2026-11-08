@@ -8,7 +8,6 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
@@ -45,7 +44,6 @@ const ShareOfflineGate = dynamic(
 // header, distinct from the global editor modals in EditorModals.
 export function EditorTabDialogs() {
   const {
-    userPreferences,
     exportOpen,
     exportScope,
     pagesMode,
@@ -112,7 +110,6 @@ export function EditorTabDialogs() {
           designTabs={tabs}
           loadTabs={loadAllTabs}
           imageContext={imageContext}
-          offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
         />
       ) : null}

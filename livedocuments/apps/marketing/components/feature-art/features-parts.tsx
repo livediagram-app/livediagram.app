@@ -171,7 +171,7 @@ export function MiniWindow({
 }
 
 // ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
-// the undo cluster, a layer plane and the Layers panel's eye, a photograph and its selection
+// the undo cluster, a photograph and its selection
 // handles, and a palette tile with its key.
 
 // The canvas cluster's undo and redo buttons, bottom right, as the editor draws them.

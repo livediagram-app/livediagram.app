@@ -143,6 +143,33 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Activity', 'Opened', null)).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'Settings')).toBe(false);
   });
+  it('retires the Layers panel, Move to Layer, its Settings and the Hidden layers export, not smart naming', () => {
+    for (const [action, type] of [
+      ['Added', null],
+      ['Selected', null],
+      ['Renamed', 'Manual'],
+      ['Deleted', null],
+      ['Toggled', 'Hidden'],
+      ['Toggled', 'OthersHidden'],
+      ['Removed', 'MergedUp'],
+      ['Changed', 'Opacity'],
+      ['Cleared', null],
+      ['Reordered', null],
+      ['Moved', null],
+      ['Opened', 'Panel'],
+    ] as const) {
+      expect(isRetiredEvent('Layer', action, type)).toBe(true);
+    }
+    expect(isRetiredEvent('UI', 'Toggled', 'LayersPanelOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerPreviewOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerCountOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'LayerHoverPreviewOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'HiddenLayersExport')).toBe(true);
+    expect(isRetiredEvent('Layer', 'Renamed', 'Adopted')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'PatternExport')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'MapDimOn')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'CollaboratePanelOff')).toBe(false);
+  });
 });
 
 describe('dropRetiredEvents', () => {
