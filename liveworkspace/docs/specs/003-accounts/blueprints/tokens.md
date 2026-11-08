@@ -93,7 +93,7 @@ Columns: `userId` (`ON DELETE CASCADE`), `name`, `readOnly` (default 0), `create
 
 | Test                                                          | Pins                                                         |
 | ------------------------------------------------------------- | ------------------------------------------------------------ |
-| `liveworkspace/apps/accounts/src/tokens.test.ts` (9)          | API tokens; tokens carried over from the old livediagram.app |
+| `liveworkspace/apps/accounts/src/tokens.test.ts` (10)         | API tokens; tokens carried over from the old livediagram.app |
 | `liveworkspace/apps/accounts/src/token-expiry.test.ts` (8)    | the expiring-token warning and note                          |
 | `liveworkspace/apps/accounts/src/bench-accounts.test.ts` (3)  | bench accounts                                               |
 | `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16) | API token events                                             |

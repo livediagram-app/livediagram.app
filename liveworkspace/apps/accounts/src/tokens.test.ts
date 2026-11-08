@@ -13,6 +13,8 @@ import {
   API_TOKEN_PREFIX,
   generateApiToken,
   hashApiToken,
+  liveApiTokenIds,
+  MAX_LIVE_TOKEN_IDS,
 } from './tokens.ts';
 import { tokenBySecret } from './workbench/revoke.ts';
 import type { DatabaseSync } from 'node:sqlite';
@@ -121,5 +123,18 @@ describe('tokens carried over from the old livediagram.app', () => {
     const token = await mintApiToken(db, 'user_bea', { name: 'New', readOnly: false });
     expect(token!.secret.startsWith(API_TOKEN_PREFIX)).toBe(true);
     for (let i = 0; i < 20; i++) expect(generateApiToken().startsWith('lwt_')).toBe(true);
+  });
+});
+
+describe('which tokens still work', () => {
+  it('answers the most ids it takes in one statement D1 accepts, live ones only', async () => {
+    const live = (await mintApiToken(db, 'user_ada', { name: 'live', readOnly: false }, 1_000))!;
+    const gone = (await mintApiToken(db, 'user_ada', { name: 'gone', readOnly: false }, 1_000))!;
+    await revokeApiToken(db, 'user_ada', gone.id, 2_000);
+    const ids = [live.id, gone.id];
+    while (ids.length < MAX_LIVE_TOKEN_IDS) ids.push(`other_${ids.length}`);
+    expect(await liveApiTokenIds(db, ids, 3_000)).toEqual([live.id]);
+    // Past its six months it no longer works.
+    expect(await liveApiTokenIds(db, ids, live.expiresAt)).toEqual([]);
   });
 });
