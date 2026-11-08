@@ -123,9 +123,9 @@ Two deliberate non-changes:
 its own build**: each environment's deploy builds its own sites. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                        | Staging                                     |
-| ------------------------ | ------------------------------------------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livediagram.app`) | the staging MCP worker's `workers.dev` host |
+| Variable                 | Production                                        | Staging                                                                       |
+| ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livediagram.app`) | `https://mcp-staging.livediagram.app`, the staging MCP worker's custom domain |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
 resolves `/api` same-origin through its own router, and

@@ -10,6 +10,11 @@ routes = [
   { pattern = "livedocuments.app", custom_domain = true },
   { pattern = "www.livedocuments.app", custom_domain = true },
 ]
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
 
 # Service bindings to the marketing and live apps.
 # The `service` values must match the deployed Worker names of each downstream app.
@@ -37,6 +42,10 @@ service = "livedocuments-help"
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
+[env.local]
+workers_dev = false
+preview_urls = false
+
 [env.local.vars]
 # Tells the router it fronts `next dev`, whose chunks are not content-hashed, so their own
 # no-cache header passes through (docs/specs/016-platform/stale-builds.md "Caching rules").
@@ -82,6 +91,8 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 [env.staging]
 name = "livedocuments-router-staging"
 routes = [{ pattern = "staging.livedocuments.app", custom_domain = true }]
+workers_dev = false
+preview_urls = false
 
 [[env.staging.services]]
 binding = "MARKETING"

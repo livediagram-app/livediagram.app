@@ -2,6 +2,11 @@ name = "livedesign-marketing"
 # The liveworkspace Cloudflare account, which also hosts livedesign.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
+# No public *.workers.dev address or preview URLs: a copy there would skip the zone's WAF and
+# rate-limit rules. The Worker is reached only at its custom domain or over a service binding
+# (docs/specs/016-platform/deployment.md "Custom domain").
+workers_dev = false
+preview_urls = false
 
 # Static assets only — Cloudflare Workers serves files from `./out`
 # (Next.js static export output). No worker code needed; the router
@@ -23,6 +28,8 @@ not_found_handling = "404-page"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "livedesign-marketing-staging"
+workers_dev = false
+preview_urls = false
 
 [env.staging.assets]
 directory = "./out"

@@ -147,7 +147,7 @@ Only two workers have a hostname, each declared in its `wrangler.toml` as a Work
 `wrangler deploy` attaches each one, and Cloudflare creates its DNS record and certificate, so no hostname is a
 dashboard step. `www.livedocuments.app` is attached because it is the canonical origin links are built from
 (`APP_BASE_URL`). The other workers have no hostname: they are reached only over the router's (and the mcp worker's)
-service bindings, and at their `*.workers.dev` URLs for direct testing. The router's paths are in
+service bindings. No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules. The router's paths are in
 [Router app](router-app.md) "Routing table".
 
 ## Out of scope
