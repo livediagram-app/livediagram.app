@@ -436,6 +436,8 @@ export * from './element-fields';
 
 // Deterministic auto-layout for AI-generated diagrams (livediagram/docs/specs/015-api/mcp-server.md).
 export * from './auto-layout';
+export { sweepEdgelessNodes } from './auto-layout-sweep';
+export { capLabel, LABEL_CAP_MAX } from './label-cap';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements } from './auto-layout-tidy';
 

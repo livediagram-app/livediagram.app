@@ -30,18 +30,14 @@ import {
   AVATAR_PAD_DEFAULT_SIZE,
   createShape,
   isFloorShape,
-  settleChips,
   type Element,
 } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
-// The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
-// after making it, so its number is set to half the disc here, as a stored board reads back, and a
-// preview or an agent's create shows what the editor will.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return settleChips([], floorsFirst(buildUnsettled(kind, cx, cy)), { attachLoose: false });
+  return floorsFirst(buildElements(kind, cx, cy));
 }
 
 const isFloor = (el: Element) => el.type === 'shape' && isFloorShape(el.shape);
@@ -63,7 +59,7 @@ function blankPad(cx: number, cy: number): Element[] {
   return [createShape('avatar-pad', cx - width / 2, cy + BLANK_PAD_DROP - height / 2)];
 }
 
-function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
+function buildElements(kind: TemplateKind, cx: number, cy: number): Element[] {
   switch (kind) {
     case 'virtual-office':
       return buildVirtualOffice(cx, cy);

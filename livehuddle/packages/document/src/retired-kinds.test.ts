@@ -513,7 +513,9 @@ describe('a stored layout container', () => {
     'pointer-note',
   ];
   const stored = (): Element[] =>
-    structuredClone(RETIRED.filter((el) => PART_3.includes(el.shape as string))) as unknown as Element[];
+    structuredClone(
+      RETIRED.filter((el) => PART_3.includes(el.shape as string)),
+    ) as unknown as Element[];
 
   it('is a retired kind, named as a person knew it', () => {
     const names = stored().map((el) => retiredElementName(el));
@@ -537,12 +539,14 @@ describe('a stored layout container', () => {
 
   it('loads and saves deep-equal: no callout becomes a card, no Timeline is rebuilt, no badge settles', () => {
     const tab = { id: 't4', name: 'Map', elements: stored() } as unknown as Tab;
-    const saved = JSON.parse(JSON.stringify(migrateStoredTab(structuredClone(tab))));
+    const saved = JSON.parse(JSON.stringify(migrateStoredTab(structuredClone(tab)))) as Tab;
     expect(saved).toEqual(tab);
     expect(migrateIncomingTab(structuredClone(tab))).toEqual(tab);
-    const callout = saved.elements.find((el: { id: string }) => el.id === 'heads-up');
+    const callout = saved.elements.find((el) => el.id === 'heads-up') as { shape?: string };
     expect(callout.shape).toBe('callout');
-    const rail = { ...box('old-rail', 'timeline-rail', 0, { railCount: 5, railLabels: ['a', 'b'] }) };
+    const rail = {
+      ...box('old-rail', 'timeline-rail', 0, { railCount: 5, railLabels: ['a', 'b'] }),
+    };
     expect(migrateStoredElements([structuredClone(rail)] as unknown as Element[])).toEqual([rail]);
   });
 
