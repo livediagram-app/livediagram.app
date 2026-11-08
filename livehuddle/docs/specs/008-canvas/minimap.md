@@ -46,7 +46,9 @@ lets you jump the viewport anywhere with a tap or drag.
   The window and the dim are drawn on their own layer over the picture, in the same box and
   viewBox, so a pan or a walk moves them without repainting the picture
   ([Canvas performance](canvas-performance.md) "The Map is one image"). Presses go to the picture's
-  layer, which maps them to the board; the window's layer takes none.
+  layer, which maps them to the board; the window's layer takes none. That body (the picture's
+  frame, the window, the dim and the presses) is the one every editor shares, `MinimapMap` in
+  `@liveworkspace/workbench`; each app builds its own picture and puts the body in its own panel.
 - **Fidelity: the map paints the canvas's paper.** An element with no colour
   of its own takes its colours from the paper it sits on (`CanvasSurface`,
   light or dark, derived from the tab's resolved backdrop), so the map reads

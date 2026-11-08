@@ -128,7 +128,8 @@ large move rides as one layer").
   walk. The lit window and the dimmed surround sit on a layer of their own above the picture, so a
   pan moves the window without repainting the picture: Safari draws an SVG picture again in full
   each time anything over it repaints, and on a 100-room office that was about 45 ms of every frame
-  of a walk (a walk's frame went from about 56 ms to about 14 ms in WebKit at iPad size).
+  of a walk (a walk's frame went from about 56 ms to about 14 ms in WebKit at iPad size). The Map's
+  body is the one every editor shares (`MinimapMap`, `@liveworkspace/workbench`).
 - **Questions about neighbours ask a spatial index.** Anything that asks, for each element, which
   other elements are near it (arrows passing behind boxes) queries one shared index of element
   bounds, updated for the elements that changed, so its per-frame cost follows the neighbourhood,
