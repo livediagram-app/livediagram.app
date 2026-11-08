@@ -1,0 +1,122 @@
+'use client';
+
+// The hands-on tours' missions (docs/specs/026-plan/plan-tour.md "The mission strip"): one thing to do at a time,
+// checked from what the person really did, never from a Next button. A mission is done the moment its check passes
+// (by any route: a drag, a menu, a key); the strip then shows its lesson for LESSON_MS and moves on by itself. Hints
+// climb one press at a time. The tracks own their missions and what a check reads; this is the runner they share.
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+
+// How long a done mission's lesson shows before the next mission (plan-tour.md "Done, then next").
+export const LESSON_MS = 1600;
+
+// One rung of a mission's hints: words, and optionally the place it means, ringed (a CSS selector, read when shown).
+export type MissionHint = { text: string; ring?: () => string | null };
+
+export type Mission<Ctx> = {
+  // Telemetry and test id ('move-card' → PlanTourStepMoveCard); fixed, never content.
+  id: string;
+  // The instruction, short and imperative: "Move one on".
+  title: string;
+  // One line on what to do and why it matters.
+  why: string;
+  // What was just learned, shown once it is done.
+  lesson: string;
+  hints: readonly MissionHint[];
+  // Whether the person has done it, read from the track's live state.
+  done: (ctx: Ctx) => boolean;
+};
+
+export type MissionPhase = 'doing' | 'lesson' | 'finish';
+
+export type MissionRun<Ctx> = {
+  mission: Mission<Ctx> | null;
+  index: number;
+  count: number;
+  phase: MissionPhase;
+  // How many hints are showing (0: none yet).
+  hintLevel: number;
+  // The hint rung on show, if any.
+  hint: MissionHint | null;
+  // Whether another hint is left to show.
+  moreHints: boolean;
+  showHint: () => void;
+};
+
+// Runs `missions` in order against `ctx` while `active`: each is checked whenever ctx changes; once done its lesson
+// shows for LESSON_MS, then the next starts (one already done shows its lesson and moves on too), and after the last
+// the phase is 'finish'. `onView` fires once as each mission starts (a restart shows them again).
+export function useMissions<Ctx>({
+  missions,
+  ctx,
+  active,
+  onView,
+}: {
+  missions: readonly Mission<Ctx>[];
+  ctx: Ctx;
+  active: boolean;
+  onView?: (mission: Mission<Ctx>) => void;
+}): MissionRun<Ctx> {
+  const [index, setIndex] = useState(0);
+  const [phase, setPhase] = useState<MissionPhase>(missions.length === 0 ? 'finish' : 'doing');
+  const [hintLevel, setHintLevel] = useState(0);
+  const onViewRef = useLatest(onView);
+
+  // A fresh run (turned on, or new missions) starts at the first mission: reset as it renders, not after.
+  const [runOf, setRunOf] = useState({ missions, active });
+  if (runOf.missions !== missions || runOf.active !== active) {
+    setRunOf({ missions, active });
+    if (active) {
+      setIndex(0);
+      setHintLevel(0);
+      setPhase(missions.length === 0 ? 'finish' : 'doing');
+    }
+  }
+
+  const mission = active && phase !== 'finish' ? (missions[index] ?? null) : null;
+
+  // The check: the current mission, whenever what it reads changes; done, its lesson shows.
+  if (mission !== null && phase === 'doing' && mission.done(ctx)) setPhase('lesson');
+
+  // Each mission's view, once as it starts.
+  const viewed = useRef<Mission<Ctx> | null>(null);
+  useEffect(() => {
+    if (!active) {
+      viewed.current = null;
+      return;
+    }
+    if (phase !== 'doing' || !mission || viewed.current === mission) return;
+    viewed.current = mission;
+    onViewRef.current?.(mission);
+  }, [active, phase, mission, onViewRef]);
+
+  // The lesson, then the next mission (or the finish).
+  useEffect(() => {
+    if (!active || phase !== 'lesson') return;
+    const t = window.setTimeout(() => {
+      setHintLevel(0);
+      if (index + 1 < missions.length) {
+        setIndex(index + 1);
+        setPhase('doing');
+      } else setPhase('finish');
+    }, LESSON_MS);
+    return () => window.clearTimeout(t);
+  }, [active, phase, index, missions.length]);
+
+  const hints = mission?.hints ?? [];
+  const showHint = useCallback(
+    () => setHintLevel((level) => Math.min(level + 1, hints.length)),
+    [hints.length],
+  );
+  return {
+    mission,
+    index,
+    count: missions.length,
+    phase: active ? phase : 'doing',
+    hintLevel,
+    hint: phase === 'doing' && hintLevel > 0 ? (hints[hintLevel - 1] ?? null) : null,
+    moreHints: phase === 'doing' && hintLevel < hints.length,
+    showHint,
+  };
+}

@@ -271,7 +271,8 @@ export function PlanCardFace({
   const pill = (f: CardField, big = false): ReactNode => {
     switch (f) {
       case 'key':
-        return <KeyTag key={f} itemKey={item.key} accent={accent} />;
+        // A practice card has no number of its own (key 0, docs/specs/026-plan/plan-tour.md "Practice cards").
+        return item.key > 0 ? <KeyTag key={f} itemKey={item.key} accent={accent} /> : null;
       case 'type':
         return (
           <TypeChip

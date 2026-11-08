@@ -6,8 +6,10 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ShapeElement } from '@livediagram/document';
 import { replayStore } from '@/lib/replay/replay-store';
-import { CHAPTERS } from '@/lib/replay/watch-it-built-script';
+import { ADD, CHAPTERS } from '@/lib/replay/watch-it-built-script';
+import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { WatchItBuiltPlayer } from './WatchItBuiltPlayer';
 
 const telemetry = vi.hoisted(() => {
@@ -42,8 +44,9 @@ vi.mock('./ReplayOverlay', () => ({
     return null;
   },
 }));
+const tourEls = vi.hoisted(() => new Map<string, Element>());
 vi.mock('@liveworkspace/workbench/components/tour/tour-dom', () => ({
-  findTour: () => null,
+  findTour: (id: string) => tourEls.get(id) ?? null,
   clickTour: () => false,
   waitForSelector: async () => null,
 }));
@@ -215,6 +218,60 @@ describe('WatchItBuiltPlayer clock', () => {
     // Replay starts it again from the top.
     press('onToggle');
     expect(overlay.props).toMatchObject({ index: 0, playing: true, finished: false });
+  });
+
+  it('holds the carried shape: mid-carry the cursor is its centre, pressed, even with the palette gone', () => {
+    editor();
+    const a = document.createElement('div');
+    a.setAttribute('data-element-id', 'wib-a');
+    a.getBoundingClientRect = () => ({ left: 600, top: 200, width: 200, height: 56 }) as DOMRect;
+    document.body.append(a);
+    try {
+      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      act(() => {
+        vi.advanceTimersByTime((ADD.drag1[0] + ADD.drag1[1]) / 2);
+      });
+      expect(document.querySelector(elementSelector('wib-a'))).toBe(a);
+      expect(overlay.props!.cursor).toEqual({ x: 700, y: 228, pressing: true });
+    } finally {
+      a.remove();
+    }
+  });
+
+  it('carries A out from the palette tile even when its first measured frames were still settling', () => {
+    editor();
+    // A's entrance scales it at first (227x64 for 200x56); one reading then put the tile far off the screen.
+    let rect = { left: 606, top: 200, width: 227, height: 64 };
+    const a = document.createElement('div');
+    a.setAttribute('data-element-id', 'wib-a');
+    a.getBoundingClientRect = () => rect as DOMRect;
+    const menu = document.createElement('div');
+    const tile = document.createElement('button');
+    tile.getBoundingClientRect = () => ({ left: 359, top: 227, width: 73, height: 73 }) as DOMRect;
+    menu.append(tile);
+    tourEls.set('palette-category-menu', menu);
+    document.body.append(a);
+    try {
+      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      rect = { left: 620, top: 204, width: 200, height: 56 };
+      act(() => {
+        vi.advanceTimersByTime(ADD.drag1[0] - 400);
+      });
+      const landed = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      act(() => {
+        vi.advanceTimersByTime(220);
+      });
+      const carried = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      // On the screen (settled map: zoom 1, A's landing at 620) the carried centre starts at the tile's, 395.
+      const screenX = 620 + (carried.x - landed.x) + carried.width / 2;
+      expect(Math.abs(screenX - 395.5)).toBeLessThan(12);
+    } finally {
+      a.remove();
+      tourEls.clear();
+    }
   });
 
   it('leaves nothing behind when it unmounts mid-run', () => {

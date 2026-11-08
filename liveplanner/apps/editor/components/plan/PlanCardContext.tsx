@@ -11,7 +11,7 @@ import { usePlan, type PlanContextValue } from './PlanContext';
 
 export type PlanCardData = Pick<
   PlanContextValue,
-  'types' | 'statusNames' | 'statusPhases' | 'canEditCards' | 'itemsScope'
+  'types' | 'statusNames' | 'statusPhases' | 'canEditCards' | 'itemsScope' | 'practiceIds'
 >;
 
 export const PlanCardContext = createContext<PlanCardData | undefined>(undefined);

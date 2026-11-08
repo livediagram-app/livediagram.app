@@ -576,19 +576,15 @@ Each change is one undo step. A Participant and a Viewer have no cog (the dashbo
 
 ### Show Me
 
-**Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of arranging and filling the dashboard, on the
-page itself; it is never offered or started on its own. Pressing it closes the settings popover, then each step rings
-a real control of the page, never a whole row or slot (a ring that size would light most of the page), and the page
-stays usable (the Editor can fill a slot or drag a divider while the step is up). The steps: **Rows of Slots** (a
-centred card, no ring: dividers and the bottom edge), **Fill a Slot** (the first empty slot's Add to Slot; only when
-a slot is empty), **Change or Move a Slot** (the first filled slot's own cog, else its Move grip, both shown as on
-hover while the step is up; only when a slot holds something), **Dashboard Settings** (the cog), then a
-closing card, **That Is a Dashboard**, with a link to the Dashboards article. Which steps it has is fixed when it
-starts, so filling the empty slot mid-tour keeps the count. Only an Editor has the cog, so only an Editor sees Show
-Me; a locked tab has no cog, so none. Telemetry: `UI` · `Started` · `DashboardTour`, and `UI` · `Ended` ·
-`DashboardTourCompleted` or `DashboardTourSkipped`. The same steps are the Dashboards tour, started from the footer's **Start Dashboards Tour** button while an
-Editor has a dashboard open ([Plan tour](plan-tour.md) "The Dashboards tour"); its cards read Show Me either way, and
-only a run from the footer marks the `dashboards` track taken.
+**Show Me** ([Show Me](../007-editor/show-me.md)) runs **Layout View**, the hands-on tour of arranging and filling
+the dashboard ([Plan tour](plan-tour.md) "Dashboards: Layout View"); it is never offered or started on its own.
+Pressing it closes the settings popover; the dashboard then shows its twelve-column guides, each slot's span and each
+row's height, and the mission strip asks the Editor to resize two slots, change a row's height and fill an empty
+slot, ticking each off as they do it. The page stays fully usable, and every change is theirs, one undo step. Only an
+Editor has the cog, so only an Editor sees Show Me; a locked tab has no cog, so none. Telemetry: `UI` · `Started` ·
+`DashboardTour`, and `UI` · `Ended` · `DashboardTourCompleted` or `DashboardTourSkipped`. The same tour is the
+Dashboards tour, started from the footer's **Start Dashboards Tour** button while an Editor has a dashboard open
+([Plan tour](plan-tour.md) "The Dashboards tour"); only a run from the footer marks the `dashboards` track taken.
 
 ## A row that fills the page
 

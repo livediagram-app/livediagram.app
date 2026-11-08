@@ -45,6 +45,7 @@ function cardElement(
   item: Item,
   base: CellCardsBase,
   done: boolean,
+  ships: boolean,
   gapBefore: string | null,
   gapHeight: number | undefined,
 ) {
@@ -58,6 +59,7 @@ function cardElement(
       lifted={liftedId === item.id || carried.has(item.id)}
       selected={selected.has(item.id)}
       done={done}
+      ships={ships}
       faceDown={!!setup && cardIsFaceDown(item, setup, selfId)}
       presence={presence?.get(item.id)}
       {...(onLongPress ? { onLongPress } : {})}
@@ -69,6 +71,7 @@ export const PlanBoardCellCards = memo(function PlanBoardCellCards({
   cards,
   base,
   done,
+  ships = false,
   busy,
   simplified,
   gapBefore,
@@ -77,6 +80,8 @@ export const PlanBoardCellCards = memo(function PlanBoardCellCards({
   cards: readonly Item[];
   base: CellCardsBase;
   done: boolean;
+  // The column the Practice Sprint ships to (plan-tour.md "Boards: Practice Sprint").
+  ships?: boolean;
   busy: boolean;
   simplified: boolean;
   // The card a drop gap opens above in this cell (never the carried card itself), and its height.
@@ -84,7 +89,7 @@ export const PlanBoardCellCards = memo(function PlanBoardCellCards({
   gapHeight: number | undefined;
 }) {
   const draw = (run: readonly Item[]) =>
-    run.map((item) => cardElement(item, base, done, gapBefore, gapHeight));
+    run.map((item) => cardElement(item, base, done, ships, gapBefore, gapHeight));
   // A busy board draws its cards in runs, each skipped while out of view (card-runs.ts).
   return busy
     ? cardRuns(cards).map((run) => (

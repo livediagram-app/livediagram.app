@@ -21,6 +21,8 @@ export type ReceptionistState = {
   chat: ReceptionistChat;
   // Counts each Ask Receptionist, so the canvas sends him over once per ask.
   asks: number;
+  // The ask the canvas has sent him off on: below `asks` in the render an ask opens his bubble, before he sets off.
+  setOff: number;
   // Counts each time he reached the pad to greet you, so the host opens your welcome (or hello) once per arrival.
   greets: number;
   // The Receptionist is on this tab and you are walking: Ask Receptionist can be offered.
@@ -36,6 +38,7 @@ const listeners = createListeners();
 let state: ReceptionistState = {
   chat: { open: false },
   asks: 0,
+  setOff: 0,
   greets: 0,
   here: false,
   can: { speak: false, edit: false },
@@ -59,6 +62,11 @@ export function useReceptionistState(): ReceptionistState {
 /** Ask Receptionist: he comes over to you and opens his topics (as his welcome, when Settings asked for it again). */
 export function askReceptionist(reason: 'ask' | 'welcome' = 'ask'): void {
   set({ asks: state.asks + 1, chat: { open: true, reason, topicId: null } });
+}
+
+/** The canvas has sent him off on ask `n` (or let it pass): his walk, not where his day had him, is now drawn. */
+export function noteReceptionistSetOff(n: number): void {
+  if (state.setOff !== n) set({ setOff: n });
 }
 
 /** Open his bubble where he stands: the welcome, a returning person's hello, or at the bell you rang. */
@@ -111,6 +119,7 @@ export function resetReceptionistState(): void {
   state = {
     chat: { open: false },
     asks: 0,
+    setOff: 0,
     greets: 0,
     here: false,
     can: { speak: false, edit: false },

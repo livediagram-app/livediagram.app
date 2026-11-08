@@ -20,6 +20,7 @@ import { pauseTelemetry, resumeTelemetry, track, trackDuringPause } from '@/lib/
 import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { replayStore, useReplayState } from '@/lib/replay/replay-store';
 import {
+  ADD,
   CHAPTERS,
   DEMO_IDS,
   cursorPlan,
@@ -195,11 +196,14 @@ export function WatchItBuiltPlayer({ onEnded }: { onEnded: () => void }) {
   // Each moment: the demo into the replay store, the palette to match, Example to where it is heading.
   useEffect(() => {
     if (!active || !layoutRef.current) return;
-    calibrate(mapRef, layoutRef);
+    // Measured again on every frame until the first carry: A's first frames can still be settling (its entrance
+    // scales it), and one early reading would put the palette's tile, and the carried shape with it, off the screen.
+    const settling = clock.index === 0 && clock.ms < ADD.drag1[0];
+    calibrate(mapRef, layoutRef, settling);
     const frame = demoAt(clock.index, clock.ms, layoutRef.current);
     applyFrame(frame, signatureRef);
     if (frame.paletteOpen !== !!findTour('palette-category-menu')) clickTour('palette-category');
-    if (frame.paletteOpen) captureTile(mapRef, layoutRef);
+    if (frame.paletteOpen) captureTile(mapRef, layoutRef, settling);
     if (frame.menuOnB) openMenuTo(frame.menuDepth);
     const point = cursorAt(clock.index, clock.ms, lastPointRef.current);
     if (point) {
@@ -341,8 +345,9 @@ function openMenuTo(depth: DemoFrame['menuDepth']) {
 function calibrate(
   mapRef: { current: { zoom: number; left: number; top: number } | null },
   layoutRef: { current: ReplayLayout | null },
+  again: boolean,
 ) {
-  if (mapRef.current || !layoutRef.current) return;
+  if ((mapRef.current && !again) || !layoutRef.current) return;
   const a = layoutRef.current.a;
   const r = document.querySelector(elementSelector(a.id))?.getBoundingClientRect();
   if (!r || r.width === 0) return;
@@ -354,10 +359,11 @@ function calibrate(
 function captureTile(
   mapRef: { current: { zoom: number; left: number; top: number } | null },
   layoutRef: { current: ReplayLayout | null },
+  again: boolean,
 ) {
   const map = mapRef.current;
   const layout = layoutRef.current;
-  if (!map || !layout || layout.tile) return;
+  if (!map || !layout || (layout.tile && !again)) return;
   const point = tilePoint();
   if (!point) return;
   layoutRef.current = {
@@ -407,6 +413,12 @@ function cursorAt(
   const nextAt = plan.findIndex((w) => w.at > ms);
   const prev = nextAt === -1 ? plan[plan.length - 1] : plan[nextAt - 1];
   const next = nextAt === -1 ? null : plan[nextAt]!;
+  // Carrying a shape out of the palette, Example holds it: the cursor is the carried shape's centre, pressed, so the
+  // two never part. (The tile it left is gone once the palette closes, so it can't be where the cursor starts from.)
+  if (prev?.to.kind === 'tile' && next?.to.kind === 'element') {
+    const held = resolve(next.to);
+    if (held) return { ...held, pressing: true };
+  }
   const from = (prev ? resolve(prev.to) : carriedFrom) ?? fallbackPoint();
   const pressing = !!prev?.press && ms - prev.at < 260;
   if (!next) return { ...from, pressing };

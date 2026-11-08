@@ -49,7 +49,9 @@ Style flyout and its Presets section the same way, by pressing their own buttons
 `[data-context-menu]` / `[data-menu-flyout]`) when they are not yet expanded. The pick itself is not pressed: B's green
 comes from the demo, as `applyColorPresetToEl` with the theme's Success preset gives it. Example's position is eased
 between the screen points of `cursorPlan`'s waypoints, resolved each frame from the DOM (a tour target, a demo element's
-rect, the open menu), so it follows a pan or a resize.
+rect, the open menu), so it follows a pan or a resize. A carry out of the palette is the exception: Example is the
+carried shape's centre, pressed, for the whole carry. The tile it left closes with the palette, so easing from it would
+jump the cursor away from the shape it holds.
 
 Seek (a chapter press, Back, reduced motion's Next) just sets `(chapter, 0)`: `demoAt` is a pure function of time,
 so there is nothing to replay.
@@ -61,6 +63,11 @@ enter: the canvas scales about the view's centre). Shape A (200 x 56) sits 250 p
 above it, far enough apart that B's selection toolbar clears A and high enough that the element menu, opened level with
 A, ends above the player; colours come from `deriveNewBoxedColours` for the tab, so the demo wears the tab's theme until
 the Style chapter gives B the Success preset.
+
+A carried shape starts on the palette's first tile, so the player maps the screen onto the canvas from A's rect while
+A waits unseen where it lands: its width gives the zoom, its corner the origin. That reading is taken again on every
+frame until the first carry, and the tile's canvas point with it, because A's first frames are still in their
+entrance (scaled, 227 x 64 for 200 x 56); a single early reading put the tile hundreds of pixels off the screen.
 
 ## Telemetry
 

@@ -172,7 +172,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'TourSeenOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'PlanTourOffer')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PlanTourStepMoveCard')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PlanTourStepOutro')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanTourSeenOff')).toBe(false);
   });
 
@@ -301,5 +302,26 @@ describe('dropRetiredEvents on a deployment with telemetry off', () => {
     const off = { enabled: false } as unknown as TelemetrySummary;
     expect(() => dropRetiredEvents(off)).not.toThrow();
     expect(dropRetiredEvents(off)).toBe(off);
+  });
+});
+
+// docs/specs/026-plan/plan-tour.md "Telemetry": the step cards went with the hands-on tours (2026-11-08).
+describe('the Plan tour step cards', () => {
+  it('retires the step views the missions replaced, keeping the missions and the finish', () => {
+    for (const t of [
+      'PlanTourStepBoard',
+      'PlanTourStepAddCards',
+      'PlanTourStepCells',
+      'PlanTourStepSheetSettings',
+    ])
+      expect(isRetiredEvent('UI', 'View', t)).toBe(true);
+    for (const t of [
+      'PlanTourStepMoveCard',
+      'PlanTourStepShipCard',
+      'PlanTourStepChart',
+      'PlanTourStepOutro',
+    ])
+      expect(isRetiredEvent('UI', 'View', t)).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'PlanTourBoard')).toBe(false);
   });
 });

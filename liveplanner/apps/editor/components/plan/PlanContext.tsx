@@ -40,6 +40,9 @@ export type ItemTypeEditing = 'new' | { id: string };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
+  // The Boards tour's practice cards, on this screen alone (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn
+  // as practice, their comments and links not offered. Absent: none.
+  practiceIds?: ReadonlySet<string>;
   // The project's item types, in order (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).
@@ -168,7 +171,7 @@ export function PlanProvider({
 }) {
   const latest = useLatest(value);
   const itemsStore = usePlanItemsStore(value?.items);
-  const { types, statusNames, statusPhases, canEditCards, itemsScope } = value ?? {};
+  const { types, statusNames, statusPhases, canEditCards, itemsScope, practiceIds } = value ?? {};
   const card = useMemo<PlanCardData | undefined>(
     () =>
       types
@@ -178,9 +181,10 @@ export function PlanProvider({
             statusPhases: statusPhases ?? NO_PHASES,
             canEditCards: !!canEditCards,
             ...(itemsScope !== undefined ? { itemsScope } : {}),
+            ...(practiceIds !== undefined ? { practiceIds } : {}),
           }
         : undefined,
-    [types, statusNames, statusPhases, canEditCards, itemsScope],
+    [types, statusNames, statusPhases, canEditCards, itemsScope, practiceIds],
   );
   return (
     <PlanContext.Provider value={value}>
