@@ -131,13 +131,26 @@ describe('add', () => {
     expect((await threadOf('a'))!.comments[0]).toMatchObject({ id: posted.id, tokenId: 'tok_1' });
   });
 
-  it('refuses a missing element, an arrow, empty or long text, and a body that is not an object', async () => {
-    seed([shape('a'), { id: 'ar', type: 'arrow' } as unknown as Element]);
+  // A stored arrow is a retired element whose placeholder card takes a thread, as a box does
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4; D28).
+  it('adds to a stored arrow’s thread, kept on the arrow as stored', async () => {
+    const arrow = {
+      id: 'ar',
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      to: { kind: 'free', x: 400, y: 0 },
+      label: 'calls',
+    } as unknown as Element;
+    seed([shape('a'), arrow]);
+    const res = await call({ path: '/tabs/t1/comments', body: { elementId: 'ar', text: 'why?' } });
+    expect(res.status).toBe(201);
+    expect((await threadOf('ar'))!.comments.map((c) => c.text)).toEqual(['why?']);
+  });
+
+  it('refuses a missing element, empty or long text, and a body that is not an object', async () => {
+    seed([shape('a')]);
     expect(
       (await call({ path: '/tabs/t1/comments', body: { elementId: 'zz', text: 'x' } })).status,
-    ).toBe(404);
-    expect(
-      (await call({ path: '/tabs/t1/comments', body: { elementId: 'ar', text: 'x' } })).status,
     ).toBe(404);
     expect(
       (await call({ path: '/tabs/t1/comments', body: { elementId: 'a', text: '  ' } })).status,

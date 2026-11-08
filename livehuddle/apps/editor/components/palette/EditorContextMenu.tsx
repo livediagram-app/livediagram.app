@@ -122,7 +122,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // rule. Placement always shows (Layer is unconditional), so each later
     // group's divider just gates on the group's own visibility.
     const showContentGroup = target.type === 'image' || target.type === 'link-card';
-    const showCollaborateGroup = boxed;
+    // A stored arrow's card attaches a comment, a note and an action as a box does (D28).
+    const showCollaborateGroup = true;
     return (
       <ContextMenu
         position={position}

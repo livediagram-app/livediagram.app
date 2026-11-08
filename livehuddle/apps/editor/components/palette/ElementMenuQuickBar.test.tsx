@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type BoxedElement } from '@livehuddle/document';
+import { storedPinnedArrow } from '@/test/retired-elements';
 import { publishClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
@@ -51,6 +52,24 @@ describe('quickBarItems', () => {
     ]);
   });
 
+  // A stored arrow's card attaches what a boxed placeholder does: an action, a comment and a note, no new link
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4; DEFAULTS.md D28).
+  it('offers a stored arrow’s card Action, Comment and Note, and reads View Comments once it has a thread', () => {
+    const arrow = storedPinnedArrow('ar', 'a', 'e', 'b', 'w');
+    expect(quickBarItems(arrow, handlers()).map((i) => i.label)).toEqual([
+      'Assign Action',
+      'Add Comment',
+      'Add Note',
+    ]);
+    const discussed = storedPinnedArrow('ar', 'a', 'e', 'b', 'w', {
+      commentThread: { resolved: false, comments: [{ id: 'c' }] },
+    });
+    expect(quickBarItems(discussed, handlers())[1]).toMatchObject({
+      label: 'View Comments',
+      on: true,
+    });
+  });
+
   // docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements": a stored embed or table takes no new link.
   it('offers no Link on a stored table or embed', () => {
     for (const type of ['table', 'video']) {
@@ -77,6 +96,13 @@ describe('ElementMenuQuickBar', () => {
     );
     return { h, onClose };
   };
+
+  it('lets an Editor add a comment from a stored arrow’s card', () => {
+    const { h, onClose } = open(true, storedPinnedArrow('ar', 'a', 'e', 'b', 'w') as BoxedElement);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Comment' }));
+    expect(h.onOpenComments).toHaveBeenCalledWith('ar');
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 
   it('runs a button’s action and closes the menu', () => {
     const { h, onClose } = open();

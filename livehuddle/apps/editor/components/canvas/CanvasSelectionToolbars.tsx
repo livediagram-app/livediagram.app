@@ -228,5 +228,5 @@ export function CanvasSelectionToolbars({
 
 // Whether an element carries a comment thread to read (resolved ones included: a reader opens those too).
 function hasComments(el: Element): boolean {
-  return isBoxed(el) && (el.commentThread?.comments.length ?? 0) > 0;
+  return (el.commentThread?.comments.length ?? 0) > 0;
 }
