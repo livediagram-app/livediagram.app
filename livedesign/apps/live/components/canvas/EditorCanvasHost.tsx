@@ -860,14 +860,16 @@ export function EditorCanvasHost() {
               />
             ) : null}
           </ComponentFaceContext.Provider>
-          <DocumentWebhooksDialog
-            open={webhooksOpen}
-            onClose={() => setWebhooksOpen(false)}
-            documentId={designId}
-            app="livedesign"
-            title={designName}
-            shareCode={sessionShareCode}
-          />
+          {designId !== null && (
+            <DocumentWebhooksDialog
+              open={webhooksOpen}
+              onClose={() => setWebhooksOpen(false)}
+              documentId={designId}
+              app="livedesign"
+              title={designName}
+              shareCode={sessionShareCode}
+            />
+          )}
         </TabWindowContext.Provider>
       </TagColoursProvider>
     </CanvasThemeProvider>

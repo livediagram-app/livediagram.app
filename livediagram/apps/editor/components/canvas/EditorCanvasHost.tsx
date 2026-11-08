@@ -1159,14 +1159,16 @@ export function EditorCanvasHost() {
               onClose={() => setLockedMenu(null)}
             />
           ) : null}
-          <DocumentWebhooksDialog
-            open={webhooksOpen}
-            onClose={() => setWebhooksOpen(false)}
-            documentId={documentId}
-            app="livediagram"
-            title={documentName}
-            shareCode={sessionShareCode}
-          />
+          {documentId !== null && (
+            <DocumentWebhooksDialog
+              open={webhooksOpen}
+              onClose={() => setWebhooksOpen(false)}
+              documentId={documentId}
+              app="livediagram"
+              title={documentName}
+              shareCode={sessionShareCode}
+            />
+          )}
         </SuppressElementIndicators>
       </TagColoursProvider>
     </CanvasThemeProvider>

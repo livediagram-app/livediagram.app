@@ -74,7 +74,7 @@ export function SettingsResetSettingsRow({
   accountRequest: SettingsRequest | null;
 }) {
   const reset = () => {
-    const apply = () => onChange(resetSettingsBlob(settings) as UserPreferences);
+    const apply = () => onChange(resetSettingsBlob(settings));
     return accountRequest
       ? resetAccountSettings(accountRequest, apply)
       : resetBrowserSettings(apply);

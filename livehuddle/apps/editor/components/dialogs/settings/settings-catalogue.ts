@@ -250,6 +250,9 @@ export type SettingsCategorySpec = {
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
+  // Old ids of categories folded into this one, so a remembered category or a `?settings=` deep link to one still
+  // lands here.
+  aliases?: readonly string[];
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;

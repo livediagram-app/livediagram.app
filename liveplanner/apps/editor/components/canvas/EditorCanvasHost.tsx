@@ -710,14 +710,16 @@ export function EditorCanvasHost() {
             explorerHidden={workbenchMode || landscapePhone}
             onToggleZen={embedMode ? undefined : toggleZenMode}
           />
-          <DocumentWebhooksDialog
-            open={webhooksOpen}
-            onClose={() => setWebhooksOpen(false)}
-            documentId={projectId}
-            app="liveplanner"
-            title={projectName}
-            shareCode={sessionShareCode}
-          />
+          {projectId !== null && (
+            <DocumentWebhooksDialog
+              open={webhooksOpen}
+              onClose={() => setWebhooksOpen(false)}
+              documentId={projectId}
+              app="liveplanner"
+              title={projectName}
+              shareCode={sessionShareCode}
+            />
+          )}
         </PlanTextScaleProvider>
       </TagColoursProvider>
     </CanvasThemeProvider>
