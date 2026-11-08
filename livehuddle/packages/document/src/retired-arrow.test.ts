@@ -215,12 +215,14 @@ describe('a tab of stored arrows', () => {
       els.push(arrow(`a${i}`, pinned(`b${i - 1}`, 'e'), pinned(`b${i}`, 'w')));
     return els;
   };
+  // Fastest of seven: one garbage collection on a busy machine moved a fastest-of-five ratio to 8.07 under coverage.
   const fastest = (els: Element[], run: (els: Element[]) => unknown) =>
-    Math.min(...[0, 1, 2, 3, 4].map(() => cpuMsOf(() => void run(els))));
+    Math.min(...Array.from({ length: 7 }, () => cpuMsOf(() => void run(els))));
 
   it('measures its bounds in time that grows with the arrows, not faster', () => {
-    const small = tabOf(500);
-    const large = tabOf(2000);
+    // Four times the arrows: linear work costs about four times as much, a quadratic sixteen.
+    const small = tabOf(1000);
+    const large = tabOf(4000);
     const bounds = (els: Element[]) => {
       for (let i = 0; i < 5; i++) contentBounds(els);
     };
