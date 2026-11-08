@@ -595,6 +595,105 @@ describe('writes', () => {
     expect((await call({ method: 'PUT', path: '/sheets', body: {} })).status).toBe(405);
     expect((await call({ method: 'GET', path: '/sheets/sheetA00' })).status).toBe(405);
   });
+  // Blueprint sheet-store.md "Counts": an ordinary cell write moves cell_count and cell_bytes by the named cells'
+  // sizes before and after; rows or columns deleted recount whole. Either way they stay what a recount gives.
+  it('keeps the stored count and bytes equal to a full recount through every kind of write', async () => {
+    const s = await sheet();
+    const [r0, r1, r2, r3] = s.layout.rows;
+    const [c0, c1, c2] = s.layout.cols;
+    const counts = () => ({
+      stored: sql.sql
+        .prepare(
+          `SELECT cell_count AS n, cell_bytes AS b FROM sheets WHERE plan_id = 'd1' AND id = 'sheetA00'`,
+        )
+        .get(),
+      recounted: sql.sql
+        .prepare(
+          `SELECT COUNT(*) AS n, COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0) AS b
+             FROM sheet_cells WHERE plan_id = 'd1' AND sheet_id = 'sheetA00'`,
+        )
+        .get(),
+    });
+    const steps: { name: string; write: SheetWrite }[] = [
+      {
+        name: 'new cells, one formatted',
+        write: {
+          kind: 'cells',
+          cells: [
+            { r: r0!, c: c0!, i: { n: 1 } },
+            { r: r0!, c: c1!, i: { s: 'short' }, f: { b: true } },
+            { r: r1!, c: c0!, i: { s: 'héllo ✓ 😀' } },
+          ],
+        },
+      },
+      {
+        name: 'an overwrite that grows',
+        write: {
+          kind: 'cells',
+          cells: [{ r: r0!, c: c1!, i: { s: 'a much longer string than before' } }],
+        },
+      },
+      {
+        name: 'an overwrite that shrinks',
+        write: { kind: 'cells', cells: [{ r: r0!, c: c1!, i: { s: 'x' } }] },
+      },
+      {
+        name: 'a format added to a value, and a format alone on an empty cell',
+        write: {
+          kind: 'cells',
+          cells: [
+            { r: r0!, c: c0!, f: { fc: '#ff0000', i: true } },
+            { r: r2!, c: c2!, f: { b: true } },
+          ],
+        },
+      },
+      {
+        name: 'a format key cleared',
+        write: { kind: 'cells', cells: [{ r: r0!, c: c0!, f: { fc: null } }] },
+      },
+      {
+        name: 'a value cleared from a formatted cell, which stays',
+        write: { kind: 'cells', cells: [{ r: r0!, c: c1!, i: null }] },
+      },
+      {
+        name: 'the last format cleared, so the cell goes',
+        write: { kind: 'cells', cells: [{ r: r0!, c: c1!, f: { b: null } }] },
+      },
+      {
+        name: 'a plain value cleared',
+        write: { kind: 'cells', cells: [{ r: r1!, c: c0!, i: null }] },
+      },
+      {
+        name: 'one cell named twice, and a value and format cleared together',
+        write: {
+          kind: 'cells',
+          cells: [
+            { r: r3!, c: c0!, i: { s: 'first' } },
+            { r: r3!, c: c0!, i: { s: 'second, longer' } },
+            { r: r2!, c: c2!, i: null, f: null },
+          ],
+        },
+      },
+      {
+        name: 'rows inserted',
+        write: { kind: 'layout', changes: [{ k: 'insertRows', after: r3!, ids: ['newrow1'] }] },
+      },
+      {
+        name: 'a column deleted',
+        write: { kind: 'layout', changes: [{ k: 'deleteCols', ids: [c1!] }] },
+      },
+      {
+        name: 'a row deleted',
+        write: { kind: 'layout', changes: [{ k: 'deleteRows', ids: [r0!] }] },
+      },
+    ];
+    for (const step of steps) {
+      expect((await write('sheetA00', step.write)).status, step.name).toBe(200);
+      const { stored, recounted } = counts();
+      expect(stored, step.name).toEqual(recounted);
+    }
+    expect(counts().stored).toEqual({ n: 1, b: JSON.stringify({ s: 'second, longer' }).length });
+  });
   it('refuses a write past the sheet cap', async () => {
     const s = await sheet();
     sql.sql.prepare(`UPDATE sheets SET cell_count = 50000 WHERE id = 'sheetA00'`).run();
@@ -642,6 +741,12 @@ describe('writes', () => {
     spy.mockRestore();
     expect(res).toMatchObject({ status: 409, body: { error: 'sheet_busy' } });
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });
+    // A write that never landed moves no count either: its delta runs only under its own nonce.
+    expect(
+      sql.sql
+        .prepare(`SELECT cell_count AS n, cell_bytes AS b FROM sheets WHERE id = 'sheetA00'`)
+        .get(),
+    ).toEqual({ n: 0, b: 0 });
   });
   it('relays a huge write as a refetch', async () => {
     const s = await sheet();

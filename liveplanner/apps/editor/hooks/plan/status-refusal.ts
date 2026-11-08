@@ -35,6 +35,18 @@ export function cardsMovingRefused(
   return stay;
 }
 
+// A removed column's cards moved into `to` as one batch (one write, one undo step, one room op), leaving out those
+// `stay` keeps, each to the end of its new column.
+export function columnCardMoves(
+  moving: readonly Pick<Item, 'id'>[],
+  stay: ReadonlySet<string>,
+  to: string,
+): { id: string; move: { status: string; before: null } }[] {
+  return moving
+    .filter((it) => !stay.has(it.id))
+    .map((it) => ({ id: it.id, move: { status: to, before: null } }));
+}
+
 // What is announced when some of a removed column's cards could not move: one line for them all.
 export function cardsStayedMessage(count: number, statusName: string): string {
   return count === 1

@@ -167,11 +167,38 @@ function distributeAxis(
     if (!best || Math.abs(delta) < Math.abs(best.delta)) best = { delta, gap, spans };
   };
   // Equidistant: a neighbour P to the left and Q to the right; centre the
-  // candidate in the gap so the two facing gaps are equal.
+  // candidate in the gap so the two facing gaps are equal. The centred snap is within the threshold only for a Q whose
+  // low lies within twice the threshold of 2 * cand.low + cand.size - P.high, so each P looks up just those Qs in a
+  // sorted copy (taking them in row order, as a scan of the whole row did) rather than pairing every P with every Q: a
+  // tall lane overlaps nearly the whole board, which made each move quadratic.
+  const qs: { item: DistAxisItem; at: number }[] = [];
+  row.forEach((Q, at) => {
+    if (Q.low >= cHigh - threshold) qs.push({ item: Q, at });
+  });
+  qs.sort((a, b) => a.item.low - b.item.low);
+  const firstAtLeast = (low: number) => {
+    let lo = 0;
+    let hi = qs.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (qs[mid]!.item.low < low) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  };
   for (const P of row) {
     if (P.high > cand.low + threshold) continue;
-    for (const Q of row) {
-      if (Q.low < cHigh - threshold || Q.low <= P.high) continue;
+    const centre = 2 * cand.low + cand.size - P.high;
+    const near: { item: DistAxisItem; at: number }[] = [];
+    // Widened by a hair so rounding never drops a Q `consider` would take; `consider` still judges each exactly.
+    const reach = 2 * threshold + 1e-6;
+    for (let k = firstAtLeast(centre - reach); k < qs.length; k++) {
+      if (qs[k]!.item.low > centre + reach) break;
+      near.push(qs[k]!);
+    }
+    near.sort((a, b) => a.at - b.at);
+    for (const { item: Q } of near) {
+      if (Q.low <= P.high) continue;
       const gap = (Q.low - P.high - cand.size) / 2;
       const targetLow = P.high + gap;
       consider(targetLow - cand.low, gap, [
@@ -225,28 +252,87 @@ function distributeAxis(
 // Item i's gap to its nearest neighbour on each side along one axis,
 // among the items overlapping it on the cross axis. The span is drawn on
 // `axis` at the middle of the pair's shared cross-axis extent.
-function nearestGaps(items: DistAxisItem[], i: number, axis: 'x' | 'y'): ItemGap[] {
-  const N = items[i]!;
-  let left: DistAxisItem | null = null;
-  let right: DistAxisItem | null = null;
-  for (let j = 0; j < items.length; j++) {
-    const M = items[j]!;
-    if (j === i || !(M.crossLow < N.crossHigh && M.crossHigh > N.crossLow)) continue;
-    if (M.high <= N.low && (!left || M.high > left.high)) left = M;
-    if (M.low >= N.high && (!right || M.low < right.low)) right = M;
-  }
-  const cross = (M: DistAxisItem) =>
-    (Math.max(M.crossLow, N.crossLow) + Math.min(M.crossHigh, N.crossHigh)) / 2;
-  const out: ItemGap[] = [];
-  if (left) {
-    const span = { axis, from: left.high, to: N.low, cross: cross(left) };
-    out.push({ gap: N.low - left.high, span });
-  }
-  if (right) {
-    const span = { axis, from: N.high, to: right.low, cross: cross(right) };
-    out.push({ gap: right.low - N.high, span });
-  }
-  return out;
+//
+// Made once per snap, answered per item on demand: the items sorted by `high` (left neighbours) and by `low` (right
+// ones), so an item walks outward from where it stands to its nearest neighbour sharing its row rather than scanning
+// every item. Ties fall to the earlier item, as a scan in order kept the first it met.
+function nearestGapsOf(
+  items: DistAxisItem[],
+  axis: 'x' | 'y',
+): (i: number) => ItemGap[] {
+  // Sorted only once enough items have asked (measured: a scan each wins below about one item in sixteen): a small
+  // box's row is a handful of items, cheaper to scan than to sort the board for.
+  let byHigh: number[] | null = null;
+  let byLow: number[] | null = null;
+  let asked = 0;
+  const scansBeforeSorting = Math.max(32, items.length / 16);
+  const memo = new Map<number, ItemGap[]>();
+  return (i) => {
+    const known = memo.get(i);
+    if (known) return known;
+    const N = items[i]!;
+    const shares = (j: number) => {
+      const M = items[j]!;
+      return j !== i && M.crossLow < N.crossHigh && M.crossHigh > N.crossLow;
+    };
+    const cross = (M: DistAxisItem) =>
+      (Math.max(M.crossLow, N.crossLow) + Math.min(M.crossHigh, N.crossHigh)) / 2;
+    const gaps = (left: DistAxisItem | null, right: DistAxisItem | null) => {
+      const out: ItemGap[] = [];
+      if (left) {
+        const span = { axis, from: left.high, to: N.low, cross: cross(left) };
+        out.push({ gap: N.low - left.high, span });
+      }
+      if (right) {
+        const span = { axis, from: N.high, to: right.low, cross: cross(right) };
+        out.push({ gap: right.low - N.high, span });
+      }
+      memo.set(i, out);
+      return out;
+    };
+    if (++asked <= scansBeforeSorting) {
+      let left: DistAxisItem | null = null;
+      let right: DistAxisItem | null = null;
+      for (let j = 0; j < items.length; j++) {
+        if (!shares(j)) continue;
+        const M = items[j]!;
+        if (M.high <= N.low && (!left || M.high > left.high)) left = M;
+        if (M.low >= N.high && (!right || M.low < right.low)) right = M;
+      }
+      return gaps(left, right);
+    }
+    byHigh ??= items.map((_, k) => k).sort((a, b) => items[a]!.high - items[b]!.high || b - a);
+    byLow ??= items.map((_, k) => k).sort((a, b) => items[a]!.low - items[b]!.low || a - b);
+    // The last index whose high is at most N.low, walking down to the first that shares the row.
+    let lo = 0;
+    let hi = byHigh.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (items[byHigh[mid]!]!.high <= N.low) lo = mid + 1;
+      else hi = mid;
+    }
+    let left: DistAxisItem | null = null;
+    for (let k = lo - 1; k >= 0; k--)
+      if (shares(byHigh[k]!)) {
+        left = items[byHigh[k]!]!;
+        break;
+      }
+    // The first index whose low is at least N.high, walking up to the first that shares the row.
+    lo = 0;
+    hi = byLow.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (items[byLow[mid]!]!.low < N.high) lo = mid + 1;
+      else hi = mid;
+    }
+    let right: DistAxisItem | null = null;
+    for (let k = lo; k < byLow.length; k++)
+      if (shares(byLow[k]!)) {
+        right = items[byLow[k]!]!;
+        break;
+      }
+    return gaps(left, right);
+  };
 }
 
 // Snap a dragged element to EQUAL spacing with its neighbours (so three
@@ -284,7 +370,7 @@ export function distributionSnap(
     },
     xItems,
     threshold,
-    (i) => nearestGaps(yItems, i, 'y'),
+    nearestGapsOf(yItems, 'y'),
   );
   const ys = distributeAxis(
     {
@@ -295,7 +381,7 @@ export function distributionSnap(
     },
     yItems,
     threshold,
-    (i) => nearestGaps(xItems, i, 'x'),
+    nearestGapsOf(xItems, 'x'),
   );
   const dx = xs?.delta ?? 0;
   const dy = ys?.delta ?? 0;

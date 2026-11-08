@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
-import { identityVars } from '@liveplanner/ui';
+import { PeerCursors } from '@/components/canvas/PeerCursors';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
@@ -136,7 +135,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     takePart = false,
     canMove,
     canResize,
-    remoteCursors,
+    peers,
     remoteSelectionsByElement,
     shiftDupGhostIds,
     voteReview,
@@ -493,7 +492,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           above the elements, beneath the remote cursors. */}
           <AgentFocusOverlay elements={elements} />
 
-          <RemoteCursors cursors={remoteCursors} paint={identityVars} />
+          <PeerCursors peers={peers} />
 
           {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
