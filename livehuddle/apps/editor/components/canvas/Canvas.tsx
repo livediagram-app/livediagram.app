@@ -1,4 +1,3 @@
-import dynamic from 'next/dynamic';
 import { canvasIsBusy } from '@/lib/canvas-busy';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { CanvasFinishProvider } from './CanvasFinishContext';
@@ -12,6 +11,11 @@ import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
+import {
+  useViewportTransform,
+  viewportTransform,
+} from '@liveworkspace/workbench/hooks/canvas/useViewportTransform';
+import { ViewPathEditToolbar } from '@/components/canvas/view-readers';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { drawIntentCursor, isWhiteboardPenIntent } from '@/lib/draw-mode';
@@ -44,25 +48,11 @@ import { CanvasStillProvider } from '@/components/canvas/CanvasStillContext';
 import { CanvasArrivalProvider } from '@liveworkspace/workbench/components/canvas/CanvasArrivalContext';
 import { CanvasLiveRegion } from '@liveworkspace/workbench/components/canvas/CanvasLiveRegion';
 import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
-import { AvatarWalker } from '@liveworkspace/avatar/components/AvatarWalker';
-import { ReceptionistLayer } from './receptionist/ReceptionistLayer';
-import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
-import { parseAvatarStatus } from '@liveworkspace/avatar/status';
-import { isDrinkKind } from '@liveworkspace/avatar/office-geometry';
-import { headPoint } from '@liveworkspace/avatar/speech';
-import { avatarScale } from '@liveworkspace/avatar/config';
-import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
-// The footprint a burst is scaled against when it comes from the avatar panel
-// rather than a pad: roughly a character, so the particles read as thrown by a
-// person rather than by whatever size of pad last set one off.
 import { useCanvasAvatar } from './useCanvasAvatar';
+import { CanvasCharactersLayer } from './CanvasCharactersLayer';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
-
-const AVATAR_BURST_PX = 120;
-import { parseAvatarConfig } from '@liveworkspace/avatar/config';
-import { reactionPose } from '@liveworkspace/avatar/reactions';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@liveworkspace/workbench/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
@@ -70,26 +60,15 @@ import { PlacementPreview } from '@/components/canvas/collab/PlacementPreview';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
-import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
+import { readPeerAvatarRows } from '@/hooks/collab/usePeerRows';
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
-import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
-import { CallBubbles, useCallBubbleRects } from '@/components/calls/CallBubbles';
-import { TalkingBars } from '@/components/calls/TalkingBars';
-import { HearingRing } from '@/components/calls/HearingRing';
 import { SpeakingStageContext } from '@/components/canvas/collab/speaking-stage';
-import { RaisedHands } from '@/components/calls/RaisedHands';
-import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 import { isPieceControlPress } from '@/lib/piece-control';
 import { useElementReader } from '@/components/canvas/collab/ElementReader';
-import { usePeerAvatarRows } from '@/hooks/collab/usePeerRows';
-
-// Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
-// nothing on the canvas needs them before then.
-const AvatarSpeechLayer = dynamic(loadAvatarSpeechLayer, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -97,7 +76,7 @@ export const Canvas = withStableEventProps(CanvasView);
 
 // The canvas is what shows the view (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the
 // canvas"): CanvasView subscribes to it; what it renders takes the view only where it shows it.
-const wholeView = (v: View) => v;
+const zoomOf = (v: View) => v.zoom;
 // livehuddle has no layers (docs/specs/006-document/layers.md): nothing is inert to the shared select handlers.
 const NO_INERT_IDS = new Set<string>();
 
@@ -132,13 +111,14 @@ function CanvasView(props: CanvasProps) {
     tabLoadState,
     onRetryTabLoad,
   } = props;
-  const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
-  // Peers' characters on this tab, read from the peer-motion store here, where they are drawn: a frame of their
-  // walking renders the canvas, not the editor (docs/specs/008-canvas/canvas-performance.md).
-  const remoteAvatars = usePeerAvatarRows(props.peers);
-  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
+  // The zoom only: a pan, a walk's camera follow among them, moves the wrapper and the floor pattern
+  // outside React (useViewportTransform below) and renders no canvas view
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  const viewportZoom = useViewportOf(zoomOf);
+  // The view when a handler runs, for what is handed down and must keep its identity across pans and zooms.
   const viewportStore = useViewportStore();
   const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
+  const readViewportOffset = useCallback(() => viewportStore.get().offset, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -150,9 +130,26 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog(canvasGestureNow);
-  const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
+  const offscreenContent = useOffscreenContent(elements, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
+  // The backdrop for a view. In world space: the pattern pans and zooms with the elements, so they
+  // stay on the same dots at any zoom (worldPatternOrigin).
+  const backdropFor = (v: View) =>
+    tabBackgroundStyle(
+      tabBackgroundPattern,
+      worldPatternOrigin(v.offset, v.zoom, { w: mainSize.width, h: mainSize.height }),
+      tabBackgroundColor,
+      tabPatternColor,
+      tabBackgroundOpacity,
+      tabBackgroundPatternScale * v.zoom,
+    );
+  // The view now, for this render's wrapper and backdrop; every pan after it is written straight to
+  // them (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  const view = useViewportTransform(wrapperRef, mainRef, (v) => {
+    const position = backdropFor(v).backgroundPosition;
+    return position === undefined ? undefined : String(position);
+  });
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
@@ -267,53 +264,34 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
   });
 
-  const {
-    avatar,
-    avatarBurst,
-    avatarLook,
-    avatarStandingOn,
-    avatarStatus,
-    padArrivals,
-    playAvatarBurst,
-    pressModeButton,
-    pressAvatarPad,
-    resolvePortal,
-    setAvatarBurst,
-    setAvatarStatus,
-    sittersOf,
-    sitsDown,
-    speakingStage,
-    speech,
-    speechBubbles,
-  } = useCanvasAvatar({
+  // Peers' characters are read where they are drawn (CanvasCharactersLayer) and here only as by-value facts, so
+  // nobody's step renders this canvas (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters,
+  // not the canvas").
+  const canvasAvatar = useCanvasAvatar({
     props,
-    remoteAvatars,
+    peers: props.peers,
     canvasTool,
     elements,
     mainRef,
     wrapperRef,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     setViewportOffset,
     readZoom,
   });
-  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): the call and its equaliser.
-  const call = useCanvasCall({
-    props,
-    remoteAvatars,
-    canvasTool,
+  const {
     avatar,
-    avatarScale: avatarScale(avatarLook.config.size),
-    viewport: {
-      offset: viewportOffset,
-      zoom: viewportZoom,
-      width: mainSize.width,
-      height: mainSize.height,
-    },
-    doNotDisturb: avatarStatus === 'dnd',
-  });
-  // Where the camera and screen bubbles were laid out, so speech bubbles rise clear of them.
-  const callBubbleRects = useCallBubbleRects();
+    avatarLook,
+    avatarStatus,
+    playAvatarBurst,
+    pressModeButton,
+    pressAvatarPad,
+    resolvePortal,
+    setAvatarStatus,
+    sittersOf,
+    speakingStage,
+    speech,
+  } = canvasAvatar;
 
   const cursorClass = canvasCursorClass({
     pendingDraw: !!pendingDraw,
@@ -377,7 +355,7 @@ function CanvasView(props: CanvasProps) {
     middleMousePan: props.settings?.middleMousePan !== false,
     pendingDraw,
     whiteboard: false,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     mainRef,
     wrapperRef,
@@ -385,7 +363,7 @@ function CanvasView(props: CanvasProps) {
     setPan,
     setMarquee,
     avatar,
-    peerAvatars: remoteAvatars,
+    readPeerAvatars: () => readPeerAvatarRows(props.peers),
     onPushPeer: props.onAvatarPush,
     elements,
     onToggleDoor: props.onToggleDoor,
@@ -480,19 +458,7 @@ function CanvasView(props: CanvasProps) {
           ['--lvd-canvas-paper' as string]: tabBackgroundColor,
           // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
           ...stickyPeel,
-          // In world space: the pattern pans and zooms with the elements, so
-          // they stay on the same dots at any zoom (worldPatternOrigin).
-          ...tabBackgroundStyle(
-            tabBackgroundPattern,
-            worldPatternOrigin(viewportOffset, viewportZoom, {
-              w: mainSize.width,
-              h: mainSize.height,
-            }),
-            tabBackgroundColor,
-            tabPatternColor,
-            tabBackgroundOpacity,
-            tabBackgroundPatternScale * viewportZoom,
-          ),
+          ...backdropFor(view),
           // Mirror the inner-wrapper cursor on <main>. The inner div is
           // `absolute inset-0` but its CSS transform scales it (zoom),
           // so when zoom is below 1 the hit area shrinks and the
@@ -535,7 +501,7 @@ function CanvasView(props: CanvasProps) {
           style={{
             // Translate is in canvas-coords (applied first); scale is centred
             // on the wrapper so zooming keeps the viewport centre stable.
-            transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)`,
+            transform: viewportTransform(view),
             // Draw-mode cursor: every intent gets a custom inline-SVG
             // cursor (crosshair at the pointer tip plus a small glyph
             // hinting at what's about to land). Without this, tool
@@ -612,138 +578,14 @@ function CanvasView(props: CanvasProps) {
             drawing={!!drawDrag}
           />
           {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-          {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
-            transformed wrapper so they pan / zoom with the canvas, and after
-            the element layer so they stand in front of the content they walk
-            over. Peers' characters render whether or not WE are in the mode —
-            someone else walking the canvas is worth seeing regardless. */}
-          {/* Where people can hear you while you talk, on the floor under every character, unless Settings
-            turned it off (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). */}
-          {props.settings.hearingRing !== false ? <HearingRing {...call.ring} /> : null}
-          {remoteAvatars.map((peer) => (
-            <AvatarWalker
-              key={peer.id}
-              pos={{ x: peer.avatar.x, y: peer.avatar.y }}
-              facing={peer.avatar.facing}
-              // Parsed, not trusted: an older peer omits the costume entirely and
-              // a future one may send an option this build doesn't know.
-              config={parseAvatarConfig(peer.avatar.config)}
-              walking={peer.avatar.walking}
-              stepFrame={peer.avatar.stepFrame}
-              lift={peer.avatar.lift}
-              wave={peer.avatar.wave}
-              seated={sitsDown(peer.avatar.seatedOn)}
-              // Parsed, not trusted: anything but a known drink draws an empty hand.
-              holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
-              status={parseAvatarStatus(peer.avatar.status)}
-              // Replayed locally from the kind + elapsed time in their packet, by
-              // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
-              pose={
-                peer.avatar.reaction
-                  ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
-                  : null
-              }
-              shirt={peer.color}
-              name={peer.name}
-              standingOn={null}
-              glideMs={peer.glideMs}
-            />
-          ))}
-          {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
-            walk. Owns his own clock, so his frames redraw his layer alone. */}
-          {canvasTool === 'avatar' ? (
-            <ReceptionistLayer
-              active
-              elements={elements}
-              arrivals={padArrivals}
-              self={avatar.pos}
-              zoom={viewportZoom}
-            />
-          ) : null}
-          {/* A reaction burst (docs/specs/008-canvas/avatar-mode.md "Reactions") thrown around the character.
-            Positioned at the character's canvas point, inside the transformed
-            wrapper, so it pans and zooms with the canvas it is celebrating. */}
-          {avatar.pos && avatarBurst ? (
-            <div
-              className="pointer-events-none absolute"
-              style={{ left: avatar.pos.x, top: avatar.pos.y, width: 0, height: 0 }}
-            >
-              <ReactionBurst
-                reaction={avatarBurst.reaction}
-                seed={avatarBurst.seed}
-                // The character's own footprint, so the burst is scaled to a
-                // person rather than to whatever pad happened to throw it.
-                width={AVATAR_BURST_PX}
-                height={AVATAR_BURST_PX}
-                onDone={() => setAvatarBurst(null)}
-              />
-            </div>
-          ) : null}
-          {avatar.pos ? (
-            <AvatarWalker
-              pos={avatar.pos}
-              facing={avatar.facing}
-              config={avatarLook.config}
-              walking={avatar.walking}
-              stepFrame={avatar.stepFrame}
-              lift={avatar.lift}
-              wave={avatar.wave}
-              pose={avatar.pose}
-              seated={sitsDown(avatar.seatedOn)}
-              holding={avatar.holding}
-              status={avatarStatus}
-              shirt={props.selfParticipant.color}
-              standingOn={avatarStandingOn}
-              self
-            />
-          ) : null}
-          {/* Who is talking, near and far (docs/specs/012-collaboration/proximity-audio.md "The talking equaliser"). */}
-          <TalkingBars {...call.bars} />
-          {/* Raised hands beside the heads, each a Let Speak for whoever may (meeting-rooms-and-stage.md). */}
-          <RaisedHands {...call.hands} />
-          {/* Camera and screen bubbles above the characters (docs/specs/012-collaboration/video-and-screen-bubbles.md). */}
-          <CallBubbles {...call.bubbles} rectsRef={callBubbleRects} />
-          {/* Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md), over the characters. */}
-          <AvatarPadArrivals arrivals={padArrivals} />
-          {/* Speech bubbles, in front of every character: yours and everyone's, and the composer above your
-              own head while you type. */}
-          {speechBubbles.length > 0 || speech.composerOpen ? (
-            <AvatarSpeechLayer
-              bubbles={speechBubbles}
-              activeTabId={props.activeTabId ?? ''}
-              zoom={viewportZoom}
-              view={{
-                offsetX: viewportOffset.x,
-                width: mainSize.width,
-                offsetY: viewportOffset.y,
-                height: mainSize.height,
-              }}
-              peers={remoteAvatars}
-              self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
-              // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
-              obstacles={callBubbleRects}
-              composer={
-                speech.composerOpen && avatar.pos
-                  ? {
-                      head: headPoint(avatar.pos, avatarScale(avatarLook.config.size)),
-                      coolingDown: speech.coolingDown,
-                      onSend: (text) => speech.send(text, 'composer'),
-                      onCancel: speech.closeComposer,
-                    }
-                  : null
-              }
-            />
-          ) : null}
+          {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters and what rides on them,
+            INSIDE the transformed wrapper so they pan / zoom with the canvas, and after the element layer so
+            they stand in front of the content they walk over. */}
+          <CanvasCharactersLayer props={props} canvasAvatar={canvasAvatar} mainSize={mainSize} />
         </div>
 
         <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
-        {pathTool.toolbar ? (
-          <PathEditToolbar
-            {...pathTool.toolbar}
-            viewportOffset={viewportOffset}
-            zoom={viewportZoom}
-          />
-        ) : null}
+        {pathTool.toolbar ? <ViewPathEditToolbar {...pathTool.toolbar} /> : null}
 
         <CanvasChrome
           {...props}

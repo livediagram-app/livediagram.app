@@ -254,7 +254,7 @@ describe('Avatar mode presses', () => {
         setPan,
         setMarquee: vi.fn(),
         spotlight: {},
-        avatar: { walkTo, pos: { x: 0, y: 0 }, seatedOn: null },
+        avatar: { walkTo, readPos: () => ({ x: 0, y: 0 }), seatedOn: null },
         peerAvatars,
         onPushPeer,
         isoCamera: {},

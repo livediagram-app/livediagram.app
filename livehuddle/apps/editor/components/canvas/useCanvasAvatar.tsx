@@ -1,13 +1,19 @@
 'use client';
 
 import { answerMachine } from '@/lib/machine-answer';
-import { usePieceMoments } from '@/components/canvas/collab/usePieceMoments';
-import { useSocialPieces } from '@/components/canvas/collab/useSocialPieces';
-import { useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
-import { useTableGameScene } from '@/lib/table-games/useTableGameScene';
 import { isStandingSeatShape } from '@livehuddle/document';
 import { useSeatStatus } from './useSeatStatus';
-import { useByValue } from '@/hooks/ui/useByValue';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import { joinStores } from '@liveworkspace/workbench/lib/state-store';
+import { useAvatarPose } from '@liveworkspace/avatar/hooks/useAvatarPose';
+import type { AvatarPose } from '@liveworkspace/avatar/pose';
+import type { SeatHolder } from '@liveworkspace/avatar/seat-claims';
+import {
+  peerAvatarRowsOf,
+  readPeerAvatarRows,
+  usePeerAvatarSlice,
+} from '@/hooks/collab/usePeerRows';
+import type { PeerAvatar, PeerRowsSource } from '@/lib/peer-motion';
 import type { AccessLevel } from '@livehuddle/api-schema';
 import { speakingStageId } from './collab/speaking-stage';
 import {
@@ -31,7 +37,6 @@ import { useSpeechBubbles } from '@liveworkspace/avatar/speech-store';
 import { avatarScale } from '@liveworkspace/avatar/config';
 import { useAvatarActionKeys } from '@liveworkspace/avatar/hooks/useAvatarActionKeys';
 import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
-import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';
 import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
 import { seatsACharacter, drinkFrom, type DrinkKind } from '@livehuddle/document';
 import { closePods } from '@liveworkspace/avatar/pod';
@@ -62,13 +67,17 @@ bindAvatar();
 
 type CanvasAvatarInput = {
   props: CanvasProps;
-  // Peers' characters on this tab, read from the peer-motion store by the canvas (hooks/collab/usePeerRows).
-  remoteAvatars: RemoteAvatarRow[];
+  // Peers' characters (lib/peer-motion): read here only as by-value facts and when a handler runs, so a peer's step
+  // never renders the canvas (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the
+  // canvas"); CanvasCharactersLayer subscribes to them.
+  peers: PeerRowsSource;
   canvasTool: CanvasProps['canvasTool'];
   elements: CanvasProps['elements'];
   mainRef: CanvasProps['mainRef'];
   wrapperRef: React.RefObject<HTMLDivElement | null>;
-  viewportOffset: { x: number; y: number };
+  // The view's offset, read when the walk or the Walk In needs it: a pan renders nothing
+  // (docs/specs/008-canvas/blueprints/viewport-store.md "Inside the canvas").
+  readViewportOffset: () => { x: number; y: number };
   viewportZoom: number;
   setViewportOffset: CanvasProps['setViewportOffset'];
   readZoom: () => number;
@@ -79,12 +88,12 @@ type CanvasAvatarInput = {
 // travel (docs/specs/009-elements/portal-element.md). Composed into Canvas, which draws what it returns.
 export function useCanvasAvatar({
   props,
-  remoteAvatars,
+  peers,
   canvasTool,
   elements,
   mainRef,
   wrapperRef,
-  viewportOffset,
+  readViewportOffset,
   viewportZoom,
   setViewportOffset,
   readZoom,
@@ -109,7 +118,7 @@ export function useCanvasAvatar({
     mainRef,
     wrapperRef,
     viewportZoom,
-    viewportOffset,
+    readViewportOffset,
     setViewportOffset,
   });
   // Pressing an Avatar Pad (docs/specs/009-elements/avatar-pad.md "Pressing it") starts the walk on that pad.
@@ -148,20 +157,19 @@ export function useCanvasAvatar({
     statusSeat,
     walkElements,
   );
-  // The peers on this tab as the seat rules read them (docs/specs/009-elements/chair.md "Occupancy is presence"):
-  // where they stand, what they sit on and their claim. Rebuilt only when presence changes.
-  const seatPeers = useMemo(() => remoteAvatars.map((peer) => peer.avatar), [remoteAvatars]);
+  // Which peers sit where (docs/specs/009-elements/chair.md "Occupancy is presence"), by value: a walking peer sits
+  // nowhere, so their steps change none of it.
+  const seatHolders = usePeerAvatarSlice(peers, seatHoldersOf, sameSeatHolders);
   // An Office Pod whose two seats peers hold has its door shut (docs/specs/009-elements/office.md "Office Pod"): the
   // walk's copy of the board says so, so its doorway blocks. The same array while no pod is full.
-  // Keyed on who sits where, by value: presence flushes many times a second while anyone walks, and a new walk
-  // scene each flush would rebuild the walls and the route grid while a pod is full.
+  // Keyed on who sits where, by value: a new walk scene would rebuild the walls and the route grid.
   const seatedKey = useMemo(
     () =>
-      seatPeers
+      seatHolders
         .flatMap((peer) => (peer.seatedOn ? [peer.seatedOn] : []))
         .sort()
         .join('\n'),
-    [seatPeers],
+    [seatHolders],
   );
   const walkScene = useMemo(
     () =>
@@ -181,7 +189,7 @@ export function useCanvasAvatar({
     elements: walkScene,
     mainRef,
     wrapperRef,
-    viewportOffset,
+    readViewportOffset,
     viewportZoom,
     setViewportOffset,
     spawnAtRef: avatarSpawnRef,
@@ -200,7 +208,11 @@ export function useCanvasAvatar({
       // The nearest seat nobody holds, facing away from the back (a meeting table's seats each face the table,
       // docs/specs/009-elements/office.md "Meeting Table"); every seat taken stops us beside the piece
       // (docs/specs/009-elements/chair.md "Sitting").
-      const arrival = seatOnArrival({ ...element, shape: element.shape }, feet, seatPeers);
+      const arrival = seatOnArrival(
+        { ...element, shape: element.shape },
+        feet,
+        readPeerAvatarRows(peers).map((peer) => peer.avatar),
+      );
       if ('stopAt' in arrival) avatarRef.current?.stepAside(arrival.stopAt);
       else avatarRef.current?.sitOn(element.id, arrival.sit, arrival.sit.facing, arrival.sit.index);
     },
@@ -214,14 +226,6 @@ export function useCanvasAvatar({
       track('Canvas', 'Used', DRINK_TELEMETRY[drink]);
     },
   });
-  // The social pieces (docs/specs/009-elements/social-pieces.md): the jukebox whose area you stand in plays for you,
-  // and the arcade machine you stand at asks for a coin.
-  useSocialPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
-  // Piece moments (docs/specs/009-elements/piece-moments.md): a tree, a pond or a fire you walk right up to now and
-  // then plays a small moment, on your screen alone.
-  usePieceMoments({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
-  // The workday pieces (docs/specs/009-elements/workday-pieces.md): the reception desk you stand at welcomes you.
-  useWorkdayPieces({ active: canvasTool === 'avatar', feet: avatar.pos, elements: walkElements });
   if (avatar.seatedOn !== statusSeat) setStatusSeat(avatar.seatedOn);
   // Who stands rather than sits in what they hold (workday-pieces.md "How each one walks"): the standing seats' ids,
   // once per board change, so drawing each character is one look-up.
@@ -261,7 +265,7 @@ export function useCanvasAvatar({
     seatedOn: avatar.seatedOn,
     claim: avatar.seatClaim,
     elements: walkElements,
-    peers: seatPeers,
+    peers: seatHolders,
     onYield: avatar.stepAside,
   });
   // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): an Editor or a Participant says
@@ -271,19 +275,13 @@ export function useCanvasAvatar({
     // The session's own say (docs/specs/013-workspace/share-roles.md): an Editor or a Participant, never by
     // whether the canvas is read-only.
     canSpeak: !!props.takePart,
-    feet: avatar.pos,
+    placed: avatar.placed,
+    readFeet: avatar.readPos,
     scale: avatarScale(avatarLook.config.size),
     tabId: props.activeTabId ?? '',
     onSay: props.onAvatarSay,
   });
   const speechBubbles = useSpeechBubbles();
-  // Arrival beams on an Avatar Pad (docs/specs/009-elements/avatar-pad.md "The arrival"), yours and every peer's.
-  const padArrivals = useAvatarPadArrivals({
-    self: avatar.pos,
-    selfColor: props.selfParticipant.color,
-    peers: remoteAvatars,
-    elements: walkElements,
-  });
   // The composer's code fetched as soon as someone who may speak is in the mode, so the first Enter finds it in and
   // the words typed straight after it land in its box, not on the editor's shortcuts.
   useEffect(() => {
@@ -306,44 +304,45 @@ export function useCanvasAvatar({
     : props.takePart
       ? 'participate'
       : 'view';
-  const speakingStage = speakingStageId(
-    canvasTool === 'avatar' ? avatar.pos : null,
-    stages,
-    selfLevel,
+  // A slice of the pose by value, so the canvas renders when you step on or off a stage, never for a step.
+  const inMode = canvasTool === 'avatar';
+  const speakingStage = useAvatarPose(
+    avatar.poseStore,
+    useCallback(
+      (pose: AvatarPose) => speakingStageId(inMode ? pose.pos : null, stages, selfLevel),
+      [inMode, stages, selfLevel],
+    ),
   );
   // Each sitter on the seat they hold (docs/specs/009-elements/chair.md "Occupancy is presence"), so a sofa or a
   // table rings the exact seat, and at their drawn size, so the name pill clears the highest head.
   const seatsOf = useMemo(() => seatsOnBoard(walkElements), [walkElements]);
-  // The game pieces (docs/specs/009-elements/social-pieces.md "A game"): who sits at each and may play, and the room.
-  useTableGameScene({
-    tabId: props.activeTabId ?? '',
-    selfId: props.selfParticipant.id,
-    selfColor: props.selfParticipant.color,
-    seatedOn: avatar.seatedOn,
-    seatClaim: avatar.seatClaim,
-    takePart: !!props.takePart,
-    peers: remoteAvatars,
-    seatsOf,
-    send: props.onCallSignal,
-  });
   const selfScale = avatarScale(avatarLook.config.size);
-  const chairSitters = useByValue(
-    useMemo(() => {
+  // Your pose and the peers' characters read as one, and kept by value (sameSitters): the canvas renders when somebody
+  // sits, stands up or steps on or off a stage, never for a step (docs/specs/008-canvas/canvas-performance.md "Walking
+  // renders the characters, not the canvas").
+  const everyone = useMemo(
+    () => joinStores(avatar.poseStore, peers.motion.avatars),
+    [avatar.poseStore, peers.motion.avatars],
+  );
+  const selfColor = props.selfParticipant.color;
+  const selectSitters = useCallback(
+    ([pose, avatars]: readonly [AvatarPose, ReadonlyMap<string, PeerAvatar>]) => {
+      const rows = peerAvatarRowsOf(peers, avatars as Map<string, PeerAvatar>);
       const byChair = sittersByChair(
         {
           name: 'You',
-          color: props.selfParticipant.color,
+          color: selfColor,
           seatedOn: avatar.seatedOn,
           seat: avatar.seatClaim,
           scale: selfScale,
         },
-        remoteAvatars.map((peer) => seatedPeer(peer)),
+        rows.map((peer) => seatedPeer(peer)),
         seatsOf,
       );
       const onStage = stageStanders(
         stages,
-        avatar.pos ? { at: avatar.pos, color: props.selfParticipant.color } : null,
-        remoteAvatars.map((peer) => ({
+        pose.pos ? { at: pose.pos, color: selfColor } : null,
+        rows.map((peer) => ({
           name: peer.name,
           color: peer.color,
           at: { x: peer.avatar.x, y: peer.avatar.y },
@@ -351,18 +350,10 @@ export function useCanvasAvatar({
       );
       for (const [id, standers] of onStage) byChair.set(id, standers);
       return byChair;
-    }, [
-      avatar.seatedOn,
-      avatar.seatClaim,
-      selfScale,
-      seatsOf,
-      avatar.pos,
-      stages,
-      remoteAvatars,
-      props.selfParticipant.color,
-    ]),
-    sameSitters,
+    },
+    [peers, selfColor, avatar.seatedOn, avatar.seatClaim, selfScale, seatsOf, stages],
   );
+  const chairSitters = useStoreSlice(everyone, selectSitters, sameSitters);
   // Stable while nobody sits or stands, so the element views' memo holds
   // (docs/specs/008-canvas/canvas-performance.md); it changes exactly when a chair must re-render.
   const sittersOf = useCallback(
@@ -417,10 +408,6 @@ export function useCanvasAvatar({
     loadedTabIds: props.portalTabsLoaded,
     loadFloors: props.onLoadPortalTabs,
     elements,
-    self: props.selfParticipant,
-    selfConfig: avatarLook.config,
-    remoteAvatars,
-    tabPresence: props.tabPresence,
     avatar,
     enterWalking: () => {
       if (!walking) props.onEnterAvatarMode?.();
@@ -449,7 +436,6 @@ export function useCanvasAvatar({
     avatarLook,
     avatarStandingOn,
     avatarStatus,
-    padArrivals,
     playAvatarBurst,
     pressModeButton,
     pressAvatarPad,
@@ -461,5 +447,34 @@ export function useCanvasAvatar({
     speakingStage,
     speech,
     speechBubbles,
+    // For the characters layer: the board the walk sees, each piece's seats and who is where.
+    walkElements,
+    seatsOf,
+    wayfinding,
   };
+}
+
+// The peers sitting down, as the seat rules read them (seat-claims SeatHolder): their place only matters for a claim
+// an older peer left out.
+function seatHoldersOf(rows: readonly RemoteAvatarRow[]): SeatHolder[] {
+  const held: SeatHolder[] = [];
+  for (const { avatar } of rows) if (avatar.seatedOn) held.push(avatar);
+  return held;
+}
+
+function sameSeatHolders(a: readonly SeatHolder[], b: readonly SeatHolder[]): boolean {
+  return (
+    a.length === b.length &&
+    a.every((h, i) => {
+      const o = b[i]!;
+      return (
+        h.seatedOn === o.seatedOn &&
+        h.x === o.x &&
+        h.y === o.y &&
+        h.seat?.index === o.seat?.index &&
+        h.seat?.at === o.seat?.at &&
+        h.seat?.tie === o.seat?.tie
+      );
+    })
+  );
 }

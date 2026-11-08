@@ -32,9 +32,13 @@ function setup(over: Partial<WayfindingInput> = {}) {
     activeTabId: 'g',
     tabs: TABS,
     elements: [down] as Element[],
-    self: { id: 'me', name: 'Me', color: '#f00' },
-    remoteAvatars: [],
-    avatar: { pos: stairsFootPoint(down), standingOnId: null, walkTo, teleportTo },
+    avatar: {
+      placed: true,
+      readPos: () => stairsFootPoint(down),
+      standingOnId: null,
+      walkTo,
+      teleportTo,
+    },
     enterWalking: vi.fn(),
     onFollowLink: vi.fn(),
     onTravelToTab,
@@ -98,7 +102,8 @@ describe('taking the Stairs', () => {
   it('climbs from on the Stairs too, and travels at once from across the room', () => {
     const on = setup({
       avatar: {
-        pos: { x: down.x + 10, y: down.y + 10 },
+        placed: true,
+        readPos: () => ({ x: down.x + 10, y: down.y + 10 }),
         standingOnId: down.id,
         walkTo: vi.fn(),
         teleportTo: vi.fn(),
@@ -109,7 +114,8 @@ describe('taking the Stairs', () => {
     const foot = stairsFootPoint(down);
     const far = setup({
       avatar: {
-        pos: { x: foot.x + CLIMB_NEAR + 1, y: foot.y },
+        placed: true,
+        readPos: () => ({ x: foot.x + CLIMB_NEAR + 1, y: foot.y }),
         standingOnId: null,
         walkTo: vi.fn(),
         teleportTo: vi.fn(),
