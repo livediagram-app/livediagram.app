@@ -3,5 +3,5 @@ tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
 ~ square e4a8 label "Payments service" → "Payments"
 ~ square cb02 moved +200,+0
 ~ sticky 0c84 comments 2 open → 2 resolved
-+ cylinder 7180 "Redis cache" in c991 "Services"
++ cylinder 7180 "Redis cache"
 + arrow 202b → 7180 [5d21]

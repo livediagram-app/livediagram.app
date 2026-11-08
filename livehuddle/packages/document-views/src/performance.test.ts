@@ -7,7 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livehuddle/document';
-import { arrowBetween, shapeAt } from './__fixtures__/build';
+import { arrowBetween, retiredShapeAt, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 import { showSelectedView } from './show-selected';
@@ -19,12 +19,13 @@ const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
-// `FRAMES` frames, each holding `perFrame` boxes joined pairwise by arrows.
+// `FRAMES` stored boundaries (retired, part 3 of the element engine), each under `perFrame` boxes joined pairwise by
+// arrows.
 function tabOf(perFrame: number) {
   const elements: Element[] = [];
   for (let frame = 0; frame < FRAMES; frame++) {
     const [fx, fy] = [frame * 100_000, 0];
-    elements.push(shapeAt('boundary', `frame-${frame}`, fx, fy, 90_000, 90_000));
+    elements.push(retiredShapeAt('boundary', `frame-${frame}`, fx, fy, 90_000, 90_000));
     for (let i = 0; i < perFrame; i++) {
       elements.push(
         shapeAt(
@@ -69,11 +70,13 @@ describe('views as tabs grow', () => {
   );
 });
 
-// `n` frames, each holding one box: n containers for a budget to collapse one by one.
+// `n` stored boundaries, each under one box: 2n outline lines for a budget to cut.
 function framesOf(n: number) {
   const elements: Element[] = [];
   for (let i = 0; i < n; i++) {
-    elements.push(shapeAt('boundary', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }));
+    elements.push(
+      retiredShapeAt('boundary', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }),
+    );
     elements.push(shapeAt('square', `bx-${i}`, i * 1000 + 50, 50, 100, 50, { label: `Box ${i}` }));
   }
   return { id: 'frames', name: 'Frames', elements };
@@ -86,12 +89,11 @@ const fastestOf = (work: () => void) => {
 };
 
 describe('views over many containers or a whole selection', () => {
-  // Fitting collapsed containers one by one rebuilt the fit and its elision per step: 1.2 s for 4,000 boundaries,
-  // now about 30 ms (1.3 s and 0.13 s with the model built, at the MCP budget).
+  // Cutting lines to a budget measures each step from prefix sums, never re-joining the outline: linear in its lines.
   it(
-    'fit many containers to a budget about linearly',
+    'fit a long outline to a budget about linearly',
     () => {
-      // A budget small enough that both sizes collapse every container, so both take the same path.
+      // A budget small enough that both sizes cut lines, so both take the same path.
       const time = (n: number) => {
         const model = buildViewModel(framesOf(n));
         return fastestOf(() => outlineView(model, { budget: 2000 }));

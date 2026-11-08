@@ -65,7 +65,7 @@ describe('renderView', () => {
 
   it('passes options through', () => {
     const coarse = render({ view: 'layout', coarse: true, only: 'c991' });
-    expect(coarse.ok && coarse.text.split('\n')[1]).toBe('c991: 202b 146b / 6406 e4a8 / 12de 0556');
+    expect(coarse.ok && coarse.text.split('\n')[1]).toBe('row 1: c991');
     const styled = render({ view: 'outline', style: true, budget: 100000, door: 'mcp' });
     expect(styled.ok && styled.text).toContain('line=angled');
     const all = render({ view: 'comments', all: true });

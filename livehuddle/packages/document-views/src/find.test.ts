@@ -9,24 +9,18 @@ import { buildViewModel } from './model';
 const checkout = () => buildViewModel(checkoutTab(), { rev: CHECKOUT_REV });
 
 describe('findView (R17, VW35)', () => {
-  it('prints matches under their container chains, then the counts', async () => {
+  // Nothing nests since part 3 of the element engine (docs/specs/002-project-scope/not-in-livehuddle.md): each match
+  // prints on its own outline line, and its path on the wire is empty.
+  it('prints each match on its outline line, then the counts', async () => {
     const { text, json } = findView(checkout(), 'pay');
     await expect(text).toMatchFileSnapshot(golden('checkout.find-pay.txt'));
-    expect(json.matches.map((m) => [m.ref, m.field, m.path])).toEqual([
-      ['146b', 'note', ['c991']],
-      ['e4a8', 'label', ['c991']],
-      ['480a', 'cell', []],
-      ['0c84', 'label', []],
-    ]);
+    expect(json.matches.every((m) => m.path.length === 0)).toBe(true);
+    expect(json.matches.map((m) => m.field)).toContain('note');
   });
 
   it('folds case and width, and finds an arrow label under its source', () => {
     const { text, json } = findView(checkout(), 'ｊｗｔ');
-    expect(text.split('\n').slice(1)).toEqual([
-      'boundary 048c "Edge"',
-      '  arrow 9c5e 649c → 202b "JWT"',
-      '1 match: 1 edge',
-    ]);
+    expect(text.split('\n').slice(1)).toEqual(['arrow 9c5e 649c → 202b "JWT"', '1 match: 1 edge']);
     expect(json.q).toBe('ｊｗｔ');
   });
 
@@ -53,21 +47,18 @@ describe('findView (R17, VW35)', () => {
 });
 
 describe('find on odd shapes', () => {
-  it('reads past malformed rows, prints an unlabelled container, and skips non-matching own-line arrows', () => {
+  it('reads past malformed rows, and skips non-matching own-line arrows', () => {
     const elements = [
-      shapeAt('boundary', 'box', 0, 0, 900, 900, { label: undefined }),
       { ...shapeAt('square', 't', 10, 10), type: 'table', cells: ['junk', ['a needle']] },
       { ...arrowBetween('free', 't', 't', { label: 'other' }), from: { kind: 'free', x: 0, y: 0 } },
     ] as unknown as Element[];
     const model = buildViewModel({ id: 't', name: 'T', elements });
-    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['boundary box']);
+    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['? table t']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
   });
 
-  it('searches items, code and comments, reprinting a chain only when it changes', () => {
+  it('searches items, code and comments, each match on its own line', () => {
     const elements = [
-      shapeAt('boundary', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
-      shapeAt('boundary', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
       retiredShapeAt('checklist', 'list', 300, 10, 100, 50, {
         checklistItems: [{ text: 'thread the needle', done: false }],
       }),
@@ -88,14 +79,37 @@ describe('find on odd shapes', () => {
     const model = buildViewModel({ id: 't', name: 'T', elements });
     const lines = findView(model, 'needle').text.split('\n').slice(1);
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
-      'boundary outer',
-      '  boundary inner',
-      '    ? checklist',
-      '  ? code-block',
+      '? checklist',
       'square talk',
+      '? code-block',
       'arrow free',
       '4 matches:',
     ]);
     expect(lines.at(-1)).toBe('4 matches: 1 edge, 1 item, 1 code, 1 comment');
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane, boundary or stack
+  // is a placeholder that holds nothing. find still reads its stored label, and prints it flat as `? <kind>`.
+  it("finds a stored layout container's label, flat, and what sat on it beside it", () => {
+    const elements = [
+      retiredShapeAt('lane', 'ops', 0, 0, 1200, 300, { label: 'Ops lane' }),
+      retiredShapeAt('boundary', 'vpc', 0, 400, 900, 400, { label: 'Ops VPC' }),
+      retiredShapeAt('stack', 'row', 0, 900, 600, 200, { label: 'Ops stack' }),
+      shapeAt('square', 'deploy', 100, 100, 100, 50, { label: 'Deploy ops' }),
+    ] as Element[];
+    const { text, json } = findView(buildViewModel({ id: 't', name: 'T', elements }), 'ops');
+    expect(text.split('\n').slice(1)).toEqual([
+      '? lane ops "Ops lane"',
+      'square deploy "Deploy ops"',
+      '? boundary vpc "Ops VPC"',
+      '? stack row "Ops stack"',
+      '4 matches: 4 labels',
+    ]);
+    expect(json.matches.map((m) => [m.ref, m.kind, m.path])).toEqual([
+      ['ops', '? lane', []],
+      ['deploy', 'square', []],
+      ['vpc', '? boundary', []],
+      ['row', '? stack', []],
+    ]);
   });
 });

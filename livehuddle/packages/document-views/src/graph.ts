@@ -13,7 +13,7 @@ import { textField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { jsonString } from '@liveworkspace/document-views/text';
-import { depthFirst, type ViewNode } from './tree';
+import { nodesOf, type ViewNode } from './tree';
 import { pinnedIds } from './visibility';
 
 type GraphOptions = { budget?: number; door?: ViewDoor };
@@ -31,7 +31,7 @@ function arrowLine(edge: ViewEdge): string {
 
 export function graphView(model: ViewModel, options: GraphOptions = {}): ViewResult<GraphView> {
   const connected = new Set(model.edges.all.flatMap((edge) => pinnedIds(edge.arrow)));
-  const all = depthFirst(model.tree.roots);
+  const all = nodesOf(model.tree.roots);
   const nodes = all.filter((node) => connected.has(node.el.id));
   const nodeLine = (node: ViewNode) =>
     `${model.kindOf(node.el)} ${model.refs.refOf(node.el.id)}${labelText(textField(node.el, 'label'))}`;

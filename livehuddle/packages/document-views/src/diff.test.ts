@@ -28,7 +28,7 @@ describe('diffView (R17, VW36)', () => {
   // An added id sharing a 4-character prefix lengthens refs (0bcd → 0bcd1): nothing else changed, and the diff
   // compares ids, so it says only what was added.
   it('reports only the added element when its id lengthens other refs', () => {
-    const frame = shapeAt('boundary', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
+    const frame = retiredShapeAt('boundary', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
     const inside = shapeAt('square', 'n1', 10, 10, 100, 50, { label: 'In' });
     const target = shapeAt('square', 'n2', 600, 0, 100, 50, { label: 'Out' });
     const arrow = arrowBetween('a1', '0bcd1111-x', 'n2');
@@ -44,8 +44,10 @@ describe('diffView (R17, VW36)', () => {
     );
   });
 
-  it('names kind, label, note, container, summary and attribute changes', () => {
-    const frame = shapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
+  // Nothing holds an element since part 3 of the element engine (docs/specs/002-project-scope/not-in-livehuddle.md):
+  // moving off a stored boundary is a move, never a container change.
+  it('names kind, label, note and attribute changes', () => {
+    const frame = retiredShapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
     const a = shapeAt('square', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
     const b = retiredShapeAt('checklist', 'b', 10, 100, 100, 50, {
       checklistItems: [{ text: 'x', done: false }],
@@ -75,7 +77,7 @@ describe('diffView (R17, VW36)', () => {
         ],
       ),
     ).toEqual([
-      '~ circle a kind square → circle · label "A" → none · note removed · in f → canvas · moved +890,+0',
+      '~ circle a kind square → circle · label "A" → none · note removed · moved +890,+0',
       '~ ? checklist b +1 other field',
       '~ square c label none → "C" · note changed · done none → on',
     ]);
@@ -111,13 +113,11 @@ describe('diffView (R17, VW36)', () => {
       '~ arrow ab from a → c · to b → free',
     ]);
     expect(changeLines([a!], [{ ...a!, opacity: 0.5 }])).toEqual(['~ square a +1 other field']);
-    expect(changeLines([a!], [{ ...a!, shape: 'stack' }])).toEqual([
-      '~ stack a kind square → stack · none → direction=row',
-    ]);
-    expect(changeLines([{ ...a!, shape: 'stack' }], [a!])).toEqual([
-      '~ square a kind stack → square · direction=row → none',
-    ]);
-    // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md) prints as unknown and summarises nothing.
+    // A retired kind (docs/specs/002-project-scope/not-in-livehuddle.md), a stack among them, prints as unknown and
+    // summarises nothing.
+    const stack = { ...a!, shape: 'stack' } as unknown as Element;
+    expect(changeLines([a!], [stack])).toEqual(['~ ? stack a kind square → ? stack']);
+    expect(changeLines([stack], [a!])).toEqual(['~ square a kind ? stack → square']);
     expect(changeLines([a!], [{ ...a!, shape: 'code-block' } as unknown as Element])).toEqual([
       '~ ? code-block a kind square → ? code-block',
     ]);
@@ -151,8 +151,8 @@ describe('diffView (R17, VW36)', () => {
     expect(lines).toEqual(['~ ? idea-box i +1 other field']);
   });
 
-  it('lists removals in the before order and additions under an unlabelled container', () => {
-    const frame = shapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
+  it('lists removals in the before order, and additions flat beside a stored boundary', () => {
+    const frame = retiredShapeAt('boundary', 'f', 0, 0, 500, 500, { label: undefined });
     const gone = shapeAt('square', 'gone', 600, 0, 100, 50, { label: 'Gone' });
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     expect(
@@ -160,7 +160,7 @@ describe('diffView (R17, VW36)', () => {
         [frame, gone, odd],
         [frame, shapeAt('square', 'new', 10, 10), { ...odd, label: 'x' }],
       ),
-    ).toEqual(['- square gone "Gone"', '+ square new in f', '~ ? hologram odd label none → "x"']);
+    ).toEqual(['- square gone "Gone"', '+ square new', '~ ? hologram odd label none → "x"']);
     expect(changeLines([], [shapeAt('square', 'top', 0, 0, 100, 50, { label: 'Top' })])).toEqual([
       '+ square top "Top"',
     ]);

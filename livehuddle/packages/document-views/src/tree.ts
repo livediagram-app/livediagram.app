@@ -1,10 +1,12 @@
-// The outline's tree (docs/specs/024-agents/blueprints/document-views.md "The view model"): each printed
-// non-arrow element under its derived container, siblings in reading order, bare strokes folded.
-import { deriveContainers, type Element } from '@livehuddle/document';
+// The outline's elements (docs/specs/024-agents/blueprints/document-views.md "The view model"): each printed
+// non-arrow element at the top level, in reading order, bare strokes folded. Nothing nests: the layout containers
+// that once held elements are retired kinds that hold nothing (docs/specs/002-project-scope/not-in-livehuddle.md
+// "The element engine", part 3), so a stored lane, stack or boundary prints beside what sat on it.
+import type { Element } from '@livehuddle/document';
 import { freehandRuns, type FreehandRun } from './freehand-runs';
 import { readingOrder, type Placed } from './reading-order';
 
-export type ViewNode = Placed & { container: string | null; children: ViewItem[] };
+export type ViewNode = Placed;
 export type FreehandRunItem = FreehandRun<ViewNode>;
 export type ViewItem = ViewNode | FreehandRunItem;
 
@@ -14,37 +16,25 @@ export function isViewRun(item: ViewItem): item is FreehandRunItem {
   return 'run' in item;
 }
 
-// `printed` is in array order; arrows are left out of the tree.
+// `printed` is in array order; arrows are left out.
 export function buildViewTree(
   printed: readonly Element[],
   arrowEndIds: ReadonlySet<string>,
 ): ViewTree {
-  const containers = deriveContainers(printed);
   const nodes = new Map<string, ViewNode>();
-  const childrenOf = new Map<string | null, ViewNode[]>();
   printed.forEach((el, index) => {
     if (el.type === 'arrow' || nodes.has(el.id)) return;
-    const container = containers.get(el.id) ?? null;
-    const node: ViewNode = { el, index, container, children: [] };
-    nodes.set(el.id, node);
-    const siblings = childrenOf.get(container);
-    if (siblings) siblings.push(node);
-    else childrenOf.set(container, [node]);
+    nodes.set(el.id, { el, index });
   });
-  const arrange = (siblings: readonly ViewNode[]): ViewItem[] =>
-    freehandRuns(readingOrder(siblings), arrowEndIds);
-  for (const node of nodes.values()) node.children = arrange(childrenOf.get(node.el.id) ?? []);
-  return { roots: arrange(childrenOf.get(null) ?? []), nodes };
+  return { roots: freehandRuns(readingOrder([...nodes.values()]), arrowEndIds), nodes };
 }
 
-// Every node under `items`, depth-first in reading order, runs unfolded into their strokes.
-export function depthFirst(items: readonly ViewItem[]): ViewNode[] {
-  return items.flatMap((item) =>
-    isViewRun(item) ? item.strokes : [item, ...depthFirst(item.children)],
-  );
+// Every node of `items` in reading order, runs unfolded into their strokes.
+export function nodesOf(items: readonly ViewItem[]): ViewNode[] {
+  return items.flatMap((item) => (isViewRun(item) ? item.strokes : [item]));
 }
 
-// The items a view starts from: the whole tree, or the subtree of `only`.
+// The items a view starts from: the whole tab, or the one element `only`.
 export function subtreeItems(tree: ViewTree, only: string | undefined): ViewItem[] {
   if (only === undefined) return tree.roots;
   const node = tree.nodes.get(only);

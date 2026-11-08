@@ -18,7 +18,8 @@ describe('showView (R17, VW34)', () => {
     expect(json).toMatchObject({
       ref: '146b',
       kind: 'square',
-      container: { ref: 'c991', kind: 'boundary', label: 'Services' },
+      // Nothing holds an element since part 3 of the element engine (not-in-livehuddle.md).
+      container: null,
       fields: { label: 'Orders service', iconId: 'server', x: 720 },
       omitted: [],
     });

@@ -7,6 +7,7 @@ import {
   createSticky,
   createText,
   type Element,
+  type ShapeKind,
   type Tab,
 } from '@livehuddle/document';
 import { checkoutTab, FIXED_EPOCH, pinnedId } from './checkout-tab';
@@ -17,12 +18,14 @@ export const CHECKOUT_DOCUMENT = {
   savedAt: FIXED_EPOCH,
 };
 
-// 6 lanes of 3 boxes, joined in a ring of 18 arrows.
+// 6 stored lanes (a retired kind, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3)
+// with 3 boxes on each, joined in a ring of 18 arrows.
 function sequenceTab(): Tab {
   const elements: Element[] = [];
   for (let lane = 0; lane < 6; lane++) {
     elements.push({
-      ...createShape('lane', 0, lane * 200),
+      ...createShape('square', 0, lane * 200),
+      shape: 'lane' as ShapeKind,
       id: pinnedId('51a0', lane),
       label: `Lane ${lane + 1}`,
       width: 1200,

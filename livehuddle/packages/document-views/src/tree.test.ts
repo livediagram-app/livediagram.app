@@ -1,26 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
-import { buildViewTree, isViewRun, type ViewItem } from './tree';
+import { arrowBetween, retiredShapeAt, shapeAt, strokeAt } from './__fixtures__/build';
+import { buildViewTree, isViewRun, nodesOf, subtreeItems, type ViewItem } from './tree';
 
-const outline = (items: ViewItem[]): unknown[] =>
-  items.map((item) =>
-    isViewRun(item)
-      ? `run×${item.strokes.length}`
-      : item.children.length > 0
-        ? { [item.el.id]: outline(item.children) }
-        : item.el.id,
-  );
+const outline = (items: ViewItem[]): string[] =>
+  items.map((item) => (isViewRun(item) ? `run×${item.strokes.length}` : item.el.id));
 
 describe('buildViewTree', () => {
-  it('nests by derived containment, reading order per level, arrows left out', () => {
-    const frame = shapeAt('boundary', 'frame', 0, 0, 500, 300);
-    const lane = shapeAt('lane', 'lane', 0, 150, 500, 150);
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: nothing nests, so a stored
+  // boundary or lane is one element in reading order like any other, and what sat on it is beside it.
+  it('lists every element flat in reading order, arrows left out, bare strokes folded', () => {
     const tree = buildViewTree(
       [
         shapeAt('square', 'far', 900, 0),
-        lane,
+        retiredShapeAt('lane', 'lane', 0, 150, 500, 150),
         shapeAt('square', 'in-lane', 10, 200),
-        frame,
+        retiredShapeAt('boundary', 'frame', 0, 0, 500, 300),
         shapeAt('square', 'b', 300, 10),
         shapeAt('square', 'a', 10, 10),
         arrowBetween('arr', 'a', 'b'),
@@ -29,13 +23,18 @@ describe('buildViewTree', () => {
       ],
       new Set(['a', 'b']),
     );
-    expect(outline(tree.roots)).toEqual([
-      { frame: ['a', 'b', { lane: ['in-lane'] }] },
-      'far',
-      'run×2',
-    ]);
+    expect(outline(tree.roots)).toEqual(['frame', 'lane', 'a', 'in-lane', 'b', 'far', 'run×2']);
     expect(tree.nodes.has('arr')).toBe(false);
-    expect(tree.nodes.get('in-lane')?.container).toBe('lane');
+    expect(nodesOf(tree.roots).map((n) => n.el.id)).toEqual([
+      'frame',
+      'lane',
+      'a',
+      'in-lane',
+      'b',
+      'far',
+      's1',
+      's2',
+    ]);
   });
 
   it('has no roots for an empty tab', () => {
@@ -49,5 +48,11 @@ describe('buildViewTree', () => {
     );
     expect(tree.roots).toHaveLength(1);
     expect(tree.nodes.get('x')?.index).toBe(0);
+  });
+
+  it('starts a view from one element, or from nothing for an id it does not hold', () => {
+    const tree = buildViewTree([shapeAt('square', 'x', 0, 0)], new Set());
+    expect(outline(subtreeItems(tree, 'x'))).toEqual(['x']);
+    expect(subtreeItems(tree, 'gone')).toEqual([]);
   });
 });

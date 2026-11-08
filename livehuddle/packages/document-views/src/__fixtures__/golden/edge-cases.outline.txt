@@ -1,8 +1,8 @@
-tab edge-tab "Edge cases" · 32 elements: 22 boxes, 2 boundaries, 8 arrows · 4 unknown
+tab edge-tab "Edge cases" · 30 elements: 22 boxes, 8 arrows · 6 unknown
 square huge "Huge"
-boundary frame-a "A"
-  square both "In both"
-boundary frame-b "B"
+? boundary frame-a "A"
+? boundary frame-b "B"
+square both "In both"
 square bare → quoted "one", quoted "two" ~dotted ~both, secret
 square quoted "Line one\nsays \"hi\" → there | here" → free
 square tilted → tilted, arrow:par-1
@@ -18,8 +18,6 @@ sticky customer "Customer"
 freehand lone
 square splitter
 freehand ×3 (1 closed)
-timeline-rail state-timeline-rail rows=Kick-off|First prototype|Beta with customers|Launch milestones=4
-card state-card "Takes card payments and issues refunds." title="Quarterly review" icon=credit-card
 ? hologram nowhere "No geometry"
 arrow free-src free → bare
 arrow rider-src arrow:par-2 → tilted

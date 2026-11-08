@@ -41,6 +41,7 @@ describe('the edge-case tab (E2 to E28, R25)', () => {
   it('prints every case, never dropping an unknown kind', async () => {
     const { text, json } = outlineView(buildViewModel(edgeCasesTab()));
     await expect(text).toMatchFileSnapshot(golden('edge-cases.outline.txt'));
-    expect(json.header).toMatchObject({ unknown: 4 });
+    // Four unknown kinds, and two stored boundaries (part 3 of the element engine).
+    expect(json.header).toMatchObject({ unknown: 6 });
   });
 });

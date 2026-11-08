@@ -18,7 +18,7 @@ import {
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { attrValue, jsonString } from '@liveworkspace/document-views/text';
-import { depthFirst } from './tree';
+import { nodesOf } from './tree';
 
 type CommentsOptions = { budget?: number; door?: ViewDoor; all?: boolean };
 
@@ -104,7 +104,7 @@ export function threadListingLines(thread: {
 export function commentHosts(
   model: ViewModel,
 ): { el: Element; ref: string; label: string | null }[] {
-  return depthFirst(model.tree.roots)
+  return nodesOf(model.tree.roots)
     .map((n) => n.el)
     .filter((el) => threadOf(el) !== null)
     .map((el) => ({ el, ref: model.refs.refOf(el.id), label: textField(el, 'label') }));
@@ -114,7 +114,7 @@ export function commentsView(
   model: ViewModel,
   options: CommentsOptions = {},
 ): ViewResult<CommentsView> {
-  const elements = depthFirst(model.tree.roots).map((n) => n.el);
+  const elements = nodesOf(model.tree.roots).map((n) => n.el);
   const threads = elements.flatMap((el) => threadsOfElement(model, el));
   const shown = threads.filter((t) => options.all || !t.resolved);
   const resolved = threads.length - shown.length;
