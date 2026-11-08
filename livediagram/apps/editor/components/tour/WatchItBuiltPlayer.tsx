@@ -7,6 +7,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { TourShield } from '@liveworkspace/workbench/components/tour/TourShield';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
+import { easeNextStyleChange } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { pauseTelemetry, resumeTelemetry, track, trackDuringPause } from '@/lib/telemetry';
 import { replayStore, useReplayState } from '@/lib/replay/replay-store';
 import type { Frame, Point, Waypoint } from '@/lib/replay/topic';
@@ -54,6 +55,7 @@ export function WatchItBuiltPlayer({
   const chapters = topic.chapters;
   const [clock, setClock] = useState<Clock>(STOPPED);
   const [cursor, setCursor] = useState<ReplayCursor | null>(null);
+  const [playerTop, setPlayerTop] = useState(false);
   const active = clock !== STOPPED;
   const layoutRef = useRef<unknown>(null);
   // Where Example was last drawn, and the move it is on: each move starts from where the cursor is, never from a
@@ -93,8 +95,12 @@ export function WatchItBuiltPlayer({
   // It starts as it mounts: the host already counted the pick and marked the topic taken.
   const begin = () => {
     const host = ctx.canvasMainRef.current?.getBoundingClientRect();
-    const centre = host ? computeViewportCenter(host, ctx.viewport.get().offset) : { x: 400, y: 300 };
-    layoutRef.current = topic.layout({ centre, tab: ctx.activeTab });
+    const view = ctx.viewport.get();
+    const centre = host ? computeViewportCenter(host, view.offset) : { x: 400, y: 300 };
+    const size = host
+      ? { width: host.width / view.zoom, height: host.height / view.zoom }
+      : { width: 1200, height: 800 };
+    layoutRef.current = topic.layout({ centre, size, tab: ctx.activeTab });
     pauseTelemetry();
     ctx.closeContextMenu();
     document.documentElement.setAttribute('data-replay', '');
@@ -189,6 +195,7 @@ export function WatchItBuiltPlayer({
     if (learned) layoutRef.current = learned;
     const frame = topic.frame(clock.index, clock.ms, layoutRef.current);
     applyFrame(frame, signatureRef);
+    setPlayerTop(frame.player === 'top');
     syncOpen(frame.open ?? [], openedRef.current);
     if (frame.menu) openMenuPath(frame.menu.path);
     if (frame.typed) typeInto(frame.typed.selector, frame.typed.text);
@@ -281,6 +288,7 @@ export function WatchItBuiltPlayer({
         reduced={reducedMotion()}
         touch={touch}
         menuOpen={menuOpen}
+        atTop={playerTop}
         say={touch ? chapter.sayTouch : chapter.say}
         cursor={cursor}
         canvasRef={ctx.canvasMainRef}
@@ -303,6 +311,9 @@ function applyFrame(frame: Frame, signatureRef: { current: string }) {
     frame.prefs ?? null,
   ]);
   if (signature === signatureRef.current) return;
+  // A new look eases in, as a pick in the Tab Style dialog does.
+  const prevTab = replayStore.get().tab;
+  if (JSON.stringify(prevTab) !== JSON.stringify(frame.tab ?? null)) easeNextStyleChange();
   signatureRef.current = signature;
   const held = replayStore.get().menu;
   const menu = frame.menu

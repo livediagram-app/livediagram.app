@@ -256,6 +256,9 @@ export function CanvasThemeDialog({
           <div className="min-h-[20rem] overflow-y-auto px-5 pb-4 pt-2">
             {/* The home and its panels swap through an easing height and a short slide: into a panel from the
                 right, back home from the left (AnimatedHeightBox). */}
+            {/* data-tab-style-view: which view is up, for Watch It Built's Look and Feel to hold one open
+                (components/tour/replay-dom.ts). */}
+            <div data-tab-style-view={tab} className="contents">
             <AnimatedHeightBox viewKey={tab} enter={enter}>
               {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
                 import / export panels do (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
@@ -332,6 +335,7 @@ export function CanvasThemeDialog({
                 />
               )}
             </AnimatedHeightBox>
+            </div>
           </div>
         </div>
       </div>

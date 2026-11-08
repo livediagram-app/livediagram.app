@@ -12,16 +12,19 @@ export function centreOfNode(el: Element | null | undefined): Point | null {
   return r && r.width > 0 ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
 }
 
-const words = (el: Element) => (el.textContent ?? '').trim().toLowerCase();
+// What a control says: its own words, and its accessible name (an icon tile has only that).
+const words = (el: Element) =>
+  [el.textContent ?? '', el.getAttribute('aria-label') ?? ''].map((w) => w.trim().toLowerCase());
 
 // The first match by its words: the exact words first, then words it ends with (a preset's swatch draws an "A" before
 // its name), then words it starts with.
 function byWords<T extends Element>(nodes: T[], text: string): T | null {
   const want = text.toLowerCase();
+  const some = (n: T, test: (w: string) => boolean) => words(n).some((w) => w !== '' && test(w));
   return (
-    nodes.find((n) => words(n) === want) ??
-    nodes.find((n) => words(n).endsWith(want)) ??
-    nodes.find((n) => words(n).startsWith(want)) ??
+    nodes.find((n) => some(n, (w) => w === want)) ??
+    nodes.find((n) => some(n, (w) => w.endsWith(want))) ??
+    nodes.find((n) => some(n, (w) => w.startsWith(want))) ??
     null
   );
 }
@@ -71,10 +74,43 @@ const byTour = (trigger: string, open: () => Element | null): Openable => ({
   },
 });
 
+const TAB_STYLE = '[role="dialog"][aria-label="Tab style"]';
+const press = (selector: string) => findNode(selector)?.click();
+
 // Every part of the chrome a topic may hold open, by the ids its frames name.
 export const OPENABLES: Record<string, Openable> = {
   // The palette's first category (Shapes; in Workshop also the first), its flyout.
   palette: byTour('palette-category', () => findTour('palette-category-menu')),
+  // The Tab Style dialog (components/dialogs/CanvasThemeDialog.tsx), opened by the footer's Style
+  // (LayersThemeStrip.tsx `canvas-theme`) and closed by its own Close.
+  'tab-style': {
+    isOpen: () => !!document.querySelector(TAB_STYLE),
+    toggle: () => {
+      if (document.querySelector(TAB_STYLE)) press(`${TAB_STYLE} button[aria-label="Close"]`);
+      else clickTour('canvas-theme');
+    },
+  },
+  // The footer's Tidy Up popover (components/canvas/TidyUpPopover.tsx), by its own button (LayersThemeStrip.tsx).
+  'tidy-up': {
+    isOpen: () => !!document.querySelector('[data-tidy-kind]'),
+    toggle: () => {
+      clickTour('tidy-up');
+    },
+  },
+  // The palette strip's Search panel (components/palette/ToolbarSearch.tsx), by its own button.
+  search: {
+    isOpen: () => !!document.querySelector('[data-toolbar-search]'),
+    toggle: () => press('[data-toolbar-search-button]'),
+  },
+  // The Tab Style dialog's Canvas panel (LooksHome.tsx's Fine-tune row), back home by the panel's Back bar.
+  'tab-style-canvas': {
+    isOpen: () => !!document.querySelector('[data-tab-style-view="canvas"]'),
+    toggle: () => {
+      if (document.querySelector('[data-tab-style-view="canvas"]'))
+        press('[data-tab-style-view="canvas"] button');
+      else press('[data-tour-id="tab-style-fine-tune"] button[aria-label^="Canvas"]');
+    },
+  },
 };
 
 /** Open what `want` names and close what the replay opened that it no longer names. */

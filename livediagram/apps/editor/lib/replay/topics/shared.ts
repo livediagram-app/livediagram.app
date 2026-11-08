@@ -1,6 +1,6 @@
 import { createShape, type ShapeElement, type ShapeKind, type Tab } from '@livediagram/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { CursorTarget, Point } from '../topic';
+import { lerp, type CursorTarget, type Point, type ScreenProbe } from '../topic';
 
 // What the topics share: a boxed shape in the tab's own colours, and the palette's first tile.
 
@@ -32,4 +32,21 @@ export function boxedShape(
     theme: tab.theme,
   });
   return { ...base, ...colours, id, label, width, height, x: cx - width / 2, y };
+}
+
+// A shape carried from a palette tile to where it lands, its centre under the cursor. With no tile seen it is simply
+// where it lands.
+export function carried(el: ShapeElement, tile: Tile, p: number): ShapeElement {
+  if (!tile || p >= 1) return el;
+  const startX = tile.x - el.width / 2;
+  const startY = tile.y - el.height / 2;
+  return { ...el, x: lerp(startX, el.x, p), y: lerp(startY, el.y, p) };
+}
+
+/** Where a tile is on the canvas now, if it is on screen and has moved since `was` (a flyout still settling). */
+export function tileMoved(screen: ScreenProbe, target: CursorTarget, was: Tile): Tile | undefined {
+  const point = screen.find(target);
+  if (!point) return undefined;
+  const tile = screen.toCanvas(point);
+  return was && was.x === tile.x && was.y === tile.y ? undefined : tile;
 }

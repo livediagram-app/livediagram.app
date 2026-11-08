@@ -16,7 +16,8 @@ const tab = {
   elements: [],
   backgroundColor: '#ffffff',
 } as unknown as Tab;
-const env = { centre: { x: 400, y: 300 }, tab };
+const env = { centre: { x: 400, y: 300 }, size: { width: 1440, height: 820 }, tab };
+const phone = { ...env, size: { width: 390, height: 700 } };
 
 describe.each(ALL_TOPIC_CARDS.map((c) => [c.id, c] as const))('%s', (id, card) => {
   const topic = TOPICS[id] as Topic;
@@ -38,8 +39,11 @@ describe.each(ALL_TOPIC_CARDS.map((c) => [c.id, c] as const))('%s', (id, card) =
     expect(`${card.title} ${card.line}`).not.toMatch(/—/);
   });
 
-  it('draws the same frame for the same moment, opening only what the player can open', () => {
-    const layout = topic.layout(env);
+  it.each([
+    ['desktop', env],
+    ['phone', phone],
+  ])('draws the same frame for the same moment on a %s, opening only what the player can open', (_on, at) => {
+    const layout = topic.layout(at);
     topic.chapters.forEach((chapter, i) => {
       for (let ms = 0; ms <= chapter.ms; ms += 250) {
         const frame = topic.frame(i, ms, layout);

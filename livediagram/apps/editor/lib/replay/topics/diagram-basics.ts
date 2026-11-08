@@ -8,7 +8,9 @@ import {
 import { getTheme } from '@/lib/themes';
 import { applyColorPresetToEl } from '@/lib/style-presets';
 import { between, centreOf, frameOf, lerp, typedAt, type Chapter, type Topic } from '../topic';
-import { boxedShape, PALETTE_TILE, type Tile } from './shared';
+import { boxedShape, carried, PALETTE_TILE, type Tile } from './shared';
+
+export { carried };
 
 // The Basics (docs/specs/007-editor/watch-it-built.md "The replay"): Add, Connect, Label, Style.
 
@@ -73,15 +75,6 @@ export const ADD = {
 export const CONNECT = { select: 900, drag: [1800, 3800] } as const;
 export const LABEL = { select: 1000, type: [1300, 3800] } as const;
 export const STYLE = { menu: 800, flyout: 1700, presets: 2600, pick: 3600, close: 4400 } as const;
-
-// A shape carried from the palette tile to where it lands, its centre under the cursor. With no tile seen it is
-// simply where it lands.
-export function carried(el: ShapeElement, tile: Tile, p: number): ShapeElement {
-  if (!tile || p >= 1) return el;
-  const startX = tile.x - el.width / 2;
-  const startY = tile.y - el.height / 2;
-  return { ...el, x: lerp(startX, el.x, p), y: lerp(startY, el.y, p) };
-}
 
 export const basics: Topic<BasicsLayout> = {
   id: 'diagram-basics',

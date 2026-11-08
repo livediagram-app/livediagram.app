@@ -41,6 +41,7 @@ export function ReplayOverlay({
   reduced,
   touch,
   menuOpen,
+  atTop = false,
   say,
   cursor,
   canvasRef,
@@ -60,6 +61,8 @@ export function ReplayOverlay({
   touch: boolean;
   // The element menu is open: on a phone it is a sheet up from the bottom, so the player moves to the top.
   menuOpen: boolean;
+  // A dialog fills the bottom of the screen (the Tab Style dialog): the player moves to the top of the canvas.
+  atTop?: boolean;
   say: string;
   cursor: ReplayCursor | null;
   canvasRef: RefObject<HTMLElement | null>;
@@ -97,11 +100,7 @@ export function ReplayOverlay({
         role="group"
         aria-label={`Watch It Built: ${title}`}
         className="pointer-events-auto absolute flex w-max max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 pb-2 pt-2.5 shadow-xl motion-safe:animate-dialog-in dark:border-slate-700 dark:bg-slate-900"
-        style={
-          touch && menuOpen
-            ? { left, top: (box?.top ?? 56) + 64 }
-            : place
-        }
+        style={(touch && menuOpen) || atTop ? { left, top: (box?.top ?? 56) + 64 } : place}
       >
         <p
           role="status"

@@ -21,9 +21,10 @@ export type Chapter = {
 
 export type Point = { readonly x: number; readonly y: number };
 
-/** What a topic builds its layout from: the view's centre in canvas coordinates and the tab's look. */
+/** What a topic builds its layout from: the view's centre and size in canvas units, and the tab's look. */
 export type TopicEnv = {
   readonly centre: Point;
+  readonly size: { readonly width: number; readonly height: number };
   readonly tab: Tab;
 };
 
@@ -63,6 +64,8 @@ export type Frame = {
   readonly tab?: Partial<Tab>;
   // The person's preferences as the canvas sees them (Draw's board background), likewise.
   readonly prefs?: Partial<UserPreferences>;
+  // Where the player sits: low over the canvas (the default), or at its top while a dialog fills the bottom.
+  readonly player?: 'top';
   // Example is holding something here (a carried shape, a pen drawing): the cursor sits on this canvas point, pressed.
   readonly hold?: Point | null;
 };
