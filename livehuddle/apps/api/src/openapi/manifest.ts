@@ -1056,8 +1056,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tokens/current',
     segment: 'tokens',
     tag: 'API tokens',
-    summary:
-      "The token this request presented: its account, name, role and expiry (the CLI's auth status).",
+    summary: 'The token this request presented: its account, name, role and expiry.',
     auth: 'clerk',
     tokenUsable: true,
     responseSchema: ref('CurrentTokenResponse'),
@@ -1068,8 +1067,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tokens/current',
     segment: 'tokens',
     tag: 'API tokens',
-    summary:
-      "Revoke the token this request presented; any token may revoke itself (the CLI's auth logout).",
+    summary: 'Revoke the token this request presented; any token may revoke itself.',
     auth: 'clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
@@ -1415,7 +1413,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'events',
     tag: 'Telemetry',
     summary:
-      'Pass a batch of anonymous first-party telemetry events on to the liveworkspace telemetry service, for clients that cannot post there themselves (the CLI).',
+      'Pass a batch of anonymous first-party telemetry events on to the liveworkspace telemetry service, for clients that cannot post there themselves.',
     auth: 'public',
     requestSchema: {
       type: 'object',

@@ -1,7 +1,7 @@
 // Inline a tab's uploaded images as base64 data URLs, so a server-side render
-// shows the real picture instead of a placeholder box. Both workers render
-// tabs: the api for the Explorer thumbnail + live share image (docs/specs/006-document/document-snapshots.md), the
-// mcp for the PNG it hands the model (livediagram/docs/specs/015-api/mcp-server.md §5). Neither renderer can fetch
+// shows the real picture instead of a placeholder box. The api renders
+// tabs for the Explorer thumbnail + live share image (docs/specs/006-document/document-snapshots.md); livediagram.s
+// mcp renders the PNG it hands the model (livediagram/docs/specs/015-api/mcp-server.md §5). Neither renderer can fetch
 // (resvg is WASM; a cached SVG must be self-contained), so each prefetches the
 // bytes and passes a `resolveImageHref` that reads this map.
 //
@@ -11,7 +11,7 @@
 // own policy at the call site:
 //
 //   - `load` reads one image's bytes + stored type (R2 for the api, the
-//     owner-authed GET /api/images/:id for the mcp), or null when missing.
+//     owner-authed GET /api/images/:id for livediagram's mcp), or null when missing.
 //   - `maxBytesPerImage` skips any single image over the cap.
 //   - `totalBudgetBytes` caps the sum. With a budget, images are read one at
 //     a time in document order until it is spent, so the result is

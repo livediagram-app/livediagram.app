@@ -47,7 +47,7 @@ covers a control. It once sat over that cluster, and a guest Editor running a se
 dismiss it to reach the timer. It is drawn over the canvas, and is additionally hidden:
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
-- while a **panel opened from the chrome** is open (Tidy Up, Style and the rest of the bottom-right cluster, the
+- while a **panel opened from the chrome** is open (Style and the rest of the bottom-right cluster, the
   Explorer panel): they reach up into the banner's band and it lay over their lower rows, so it steps aside until the
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 

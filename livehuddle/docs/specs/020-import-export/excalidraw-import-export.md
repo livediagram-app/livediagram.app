@@ -48,9 +48,8 @@ degradation table below; nothing degrades silently outside that table.
 - `../livediagram/apps/editor/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
-- None of these is needed by the MCP worker or any other app, so they stay in
-  `apps/editor/lib` (Mermaid lives in `packages/document` only because the MCP
-  server also renders it).
+- None of these is needed by the api worker or any other app, so they stay in
+  `apps/editor/lib` (Mermaid lives in `packages/document`, where it came with livediagram's MCP).
 
 ## Envelopes
 

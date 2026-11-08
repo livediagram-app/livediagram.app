@@ -119,7 +119,7 @@ to the visible path and the selection halo:
 The shared SVG arrow renderer (`svgArrow` in `packages/document/src/svg-render-arrows.ts`)
 punches the same holes into the same mask as the label knockouts, so every
 export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
-arrows from that markup), server snapshots and thumbnails, and the MCP's inline
+arrows from that markup), server snapshots and thumbnails, and the api's
 preview. An arrow the canvas draws passing behind a box is never drawn straight
 across it in an export.
 

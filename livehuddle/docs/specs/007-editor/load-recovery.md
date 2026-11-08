@@ -226,7 +226,7 @@ the server, which the rest of this spec covers.
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
 - **Code not loaded yet waits for the connection.** Some of the editor loads when first opened (the Timer
-  and Poll popovers, Tidy Up). Opened while offline, its code cannot come, and it never takes the canvas with it: the
+  and Poll popovers). Opened while offline, its code cannot come, and it never takes the canvas with it: the
   popover simply does not open (its button lets go). A layout area that cannot load says "You're offline, so the
   canvas couldn't load. It comes back when you reconnect." with no Try Again, and comes back on its own when the
   browser is online again.

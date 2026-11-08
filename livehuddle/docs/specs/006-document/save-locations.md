@@ -71,7 +71,7 @@ person (livehuddle).
 
 - **When it shows** (`showsSaveSwitch`): the canvas has loaded and the reader and their sign-in are known; the reader
   owns it and can edit it; it has one tab with nothing on it; it has no live share link, is not open through one and
-  is not in a team; nobody else is in it; and the editor is not embedded or in another app's workbench. Anywhere else
+  is not in a team; nobody else is in it; and the editor is not embedded. Anywhere else
   the row is hidden, and the Explorer's Sync Space and Take Offline stay the way to move it. Once a move has started the
   row stays until it lands.
 - **Built once.** The switch (`Switch`) and the row (`SaveSwitch`, `SaveSwitchRow`, its words and `showsSaveSwitch`)

@@ -108,7 +108,7 @@ untitled.
 - **Names.** The first tab is named after the template's first floor ("Lobby", "Ground Floor", "Downstairs"), the others after
   theirs, so the [Elevator](../009-elements/elevator.md) panel reads as the building's floors. The document is still
   named after the template ("Untitled Hotel and Suites").
-- **Agents** (`buildTemplateTab`, the MCP's create and add tab) get the first floor only, for now; the floors are a
+- **Agents** (`buildTemplateTab`, an API create or tab add) get the first floor only, for now; the floors are a
   follow-up for the agents' catalogue.
 
 ## The tab's name

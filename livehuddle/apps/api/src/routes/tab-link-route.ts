@@ -50,7 +50,6 @@ export async function handleTabLink(ctx: DocumentRouteContext): Promise<Response
     targetId: id,
     tabId,
     from: body.from,
-    workbench: false,
     target: accessOf(ctx, id),
     // The request carries the grant on this document alone: the caller's on `from` is the index's to give.
     source: async (from) => {

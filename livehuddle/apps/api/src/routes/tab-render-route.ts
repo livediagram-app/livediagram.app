@@ -1,5 +1,5 @@
 // GET /api/documents/:id/tabs/:tabId/render.svg (docs/specs/015-api/api.md): one tab drawn by the shared renderer,
-// read-gated like the tab itself. The CLI's `pull --svg` and `tab render` read it, so every front door draws alike.
+// read-gated like the tab itself. API scripts read it, so every front door draws alike.
 
 import { getDocumentMeta } from '../db';
 import { notFound, svgImage } from '../responses';

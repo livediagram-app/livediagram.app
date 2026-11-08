@@ -212,18 +212,10 @@ describe('guestReturnHref', () => {
     );
   });
 
-  it.each([
-    '/oauth/consent?session=s',
-    '/oauth/device',
-    '/workbench/pair?code=c',
-    '/OAuth/consent',
-  ])('never sends a guest back to a signed-in-only page (%s)', (redirect) => {
-    expect(guestReturnHref(params(`redirect_url=${encodeURIComponent(redirect)}`))).toBe(
-      POST_AUTH_DEFAULT,
-    );
-  });
-
-  it('keeps a page that only starts with the same letters', () => {
+  // livehuddle has no signed-in-only connect pages (docs/specs/014-identity/auth-and-guest-access.md "The look"):
+  // every safe page is one a guest can go back to.
+  it('sends a guest back to any safe page', () => {
     expect(guestReturnHref(params('redirect_url=%2Foauthors'))).toBe('/oauthors');
+    expect(guestReturnHref(params('redirect_url=%2Fexplorer%2F'))).toBe('/explorer/');
   });
 });

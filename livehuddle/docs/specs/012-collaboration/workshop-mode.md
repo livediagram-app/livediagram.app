@@ -1,6 +1,6 @@
 # The meeting board (Workshop mode in the code)
 
-Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04). Parts 2, 3 and 4 are done: the palette,
+Status: **approved, built** (Work Tracker #423, owner, 2026-11-04). Parts 2 to 5 are done: the palette,
 the templates and the help are the meeting board's (the Session strip has since left), and the leaving code is deleted
 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
@@ -132,12 +132,12 @@ Following [Gate a feature by share role](../../instructions/gate-a-feature-by-sh
 
 Every gate reads the session's `can`, never `isReadOnly` alone.
 
-## Agents, MCP and the CLI
+## Agents
 
 - `'workshop'` is the stored `opensIn` everywhere a mode is read (the api's creation intent, tab stats, the OpenAPI
   `EditorMode` enum); every other stored value reads as it.
-- No tool takes a mode. A template, or `blank-session`, makes a meeting board like any other. `list_templates` and
-  the CLI list the five templates.
+- No tool takes a mode. A template, or `blank-session`, makes a meeting board like any other. `GET /api/templates` lists
+  the five templates.
 - No agent schema, verb or enum names a retired kind or the Page (part 4, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#retired-elements));
   the diagram kinds an agent may still add leave with the element engine (Work Tracker #459).
 

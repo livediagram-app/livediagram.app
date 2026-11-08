@@ -80,8 +80,7 @@ last-saved time untouched.
 ## The API
 
 `GET /api/trash` rows carry `reason`: `deleted` (a person, a script or an AI
-tool deleted it) or `empty` (the sweep moved it). The MCP server's
-`list_trash` carries the same field ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
+tool deleted it) or `empty` (the sweep moved it).
 Offline Mode's local Trash rows are always `deleted`.
 
 ## Decided trade-offs

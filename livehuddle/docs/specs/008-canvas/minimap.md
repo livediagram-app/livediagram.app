@@ -27,7 +27,7 @@ lets you jump the viewport anywhere with a tap or drag.
   every preference is in Settings, and one setting with two controls is one control too many.
 - **What it shows.** A **full-fidelity miniature of the tab**: the map is
   drawn by the SAME headless renderer the exports / live image use
-  (`svgBoxed` / `svgArrow`, [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §5), so every element appears with its
+  (`svgBoxed` / `svgArrow`, [livediagram's MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §5), so every element appears with its
   real colours, silhouette, table grid, freehand stroke, icon glyph (the
   Technology marks pop in when the async catalogue lands), rotation, and
   every arrow with its true curved / elbow path, not a grey wireframe. That

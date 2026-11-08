@@ -172,8 +172,6 @@ type PaletteTileAction =
       variant?: string;
     }
   | { type: 'text' }
-  // An opener: stands for a category and opens it; places nothing.
-  | { type: 'open'; category: string }
   | { type: 'freehand' }
   // Marker variant of the pencil (docs/specs/008-canvas/highlighter.md), the recognising pen
   // (docs/specs/008-canvas/two-pens.md) and the click-to-place vertex tool (docs/specs/008-canvas/polygon-tool.md)

@@ -48,8 +48,7 @@ import, or an API-driven change.
 
 The api worker applies `truncateName` to every document and tab name it is asked
 to store, so the cap holds for every caller: the editor, an API-token script
-([Public API and API tokens](../015-api/public-api-and-tokens.md)), an AI tool
-through the [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md), or an Offline Mode sync.
+([Public API and API tokens](../015-api/public-api-and-tokens.md)), or an Offline Mode sync.
 The worker **shortens, it does not reject**: a name over the cap is stored in
 its truncated form and the response carries the stored name, exactly as the
 editor would have shortened it. The write points are:
@@ -73,10 +72,7 @@ never rewrites it (see Out of scope). Only a new or changed name is shortened.
 The server logs `[names] capped <document|tab> name` with the original and
 stored lengths whenever it shortens one, so an over-long writer is visible.
 
-The MCP tool schemas (`create_document`, `add_tab`, `rename_document`) state the
-cap in each name field's description and shorten the name with the same
-`truncateName` before the call, so the name a tool reports back is the one
-stored. The REST reference ([API documentation](../015-api/api-documentation.md))
+The REST reference ([API documentation](../015-api/api-documentation.md))
 states the cap on each name field.
 
 ### The editor caps too
@@ -95,7 +91,7 @@ An Offline Mode document never reaches the server until it syncs, so for it
 these editor points are the enforcement until it does; the sync is a create,
 so the server cap applies to it like any other.
 
-The text inputs (`NameEditor`, `InlineRenameInput`, `TabNameInBox`) also
+The text inputs (`NameEditor`, `TabNameInBox`) also
 carry `maxLength={NAME_MAX_LENGTH}`. That is a **third** line of defence, not
 the enforcement: it makes the limit visible while typing instead of silently
 eating the end of what someone wrote.

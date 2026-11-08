@@ -354,8 +354,7 @@ Missing key === undefined === default behaviour. Concretely:
   is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
   `infographicModeEnabled` and `planModeEnabled` (there is one editor mode, [Editor modes](editor-modes.md)), `skipLocationStep` (the New Document wizard never asks
   where a document goes, [New document route](new-document-route.md#no-welcome-screen)), and `aiAssistanceEnabled` and
-  `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
-  [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
+  `aiSuggestedPrompts` (there is no in-editor AI assistant, and livehuddle has no MCP server), and `powerUserMode`, `powerUserBaseline`, `minimalChrome` and
   `powerUserOfferShown` ([Power user mode](power-user-mode.md) is retired). Dropping them reverts nothing: whatever
   the mode's preset wrote (alignment guides, the tours' seen flags) stays as it is, and only Minimal chrome, which
   nothing reads any more, goes. Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
@@ -548,7 +547,7 @@ and the dialog stays as the one complete, browsable index of them.
   ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
   section's **Webhooks** links there. A guest gets a **Webhooks** category under Account (id `webhooks`, so
   `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
-  the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
+  the same shape as the email stand-in, so it reads the way API Tokens does for a guest.
 
   Panels holds Map and Collaborate,
   one per panel, each its own pane. Each opens with that panel's **Enable
@@ -683,7 +682,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
-  Settings and theme, and the bottom-right cluster's (Style, Tidy Up and
+  Settings and theme, and the bottom-right cluster's (Style and
   the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.
@@ -746,7 +745,7 @@ and the dialog stays as the one complete, browsable index of them.
   session holds them. Nothing of All is fetched
   until All is first chosen: its code and the four listed apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account
-  outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
+  (a guest's settings stay in this browser); a targeted open (a search result,
   `?settings=`) lands on livehuddle; otherwise the dialog opens on the side this device chose last
   (`livehuddle:settings-scope:v1`). The host part is `settings-panel-host.tsx` (the app's id, its logos
   and the bearer request); the switch, the Account section and All's merged categories are the package's.

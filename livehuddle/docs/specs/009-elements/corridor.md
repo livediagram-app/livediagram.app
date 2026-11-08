@@ -67,7 +67,7 @@ A shape kind of its own, `corridor`, whose type is stored in `variant` (the fiel
 ## Export and agents
 
 - Export draws the floor and the walls as the canvas does, turned by the rotation.
-- Agents and the CLI add one as `corridor` (optionally `variant=corner`), as any kind.
+- Agents add one as `corridor` (optionally `variant=corner`), as any kind.
 
 ## Telemetry
 

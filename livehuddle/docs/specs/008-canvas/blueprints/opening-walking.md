@@ -63,7 +63,7 @@ never brings the walk back.
 ## Data and persistence
 
 Nothing is stored. No API, schema, route or stored key changes: the entrance is read from the tab's own content, so
-a Space made by the MCP server or before this change opens walking the same way.
+a Space made by the API or before this change opens walking the same way.
 
 ## Errors and edge cases
 

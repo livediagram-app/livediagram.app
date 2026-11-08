@@ -52,8 +52,6 @@ export const HELP_ARTICLES = {
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  layoutCleanup: 'tools/layout-cleanup',
   minimap: 'user-interface/minimap',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
@@ -177,11 +175,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   explorerPanel: {
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
-  },
-  layoutCleanup: {
-    title: 'Learn about tidying a layout',
-    description:
-      'Tips for laying a diagram out in one press, and choosing the style that suits it.',
   },
   minimap: {
     title: 'Learn about the Map',

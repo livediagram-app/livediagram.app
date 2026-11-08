@@ -76,7 +76,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).
-  Server-rendered PNG previews (the MCP's inline images, the CLI) letter every font in Inter, so there the
+  Server-rendered PNG previews (thumbnails, the live image) letter every font in Inter, so there the
   hand-drawn lines carry the look and the lettering does not; browser exports use the real font.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the hand-drawn line.
 - **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
@@ -203,7 +203,7 @@ Draws exactly as livehuddle did before finishes existed.
   note) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
   element's own finish on the tab is cleared so they all follow it again.
 - **New tabs** start Flexible. Duplicated and imported tabs keep their finish.
-- **Agents (MCP):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an
+- **Agents (API):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an
   ordinary element field agents may set.
 
 ## Where it shows

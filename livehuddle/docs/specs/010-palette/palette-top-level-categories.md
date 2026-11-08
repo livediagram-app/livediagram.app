@@ -225,7 +225,7 @@ There is no actor / stick-figure tile in the palette or the "Add to canvas" sear
 
 The `actor` **shape kind is kept** in the model, the renderer and the wire schema: removing it would coerce every
 existing actor element to a square on next load (`coerceShape`'s fallback), silent data loss, and would break API
-and MCP callers. So it renders wherever one exists, and nothing adds one.
+callers. So it renders wherever one exists, and nothing adds one.
 
 ## The body scrolls when it has to
 

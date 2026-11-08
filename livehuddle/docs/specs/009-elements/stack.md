@@ -68,7 +68,7 @@ A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it r
 
 ## Agents
 
-The MCP server and the REST API take `stack` with `stackDirection`, `stackColumns`, `stackGap`, `stackPadding` and
+The REST API takes `stack` with `stackDirection`, `stackColumns`, `stackGap`, `stackPadding` and
 `stackAlign`. An agent places children anywhere inside it; the editor lays them out when the board next loads or
 changes.
 

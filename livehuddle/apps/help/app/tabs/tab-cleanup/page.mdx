@@ -6,32 +6,30 @@ import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Cleaning Up a Tab',
   description:
-    'Tidy a tab in one press: Tidy Up snaps sticky notes and pictures onto the grid, lining up what nearly lines up.',
+    'Tidy a tab in one step: Auto-align snaps sticky notes and pictures onto the grid, lining up what nearly lines up.',
   path: '/help/tabs/tab-cleanup/',
 });
 
 <ArticleLayout
   title="Cleaning Up a Tab"
-  description="Tidy a messy tab in one press: snap its notes and pictures onto a tidy grid."
+  description="Tidy a messy tab in one step: snap its notes and pictures onto a tidy grid."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
 A board that filled up fast in a meeting can end up slightly ragged: notes dropped in a hurry, pictures pulled to roughly the right size. Tidying cleans up the active tab in one step, so you do not have to nudge elements into place by hand.
 
-## Tidy Up
+## Auto-align
 
-The quickest way is the **Tidy Up** button in the bottom-right corner, just left of the Theme & canvas button. Choose **Auto-align** at the bottom of its panel: it snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your arrangement. Resting the mouse on it first previews the result on the canvas before you click.
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`), type **Auto-align** and pick **Auto-align to Grid** under **Actions**. It snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your arrangement.
 
-Or open the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`), type **Auto-align** and pick **Auto-align to Grid** under **Actions**.
-
-<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
+<Figure caption="Typing layout in the command palette lists Auto-align under Actions.">
   <SearchCommandPalette />
 </Figure>
 
 Tidying acts on the whole tab at once, and it is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted.
 
-<Figure caption="Auto-align takes a scattered handful of notes and snaps them into tidy rows on the grid in one press.">
+<Figure caption="Auto-align takes a scattered handful of notes and snaps them into tidy rows on the grid in one step.">
   <CleanupBeforeAfter />
 </Figure>
 

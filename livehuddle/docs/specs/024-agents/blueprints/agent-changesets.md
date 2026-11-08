@@ -1,5 +1,9 @@
 # Agent changesets: blueprint
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
+> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
+
 Derived from [Agent changesets](../agent-changesets.md), with the room and persistence boundary of
 [API](../../015-api/api.md), the tool contracts of [MCP server](../../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.3a and §4.4, the
 ledger merge of [Collaboration race hardening](../../012-collaboration/collab-race-hardening.md), the agent rule in

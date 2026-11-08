@@ -123,13 +123,7 @@ describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
   });
 
   it('leaves the sign-in pages, the guest hand-off and embeds alone', () => {
-    for (const path of ['/sign-in', '/get-started', '/auth', '/embed', '/workbench']) {
-      expect(SILENT_SIGN_IN_SKIP_PATHS).toContain(path);
-    }
-  });
-
-  // A person signed in to liveworkspace who arrives from an AI tool is signed in on the way, not shown Sign in.
-  it('signs the AI-tool consent and device pages in without a click', () => {
-    expect(SILENT_SIGN_IN_SKIP_PATHS).not.toContain('/oauth');
+    // livehuddle has no workbench pages to leave alone (docs/specs/002-project-scope/not-in-livehuddle.md).
+    expect(SILENT_SIGN_IN_SKIP_PATHS).toEqual(['/sign-in', '/get-started', '/auth', '/embed']);
   });
 });

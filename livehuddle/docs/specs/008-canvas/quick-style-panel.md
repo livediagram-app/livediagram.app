@@ -302,7 +302,7 @@ element of the same kind you draw.
 - **User-drawn elements only**: a shape or text element placed from the palette (tap, drag-to-size, drag and drop), a
   shape recognised by the Shape Pen, an arrow drawn with the arrow tool, by click-to-connect, from a
   quick-connect plus, or chained with Shift. Paste, duplicate (including quick-connect Duplicate and
-  Shift-drag), a forked arrow branch (it takes its trunk's look), templates, import, the MCP server
+  Shift-drag), a forked arrow branch (it takes its trunk's look), templates, import, the API
   and AI never read memory: they carry styles of their own, and applying memory to them would
   silently restyle content the user did not draw.
 - **Per document, on this device.** Memory is kept in the browser (`localStorage`), keyed by document. It

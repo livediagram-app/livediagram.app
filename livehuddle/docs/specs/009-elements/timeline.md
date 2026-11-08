@@ -123,6 +123,6 @@ element type, and one layout shared by the canvas and the export. The [Rating](r
 
 ## Agents
 
-The MCP server and the REST API take the Timeline with `conceptRows` and the animation fields. Rows are kept to its
+The REST API takes the Timeline with `conceptRows` and the animation fields. Rows are kept to its
 range, as the menu keeps them: past the most, the rest are dropped, and short of the fewest, rows named as Add names
 them ("Milestone 3") are added, so every later edit takes.

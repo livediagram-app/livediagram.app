@@ -421,7 +421,7 @@ invalid element does.
 | draft, edit selection     | canvas component state      | session  | never   |
 
 No migration: a new element type. A build without it rejects a tab holding a path on validation;
-paths ship with the validator, the OpenAPI schema and the MCP's type list in one change.
+paths ship with the validator, and the OpenAPI schema in one change.
 
 ## Errors and edge cases
 
@@ -440,7 +440,7 @@ paths ship with the validator, the OpenAPI schema and the MCP's type list in one
 
 ## Security and trust
 
-A path arrives from peers, the API and the MCP like any element: `isValidElement` bounds the node
+A path arrives from peers and the API like any element: `isValidElement` bounds the node
 count (`MAX_PATH_NODES`), every coordinate (finite, `PATH_COORD_MAX`) and the mode vocabulary, so a
 hostile payload cannot allocate unbounded memory or inject markup (the `d` string is built from
 numbers only).

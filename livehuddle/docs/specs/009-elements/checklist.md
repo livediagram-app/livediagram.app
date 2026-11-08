@@ -32,13 +32,13 @@ two people ticking different rows both land, and a peer's whole-element
 update (an added row, a retitle) keeps everyone's ticks. Ticks are not
 undoable: like a dot or an answer, they are the room's, not an edit.
 
-## Headless render (share thumbnails, MCP, exports)
+## Headless render (share thumbnails, exports)
 
 `svg-render` has a `checklist` branch (`svgChecklistShape`): card + per-row square (filled + check path when done) + `<text>` row (with `text-decoration: line-through` when done), clipped to the box.
 
 ## Plumbing checklist
 
-`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, MCP schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include: "the AI may emit checklists for plan/retro asks" is genuinely useful), telemetry dashboard TOOLS label set.
+`SHAPE_KINDS` + field bounds in `validate.ts`, colour defaults in `colors.ts` (standard themed boxed element), kind label ("Checklist"), palette tile `tools:checklist` (Components category; favouritable, no letter shortcut), quick-connect excluded, OpenAPI regen, API schema prose (built from `SHAPE_KINDS`), AI-generate prompt vocabulary (include: "the AI may emit checklists for plan/retro asks" is genuinely useful), telemetry dashboard TOOLS label set.
 
 ## Telemetry
 

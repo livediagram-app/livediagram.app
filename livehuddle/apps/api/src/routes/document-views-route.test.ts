@@ -376,7 +376,7 @@ describe('parseViewQuery (VW43)', () => {
     quiet();
     expect(await refusal('view=diff')).toEqual({
       error: 'unknown_view',
-      message: 'diff is computed by the CLI: livehuddle tab diff',
+      message: 'diff has no api door: compare two reads of the tab',
     });
     expect(await refusal('view=lint', 'document')).toMatchObject({
       message: 'the lint is a tab view: GET …/tabs/:tabId?view=lint',

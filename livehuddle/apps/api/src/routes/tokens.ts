@@ -52,8 +52,7 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
     };
     return json(body);
   }
-  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app. Its workbench pairings and
-  // sessions are liveworkspace's, which ends them with it (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
+  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app.
   const secret = bearerTokenOf(request.headers.get('Authorization'));
   if (secret) await revokePresentedToken(env, secret);
   console.info('[tokens] current revoked', { tokenId: token.id });

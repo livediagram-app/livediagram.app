@@ -1,5 +1,5 @@
 // Agent changesets (docs/specs/024-agents/agent-changesets.md): the constants, headers, id
-// pattern, error codes and wire types the api, the MCP, the CLI and the editor share
+// pattern, error codes and wire types the api and the editor share
 // (docs/specs/024-agents/blueprints/agent-changesets.md, CS35). The result lines, warnings and
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.

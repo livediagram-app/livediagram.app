@@ -1,7 +1,7 @@
 // Whether Auto-align's result is worth applying (docs/specs/008-canvas/layout-cleanup.md "A tidy never
 // trashes the work"). It is offered only when it would make the tab tidier: if it changes nothing, covers a
-// shape it did not cover before, or pulls a shape out of the lane or frame that held it, it is greyed out in
-// the Tidy Up popover with the reason, and refused with a notice from the command palette. Pure.
+// shape it did not cover before, or pulls a shape out of the lane or frame that held it, the command palette
+// refuses it with a notice. Pure.
 
 import { isBoxed, type BoxedElement, type Element } from '@livehuddle/document';
 import { cleanupElements } from '@/lib/tab-cleanup';
@@ -104,20 +104,6 @@ export function cleanupVerdict(before: Element[], after: Element[]): CleanupVerd
 export function assessCleanup(elements: Element[]): CleanupVerdict {
   if (elements.length === 0) return { kind: 'unchanged' };
   return cleanupVerdict(elements, cleanupElements(elements));
-}
-
-/** The short reason a tile shows under its name when it is greyed out; null when it is offered. */
-export function verdictLine(v: CleanupVerdict): string | null {
-  switch (v.kind) {
-    case 'ok':
-      return null;
-    case 'unchanged':
-      return 'Already tidy';
-    case 'covers':
-      return v.count === 1 ? 'Would cover a shape' : `Would cover ${v.count} shapes`;
-    case 'leaves-container':
-      return 'Would pull shapes out of their lanes';
-  }
 }
 
 /** The notice the command palette shows when it refuses a tidier, naming it. */

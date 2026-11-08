@@ -1,6 +1,6 @@
 // A created document's seeded tabs may give `graph` or `template` in place of `elements`
 // (docs/specs/015-api/api.md, POST /api/documents): compiled here by the edit-operations engine's `applyReplace`,
-// as a `replace` changeset compiles, so the CLI and the MCP create documents the way they replace tabs. A tab the
+// as a `replace` changeset compiles, so an API script creates documents the way it replaces tabs. A tab the
 // engine refuses refuses the whole create, by its id, before anything is written.
 
 import { creationIntentOf, type CreationIntent } from '@livehuddle/api-schema';

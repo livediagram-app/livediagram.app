@@ -322,8 +322,8 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Clipboard and tab import migrate                                                    | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                              |
 | Room ops migrated on receipt                                                        | `apps/editor/app/document/[id]/room-op-migrate.test.ts`                                        |
 | Untrusted tabs and elements: migrated or passed through                             | `packages/document/src/legacy-stroke-points.test.ts`                                           |
-| MCP packs a model's former-shape stroke; an update's points replace the block       | `packages/document/src/element-normalise.test.ts`                                              |
-| Every template builds a valid tab with packed strokes (MCP and editor)              | `packages/templates/src/template-tab.test.ts`                                                  |
+| An agent's former-shape stroke is packed; an update's points replace the block      | `packages/document/src/element-normalise.test.ts`                                              |
+| Every template builds a valid tab with packed strokes (API and editor)              | `packages/templates/src/template-tab.test.ts`                                                  |
 | Live ink matches landed ink within the bound                                        | `apps/editor/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                       |
 
 ## Constants and configuration

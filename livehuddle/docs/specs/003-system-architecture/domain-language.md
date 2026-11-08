@@ -75,7 +75,7 @@ The words for a program working on documents for a person ([Agents](../024-agent
 
 | Term               | Means                                                                                                   | Never called                            |
 | ------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| **agent**          | A program acting as a person through their API token: an MCP client, a CLI caller, a script             | bot, AI user, assistant                 |
+| **agent**          | A program acting as a person through their API token: a script or an AI tool calling the API            | bot, AI user, assistant                 |
 | **changeset**      | One agent write to one tab: atomic, sequenced by the room, attributed, revertable                       | batch, commit, patch                    |
 | **edit operation** | One step in a changeset (`set`, `add`, `connect`, ...), compiled into element ops                       | op (that is a room op), action, command |
 | **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                                      | mode, format                            |
@@ -88,7 +88,7 @@ The words for a program working on documents for a person ([Agents](../024-agent
 - **Participant** is the access level; a person's name and colour (the `participants` table) are their
   **display identity**.
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
-- A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
+- A **verb** (`tab.view`, `element.set`) is one thing an agent asks of the API, whatever calls it.
 
 ## Colours
 
@@ -147,7 +147,7 @@ Documents and livedesign Designs; `APP_KINDS` in `@liveworkspace/index-client`).
 it matches the Spaces templates that make one. Copy follows the app's casing: **New Space**, **Open Space**,
 **Share This Space**, "Untitled Space", "your spaces". The shared Explorer takes the word from `KIND_WORDS` in
 `packages/explorer/src/words.ts`, never from copy of its own. Only what people see is renamed: code, types, API
-routes, URL paths (`/document/<id>`), MCP tool names (`create_document`), CLI commands (`document ls`), storage keys,
+routes, URL paths (`/document/<id>`), storage keys,
 telemetry events and database columns still say **document**, and specs that describe them do too. Search keywords
 keep "document" and "canvas" beside "space", so an old search still finds the command or article. Spaces stored as
 "Untitled canvas", "Untitled Workshop" or "Untitled document" still count as untitled.

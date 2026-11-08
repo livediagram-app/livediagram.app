@@ -101,7 +101,7 @@ type TechIconDef = {
   VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation (data lakes) and MSK, the last two
   added for diagrams imported from draw.io ([draw.io import](../020-import-export/drawio-import.md)), and Elastic Load
   Balancing, ElastiCache, Fargate, Cognito, Kinesis, Step Functions and Secrets Manager, the services an agent's
-  architecture diagrams reached for and found missing ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.5a).
+  architecture diagrams reached for and found missing (livediagram's [MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §4.5a).
 - **Azure:** Virtual Machine, Blob Storage, App Service, Functions, SQL
   Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key
   Vault, Monitor.
@@ -265,8 +265,7 @@ with the caption in the bottom band, instead of the old box-with-caption
 fallback (which remains the output for an unknown id or a resolver-less
 caller). The in-app SVG / PNG / PDF export resolves from the loaded icon
 registry (`resolveIconArtLoaded`, awaited via `ensureIconCatalogs` in the
-Export dialog); the api worker's live image / Explorer thumbnail and the MCP
-worker's inline render resolve via `@liveworkspace/icons/resolve` (a static
+Export dialog); the api worker's live image / Explorer thumbnail resolve via `@liveworkspace/icons/resolve` (a static
 import of the catalogue data).
 
 ## Templates that seed brand tiles

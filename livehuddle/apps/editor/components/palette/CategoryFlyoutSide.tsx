@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
@@ -77,7 +77,6 @@ export function CategoryFlyoutSide({
   scale,
   actions,
   pendingDraw,
-  openBody,
   seeThrough = false,
   hoverHandlers,
 }: {
@@ -86,8 +85,6 @@ export function CategoryFlyoutSide({
   scale: number;
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null;
-  // An opener's body: the category it stands for, at its group.
-  openBody: (categoryId: string, group: string | null) => ReactNode;
   // A tile is being dragged out: hidden at once (no fade, so it never lies over the fading flyout as a second layer of
   // see-through text), and a drop on it lands on the canvas beneath (`data-drop-through`).
   seeThrough?: boolean;
@@ -132,7 +129,6 @@ export function CategoryFlyoutSide({
       observer?.disconnect();
     };
   }, [anchor]);
-  const a = def.action;
   const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
   return (
     <div
@@ -153,7 +149,7 @@ export function CategoryFlyoutSide({
       <FlyoutHeader
         icon={def.icon}
         title={tileDisplayName(def)}
-        tagline={variants ? (def.variantsHint ?? PRESETS_HINT) : `Browse ${def.label}.`}
+        tagline={def.variantsHint ?? PRESETS_HINT}
         count={variants?.length}
       />
       <div ref={bodyRef} onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}>
@@ -168,8 +164,6 @@ export function CategoryFlyoutSide({
               onHover={(t) => setHovered(t)}
             />
           </div>
-        ) : a.type === 'open' ? (
-          <div className="px-2 py-2.5">{openBody(a.category, null)}</div>
         ) : null}
       </div>
       {variants ? <InfoFooter def={hovered} /> : null}

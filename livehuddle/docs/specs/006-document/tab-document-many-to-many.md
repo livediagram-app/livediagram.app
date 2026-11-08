@@ -93,7 +93,7 @@ documents with their snapshot previews ([Document SVG snapshots](document-snapsh
 `{ tab }` as the target now holds it; a repeat answers the tab as it is. It is the caller's to make on both sides
 (`linkSharedTab`, `mayLinkTabs`): they must edit the target and `from` as their own, an edit grant from the index on
 each (the request's for the target, one fetched for `from`) that no share link gave and no tab scope narrows, and not
-from a workbench session; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a document
+from an embed; and `from` must hold the tab. So nobody links a tab they cannot edit, or into a document
 they cannot edit: 403 otherwise, 404 for a tab or `from` that is not there, 400 with no `from` or `from` the target
 itself, 409 (`too_many_holders`) when the tab is already in 20 documents (`MAX_TAB_HOLDERS`). The row is offered for the documents `addToDocumentTargets` lists
 (`apps/editor/lib/add-to-document-targets.ts`).

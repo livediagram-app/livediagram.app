@@ -473,7 +473,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggle',
         key: 'dockButtonNames',
         keywords:
-          'button labels names text captions bottom bar corner buttons zoom style tidy up icons only',
+          'button labels names text captions bottom bar corner buttons zoom style icons only',
         section: 'Interface',
         label: 'Button Labels',
         description:

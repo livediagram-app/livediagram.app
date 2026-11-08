@@ -78,7 +78,7 @@ export function SignInBanner({
           eat clicks meant for the pane behind; the card re-enables
           them for itself. */}
       <div
-        // Steps aside while a panel opened from the chrome is open (Tidy Up, Layers, the Explorer panel), which reaches up into its band.
+        // Steps aside while a panel opened from the chrome is open (Collaborate, the Explorer panel), which reaches up into its band.
         className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 [body:has([data-dock-button]_[aria-expanded=true])_&]:hidden ${placementClassName}`}
         style={standOnChrome ? { bottom: chromeFloor } : undefined}
       >

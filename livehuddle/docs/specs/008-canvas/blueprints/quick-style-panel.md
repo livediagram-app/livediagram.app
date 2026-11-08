@@ -382,7 +382,7 @@ label", "Icon after label"; "Clear Styles". The panel's region label: "Quick sty
 ## Security and trust
 
 Memory is device-local, never sent, and only ever applied to elements the user draws, as style
-fields of known primitive type (`parseStyleMemory`). Swatch bindings arriving from the api, MCP or
+fields of known primitive type (`parseStyleMemory`). Swatch bindings arriving from the api or
 an import pass `isValidElement`; an out-of-range slot rejects the element. Swatch overrides ride the
 existing preferences PUT (the owner's own blob, same auth, same 4 KB cap); they are only ever read
 back through `parseSwatchOverrideStore` and only ever used as a swatch colour, never as markup. No

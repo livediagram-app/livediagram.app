@@ -85,7 +85,7 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
 const HIDDEN_FIELDS: ReadonlySet<string> = new Set(['id', 'type', ...LIVE_ELEMENT_FIELDS]);
 
 // A shape's stored fields cover every shape kind at once, more than one kind's budget: a shape names the fields
-// every shape uses, then its kind's own (its content, as the MCP's schema describes it).
+// every shape uses, then its kind's own (its content, as the API's changeset docs describe it).
 export const SHAPE_COMMON_FIELDS = [
   'x',
   'y',

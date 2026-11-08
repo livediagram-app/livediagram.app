@@ -1,11 +1,12 @@
 'use client';
 
-// Why sign in, from the guest's banner's Learn More: what an account adds, in the Explorer's words for the app's
-// kind. Loaded only when first opened.
+// Why sign in, from the guest's banner's Learn More: what an account adds (sign-in-reasons.ts), in the Explorer's
+// words for the app's kind and with the app's own agents row. Loaded only when first opened.
 
 import { buttonClassName } from '@liveworkspace/ui';
 import { Dialog } from '../ui/Dialog';
 import { useExplorer } from './context';
+import { signInReasons } from './sign-in-reasons';
 
 export function SignInReasons({
   href,
@@ -18,29 +19,8 @@ export function SignInReasons({
   onSignIn: () => void;
   onClose: () => void;
 }) {
-  const { words } = useExplorer();
-  const reasons = [
-    {
-      title: `Keep your ${words.lowerMany} safe`,
-      body: `A guest's ${words.lowerMany} are tied to this browser, so clearing its data can lose them. Signing in keeps them with your account.`,
-    },
-    {
-      title: 'Open them anywhere',
-      body: `Your ${words.lowerMany} wait for you on your laptop, desktop and phone.`,
-    },
-    {
-      title: 'Work as a team',
-      body: 'Make teams, invite people by email, and share a library everyone can open, in every app.',
-    },
-    {
-      title: 'Connect AI tools',
-      body: 'Make API tokens and connect AI assistants over MCP, so they can read and build your work.',
-    },
-    {
-      title: 'Use your real name',
-      body: 'Shared work, cursors and comments show your name, so people know who did what.',
-    },
-  ];
+  const { app, words } = useExplorer();
+  const reasons = signInReasons(app, words);
   return (
     <Dialog onClose={onClose} ariaLabel="Why sign in" size="lg">
       <div className="bg-gradient-to-br from-brand-700 to-brand-800 px-6 pb-5 pt-6 text-white">

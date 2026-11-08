@@ -153,10 +153,10 @@ describe('useTabCanvas tidiers', () => {
     expect(notify).toHaveBeenCalledWith('Auto-align: the tab is already tidy, so nothing moved.');
   });
 
-  it('runs a judged press from the popover without judging it again', () => {
+  it('commits Auto-align once on a tab it helps, with no notice', () => {
     const notify = vi.fn();
-    const h = setup(tidy, false, notify);
-    h.api.autoAlignTab({ judged: true });
+    const h = setup([box('a', { x: 3, y: 7, width: 100, height: 50 })], false, notify);
+    h.api.autoAlignTab();
     expect(h.commit).toHaveBeenCalledTimes(1);
     expect(notify).not.toHaveBeenCalled();
   });

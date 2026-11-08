@@ -74,7 +74,7 @@ centred and never mirrored, at every facing.
   that names the sender with the note, and the note never rides the room, so nobody's screen sees it arrive. What an
   Editor reads is the text and the day.
 - **Not part of the Space's content.** Notes are kept beside the Space, in its own store (`suggestions`, in the
-  Space's Durable Object), never in the box element. So they are in no tab read, export, copy, template, version, MCP
+  Space's Durable Object), never in the box element. So they are in no tab read, export, copy, template, version, API
   or agent read, Community post or Download All My Data; nothing but the box's own read below reaches them.
 - **Editors read them**: an Editor's box opens on the notes, newest day first (and newest first within a day), each
   with its day ("5 Nov") and **Remove**, the add box below theirs too. A **Refresh** fetches again: a drop is not sent

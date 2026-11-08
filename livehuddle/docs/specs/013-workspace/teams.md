@@ -38,7 +38,7 @@ Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`, `TeamInvite`) live 
 The **New Team** tile in the Move dialog makes a team without leaving livehuddle, and files the document being moved into it. `POST /api/teams` (`apps/api/src/routes/team-create.ts`) asks liveworkspace to make it for the person signed in, vouching for them with the access token they sent (`createTeamFor` in `@liveworkspace/auth-client`, `POST /api/account/internal/teams`); they become its admin. It is usable on the very next request: a team the caller's token does not name yet is asked of accounts. It is the same team in every app, and run in the Explorer.
 
 - The name is trimmed and cut at 80 characters, as liveworkspace cuts it; an empty one is `400 name_required`. The organisation, likewise, or null.
-- An API token or a workbench can't make one: `401 sign_in_required` without a signed-in session and its access token.
+- An API token can't make one: `401 sign_in_required` without a signed-in session and its access token.
 - liveworkspace's refusal is passed on (`409 team_limit_reached` at 50 teams). Without accounts configured, or with liveworkspace out of reach, it is `503`.
 
 ## Invitations

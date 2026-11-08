@@ -57,5 +57,5 @@ the map.
 
 ## Agents
 
-The MCP server and the REST API take `tagColours` on a tab; an agent colour-codes a diagram by tagging cards and
+The REST API takes `tagColours` on a tab; an agent colour-codes a diagram by tagging cards and
 setting the map once.

@@ -1,6 +1,8 @@
 # Not in livehuddle
 
-Status: **approved, being built** (Work Tracker #423, owner, 2026-11-04).
+Status: **approved, built** (Work Tracker #423, owner, 2026-11-04; its five parts have shipped, and Work Tracker #583
+took the leftovers). The diagram tools' element engine, which nothing offers, is still being deleted in Work Tracker
+#459.
 
 livehuddle is for meeting in Spaces ([Purpose](../001-project-vision/purpose.md)). Everything below came over from
 livediagram at the fork and **leaves livehuddle**; livediagram keeps all of it, and its specs there are the ones to
@@ -490,7 +492,7 @@ and redacted by the api, never read or written by the editor.
 ### The diagram tools still in livehuddle's UI
 
 Part 4 also removes the diagram tools livehuddle's UI still offered after part 3, with their help articles (each old
-address redirects to the nearest article that stays): Tidy Up's Auto Layout tiles (Tidy Up keeps Auto-Align and its
+address redirects to the nearest article that stays): Tidy Up's Auto Layout tiles (Auto-Align stays, in the command palette, and its
 cleanup), the Explorer's Shape Libraries page and library import, the draw.io, Mermaid, Markdown and Microsoft
 Whiteboard imports, Settings' Auto-Attach Arrows, and the search panel's Add to Canvas results for tiles the meeting
 palette does not offer (it adds only what the palette offers). The element engine under the diagram tools (shapes, arrows,
@@ -604,8 +606,8 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
   pairs one: the `/embed/workbench` frame, Settings' list of workbench pairings, the editor's workbench chrome and
   messages, and the api's `lvw_` session and its confinement are gone. An `lvw_` bearer now identifies nobody, and the
   router's `/api/workbench` answers 404 from the api. liveworkspace's pairing service is unchanged; livehuddle simply
-  never redeems a pairing. The room keeps its share of the platform's pairing contract (closing a room with code 4006
-  when a pairing ends), unused, until that contract is next changed.
+  never redeems a pairing. The room's share of the pairing contract went too (Work Tracker #583): no session
+  carries a pairing, the api has no workbench-close door, and a platform close for a pairing matches nobody.
 - **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old
   addresses redirect (router `legacy-editor-route.ts`): the AI and MCP articles to [API Tokens](/help/account-and-data/api-tokens/),
   the CLI and Workbench articles to the [API overview](/help/developers/api-overview/).
@@ -639,7 +641,7 @@ comments on it; a Viewer sees it).
 - Part 4: a stored tab holding each deleted kind loads, saves unchanged and shows its placeholder
   (`retired-kinds.test.ts` in `packages/document`, `RetiredElementFace.test.tsx` and the e2e
   `retired-elements.spec.ts` in the editor); the export draws the placeholder (`svg-render-retired.test.ts`); no
-  palette entry, Search result or agent schema names a deleted kind; Tidy Up, Import and Settings show no diagram
+  palette entry, Search result or agent schema names a deleted kind; Import and Settings show no diagram
   tool; the router's `legacy-editor-route.test.ts` pins the retired help addresses.
 - The presenting tools: a stored Reaction Pad loads as a retired element named Reaction Pad (`retired-kinds.test.ts`),
   a stored Laser, Spotlight or Isometric button loads with no mode (`legacy-mode-buttons.test.ts`), the picker and

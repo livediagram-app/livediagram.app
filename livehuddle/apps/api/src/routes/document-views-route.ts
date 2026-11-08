@@ -70,7 +70,7 @@ function unknownView(view: string, scope: Scope): Response {
   const names = scope === 'tab' ? TAB_VIEW_NAMES : DOCUMENT_VIEW_NAMES;
   const message =
     view === 'diff'
-      ? 'diff is computed by the CLI: livehuddle tab diff'
+      ? 'diff has no api door: compare two reads of the tab'
       : view === LINT_VIEW_NAME
         ? 'the lint is a tab view: GET …/tabs/:tabId?view=lint'
         : `view takes ${names.join(', ')} here`;

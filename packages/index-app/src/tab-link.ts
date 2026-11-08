@@ -27,8 +27,8 @@ export type TabLinkInput<T> = {
   tabId: string;
   // The request body's `from`, unchecked.
   from: unknown;
-  // A workbench session asks: refused.
-  workbench: boolean;
+  // A workbench session asks: refused. An app with no workbenches (livehuddle) leaves it out.
+  workbench?: boolean;
   // The caller's access on the target (from the grant the request carried).
   target: TabLinkAccess | null;
   // The caller's access on `from`, from the index: null for none, a Response to return as it is (a refusal the

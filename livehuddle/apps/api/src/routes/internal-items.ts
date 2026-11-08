@@ -2,8 +2,7 @@
 // "Internal"), answered by the shared kit (@liveworkspace/index-app handleInternalItems): the bearer check against
 // INDEX_KEY, the paths and their bodies. See it for the doors: a purge (one canvas, or up to a hundred for a closed
 // account), revoked links, notices for the emails, a copy into a new canvas, a person closed, merged or
-// anonymised, and a workbench pairing's sessions closed in a canvas's room (liveworkspace/docs/specs/011-workbench/workbench.md
-// "Ending access").
+// anonymised. livehuddle has no workbenches, so it gives no workbench-close door (a 404).
 //
 // Each is a call to the canvas's Durable Object (document-client.ts) or the person's own stores. Where the canvas is
 // filed, its sharing and its Trash are the index's; a purge also tells the media service the canvas places nothing
@@ -28,7 +27,6 @@ import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
-import { closeWorkbenchSessions } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import type { Env } from '../types';
@@ -114,8 +112,6 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the canvas's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
-      // A workbench pairing's access ended at liveworkspace: its sockets in this canvas's room close.
-      workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
     },
   });
 }

@@ -52,7 +52,7 @@ Canonical types live in **`@livehuddle/document`**; that package is the source o
 **The vocabularies exist twice, and tests hold them together.** `Element`'s
 `type` discriminants and `ShapeKind`'s members are compile-time unions, while
 `validate.ts` keeps each as a runtime set (`ELEMENT_TYPES`, `SHAPE_KINDS`) so it
-can gate input crossing a trust boundary: the api worker, the MCP server, the AI
+can gate input crossing a trust boundary: the api worker and the AI
 panel. Nothing in the compiler makes a union and a set agree, and both drift
 silently:
 
@@ -62,8 +62,8 @@ silently:
   `isValidTab` fails a tab if **any** element does, so the api answers
   `400 invalid tab` and the tab stops persisting at all. Add an element type,
   wire it through the editor, forget the set, and the feature works until the
-  first save. `ELEMENT_TYPES` is also the list of types the MCP hands the calling
-  model, so the gap is invisible to AI callers too.
+  first save. `ELEMENT_TYPES` is also the list of types the API accepts from
+  agents, so the gap is invisible to AI callers too.
 
 `shape-kind.test.ts` and `element-type-vocabulary.test.ts` read the union members
 out of the source (the members cannot be enumerated at runtime) and compare them

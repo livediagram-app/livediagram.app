@@ -48,20 +48,20 @@ The engine, the pool of committed texts and the page's contract are the monorepo
 
 ## Domain and naming
 
-| Term          | Identifier                                           | Meaning                                                                                         |
-| ------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `community`, `api`, `mcp`, `router` |
-| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                      |
-| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)         |
-| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                       |
-| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                           |
-| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@jsquash/webp`, `livehuddle source`)    |
-| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                 |
-| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                  |
-| Override      | `Override`                                           | Committed texts for one exact package version                                                   |
-| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                      |
-| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                     |
-| Manifest      | `LicencesManifest`                                   | What the page renders                                                                           |
+| Term          | Identifier                                           | Meaning                                                                                      |
+| ------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `community`, `api`, `router`     |
+| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                   |
+| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)      |
+| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                    |
+| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                        |
+| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@jsquash/webp`, `livehuddle source`) |
+| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                              |
+| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                               |
+| Override      | `Override`                                           | Committed texts for one exact package version                                                |
+| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                   |
+| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                  |
+| Manifest      | `LicencesManifest`                                   | What the page renders                                                                        |
 
 Banned: "licence" and "license" as synonyms of each other in identifiers; the code spells the
 British `licence` everywhere except the npm `license` field and file names.
@@ -115,8 +115,7 @@ every app appears in exactly one section; output is byte-identical for identical
 
 ```ts
 export type Side = 'browser' | 'server';
-export type AppId =
-  'live' | 'marketing' | 'help' | 'telemetry' | 'community' | 'api' | 'mcp' | 'router';
+export type AppId = 'live' | 'marketing' | 'help' | 'telemetry' | 'community' | 'api' | 'router';
 export type LicenceApp = { id: AppId; label: string; side: Side; bundler: 'next' | 'worker' };
 
 export type AppBundle = { app: AppId; sources: string[]; assets: string[] };
@@ -257,12 +256,12 @@ content column `max-w-3xl`.
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
 - Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help
-  centre, the Community and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API,
-  MCP server and router, which run on Cloudflare rather than on your device."
+  centre, the Community and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API
+  and router, which run on Cloudflare rather than on your device."
 - Each section shows its work count: "{n} works".
 - Entry summary: the native disclosure marker (D16), name (medium weight), version, then a row of
   licence id (monospace) and app chips ("Editor", "Website", "Help centre", "Telemetry", "Community", "API",
-  "MCP server", "Router") after a visually hidden "Ships in". A hanging indent keeps a wrapped name,
+  "Router") after a visually hidden "Ships in". A hanging indent keeps a wrapped name,
   version or chip row aligned past the marker.
 - Entry body: for a vendored or embedded work "Inside {carrier}."; for a homepage, a "Source" link;
   then per text: its label as a heading-sized line, a "Plain text" link, and the text box.

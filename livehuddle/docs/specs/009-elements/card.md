@@ -81,7 +81,7 @@ title "Heads up" and a body, which is what a Callout was.
 Stored callouts **migrate on read**: `shape: 'callout'` becomes `shape: 'card'` with `cardMedia: 'badge'`, keeping
 `pageTitle`, the label, `iconId` and every colour and geometry field, so a migrated callout looks as it did. The
 migration runs where the other stored-element migrations run (the api's read path, the thumbnail render, the offline
-load and the JSON import), so the editor, MCP, share links and thumbnails only ever see cards. The validator still
+load and the JSON import), so the editor, the API, share links and thumbnails only ever see cards. The validator still
 accepts `callout` on write, so a browser on a cached build can still save; the next read migrates it.
 
 ## Animation
@@ -146,5 +146,5 @@ in-place lines render inert for a Participant and a Viewer.
 
 ## Agents
 
-The MCP server and the REST API take `card` with these fields. An agent building an architecture diagram uses cards
+The REST API takes `card` with these fields. An agent building an architecture diagram uses cards
 for its service nodes: title the service, meta line the product or runtime, tags for the facts.

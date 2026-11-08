@@ -105,7 +105,7 @@ hero.
 - `groupId` on stored elements is **ignored** and stripped on load.
 - A legacy `pinned-group` arrow end is **frozen to a free endpoint** at the position it resolved
   to, by `migrateLegacyGroups`, at the two boundaries where stored tabs enter: the api worker's
-  `rowToTab` (so the editor, MCP, share links and thumbnails all see migrated data) and the
+  `rowToTab` (so the editor, the API, share links and thumbnails all see migrated data) and the
   offline store's tab load. The validator still accepts the legacy endpoint shape on write, so a
   browser running a cached pre-change build can still save; the next read migrates it.
 

@@ -184,7 +184,7 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Layout and Parts`; `Charts`, `Meters
 
 A tile with presets (Card, Badge: [Card presets](../009-elements/card.md); the Room, Corridor, Door and Rug:
 [Room presets](../009-elements/office.md#room-presets), [Corridor](../009-elements/corridor.md),
-[Door types](../009-elements/room-builder.md#door-types), [Rug types](../009-elements/office.md#rug-types)) or an opener opens a **side panel**: a
+[Door types](../009-elements/room-builder.md#door-types), [Rug types](../009-elements/office.md#rug-types)) opens a **side panel** (there are no category openers: the opener action went in Work Tracker #583): a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
 to its left), against the tile itself over the other column where the window has no room, and rises to stay inside

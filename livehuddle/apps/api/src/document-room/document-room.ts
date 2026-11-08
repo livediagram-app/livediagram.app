@@ -19,7 +19,6 @@ import {
   ACCESS_CHANGED_CLOSE,
   GRANT_LAPSED_CLOSE,
   ROOM_GRANT_ASK_BEFORE_MS,
-  WORKBENCH_ENDED_CLOSE,
   DOCUMENT_FORMAT,
   DOCUMENT_TRASHED_CLOSE,
   isRoomOpRef,
@@ -1010,7 +1009,6 @@ export class DocumentRoom extends DurableObject<Env> {
       v.tabScope,
       v.shareCode,
       v.personTag,
-      v.workbenchPairing,
       v.adderKey,
       v.documentId,
       v.grantExp ?? null,
@@ -1125,7 +1123,6 @@ export class DocumentRoom extends DurableObject<Env> {
     tabScope: string | null = null,
     shareCode: string | null = null,
     personTag: string | null = null,
-    workbenchPairing: string | null = null,
     adderKey: string | null = null,
     documentId: string | null = null,
     grantExp: number | null = null,
@@ -1138,7 +1135,6 @@ export class DocumentRoom extends DurableObject<Env> {
           tabScope,
           shareCode,
           personTag,
-          workbenchPairing,
           adderKey,
           documentId,
           grantExp,
@@ -1294,14 +1290,13 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   // Close every session an access change affects (room-access.ts). The editor reloads on the
-  // close code, so the next join meets the gates again.
+  // close code, so the next join meets the gates again. livehuddle has no workbenches, so no session carries a
+  // pairing and a `workbench` match closes nobody (docs/specs/002-project-scope/not-in-livehuddle.md).
   private closeSessionsForAccessChange(close: AccessCloseMatch): void {
-    const code: [number, string] =
-      close.match === 'workbench'
-        ? [WORKBENCH_ENDED_CLOSE, 'workbench-ended']
-        : [ACCESS_CHANGED_CLOSE, 'access-changed'];
     const closed = this.closeSockets((ws) =>
-      sessionMatchesAccessClose(this.readSession(ws), close) ? code : null,
+      sessionMatchesAccessClose(this.readSession(ws), close)
+        ? [ACCESS_CHANGED_CLOSE, 'access-changed']
+        : null,
     );
     console.info('[room-access] closed', { match: close.match, closed });
   }

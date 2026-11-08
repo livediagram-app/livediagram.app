@@ -76,7 +76,7 @@ over; clearing its text in place switches it off) and the three styles as tiles.
 
 ## Agents
 
-The MCP server and the REST API take `boundary` with `boundaryStyle`, `pageSubtitle` and `iconId`. An agent drawing
+The REST API takes `boundary` with `boundaryStyle`, `pageSubtitle` and `iconId`. An agent drawing
 cloud architecture nests boundaries for edge, region, VPC and subnet.
 
 ## Element tour

@@ -89,7 +89,7 @@ it exists not to be.
 
 `stickerArt(def)` in `@liveworkspace/icons` returns `{ viewBox, markup }` and is
 the ONLY place a sticker is drawn. The editor canvas, the palette tile, the
-SVG / PNG / PDF export, the api worker's share thumbnail and the MCP render all
+SVG / PNG / PDF export and the api worker's share thumbnail all
 call it. A sticker that looked one way in the editor and another in the export
 would defeat the point of it being a sticker.
 
@@ -136,7 +136,7 @@ has no Emoji category in `ICON_CATEGORIES`, the Icons tab's search and the globa
 out, and Stickers is the one place you browse or place them.
 
 Sticker ids keep the `emoji-` prefix for the same reason: an id is what a
-saved element, an API payload and an MCP call carry.
+saved element and an API payload carry.
 
 ## What we deliberately did NOT build
 

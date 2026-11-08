@@ -1,8 +1,8 @@
 # Purpose
 
-Status: **approved, being built** (first approved on Work Tracker #99; refocused on meeting by Work Tracker #423,
-2026-11-04). The code still carries what [Not in livehuddle](../002-project-scope/not-in-livehuddle.md) lists until
-the parts of #423 remove it.
+Status: **approved, built** (first approved on Work Tracker #99; refocused on meeting by Work Tracker #423,
+2026-11-04, whose five parts have shipped). What is left of the diagram tools' element engine, which nothing offers
+any more, goes in Work Tracker #459 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 livehuddle is a web app where a team **meets in a shared space, in real time**. Everyone in the meeting has a
 character in the space, walks to the room they want to talk in, hears the people near them, and meets around the
@@ -75,7 +75,8 @@ The full list is in [v1 scope](../002-project-scope/v1-scope.md).
 - **Keeping a meeting moving**: the Timer and Stopwatch pieces, and Bring Focus.
 - **Light content**: sticky notes, text and stickers.
 - **The liveworkspace platform**: one account, the One Explorer, teams, share links with the three roles, media,
-  Offline Mode, Google Drive sync, the Community, the MCP server and the CLI, telemetry.
+  Offline Mode, Google Drive sync, the Community, the REST API with API tokens, telemetry (no MCP server, CLI or
+  workbenches: [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 ## What it is _not_
 

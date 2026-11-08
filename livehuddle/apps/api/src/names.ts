@@ -1,6 +1,6 @@
 // The server half of the name cap (docs/specs/006-document/name-length.md): every
 // document and tab name the worker stores passes through here, so API-token
-// callers, MCP tools and copies meet the same NAME_MAX_LENGTH the editor applies.
+// callers, scripts and copies meet the same NAME_MAX_LENGTH the editor applies.
 
 import { NAME_MAX_LENGTH, truncateName } from '@livehuddle/document';
 

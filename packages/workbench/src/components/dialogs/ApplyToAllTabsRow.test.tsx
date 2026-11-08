@@ -41,4 +41,11 @@ describe('ApplyToAllTabsRow', () => {
       screen.getByText('Locked tabs keep their own style. Undo puts every tab back.'),
     ).toBeTruthy();
   });
+
+  // An app with no tab locks (livehuddle) names none.
+  it('says nothing of locked tabs in an app that cannot lock them', () => {
+    render(<ApplyToAllTabsRow tabCount={3} applying={false} onApply={vi.fn()} tabLocks={false} />);
+    expect(screen.getByText('Undo puts every tab back.')).toBeTruthy();
+    expect(screen.queryByText(/Locked tabs/)).toBeNull();
+  });
 });

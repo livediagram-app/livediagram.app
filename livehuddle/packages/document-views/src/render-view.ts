@@ -1,4 +1,4 @@
-// The one door the api and the CLI render a tab view through (docs/specs/024-agents/blueprints/
+// The one door the api renders a tab view through (docs/specs/024-agents/blueprints/
 // document-views.md "Every view"): it builds the model once, resolves `ref` and `only`, and dispatches.
 import {
   TARGET_AMBIGUOUS_ERROR,

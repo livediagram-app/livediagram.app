@@ -62,7 +62,7 @@ export function iconWeightPx(w: IconWeight | undefined): number;
 ```
 
 - `strokeUnits` rejects non-finite or non-positive `sizePx` / `units` by throwing `RangeError('strokeUnits: size and units must be positive')`.
-- `iconWeight` on the wire (api-schema, openapi, MCP) is the closed enum. Any other value is rejected by the existing element validation, with a message naming the field.
+- `iconWeight` on the wire (api-schema, openapi) is the closed enum. Any other value is rejected by the existing element validation, with a message naming the field.
 
 ## Data and persistence
 

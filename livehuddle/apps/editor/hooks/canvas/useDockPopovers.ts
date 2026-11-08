@@ -18,17 +18,11 @@ const POPOVER_WIDTH = 256;
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
   layers: 352,
-  // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
-  'tidy-up': 320,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 960,
 };
 
-export type DockPanel =
-  | 'explorer'
-  | 'collaborate'
-  // The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up';
+export type DockPanel = 'explorer' | 'collaborate';
 
 export type { DockAnchor };
 
@@ -37,7 +31,6 @@ export type { DockAnchor };
 // new open.
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
-  else if (id === 'tidy-up') track('UI', 'Opened', 'TidyUp');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

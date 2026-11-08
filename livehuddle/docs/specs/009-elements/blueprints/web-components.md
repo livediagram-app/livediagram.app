@@ -208,7 +208,7 @@ same object. Nothing is written back until the next save.
 
 | #   | Case                                      | Handling                                                   |
 | --- | ----------------------------------------- | ---------------------------------------------------------- |
-| E1  | Rows array absent (API / MCP author)      | Face draws no rows; append starts from empty               |
+| E1  | Rows array absent (API author)            | Face draws no rows; append starts from empty               |
 | E2  | Write below a kind's minimum              | `withWebRows` drops that field; the element is unchanged   |
 | E3  | Header too narrow for its links           | Links dropped from the end, brand keeps `HEADER_BRAND_MIN` |
 | E4  | Process too narrow                        | Circles shrink; connectors under 4px are not drawn         |
@@ -225,7 +225,7 @@ same object. Nothing is written back until the next save.
 
 All fields arrive through `isValidTab` at the api; strings are bounded, rendered as React text on
 the canvas and escaped with `xmlEscape` in export. `migrateStoredTab` runs on the api read path
-and in the thumbnail render, so MCP, share links and thumbnails never see legacy shapes.
+and in the thumbnail render, so the API, share links and thumbnails never see legacy shapes.
 
 ## Performance and limits
 

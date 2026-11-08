@@ -151,7 +151,7 @@ room carrying the room cursor its snapshot was taken at
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
 only the entries sequenced after that cursor (`fetchRoomLedger` + `applyRoomLedger` in
 `room-client.ts`, `mergeLedgerIntoTab` in `collab-ledger.ts`) before writing.
-A save with no cursor (the unload beacon, an API token, the MCP server), or a
+A save with no cursor (the unload beacon, an API token), or a
 cursor from another epoch, isn't merged. Each ledger entry is re-applied through `applyElementDelta`, so
 the merge is exactly what a peer receiving those deltas would do: answers
 are re-set or withdrawn, ticks re-set,

@@ -66,7 +66,7 @@ one shallow copy of the tab when it matches.
 One pure function in `@livehuddle/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
 element migrations: retired groups and docks). Every place a stored tab enters a reader runs it:
 
-- the api worker's tab read (`rowToTab`), which every editor, share-link and MCP read goes through;
+- the api worker's tab read (`rowToTab`), which every editor, share-link and API read goes through;
 - the api worker's thumbnail and live-image render, which parses `tabs.data` directly;
 - the offline store's tab load, for documents kept only in this browser;
 - a file import, since an exported file is a stored tab like any other;
