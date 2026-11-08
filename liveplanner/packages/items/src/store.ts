@@ -176,7 +176,10 @@ export function applyItemWrite(
 }
 
 // Folds a write someone else made (the room's `items` op, an api answer) into a store: per item
-// the higher rev wins, so ops arriving out of order never roll an item back.
+// the higher rev wins, so ops arriving out of order never roll an item back. A card that comes back as it is (the
+// answer to this person's own write, at the rev it already holds) keeps its object, and a fold that changes no card
+// keeps the store's list, so nothing drawn from them is drawn again (docs/specs/026-plan/plan-board.md "A drag stays
+// smooth").
 export function mergeItemChanges(
   state: ItemStoreState,
   upserts: readonly Item[],
@@ -184,17 +187,28 @@ export function mergeItemChanges(
   rev: number,
 ): ItemStoreState {
   const byId = new Map(state.items.map((i) => [i.id, i]));
+  let changed = false;
   for (const u of upserts) {
     const have = byId.get(u.id);
-    if (!have || u.rev >= have.rev) byId.set(u.id, u);
+    if (have && (u.rev < have.rev || (u.rev === have.rev && sameItem(have, u)))) continue;
+    byId.set(u.id, u);
+    changed = true;
   }
-  for (const id of removed) byId.delete(id);
-  const maxKey = Math.max(0, ...[...byId.values()].map((i) => i.key));
+  for (const id of removed) changed = byId.delete(id) || changed;
+  const nextRev = Math.max(state.rev, rev);
+  if (!changed) return nextRev === state.rev ? state : { ...state, rev: nextRev };
+  let maxKey = 0;
+  for (const i of byId.values()) if (i.key > maxKey) maxKey = i.key;
   return {
     items: [...byId.values()],
-    rev: Math.max(state.rev, rev),
+    rev: nextRev,
     nextKey: Math.max(state.nextKey, maxKey + 1),
   };
+}
+
+// The same card, field for field (an item is plain JSON).
+function sameItem(a: Item, b: Item): boolean {
+  return a === b || JSON.stringify(a) === JSON.stringify(b);
 }
 
 // The items a write touches: after a refused or failed write, their optimistic copies are wrong.

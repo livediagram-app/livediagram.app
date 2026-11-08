@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 // One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
 // cards and the Plan card element, at the board's card size: Minimal (the title) or Detailed (the type chip,
 // number and priority signal; the title; the project; the description; custom fields; label chips; then a footer
@@ -44,11 +44,14 @@ import {
   runningOnCard,
   pastDue,
   typeFieldLabel,
+  hasBlocksFields,
+  type FormulaOutcome,
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
 import type { PlanCardPresence } from './PlanContext';
 import { usePlanCard } from './PlanCardContext';
+import { sameEntries, usePlanItemsSelect } from './plan-items-store';
 import { planBlocking } from './blocking';
 import { customFieldText } from './custom-field-text';
 import { calculatedFieldOutcome } from './calculated-values';
@@ -127,6 +130,15 @@ const FRAME =
 // Under the pointer (docs/specs/026-plan/plan-board.md "Card hover"): it rises onto a shadow in its type's colour, its edge
 // leans to that colour and a soft light follows the pointer (globals.css .plan-card-hover, useCardSpotlight).
 const LIFT = 'plan-card-hover';
+const NO_CARDS: readonly (Item | undefined)[] = [];
+const NO_OUTCOMES: readonly FormulaOutcome[] = [];
+// Two Calculated values alike: the same answer, or the same problem.
+const sameOutcomes = (a: readonly FormulaOutcome[], b: readonly FormulaOutcome[]) =>
+  a.length === b.length &&
+  a.every((x, i) => {
+    const y = b[i]!;
+    return x.ok ? y.ok && Object.is(x.value, y.value) : !y.ok && x.error === y.error;
+  });
 const REST_SHADOW = '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)';
 
 export function PlanCardFace({
@@ -152,6 +164,37 @@ export function PlanCardFace({
   const shown = cardFieldsAt(size, fields).filter((f) => typeShows.includes(f));
   // A custom field shows wherever the type's Display places it (the board's field list names built-ins only).
   const show = (f: CardField) => (isCustomCardField(f) ? typeShows.includes(f) : shown.includes(f));
+  // What the face reads of other cards (plan-items-store.ts): the cards its Card fields link to, its Calculated
+  // fields' values and its open blockers, each picked so a change to any other card never redraws it.
+  const shownDefs = (type.custom ?? []).filter((c) => typeShows.includes(c.id as CardField));
+  const linkIds = shownDefs.flatMap((def) =>
+    def.kind === 'card' ? fieldCardIds(def, item.fields[def.id]) : [],
+  );
+  const calcDefs = shownDefs.filter((def) => def.kind === 'calculated');
+  const linkedCards = usePlanItemsSelect(
+    (all) => (linkIds.length ? linkIds.map((id) => all.get(id)) : NO_CARDS),
+    sameEntries,
+    [item, type],
+  );
+  const items = useMemo(() => {
+    const m = new Map<string, Item>();
+    for (const card of linkedCards) if (card) m.set(card.id, card);
+    return m;
+  }, [linkedCards]);
+  const outcomes = usePlanItemsSelect(
+    (all) =>
+      plan && calcDefs.length
+        ? calcDefs.map((def) => calculatedFieldOutcome({ ...plan, items: all }, def, item, type))
+        : NO_OUTCOMES,
+    sameOutcomes,
+    [item, type, plan?.types, plan?.statusPhases],
+  );
+  const reads = !!plan && !edit && hasBlocksFields(plan.types);
+  const blocked = usePlanItemsSelect(
+    (all) => (reads ? (planBlocking({ ...plan, items: all }).open.get(item.id) ?? 0) : 0),
+    Object.is,
+    [item.id, reads, plan?.types, plan?.statusPhases],
+  );
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
   const fresh = useFreshResponse(item);
@@ -200,7 +243,6 @@ export function PlanCardFace({
   const title = itemTitle(item) || 'Untitled';
   // Its open blockers (docs/specs/026-plan/item-types.md "Blocked By"), from the plan's one lookup; never on the
   // Display's example card.
-  const blocked = plan && !edit ? (planBlocking(plan).open.get(item.id) ?? 0) : 0;
   const flag = (
     <>
       {fresh ? <NewResponseMark /> : null}
@@ -347,7 +389,7 @@ export function PlanCardFace({
         // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
         // fields").
         const outcome =
-          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
+          def?.kind === 'calculated' ? (outcomes[calcDefs.indexOf(def)] ?? null) : null;
         // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
         if (def && showsAsPercent(def) && outcome?.ok !== false) {
           const share = percentShown(
@@ -369,7 +411,7 @@ export function PlanCardFace({
               key={f}
               label={def.label}
               ids={fieldCardIds(def, item.fields[def.id])}
-              items={plan.items}
+              items={items}
               types={plan.types}
               palette={palette}
             />
@@ -394,13 +436,13 @@ export function PlanCardFace({
             ? outcome?.ok
               ? calculatedText(def, outcome.value)
               : null
-            : customFieldText(def, item.fields[def.id], plan?.items);
+            : customFieldText(def, item.fields[def.id], items);
         if (!def || !text) return null;
         // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
         // may link to several types), the field's first type's while the card is missing.
         const linked =
           def.kind === 'card' && plan
-            ? linkedCard(plan.items, fieldCardIds(def, item.fields[def.id])[0])
+            ? linkedCard(items, fieldCardIds(def, item.fields[def.id])[0])
             : undefined;
         const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
         const linkedType = linkedTypeId

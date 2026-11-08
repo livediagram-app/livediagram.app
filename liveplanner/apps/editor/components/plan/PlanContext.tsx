@@ -6,9 +6,10 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, use, useMemo, type ReactNode } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { PlanCardContext, PlanLatestContext, type PlanCardData } from './PlanCardContext';
+import { PlanItemsStoreContext, usePlanItemsStore } from './plan-items-store';
 import type { PlanCardRef, PlanViewRef, Tab } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
@@ -166,12 +167,12 @@ export function PlanProvider({
   children?: ReactNode;
 }) {
   const latest = useLatest(value);
-  const { items, types, statusNames, statusPhases, canEditCards, itemsScope } = value ?? {};
+  const itemsStore = usePlanItemsStore(value?.items);
+  const { types, statusNames, statusPhases, canEditCards, itemsScope } = value ?? {};
   const card = useMemo<PlanCardData | undefined>(
     () =>
-      items && types
+      types
         ? {
-            items,
             types,
             statusNames: statusNames ?? NO_NAMES,
             statusPhases: statusPhases ?? NO_PHASES,
@@ -179,17 +180,22 @@ export function PlanProvider({
             ...(itemsScope !== undefined ? { itemsScope } : {}),
           }
         : undefined,
-    [items, types, statusNames, statusPhases, canEditCards, itemsScope],
+    [types, statusNames, statusPhases, canEditCards, itemsScope],
   );
   return (
     <PlanContext.Provider value={value}>
       <PlanLatestContext.Provider value={latest}>
-        <PlanCardContext.Provider value={card}>{children}</PlanCardContext.Provider>
+        <PlanCardContext.Provider value={card}>
+          <PlanItemsStoreContext.Provider value={itemsStore}>
+            {children}
+          </PlanItemsStoreContext.Provider>
+        </PlanCardContext.Provider>
       </PlanLatestContext.Provider>
     </PlanContext.Provider>
   );
 }
 
+// `use`, so a card may read the plan behind a condition (PlanCardContext.tsx usePlanItems).
 export function usePlan(): PlanContextValue | undefined {
-  return useContext(PlanContext);
+  return use(PlanContext);
 }

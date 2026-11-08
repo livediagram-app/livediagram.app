@@ -4,12 +4,14 @@
 // PlanCardFace, card-file-drop and useAttachmentUpload read the plan's parts a card shows, kept by those parts in
 // PlanProvider (PlanContext.tsx), so a plan change no card shows (a card picked up, someone's presence, an open item)
 // redraws no card; on a 2,000-card board picking a card up redrew every one (plan-board.md "A drag stays smooth").
+// The plan's cards are apart again (plan-items-store.ts): a card picks the little it reads of other cards, so a drop
+// or an edit redraws the cards it changed, not every card.
 import { createContext, use, type RefObject } from 'react';
 import { usePlan, type PlanContextValue } from './PlanContext';
 
 export type PlanCardData = Pick<
   PlanContextValue,
-  'items' | 'types' | 'statusNames' | 'statusPhases' | 'canEditCards' | 'itemsScope'
+  'types' | 'statusNames' | 'statusPhases' | 'canEditCards' | 'itemsScope'
 >;
 
 export const PlanCardContext = createContext<PlanCardData | undefined>(undefined);

@@ -5,10 +5,12 @@
 // cell changes only the run it lands in or leaves, the others keep their cards (and React their elements), and a run
 // is keyed by its first card.
 
-// One card in this many starts a run, so a run holds this many on average.
-export const RUN_SPREAD = 8;
+// One card in this many starts a run, so a run holds this many on average. Measured in Safari on a 2,000-card board:
+// runs of 8 (at most 16) cost 0.3 to 0.5 s each time a carried card crossed the board's edge (it grew with a run's
+// length), runs of 2 slowed every gap change; 4 keeps both under the board without runs.
+export const RUN_SPREAD = 4;
 // The most cards in one run.
-export const CARD_RUN_MAX = 16;
+export const CARD_RUN_MAX = 8;
 
 // FNV-1a over the id: the same start on every machine and every render.
 function startsRun(id: string): boolean {
