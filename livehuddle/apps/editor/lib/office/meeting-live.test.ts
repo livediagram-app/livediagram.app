@@ -9,8 +9,11 @@ import {
   type SignLive,
 } from './meeting-live';
 import { zonesOfWalkers } from './useMeetingPieces';
-import { onKnock, receiveKnockOp } from './knock-inbox';
+import { onKnock, playKnock, receiveKnockOp } from './knock-inbox';
 import type { KnockEvent } from './knock-inbox';
+
+const playTones = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/timer-chime', () => ({ playTones }));
 
 afterEach(resetMeetingLive);
 
@@ -122,5 +125,14 @@ describe('the knock inbox', () => {
       ['knock', 'p1'],
       ['answer', 'p2'],
     ]);
+  });
+});
+
+describe('the knock sound', () => {
+  it('raps twice, low and short (knock.md "The sound")', () => {
+    playKnock();
+    const [notes, seconds] = playTones.mock.calls[0] as [{ hz: number; at: number }[], number];
+    expect(notes.filter((n) => n.hz === 150).map((n) => n.at)).toEqual([0, 0.17]);
+    expect(seconds).toBeLessThan(0.2);
   });
 });

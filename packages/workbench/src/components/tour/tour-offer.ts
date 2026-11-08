@@ -45,6 +45,9 @@ export type TourOffer = {
   id: string;
   /** The tour's name as the button says it: "Draw" reads "Start Draw Tour". */
   name: string;
+  /** The button's whole words when they are not "Start <name> Tour" (livehuddle's "Ask the Receptionist"), and its hover line. */
+  label?: string;
+  description?: string;
   rank: number;
   /** Starts the tour (a press on the button). */
   start: () => void;
@@ -96,6 +99,8 @@ export function useOfferTour(
   id: string,
   offer: {
     name: string;
+    label?: string;
+    description?: string;
     rank: number;
     start: () => void;
     onShown?: () => void;
@@ -109,6 +114,8 @@ export function useOfferTour(
   });
   const name = offer && !offer.seen ? offer.name : null;
   const rank = offer?.rank ?? 0;
+  const label = offer?.label;
+  const description = offer?.description;
   useEffect(() => {
     if (name === null) {
       publishTourOffer(id, null);
@@ -117,11 +124,13 @@ export function useOfferTour(
     publishTourOffer(id, {
       id,
       name,
+      ...(label ? { label } : {}),
+      ...(description ? { description } : {}),
       rank,
       start: () => latest.current?.start(),
       onShown: () => latest.current?.onShown?.(),
     });
-  }, [id, name, rank]);
+  }, [id, name, label, description, rank]);
   useEffect(() => () => publishTourOffer(id, null), [id]);
 }
 

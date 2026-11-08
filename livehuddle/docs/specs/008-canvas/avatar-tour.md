@@ -1,5 +1,9 @@
 # Avatar tour ("Start Avatar Tour")
 
+Status: **retired** (owner, 2026-11-08, Work Tracker #58): [the Receptionist](receptionist.md) replaced it. The Receptionist's
+welcome keeps its `avatarTourSeen` record, so nobody who took this tour is welcomed again. The rest of this page
+records what the tour was.
+
 A short, optional guided tour of [Avatar mode](avatar-mode.md), started from the footer's **Start Avatar Tour**
 button. It is built like every tour ([Tours](../007-editor/editor-tour.md)): the same Start Tour button, anchored
 step cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent,
@@ -41,7 +45,7 @@ closes nothing; it changes no costume, plays no reaction, sends no message and p
 ## The steps
 
 Five steps, then an outro card, which sits outside the step count. There is no welcome card. Each step rings an
-element by its `data-tour-id`. The exact strings live in `apps/editor/components/tour/avatar-tour-steps.ts`.
+element by its `data-tour-id`. The exact strings lived in the tour's steps file, removed with the tour.
 
 1. **Your Avatar Palette**: rings the strip (`palette`, the anchor the building strip's card also carries; only the visible one is found). While you walk, the palette dresses your character
    and holds everything it can do.

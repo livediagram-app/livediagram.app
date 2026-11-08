@@ -53,6 +53,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   flag('stageCameras'),
   flag('doorClosed'),
+  flag('receptionistLeft'),
   {
     field: 'variant',
     valid: isPieceVariant,

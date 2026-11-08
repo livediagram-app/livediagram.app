@@ -68,6 +68,13 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'x', type: 'text', ...box })).toBe(true);
   });
 
+  it("accepts an Avatar Pad's receptionistLeft flag, rejects junk values", () => {
+    // docs/specs/008-canvas/receptionist.md "Asking him to leave".
+    const pad = { id: 'p', type: 'shape', shape: 'avatar-pad', ...box };
+    expect(isValidElement({ ...pad, receptionistLeft: true })).toBe(true);
+    expect(isValidElement({ ...pad, receptionistLeft: 'yes' })).toBe(false);
+  });
+
   it('accepts the freehand pen + straightEdges flags, rejects junk values', () => {
     const freehand = { id: 'f', type: 'freehand', closed: false, packedPoints: 'AQA=', ...box };
     // Highlighter recipe (docs/specs/008-canvas/highlighter.md) + polygon straight edges (docs/specs/008-canvas/polygon-tool.md).
