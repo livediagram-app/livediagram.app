@@ -416,7 +416,8 @@ export function usePagesMode(deps: {
       });
   };
   const theme = getTheme(activeTab.theme);
-  const themeBackgrounds = themeBackgroundPresets(theme);
+  // Worked out once per theme, so the pages' sheets (CanvasPageSheet) keep their props while it holds.
+  const themeBackgrounds = useMemo(() => themeBackgroundPresets(theme), [theme]);
   const tabFont = activeTab.font;
   // The page whose place holds the middle of the view (beside the docked Contents), read from the view itself.
   const pageIdInView = () => {
