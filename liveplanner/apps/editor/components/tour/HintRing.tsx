@@ -12,11 +12,24 @@ const RING_PAD_PX = 4;
 
 type Box = { left: number; top: number; width: number; height: number };
 
-// The first of `selectors` drawn on screen, read again at every measure, so the ring moves on as the page changes.
+// Whether another layer (a dialog opened over it) covers the target at its centre: the ring would float over that
+// layer, ringing a control nobody can press. The ring itself takes no pointer, so it is never what is hit. Off screen,
+// nothing is hit and the target counts as clear.
+function covered(el: Element, r: DOMRect): boolean {
+  if (typeof document.elementFromPoint !== 'function') return false;
+  const x = Math.min(Math.max(r.left + r.width / 2, 0), window.innerWidth - 1);
+  const y = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight - 1);
+  const hit = document.elementFromPoint(x, y);
+  return hit !== null && hit !== el && !el.contains(hit) && !hit.contains(el);
+}
+
+// The first of `selectors` drawn on screen and not covered, read again at every measure, so the ring moves on as the
+// page changes.
 function firstDrawn(selectors: readonly string[]): DOMRect | null {
   for (const s of selectors) {
-    const r = document.querySelector(s)?.getBoundingClientRect();
-    if (r && (r.width > 0 || r.height > 0)) return r;
+    const el = document.querySelector(s);
+    const r = el?.getBoundingClientRect();
+    if (el && r && (r.width > 0 || r.height > 0) && !covered(el, r)) return r;
   }
   return null;
 }

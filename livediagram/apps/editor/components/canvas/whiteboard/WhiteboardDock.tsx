@@ -56,6 +56,8 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { useReplayState } from '@/lib/replay/replay-store';
+import { withReplayDock } from '@/lib/replay/replay-dock';
 
 // How long the "seven pinned" hint stays up.
 const HINT_MS = 4000;
@@ -86,7 +88,10 @@ type WhiteboardDockProps = {
   onDrawn?: () => void;
 };
 
-export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
+export function WhiteboardDock({ model: ownModel, ink, onDrawn }: WhiteboardDockProps) {
+  // While Watch It Built runs, the dock shows what a Draw topic has in hand (lib/replay/replay-dock.ts); otherwise
+  // this is the model itself.
+  const model = withReplayDock(ownModel, useReplayState());
   useLayoutEffect(() => {
     onDrawn?.();
   }, [onDrawn]);

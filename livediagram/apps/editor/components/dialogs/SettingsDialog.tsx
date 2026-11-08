@@ -18,9 +18,8 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { requestTourRelaunch } from '@/lib/diagram-tour';
-import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
-import { requestDrawTourRelaunch } from '@/lib/draw-tour';
+import { requestWatchRelaunch } from '@/lib/watch-relaunch';
+import { topicsOwed } from '@/lib/watch-topics';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
@@ -52,6 +51,9 @@ type SettingsDialogProps = {
   // Drive connect flow returns to Account > Cloud Sync.
   initialSectionId?: string | null;
 };
+
+// The modes Watch It Built teaches, whose start panel a Settings change can reopen.
+const WATCH_MODES = ['diagram', 'draw', 'workshop'] as const;
 
 // The Settings dialog (docs/specs/007-editor/user-preferences.md), shaped like the iOS Settings app because it
 // had outgrown a single scrolling accordion: six groups of long paragraphs
@@ -161,23 +163,17 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Watch It Built" (docs/specs/007-editor/editor-tour.md): turning its row on from off and closing reruns the
-  // tour in place, as the footer's Start Tour button does.
-  const tourSeen = settings.tourSeen === true;
-  const tourSeenAtOpen = useRef(tourSeen);
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Diagram tour's.
-  const workshopTourSeen = settings.workshopTourSeen === true;
-  const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as the Workshop tour's.
-  const drawTourSeen = settings.drawTourSeen === true;
-  const drawTourSeenAtOpen = useRef(drawTourSeen);
+  // Watch It Built (docs/specs/007-editor/watch-it-built.md "Settings"): a mode with every topic taken when Settings
+  // opened and one owed again as it closes opens that mode's start panel in place, as the Start Tour button does.
+  const watchOwed = WATCH_MODES.map((m) => topicsOwed(settings, m).length > 0);
+  const watchOwedAtOpen = useRef(watchOwed);
   // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
-    if (!tourSeen && tourSeenAtOpen.current) requestTourRelaunch();
-    if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
-    if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
+    WATCH_MODES.forEach((m, i) => {
+      if (watchOwed[i] && !watchOwedAtOpen.current[i]) requestWatchRelaunch(m);
+    });
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };

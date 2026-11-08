@@ -8,6 +8,7 @@ import {
   documentHeaders,
   seedDocumentItem,
   paletteTile,
+  markModeToursSeen,
 } from './fixtures';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
@@ -37,14 +38,11 @@ async function openAs(
       if (o) {
         localStorage.setItem('livehuddle:v2:name-confirmed', '1');
       }
-      // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
-      localStorage.setItem(
-        'livehuddle:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
     },
     { o: owner },
   );
+  // The Receptionist's welcome and the element tours open over the board; their bubbles would take the presses.
+  await markModeToursSeen(ctx);
   const page = await ctx.newPage();
   await page.goto(url);
   return page;

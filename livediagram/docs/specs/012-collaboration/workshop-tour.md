@@ -1,5 +1,7 @@
 # Workshop tour ("Start Workshop Tour")
 
+> **Retired** (owner, 2026-11-08, Work Tracker #58): Workshop mode's tour is now [Watch It Built](../007-editor/watch-it-built.md), short replays picked from a start panel. This spec is kept as the record of the stepped tour; its code is gone. The `workshopTourSeen` key stays as Settings' row key and telemetry token for the mode's Watch It Built switch.
+
 A short, optional guided tour of [Workshop mode](workshop-mode.md), started from the footer's **Start Workshop Tour**
 button. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
 [Draw tour](../023-draw-mode/draw-tour.md) is: the same Start Tour button, anchored step cards, glide, dimming ring,
@@ -42,7 +44,7 @@ taken away when the tour ends, however it ends. Nothing reaches the document's h
 
 Six steps, then an outro card, which sits outside the step count. There is no welcome card: a press of the button
 starts the first step. The palette
-itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
+itself is the Diagram tour's, so this tour does not repeat it. The exact strings lived in the tour's steps file, removed with it.
 
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to

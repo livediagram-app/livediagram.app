@@ -26,7 +26,7 @@ missions, checked from live state, in a mission strip of their own.
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/components/tour/missions.ts`             | `useMissions`, `Mission`, `MissionHint`: the runner every track shares (a lesson waits for `next`)                                        |
 | `apps/editor/components/tour/MissionStrip.tsx`        | The strip: name, segments, mission or lesson (Next) or finish, Hint / More Help, End; `StripFrame`, the corner strip over a dialog        |
-| `apps/editor/components/tour/TourStart.tsx`           | The start panel a press opens: one track (Start) or a board's three (rows with a Done tick); Not Now                                      |
+| `apps/editor/components/tour/TourStart.tsx`           | The start panel a press opens: one track (Start) or a board's three (the workbench's `TourTopics` rows, shared with livediagram); Not Now |
 | `apps/editor/components/tour/board-tracks.ts`         | `typesMissions`, `setupMissions`, `newTypeOf`, `typeShape`, `setupChanged`: the Card Types and Board Setup checks                         |
 | `apps/editor/components/tour/CardTypesTrack.tsx`      | The Card Types track: new type, its first shape, capture of its card, board `addTypes`, Keep the Type / Put It Back                       |
 | `apps/editor/components/tour/BoardSetupTrack.tsx`     | The Board Setup track: the board's setup at start, missions, Keep Changes / Put It Back (`updateBoard(boardId, start)`)                   |
@@ -127,7 +127,8 @@ On a computer, while `useOpenModalCount() > 0`, the full strip moves to the bott
 layer, `justify-start`, the card `w-[19rem]`); nothing about it shrinks. A mission with `onPage` adds the amber line
 `[data-close-first]` "Close this window first, then:" over its why while doing. A phone keeps docking at the top.
 The ring is `hint.ring()` once a hint asks, otherwise the mission's `points` while doing; `HintRing` takes the first
-selector drawn on screen (non-zero box), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
+selector drawn on screen (non-zero box) and not covered (`elementFromPoint` at its centre is it, inside it or holds
+it), re-checked every 150 ms. `Emphasis` draws `**x**` as `<strong>`.
 
 ### Practice cards (`usePlanItems`)
 

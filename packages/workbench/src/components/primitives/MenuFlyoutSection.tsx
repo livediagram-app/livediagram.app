@@ -351,6 +351,8 @@ function Flyout({
         }}
         aria-expanded={open}
         aria-haspopup={kind === 'command' ? 'menu' : 'dialog'}
+        // Names the section for drivers (Watch It Built's replay, e2e) apart from controls inside it with the same words.
+        data-menu-section={title}
         className={plain ? plainTriggerClass(open) : sectionTriggerClass(open)}
       >
         {plain ? (

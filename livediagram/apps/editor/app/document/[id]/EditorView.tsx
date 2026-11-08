@@ -566,7 +566,10 @@ export function EditorView() {
                           onDismiss={focusInvite.dismissFocus}
                         />
                         <AreaErrorBoundary area="Modals">
-                          <EditorModals />
+                          {/* In the replay's scope, so the Tab Style dialog shows the look Watch It Built is showing. */}
+                          <ReplayScope>
+                            <EditorModals />
+                          </ReplayScope>
                         </AreaErrorBoundary>
                         <AreaErrorBoundary area="Popovers">
                           <EditorAnchoredPopovers />

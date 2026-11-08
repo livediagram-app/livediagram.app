@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import {
   lucideCheck,
@@ -11,9 +11,11 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { identityVars, lucideGlyph, SOLID_BRAND_DARK_CONTROL, Tooltip } from '@livediagram/ui';
 import { RemoteCursor } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
-import { CHAPTERS } from '@/lib/replay/watch-it-built-script';
+import type { Chapter } from '@/lib/replay/topic';
+import { playerPlace, useCanvasBox } from './use-canvas-box';
 
-export type ReplayCursor = { x: number; y: number; pressing: boolean };
+// `pressing`: a press is landing (one ripple). `holding`: Example is holding something (a carry, a pen down).
+export type ReplayCursor = { x: number; y: number; pressing: boolean; holding?: boolean };
 
 // The play button's face for each thing it does.
 const TOGGLE_GLYPH = {
@@ -30,6 +32,8 @@ const EXAMPLE_COLOUR = '#e11d48';
 // Watch It Built's chrome (docs/specs/007-editor/watch-it-built.md "The replay", "The player"): the player, with
 // Example's line, and Example. Portalled above the tour shield, so only these take presses.
 export function ReplayOverlay({
+  title,
+  chapters,
   index,
   ms,
   playing,
@@ -37,13 +41,18 @@ export function ReplayOverlay({
   reduced,
   touch,
   menuOpen,
+  atTop = false,
   say,
   cursor,
   canvasRef,
   onToggle,
   onChapter,
   onYourTurn,
+  onMore,
 }: {
+  // The topic's name, the player's accessible name.
+  title: string;
+  chapters: readonly Chapter[];
   index: number;
   ms: number;
   playing: boolean;
@@ -52,30 +61,26 @@ export function ReplayOverlay({
   touch: boolean;
   // The element menu is open: on a phone it is a sheet up from the bottom, so the player moves to the top.
   menuOpen: boolean;
+  // A dialog fills the bottom of the screen (the Tab Style dialog): the player moves to the top of the canvas.
+  atTop?: boolean;
   say: string;
   cursor: ReplayCursor | null;
   canvasRef: RefObject<HTMLElement | null>;
   onToggle: () => void;
   onChapter: (index: number) => void;
   onYourTurn: () => void;
+  // More Topics, beside Your Turn once the topic has played through, when the mode has another.
+  onMore?: () => void;
 }) {
-  const [box, setBox] = useState<DOMRect | null>(null);
-  useEffect(() => {
-    const el = canvasRef.current;
-    if (!el) return;
-    const read = () => setBox(el.getBoundingClientRect());
-    read();
-    const ro = new ResizeObserver(read);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [canvasRef]);
+  const box = useCanvasBox(canvasRef);
   // The player takes focus as it appears, so Space and the arrows work at once.
   const playRef = useRef<HTMLButtonElement>(null);
   useEffect(() => playRef.current?.focus({ preventScroll: true }), []);
 
   if (typeof document === 'undefined') return null;
-  const left = box ? box.left + box.width / 2 : window.innerWidth / 2;
-  const last = index === CHAPTERS.length - 1;
+  const place = playerPlace(box);
+  const left = place.left;
+  const last = index === chapters.length - 1;
   const toggle: keyof typeof TOGGLE_GLYPH = reduced
     ? last
       ? 'done'
@@ -93,13 +98,9 @@ export function ReplayOverlay({
           canvas, so the toolbar and palette Example presses stay in view. */}
       <div
         role="group"
-        aria-label="Watch It Built"
+        aria-label={`Watch It Built: ${title}`}
         className="pointer-events-auto absolute flex w-max max-w-[calc(100vw-32px)] -translate-x-1/2 flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-2.5 pb-2 pt-2.5 shadow-xl motion-safe:animate-dialog-in dark:border-slate-700 dark:bg-slate-900"
-        style={
-          touch && menuOpen
-            ? { left, top: (box?.top ?? 56) + 64 }
-            : { left, bottom: box ? window.innerHeight - box.bottom + 76 : 96 }
-        }
+        style={(touch && menuOpen) || atTop ? { left, top: (box?.top ?? 56) + 64 } : place}
       >
         <p
           role="status"
@@ -128,7 +129,7 @@ export function ReplayOverlay({
             </button>
           </Tooltip>
           <ol className="flex items-end gap-1.5">
-            {CHAPTERS.map((c, i) => {
+            {chapters.map((c, i) => {
               const fill = i < index ? 1 : i > index ? 0 : Math.min(1, ms / c.ms);
               return (
                 <li key={c.id}>
@@ -153,6 +154,15 @@ export function ReplayOverlay({
               );
             })}
           </ol>
+          {onMore && (finished || (reduced && last)) ? (
+            <button
+              type="button"
+              onClick={onMore}
+              className="shrink-0 cursor-pointer rounded-lg px-2.5 py-1.5 text-sm font-semibold text-slate-700 transition-colors duration-micro hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              More Topics
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onYourTurn}
@@ -173,15 +183,25 @@ export function ReplayOverlay({
               left: cursor.x,
               top: cursor.y,
               borderColor: EXAMPLE_COLOUR,
-              background: cursor.pressing ? `${EXAMPLE_COLOUR}66` : `${EXAMPLE_COLOUR}33`,
+              background:
+                cursor.pressing || cursor.holding ? `${EXAMPLE_COLOUR}66` : `${EXAMPLE_COLOUR}33`,
             }}
           />
         ) : (
           <>
-            {cursor.pressing ? (
+            {/* A press: one ripple, never a repeating pulse (a held press read as a flicker). Holding: a steady
+                soft dot under the tip. */}
+            {cursor.holding ? (
               <span
                 aria-hidden
-                className="absolute size-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 motion-safe:animate-ping"
+                className="absolute size-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{ left: cursor.x, top: cursor.y, background: `${EXAMPLE_COLOUR}40` }}
+              />
+            ) : cursor.pressing ? (
+              <span
+                aria-hidden
+                data-replay-press=""
+                className="absolute size-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2"
                 style={{ left: cursor.x, top: cursor.y, borderColor: EXAMPLE_COLOUR }}
               />
             ) : null}

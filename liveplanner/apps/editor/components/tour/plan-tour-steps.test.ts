@@ -4,7 +4,9 @@
 // each is done by what the person really did, and the subject is the board or Sheet they see.
 
 import type { Item } from '@liveplanner/items';
+import { dashboardFromPreset } from '@liveplanner/project';
 import { afterEach, describe, expect, it } from 'vitest';
+import { layoutMissions } from './layout-missions';
 import {
   a1Range,
   boardRoot,
@@ -232,9 +234,7 @@ describe('telemetry', () => {
 });
 
 describe('mission titles', () => {
-  it('are in Title Case, small words aside', async () => {
-    const { layoutMissions } = await import('./layout-missions');
-    const { dashboardFromPreset } = await import('@liveplanner/project');
+  it('are in Title Case, small words aside', () => {
     let n = 0;
     const layout = dashboardFromPreset('two-by-two', () => `id${n++}`);
     const titles = [

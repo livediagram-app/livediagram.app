@@ -1,5 +1,13 @@
 import type { Browser, Locator, Page } from '@playwright/test';
-import { adoptGuest, documentHeaders, expect, mintGuest, serverNewUrl, test } from './fixtures';
+import {
+  adoptGuest,
+  documentHeaders,
+  expect,
+  markModeToursSeen,
+  mintGuest,
+  serverNewUrl,
+  test,
+} from './fixtures';
 
 // A Space walked by two people (docs/specs/003-system-architecture/e2e-smoke.md "The smoke"): a Spaces template opens
 // walking as it lands (docs/specs/008-canvas/avatar-mode.md), a second person joins from a share link and walks in
@@ -18,14 +26,11 @@ async function personIn(browser: Browser, baseURL: string, owner: string | null)
     ({ o }) => {
       // The owner has a name; the second person gives theirs in the Join dialog.
       if (o) localStorage.setItem('livehuddle:v2:name-confirmed', '1');
-      // The Workshop tour stays away; its overlay would take the arrows.
-      localStorage.setItem(
-        'livehuddle:user-preferences:v1',
-        JSON.stringify({ workshopTourSeen: true }),
-      );
     },
     { o: owner },
   );
+  // The Receptionist's welcome stays away; its bubble would take the arrows.
+  await markModeToursSeen(ctx);
   return ctx.newPage();
 }
 

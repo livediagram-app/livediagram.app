@@ -1,19 +1,21 @@
 # Workshop tour blueprint
 
+> **Retired** with the [Workshop tour](../workshop-tour.md) (2026-11-08): its code is gone; Workshop's tour is now [Watch It Built](../../007-editor/watch-it-built.md).
+
 Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 [Diagram tour](../../007-editor/editor-tour.md) holds.
 
 ## Domain and naming
 
-| Thing               | Identifier                                                                                          |
-| ------------------- | --------------------------------------------------------------------------------------------------- |
-| The host            | `WorkshopTourHost` in `apps/editor/components/tour/WorkshopTourHost.tsx`                            |
-| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`                |
-| The taken record    | `UserPreferences.workshopTourSeen` (synced), read by Settings only                                  |
-| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` in `apps/editor/lib/workshop-tour.ts` |
-| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                                       |
-| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Getting Started category               |
-| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                                |
+| Thing               | Identifier                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| The host            | `WorkshopTourHost` (removed)                                                          |
+| The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`  |
+| The taken record    | `UserPreferences.workshopTourSeen` (synced), read by Settings only                    |
+| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` (removed)               |
+| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                         |
+| The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Getting Started category |
+| The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                  |
 
 ## Behaviour and state
 

@@ -212,6 +212,7 @@
     "./components/tour/TourShield": "./src/components/tour/TourShield.tsx",
     "./components/tour/TourSpotlight": "./src/components/tour/TourSpotlight.tsx",
     "./components/tour/TourStage": "./src/components/tour/TourStage.tsx",
+    "./components/tour/TourTopics": "./src/components/tour/TourTopics.tsx",
     "./components/tour/element-menu-tour": "./src/components/tour/element-menu-tour.ts",
     "./components/tour/element-tour-api": "./src/components/tour/element-tour-api.ts",
     "./components/tour/sankey-flows-tour-steps": "./src/components/tour/sankey-flows-tour-steps.ts",

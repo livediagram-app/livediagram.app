@@ -9,7 +9,7 @@ import {
   writeSettingsView as writeView,
 } from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { TOUR_RELAUNCH_EVENT } from '@/lib/diagram-tour';
+import { WATCH_RELAUNCH_EVENT } from '@/lib/watch-relaunch';
 
 const VIEW_KEY = 'livediagram:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
@@ -165,12 +165,12 @@ describe('SettingsDialog', () => {
   it('leaves the Diagram tour be when its row was on already', () => {
     setViewport(false);
     const relaunch = vi.fn();
-    window.addEventListener(TOUR_RELAUNCH_EVENT, relaunch);
-    renderDialog({ tourSeen: false });
+    window.addEventListener(WATCH_RELAUNCH_EVENT, relaunch);
+    renderDialog({});
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     // Left on, not turned on from off: nothing reruns.
     expect(relaunch).not.toHaveBeenCalled();
-    window.removeEventListener(TOUR_RELAUNCH_EVENT, relaunch);
+    window.removeEventListener(WATCH_RELAUNCH_EVENT, relaunch);
   });
 
   describe('reopening where it was left', () => {

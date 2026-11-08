@@ -270,7 +270,7 @@ type UserPreferences = {
 
   // The Diagram tour's taken record, now Watch It Built (docs/specs/007-editor/watch-it-built.md). True once a run has ended
   // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
-  // does not offer the tour; Settings' Tours › "Watch It Built" row (inverted) clears it, and turning
+  // does not offer the tour; Settings' Getting Started › "Watch It Built" row (inverted) clears it, and turning
   // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.

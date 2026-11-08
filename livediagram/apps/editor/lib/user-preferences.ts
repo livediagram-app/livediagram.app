@@ -197,11 +197,13 @@ export type UserPreferences = {
   // Settings as Tours › "Watch It Built" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Workshop tour's seen-guard (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
+  // Watch It Built's topics taken (docs/specs/007-editor/watch-it-built.md "The start panel"): topic ids, written as a
+  // topic is picked; a mode's Watch It Built is on the Start Tour button while one of its topics is not here. Read
+  // through lib/watch-topics, which also counts `tourSeen` as The Basics.
+  watchTopics?: string[];
+  // The stepped Workshop and Draw tours' seen-guards. Both tours are retired for Watch It Built in those modes, which
+  // reads neither (they showed none of its topics); kept in the type because they are already stored.
   workshopTourSeen?: boolean;
-  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Avatar tour's seen-guard (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.

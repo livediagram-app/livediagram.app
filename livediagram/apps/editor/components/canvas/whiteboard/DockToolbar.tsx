@@ -78,7 +78,7 @@ export function DockToolbar({
         aria-label={label}
         aria-orientation="horizontal"
         data-dock-group={group}
-        // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
+        // Watch It Built's anchors in Draw (docs/specs/007-editor/watch-it-built.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
         // A run of the dock's card (DockBody draws the card and the hairlines between groups), its items 44px-tall

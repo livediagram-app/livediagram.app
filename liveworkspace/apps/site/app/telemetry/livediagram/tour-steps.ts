@@ -1,9 +1,9 @@
 import type { TelemetryCount } from '@livediagram/api-schema';
 import { typeLabel } from '../_shared/event-vocab';
 
-// The Diagram tour's chapters (docs/specs/007-editor/watch-it-built.md), in the order Watch It Built plays them, as the
+// Watch It Built's The Basics chapters (docs/specs/007-editor/watch-it-built.md), in the order it plays them, as the
 // `UI·View·TourStep<Chapter>` tokens each sends when it starts. The editor derives these from its chapter ids
-// (apps/editor lib/replay/watch-it-built-script.ts, tourStepTelemetryType); metric-emitters.test reads that file and
+// (apps/editor lib/replay/topics/diagram-basics.ts, tourStepTelemetryType); metric-emitters.test reads that file and
 // fails if this list drifts from it.
 export const TOUR_STEP_TYPES: readonly string[] = [
   'TourStepAdd',
