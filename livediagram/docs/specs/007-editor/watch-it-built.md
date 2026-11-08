@@ -25,7 +25,7 @@ multiplayer canvas, so the tour also previews working together.
 | Term               | Means                                                                                                |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
 | **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Tours category |
-| **A topic**        | One thing to learn, played as one replay: **The Basics**, **Look and Feel**, **Sketch**, ...          |
+| **A topic**        | One thing to learn, played as one replay: **The Basics**, **Look and Feel**, **Sketch**, ...         |
 | **The curriculum** | A mode's topics, in the order the start panel lists them                                             |
 | **Start panel**    | What a press opens: "What would you like to learn?" and the mode's topics                            |
 | **The replay**     | One run of a topic, from the pick to its end                                                         |
@@ -70,31 +70,36 @@ view. Lines name clicks on a computer and taps on a touch screen.
 
 ### Diagram
 
-| Topic             | Line on the start panel                                     | Chapters: what Example does with the real chrome                                                                                                                                                 |
-| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **The Basics**    | Add shapes, join them, name them and colour one.            | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                   |
-| **Look and Feel** | Give the whole canvas a new look and background.            | **Open Style**: presses the footer's Style; the real Theme & canvas dialog opens. **Pick a Look**: presses two looks in turn; the canvas and demo restyle live. **Canvas**: opens Canvas and picks Grid |
-| **Style a Shape** | Colours, border, shadow and font for one shape.             | **Colours**: right-click, Style, Colours, a fill. **Border**: Border, a thicker dashed edge. **Shadow**: Shadow, a soft preset. **Font**: Text, Font, a hand-drawn face                            |
-| **Find Anything** | Search for any shape or icon and drop it in.                | **Search**: presses Search on the strip and types "database". **Drop**: presses the first result; it lands on the canvas. **Again**: searches "user" and drops an icon beside it                   |
-| **Tidy Up**       | Lay a messy flow out neatly in one press.                   | **The Mess**: five joined shapes scattered at odd angles. **Tidy Up**: presses Tidy Up; the shapes glide into a clean top-to-bottom flow                                                           |
+| Topic             | Line on the start panel                          | Chapters: what Example does with the real chrome                                                                                                                                                        |
+| ----------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The Basics**    | Add shapes, join them, name them and colour one. | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                          |
+| **Look and Feel** | Give the whole canvas a new look and background. | **Open Style**: presses the footer's Style; the real Theme & canvas dialog opens. **Pick a Look**: presses two looks in turn; the canvas and demo restyle live. **Canvas**: opens Canvas and picks Grid |
+| **Style a Shape** | Colours, border, shadow and font for one shape.  | **Colours**: right-click, Style, Colours, a fill. **Border**: Border, a thicker dashed edge. **Shadow**: Shadow, a soft preset. **Font**: Text, Font, a hand-drawn face                                 |
+| **Find Anything** | Search for any shape or icon and drop it in.     | **Search**: presses Search on the strip and types "database". **Drop**: presses the first result; it lands on the canvas. **Again**: searches "user" and drops an icon beside it                        |
+| **Tidy Up**       | Lay a messy flow out neatly in one press.        | **The Mess**: five joined shapes scattered at odd angles. **Tidy Up**: presses Tidy Up; the shapes glide into a clean top-to-bottom flow                                                                |
 
 ### Draw
 
-| Topic                  | Line on the start panel                              | Chapters                                                                                                                                                       |
-| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sketch**             | Pick up a marker and draw.                           | **Pick Up**: presses the first marker on the dock. **Draw**: a freehand line and a little house are drawn under the cursor                                     |
-| **Shape Recognition**  | Wobbly lines become clean shapes when you hold.      | **Rough**: a wobbly circle is drawn. **Hold**: the cursor rests; the stroke snaps into a clean ellipse. **Again**: a rough box snaps into a rectangle           |
-| **Pens and Colours**   | Choose each marker's colour and width.               | **Open**: presses the marker in hand again; its flyout opens. **Colour**: picks a colour and a wider width. **Draw**: a stroke in the new pen                   |
-| **Shapes and Stickies**| Add shapes and sticky notes from the dock.           | **Shapes**: opens the dock's Shapes and drops a rectangle. **Sticky**: adds a sticky note and types on it                                                      |
-| **Erase and Board**    | Rub things out and change what's behind your work.   | **Erase**: picks the Eraser and rubs out a stroke. **Board**: opens the dock's settings cog and picks Dots, then Grid; the board changes behind the strokes     |
+| Topic                   | Line on the start panel                            | Chapters                                                                                                                                                    |
+| ----------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sketch**              | Pick up a marker and draw.                         | **Pick Up**: presses the first marker on the dock. **Draw**: a freehand line and a little house are drawn under the cursor                                  |
+| **Shape Recognition**   | Wobbly lines become clean shapes when you hold.    | **Rough**: a wobbly circle is drawn. **Hold**: the cursor rests; the stroke snaps into a clean ellipse. **Again**: a rough box snaps into a rectangle       |
+| **Pens and Colours**    | Choose each marker's colour and width.             | **Open**: presses the marker in hand again; its flyout opens. **Colour**: picks a colour and a wider width. **Draw**: a stroke in the new pen               |
+| **Shapes and Stickies** | Add shapes and sticky notes from the dock.         | **Shapes**: opens the dock's Shapes and drops a rectangle. **Sticky**: adds a sticky note and types on it                                                   |
+| **Erase and Board**     | Rub things out and change what's behind your work. | **Erase**: picks the Eraser and rubs out a stroke. **Board**: opens the dock's settings cog and picks Dots, then Grid; the board changes behind the strokes |
 
 ### Workshop
 
-| Topic                     | Line on the start panel                                    | Chapters                                                                                                                                                      |
-| ------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask the Room**          | Timers, votes and polls everyone can join.                 | **Ask**: opens the palette's Ask; drops a Timer. **Vote**: drops a Dot Vote beside it. **Poll**: drops a Poll                                                  |
-| **Stickies and Stickers** | Sticky notes for ideas, stickers to react.                 | **Stickies**: drops three stickies in a row and types on them. **Stickers**: opens Decorate's Stickers and drops two on the stickies                            |
-| **Reactions and Reveals** | Reaction pads and a reveal zone that hides answers.        | **Reactions**: drops a reaction pad. **Reveal**: drops a reveal zone over two stickies; they hide under its cover                                              |
+| Topic                     | Line on the start panel                             | Chapters                                                                                                                                                                                                                                                     |
+| ------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Ask the Room**          | Dot votes, polls and check-ins everyone can join.   | **Dot Vote**: opens the palette's Ask and drags a Dot Vote onto the canvas. **Poll**: drags a Poll beside it. **Check-In**: drags a Temperature Check under them                                                                                             |
+| **Stickies and Stickers** | Sticky notes for ideas, stickers to react.          | **Stickies**: opens Write and drags out three stickies in a row. **Write**: double-clicks each and types an idea. **Stickers**: opens Stickers, picks Reactions and drags a thumbs up and a heart onto two of them                                           |
+| **Reactions and Reveals** | Reaction pads and a reveal zone that hides answers. | **Reactions**: opens Session, picks React and drags a Confetti pad onto the canvas. **Reveal**: picks Session's Reveal Zone and draws it over two answer stickies; they hide under its cover                                                                 |
+| **Run the Room**          | Start a timer and a dot vote for everyone.          | **Timer**: presses a Timer button on the board; it counts down there and on the Session strip. **Vote**: presses Dot Vote; dots land on the notes as the room votes. **Results**: presses Vote on the Session strip to end it; the most-voted notes light up |
+
+Ask holds Dot Vote, Poll and Temperature Check; the Timer, Reveal Zone and reaction pads are in Session, whose groups
+(Tools, React, ...) the replay picks on Session's rail, putting the rail back on its first group as it closes. Run the
+Room's timer and vote are drawn from the replay (as Look and Feel's theme is), never started: the room sees nothing.
 
 ## The replay
 
@@ -145,6 +150,8 @@ The replay never changes the document:
 - **A look shown is not applied.** Look and Feel and Erase and Board show a theme or a board background on the canvas
   (and in the Theme & canvas dialog while it is open) from the replay, not the tab or the person's settings; the tab and
   the person's Draw background are exactly as they were when it ends.
+- **A session shown is not started.** Run the Room shows a running timer and a dot vote on the canvas and the Session
+  strip from the replay, not the tab: nothing starts for the room, and the tab's own timer and vote are as they were.
 - **Demo elements are never in the document's tabs.** They are drawn on the canvas beside the person's own, so autosave,
   the unload save, the offline copy, undo, export, the minimap's document and every collaborator never see them.
 - **Its selection is its own.** Selecting a demo element shows the real handles and toolbar on this screen only; the

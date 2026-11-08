@@ -78,6 +78,30 @@ const byTour = (trigger: string, open: () => Element | null): Openable => ({
 const TAB_STYLE = '[role="dialog"][aria-label="Tab style"]';
 const press = (selector: string) => findNode(selector)?.click();
 
+// A category on the palette's category bar, by its own anchor (`bar-<category id>`, CategoryBar.tsx
+// CategoryBarButtons): open while its button says so. A press with no pointer (detail 0) toggles it, as a keyboard
+// press does.
+const byBar = (tourId: string): Openable => ({
+  isOpen: () => findTour(tourId)?.getAttribute('aria-expanded') === 'true',
+  toggle: () => {
+    clickTour(tourId);
+  },
+});
+
+// A group on the open flyout's rail (PaletteCategoryRail.tsx, its `<nav aria-label="<things> groups">`), by its place
+// down the rail (a group's row holds its glyph and count, so its words are no handle). Opening presses its row;
+// closing presses the first row, which is where the rail starts when nothing is remembered, so the browse memory
+// (PaletteCategoryBrowser.tsx BrowseMemory) is put back as the replay leaves.
+const railRow = (things: string, n: number) =>
+  findNode(`nav[aria-label="${things} groups"] > button:nth-child(${n})`);
+const byRailGroup = (things: string, n: number): Openable => ({
+  isOpen: () => railRow(things, n)?.getAttribute('aria-current') === 'true',
+  toggle: () => {
+    const open = railRow(things, n)?.getAttribute('aria-current') === 'true';
+    railRow(things, open ? 1 : n)?.click();
+  },
+});
+
 // Every part of the chrome a topic may hold open, by the ids its frames name.
 export const OPENABLES: Record<string, Openable> = {
   // The palette's first category (Shapes; in Workshop also the first), its flyout.
@@ -112,7 +136,18 @@ export const OPENABLES: Record<string, Openable> = {
       else press('[data-tour-id="tab-style-fine-tune"] button[aria-label^="Canvas"]');
     },
   },
+  // Workshop's category bar (palette-layouts.ts WORKSHOP, session-category.tsx): Write, Ask, Session, Stickers.
+  'bar-write': byBar('bar-write'),
+  'bar-collab-ask': byBar('bar-collab-ask'),
+  'bar-session': byBar('bar-session'),
+  'bar-stickers': byBar('bar-stickers'),
+  // Session's groups (session-category.tsx SESSION_GROUP_IDS: Tools, Record, React, ...) and Stickers' (stickers.ts
+  // STICKER_CATEGORIES: Badges, Reactions, ...), on the open flyout's rail.
+  'session-tools': byRailGroup('session tools', 1),
+  'session-react': byRailGroup('session tools', 3),
+  'stickers-reactions': byRailGroup('stickers', 2),
 };
+
 
 /** Open what `want` names and close what the replay opened that it no longer names: the last opened first, so a panel
  *  inside a dialog closes before the dialog does (closing the dialog first, the panel's Back would reopen its home). */

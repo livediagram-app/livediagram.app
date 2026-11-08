@@ -60,7 +60,40 @@ export const CURRICULUM: Record<ReplayMode, readonly TopicCard[]> = {
     },
   ],
   draw: [],
-  workshop: [],
+  workshop: [
+    {
+      id: 'workshop-ask',
+      mode: 'workshop',
+      title: 'Ask the Room',
+      line: 'Dot votes, polls and check-ins everyone can join.',
+      telemetry: 'WorkshopAsk',
+      seconds: 20,
+    },
+    {
+      id: 'workshop-stickies',
+      mode: 'workshop',
+      title: 'Stickies and Stickers',
+      line: 'Sticky notes for ideas, stickers to react.',
+      telemetry: 'WorkshopStickies',
+      seconds: 25,
+    },
+    {
+      id: 'workshop-reveal',
+      mode: 'workshop',
+      title: 'Reactions and Reveals',
+      line: 'Reaction pads and a reveal zone that hides answers.',
+      telemetry: 'WorkshopReveal',
+      seconds: 15,
+    },
+    {
+      id: 'workshop-run',
+      mode: 'workshop',
+      title: 'Run the Room',
+      line: 'Start a timer and a dot vote for everyone.',
+      telemetry: 'WorkshopRun',
+      seconds: 20,
+    },
+  ],
 };
 
 export const ALL_TOPIC_CARDS: readonly TopicCard[] = [
