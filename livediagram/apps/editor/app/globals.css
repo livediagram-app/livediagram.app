@@ -1052,3 +1052,21 @@ html {
   opacity: 0.25 !important;
   transition: opacity 250ms ease;
 }
+
+/* Watch It Built's press (docs/specs/007-editor/watch-it-built.md "Motion"): one ripple out from the tip and gone,
+   never a repeating pulse. Still under reduced motion (the ring just shows for the press). */
+@keyframes lvd-replay-press {
+  from {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.9;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.4);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(.reduce-motion) [data-replay-press] {
+    animation: lvd-replay-press 420ms ease-out forwards;
+  }
+}

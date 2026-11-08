@@ -7,14 +7,12 @@ import {
   DEMO_IDS,
   LABEL,
   STYLE,
-  TOTAL_MS,
-  cursorPlan,
-  demoAt,
-  type ReplayLayout,
-} from './watch-it-built-script';
+  basics,
+  type BasicsLayout,
+} from './diagram-basics';
 
-// Watch It Built's script (docs/specs/007-editor/watch-it-built.md "The replay"): a pure function of (chapter, ms), so
-// a pause, a chapter press and reduced motion's Next are only a different moment.
+// The Basics (docs/specs/007-editor/watch-it-built.md "The replay"): a pure function of (chapter, ms), so a pause, a
+// chapter press and reduced motion's Next are only a different moment. What every topic must hold is in topics.test.ts.
 
 const shape = (id: string, label: string, y: number): ShapeElement => ({
   ...createShape('square', 0, 0),
@@ -39,8 +37,10 @@ const green: ShapeElement = {
   strokeColor: '#16a34a',
   colorPreset: 'success',
 };
-const layout: ReplayLayout = { a, b, arrow, green, tile: { x: 20, y: -300 } };
+const layout: BasicsLayout = { a, b, arrow, green, tile: { x: 20, y: -300 } };
 
+const demoAt = basics.frame;
+const cursorPlan = (index: number) => basics.plan(index, layout);
 const at = (id: string, ms: number) =>
   demoAt(
     CHAPTERS.findIndex((c) => c.id === id),
@@ -51,32 +51,37 @@ const byId = (frame: ReturnType<typeof demoAt>, id: string) =>
   frame.elements.find((e) => e.id === id);
 
 describe('CHAPTERS', () => {
-  it('plays Add, Connect, Label, Style, adding up to TOTAL_MS', () => {
+  it('plays Add, Connect, Label, Style', () => {
     expect(CHAPTERS.map((c) => c.id)).toEqual(['add', 'connect', 'label', 'style']);
-    expect(TOTAL_MS).toBe(CHAPTERS.reduce((sum, c) => sum + c.ms, 0));
-  });
-
-  it('words every line for touch, never with an em dash', () => {
-    for (const c of CHAPTERS) {
-      expect(c.sayTouch).not.toBe(c.say);
-      expect(`${c.say} ${c.sayTouch} ${c.name} ${c.shortName}`).not.toMatch(/—/);
-    }
+    expect(basics.chapters).toBe(CHAPTERS);
   });
 });
 
 describe('demoAt: Add', () => {
-  it('holds A unseen where it lands before the drag, for the host to measure', () => {
+  it('starts on an empty canvas with the palette shut', () => {
     const frame = at('add', 0);
-    expect(frame.elements).toEqual([{ ...a, opacity: 0 }]);
-    expect(frame.paletteOpen).toBe(false);
+    expect(frame.elements).toEqual([]);
+    expect(frame.open).toEqual([]);
   });
 
   it('opens the palette for each carry and closes it once the shape is out', () => {
-    expect(at('add', ADD.open1).paletteOpen).toBe(true);
-    expect(at('add', ADD.drag1[0] + 100).paletteOpen).toBe(true);
-    expect(at('add', ADD.drag1[0] + 300).paletteOpen).toBe(false);
-    expect(at('add', ADD.open2).paletteOpen).toBe(true);
-    expect(at('add', ADD.drag2[1]).paletteOpen).toBe(false);
+    const open = (ms: number) => at('add', ms).open?.includes('palette');
+    expect(open(ADD.open1)).toBe(true);
+    expect(open(ADD.drag1[0] + 100)).toBe(true);
+    expect(open(ADD.drag1[0] + 300)).toBe(false);
+    expect(open(ADD.open2)).toBe(true);
+    expect(open(ADD.drag2[1])).toBe(false);
+  });
+
+  it('holds the carried shape under the cursor while it is carried, and lets go as it lands', () => {
+    const mid = at('add', (ADD.drag1[0] + ADD.drag1[1]) / 2);
+    const carriedA = byId(mid, a.id) as ShapeElement;
+    expect(mid.hold).toEqual({
+      x: carriedA.x + carriedA.width / 2,
+      y: carriedA.y + carriedA.height / 2,
+    });
+    expect(at('add', ADD.drag1[1]).hold).toBeNull();
+    expect(demoAt(0, ADD.drag1[0] + 100, { ...layout, tile: null }).hold).toBeNull();
   });
 
   it('carries A from the palette tile, its centre on the tile, to where it lands', () => {
@@ -139,14 +144,13 @@ describe('demoAt: Label', () => {
 
 describe('demoAt: Style', () => {
   it('opens the menu on B, goes into Style then Presets, and picks the green look', () => {
-    expect(at('style', 0).menuOnB).toBe(false);
+    expect(at('style', 0).menu).toBeNull();
     expect(at('style', STYLE.menu)).toMatchObject({
-      menuOnB: true,
-      menuDepth: 0,
+      menu: { on: b.id, path: [] },
       selectedId: b.id,
     });
-    expect(at('style', STYLE.flyout).menuDepth).toBe(1);
-    expect(at('style', STYLE.presets).menuDepth).toBe(2);
+    expect(at('style', STYLE.flyout).menu?.path).toEqual(['Style']);
+    expect(at('style', STYLE.presets).menu?.path).toEqual(['Style', 'Presets']);
     expect((byId(at('style', STYLE.pick - 1), b.id) as ShapeElement).fillColor).toBe(b.fillColor);
     const picked = byId(at('style', STYLE.pick), b.id) as ShapeElement;
     expect(picked).toMatchObject({
@@ -154,7 +158,7 @@ describe('demoAt: Style', () => {
       colorPreset: 'success',
       label: 'Check stock',
     });
-    expect(at('style', STYLE.close).menuOnB).toBe(false);
+    expect(at('style', STYLE.close).menu).toBeNull();
   });
 
   it('clamps a chapter index past the end to the last chapter', () => {
@@ -175,6 +179,10 @@ describe('cursorPlan', () => {
   it('presses through the menu by the words on its rows', () => {
     const names = cursorPlan(3).flatMap((w) => (w.to.kind === 'menu' ? [w.to.name] : []));
     expect(names).toEqual(['Style', 'Presets', 'Success']);
+  });
+
+  it('starts each carry from the palette tile', () => {
+    expect(cursorPlan(0).filter((w) => w.to.kind === 'find')).toHaveLength(2);
   });
 
   it('falls back to the first chapter for an unknown index', () => {

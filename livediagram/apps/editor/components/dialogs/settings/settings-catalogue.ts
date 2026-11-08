@@ -1,5 +1,14 @@
 import { DATA_EXPORT_CATEGORY, WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
 import type { HelpArticleKey } from '@/lib/help-articles';
+import { CURRICULUM } from '@/lib/replay/curriculum';
+import type { ReplayMode } from '@/lib/replay/topic';
+import {
+  markTopicTaken,
+  offerTopicAgain,
+  setModeTopics,
+  topicsOwed,
+  topicTaken,
+} from '@/lib/watch-topics';
 import {
   HIDE_CURSORS_HINT,
   HIDE_CURSORS_LABEL,
@@ -412,6 +421,39 @@ function tourTracksSwitch(
       return { ...rest, [key]: false };
     },
   };
+}
+
+// Watch It Built's rows for a mode (docs/specs/007-editor/watch-it-built.md "Settings"): its switch, on while any of
+// its topics is owed (off takes them all, on offers them all again), then one switch per topic beneath it. The mode's
+// key is the stepped tour's old flag, kept so its telemetry tokens keep their series; the switch reads the topics.
+function watchRows(
+  mode: ReplayMode,
+  key: 'tourSeen' | 'drawTourSeen' | 'workshopTourSeen',
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec[] {
+  const parent: SettingsToggleRowSpec = {
+    ...tourSwitch(key, { ...row, helpArticle: 'diagramTour' }),
+    read: (p) => topicsOwed(p, mode).length > 0,
+    write: (p, v) => setModeTopics(p, mode, !v),
+  };
+  return [
+    parent,
+    ...CURRICULUM[mode].map(
+      (t): SettingsToggleRowSpec => ({
+        kind: 'toggle',
+        key: `watchTopic-${t.id}`,
+        section: 'Offer Again',
+        parent: key,
+        label: t.title,
+        description: t.line,
+        keywords: `tour replay learn watch ${mode} ${t.title.toLowerCase()}`,
+        helpArticle: 'diagramTour',
+        event: { category: 'UI', on: `Watch${t.telemetry}SeenOff`, off: `Watch${t.telemetry}SeenOn` },
+        read: (p) => !topicTaken(p, t.id),
+        write: (p, v) => (v ? offerTopicAgain(p, t.id) : markTopicTaken(p, t.id)),
+      }),
+    ),
+  ];
 }
 
 type TourSeenKey =
@@ -951,29 +993,29 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('tourSeen', {
-        // The Diagram tab's tour, Watch It Built (docs/specs/007-editor/watch-it-built.md; the stepped Diagram tour
-        // until 8 November 2026, the welcome tour until October 2026).
+      // Watch It Built (docs/specs/007-editor/watch-it-built.md "Settings"): one switch per mode over its topics,
+      // each topic's own switch nested beneath it.
+      ...watchRows('diagram', 'tourSeen', {
+        // Kept from the first Watch It Built (one replay, 8 November 2026) and the stepped Diagram tour before it.
         label: 'Watch It Built',
         event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
         keywords:
-          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
-        description: 'A cursor builds a small diagram so you can see how it is done.',
-        helpArticle: 'diagramTour',
+          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette look theme style search tidy replay learn',
+        description: 'Short replays of Diagram, offered from Start Tour until you have watched each.',
       }),
-      tourSwitch('workshopTourSeen', {
-        label: 'Workshop Tour',
-        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-        description: 'In Workshop.',
-        helpArticle: 'workshopTour',
-      }),
-      tourSwitch('drawTourSeen', {
-        label: 'Draw Tour',
+      ...watchRows('draw', 'drawTourSeen', {
+        label: 'Watch It Built in Draw',
         event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
-        description: 'In Draw.',
-        helpArticle: 'drawTour',
+        keywords:
+          'tour walkthrough onboarding tutorial draw whiteboard pen marker sketch eraser shapes replay learn',
+        description: 'Short replays of Draw.',
+      }),
+      ...watchRows('workshop', 'workshopTourSeen', {
+        label: 'Watch It Built in Workshop',
+        event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
+        keywords:
+          'tour walkthrough onboarding tutorial workshop facilitate session retro timer vote poll replay learn',
+        description: 'Short replays of Workshop.',
       }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',

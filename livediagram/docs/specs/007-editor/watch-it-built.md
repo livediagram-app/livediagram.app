@@ -3,12 +3,16 @@
 Status: **approved** (owner, 2026-11-08, Work Tracker #58 "New & Improved Page Tours": direction E, Watch It Built,
 picked from six designs; "the Tour offers to show us, and then the cursor moves to build a basic diagram and shows
 things like the context menu / toolbar etc in action"). Replaces the six-step [Diagram tour](editor-tour.md#the-steps).
+Extended (owner, 2026-11-08): "The tour shouldn't start immediately, it should offer me what I want to learn ... show
+me the basics, but also ... how to change the look and feel etc, find useful topics"; "do the same for draw and
+workshop modes ... create a working and amazing curriculum". So Watch It Built is now a set of short **topics** per
+mode, picked on a start panel, and it replaces the stepped Draw and Workshop tours too.
 
-**Watch It Built** is the Diagram tab's tour. A cursor named **Example**, drawn exactly like a collaborator's, builds a
-small diagram on the canvas in about half a minute, using the real chrome as it goes: the palette opens, shapes drop
-in, the quick-connect ring joins them, a label is typed, the element menu opens and changes a colour, and the selection
-toolbar shows above what is selected. A player bar under it has chapters, pause and **Your Turn**. Nothing it builds is
-kept: Your Turn hands the canvas back exactly as it was.
+**Watch It Built** is the editor's tour in every mode (Diagram, Draw, Workshop). A press asks **What would you like to
+learn?** and lists that mode's **topics**; picking one plays a short replay in which a cursor named **Example**, drawn
+exactly like a collaborator's, does the thing on the canvas using the real chrome: the palette opens, shapes drop in,
+menus and panels open, a look is picked. A player bar under it has chapters, pause and **Your Turn**. Nothing it builds
+or changes is kept: Your Turn hands the canvas back exactly as it was.
 
 ## Why
 
@@ -21,32 +25,87 @@ multiplayer canvas, so the tour also previews working together.
 | Term               | Means                                                                                                |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
 | **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Tours category |
-| **The replay**     | One run of it, from the press to its end                                                             |
+| **A topic**        | One thing to learn, played as one replay: **The Basics**, **Look and Feel**, **Sketch**, ...          |
+| **The curriculum** | A mode's topics, in the order the start panel lists them                                             |
+| **Start panel**    | What a press opens: "What would you like to learn?" and the mode's topics                            |
+| **The replay**     | One run of a topic, from the pick to its end                                                         |
 | **Example**        | The replay's cursor and its name chip                                                                |
 | **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                              |
-| **A chapter**      | One named part of the replay: **Add**, **Connect**, **Label**, **Style**                             |
+| **A chapter**      | One named part of a topic's replay (The Basics: **Add**, **Connect**, **Label**, **Style**)          |
 | **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                |
 | **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                        |
 
 ## Where it appears
 
-- **The footer's Start Tour button offers it**, at the Diagram tour's place and rank (`TOUR_OFFER_RANK.mode`), reading
-  **Watch It Built**, under the same rules as every tour ([Diagram tour](editor-tour.md#where-it-appears)): only on a
-  Diagram tab, to an Editor, once the editor is ready and the tab's start is done; never in read-only, an embed, a
-  locked tab or for a Participant; gone once taken; back from Settings. It never starts or offers itself.
-- **Taken** is the synced `tourSeen` preference, kept so nobody who took the stepped tour is offered it again. It is
-  written as the replay starts. Settings' Tours row reads **Watch It Built** ("A cursor builds a small diagram so you
-  can see how it is done").
-- **One tour at a time**, as before. Leaving Diagram mid-replay or switching tab ends it. No dialog can open while it
-  runs: the shield takes every press and key but the player's.
+- **The footer's Start Tour button offers it** in each mode, reading **Watch It Built**, at the mode tour's rank
+  (`TOUR_OFFER_RANK.mode`), under the same rules as every tour ([Diagram tour](editor-tour.md#where-it-appears)): to an
+  Editor, once the editor is ready and the tab's start is done; never in read-only, an embed, a locked tab or for a
+  Participant. It never starts or offers itself. It is on the button while the mode has a topic not yet taken, and back
+  from Settings.
+- **A press opens the start panel, never a replay.** See [The start panel](#the-start-panel).
+- **One tour at a time**, as before. Leaving the mode mid-replay or switching tab ends it. No dialog of the person's can
+  open while it runs: the shield takes every press and key but the player's.
+
+## The start panel
+
+Opened by a press on Watch It Built (or a Settings rerun), in the player's place low over the canvas, as a card of the
+player's look:
+
+- **"What would you like to learn?"** and one line: "Short replays on your own canvas. Nothing is saved."
+- The mode's topics as rows, each with its name, one line on what it shows, about how long it runs ("30 s"), and a
+  **Done** tick once taken. Any row plays its topic; a taken one plays again.
+- **Not Now** closes the panel. Nothing is recorded and the button stays.
+- Keyboard: the rows are buttons in order (Tab, Enter); Escape is Not Now. The panel takes focus when it opens.
+- A topic ending (Your Turn, or Done under reduced motion) offers **More Topics** beside Your Turn when the mode has
+  another; it reopens the panel. Escape and leaving end the run without it.
+- Taken: a topic is taken when it is picked (so a reload mid-replay leaves it taken). The record is the synced
+  `watchTopics` list of topic ids. A mode's button goes once every one of its topics is taken. The older `tourSeen`
+  (someone who watched the first Watch It Built) counts as **The Basics** taken; `drawTourSeen` and `workshopTourSeen`
+  (the stepped tours) count as nothing, since those tours showed none of these replays.
+
+## The curriculum
+
+Each topic is a short replay (20 to 35 s) of two to four chapters, on its mode's canvas, built round the middle of the
+view. Lines name clicks on a computer and taps on a touch screen.
+
+### Diagram
+
+| Topic             | Line on the start panel                                     | Chapters: what Example does with the real chrome                                                                                                                                                 |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **The Basics**    | Add shapes, join them, name them and colour one.            | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                   |
+| **Look and Feel** | Give the whole canvas a new look and background.            | **Open Style**: presses the footer's Style; the real Theme & canvas dialog opens. **Pick a Look**: presses two looks in turn; the canvas and demo restyle live. **Canvas**: opens Canvas and picks Grid |
+| **Style a Shape** | Colours, border, shadow and font for one shape.             | **Colours**: right-click, Style, Colours, a fill. **Border**: Border, a thicker dashed edge. **Shadow**: Shadow, a soft preset. **Font**: Text, Font, a hand-drawn face                            |
+| **Find Anything** | Search for any shape or icon and drop it in.                | **Search**: presses Search on the strip and types "database". **Drop**: presses the first result; it lands on the canvas. **Again**: searches "user" and drops an icon beside it                   |
+| **Tidy Up**       | Lay a messy flow out neatly in one press.                   | **The Mess**: five joined shapes scattered at odd angles. **Tidy Up**: presses Tidy Up; the shapes glide into a clean top-to-bottom flow                                                           |
+
+### Draw
+
+| Topic                  | Line on the start panel                              | Chapters                                                                                                                                                       |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sketch**             | Pick up a marker and draw.                           | **Pick Up**: presses the first marker on the dock. **Draw**: a freehand line and a little house are drawn under the cursor                                     |
+| **Shape Recognition**  | Wobbly lines become clean shapes when you hold.      | **Rough**: a wobbly circle is drawn. **Hold**: the cursor rests; the stroke snaps into a clean ellipse. **Again**: a rough box snaps into a rectangle           |
+| **Pens and Colours**   | Choose each marker's colour and width.               | **Open**: presses the marker in hand again; its flyout opens. **Colour**: picks a colour and a wider width. **Draw**: a stroke in the new pen                   |
+| **Shapes and Stickies**| Add shapes and sticky notes from the dock.           | **Shapes**: opens the dock's Shapes and drops a rectangle. **Sticky**: adds a sticky note and types on it                                                      |
+| **Erase and Board**    | Rub things out and change what's behind your work.   | **Erase**: picks the Eraser and rubs out a stroke. **Board**: opens the dock's settings cog and picks Dots, then Grid; the board changes behind the strokes     |
+
+### Workshop
+
+| Topic                     | Line on the start panel                                    | Chapters                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask the Room**          | Timers, votes and polls everyone can join.                 | **Ask**: opens the palette's Ask; drops a Timer. **Vote**: drops a Dot Vote beside it. **Poll**: drops a Poll                                                  |
+| **Stickies and Stickers** | Sticky notes for ideas, stickers to react.                 | **Stickies**: drops three stickies in a row and types on them. **Stickers**: opens Decorate's Stickers and drops two on the stickies                            |
+| **Reactions and Reveals** | Reaction pads and a reveal zone that hides answers.        | **Reactions**: drops a reaction pad. **Reveal**: drops a reveal zone over two stickies; they hide under its cover                                              |
 
 ## The replay
 
-- **A press starts it at once.** The canvas fades back (the person's elements at a quarter strength), the player appears
+The replay is the same for every topic; The Basics is described here as the example.
+
+- **A pick starts it at once.** The canvas fades back (the person's elements at a quarter strength), the player appears
   low over the canvas with Example's line in it, and Example sets off. Nothing sits over the toolbar or palette, so
   every press Example makes is in view. The tab's empty-canvas card and tray stay away while the demo fills it. The demo
   is built round the middle of the view, in whatever space is there; the view never pans or zooms.
-- **The chapters**, each a few seconds, in order. Each chapter's one short line sits in the player, after **Example**:
+- **The chapters** (The Basics), each a few seconds, in order. Each chapter's one short line sits in the player, after
+  **Example**:
 
   | Chapter | What Example does, with the real chrome                                                                                                               | Example's line                                                |
   | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -64,7 +123,8 @@ multiplayer canvas, so the tour also previews working together.
   shield), except the player and Escape. Escape ends the replay as skipped.
 - **It ends**:
   - **Your Turn** (in the player, and after the last chapter, where the player holds on the finished diagram):
-    the demo goes, the canvas comes back to full strength exactly as it was, and the tour is finished.
+    the demo goes, the canvas comes back to full strength exactly as it was, and the tour is finished. **More Topics**
+    beside it does the same and opens the start panel.
   - **Escape**, a change of tab or mode, or leaving the page: the same, recorded as skipped.
 
 ## The player
@@ -82,6 +142,9 @@ multiplayer canvas, so the tour also previews working together.
 
 The replay never changes the document:
 
+- **A look shown is not applied.** Look and Feel and Erase and Board show a theme or a board background on the canvas
+  (and in the Theme & canvas dialog while it is open) from the replay, not the tab or the person's settings; the tab and
+  the person's Draw background are exactly as they were when it ends.
 - **Demo elements are never in the document's tabs.** They are drawn on the canvas beside the person's own, so autosave,
   the unload save, the offline copy, undo, export, the minimap's document and every collaborator never see them.
 - **Its selection is its own.** Selecting a demo element shows the real handles and toolbar on this screen only; the
@@ -105,15 +168,27 @@ The replay never changes the document:
 
 ## Telemetry
 
-The Diagram tour's events, kept so its funnel carries on: `UI·Opened·TourOffer` (the button first offering it in a
-page load), `UI·Started·Tour` (a press, or a Settings rerun), `UI·View·TourStep<Chapter>` as each chapter starts
-(`TourStepAdd`, `TourStepConnect`, `TourStepLabel`, `TourStepStyle`; a chapter press sends its chapter again), and
-`UI·Ended·TourCompleted` (Your Turn) or `UI·Ended·TourSkipped`. The dashboard's Tour Steps ranking reads the four
-chapters in order ([Telemetry](../017-telemetry/telemetry.md)); the six stepped-tour step tokens stop being sent and
-leave the ranking.
+- `UI·Opened·TourOffer` (the button first offering it in a page load), as before.
+- `UI·Opened·WatchStart` when the start panel opens (a press or a Settings rerun).
+- `UI·Started·Tour` when a topic is picked, plus `UI·View·WatchTopic<Topic>` naming it (`WatchTopicBasics`,
+  `WatchTopicLook`, ...; one token per topic id).
+- `UI·View·TourStep<Chapter>` as each chapter starts (The Basics: `TourStepAdd`, `TourStepConnect`, `TourStepLabel`,
+  `TourStepStyle`; other topics' chapters likewise, by their chapter id).
+- `UI·Ended·TourCompleted` (Your Turn, More Topics, Done) or `UI·Ended·TourSkipped`.
+
+The dashboard's Tour Steps ranking reads The Basics' four chapters in order ([Telemetry](../017-telemetry/telemetry.md)).
+
+## Settings
+
+Settings' Tours (Getting Started) category, section **Offer Again**: one switch per mode over all its topics (**Watch
+It Built**, **Watch It Built in Draw**, **Watch It Built in Workshop**, on while any of its topics is not taken), and
+one switch per topic nested under it, named by the topic ("The Basics", "Look and Feel", ...). On means not yet taken.
+A mode's switch turned on from off forgets its topics; a topic's switch forgets that topic. Turned on and Settings
+closed, the start panel opens if the editor is in that mode.
 
 ## Out of scope
 
-- The Draw and Workshop tours and the element tours keep the stepped engine for now (#58 covers them later).
+- The element tours keep the stepped engine. The stepped Draw and Workshop tours are retired: Watch It Built in Draw
+  and Workshop replaces them.
 - The demo cannot be kept as the person's own diagram. It is a demonstration, and the templates are where a diagram
   starts.

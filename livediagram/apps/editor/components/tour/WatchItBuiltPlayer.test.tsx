@@ -8,7 +8,8 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShapeElement } from '@livediagram/document';
 import { replayStore } from '@/lib/replay/replay-store';
-import { ADD, CHAPTERS } from '@/lib/replay/watch-it-built-script';
+import { ADD, CHAPTERS } from '@/lib/replay/topics/diagram-basics';
+import { CURRICULUM } from '@/lib/replay/curriculum';
 import { WatchItBuiltPlayer } from './WatchItBuiltPlayer';
 
 const telemetry = vi.hoisted(() => {
@@ -56,6 +57,7 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
 }));
 
 const onEnded = vi.fn();
+const card = CURRICULUM.diagram[0]!;
 const closeContextMenu = vi.fn();
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {
@@ -103,24 +105,30 @@ const press = (name: 'onToggle' | 'onYourTurn') =>
 describe('WatchItBuiltPlayer', () => {
   it('starts as it mounts: pauses telemetry and plays the demo in the replay store', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     expect(closeContextMenu).toHaveBeenCalled();
     expect(document.documentElement.hasAttribute('data-replay')).toBe(true);
     expect(replayStore.get().active).toBe(true);
     expect(telemetry.state.paused).toBe(true);
     expect(telemetry.sent).toEqual(['View·TourStepAdd']);
     expect(overlay.props).toMatchObject({ index: 0, playing: true, finished: false });
-    // A waits unseen where it will land, so the host can measure it.
-    expect(replayStore.get().elements.map((e) => e.id)).toEqual(['wib-a']);
+    // The canvas starts empty: A comes out of the palette.
+    expect(replayStore.get().elements).toEqual([]);
   });
 
   it('ends on Your Turn: the demo and fade go, telemetry resumes, and it counts as completed', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     const yourTurn = overlay.props!.onYourTurn as () => void;
     overlay.props = null;
     act(() => yourTurn());
-    expect(replayStore.get()).toEqual({ active: false, elements: [], menu: null });
+    expect(replayStore.get()).toEqual({
+      active: false,
+      elements: [],
+      menu: null,
+      tab: null,
+      prefs: null,
+    });
     expect(document.documentElement.hasAttribute('data-replay')).toBe(false);
     expect(telemetry.state.paused).toBe(false);
     expect(telemetry.sent.at(-1)).toBe('Ended·TourCompleted');
@@ -130,7 +138,7 @@ describe('WatchItBuiltPlayer', () => {
 
   it('ends as skipped on Escape', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
@@ -141,16 +149,16 @@ describe('WatchItBuiltPlayer', () => {
 
   it('ends as skipped when the tab changes under it', () => {
     editor();
-    const { rerender } = render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    const { rerender } = render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     editor({ activeTab: { id: 'tab2', elements: [] } });
-    rerender(<WatchItBuiltPlayer onEnded={onEnded} />);
+    rerender(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     expect(replayStore.get().active).toBe(false);
     expect(telemetry.sent.at(-1)).toBe('Ended·TourSkipped');
   });
 
   it('jumps to a chapter on its press, and pauses and plays on the button', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     act(() => (overlay.props!.onChapter as (i: number) => void)(2));
     expect(overlay.props).toMatchObject({ index: 2, ms: 0, playing: true });
     expect(telemetry.sent).toContain('View·TourStepLabel');
@@ -163,7 +171,7 @@ describe('WatchItBuiltPlayer', () => {
   it('with reduced motion, steps chapter end states on Next and finishes on Done', () => {
     reduced = true;
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     expect(overlay.props).toMatchObject({ index: 0, playing: false, reduced: true });
     for (let i = 1; i < CHAPTERS.length; i++) {
       press('onToggle');
@@ -183,7 +191,7 @@ describe('WatchItBuiltPlayer reduce motion', () => {
     document.documentElement.classList.add('reduce-motion');
     try {
       editor();
-      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
       expect(overlay.props).toMatchObject({
         playing: false,
         reduced: true,
@@ -198,7 +206,7 @@ describe('WatchItBuiltPlayer reduce motion', () => {
 describe('WatchItBuiltPlayer clock', () => {
   it('plays on its own through the chapters, sending each one, and holds on the finished diagram', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     act(() => {
       vi.advanceTimersByTime(CHAPTERS[0]!.ms + 200);
     });
@@ -219,73 +227,74 @@ describe('WatchItBuiltPlayer clock', () => {
     expect(overlay.props).toMatchObject({ index: 0, playing: true, finished: false });
   });
 
-  it('holds the carried shape: mid-carry the cursor is its centre, pressed, even with the palette gone', () => {
-    editor();
-    const a = document.createElement('div');
-    a.setAttribute('data-element-id', 'wib-a');
-    a.getBoundingClientRect = () => ({ left: 600, top: 200, width: 200, height: 56 }) as DOMRect;
-    document.body.append(a);
+  it('holds the carried shape: mid-carry the cursor is its centre, holding, even with the palette gone', () => {
+    // The canvas fills a 1440x900 screen at zoom 1, so a canvas point is its screen point.
+    const host = document.createElement('div');
+    host.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1440, height: 900 }) as DOMRect;
+    editor({ canvasMainRef: { current: host } });
     const menu = document.createElement('div');
     const tile = document.createElement('button');
     tile.getBoundingClientRect = () => ({ left: 359, top: 227, width: 73, height: 73 }) as DOMRect;
     menu.append(tile);
+    menu.setAttribute('data-tour-id', 'palette-category-menu');
+    document.body.append(menu);
     tourEls.set('palette-category-menu', menu);
     try {
-      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
       act(() => {
-        vi.advanceTimersByTime(ADD.drag1[0] - 100);
+        vi.advanceTimersByTime(ADD.drag1[0] + 20);
       });
-      const landed = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      // The carry starts on the tile.
+      const start = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      expect(start.x + start.width / 2).toBeCloseTo(395.5, 0);
+      expect(start.y + start.height / 2).toBeCloseTo(263.5, 0);
       // The palette closes during the carry; the cursor stays on the shape all the same.
       tourEls.clear();
+      menu.remove();
       act(() => {
-        vi.advanceTimersByTime((ADD.drag1[1] - ADD.drag1[0]) / 2 + 100);
+        vi.advanceTimersByTime((ADD.drag1[1] - ADD.drag1[0]) / 2);
       });
       const carried = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
-      // Settled map: zoom 1, A's landing at (600, 200) on the screen.
       expect(overlay.props!.cursor).toEqual({
-        x: 600 + (carried.x - landed.x) + 100,
-        y: 200 + (carried.y - landed.y) + 28,
-        pressing: true,
+        x: carried.x + carried.width / 2,
+        y: carried.y + carried.height / 2,
+        pressing: false,
+        holding: true,
       });
     } finally {
-      a.remove();
       tourEls.clear();
     }
   });
 
-  it('carries A out from the palette tile even when its first measured frames were still settling', () => {
-    editor();
-    // A's entrance scales it at first (227x64 for 200x56); one reading then put the tile far off the screen.
-    let rect = { left: 606, top: 200, width: 227, height: 64 };
-    const a = document.createElement('div');
-    a.setAttribute('data-element-id', 'wib-a');
-    a.getBoundingClientRect = () => rect as DOMRect;
+  it('reads the palette tile again while the palette is still settling, until the first carry', () => {
+    const host = document.createElement('div');
+    host.getBoundingClientRect = () => ({ left: 0, top: 0, width: 1440, height: 900 }) as DOMRect;
+    editor({ canvasMainRef: { current: host } });
+    // The flyout opens with a scale, so its tile first reads off where it ends.
+    let rect = { left: 300, top: 180, width: 60, height: 60 };
     const menu = document.createElement('div');
     const tile = document.createElement('button');
-    tile.getBoundingClientRect = () => ({ left: 359, top: 227, width: 73, height: 73 }) as DOMRect;
+    tile.getBoundingClientRect = () => rect as DOMRect;
     menu.append(tile);
+    menu.setAttribute('data-tour-id', 'palette-category-menu');
+    document.body.append(menu);
     tourEls.set('palette-category-menu', menu);
-    document.body.append(a);
     try {
-      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
       act(() => {
-        vi.advanceTimersByTime(200);
+        vi.advanceTimersByTime(ADD.open1 + 50);
       });
-      rect = { left: 620, top: 204, width: 200, height: 56 };
-      act(() => {
-        vi.advanceTimersByTime(ADD.drag1[0] - 400);
-      });
-      const landed = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
-      act(() => {
-        vi.advanceTimersByTime(220);
-      });
-      const carried = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
-      // On the screen (settled map: zoom 1, A's landing at 620) the carried centre starts at the tile's, 395.
-      const screenX = 620 + (carried.x - landed.x) + carried.width / 2;
-      expect(Math.abs(screenX - 395.5)).toBeLessThan(12);
+      rect = { left: 359, top: 227, width: 73, height: 73 };
+      // A frame at a time (act draws once at its end), so the player sees the moments before the carry.
+      for (let t = ADD.open1 + 50; t < ADD.drag1[0] + 50; t += 100) {
+        act(() => {
+          vi.advanceTimersByTime(100);
+        });
+      }
+      const start = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      expect(Math.abs(start.x + start.width / 2 - 395.5)).toBeLessThan(12);
     } finally {
-      a.remove();
+      menu.remove();
       tourEls.clear();
     }
   });
@@ -312,7 +321,7 @@ describe('WatchItBuiltPlayer clock', () => {
     menu.append(tile);
     tourEls.set('palette-category-menu', menu);
     try {
-      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
       let last = overlay.props!.cursor as { x: number; y: number } | null;
       let worst = 0;
       const total = CHAPTERS.reduce((sum, c) => sum + c.ms, 0);
@@ -334,7 +343,7 @@ describe('WatchItBuiltPlayer clock', () => {
 
   it('leaves nothing behind when it unmounts mid-run', () => {
     editor();
-    const { unmount } = render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    const { unmount } = render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     unmount();
     expect(replayStore.get().active).toBe(false);
     expect(document.documentElement.hasAttribute('data-replay')).toBe(false);
@@ -343,7 +352,7 @@ describe('WatchItBuiltPlayer clock', () => {
 
   it('steps chapters on the arrow keys and toggles on Space', () => {
     editor();
-    render(<WatchItBuiltPlayer onEnded={onEnded} />);
+    render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     const key = (k: string) =>
       act(() => {
         window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));

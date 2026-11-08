@@ -12,7 +12,8 @@ const closeReplayMenu = () => replayStore.set({ menu: null });
 
 // While Watch It Built runs (docs/specs/007-editor/blueprints/watch-it-built.md "The scope"), the canvas and the
 // element menu see the demo drawn in: the active tab's elements with the demo's after them, the replay's held menu and
-// the replay's own selection. Nothing else in the editor sees any of it, so it is never saved, sent or undone.
+// the replay's own selection, and any look the replay is showing (the tab's theme or background, the person's Draw
+// board) over the real one. Nothing else in the editor sees any of it, so it is never saved, sent or undone.
 export function ReplayScope({ children }: { children: ReactNode }) {
   const ctx = useEditorContext();
   const replay = useReplayState();
@@ -20,7 +21,14 @@ export function ReplayScope({ children }: { children: ReactNode }) {
     if (!replay.active) return null;
     return {
       ...ctx,
-      activeTab: { ...ctx.activeTab, elements: [...ctx.activeTab.elements, ...replay.elements] },
+      activeTab: {
+        ...ctx.activeTab,
+        ...replay.tab,
+        elements: [...ctx.activeTab.elements, ...replay.elements],
+      },
+      ...(replay.prefs
+        ? { userPreferences: { ...ctx.userPreferences, ...replay.prefs } }
+        : {}),
       contextMenu: replay.menu,
       setContextMenu: setReplayMenu,
       closeContextMenu: closeReplayMenu,
