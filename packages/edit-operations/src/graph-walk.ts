@@ -21,12 +21,16 @@ export function reachableFrom(
       direction === 'downstream'
         ? [el.from.elementId, el.to.elementId]
         : [el.to.elementId, el.from.elementId];
-    next.set(a, [...(next.get(a) ?? []), b]);
+    // Pushed in place: a copy per arrow made a hub's out-arrows quadratic.
+    const out = next.get(a);
+    if (out) out.push(b);
+    else next.set(a, [b]);
   }
   const seen = new Set<string>([start]);
   const queue = [start];
-  for (let at = queue.shift(); at !== undefined; at = queue.shift()) {
-    for (const id of next.get(at) ?? []) {
+  // An index into the queue rather than shift(), which moves every later entry.
+  for (let head = 0; head < queue.length; head++) {
+    for (const id of next.get(queue[head]!) ?? []) {
       if (seen.has(id)) continue;
       seen.add(id);
       queue.push(id);

@@ -77,6 +77,7 @@ vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
 });
 import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
+import { createPeerMotion } from '@/lib/peer-motion';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
@@ -96,7 +97,13 @@ const STABLE = {
   chairSitters: () => [],
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
-  remoteCursors: [],
+  peers: {
+    motion: createPeerMotion(),
+    livePresenceById: new Map(),
+    selfId: 'me',
+    activeId: 't1',
+    tabFocus: new Map(),
+  },
   remoteSelectionsByElement: new Map(),
   selectionInput: {
     elements: BOARD,

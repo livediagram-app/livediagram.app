@@ -7,7 +7,7 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
-import { useLayoutEffect, useRef } from 'react';
+import { memo, useLayoutEffect, useRef } from 'react';
 import type { DrinkKind } from '../office-geometry';
 import { avatarGlides } from '../relay';
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '../status';
@@ -52,7 +52,7 @@ export function StatusDot({ status }: { status: AvatarStatus }) {
   );
 }
 
-export function AvatarWalker({
+function AvatarWalkerView({
   pos,
   facing,
   config,
@@ -119,12 +119,15 @@ export function AvatarWalker({
   // style prop: whether a move glides depends on where the character stood before it.
   const placed = useRef<HTMLDivElement>(null);
   const from = useRef(pos);
+  // By coordinates: a caller hands a fresh `pos` each render, and a render for anything else must not re-judge the glide.
+  const { x, y } = pos;
   useLayoutEffect(() => {
     const el = placed.current;
-    const glides = avatarGlides(from.current, pos, glideMs, walking);
-    from.current = pos;
+    const at = { x, y };
+    const glides = avatarGlides(from.current, at, glideMs, walking);
+    from.current = at;
     if (el) el.style.transition = glides ? `left ${glideMs}ms linear, top ${glideMs}ms linear` : '';
-  }, [pos, glideMs, walking]);
+  }, [x, y, glideMs, walking]);
   return (
     <>
       {/* The status for a screen reader (docs/specs/008-canvas/avatar-mode.md "Status"): the character itself is
@@ -239,3 +242,27 @@ export function AvatarWalker({
     </>
   );
 }
+
+type WalkerProps = Parameters<typeof AvatarWalkerView>[0];
+
+// The props equal when each is the same value, or a plain object (pos, config, pose, standingOn) with the same fields:
+// callers build those afresh every render (a peer's position and parsed costume from their latest packet).
+export function walkerPropsEqual(prev: WalkerProps, next: WalkerProps): boolean {
+  const keys = new Set([...Object.keys(prev), ...Object.keys(next)]) as Set<keyof WalkerProps>;
+  for (const key of keys) {
+    const a: unknown = prev[key];
+    const b: unknown = next[key];
+    if (a === b) continue;
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+    const ra = a as Record<string, unknown>;
+    const rb = b as Record<string, unknown>;
+    const fields = Object.keys(ra);
+    if (fields.length !== Object.keys(rb).length) return false;
+    for (const f of fields) if (ra[f] !== rb[f]) return false;
+  }
+  return true;
+}
+
+// Memoised: a room's presence flush re-renders the layer that maps every peer, and only the peers who moved, turned
+// or changed costume need their sprite (a few hundred SVG nodes) drawn again.
+export const AvatarWalker = memo(AvatarWalkerView, walkerPropsEqual);

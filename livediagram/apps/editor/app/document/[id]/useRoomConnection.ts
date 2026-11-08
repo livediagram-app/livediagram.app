@@ -37,7 +37,7 @@ import {
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
+import { applyRoomOpToTabs, remoteRoomOp, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
@@ -424,10 +424,15 @@ export function useRoomConnection(opts: {
         // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
         // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
         const savedBefore = saveBaseline.tabs.current;
-        applyRemoteOp((prev) =>
+        // The undo snapshots take the op later, when one is restored (historyApplyRemoteOp): the pending idea
+        // posts are read once, when the present takes it, so a snapshot gets the answer the present got.
+        let pending: readonly string[] | undefined;
+        const pendingNow: PendingIdeaIds | undefined =
+          pendingIdeaIds && ((tabId, elementId) => (pending ??= pendingIdeaIds(tabId, elementId)));
+        applyRemoteOp(
           op.kind === 'document-meta'
-            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op, pendingIdeaIds),
+            ? (prev) => keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
+            : remoteRoomOp(op, pendingNow),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         const switched = peerModeSwitchOf(op);

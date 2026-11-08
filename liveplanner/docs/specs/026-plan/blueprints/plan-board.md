@@ -660,7 +660,8 @@ planKind }`, published before paint by `usePlanCoverWiring` (called once from `u
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).
 - **Set-up edits**: board commits via `PlanContext.updateBoard(boardId, setup)`; Delete Status on a state that holds
   cards opens `RemoveColumnPopover` first (move them to another column of this board, or to the Trash), the move done
-  before the state's column comes off every board.
+  before the state's column comes off every board. The move is one `moveItems` batch (`columnCardMoves`): one write,
+  one undo step and one room op for the whole column, never one per card.
 - **Face-down**: `setup.hideWriting && item.createdBy.id !== viewerId` → face shows the author's colour and
   "Hidden until reveal".
 - **Presence**: room presence op `plan-presence` `{ tabId, itemId | null, state: 'drag' | 'view' }`, sent on a

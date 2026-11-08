@@ -85,6 +85,7 @@ import { useCanvasCall } from '@/components/calls/useCanvasCall';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
 import { isPieceControlPress } from '@/lib/piece-control';
 import { useElementReader } from '@/components/canvas/collab/ElementReader';
+import { usePeerAvatarRows } from '@/hooks/collab/usePeerRows';
 
 // Speech bubbles (docs/specs/008-canvas/avatar-mode.md "Speech bubbles") load the first time somebody speaks:
 // nothing on the canvas needs them before then.
@@ -132,6 +133,9 @@ function CanvasView(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
+  // Peers' characters on this tab, read from the peer-motion store here, where they are drawn: a frame of their
+  // walking renders the canvas, not the editor (docs/specs/008-canvas/canvas-performance.md).
+  const remoteAvatars = usePeerAvatarRows(props.peers);
   // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
   const viewportStore = useViewportStore();
   const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
@@ -283,6 +287,7 @@ function CanvasView(props: CanvasProps) {
     speechBubbles,
   } = useCanvasAvatar({
     props,
+    remoteAvatars,
     canvasTool,
     elements,
     mainRef,
@@ -295,6 +300,7 @@ function CanvasView(props: CanvasProps) {
   // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): the call and its equaliser.
   const call = useCanvasCall({
     props,
+    remoteAvatars,
     canvasTool,
     avatar,
     avatarScale: avatarScale(avatarLook.config.size),
@@ -379,7 +385,7 @@ function CanvasView(props: CanvasProps) {
     setPan,
     setMarquee,
     avatar,
-    peerAvatars: props.remoteAvatars,
+    peerAvatars: remoteAvatars,
     onPushPeer: props.onAvatarPush,
     elements,
     onToggleDoor: props.onToggleDoor,
@@ -614,7 +620,7 @@ function CanvasView(props: CanvasProps) {
           {/* Where people can hear you while you talk, on the floor under every character, unless Settings
             turned it off (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). */}
           {props.settings.hearingRing !== false ? <HearingRing {...call.ring} /> : null}
-          {props.remoteAvatars.map((peer) => (
+          {remoteAvatars.map((peer) => (
             <AvatarWalker
               key={peer.id}
               pos={{ x: peer.avatar.x, y: peer.avatar.y }}
@@ -712,7 +718,7 @@ function CanvasView(props: CanvasProps) {
                 offsetY: viewportOffset.y,
                 height: mainSize.height,
               }}
-              peers={props.remoteAvatars}
+              peers={remoteAvatars}
               self={{ name: props.selfParticipant.name, colour: props.selfParticipant.color }}
               // Speech rises clear of camera and screen bubbles (video-and-screen-bubbles.md "Close together").
               obstacles={callBubbleRects}

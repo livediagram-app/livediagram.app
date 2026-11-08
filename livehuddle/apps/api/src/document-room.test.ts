@@ -336,6 +336,36 @@ describe('DocumentRoom non-WebSocket upgrades', () => {
   });
 });
 
+describe('DocumentRoom repeat hello', () => {
+  // docs/specs/015-api/api.md "Realtime model": a hello that changes nothing on the roster sends nobody a new one,
+  // so one socket at the frame-rate cap cannot make the room rebuild every roster; a real change still does.
+  it('sends nobody a new roster for a repeat hello that changes nothing, and everyone one for a change', () => {
+    const { room } = newRoom();
+    const viewer = makeSocket();
+    const peer = makeSocket();
+    room.acceptSession(asWs(viewer), 'view');
+    room.acceptSession(asWs(peer), 'edit');
+    const hello = (ws: FakeSocket, name: string) =>
+      sendFrame(room, ws, { kind: 'hello', participant: { id: 'x', name, color: '#000' } });
+    hello(viewer, 'Vic');
+    hello(peer, 'Pat');
+    const rosters = () => [
+      receivedOf(viewer, 'presence').length,
+      receivedOf(peer, 'presence').length,
+    ];
+    const before = rosters();
+    for (let i = 0; i < 20; i++) hello(viewer, 'Vic');
+    expect(rosters()).toEqual(before);
+    hello(viewer, 'Victor');
+    expect(rosters()).toEqual([before[0]! + 1, before[1]! + 1]);
+    expect(
+      receivedOf(peer, 'presence')
+        .at(-1)!
+        .participants.map((p) => p.name),
+    ).toEqual(['Victor']);
+  });
+});
+
 describe('DocumentRoom hello frame role forcing', () => {
   it('overrides whatever role the client claims with the server-resolved role', () => {
     const { room } = newRoom();
