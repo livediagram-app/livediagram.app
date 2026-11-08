@@ -62,7 +62,10 @@ export function sameFences(p: readonly FenceSegment[], q: readonly FenceSegment[
     if (s.a.x !== t.a.x || s.a.y !== t.a.y || s.b.x !== t.b.x || s.b.y !== t.b.y) return false;
     const r = s.solid;
     const u = t.solid;
-    if (r !== u && (!r || !u || r.x !== u.x || r.y !== u.y || r.width !== u.width || r.height !== u.height))
+    if (
+      r !== u &&
+      (!r || !u || r.x !== u.x || r.y !== u.y || r.width !== u.width || r.height !== u.height)
+    )
       return false;
   }
   return true;

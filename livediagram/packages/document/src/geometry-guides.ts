@@ -256,10 +256,7 @@ function distributeAxis(
 // Made once per snap, answered per item on demand: the items sorted by `high` (left neighbours) and by `low` (right
 // ones), so an item walks outward from where it stands to its nearest neighbour sharing its row rather than scanning
 // every item. Ties fall to the earlier item, as a scan in order kept the first it met.
-function nearestGapsOf(
-  items: DistAxisItem[],
-  axis: 'x' | 'y',
-): (i: number) => ItemGap[] {
+function nearestGapsOf(items: DistAxisItem[], axis: 'x' | 'y'): (i: number) => ItemGap[] {
   // Sorted only once enough items have asked (measured: a scan each wins below about one item in sixteen): a small
   // box's row is a handful of items, cheaper to scan than to sort the board for.
   let byHigh: number[] | null = null;

@@ -35,7 +35,11 @@ describe('distributionSnap performance', () => {
       distributionSnap({ x: 1003 + k, y: -50, width: 300, height: 100_000 }, els, none, 6);
     for (let i = 0; i < WARM_UP_PASSES; i++) move(i);
     let best = Infinity;
-    for (let i = 0; i < PASSES; i++) best = Math.min(best, cpuMsOf(() => move(i)));
+    for (let i = 0; i < PASSES; i++)
+      best = Math.min(
+        best,
+        cpuMsOf(() => move(i)),
+      );
     expect(best).toBeLessThan(cpuBudgetMs(40));
   });
 });

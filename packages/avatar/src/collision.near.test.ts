@@ -23,7 +23,10 @@ describe('fencesNear', () => {
   });
 
   it('keeps a far edge of a footprint the walker stands inside, and drops it from outside', () => {
-    const edge: FenceSegment = { ...line(0, 0, 1000, 0), solid: { x: 0, y: 0, width: 1000, height: 1000 } };
+    const edge: FenceSegment = {
+      ...line(0, 0, 1000, 0),
+      solid: { x: 0, y: 0, width: 1000, height: 1000 },
+    };
     expect(fencesNear({ x: 500, y: 500 }, 20, [edge])).toEqual([edge]);
     expect(fencesNear({ x: 500, y: 1500 }, 20, [edge])).toEqual([]);
   });
@@ -33,7 +36,10 @@ describe('fencesNear on a big list', () => {
   // 100 short lines in a row, 300 px apart, so the grid answers; one wall long enough to sit outside it.
   const row = Array.from({ length: 100 }, (_, i) => line(i * 300, 0, i * 300 + 50, 0));
   const long = line(-1e6, 1000, 1e6, 1000);
-  const edge: FenceSegment = { ...line(0, 5000, 4000, 5000), solid: { x: 0, y: 5000, width: 4000, height: 4000 } };
+  const edge: FenceSegment = {
+    ...line(0, 5000, 4000, 5000),
+    solid: { x: 0, y: 5000, width: 4000, height: 4000 },
+  };
   const fences = [...row, long, edge, line(10, 5, 20, 5)];
 
   it('finds the same fences as a scan of the whole list, in order', () => {
@@ -59,7 +65,9 @@ describe('sameFences', () => {
   it('matches the same list and a fresh list of the same lines', () => {
     const p = [line(0, 0, 1, 1), { ...line(2, 2, 3, 3), solid }];
     expect(sameFences(p, p)).toBe(true);
-    expect(sameFences(p, [line(0, 0, 1, 1), { ...line(2, 2, 3, 3), solid: { ...solid } }])).toBe(true);
+    expect(sameFences(p, [line(0, 0, 1, 1), { ...line(2, 2, 3, 3), solid: { ...solid } }])).toBe(
+      true,
+    );
   });
 
   it('tells apart a moved line, another length and a footprint gained, lost or moved', () => {
