@@ -4,6 +4,7 @@ import {
   createShape,
   type ArrowElement,
   type BoxedElement,
+  type Element,
 } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -125,9 +126,9 @@ describe('inheritedSizeFor', () => {
     });
   });
 
-  it('keeps a sticker, a timeline rail and the office scenery their own size', () => {
+  it('keeps a sticker and the office scenery their own size', () => {
     const big = { ...createShape('square', 0, 0), width: 200, height: 170 } as BoxedElement;
-    for (const kind of ['sticker', 'timeline-rail', 'plant', 'rug', 'fence'] as const) {
+    for (const kind of ['sticker', 'plant', 'rug', 'fence'] as const) {
       const fresh = createShape(kind, 0, 0) as BoxedElement;
       expect(inheritedSizeFor(fresh, big), kind).toEqual({
         width: fresh.width,
@@ -173,22 +174,26 @@ describe('inheritedSizeFor', () => {
   });
 });
 
+// A stored backdrop (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") stays at the back.
+const stored = (kind: string, x: number, y: number) =>
+  ({ ...createShape('square', x, y), shape: kind }) as unknown as Element;
+
 describe('framesFirst', () => {
-  it('moves containers ahead of everything else, preserving relative order', () => {
-    const frameA = createShape('boundary', 0, 0);
+  it('moves stored backdrops ahead of everything else, preserving relative order', () => {
+    const frameA = stored('boundary', 0, 0);
     const box = createShape('square', 0, 0);
-    const frameB = createShape('boundary', 9, 9);
+    const frameB = stored('stack', 9, 9);
     const ordered = framesFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
   });
 
-  it('puts lanes first too, as containers', () => {
+  it('puts a stored lane first too', () => {
     const box = createShape('square', 0, 0);
-    const lane = createShape('lane', 0, 0);
+    const lane = stored('lane', 0, 0);
     expect(framesFirst([box, lane]).map((e) => e.id)).toEqual([lane.id, box.id]);
   });
 
-  it('returns the same array reference when there are no containers (no-op)', () => {
+  it('returns the same array reference when there are no backdrops (no-op)', () => {
     const arr = [createShape('square', 0, 0)];
     expect(framesFirst(arr)).toBe(arr);
   });

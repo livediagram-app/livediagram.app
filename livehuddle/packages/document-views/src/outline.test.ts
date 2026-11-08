@@ -1,7 +1,6 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
-import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
+import { arrowBetween, retiredShapeAt, shapeAt, strokeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { estimateTokens } from '@liveworkspace/document-views/budget';
 import { buildViewModel } from './model';
@@ -17,14 +16,14 @@ const tabOf = (elements: Element[], extra: Partial<Tab> = {}): Tab => ({
 });
 
 describe('outlineView on the checkout tab (R8)', () => {
-  it('prints the research render, with the revision on the header', () => {
-    const research = readFileSync(
-      new URL('../../../docs/research/agent-cli/compact-representations.md', import.meta.url),
-      'utf8',
-    );
-    const block = research.split('### 4.1 Rendered\n\n```text\n')[1]!.split('\n```')[0]!;
-    const [header, ...rest] = block.split('\n');
-    expect(outlineView(checkout()).text).toBe([`${header} · rev 41`, ...rest].join('\n'));
+  // The research render (docs/research/agent-cli/compact-representations.md §4.1) nested by boundary. Nothing nests
+  // since part 3 of the element engine (docs/specs/002-project-scope/not-in-livehuddle.md): a stored boundary prints
+  // flat as `? boundary`, and what sat on it prints beside it, unindented.
+  it('prints flat, a stored boundary as `? boundary` beside what sat on it, the revision on the header', () => {
+    const lines = outlineView(checkout()).text.split('\n');
+    expect(lines[0]).toMatch(/ · rev 41$/);
+    expect(lines).toContain('? boundary c991 "Services"');
+    expect(lines.slice(1).every((line) => !line.startsWith(' '))).toBe(true);
   });
 
   it('matches its goldens', async () => {
@@ -51,21 +50,16 @@ describe('outlineView on the checkout tab (R8)', () => {
     expect(estimateTokens(text) * 10).toBeLessThanOrEqual(estimateTokens(json));
   });
 
-  it('prints one subtree with only, the header still counting the whole tab (E19)', () => {
+  it('prints one element with only, the header still counting the whole tab (E19)', () => {
     const subtree = outlineView(checkout(), { only: CHECKOUT_IDS.data }).text.split('\n');
-    expect(subtree).toEqual([
-      expect.stringContaining('· 30 elements'),
-      'boundary ca76 "Data"',
-      '  cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."',
-      '  cylinder 822f "Inventory DB"',
-    ]);
+    expect(subtree).toEqual([expect.stringContaining('· 30 elements'), '? boundary ca76 "Data"']);
     expect(outlineView(checkout(), { only: CHECKOUT_IDS.stripe }).text.split('\n')).toHaveLength(2);
     expect(outlineView(checkout(), { only: 'nothing' }).text.split('\n')).toHaveLength(1);
   });
 });
 
 describe('outline budgets (R20, R21)', () => {
-  it('steps down the ladder: notes, attributes, containers, then the root', () => {
+  it('steps down the ladder: notes, attributes, then the trailing lines', () => {
     const states = [400, 350, 300, 200, 60].map(
       (budget) => outlineView(checkout(), { budget }).state,
     );
@@ -73,43 +67,66 @@ describe('outline budgets (R20, R21)', () => {
       'full',
       'notes-dropped',
       'attributes-dropped',
-      'containers-collapsed',
-      'root-collapsed',
+      'lines-dropped',
+      'lines-dropped',
     ]);
   });
 
   it('fits within the budget whenever anything is left to drop', () => {
-    for (const budget of [350, 300, 200]) {
+    for (const budget of [350, 300, 200, 60]) {
       expect(estimateTokens(outlineView(checkout(), { budget }).text)).toBeLessThanOrEqual(budget);
     }
   });
 
-  it('says what it dropped in one closing line, naming the largest collapsed container', () => {
-    const { text, json } = outlineView(checkout(), { budget: 200 });
-    expect(text.split('\n').at(-1)).toBe(
-      '… notes hidden; attributes hidden; 7 elements in boundary 048c hidden; 13 elements in boundary c991 hidden: view --only c991',
+  it('keeps the leading lines, says how many elements the rest held, and keeps JSON in step', () => {
+    const full = outlineView(checkout());
+    const { text, json, fullTokens } = outlineView(checkout(), { budget: 200 });
+    const lines = text.split('\n');
+    const kept = lines.slice(1, -1);
+    expect(kept).toEqual(
+      outlineView(checkout(), { budget: 300 })
+        .text.split('\n')
+        .slice(1, 1 + kept.length),
     );
+    const hidden = Number(/(\d+) elements hidden/.exec(lines.at(-1)!)![1]);
+    expect(lines.at(-1)).toBe(
+      `… notes hidden; attributes hidden; ${hidden} elements hidden: view --budget ${fullTokens}`,
+    );
+    expect(hidden).toBeGreaterThan(0);
     expect(json.elision).toMatchObject({
       dropped: ['notes', 'attributes'],
-      arguments: { only: 'c991' },
+      collapsed: [],
+      arguments: { budget: fullTokens },
     });
-    const services = json.nodes.find((n) => 'ref' in n && n.ref === 'c991');
-    expect(services).toMatchObject({ children: [], collapsed: 13 });
+    expect(json.nodes.length + json.ownLineArrows.length).toBe(kept.length);
+    expect(full.json.nodes.length + full.json.ownLineArrows.length).toBeGreaterThan(kept.length);
+    expect(json.nodes.every((n) => !('children' in n) || n.children.length === 0)).toBe(true);
   });
 
-  it('points to the full budget when nothing collapsed', () => {
+  it('cuts into the own-line arrows too, keeping those that fit', () => {
+    const a = shapeAt('square', 'a', 0, 0);
+    const free = (i: number) => ({
+      ...arrowBetween(`loose-${i}`, 'a', 'a', { label: 'a long retry label '.repeat(2) }),
+      from: { kind: 'free' as const, x: i, y: i },
+    });
+    const model = buildViewModel(tabOf([a, free(1), free(2), free(3)] as Element[]));
+    const full = outlineView(model);
+    const budgets = Array.from({ length: full.fullTokens }, (_, i) => i + 1);
+    const kept = budgets.map((budget) => outlineView(model, { budget }).json.ownLineArrows.length);
+    expect(kept).toContain(0);
+    expect(kept).toContain(1);
+  });
+
+  it('points to the full budget when only notes went', () => {
     const { text, fullTokens } = outlineView(checkout(), { budget: 350 });
     expect(text.split('\n').at(-1)).toBe(`… notes hidden: view --budget ${fullTokens}`);
   });
 
-  it('accounts for every printed element when the root goes (I2, E20)', () => {
+  it('accounts for every printed element when every line goes (I2, E20)', () => {
     const { text, json } = outlineView(checkout(), { budget: 1 });
     const lines = text.split('\n');
     expect(lines).toHaveLength(2);
-    const counted = [...lines[1]!.matchAll(/(\d+) elements?(?: in [^;:]+)? hidden/g)].map((m) =>
-      Number(m[1]),
-    );
-    expect(counted.reduce((a, b) => a + b, 0)).toBe(30);
+    expect(lines[1]).toMatch(/ 30 elements hidden: /);
     expect(json.nodes).toEqual([]);
     expect(json.ownLineArrows).toEqual([]);
   });
@@ -125,42 +142,39 @@ describe('outline budgets (R20, R21)', () => {
   });
 });
 
-describe('outline budgets over nested containers', () => {
-  // Two equal boundaries, the first holding a lane; each holds strokes and boxes.
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane, boundary or stack is
+// a placeholder that holds nothing. It prints flat as `? <kind>` with its stored label, and what sat on it prints at
+// the top level beside it.
+describe('a stored layout container in the outline', () => {
   const elements: Element[] = [
-    shapeAt('boundary', 'left', 0, 0, 1000, 1000),
-    shapeAt('lane', 'lane', 0, 500, 1000, 400),
-    shapeAt('square', 'in-lane-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
-    shapeAt('square', 'in-lane-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
-    shapeAt('square', 'in-lane-2', 300, 550),
-    shapeAt('square', 'in-left', 10, 10),
-    shapeAt('boundary', 'right', 2000, 0, 1000, 1000),
-    shapeAt('square', 'r1', 2010, 10),
-    shapeAt('square', 'r2', 2300, 10),
-    shapeAt('square', 'r3', 2600, 10),
-    strokeAt('s1', 2010, 300),
-    strokeAt('s2', 2300, 300),
+    retiredShapeAt('lane', 'lane', 0, 0, 1200, 300, { label: 'Ops' }),
+    shapeAt('square', 'deploy', 100, 100, 100, 50, { label: 'Deploy' }),
+    retiredShapeAt('boundary', 'vpc', 0, 400, 900, 400, { label: 'VPC' }),
+    shapeAt('square', 'db', 100, 500, 100, 50, { label: 'DB' }),
+    retiredShapeAt('stack', 'row', 0, 900, 600, 200),
+    strokeAt('s1', 10, 950),
+    strokeAt('s2', 300, 950),
   ];
-  const model = buildViewModel(tabOf(elements));
 
-  it('prints a run inside a container, in text and JSON', () => {
-    const { text, json } = outlineView(model);
-    expect(text.split('\n')).toContain('  freehand ×2');
-    expect(json.nodes[1]).toMatchObject({
-      children: [{}, {}, {}, { run: 'freehand', refs: ['s1', 's2'] }],
+  it('prints flat, `? <kind>` with its stored label, beside what sat on it', () => {
+    const { text, json } = outlineView(buildViewModel(tabOf(elements)));
+    expect(text.split('\n')).toEqual([
+      'tab tab-1 "T" · 7 elements: 7 boxes · 3 unknown',
+      '? lane lane "Ops"',
+      'square deploy "Deploy"',
+      '? boundary vpc "VPC"',
+      'square db "DB"',
+      '? stack row',
+      'freehand ×2',
+    ]);
+    expect(json.nodes[0]).toMatchObject({
+      kind: '? lane',
+      unknown: true,
+      label: 'Ops',
+      summary: null,
+      children: [],
+      collapsed: 0,
     });
-  });
-
-  it('collapses the earlier of equal containers first, never a container inside a collapsed one', () => {
-    const budgets = Array.from({ length: 120 }, (_, i) => i + 1);
-    const collapsedRefs = budgets.map((budget) => {
-      const { json } = outlineView(model, { budget });
-      return (json.elision?.collapsed ?? []).map((c) => c.ref).join(',');
-    });
-    expect(collapsedRefs).toContain('left');
-    expect(collapsedRefs).toContain('left,right');
-    expect(collapsedRefs.some((refs) => refs.includes('lane'))).toBe(false);
-    expect(collapsedRefs.includes('right')).toBe(false);
   });
 });
 
@@ -169,8 +183,8 @@ describe('outline edge cases', () => {
     expect(outlineView(buildViewModel(tabOf([]))).text).toBe('tab tab-1 "T" · 0 elements');
   });
 
-  it('prints unknown kinds with ?, counted and contained by geometry, never dropped (R25, E12)', () => {
-    const frame = shapeAt('boundary', 'frame', 0, 0, 500, 500);
+  it('prints unknown kinds with ?, counted, never dropped (R25, E12)', () => {
+    const frame = retiredShapeAt('boundary', 'frame', 0, 0, 500, 500, { label: 'Region' });
     const hologram = {
       id: 'holo',
       type: 'hologram',
@@ -185,13 +199,13 @@ describe('outline edge cases', () => {
     const { text, json } = outlineView(model);
     expect(text).toBe(
       [
-        'tab tab-1 "T" · 3 elements: 2 boxes, 1 boundary · 2 unknown',
-        'boundary frame "Region"',
-        '  ? hologram holo "Hi"',
+        'tab tab-1 "T" · 3 elements: 3 boxes · 3 unknown',
+        '? boundary frame "Region"',
+        '? hologram holo "Hi"',
         '? blob blob',
       ].join('\n'),
     );
-    expect(json.nodes[1]).toMatchObject({ kind: '? blob', unknown: true });
+    expect(json.nodes[2]).toMatchObject({ kind: '? blob', unknown: true });
   });
 
   it('prints own-line arrows after the root, and folds strokes (E8, E27)', () => {

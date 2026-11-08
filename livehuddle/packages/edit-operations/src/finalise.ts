@@ -1,27 +1,20 @@
 // The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
 // "Finalise"): touched elements normalised and their shape kinds coerced, then checked, arrows
-// re-anchored around moved boxes, lanes behind what they hold, and the whole tab validated. Untouched elements pass through as the same objects (I2).
+// re-anchored around moved boxes, and the whole tab validated. Untouched elements pass through as the same objects (I2).
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
   coerceShapeKind,
-  deriveContainers,
-  isContainer,
-  chipLabelIssue,
   elementValidationIssue,
   isValidTab,
-  lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
   type ArrowElement,
-  type BoxedElement,
   type Element,
   type ElementId,
   type Endpoint,
   type Tab,
-  settleDiagramKeys,
-  tagColoursOf,
 } from '@livehuddle/document';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
@@ -52,7 +45,11 @@ function normaliseTouched(state: EditState, log: EditLog): void {
       !written.some((k) => k === 'fillColor' || ALIAS_FIELDS[k]?.includes('fillColor'))
     )
       delete normalised.strokeColor;
-    if (normalised.type === 'shape') {
+    // A kind the edit did not write stays: a stored lane, a retired kind (docs/specs/002-project-scope/
+    // not-in-livehuddle.md "The element engine", part 3), keeps its kind when an agent relabels it.
+    const was = state.before.get(id);
+    const kept = was?.type === 'shape' && was.shape === normalised.shape;
+    if (normalised.type === 'shape' && !kept) {
       const shape = coerceShapeKind(normalised.shape);
       if (shape !== normalised.shape) {
         state.warnings.push({
@@ -71,8 +68,7 @@ function normaliseTouched(state: EditState, log: EditLog): void {
 function touchedIssue(state: EditState): EditRejection | null {
   for (const id of state.touched.keys()) {
     const el = state.byId.get(id);
-    // A chip's label cap holds for agent writes, on what they touch (docs/specs/009-elements/badge.md).
-    const issue = el && (elementValidationIssue(el) ?? chipLabelIssue(el));
+    const issue = el && elementValidationIssue(el);
     if (issue) return invalidResult(id, kindOf(el), issue);
   }
   return null;
@@ -131,36 +127,6 @@ export function tabRejection(tab: Tab): EditRejection {
   return invalidResult('the tab', undefined, { field: 'id', rule: 'an id and a name' });
 }
 
-// Workshop notes a lane took in: a note no operation wrote reports the landing as its move.
-// Every container directly before its earliest member when it is after it, innermost first, so an
-// outer container ends before the inner ones it holds (I6).
-export function containersBehindMembers(elements: readonly Element[]): Element[] {
-  const byId = new Map(elements.map((el) => [el.id, el]));
-  const members = new Map<BoxedElement, ElementId[]>();
-  for (const [id, holder] of deriveContainers(elements)) {
-    const container = holder ? byId.get(holder) : undefined;
-    if (!container || container.type === 'arrow' || !isContainer(container)) continue;
-    const held = members.get(container);
-    if (held) held.push(id);
-    else members.set(container, [id]);
-  }
-  const order = elements.map((el) => el.id);
-  // Each id's index in `order`, kept true as containers move: a move shifts only the range it crosses, so the
-  // pass is linear in the tab plus what actually moves, never a scan of the order per member.
-  const at = new Map(order.map((id, i) => [id, i]));
-  const innermostFirst = [...members].sort(([a], [b]) => a.width * a.height - b.width * b.height);
-  for (const [container, held] of innermostFirst) {
-    const from = at.get(container.id)!;
-    let earliest = Infinity;
-    for (const id of held) earliest = Math.min(earliest, at.get(id)!);
-    if (earliest > from) continue;
-    order.splice(from, 1);
-    order.splice(earliest, 0, container.id);
-    for (let i = earliest; i <= from; i++) at.set(order[i]!, i);
-  }
-  return order.map((id) => byId.get(id)!);
-}
-
 export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   normaliseTouched(state, log);
   const issue = touchedIssue(state);
@@ -169,13 +135,7 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   const moved = movedBoxes(state.before, current);
   const rebound = rerouteRebound(current, rebindArrowAnchorsAfterMove(current, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
-  // A diagram key's rows follow the tab's lines and tags (docs/specs/009-elements/diagram-key.md), settled here as the
-  // editor settles them on commit: an agent's key otherwise drew its empty hint.
-  const settled = settleDiagramKeys(
-    containersBehindMembers(lanesToFront(rebound)),
-    tagColoursOf(state.tab),
-  );
-  const elements = settled.map((el) => {
+  const elements = rebound.map((el) => {
     const was = state.before.get(el.id);
     return was && was !== el && sameValue(was, el) ? was : el;
   });

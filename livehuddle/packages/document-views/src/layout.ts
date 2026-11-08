@@ -1,5 +1,5 @@
 // The layout view (docs/specs/024-agents/blueprints/document-views.md "layout", VW31, VW32): exact
-// geometry relative to the content origin, or coarse rows per container.
+// geometry relative to the content origin, or coarse rows of the canvas.
 import type { LayoutView, ViewDoor } from '@livehuddle/api-schema';
 import { contentOrigin, type Endpoint } from '@livehuddle/document';
 import {
@@ -13,13 +13,13 @@ import { boxOf, numberField } from '@liveworkspace/document-views/fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { rowsOf } from './reading-order';
-import { depthFirst, isViewRun, subtreeItems, type ViewNode } from './tree';
+import { nodesOf, subtreeItems, type ViewNode } from './tree';
 
 type LayoutOptions = { budget?: number; door?: ViewDoor; only?: string; coarse?: boolean };
 
 const BOX = { one: 'box', many: 'boxes' };
 const ARROW = { one: 'arrow', many: 'arrows' };
-const ROW = { one: 'container', many: 'containers' };
+const ROW = { one: 'row', many: 'rows' };
 
 export type Origin = { x: number; y: number };
 
@@ -35,10 +35,6 @@ export function layoutEndText(end: Endpoint, model: ViewModel, origin: Origin): 
   }
 }
 
-function unfolded(node: ViewNode): ViewNode[] {
-  return node.children.flatMap((child) => (isViewRun(child) ? child.strokes : [child]));
-}
-
 function rowRefs(model: ViewModel, siblings: readonly ViewNode[]): string[][] {
   const { rows, loose } = rowsOf(siblings);
   return [...rows, ...(loose.length > 0 ? [loose] : [])].map((row) =>
@@ -46,38 +42,19 @@ function rowRefs(model: ViewModel, siblings: readonly ViewNode[]): string[][] {
   );
 }
 
+// The canvas's rows, one line each (`row 2: a b c`): nothing nests since part 3 of the element engine
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), so a budget cuts whole rows.
 function coarseLayout(model: ViewModel, options: LayoutOptions) {
-  const containers = depthFirst(subtreeItems(model.tree, options.only)).filter(
-    (node) => node.children.length > 0,
-  );
-  const rootRows =
-    options.only === undefined
-      ? [
-          {
-            container: null,
-            rows: rowRefs(
-              model,
-              depthFirst(model.tree.roots).filter((n) => n.container === null),
-            ),
-          },
-        ]
-      : [];
-  const rows = [
-    ...rootRows,
-    ...containers.map((node) => ({
-      container: model.refs.refOf(node.el.id),
-      rows: rowRefs(model, unfolded(node)),
-    })),
-  ];
-  const lines: ViewLine[] = rows.map((r) => ({
-    text: `${r.container ?? 'canvas'}: ${r.rows.map((row) => row.join(' ')).join(' / ')}`,
+  const rows = rowRefs(model, nodesOf(subtreeItems(model.tree, options.only)));
+  const lines: ViewLine[] = rows.map((row, i) => ({
+    text: `row ${i + 1}: ${row.join(' ')}`,
     noun: ROW,
   }));
   return { lines, rows };
 }
 
 function exactLayout(model: ViewModel, options: LayoutOptions, origin: Origin) {
-  const nodes = depthFirst(subtreeItems(model.tree, options.only));
+  const nodes = nodesOf(subtreeItems(model.tree, options.only));
   const inScope = new Set(nodes.map((n) => n.el.id));
   const arrows = model.edges.all.filter(
     (edge) =>
@@ -144,7 +121,8 @@ export function layoutView(model: ViewModel, options: LayoutOptions = {}): ViewR
         origin,
         boxes: [],
         arrows: [],
-        rows: rows.slice(0, fitted.kept),
+        // One group, the canvas: `container` stays on the wire, null.
+        rows: [{ container: null, rows: rows.slice(0, fitted.kept) }],
         elision: fitted.elision,
       },
     };

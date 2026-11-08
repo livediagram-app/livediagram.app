@@ -1,12 +1,12 @@
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · 1 unknown · threads 1 open/2 · rev 41
-actor b811 "Customer"
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 4 unknown · threads 1 open/2 · rev 41
 square a3cf "Web app"
 hexagon 649c "API gateway"
+actor b811 "Customer"
 square 202b "Auth service"
-square 146b "Orders service"
 stadium 6406 "Event bus"
-square e4a8 "Payments service"
 square 12de "Inventory service"
+square 146b "Orders service"
+square e4a8 "Payments service"
 square 0556 "Notification worker"
 cylinder d41e "Orders DB"
 cylinder 822f "Inventory DB"

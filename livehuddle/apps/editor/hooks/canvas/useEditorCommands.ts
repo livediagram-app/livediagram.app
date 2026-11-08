@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, turnsWithFacing } from '@livehuddle/document';
+import { isBoxed, supportsRotation, turnsWithFacing } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -36,7 +36,6 @@ const INERT_HANDLERS: CommandHandlers = {
   rotate: noop,
   turn: noop,
   clearAnimation: noop,
-  renumberSteps: noop,
   setMarker: noop,
   addComment: noop,
   editNote: noop,
@@ -85,7 +84,6 @@ export function useEditorCommands(open: boolean): {
     setRotationSelected,
     turnSelected,
     clearAnimationsSelected,
-    commitElements,
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
@@ -143,7 +141,6 @@ export function useEditorCommands(open: boolean): {
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
-  const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -155,7 +152,6 @@ export function useEditorCommands(open: boolean): {
       selectionTurns,
       singleIsShape,
       hasAnimation,
-      tabHasSteps,
       marker,
       canShare: canShareDocument,
       isOffline,
@@ -171,7 +167,6 @@ export function useEditorCommands(open: boolean): {
       selectionTurns,
       singleIsShape,
       hasAnimation,
-      tabHasSteps,
       marker,
       canShareDocument,
       isOffline,
@@ -192,11 +187,6 @@ export function useEditorCommands(open: boolean): {
     clearAnimation: () =>
       single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,
-    // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.
-    renumberSteps: () => {
-      commitElements(renumberSteps);
-      track('Element', 'Changed', 'RenumberSteps');
-    },
     addComment: () => {
       if (selectedId) openComments(selectedId);
     },

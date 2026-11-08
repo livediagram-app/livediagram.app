@@ -98,8 +98,24 @@ describe('edge-crossings', () => {
     const [next] = of(lint(restyled), 'edge-crossings');
     if (next) expect(next.fix).not.toBe(`set ${selector} line=${arrowStyleBefore(tab, selector!)}`);
     // With no style that helps, the fix is advice rather than a style that changes nothing.
-    expect(fixes.edgeCrossings('tab', { arrow: 'a->b', style: null })).toBe(
+    expect(fixes.edgeCrossings({ arrow: 'a->b', style: null })).toBe(
       'move a box so a->b crosses fewer lines',
+    );
+  });
+
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: on a tab with a stored backdrop
+  // (here a boundary) a layout would scatter what sits on it, so the fix restyles; where no style crosses fewer lines
+  // (a lattice of straight runs), it is advice.
+  it('advises a move on a tab with a stored backdrop when no line style crosses fewer lines', () => {
+    const els: Element[] = [frame('f', -900, -900, 50, 50)];
+    for (let i = 0; i < 3; i++) {
+      els.push(box(`t${i}`, 200 + i * 200, 0), box(`b${i}`, 200 + i * 200, 800));
+      els.push(box(`l${i}`, 0, 200 + i * 200), box(`r${i}`, 1000, 200 + i * 200));
+    }
+    for (let i = 0; i < 3; i++)
+      els.push(arrow(`v${i}`, `t${i}`, `b${i}`, ['s', 'n']), arrow(`h${i}`, `l${i}`, `r${i}`));
+    expect(of(lint(tabOf(...els)), 'edge-crossings')[0]!.fix).toBe(
+      'move a box so t0->b0 crosses fewer lines',
     );
   });
 });

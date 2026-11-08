@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
   DEFAULT_BUTTON_MODE,
@@ -11,12 +11,6 @@ import {
   carriesSharedSettingsMenu,
   elementKindLabel,
   isSelfDrawingShape,
-  isWebComponentShape,
-  isChipShape,
-  isConceptShape,
-  type ConceptShape,
-  type ShapeElement,
-  defaultTextColor,
   isRetiredElement,
   type ShapeMarker,
   type TextAlignX,
@@ -37,12 +31,6 @@ import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-lay
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
 import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
-import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
-import { ChipFace } from '@/components/canvas/ChipFace';
-import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
-import { BoundaryFace } from '@/components/canvas/BoundaryFace';
-import { ConceptFace } from '@/components/canvas/ConceptFace';
-import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { DirectoryFace } from '@/components/canvas/wayfinding/DirectoryFace';
 import { ElevatorFace } from '@/components/canvas/wayfinding/ElevatorFace';
@@ -81,9 +69,6 @@ type ElementFaceRouterProps = Pick<
   | 'onFollowLink'
   | 'onPressModeButton'
   | 'onPressFocusButton'
-  | 'onSetPageHeading'
-  | 'onSetWebRows'
-  | 'onSetHeroCaptionLine'
   | 'onOpenElementSettings'
   | 'onDeleteRetired'
 > & {
@@ -102,8 +87,6 @@ type ElementFaceRouterProps = Pick<
   inlineIcon: string | false | undefined;
   marker: ShapeMarker | undefined;
   iconCaptionBand: string | null;
-  // An upright lane title's turned frame (upright-title.ts), or null.
-  labelFrame: CSSProperties | null;
   // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
   hitLine: boolean;
   // The box the element's indicators take, in its own units (indicatorClusterRect), so a retired element's Delete
@@ -131,7 +114,6 @@ function KnownElementFace({
   hitLine,
   element,
   isEditing,
-  isSelected,
   readOnly,
   fontFamily,
   activeMode,
@@ -141,9 +123,6 @@ function KnownElementFace({
   onFollowLink,
   onPressModeButton,
   onPressFocusButton,
-  onSetPageHeading,
-  onSetWebRows,
-  onSetHeroCaptionLine,
   onOpenElementSettings,
   label,
   labelNode,
@@ -156,7 +135,6 @@ function KnownElementFace({
   inlineIcon,
   marker,
   iconCaptionBand,
-  labelFrame,
 }: ElementFaceRouterProps) {
   // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/editor-app.md).
   const surface = useCanvasSurface();
@@ -174,8 +152,6 @@ function KnownElementFace({
         onOpen={() => onOpenElementSettings(element.id)}
       />
     ) : null;
-  // A card's own fill, for a diagram key's paper.
-  const cardFill = element.fillColor ?? defaultFillColor(element, surface);
   const settingsMenu = settingsButton ? (
     <span className="absolute right-1 top-1 z-10">{settingsButton}</span>
   ) : null;
@@ -251,30 +227,14 @@ function KnownElementFace({
           onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
         />
       ) : element.type === 'image' && imageContext ? (
-        <>
-          <ImageElementView
-            element={element}
-            ownerId={imageContext.ownerId}
-            documentId={imageContext.documentId}
-            shareCode={imageContext.shareCode}
-            onOpenPicker={imageContext.onOpenPicker}
-            fontFamily={fontFamily}
-          />
-          {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
-          {element.heroCaption ? (
-            <HeroCaptionCard
-              element={element}
-              caption={element.heroCaption}
-              editable={isSelected && !readOnly}
-              fontFamily={fontFamily}
-              onSetLine={
-                onSetHeroCaptionLine
-                  ? (field, value) => onSetHeroCaptionLine(element.id, field, value)
-                  : undefined
-              }
-            />
-          ) : null}
-        </>
+        <ImageElementView
+          element={element}
+          ownerId={imageContext.ownerId}
+          documentId={imageContext.documentId}
+          shareCode={imageContext.shareCode}
+          onOpenPicker={imageContext.onOpenPicker}
+          fontFamily={fontFamily}
+        />
       ) : element.type === 'freehand' ? (
         <>
           <FreehandSvg
@@ -305,73 +265,6 @@ function KnownElementFace({
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
         />
-      ) : element.type === 'shape' && isConceptShape(element.shape) ? (
-        // A timeline (docs/specs/009-elements/timeline.md): its milestones along a line.
-        <ConceptFace
-          element={element as ShapeElement & { shape: ConceptShape }}
-          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          ink={textColor}
-          fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !!onSetWebRows}
-          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
-        />
-      ) : element.type === 'shape' && element.shape === 'diagram-key' ? (
-        // A diagram key (docs/specs/009-elements/diagram-key.md): its title, swatches and meanings.
-        <DiagramKeyFace
-          element={element}
-          labelNode={labelNode}
-          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          paper={cardFill}
-          ink={textColor}
-          fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !!onSetWebRows}
-          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
-        />
-      ) : element.type === 'shape' && element.shape === 'boundary' ? (
-        // A boundary (docs/specs/009-elements/boundary.md): its tint, and its title in its tab or corner. It draws
-        // its own icon, so this sits before the generic inline-icon layout.
-        <BoundaryFace
-          element={element}
-          labelNode={labelNode}
-          // Its own accent, never a remote selector's: the tab, tint and title are its content, and the wrapper's
-          // outline already shows who has it selected.
-          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          ink={textColor}
-          fontFamily={fontFamily}
-          editable={isSelected && !readOnly}
-          onSetMeta={(value) => onSetPageHeading(element.id, 'pageSubtitle', value)}
-        />
-      ) : element.type === 'shape' && isChipShape(element.shape) ? (
-        // A badge or step number (docs/specs/009-elements/badge.md): its pill or disc under its own label.
-        <ChipFace
-          element={element}
-          labelNode={labelNode}
-          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          ink={element.textColor ?? defaultTextColor(element, surface)}
-        />
-      ) : element.type === 'shape' && isWebComponentShape(element.shape) ? (
-        /* The web components (docs/specs/009-elements/web-components-and-no-groups.md): each lays out its own content and
-           places the label in its own region, so it is edited like any
-           label; the other lines edit in place once it is selected. They draw
-           an inline icon themselves (a header's logo, a callout's badge), so
-           this sits before the generic inline-icon layout. */
-        <WebComponentFace
-          kind={element.shape}
-          element={element}
-          labelNode={labelNode}
-          // Its own accent, never a remote selector's: a card's header band, media and tags (a banner's bar, a stat
-          // row's numbers) are its content, so a collaborator's selection recoloured the whole face; the wrapper's
-          // outline already shows who has it selected.
-          accent={element.strokeColor ?? defaultStrokeColor(element, surface)}
-          fill={element.fillColor ?? defaultFillColor(element, surface)}
-          textColor={textColor}
-          fontFamily={fontFamily}
-          editable={isSelected && !readOnly && !!onSetWebRows}
-          onSetRows={(rows) => onSetWebRows?.(element.id, rows)}
-          onSetHeading={(field, value) => onSetPageHeading(element.id, field, value)}
-        />
       ) : element.type === 'shape' && (inlineIcon || marker) ? (
         <InsetContent inset={contentInset}>
           <ShapeInlineIconLayout
@@ -396,10 +289,6 @@ function KnownElementFace({
         // A self-drawing piece (a rail, a sticker, a Space piece) draws its own content, so
         // it renders no standard editable label.
         <></>
-      ) : labelFrame ? (
-        // An upright lane title (docs/specs/009-elements/lane.md "Upright titles"): the label and its
-        // editor turn together in the strip.
-        <div style={labelFrame}>{labelNode}</div>
       ) : iconCaptionBand ? (
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,

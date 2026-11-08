@@ -25,7 +25,7 @@ describe('arrow-behind-box', () => {
     expect(report.measures.behind).toBe(1);
   });
 
-  it('suggests a style only when its route clears every box, else a move, per arrow, and a graph change', () => {
+  it('suggests a style only when its route clears every box, else a move, per arrow', () => {
     // A diagonal through m: angled goes round it.
     const diagonal = arrow('x', 'a', 'b', ['s', 'w']);
     expect(
@@ -56,14 +56,6 @@ describe('arrow-behind-box', () => {
       'move m by=0,39',
       'move m by=0,-39',
     ]);
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('m', 200, 0), box('b', 400, 0), arrow('x', 'a', 'b')), {
-          source: 'graph',
-        }),
-        'arrow-behind-box',
-      )[0]!.fix,
-    ).toBe('drop the groups, or lines: angled');
   });
 
   it('names an arrow with a free end by its ref', () => {

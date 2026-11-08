@@ -9,8 +9,6 @@ export const EDIT_OPERATION_NAMES = [
   'connect',
   'rewire',
   'insert',
-  'wrap',
-  'unwrap',
   'order',
   'layout',
   'test',
@@ -26,8 +24,6 @@ export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly stri
   connect: ['op', 'from', 'to', 'id', 'fields', 'again'],
   rewire: ['op', 'target', 'from', 'to'],
   insert: ['op', 'kind', 'id', 'fields', 'between'],
-  wrap: ['op', 'targets', 'in', 'id', 'fields', 'tidy', 'absorb', 'makeRoom'],
-  unwrap: ['op', 'target'],
   order: ['op', 'target', 'to', 'above', 'below'],
   layout: ['op', 'target', 'style', 'direction'],
   test: ['op', 'target', 'fields'],
@@ -40,30 +36,18 @@ export const PLACEMENT_RELATIONS = [
   'above',
   'below',
   'after',
-  'inside',
   'align',
 ] as const;
 export type PlacementRelation = (typeof PLACEMENT_RELATIONS)[number];
 
 // The `key:value` selector keys (blueprint "Selectors").
-export const SELECTOR_KEYS = [
-  'type',
-  'shape',
-  'in',
-  'from',
-  'to',
-  'downstream',
-  'upstream',
-] as const;
+export const SELECTOR_KEYS = ['type', 'shape', 'from', 'to', 'downstream', 'upstream'] as const;
 
 // The line form's flag words and the JSON members they set.
 export const FLAG_MEMBERS = {
   all: 'all',
   'keep-arrows': 'keepArrows',
   again: 'again',
-  tidy: 'tidy',
-  absorb: 'absorb',
-  'make-room': 'makeRoom',
 } as const;
 export type FlagWord = keyof typeof FLAG_MEMBERS;
 
@@ -72,14 +56,8 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
   'selected',
   'all',
   'again',
-  'tidy',
-  'absorb',
-  'make-room',
   'keep-arrows',
   'between',
-  'in',
-  'boundary',
-  'lane',
   'front',
   'back',
 ]);
@@ -87,7 +65,6 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
 export const LAYOUT_STYLES = ['flow', 'tree'] as const;
 export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
-export const WRAP_CONTAINERS = ['boundary', 'lane'] as const;
 
 // The layout engine's rank gap (EO23); larger reads as a separate drawing.
 export { LAYER_GAP as PLACEMENT_GAP } from '@livehuddle/document';

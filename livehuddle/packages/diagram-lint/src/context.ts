@@ -1,6 +1,6 @@
 // Everything the checks read, prepared once a run (blueprint "Behaviour and state" step 1): the visible
-// elements, an index over all of them, the views' refs, the boxes, containment, the arrows sorted into
-// dangling and drawable with their routes, the element grid and the label pass.
+// elements, an index over all of them, the views' refs, the boxes, the arrows sorted into dangling and
+// drawable with their routes, the element grid and the label pass.
 
 import {
   arrowLabelPass,
@@ -9,9 +9,9 @@ import {
   buildElementGrid,
   buildElementIndex,
   computeRefs,
-  deriveContainers,
   estimatedLabelMeasure,
   isBoxed,
+  isRetiredBackdrop,
   pinnedBoxedElement,
   type ArrowElement,
   type ArrowLabelPass,
@@ -29,8 +29,6 @@ import {
 import { boxBounds, isLintBox } from './boxes';
 import { LINT_MEASURE_EPOCH } from './constants';
 
-export type LintSource = 'tab' | 'graph';
-
 export type DrawableArrow = {
   arrow: ArrowElement;
   polyline: Point[];
@@ -41,7 +39,6 @@ export type DrawableArrow = {
 };
 
 export type LintContext = {
-  source: LintSource;
   theme: string | undefined;
   visible: Element[];
   index: ElementIndex;
@@ -49,8 +46,6 @@ export type LintContext = {
   boxes: BoxedElement[];
   // Visible elements with a non-finite rect, checked by nothing (N6).
   skipped: number;
-  // Each visible element's container: the smallest frame or lane holding its centre.
-  containers: ReadonlyMap<ElementId, ElementId | null>;
   byId: ReadonlyMap<ElementId, Element>;
   // Paint order among visible elements.
   order: ReadonlyMap<ElementId, number>;
@@ -83,7 +78,7 @@ function isDangling(arrow: ArrowElement, index: ElementIndex): boolean {
 
 export function prepareLintContext(
   tab: Pick<Tab, 'elements' | 'theme'>,
-  options: { source: LintSource; flow?: 'down' | 'right' },
+  options: { flow?: 'down' | 'right' } = {},
 ): LintContext {
   const visible = tab.elements;
   const index = buildElementIndex(tab.elements);
@@ -122,14 +117,12 @@ export function prepareLintContext(
       }),
   );
   return {
-    source: options.source,
     theme: tab.theme,
     visible,
     index,
     refs: computeRefs(tab.elements.map((el) => el.id)),
     boxes,
     skipped,
-    containers: deriveContainers(visible),
     byId: new Map(visible.map((el) => [el.id, el])),
     order: new Map(visible.map((el, i) => [el.id, i])),
     dangling,
@@ -164,8 +157,9 @@ export function padded(ctx: LintContext, rect: Rect): Rect {
 // The ref the views print for an element.
 export const refOf = (ctx: LintContext, id: ElementId) => ctx.refs.refOf(id);
 
-// Whether anything on the tab sits in a frame or lane: a layout of the shapes alone would leave those behind.
-export function framedTab(ctx: Pick<LintContext, 'containers'>): boolean {
-  for (const holder of ctx.containers.values()) if (holder !== null) return true;
-  return false;
+// Whether the tab holds a stored lane, stack, boundary or frame: a retired backdrop that paints at the back with
+// boxes drawn over it (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3). A layout of
+// the shapes would scatter what sits on it and lay the backdrop out as one more box.
+export function framedTab(ctx: Pick<LintContext, 'visible'>): boolean {
+  return ctx.visible.some((el) => isRetiredBackdrop(el));
 }

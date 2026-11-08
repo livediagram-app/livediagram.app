@@ -89,7 +89,7 @@ describe('supportsTextAlign', () => {
 
   it('is on for plain shapes and for kinds that render the aligned label', () => {
     // An icon's alignment places its caption around the glyph (docs/specs/010-palette/technology-icons.md).
-    for (const kind of ['square', 'circle', 'callout', 'icon'] as const) {
+    for (const kind of ['square', 'circle', 'icon'] as const) {
       expect(supportsTextAlign(kind), kind).toBe(true);
     }
   });
@@ -105,7 +105,7 @@ describe('supportsMarkers', () => {
   });
 
   it('is on for plain shapes', () => {
-    for (const kind of ['square', 'circle', 'callout'] as const) {
+    for (const kind of ['square', 'circle'] as const) {
       expect(supportsMarkers(kind), kind).toBe(true);
     }
   });

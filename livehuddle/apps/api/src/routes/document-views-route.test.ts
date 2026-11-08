@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_BATCH } from '@livehuddle/document-views';
-import type { Element } from '@livehuddle/document';
+import type { Element, ShapeKind } from '@livehuddle/document';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
@@ -35,10 +35,11 @@ const comment = {
   authorId: 'user_sam_secret',
 };
 const ELEMENTS: Element[] = [
+  // A stored boundary (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
   {
     id: 'frame-1',
     type: 'shape',
-    shape: 'boundary',
+    shape: 'boundary' as ShapeKind,
     x: -20,
     y: -20,
     width: 600,
@@ -128,10 +129,10 @@ describe('tab views over REST (R23)', () => {
     expect(res.headers.get('ETag')).toBe('W/"1"');
     const text = await res.text();
     expect(text.split('\n').slice(0, 4)).toEqual([
-      'tab t1 "Architecture" · 6 elements: 4 boxes, 1 boundary, 1 arrow · threads 1 open/1 · rev 1',
-      'boundary frame-1 "Services"',
-      '  square orders "Orders service" comments=1 open → payments "charge"',
-      '  square payments "Payments"',
+      'tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 1 unknown · threads 1 open/1 · rev 1',
+      '? boundary frame-1 "Services"',
+      'square orders "Orders service" comments=1 open → payments "charge"',
+      'square payments "Payments"',
     ]);
     expect(logged('[views] rendered outline')).toMatchObject({ doc: 'D', tab: 't1', elements: 6 });
     await settled();
@@ -188,7 +189,13 @@ describe('tab views over REST (R23)', () => {
     db.sql.prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'").run(data);
     const text = await (await tabView(db, 'view=outline')).text();
     expect(text).toContain('? hologram holo "x"');
-    expect(logged('[views] unknown kinds')).toEqual({ tab: 't1', hologram: 1, 'shape:blob': 1 });
+    // A stored boundary (part 3) counts too: a kind the views no longer know.
+    expect(logged('[views] unknown kinds')).toEqual({
+      tab: 't1',
+      hologram: 1,
+      'shape:blob': 1,
+      'shape:boundary': 1,
+    });
   });
 });
 
@@ -273,7 +280,6 @@ describe('the lint over REST', () => {
     expect(logged('[lint] run')).toMatchObject({
       documentId: 'D',
       tabId: 't1',
-      source: 'tab',
       elements: 6,
     });
     await settled();
@@ -439,7 +445,7 @@ describe('the overview over REST', () => {
     const lines = (await res.text()).split('\n');
     expect(lines[0]).toMatch(/^doc D "Checkout" · 10 tabs · edited just now$/);
     expect(lines[1]).toBe(
-      '  tab t1 "Architecture" · 6 elements: 4 boxes, 1 boundary, 1 arrow · threads 1 open/1 · rev 1',
+      '  tab t1 "Architecture" · 6 elements: 5 boxes, 1 arrow · 1 unknown · threads 1 open/1 · rev 1',
     );
     expect(lines).toHaveLength(11);
     expect(logged('[views] overview')).toMatchObject({ doc: 'D', tabs: 10, batches: 2 });

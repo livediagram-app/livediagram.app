@@ -90,7 +90,6 @@ type CanvasElementListProps = Pick<
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
   // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
-  stackedIds: ReadonlySet<string>;
 };
 
 export const CanvasElementList = memo(function CanvasElementList({
@@ -113,7 +112,6 @@ export const CanvasElementList = memo(function CanvasElementList({
   canResize,
   tabFont,
   tabFinish,
-  stackedIds,
 }: CanvasElementListProps) {
   return (
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
@@ -193,7 +191,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 {...boxedShared}
                 element={element}
                 // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
-                stackGlide={stackedIds.has(element.id) && entry === undefined}
 
                 layerOpacity={effOpacity < 1 ? effOpacity : undefined}
                 remoteSelectors={

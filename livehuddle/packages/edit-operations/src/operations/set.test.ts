@@ -52,9 +52,11 @@ describe('set', () => {
     expect(lines(run([set('n3', { note: 'Ask for SSO' })]))).toEqual(['~ n3  note →"Ask for SSO"']);
   });
 
-  it('prints the fields it wrote first, then what normalising added', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane is a retired
+  // kind. A relabel writes the label and nothing else: no normalising, and no square in its place.
+  it('relabels a stored lane, keeping its kind and every other field', () => {
     const tab = checkoutFlow();
-    tab.elements.push({
+    const lane = {
       id: 'l1',
       type: 'shape',
       shape: 'lane',
@@ -62,9 +64,23 @@ describe('set', () => {
       y: 900,
       width: 800,
       height: 200,
+      headerSize: 96,
+    } as unknown as Element;
+    tab.elements.push(lane);
+    const outcome = run([set('l1', { label: 'Payments' })], tab);
+    expect(lines(outcome)).toEqual(['~ l1  label →"Payments"']);
+    expect(applied(outcome).warnings).toEqual([]);
+    expect(applied(outcome).tab.elements.find((el) => el.id === 'l1')).toEqual({
+      ...lane,
+      label: 'Payments',
     });
-    const [line] = lines(run([set('l1', { label: 'Payments' })], tab));
-    expect(line).toMatch(/^~ l1 {2}label →"Payments" · textSize →\w+ · textAlignX →\w+/);
+  });
+
+  it('draws a stored kind changed to one livehuddle lacks as a square', () => {
+    const outcome = run([set('n1', { shape: 'lane' })]);
+    expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
+      'n1 shape "lane" drawn as square',
+    ]);
   });
 
   it('prints nothing for a value the element already holds (E1)', () => {

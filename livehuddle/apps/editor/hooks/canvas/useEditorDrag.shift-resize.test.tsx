@@ -34,8 +34,6 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 // through the whole drag machine: every boxed kind, every tab kind, and Shift pressed or released
 // mid-drag taking effect on the next pointer move.
 
-const COLOURS = { accent: '#0284c7', surface: '#ffffff', ink: '#0f172a' };
-
 // One of every boxed kind, each resized from its own start size.
 const KINDS: [string, () => Element][] = [
   ['square', () => createShape('square', 0, 0)],
@@ -71,8 +69,7 @@ const KINDS: [string, () => Element][] = [
         false,
       ),
   ],
-  ['hero component', () => createComponent('hero', 200, 100, COLOURS)],
-  ['avatar component', () => createComponent('avatar', 200, 100, COLOURS)],
+  ['avatar component', () => createComponent('avatar', 200, 100)],
 ];
 
 function harness(element: Element, kind: TabKind = 'diagram') {

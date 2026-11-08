@@ -17,7 +17,6 @@ import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
 import { isFilledPenLoop, penLoopFillPath } from './stroke-loop-fill';
 import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
 import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
-import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import {
   SHAPE_DETAIL_STROKE_PX,
   shapeGeometry,
@@ -216,48 +215,5 @@ export function svgPathElementShape(
   return (
     `<path d="${d}" fill="${fillAttr}"${rule} stroke="${xmlEscape(stroke)}" stroke-width="${width}"` +
     `${dash ? ` stroke-dasharray="${dash}"` : ''} stroke-linecap="round" stroke-linejoin="round"/>`
-  );
-}
-
-// A lane's title gutter (docs/specs/009-elements/lane.md): the tinted strip behind the title, on
-// whichever edge the title is pinned to, with the rule where it meets the
-// body. Without it an exported swimlane is a plain box with its title
-// floating in the middle of the work.
-export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: string): string {
-  const edge = laneEdgeOfElement(el);
-  const size = Math.min(laneSizeOfElement(el), (isLaneBand(edge) ? el.height : el.width) - 1);
-  // An explicit heading colour paints at full strength (you picked it, you
-  // get it); with none set it is the 10% wash of the lane's own stroke the
-  // canvas falls back to, so a recoloured lane keeps its gutter in the family.
-  const fill = el.headerFill ?? stroke;
-  const wash = el.headerFill ? '' : ' opacity="0.1"';
-  const strip = (x: number, y: number, w: number, h: number) =>
-    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" fill="${xmlEscape(fill)}"${wash}/>`;
-  const rule = (x1: number, y1: number, x2: number, y2: number) =>
-    `<path d="M ${r2(x1)} ${r2(y1)} L ${r2(x2)} ${r2(y2)}" stroke="${xmlEscape(stroke)}" stroke-width="1"/>`;
-  if (edge === 'left')
-    return (
-      strip(el.x, el.y, size, el.height) + rule(el.x + size, el.y, el.x + size, el.y + el.height)
-    );
-  if (edge === 'right')
-    return (
-      strip(el.x + el.width - size, el.y, size, el.height) +
-      rule(el.x + el.width - size, el.y, el.x + el.width - size, el.y + el.height)
-    );
-  if (edge === 'top')
-    return (
-      strip(el.x, el.y, el.width, size) + rule(el.x, el.y + size, el.x + el.width, el.y + size)
-    );
-  if (edge === 'bottom')
-    return (
-      strip(el.x, el.y + el.height - size, el.width, size) +
-      rule(el.x, el.y + el.height - size, el.x + el.width, el.y + el.height - size)
-    );
-  // A centred strip has two seams with the body, not one.
-  const left = el.x + el.width / 2 - size / 2;
-  return (
-    strip(left, el.y, size, el.height) +
-    rule(left, el.y, left, el.y + el.height) +
-    rule(left + size, el.y, left + size, el.y + el.height)
   );
 }

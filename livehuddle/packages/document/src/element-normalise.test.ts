@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, isValidElement, isValidTab } from './index';
-import {
-  lanesToFront,
-  mergeElementUpdate,
-  normaliseElement,
-  normaliseElements,
-} from './element-normalise';
+import { mergeElementUpdate, normaliseElement, normaliseElements } from './element-normalise';
 
 // livediagram/docs/specs/015-api/mcp-server.md §4.7a: the content-carrying kinds are made safe before validation.
 
@@ -19,14 +14,14 @@ describe('content kinds', () => {
   });
 
   it('keeps an alignment the model chose', () => {
-    const lane = normaliseElement({
+    const square = normaliseElement({
       id: 'l',
       type: 'shape',
-      shape: 'lane',
+      shape: 'square',
       ...box,
       textAlignX: 'right',
     });
-    expect(lane).toMatchObject({ textAlignX: 'right', padding: 'lg' });
+    expect(square).toMatchObject({ textAlignX: 'right' });
   });
 
   it('gives a coloured sticky the borderless palette look', () => {
@@ -49,16 +44,6 @@ describe('content kinds', () => {
     expect(text).toMatchObject({ textSize: 'sm' });
     expect(sticky).toMatchObject({ textSize: 'md' });
     expect(sized).toMatchObject({ textSize: 'scale' });
-  });
-
-  it('moves lanes to the front, keeping their order', () => {
-    const ids = lanesToFront([
-      { id: 'a', type: 'shape', shape: 'square' },
-      { id: 'l1', type: 'shape', shape: 'lane' },
-      { id: 'b', type: 'sticky' },
-      { id: 'l2', type: 'shape', shape: 'lane' },
-    ]).map((e) => e.id);
-    expect(ids).toEqual(['l1', 'l2', 'a', 'b']);
   });
 
   it('leaves anything that is not an element list for validation to reject', () => {
@@ -116,76 +101,62 @@ describe('mergeElementUpdate', () => {
   });
 });
 
-// docs/specs/009-elements/badge.md "Agents": an agent's attached badge (or pointer note) keeps its host through the
-// per-element normalise; a lone element used to be settled on its own, find no host and come back detached.
-describe('attached elements through normaliseElements', () => {
-  it('keeps a badge and a pointer note attached to their host', () => {
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a badge, a step, a pointer note and a
+// Timeline are retired kinds. Nothing settles, attaches, numbers or trims them: each comes back as it was sent.
+describe('retired layout kinds through normaliseElements', () => {
+  it('leaves an attached badge and pointer note, and a Timeline, as they were', () => {
     const host = { ...createShape('square', 100, 100), id: 'host', width: 120, height: 60 };
     const badge = {
-      ...createShape('badge', 0, 0),
       id: 'b',
+      type: 'shape',
+      shape: 'badge',
+      ...box,
       attachedTo: 'host',
       attachAt: 'top-right',
+      chipLook: 'tinted',
     };
     const note = {
-      ...createShape('pointer-note', 300, 20),
       id: 'n',
-      attachedTo: 'host',
+      type: 'shape',
+      shape: 'pointer-note',
+      ...box,
+      attachedTo: 'gone',
       attachAt: 'top-left',
       pointerTip: { x: -200, y: 80 },
     };
-    const out = normaliseElements([host, badge, note]) as Array<Record<string, unknown>>;
-    expect(out.find((e) => e.id === 'b')!.attachedTo).toBe('host');
-    const n = out.find((e) => e.id === 'n')!;
-    expect(n.attachedTo).toBe('host');
-    expect(n.attachAt).toBe('top-left');
+    const rail = {
+      id: 'r',
+      type: 'shape',
+      shape: 'timeline-rail',
+      ...box,
+      conceptRows: Array.from({ length: 10 }, (_, i) => ({ label: `R${i + 1}` })),
+      railCount: 4,
+    };
+    const [, b, n, r] = normaliseElements([host, badge, note, rail]) as Record<string, unknown>[];
+    expect(b).toMatchObject({
+      attachedTo: 'host',
+      attachAt: 'top-right',
+      chipLook: 'tinted',
+      ...box,
+    });
+    expect(n).toMatchObject({ attachedTo: 'gone', pointerTip: { x: -200, y: 80 }, ...box });
+    expect((r!.conceptRows as unknown[]).length).toBe(10);
+    expect(r!.railCount).toBe(4);
   });
 });
 
-describe('settling an agent’s chips', () => {
-  it('writes an agent’s numbered step’s label as text, settled and valid', () => {
-    const step = {
-      id: 's',
-      type: 'shape',
-      shape: 'step',
-      x: 0,
-      y: 0,
-      width: 28,
-      height: 28,
-      label: 5,
-    };
-    const [out] = normaliseElements([step]) as Record<string, unknown>[];
+describe('an agent’s labels', () => {
+  it('writes a numbered label as text, valid', () => {
+    const shape = { ...createShape('square', 0, 0), id: 's', label: 5 };
+    const [out] = normaliseElements([shape]) as Record<string, unknown>[];
     expect(out!.label).toBe('5');
     expect(isValidElement(out as never)).toBe(true);
   });
 
   it('leaves a label it cannot read for validation to refuse, rather than throwing', () => {
-    const step = {
-      id: 's',
-      type: 'shape',
-      shape: 'step',
-      x: 0,
-      y: 0,
-      width: 28,
-      height: 28,
-      label: { n: 5 },
-    };
+    const shape = { ...createShape('square', 0, 0), id: 's', label: { n: 5 } };
     let out: unknown;
-    expect(() => (out = normaliseElements([step]))).not.toThrow();
+    expect(() => (out = normaliseElements([shape]))).not.toThrow();
     expect(isValidElement((out as unknown[])[0] as never)).toBe(false);
-  });
-});
-
-describe('an agent’s Timeline', () => {
-  const concept = (shape: string, n: number) =>
-    normaliseElement({
-      ...createShape(shape as never, 0, 0),
-      conceptRows: Array.from({ length: n }, (_, i) => ({ label: `R${i + 1}` })),
-    }) as { conceptRows: { label: string }[] };
-
-  it('keeps its rows within its kind’s range, so every later edit takes', () => {
-    // A Timeline holds at most 8 milestones.
-    expect(concept('timeline-rail', 10).conceptRows).toHaveLength(8);
-    expect(concept('timeline-rail', 5).conceptRows).toHaveLength(5);
   });
 });

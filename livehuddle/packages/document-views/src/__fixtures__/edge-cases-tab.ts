@@ -1,13 +1,8 @@
 // The edge cases of docs/specs/024-agents/blueprints/document-views.md "Errors and edge cases" (E2 to
-// E28) composed in one tab, with every kind that has a state attribute. Unknown kinds make it a tab
-// `isValidTab` refuses, which is the point: views never drop what they do not know.
-import { createSticky, type Element, type ShapeKind, type Tab } from '@livehuddle/document';
-import { arrowBetween, shapeAt, storedTableAt, strokeAt } from './build';
-
-const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
-  ['timeline-rail', {}],
-  ['card', { pageTitle: 'Quarterly review' }],
-];
+// E28) composed in one tab. Unknown kinds make it a tab `isValidTab` refuses, which is the point: views never drop
+// what they do not know.
+import { createSticky, type Element, type Tab } from '@livehuddle/document';
+import { arrowBetween, retiredShapeAt, shapeAt, storedTableAt, strokeAt } from './build';
 
 // Grid cells below the frames, 8 to a row.
 const cell = (i: number): [number, number] => [(i % 8) * 250, 600 + Math.floor(i / 8) * 200];
@@ -51,19 +46,17 @@ export function edgeCasesTab(): Tab {
     strokeAt('run-1', ...cell(14)),
     strokeAt('run-2', ...cell(15)),
     strokeAt('run-3', cell(15)[0] + 30, cell(15)[1], true),
-    ...STATE_KINDS.map(([kind, state], i) =>
-      shapeAt(kind, `state-${kind}`, ...cell(24 + i), 100, 50, state),
-    ),
   ];
   return {
     id: 'edge-tab',
     name: 'Edge cases',
     elements: [
-      // Two frames of equal area overlapping: the earlier holds what sits in both (E4).
-      shapeAt('boundary', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
-      shapeAt('boundary', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
+      // Two stored boundaries overlapping (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+      // part 3): retired kinds that hold nothing, so what sits on them prints beside them.
+      retiredShapeAt('boundary', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
+      retiredShapeAt('boundary', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
       shapeAt('square', 'both', 400, 175, 100, 50, { label: 'In both' }),
-      // Larger than the frame its centre is in (E5).
+      // Larger than the stored boundary its centre is on.
       shapeAt('square', 'huge', -10, -10, 620, 420, { label: 'Huge' }),
       ...grid,
       { id: 'nowhere', type: 'hologram', label: 'No geometry' } as unknown as Element,

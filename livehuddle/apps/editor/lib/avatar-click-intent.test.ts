@@ -122,8 +122,6 @@ const WALK = [
   'hot-desk',
   'pet-bed',
   'reception-desk',
-  'lane',
-  'boundary',
   'arrow',
   'freehand',
   'path',
@@ -149,7 +147,7 @@ describe('avatarClickIntent', () => {
   it('opens everything else in the reader: content to read', () => {
     for (const kind of ALL_KINDS.filter((k) => !IN_PLACE.includes(k) && !WALK.includes(k)))
       expect(avatarClickIntent(kind), kind).toBe('read');
-    for (const kind of ['sticky', 'text', 'image', 'callout'])
+    for (const kind of ['sticky', 'text', 'image'])
       expect(avatarClickIntent(kind), kind).toBe('read');
   });
 

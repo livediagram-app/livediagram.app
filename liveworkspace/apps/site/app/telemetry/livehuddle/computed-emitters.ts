@@ -372,10 +372,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
-  'apps/editor/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
-    values: ['Banner', 'Callout', 'StatRow'],
-    open: 'elementTelemetryType of the web component a row was added to',
-  },
   'apps/editor/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
   // The Share dialog's reports, through its onTelemetry prop (@liveworkspace/explorer ShareDialog.tsx): each a fixed
   // token from the package; a pass issued reports its level.

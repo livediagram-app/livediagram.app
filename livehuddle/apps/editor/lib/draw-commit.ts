@@ -117,27 +117,18 @@ export function buildDressedDrawnArrow(
   return styleNewElement(drawn);
 }
 
-// Component branch (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): build the component at the theme's
-// colours, then a tap drops it at its natural size centred on the tap, while
-// a drag sizes it to the dragged box like any shape. A component is one
-// element that lays itself out, so it re-flows into the box rather than
-// zooming; an aspect-locked one (the Avatar) keeps its square, fitted into
-// the box.
+// Component branch (docs/specs/008-canvas/canvas-and-palette.md): a tap drops the component at its natural size
+// centred on the tap, while a drag sizes it to the dragged box like any shape; an aspect-locked one (the Avatar)
+// keeps its square, fitted into the box.
 export function buildDrawnComponent(
   kind: ComponentKind,
   startX: number,
   startY: number,
   endX: number,
   endY: number,
-  theme: ThemeDefinition,
 ): Element {
-  const colors = {
-    accent: theme.elementStroke ?? '#0284c7',
-    surface: theme.elementFill ?? '#ffffff',
-    ink: theme.elementText ?? '#0f172a',
-  };
-  if (isDrawTap(startX, startY, endX, endY)) return createComponent(kind, startX, startY, colors);
-  const made = createComponent(kind, (startX + endX) / 2, (startY + endY) / 2, colors);
+  if (isDrawTap(startX, startY, endX, endY)) return createComponent(kind, startX, startY);
+  const made = createComponent(kind, (startX + endX) / 2, (startY + endY) / 2);
   if (made.type === 'arrow') return made;
   const box = drawnDragBox({ type: 'component', kind }, startX, startY, endX, endY);
   const side = Math.min(box.width, box.height);

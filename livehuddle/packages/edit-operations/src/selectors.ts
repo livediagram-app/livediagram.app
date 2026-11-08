@@ -3,17 +3,11 @@
 // against the working state, so an element an earlier operation added or named is addressable.
 
 import type { EditRejection } from '@livehuddle/api-schema';
-import {
-  isContainer,
-  kindWordOf,
-  resolveRef,
-  type Element,
-  type ElementId,
-} from '@livehuddle/document';
+import { kindWordOf, resolveRef, type Element, type ElementId } from '@livehuddle/document';
 import { describeElement, kindOf, labelOf } from './element-text';
 import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';
-import { currentElements, holdersOf, namingOf, noteTarget, refsOf, type EditState } from './state';
+import { currentElements, namingOf, noteTarget, refsOf, type EditState } from './state';
 import {
   arrowParts,
   hasQuotes,
@@ -25,7 +19,7 @@ import {
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
 // Keys whose value names one element.
-const WORD_KEYS = ['in', 'from', 'to', 'downstream', 'upstream'] as const;
+const WORD_KEYS = ['from', 'to', 'downstream', 'upstream'] as const;
 type WordKey = (typeof WORD_KEYS)[number];
 
 type SelectorTerm =
@@ -95,7 +89,7 @@ export function isSingleWord(word: Word): boolean {
   return !/[:=~]|->/.test(word.value);
 }
 
-// What an operation that acts on many by nature (`wrap`, `layout`) acts on: each ref or quoted
+// What an operation that acts on many by nature (`layout`) acts on: each ref or quoted
 // label names exactly one element, and the other words of a selector together one or more. In
 // element order, each once.
 export function resolveMembers(
@@ -250,33 +244,6 @@ function applyTerm(
         return { rejection: notFound(state, selector, operation, 'nothing is selected') };
       const selected = new Set(state.selected);
       return keep((el) => selected.has(el.id));
-    }
-    case 'in': {
-      const resolved = word(term.word);
-      if ('rejection' in resolved) return resolved;
-      const container = resolved.el;
-      if (!isContainer(container)) {
-        const containers = currentElements(state).filter(isContainer);
-        return {
-          rejection: {
-            code: 'invalid_value',
-            operation,
-            details: [
-              `in:${term.word}: ${refsOf(state).refOf(container.id)} is not a boundary or lane`,
-              ...(containers.length
-                ? [`containers: ${containers.map((c) => refsOf(state).refOf(c.id)).join(' ')}`]
-                : []),
-            ],
-            hint: 'name a boundary or a lane',
-          },
-        };
-      }
-      const holders = holdersOf(state);
-      const within = (id: ElementId): boolean => {
-        const holder = holders.get(id);
-        return holder === container.id || (holder ? within(holder) : false);
-      };
-      return keep((el) => el.type !== 'arrow' && within(el.id));
     }
     case 'from':
     case 'to': {

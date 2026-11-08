@@ -1,8 +1,6 @@
 // Everything a stored tab's elements need on the way in, in one call. Composed
 // into migrateStoredTab (stored-tab.ts), which every stored-tab entry point runs.
 
-import { migrateLegacyCallouts } from './card';
-import { settleChips } from './attachment';
 import { migrateLegacyGroups } from './legacy-groups';
 import { migrateLegacyModeButtons } from './legacy-mode-buttons';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
@@ -15,15 +13,6 @@ import { dropUnsafeColours } from './unsafe-colours';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
-  // Badges, step numbers and pointer notes read settled (docs/specs/009-elements/badge.md): fitted, numbered and on
-  // their hosts' points, whoever wrote them, without attaching a loose one that merely sits near a corner.
-  return settleChips([], migrateStoredElementsUnsettled(elements), { attachLoose: false });
-}
-
-/** The stored-element migrations without the settle: for ONE element at a time (normaliseElement), whose host is not
- *  in its one-element list, so settling it alone would detach every badge, step and pointer note from its host. The
- *  whole list is settled afterwards. */
-export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
   // Malformed styles, catalogue keys and bends are settled first, so no later migration reads them.
   return dropUnsafeColours(
     dropUnturnableRotation(
@@ -31,9 +20,7 @@ export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
         migrateLegacyTextSizing(
           migrateLegacyStrokePoints(
             migrateLegacyGroups(
-              migrateLegacyCallouts(
-                dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
-              ),
+              dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
             ),
           ),
         ),

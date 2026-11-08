@@ -72,11 +72,10 @@ describe('stripTilesFor', () => {
   });
 
   it('keeps every tile of a category short of the strip', () => {
-    const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(5);
-    expect([...components.dividersAfter]).toEqual([]);
-    // Five since the Frame left (not-in-livehuddle.md "The Frame") and then the Table (Work Tracker #459, part 2).
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(5);
+    const write = stripTilesFor('write', NONE);
+    expect(write.tiles).toHaveLength(3);
+    expect(write.hasMore).toBe(false);
+    expect([...write.dividersAfter]).toEqual([]);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

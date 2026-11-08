@@ -16,7 +16,7 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
+import { ColourRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -160,14 +160,6 @@ export function ElementContentSections({
               <ImageCreditRow credit={target.credit} />
             </>
           ) : null}
-          {/* The hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): any image can carry one. */}
-          <ContextMenuDivider />
-          <MenuToggleRow
-            label="Caption Card"
-            description="A title and a line of text over the image."
-            checked={!!target.heroCaption}
-            onToggle={() => props.onSetHeroCaption(!target.heroCaption)}
-          />
         </MenuAccordionSection>
       ) : null}
       {/* Link: set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md). */}

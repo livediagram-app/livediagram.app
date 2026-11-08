@@ -58,7 +58,9 @@ function shape(
   extra: Partial<ShapeElement> = {},
 ): ShapeElement {
   const [x, y, width, height] = box;
-  return { ...createShape(kind, x, y), id, label, x, y, width, height, ...extra };
+  // A stored boundary has no factory any more: a square's box carrying the old kind word.
+  const made = createShape(kind === STORED_BOUNDARY ? 'square' : kind, x, y);
+  return { ...made, shape: kind, id, label, x, y, width, height, ...extra };
 }
 
 function comment(n: number, text: string, author: string): Comment {
@@ -84,6 +86,10 @@ function arrow(
   };
 }
 
+// The three groups are stored boundaries (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 3): a retired kind that holds nothing and prints as `? boundary`, beside what sits on it.
+const STORED_BOUNDARY = 'boundary' as ShapeKind;
+
 export function checkoutElements(): Element[] {
   return [
     {
@@ -93,9 +99,9 @@ export function checkoutElements(): Element[] {
       width: 520,
       height: 48,
     },
-    shape('boundary', ID.edge, 'Edge', [40, 100, 300, 440]),
-    shape('boundary', ID.services, 'Services', [400, 100, 580, 440]),
-    shape('boundary', ID.data, 'Data', [1040, 100, 280, 440]),
+    shape(STORED_BOUNDARY, ID.edge, 'Edge', [40, 100, 300, 440]),
+    shape(STORED_BOUNDARY, ID.services, 'Services', [400, 100, 580, 440]),
+    shape(STORED_BOUNDARY, ID.data, 'Data', [1040, 100, 280, 440]),
     shape('actor', ID.customer, 'Customer', [150, 140, 80, 110]),
     shape('square', ID.web, 'Web app', [90, 290, 200, 72], { iconId: 'nextjs' }),
     shape('hexagon', ID.gateway, 'API gateway', [90, 420, 200, 72], {

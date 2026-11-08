@@ -49,31 +49,3 @@ describe('duplicateMultiSelected', () => {
     expect(copies.filter((c) => c.type === 'arrow')).toHaveLength(1);
   });
 });
-
-describe('duplicateSelected', () => {
-  it('lets a lone copy of an attached badge go of its host, offset beside the original', () => {
-    const host = shape('h', { width: 200, height: 100 });
-    const badge = {
-      ...shape('b', { shape: 'badge', x: -12, y: -12, width: 24, height: 24, label: '1' }),
-      attachedTo: 'h',
-      attachAt: 'top-left',
-    } as Element;
-    let committed: Element[] = [host, badge];
-    const { result } = renderHook(() =>
-      useElementDuplication({
-        readSelection: () => ({ selectedId: 'b', multiSelectedIds: new Set() }),
-        activeTab: { id: 't', name: 'T', elements: committed },
-        commit: (m) => {
-          committed = m(committed);
-        },
-        setSelectedId: vi.fn(),
-        setMultiSelectedIds: vi.fn(),
-      }),
-    );
-    result.current.duplicateSelected();
-    const copy = committed[2] as ShapeElement;
-    expect(copy.attachedTo).toBeUndefined();
-    expect(copy.attachAt).toBeUndefined();
-    expect(copy.x).not.toBe(-12);
-  });
-});

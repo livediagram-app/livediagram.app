@@ -310,7 +310,7 @@ submit answers the same 200 shape with `dryRun: true`, `changeset: null`; any ot
 type ChangesetBase = { rev: number; elements?: Record<string, string> }; // id -> fingerprint
 type ChangesetRequest = {
   operations?: unknown[] | string; // JSON form (validateEditOperations) or line form (parseEditOperations) (CS8)
-  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name? }; exactly one of the two
+  replace?: ReplaceBody; // { template | elements, layout?, theme?, name? }; exactly one of the two
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string; // trimmed, control characters removed, at most CHANGESET_SUMMARY_MAX (CS10)
@@ -425,10 +425,10 @@ before)`. Derived by diffing back rather than op by op, so removes, adds and a r
 ### MCP
 
 - No tool does a whole-tab save.
-- `add_tab`: `POST .../tabs/<newTabId>/changesets` with `{ replace: { template | graph | mermaid | elements,
+- `add_tab`: `POST .../tabs/<newTabId>/changesets` with `{ replace: { template | elements,
 layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). Structured output gains
   `changesetId`, `rev`, `text`, `lint`.
-- `update_document` `replace`: `{ replace: { graph | mermaid | elements, layout } }`, no base.
+- `update_document` `replace`: `{ replace: { elements, layout } }`, no base.
 - `update_document` `ops`: `mcpOpsToEditOperations(args.ops)` in the JSON form: `add` → `add` of the whole
   element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed).
   `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the
@@ -574,10 +574,9 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
   `CHANGESET_MAX_OPERATIONS`, `MAX_BODY_BYTES` and `CHANGESET_PART_MAX_BYTES` bound the work; `MAX_SELECTION_IDS`
   bounds a hostile `select`.
 - A forged `X-Changeset-Seen` can only make its own save drop or keep changesets; it reaches no other tab.
-- A `replace` compiles graph and Mermaid text from any token holder inside the worker, so the label cap and the
-  Mermaid parser read it in linear time: no pattern that backtracks over a run of one character
-  (`../livediagram/packages/document/src/mermaid-scan.ts`; `graph-input-redos.test.ts` times growth and checks each scan
-  against the pattern it replaced).
+- A `replace` compiles no graph or Mermaid text: those bodies went with the graph input
+  ([not in livehuddle](../../002-project-scope/not-in-livehuddle.md) "The element engine", part 3), so no parser
+  reads a token holder's text there.
 
 ## Performance and limits
 

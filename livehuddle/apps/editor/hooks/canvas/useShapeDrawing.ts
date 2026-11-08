@@ -27,7 +27,6 @@ import {
   withDoorPiece,
   type Element,
   type Tab,
-  withVariantColours,
 } from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { armedRoomSnap } from '@/lib/palette-drag-snap';
@@ -189,9 +188,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       return;
     }
     if (intent.type === 'component') {
-      const placed = styleNewElement(
-        buildDrawnComponent(intent.kind, startX, startY, endX, endY, getTheme(activeTab.theme)),
-      );
+      const placed = styleNewElement(buildDrawnComponent(intent.kind, startX, startY, endX, endY));
       commit((els) => [...els, placed]);
       setSelectedId(placed.id);
       setPendingDraw(null);
@@ -213,11 +210,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
         buildDrawnBoxed(intent, sx, sy, endX, endY, inheritSizeRef.current, activeTab),
       ),
     );
-    // A preset's own colour (the Warning badge's rose) outlasts the theme and the remembered style it was dressed in.
-    const sized =
-      intent.type === 'shape' && dressed.type === 'shape'
-        ? withVariantColours(dressed, intent.variant)
-        : dressed;
+    const sized = dressed;
     // Containers don't need special-casing here: the canvas + exporters
     // route through `framesFirst`, which keeps every container painted
     // behind its contents regardless of array position.

@@ -212,8 +212,6 @@ export type CanvasProps = {
   onAddLinkCard: () => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
   // Header / Avatar carry an image and open the picker on drop.
-  onAddHero: () => void;
-  onAddCallout: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   onAddSticky: () => void;
@@ -387,26 +385,10 @@ export type CanvasProps = {
   // Inline label-editor (rich-text) alignment control, threaded through
   // CanvasElementsLayer to the in-place editor on the selected element.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit per gesture, so a drag is one undo step.
-  onCommitHeaderSize?: (elementId: string, px: number) => void;
   onCancelEdit: () => void;
   // Delete a retired element from its placeholder (docs/specs/002-project-scope/not-in-livehuddle.md "Deleting it").
   // An Editor's alone: omitted in read-only.
   onDeleteRetired?: (elementId: string) => void;
-  // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
-  // fields, so they commit through here rather than the label editor.
-  onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place and a hero's
-  // caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@livehuddle/document').WebRows) => void;
-  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
-  onSetHeroCaptionLine?: (
-    elementId: string,
-    field: keyof import('@livehuddle/document').HeroCaption,
-    value: string,
-  ) => void;
   onBeginEndpointDrag: (arrowId: string, end: ArrowEnd, e: ReactPointerEvent) => void;
   onBeginArrowCurveDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowCurvePointDrag: (arrowId: string, index: number, e: ReactPointerEvent) => void;

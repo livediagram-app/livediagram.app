@@ -1,8 +1,7 @@
-tab agent-tab "Services" · 12 elements: 6 boxes, 1 boundary, 5 arrows
-boundary services "Services"
-  square orders "Orders service" note="Owns the order lifecycle and is the source of"… → payments "charge", orders-db, event-bus "OrderPlaced"
-  stadium event-bus "Event bus" note="Kafka, 3 brokers, 7-day retention." → inventory, notification
-  square payments "Payments service"
-  square inventory "Inventory service"
-  square notification "Notification worker"
+tab agent-tab "Services" · 11 elements: 6 boxes, 5 arrows
+square payments "Payments service"
+square orders "Orders service" note="Owns the order lifecycle and is the source of"… → payments "charge", orders-db, event-bus "OrderPlaced"
 cylinder orders-db "Orders DB"
+square inventory "Inventory service"
+stadium event-bus "Event bus" note="Kafka, 3 brokers, 7-day retention." → inventory, notification
+square notification "Notification worker"

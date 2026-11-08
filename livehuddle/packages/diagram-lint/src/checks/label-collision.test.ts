@@ -1,3 +1,4 @@
+import type { Element } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { arrow, box, lint, of, tabOf } from '../fixtures/build';
 
@@ -10,12 +11,6 @@ describe('label-collision', () => {
       message: 'a→b label overlaps a, b',
       fix: 'set a->b label="<at most 3 characters>"',
     });
-    expect(
-      of(
-        lint(tabOf(box('a', 0, 0), box('b', 160, 0), labelled), { source: 'graph' }),
-        'label-collision',
-      )[0]!.fix,
-    ).toBe('shorten the edge label to 3 characters');
   });
 
   it('reads lines as drawn, fanned off a shared anchor: a label between two fanned drops is not struck', () => {
@@ -167,5 +162,76 @@ describe('label-collision', () => {
     expect(found).toHaveLength(1);
     expect(found[0]!.refs).toEqual(['y', 'n']);
     expect(found[0]!.message).toMatch(/label overlaps .*'s label/);
+  });
+
+  it('reads a label on an upright line, struck by a level line across it', () => {
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 0, 400),
+      arrow('x', 'a', 'b', ['s', 'n'], { label: 'go', labelOffset: { t: 0.5, offset: 0 } }),
+      box('c', -400, 200),
+      box('d', 400, 200),
+      arrow('y', 'c', 'd'),
+      // An upright line well off the label's track neither strikes it nor runs along it.
+      box('e', 900, 0),
+      box('f', 900, 400),
+      arrow('z', 'e', 'f', ['s', 'n']),
+    );
+    expect(of(lint(tab), 'label-collision')[0]!.message).toBe('a→b label struck by c→d');
+  });
+
+  it("reads a label's track from the run it sits on, not a level run beside it at the same height", () => {
+    // Right along y=0 (x 0 to 100), up, right, then down x=300 through y=0: the label sits on the upright run, level
+    // with the first run but past its end, which is not its track.
+    const bent = {
+      id: 'x',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 400, y: 200 },
+      arrowStyle: 'angled',
+      curvePoints: [
+        { dx: -100, dy: -100 },
+        { dx: -100, dy: -300 },
+        { dx: 100, dy: -300 },
+        { dx: 100, dy: 100 },
+      ],
+      label: 'go',
+      labelOffset: { t: 0.7, offset: 0 },
+    } as Element;
+    expect(of(lint(tabOf(bent)), 'label-collision')).toEqual([]);
+  });
+
+  it('reads a label on a slanted line as on no track, so any line across it strikes it', () => {
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 600, 600),
+      arrow('x', 'a', 'b', ['s', 'n'], {
+        arrowStyle: 'straight',
+        label: 'go',
+        labelOffset: { t: 0.5, offset: 0 },
+      }),
+      box('c', -200, 300),
+      box('d', 900, 300),
+      arrow('y', 'c', 'd', ['e', 'w'], { arrowStyle: 'straight' }),
+    );
+    expect(of(lint(tab), 'label-collision')[0]!.message).toBe('a→b label struck by c→d');
+  });
+
+  it('moves a struck label past a bend, along its own route', () => {
+    const tab = tabOf(
+      box('a', 0, 0),
+      box('b', 600, 400),
+      arrow('x', 'a', 'b', ['e', 'n'], {
+        label: 'publish',
+        arrowStyle: 'angled',
+        labelOffset: { t: 0.264, offset: 0 },
+      }),
+      box('c', 300, -300),
+      box('d', 300, 900),
+      arrow('y', 'c', 'd', ['s', 'n'], { arrowStyle: 'straight' }),
+    );
+    expect(of(lint(tab), 'label-collision')[0]!.fix).toBe(
+      'set a->b labelOffset={"t":0.75,"offset":0}',
+    );
   });
 });

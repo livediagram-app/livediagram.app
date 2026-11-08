@@ -8,12 +8,10 @@ import {
   duplicateElements,
   freshCopyFields,
   isBoxed,
-  withAttached,
   type ArrowElement,
   type BoxedElement,
   type Element,
   type Tab,
-  detachChip,
 } from '@livehuddle/document';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
@@ -38,11 +36,9 @@ export function useElementDuplication(deps: {
   const duplicateMultiSelected = () => {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
-    // A host's copy takes its badges and step numbers (docs/specs/009-elements/badge.md).
-    const ids = withAttached(activeTab.elements, multiSelectedIds);
     const { newElements: copies } = duplicateElements(
       activeTab.elements,
-      ids,
+      multiSelectedIds,
       PASTE_OFFSET,
       PASTE_OFFSET,
     );
@@ -60,33 +56,15 @@ export function useElementDuplication(deps: {
     // Element-only duplicate: clones just this element (not arrows attached
     // to it), offset diagonally so it's visible next to the original.
     const offset = PASTE_OFFSET;
-    // A host copies with its badges and step numbers (docs/specs/009-elements/badge.md).
-    const withCharts = withAttached(activeTab.elements, new Set([source.id]));
-    if (withCharts.size > 1) {
-      const { newElements: copies, idMap } = duplicateElements(
-        activeTab.elements,
-        withCharts,
-        offset,
-        offset,
-      );
-      const copyId = idMap.get(source.id);
-      if (!copyId) return;
-      commit((els) => [...els, ...copies]);
-      trackDuplicated(copies);
-      setSelectedId(copyId);
-      return;
-    }
     if (isBoxed(source)) {
-      // A copy of a badge, step number or pointer note on its own is let go of the host (detachChip), as a copy made
-      // with others is: still attached, settling would centre it straight back over the original.
-      const copy: BoxedElement = detachChip({
+      const copy: BoxedElement = {
         ...source,
         id: crypto.randomUUID(),
         x: source.x + offset,
         y: source.y + offset,
         // Whatever a copy regenerates rather than inherits.
         ...freshCopyFields(source),
-      });
+      };
       commit((els) => [...els, copy]);
       trackDuplicated([copy]);
       setSelectedId(copy.id);

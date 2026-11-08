@@ -104,10 +104,10 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       all: true,
       keepArrows: true,
     });
-    expect(one('move n4 inside:f2')).toEqual({
+    expect(one('move n4 align:f2')).toEqual({
       op: 'move',
       target: 'n4',
-      place: { rel: 'inside', ref: 'f2' },
+      place: { rel: 'align', ref: 'f2' },
     });
     expect(one('move type:sticky by=10,-5 all')).toEqual({
       op: 'move',
@@ -132,7 +132,7 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     expect(one('rewire a3 to=verify')).toEqual({ op: 'rewire', target: 'a3', to: 'verify' });
   });
 
-  it('reads insert, wrap, unwrap, order, layout and test', () => {
+  it('reads insert, order, layout and test', () => {
     expect(one('insert diamond id=valid label=Valid? between n3 n4')).toEqual({
       op: 'insert',
       kind: 'diamond',
@@ -140,23 +140,11 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       fields: { label: 'Valid?' },
       between: ['n3', 'n4'],
     });
-    expect(
-      one('wrap n3 "Orders DB" type:sticky in:f2 in lane id=svc label=Services tidy make-room'),
-    ).toEqual({
-      op: 'wrap',
-      targets: ['n3', '"Orders DB"', 'type:sticky in:f2'],
-      in: 'lane',
-      id: 'svc',
-      fields: { label: 'Services' },
-      tidy: true,
-      makeRoom: true,
-    });
-    expect(one('unwrap f2')).toEqual({ op: 'unwrap', target: 'f2' });
     expect(one('order n3 front')).toEqual({ op: 'order', target: 'n3', to: 'front' });
     expect(one('order n3 above=n4')).toEqual({ op: 'order', target: 'n3', above: 'n4' });
-    expect(one('layout in:f2 style=tree direction=right')).toEqual({
+    expect(one('layout type:square style=tree direction=right')).toEqual({
       op: 'layout',
-      target: 'in:f2',
+      target: 'type:square',
       style: 'tree',
       direction: 'right',
     });
@@ -167,17 +155,18 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     });
   });
 
-  it('keeps members that name one element apart, and takes the rest together', () => {
-    expect(one('wrap n3 n4 in boundary')).toEqual({
-      op: 'wrap',
-      targets: ['n3', 'n4'],
-      in: 'boundary',
-    });
-    expect(one('wrap selected label~"to do" in boundary')).toEqual({
-      op: 'wrap',
-      targets: ['selected label~"to do"'],
-      in: 'boundary',
-    });
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: nothing holds any more.
+  it('reads wrap and unwrap as words that are not operations, and inside: as no placement', () => {
+    for (const line of ['wrap n3 n4 in boundary', 'unwrap f2']) {
+      const [error] = errorsOf(line);
+      expect(error, line).toMatchObject({ code: 'unknown_operation', line: 1 });
+    }
+    expect(errorsOf('move n4 inside:f2')[0]!.details[0]).toMatch(
+      /takes exactly one of "place", "by"/,
+    );
+    expect(errorsOf('add square inside:f2')[0]!.details[0]).toMatch(
+      /expected a placement: .* or align:<ref>$/,
+    );
   });
 
   it('skips comments and blank lines, mixes forms, and numbers operations among them', () => {
@@ -241,10 +230,10 @@ describe('parseEditOperations: refusals', () => {
   it('names the placements for a word that is not one', () => {
     const [error] = errorsOf('add square label=x right:n3');
     expect(error!.details[0]).toBe(
-      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<container>',
+      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>',
     );
     expect(error!.hint).toBe(
-      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<container>',
+      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>',
     );
   });
 
@@ -262,23 +251,19 @@ describe('parseEditOperations: refusals', () => {
         'connect n3 n4',
         'connect -> n4',
         'connect n3 ->',
-        'wrap n3 n4',
-        'wrap in boundary',
-        'wrap n3 in boundary label=x n4',
         'set',
         'set n3',
         'rm n3 label=x',
         'move n3 by=1',
         'move n3 by=a,1',
         'connect n3 -> n4 tags=[1,',
-        'wrap n3 in boundary tags=[1,',
         'set n3 tags=[1,',
       ].map(detail),
     ).toEqual([
       'line 1, column 4: expected a kind: square, text, sticky, …',
       'line 1, column 5: expected a kind: square, text, sticky, …',
       'line 1, column 12: expected key=value or a placement',
-      'line 1, column 21: expected one placement (or inside: and align: with a side)',
+      'line 1, column 21: expected one placement (or align: with a side)',
       'line 1, column 12: expected at:x,y with two numbers',
       'line 1, column 12: expected gap: with a side, after or align placement',
       'line 1, column 19: expected gap: with a side, after or align placement',
@@ -286,16 +271,12 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 12: expected a selector after ->',
-      'line 1, column 9: expected in boundary or in lane',
-      'line 1, column 6: expected the members to wrap',
-      'line 1, column 29: expected key=value or tidy, absorb, make-room',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',
       'line 1, column 7: expected key=value',
       'line 1, column 7: expected no key=value on rm',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 18: expected a JSON value after tags=',
-      'line 1, column 21: expected a JSON value after tags=',
       'line 1, column 8: expected a JSON value after tags=',
     ]);
   });
@@ -337,7 +318,7 @@ describe('formatOperation round trip', () => {
   const lines = [
     'add square id=verify label="Verify email" text=sm below:n3 gap:40',
     'add text label=Note at:0,-20',
-    'set type:sticky in:f2 fill=green width=200 textBold=true note= tags=["a","b"] all',
+    'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
     'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
     'rm n7 all keep-arrows',
     'move n4 right-of:"Orders service"',
@@ -347,12 +328,10 @@ describe('formatOperation round trip', () => {
     'rewire a3 to="Orders DB"',
     'rewire a3 from=n1 to="Orders DB"',
     'insert diamond label=Valid? between n3 "Orders DB"',
-    'wrap n3 type:sticky in boundary label=Services absorb',
-    'unwrap f2',
     'order n3 back',
     'order n3 above=n4',
     'order n3 below="Orders DB"',
-    'layout in:f2 style=tree direction=right',
+    'layout type:square style=tree direction=right',
     'layout n3',
     'test n3 label=Login',
     '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
@@ -368,7 +347,7 @@ describe('formatOperation round trip', () => {
     expect(operationsOf(lines.join('\n')).map(formatOperation)).toEqual([
       'add square id=verify label="Verify email" text=sm below:n3 gap:40',
       'add text label=Note at:0,-20',
-      'set type:sticky in:f2 fill=green width=200 textBold=true note= tags=["a","b"] all',
+      'set type:sticky fill=green width=200 textBold=true note= tags=["a","b"] all',
       'set "Orders service" label="200" title="a: b" text="#tag" value="" data={"x":"a b"}',
       'rm n7 all keep-arrows',
       'move n4 right-of:"Orders service"',
@@ -378,27 +357,14 @@ describe('formatOperation round trip', () => {
       'rewire a3 to="Orders DB"',
       'rewire a3 from=n1 to="Orders DB"',
       'insert diamond label=Valid? between n3 "Orders DB"',
-      'wrap n3 type:sticky in boundary label=Services absorb',
-      'unwrap f2',
       'order n3 back',
       'order n3 above=n4',
       'order n3 below="Orders DB"',
-      'layout in:f2 style=tree direction=right',
+      'layout type:square style=tree direction=right',
       'layout n3',
       'test n3 label=Login',
       '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
     ]);
-  });
-
-  it('prints a wrap of two compound selectors as its JSON form, which parses back alike', () => {
-    const wrap: EditOperation = {
-      op: 'wrap',
-      targets: ['n3', 'type:sticky', 'type:square in:f2'],
-      in: 'boundary',
-    };
-    const printed = formatOperation(wrap);
-    expect(printed.startsWith('{')).toBe(true);
-    expect(operationsOf(printed)).toEqual([wrap]);
   });
 
   it('refuses gap: with no number rather than reading 0', () => {

@@ -30,11 +30,7 @@ export function isSelectionMode(value: unknown): value is SelectionMode {
 // resize handles, ignore a drag-to-draw's size, and are left alone when a
 // multi-selection is scaled — a button that is 40px on one canvas and 400 on
 // another stops looking like part of the product.
-const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set([
-  'mode-button',
-  // A badge fits its text (docs/specs/009-elements/badge.md): it is never resized by hand.
-  'badge',
-]);
+const FIXED_SIZE_SHAPES: ReadonlySet<string> = new Set(['mode-button']);
 
 export function isFixedSizeShape(kind: string): boolean {
   return FIXED_SIZE_SHAPES.has(kind);

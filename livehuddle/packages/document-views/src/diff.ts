@@ -10,7 +10,6 @@ import {
   type ViewResult,
 } from '@liveworkspace/document-views/budget';
 import { LABEL_CUT_CHARS } from './constants';
-import { contentSummaryOf } from './content-summary';
 import { edgeText, endText, type ViewEdge } from './edges';
 import {
   boxOf,
@@ -21,7 +20,6 @@ import {
 } from '@liveworkspace/document-views/fields';
 import { viewHeader } from './header';
 import { buildViewModel, type ViewContext, type ViewModel } from './model';
-import { stateAttributeOf } from './state-attribute';
 import { attrValue, jsonString, plural } from '@liveworkspace/document-views/text';
 import type { ViewAttribute } from '@liveworkspace/document-views/view-attribute';
 
@@ -41,17 +39,6 @@ const CHANGE = { one: 'change', many: 'changes' };
 const NONE = 'none';
 
 // The stored fields each kind of change speaks for; anything else that differs is an "other field".
-const SUMMARY_SOURCES = [
-  'cells',
-  'entityFields',
-  'code',
-  'codeLanguage',
-  'pieSlices',
-  'lineSeries',
-  'lineCategories',
-  'checklistItems',
-  'sankeyFlows',
-];
 const ATTRIBUTE_SOURCES = [
   'iconId',
   'link',
@@ -64,8 +51,6 @@ const ATTRIBUTE_SOURCES = [
   'legendItems',
   'rating',
   'progress',
-  'railCount',
-  'pageTitle',
 ];
 const STYLE_FIELDS = STYLE_KEYS.map((k) => k.field);
 const ALWAYS_COVERED = ['id', 'packedPoints'];
@@ -78,10 +63,9 @@ const signed = (n: number) => `${n >= 0 ? '+' : ''}${Math.round(n)}`;
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 function attributeMap(model: ViewModel, el: Element): Map<string, ViewAttribute> {
-  const attributes = [
-    ...stateAttributeOf(el),
-    ...attributesOf(el, { tabRefOf: model.tabRefOf, style: null }),
-  ].filter((a) => a.key !== 'note' && a.key !== 'comments');
+  const attributes = attributesOf(el, { tabRefOf: model.tabRefOf, style: null }).filter(
+    (a) => a.key !== 'note' && a.key !== 'comments',
+  );
   return new Map(attributes.map((a) => [a.key, a]));
 }
 
@@ -97,10 +81,6 @@ function threadState(el: Element): string {
 
 // Two reads have two ref tables: one added id can lengthen another's ref. So changes compare ids, and refs are
 // only how a change prints.
-const containerIdOf = (model: ViewModel, id: string): string | null =>
-  model.tree.nodes.get(id)?.container ?? null;
-const containerText = (model: ViewModel, id: string | null): string =>
-  id === null ? 'canvas' : model.refs.refOf(id);
 const endpointKey = (end: Endpoint): string =>
   end.kind === 'pinned'
     ? `pinned ${end.elementId}`
@@ -145,16 +125,6 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
     const how = noteA === null ? 'added' : noteB === null ? 'removed' : 'changed';
     add('note', `note ${how}`, noteA, noteB, ['note', 'noteRich']);
   }
-  if (b.type !== 'arrow') {
-    const [idA, idB] = [containerIdOf(before, a.id), containerIdOf(after, b.id)];
-    if (idA !== idB) {
-      const [inA, inB] = [containerText(before, idA), containerText(after, idB)];
-      add('in', `in ${inA} → ${inB}`, inA, inB);
-    }
-  }
-  const [sumA, sumB] = [contentSummaryOf(a), contentSummaryOf(b)];
-  if (sumA !== sumB)
-    add('summary', `${sumA ?? NONE} → ${sumB ?? NONE}`, sumA, sumB, SUMMARY_SOURCES);
   const [attrsA, attrsB] = [attributeMap(before, a), attributeMap(after, b)];
   for (const key of new Set([...attrsB.keys(), ...attrsA.keys()])) {
     const [was, now] = [attributeValue(attrsA.get(key)), attributeValue(attrsB.get(key))];
@@ -218,13 +188,7 @@ function elementLine(model: ViewModel, el: Element): string {
 
 function addedLine(model: ViewModel, el: Element): string {
   if (el.type === 'arrow') return `+ ${arrowLine(model, el.id)}`;
-  const container = model.tree.nodes.get(el.id)?.container ?? null;
-  const containerEl = container === null ? null : model.tree.nodes.get(container)!.el;
-  const inPart =
-    containerEl === null
-      ? ''
-      : ` in ${model.refs.refOf(containerEl.id)}${textField(containerEl, 'label') === null ? '' : ` ${labelText(containerEl)}`}`;
-  return `+ ${elementLine(model, el)}${inPart}`;
+  return `+ ${elementLine(model, el)}`;
 }
 
 function removedLine(model: ViewModel, el: Element): string {

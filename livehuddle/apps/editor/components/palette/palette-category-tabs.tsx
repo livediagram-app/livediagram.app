@@ -18,10 +18,8 @@ import {
   PaletteCollaborateTab,
   PaletteMediaTab,
   PaletteDrawTab,
-  PaletteBuildTab,
   PaletteWriteTab,
   PaletteShapesTab,
-  PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
 import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -77,16 +75,12 @@ export function paletteCategoryTabs(
         );
       case 'shapes':
         return <PaletteShapesTab {...tab} tiles={tiles} />;
-      case 'build':
-        return <PaletteBuildTab {...tab} tiles={tiles} />;
       case 'write':
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
         return <PaletteDrawTab {...tab} tiles={tiles} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
-      case 'components':
-        return <PaletteComponentsTab {...tab} tiles={tiles} />;
       default:
         // The meeting categories (the Space categories and Selection Mode) by their group, so a new one needs no case.
         return c.id in COLLABORATE_CATEGORY_GROUPS ? (

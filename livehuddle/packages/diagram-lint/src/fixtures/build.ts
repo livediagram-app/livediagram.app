@@ -1,4 +1,5 @@
-// Small builders for lint fixtures: boxes, frames, lanes and pinned arrows on a tab, and a quiet lint.
+// Small builders for lint fixtures: boxes, stored backdrops (a retired boundary, lane, stack or frame) and pinned
+// arrows on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livehuddle/api-schema';
 import type { Anchor, Element, Tab } from '@livehuddle/document';

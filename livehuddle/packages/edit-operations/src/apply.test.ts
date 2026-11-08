@@ -174,12 +174,20 @@ describe('applyEditOperations', () => {
       expect(
         applied(outcome).elementOps.map((op) => op.kind === 'update' && op.element.id),
       ).toContain('a3');
-      expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200', 'f2  -n4']);
+      // f2 is a stored boundary, a retired kind that holds nothing: no membership line follows the move.
+      expect(lines(outcome)).toEqual(['~ n4  @40,300→@340,200']);
     });
 
-    it('puts lanes behind everything else', () => {
+    // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a lane is no longer a kind, so
+    // an added one is drawn as a square where it was added, not moved behind everything.
+    it('draws an added lane as a square, appended, never moved to the back', () => {
       const lane = { id: 'lane', type: 'shape', shape: 'lane', ...box, width: 800, height: 200 };
-      expect(applied(run([add(lane)])).tab.elements[0]!.id).toBe('lane');
+      const outcome = run([add(lane)]);
+      const els = applied(outcome).tab.elements;
+      expect(els.at(-1)).toMatchObject({ id: 'lane', shape: 'square' });
+      expect(applied(outcome).warnings.map((w) => w.message)).toEqual([
+        'lane shape "lane" drawn as square',
+      ]);
     });
 
     it('refuses a touched element the format does not allow, naming field and rule', () => {
@@ -190,29 +198,8 @@ describe('applyEditOperations', () => {
       });
     });
 
-    // docs/specs/009-elements/badge.md "The cap holds for agents".
-    it('refuses a badge label over 24 and a step label over 3, naming the element and the cap', () => {
-      const chip = { x: 400, y: 0, width: 40, height: 24 };
-      expect(
-        refused(
-          run([add({ id: 'b1', type: 'shape', shape: 'badge', label: 'x'.repeat(25), ...chip })]),
-        ),
-      ).toEqual({
-        code: 'invalid_result',
-        details: ["b1 label: a badge's label is at most 24 characters"],
-        hint: 'see the format: livehuddle schema badge',
-      });
-      expect(
-        refused(run([add({ id: 's1', type: 'shape', shape: 'step', label: '1234', ...chip })]))
-          .details,
-      ).toEqual(["s1 label: a step's label is at most 3 characters"]);
-      // At the cap is fine.
-      applied(
-        run([add({ id: 'b2', type: 'shape', shape: 'badge', label: 'x'.repeat(24), ...chip })]),
-      );
-      applied(run([add({ id: 's2', type: 'shape', shape: 'step', label: '12a', ...chip })]));
-    });
-
+    // A stored badge is a retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+    // part 3): no cap holds on it, and an edit elsewhere leaves it as it was.
     it('leaves an untouched badge that already holds a longer label alone', () => {
       const tab = checkoutFlow();
       tab.elements.push({
@@ -224,7 +211,7 @@ describe('applyEditOperations', () => {
         y: 0,
         width: 200,
         height: 24,
-      });
+      } as unknown as Element);
       applied(run([set('n3', { label: 'Sign in' })], tab));
     });
 

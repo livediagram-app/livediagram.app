@@ -2,6 +2,7 @@
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
 // in the package so anything that themes a tab does it the editor's way. The viewer-appearance wrappers +
 // deriveNewBoxedColours stay in apps/editor/lib/themes.ts, which re-exports this.
+import { isRetiredElement } from './retired-kinds';
 import { themeHalf } from './theme-halves';
 import type { BackgroundPattern, Element, ShapeKind } from './index';
 import { rederiveColorPresetForTheme } from './theme-presets';
@@ -249,6 +250,9 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
 // below funnel through this so the opt-out can't apply to one and silently
 // drift from the others. Stroke + text stay themed.
 export function themeColourFields(el: Element): ThemeColourField[] {
+  // A retired element keeps every colour it stored (docs/specs/002-project-scope/not-in-livehuddle.md "Retired
+  // elements"): nothing in livehuddle writes it, a theme included.
+  if (isRetiredElement(el)) return [];
   // Unknown kinds (a malformed stored element) expose nothing to theming.
   const fields = THEME_COLOUR_FIELDS[el.type] ?? [];
   if ((el as { themeLockFill?: boolean }).themeLockFill) {
@@ -366,6 +370,7 @@ export function switchThemeBackdrop(
 // theme is "apply when present", reset is "make match the theme,
 // blank when the theme blanks".
 export function resetThemeElement(el: Element, theme: ThemeDefinition): Element {
+  if (isRetiredElement(el)) return el;
   // A preset-bound shape KEEPS its binding (docs/specs/010-palette/style-presets.md): the user chose "Bold",
   // so reset means "this theme's Bold" — re-derive the preset's colours +
   // border under the given theme (view) rather than blanking to the plain

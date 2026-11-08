@@ -2,7 +2,6 @@
 // each file under the ~1000-line budget. Depends on the core geometry helpers
 // (anchorPosition, Point) which stay in geometry.ts. Re-exported through the
 // package barrel (index.ts) alongside geometry.
-import { isChipShape } from './chip';
 import { anchorPosition, type Point } from './geometry';
 import type { AlignmentGuide } from './geometry-guides';
 import { isBoxed, type Anchor, type Element, type ElementId } from './index';
@@ -283,8 +282,7 @@ export function snapToAnchor(
   const thresholdSq = threshold * threshold;
   let best: { elementId: ElementId; anchor: Anchor; distSq: number } | null = null;
   for (const el of elements) {
-    // A badge or step number is a mark on a node, not a node: no arrow ends on it (docs/specs/009-elements/badge.md).
-    if (!isBoxed(el) || (el.type === 'shape' && isChipShape(el.shape))) continue;
+    if (!isBoxed(el)) continue;
     // Bounding-radius pre-reject: every anchor (corner, edge-mid, or
     // centre) sits within R = half the element's diagonal of its
     // centre, for ANY rotation. So if the point is farther than

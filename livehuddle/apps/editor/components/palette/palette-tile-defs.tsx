@@ -1,12 +1,9 @@
-import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import {
   CORRIDOR_PRESET_TILES,
   DOOR_PRESET_TILES,
   ROOM_PRESET_TILES,
   RUG_PRESET_TILES,
 } from './palette-floor-presets';
-import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { badgePresetFace } from '@livehuddle/document';
 
 import type { ComponentKind, SelectionMode, ShapeKind } from '@livehuddle/document';
 import {
@@ -146,16 +143,10 @@ const lucideStickyNotePaths = { body: pathD(0), fold: pathD(1) };
 
 export type PaletteTileSection =
   | 'shapes'
-  // Structure (docs/specs/010-palette/build-category.md): the elements you lay a diagram OUT with rather than
-  // draw on it: a lane, a frame, a timeline. They were
-  // scattered across Write, Draw, Data and Components, filed by what they look
-  // like; what they have in common is that they hold other work.
-  | 'build'
   | 'tools'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md), and the collaboration elements
   // with it (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements").
   | 'media'
-  | 'components'
   | 'stickers';
 
 // What clicking (or drag-dropping) the tile does. 'shape' descriptors also
@@ -168,7 +159,7 @@ type PaletteTileAction =
       type: 'shape';
       kind: ShapeKind;
       mode?: SelectionMode;
-      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      // A creation-time variant of the kind (packages/document shape-variants.ts): a room preset.
       variant?: string;
     }
   | { type: 'text' }
@@ -1990,158 +1981,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // The card (docs/specs/009-elements/card.md): a diagram node with slots, placed like any shape so the theme
-    // paints it. The Callout below is its preset.
-    id: 'components:card',
-    blurb: 'A node with an icon, title, meta and tags',
-    caption: 'Card',
-    section: 'components',
-    label: 'Add Card',
-    description:
-      'Card. A diagram node with slots you switch on: a header band, an icon, a title and meta line, a body and tags. Click to drop or drag to size.',
-    filled: true,
-    action: { type: 'shape', kind: 'card' },
-    variants: CARD_PRESET_TILES,
-    variantsHint: 'Start from a preset, then switch any part on or off.',
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
-        <rect x="5.5" y="6.5" width="4.5" height="4.5" rx="1.2" />
-        <path d="M12.5 7.5h6M12.5 10h4M5.5 14h13" />
-        <rect x="5.5" y="16.5" width="4" height="1.6" rx="0.8" />
-        <rect x="11" y="16.5" width="4" height="1.6" rx="0.8" />
-      </Glyph>
-    ),
-  },
-  {
-    // The badge (docs/specs/009-elements/badge.md): a pill that attaches to a point on a node when dropped there.
-    id: 'components:badge',
-    blurb: 'A small tag that sits on a node',
-    caption: 'Badge',
-    section: 'components',
-    label: 'Add Badge',
-    description:
-      'Badge. A small pill like "Beta" or "v2". Drop it on a corner or edge of a node and it stays there as the node moves.',
-    // Drawn as the badge it drops (a New pill), so untinted: the glyph carries the theme's colours itself.
-    noTint: true,
-    action: { type: 'shape', kind: 'badge' },
-    variants: BADGE_PRESET_TILES,
-    variantsHint: 'Start from a preset, then change its text, look or colour.',
-    icon: <BadgePresetGlyph {...badgePresetFace(undefined)} />,
-  },
-  {
-    // The step number (docs/specs/009-elements/step-number.md): numbers itself as it lands.
-    id: 'components:step',
-    blurb: 'A numbered disc for walkthroughs',
-    caption: 'Step Number',
-    section: 'components',
-    label: 'Add Step Number',
-    description:
-      'Step number. A numbered disc for walking through a diagram in order; each new one takes the next number.',
-    filled: true,
-    action: { type: 'shape', kind: 'step' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <circle cx="12" cy="12" r="8.5" />
-        <path d="M10.5 9.5 12.5 8v8" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:lane',
-    blurb: 'A titled band that carries its steps',
-    caption: 'Lane',
-    section: 'build',
-    label: 'Add Lane',
-    description:
-      'A swimlane: a horizontal band with a title down its left edge. Dragging it carries everything inside, like a frame.',
-    action: { type: 'shape', kind: 'lane' },
-    icon: (
-      <Glyph size={18} units={24}>
-        {/* Two stacked bands, each with its title gutter. */}
-        <rect x="2" y="5" width="20" height="6.5" rx="1.5" />
-        <rect x="2" y="13" width="20" height="6.5" rx="1.5" />
-        <path d="M8 5v6.5M8 13v6.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // The stack (docs/specs/009-elements/stack.md): a container that arranges what is dropped into it.
-    id: 'tools:stack',
-    blurb: 'Lines things up with even gaps',
-    caption: 'Stack',
-    section: 'build',
-    label: 'Add Stack',
-    description:
-      'Stack. Drop elements in and it lines them up in a row, a column or a grid with even gaps, and reflows as they change.',
-    action: { type: 'shape', kind: 'stack' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <rect x="2.5" y="6" width="19" height="12" rx="2" strokeDasharray="2.5 2" />
-        <rect x="5" y="9" width="4" height="6" rx="1" />
-        <rect x="10" y="9" width="4" height="6" rx="1" />
-        <rect x="15" y="9" width="4" height="6" rx="1" />
-      </Glyph>
-    ),
-  },
-  {
-    // The boundary (docs/specs/009-elements/boundary.md): a titled, tinted container for regions and systems.
-    id: 'tools:boundary',
-    blurb: 'A titled zone: a region, a VPC, a system',
-    section: 'build',
-    label: 'Add Boundary',
-    description:
-      'Boundary. A titled, tinted container for a cloud region, a network or a system. It carries what is inside it, and nested boundaries tint deeper.',
-    action: { type: 'shape', kind: 'boundary' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <rect x="3" y="6" width="18" height="15" rx="2" strokeDasharray="3 2.5" />
-        <rect x="5" y="3.5" width="9" height="5" rx="1.5" />
-      </Glyph>
-    ),
-  },
-  {
-    // The diagram key (docs/specs/009-elements/diagram-key.md): a legend of the tab's line patterns and tag colours.
-    id: 'tools:diagram-key',
-    blurb: 'A legend that fills itself in',
-    caption: 'Diagram Key',
-    section: 'build',
-    label: 'Add Diagram Key',
-    description:
-      'Diagram key. Lists the line styles and tag colours this tab uses, each with a meaning you type.',
-    filled: true,
-    action: { type: 'shape', kind: 'diagram-key' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2.5" />
-        <path d="M5.5 9h5M15 9h3.5" />
-        <path d="M5.5 14h1.5M9 14h1.5M15 14h3.5" />
-        <path d="M5.5 17.5h5" strokeOpacity={0.5} />
-      </Glyph>
-    ),
-  },
-  {
-    // The Timeline (docs/specs/009-elements/timeline.md), in Build with the other structures.
-    id: 'tools:timeline',
-    blurb: 'Milestones along a line, when and what',
-    caption: 'Timeline',
-    section: 'build',
-    label: 'Add Timeline',
-    description:
-      'Timeline. Milestones along a line, each with when and what, taking turns above and below: a roadmap, a project plan, a history.',
-    action: { type: 'shape', kind: 'timeline-rail' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <path d="M2 12h18" />
-        <path d="m20 9.5 2.5 2.5-2.5 2.5" />
-        <circle cx="5.5" cy="12" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="11" cy="12" r="1.8" fill="currentColor" stroke="none" />
-        <circle cx="16.5" cy="12" r="1.8" fill="currentColor" stroke="none" />
-        <path d="M5.5 9.5V6M11 14.5V18M16.5 9.5V6" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'tools:annotation',
     blurb: 'A marker that holds a note',
     section: 'tools',
@@ -2165,27 +2004,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    // The pointer note (docs/specs/009-elements/pointer-note.md): a note whose leader's tip pins to a point on a shape.
-    id: 'tools:pointer-note',
-    blurb: 'A note that points at a spot',
-    caption: 'Pointer Note',
-    section: 'tools',
-    toolGroup: 'write',
-    label: 'Add Pointer Note',
-    description:
-      'Pointer note. A short note with a line to a dot; drag the dot onto a corner or edge of a shape and the note follows it.',
-    filled: true,
-    action: { type: 'shape', kind: 'pointer-note' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="9" y="3" width="12.5" height="8" rx="2" />
-        <path d="M11.5 6h7.5M11.5 8.5h4.5" />
-        <path d="M9 11 4.5 18" />
-        <circle cx="4" cy="19" r="1.6" fill="currentColor" />
-      </Glyph>
-    ),
-  },
-  {
     id: 'tools:link-card',
     blurb: 'A clickable preview of a link',
     // Offered by no category (docs/specs/002-project-scope/not-in-livehuddle.md "Media: Image and Link card"): kept
@@ -2199,46 +2017,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       <Glyph size={18} units={24}>
         <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5" />
         <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5" />
-      </Glyph>
-    ),
-  },
-  // --- Components (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md): each one element that lays itself out -
-  {
-    id: 'components:callout',
-    tileGroup: 'web',
-    blurb: 'A note box with an icon and title',
-    caption: 'Callout',
-    section: 'components',
-    label: 'Add Callout',
-    description:
-      'Callout. A soft note box with an icon badge, a heading, and a body for annotating a diagram. Click to drop or drag to size; double-click to edit the body.',
-    noTint: true,
-    action: { type: 'component', kind: 'callout' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
-        <circle cx="7" cy="9" r="2" fill="currentColor" stroke="none" />
-        <path d="M11 8.5h8M6 13h13M6 16h9" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'components:hero',
-    tileGroup: 'web',
-    blurb: 'A big image with a title card',
-    caption: 'Hero',
-    section: 'components',
-    label: 'Add Hero',
-    description:
-      'Hero. A large image with a title and supporting line on a themed caption card. Click to drop or drag to size; double-click the image to set it, click the caption to edit it.',
-    noTint: true,
-    needsImage: true,
-    action: { type: 'component', kind: 'hero' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <rect x="2.5" y="3.5" width="19" height="17" rx="2" />
-        <path d="M2.5 14l5-4 4 3 3-2.5 7 5.5" />
-        <path d="M7 17.5h10" strokeWidth="2.2" />
       </Glyph>
     ),
   },

@@ -47,14 +47,7 @@ describe('every kind with a body draws one', () => {
   // The kinds whose content IS their data or their face. Each of these
   // exported as a rounded rectangle with its own name centred in it, which is
   // not a degraded render, it is a blank.
-  const WITH_BODY: ShapeKind[] = [
-    'timeline-rail',
-    'lane',
-    'chair',
-    'portal',
-    'mode-button',
-    'focus-button',
-  ];
+  const WITH_BODY: ShapeKind[] = ['chair', 'portal', 'mode-button', 'focus-button'];
 
   // A plain export is the box and its label. Anything with a body of its own
   // emits at least two DRAWN marks (a portal is two ellipses and nothing

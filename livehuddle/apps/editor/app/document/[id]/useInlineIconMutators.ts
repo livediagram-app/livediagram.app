@@ -1,4 +1,5 @@
-import { withInlineIcon, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
+import { withInlineIcon } from '@/lib/style-presets';
 
 interface InlineIconMutatorsDeps {
   // True while edits are blocked (read-only share role / locked tab). Every

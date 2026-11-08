@@ -9,14 +9,12 @@
 import {
   BorderColourIcon,
   FillColourIcon,
-  HeadingColourIcon,
   PointerColourIcon,
   TextColourIcon,
 } from '@/components/palette/context-menu-icons';
 import {
   defaultArrowStrokeColor,
   defaultFillColor,
-  hasHeadingBand,
   supportsFillColor,
   defaultStrokeColor,
   defaultTextColor,
@@ -59,7 +57,6 @@ export function ElementColourBorderSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
-  headerFillHandlers,
   arrowheadColorHandlers,
   strokeColorHandlers,
 }: {
@@ -73,7 +70,6 @@ export function ElementColourBorderSections({
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
-  headerFillHandlers: Scaffold['headerFillHandlers'];
   arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 }) {
@@ -164,21 +160,6 @@ export function ElementColourBorderSections({
                 }
                 {...fillColorHandlers}
                 {...colorProps('background')}
-                {...props.colourPalette}
-              />
-            ) : null}
-            {/* Heading band: only for the elements that have one distinct
-                from their body (a lane's title gutter, a table's header
-                row). Unset falls back to each one's historical default, so
-                the row reads as empty until you choose. */}
-            {hasHeadingBand(target) ? (
-              <ColourRow
-                label="Heading"
-                tone="soft"
-                icon={<HeadingColourIcon />}
-                value={(target as { headerFill?: string }).headerFill ?? 'transparent'}
-                {...headerFillHandlers}
-                {...colorProps('heading')}
                 {...props.colourPalette}
               />
             ) : null}

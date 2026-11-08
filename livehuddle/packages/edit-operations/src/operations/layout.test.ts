@@ -28,7 +28,7 @@ describe('layout', () => {
   });
 
   it('lays out as a tree, and refuses the mind map style', () => {
-    expect(lines(run('layout type:square style=tree')).at(-2)).toBe(
+    expect(lines(run('layout type:square style=tree')).find((l) => l.startsWith('»'))).toBe(
       '» n3 n4 n5 n7  laid out (tree)',
     );
     expect(run('layout n1 n2 n3 style=mindmap')).toHaveProperty('errors');
@@ -62,5 +62,16 @@ describe('layout', () => {
   it('lays out nothing for arrows alone', () => {
     expect(lines(run('layout a1'))).toEqual([]);
     expect(refused(run('layout nowhere')).code).toBe('target_not_found');
+  });
+
+  // What `layout` lays out (EO38): refs and quoted labels each name one element, the other words together any
+  // number, in element order, each once.
+  it('takes refs, quoted labels and selector terms together, and refuses what names nothing', () => {
+    const { targets } = applied(run('layout "Cart" n3 label~"card"'));
+    expect([...targets].sort()).toEqual(['n2', 'n3', 'n5', 'n7']);
+    expect(refused(run('layout n3 nowhere')).code).toBe('target_not_found');
+    expect(refused(run('layout n3 type:table')).code).toBe('target_not_found');
+    expect(refused(run('layout n3 selected')).details[0]).toBe('nothing is selected');
+    expect(refused(run('{"op":"layout","target":"\\"open"}')).code).toBe('parse_error');
   });
 });

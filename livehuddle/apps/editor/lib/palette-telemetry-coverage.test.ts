@@ -134,7 +134,7 @@ describe('palette telemetry coverage', () => {
       .filter(([, token]) => !ALL_PALETTE_TELEMETRY_TYPES.includes(token))
       .map(([kind, token]) => `${kind} -> ${token}`);
     expect(missing).toEqual([]);
-    expect(Object.keys(COMPONENT_TELEMETRY).sort()).toEqual(['avatar', 'callout', 'hero']);
+    expect(Object.keys(COMPONENT_TELEMETRY).sort()).toEqual(['avatar']);
   });
 
   it('lists no token twice across the buckets', () => {

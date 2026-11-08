@@ -1,6 +1,6 @@
 // What a changeset did, one line per element (docs/specs/024-agents/blueprints/edit-operations.md
 // "Result lines", EO42): `+ ~ -` in the order operations first touched each element, then `»` lines for
-// what moved without being named, then each container whose members changed, then warnings. Elements
+// what moved without being named, then warnings. Elements
 // print by ref (a removed one by its ref in the input tab); coordinates are rounded and relative to the
 // content origin. An element touched that ends as it began prints nothing (E1), and so does one
 // created and removed again (E2).
@@ -8,7 +8,6 @@
 import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@livehuddle/api-schema';
 import {
   computeRefs,
-  deriveContainers,
   type ArrowElement,
   type Element,
   type ElementId,
@@ -53,9 +52,7 @@ export function removedLine(el: Element, naming: LineNaming, removal: Removal = 
       : {}),
     ...(removal.pinnedTo
       ? { reason: 'pinned' as const, pinnedTo: naming.refOf(removal.pinnedTo) }
-      : removal.unwrapped
-        ? { reason: 'unwrapped' as const }
-        : {}),
+      : {}),
   };
 }
 
@@ -125,19 +122,9 @@ function aliasChanges(
       !(c.key === 'height' && fit.taller) &&
       !(c.key === 'at' && !named),
   );
-  // A container given back room reads as such: narrower or shorter, never "widened" to a smaller size.
-  if (fit.widened)
-    out.push({
-      key: fit.widened[1] < fit.widened[0] ? 'narrower' : 'widened',
-      from: fit.widened[0],
-      to: fit.widened[1],
-    });
-  if (fit.taller)
-    out.push({
-      key: fit.taller[1] < fit.taller[0] ? 'shorter' : 'taller',
-      from: fit.taller[0],
-      to: fit.taller[1],
-    });
+  // A box only ever grows to fit (labels.ts), so its size change reads as widened or taller.
+  if (fit.widened) out.push({ key: 'widened', from: fit.widened[0], to: fit.widened[1] });
+  if (fit.taller) out.push({ key: 'taller', from: fit.taller[0], to: fit.taller[1] });
   return out;
 }
 
@@ -239,36 +226,6 @@ function movedLines(
   }));
 }
 
-// Each container present after whose members changed: who joined and who left, removed elements
-// aside (their - line says it).
-function containerLines(
-  source: ResultSource,
-  next: readonly Element[],
-  naming: LineNaming,
-): ResultLine[] {
-  const was = deriveContainers(source.beforeElements);
-  const now = deriveContainers(next);
-  const joined = new Map<ElementId, ElementId[]>();
-  const left = new Map<ElementId, ElementId[]>();
-  const add = (map: Map<ElementId, ElementId[]>, container: ElementId, id: ElementId) =>
-    map.set(container, [...(map.get(container) ?? []), id]);
-  for (const el of next) {
-    if (el.type === 'arrow') continue;
-    const [before, after] = [was.get(el.id) ?? null, now.get(el.id) ?? null];
-    if (before === after) continue;
-    if (after) add(joined, after, el.id);
-    if (before && source.before.has(el.id)) add(left, before, el.id);
-  }
-  return next
-    .filter((el) => joined.has(el.id) || left.has(el.id))
-    .map((el) => ({
-      mark: 'container' as const,
-      ref: naming.refOf(el.id),
-      joined: (joined.get(el.id) ?? []).map(naming.refOf),
-      left: (left.get(el.id) ?? []).map(naming.refOf),
-    }));
-}
-
 export function buildResultLines(source: ResultSource, next: readonly Element[]): ResultLine[] {
   const after = new Map(next.map((el) => [el.id, el]));
   const naming = lineNaming(source.beforeElements, next, source.origin);
@@ -296,7 +253,6 @@ export function buildResultLines(source: ResultSource, next: readonly Element[])
   return [
     ...lines,
     ...movedLines(source, after, next, naming),
-    ...containerLines(source, next, naming),
     ...source.warnings.map((warning) => ({ mark: '!' as const, warning })),
   ];
 }

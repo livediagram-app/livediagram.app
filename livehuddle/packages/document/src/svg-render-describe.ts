@@ -4,7 +4,6 @@
 // element -> shape + label descriptor both the per-element emitters and
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
-import type { TagColour } from './tag-colours';
 import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
@@ -24,12 +23,9 @@ import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { SHAPE_KINDS } from './shape-kinds';
 import { isSeatingShape } from './seating';
 import { isSelfDrawingShape } from './data-shapes';
-import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
 import { isRetiredElementType } from './retired-kinds';
-import { chipColours, chipLookOf, isChipShape } from './chip';
-import { isUprightTitle, uprightTitleStrip } from './lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
 import { resolveStockColours } from './stock-colours';
@@ -104,8 +100,6 @@ type BoxedExport = { opacity: number; shape: ExportShape; label: ExportLabel | n
 // the wrong typeface for the whole canvas.
 export type BoxedExportOptions = {
   resolveImageHref?: ResolveImageHref;
-  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's accent edge and tinted chips.
-  tagColours?: readonly TagColour[];
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
   resolveEmojiArt?: ResolveEmojiArt;
@@ -285,13 +279,7 @@ export function describeBoxedExport(
         : el.type === 'text'
           ? { kind: 'none' }
           : { kind: 'rect', fill, stroke };
-  // A badge or step number (docs/specs/009-elements/badge.md) writes in its look's text colour: the look decides
-  // what the pill is filled with, so it decides what reads on it.
-  const inkColor = own.text ?? defaultTextColor(el, surface);
-  const baseColor =
-    el.type === 'shape' && isChipShape(el.shape)
-      ? chipColours(chipLookOf(el), { accent: stroke, surface: fill, ink: inkColor }).text
-      : inkColor;
+  const baseColor = own.text ?? defaultTextColor(el, surface);
   // A sticky's label is a block of writing rather than a name, and runs
   // smaller at every preset. The canvas decides that the same way (its
   // `multiline` flag is `type === 'sticky'`).
@@ -322,42 +310,6 @@ export function describeBoxedExport(
   const body = labelBodyInset(el);
   const bodyTop = el.y + body.top;
   const bodyBottom = el.y + el.height - body.bottom;
-  const upright =
-    el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
-      ? uprightTitleStrip(el, el.width, el.height)
-      : null;
-  if (upright && el.label) {
-    // The turned frame: as long as the strip is tall, as tall as it is thick, turned about its
-    // top-left corner (the strip's bottom-left).
-    const inset = Math.min(PADDING_PX.sm, pad);
-    const fx = el.x + upright.x;
-    const fy = el.y + upright.y + upright.height;
-    const along = upright.alongAlign;
-    return {
-      opacity,
-      shape,
-      label: {
-        text: el.label,
-        x:
-          along === 'right'
-            ? fx + upright.height - inset
-            : along === 'left'
-              ? fx + inset
-              : fx + upright.height / 2,
-        y: fy + upright.width / 2,
-        anchor: along === 'right' ? 'end' : along === 'left' ? 'start' : 'middle',
-        valign: 'middle',
-        maxWidth: Math.max(0, upright.height - 2 * inset),
-        color: baseColor,
-        size: baseSize,
-        bold: !!el.textBold,
-        italic: !!el.textItalic,
-        fontFamily,
-        runs,
-        turnAbout: { x: fx, y: fy },
-      },
-    };
-  }
   const label: ExportLabel | null = el.label
     ? {
         text: el.label,
@@ -388,7 +340,7 @@ export function describeBoxedExport(
 }
 
 // An element that writes its own text, so no centred label is printed over it: a self-drawing shape, a Behaviour
-// face other than the chair, a web component, a retired element's placeholder (svg-render-retired.ts, its stored
+// face other than the chair, a retired element's placeholder (svg-render-retired.ts, its stored
 // label under its name), of a retired kind or a retired type.
 export function selfLabelled(el: BoxedElement): boolean {
   if (isRetiredElementType(el.type)) return true;
@@ -400,12 +352,7 @@ export function selfLabelled(el: BoxedElement): boolean {
     (BEHAVIOUR_FACE_SHAPES.has(el.shape) &&
       !isSeatingShape(el.shape) &&
       el.shape !== 'room' &&
-      el.shape !== 'stage') ||
-    isWebComponentShape(el.shape) ||
-    // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
-    el.shape === 'boundary' ||
-    // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
-    el.shape === 'diagram-key'
+      el.shape !== 'stage')
   );
 }
 

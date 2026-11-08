@@ -286,7 +286,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: {
           type: 'array',
           description:
-            'The tabs to seed. A tab may give `graph` or `template` in place of `elements`, compiled ' +
+            'The tabs to seed. A tab may give a `template` in place of `elements`, compiled ' +
             'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
           items: {
             anyOf: [
@@ -297,7 +297,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
                   id: { type: 'string' },
                   name: { type: 'string' },
                   theme: { type: 'string' },
-                  graph: { type: 'object' },
                   template: { type: 'string' },
                 },
                 required: ['id'],

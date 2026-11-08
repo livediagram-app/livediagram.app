@@ -8,8 +8,6 @@
 // bodies, and without the import cycle an earlier dialog reached from inside a body once closed.
 
 import {
-  BuildTabIcon,
-  ComponentsTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   MediaTabIcon,
@@ -62,7 +60,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
+    description: 'The wordy elements: text, sticky notes and annotations.',
     icon: <WriteTabIcon />,
   },
   {
@@ -71,30 +69,6 @@ export const PALETTE_CATEGORIES: {
     group: 0,
     description: 'The gesture tools: pencil, shape pen, highlighter, polygon, and arrows.',
     icon: <DrawTabIcon />,
-  },
-  {
-    id: 'build',
-    label: 'Build',
-    group: 1,
-    description:
-      'The structural elements: lanes, stacks, boundaries, a timeline and a diagram key.',
-    icon: <BuildTabIcon />,
-  },
-  {
-    id: 'layout',
-    label: 'Layout',
-    group: 1,
-    description:
-      'What a board is arranged and labelled with: lanes, frames, stacks, boundaries, a timeline, a diagram key, cards, badges and step numbers.',
-    icon: <BuildTabIcon />,
-  },
-  {
-    id: 'components',
-    label: 'Components',
-    group: 1,
-    description:
-      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the Callout and the Hero. Each is one element that re-flows as you resize it, with every line of text editable in place.',
-    icon: <ComponentsTabIcon />,
   },
   {
     id: 'stickers',

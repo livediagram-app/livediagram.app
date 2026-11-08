@@ -23,8 +23,8 @@ const DOC: Element[] = [a, b, c, ab, ac, loose, rider];
 const BEFORE = new Map(DOC.map((el) => [el.id, el]));
 const LINKS = buildArrowLinks(DOC);
 
-const rides = (next: Element[], still: ReadonlySet<string> = new Set()) =>
-  Object.fromEntries(ridingElements(overlayBetween('t', next, DOC), BEFORE, LINKS, still));
+const rides = (next: Element[]) =>
+  Object.fromEntries(ridingElements(overlayBetween('t', next, DOC), BEFORE, LINKS));
 const swap = (...els: Element[]) => DOC.map((el) => els.find((n) => n.id === el.id) ?? el);
 
 describe('ridingElements', () => {
@@ -63,14 +63,11 @@ describe('ridingElements', () => {
     expect(rides(swap(...moveAll))).not.toHaveProperty('rider');
   });
 
-  it('keeps the ids it is told to out, and needs a box moving to carry anything', () => {
-    expect(rides(swap({ ...a, x: 10 }, { ...b, x: 410 }), new Set(['a']))).toEqual({
-      b: { dx: 10, dy: 0 },
-    });
+  it('needs a box moving to carry anything', () => {
     const freeOnly = { ...loose, from: { kind: 'free' as const, x: -190, y: 0 } };
     expect(rides(swap(freeOnly))).toEqual({});
     // An element the preview adds is not in the board it is laid over: it draws from the preview.
     const added = [...DOC, box('new', 900)];
-    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE, null, new Set()).size).toBe(0);
+    expect(ridingElements(overlayBetween('t', added, DOC), BEFORE, null).size).toBe(0);
   });
 });

@@ -60,6 +60,10 @@ describe('parseChangesetRequest', () => {
       replace: { elements: [], layout: 'auto' },
     });
     expect(replace({ graph: {}, template: 'kanban' })).toBe('invalid_body');
+    // The graph input is gone (not-in-livehuddle.md "The element engine", part 3): a graph alone is refused too.
+    expect(replace({ graph: { nodes: [{ id: 'a', label: 'A' }], edges: [] } })).toBe(
+      'invalid_body',
+    );
     // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools"): no source at all.
     expect(replace({ mermaid: 'graph TD; a-->b' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');

@@ -93,8 +93,7 @@ export function elementTelemetryType(element: Element): string {
     case 'sticky':
       return 'Sticky';
     case 'image':
-      // A hero is an image with a caption card (docs/specs/009-elements/web-components-and-no-groups.md).
-      return element.heroCaption ? 'Hero' : 'Image';
+      return 'Image';
     case 'table':
       return 'Table';
     case 'link-card':
@@ -130,8 +129,6 @@ export function elementTelemetryType(element: Element): string {
 // one in the drawing hook is how `Video` came to be missing from the
 // dashboard catalogue, unseen by the test that walks this file.
 export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
-  hero: 'Hero',
-  callout: 'Callout',
   avatar: 'Avatar',
 };
 

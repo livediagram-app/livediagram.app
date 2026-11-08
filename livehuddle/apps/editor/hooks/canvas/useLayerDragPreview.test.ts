@@ -24,7 +24,6 @@ const BOARD: Element[] = [a, b, c, ab];
 const ordered = BOARD.map((element) => ({ element, layerOpacity: 1 }));
 const NONE = { layout: null, knockouts: [] };
 const tracker = createElementGridTracker();
-const NO_STACK: ReadonlySet<string> = new Set();
 
 function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
   return {
@@ -40,7 +39,6 @@ function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
       draftLayout: () => null,
     },
     tabFinish: undefined,
-    stackedIds: NO_STACK,
     ...over,
   };
 }
@@ -210,15 +208,6 @@ describe('the layer preview store', () => {
     expect(store.entryOf(ab.id)).toBeUndefined();
     expect(told.a).not.toHaveBeenCalled();
     expect(told.ab).not.toHaveBeenCalled();
-  });
-
-  it('draws a stack’s child from the preview: it never rides', () => {
-    const store = createLayerPreviewStore();
-    const moved = { ...a, y: 9 };
-    setLocalPreview('t', [moved, b, c, ab], BOARD);
-    store.update(inputs({ stackedIds: new Set([a.id]) }));
-    expect(store.entryOf(a.id)?.element).toBe(moved);
-    expect(store.entryOf(ab.id)?.geometry).toBeDefined();
   });
 
   it('stops telling an element once it unsubscribes', () => {

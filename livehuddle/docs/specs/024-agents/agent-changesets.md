@@ -34,7 +34,7 @@ persistence boundary"). That write never reached the room, so:
 | `tabId`      | The one tab it writes; a changeset never spans tabs                                                             |
 | `agent`      | The token id and the owner id; absent when a signed-in session writes                                           |
 | `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history |
-| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template or elements)   |
+| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (template or elements)                   |
 | `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target             |
 | `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`     |
 | `rev`        | The tab revision the changeset produced                                                                         |
@@ -45,7 +45,7 @@ persistence boundary"). That write never reached the room, so:
 - **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
-  graph, Mermaid or template tabs with the same engine.
+  template or elements tabs with the same engine. A `graph` body went with the graph input ([not in livehuddle](../002-project-scope/not-in-livehuddle.md) "The element engine", part 3).
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
   answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
   edit.

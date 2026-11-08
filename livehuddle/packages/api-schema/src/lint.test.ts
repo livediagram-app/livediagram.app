@@ -11,11 +11,9 @@ describe('lint wire types', () => {
       'label-collision',
       'label-overflow',
       'node-isolated',
-      'group-escape',
       'text-overflow',
     ]);
     expect(by('info')).toEqual([
-      'group-split-edges',
       'duplicate-label',
       'flow-backwards',
       'aspect-extreme',

@@ -17,10 +17,10 @@ const at = (tab: Tab, id: string) => {
 };
 
 describe('move', () => {
-  it('moves by an offset, printing the position change and the membership change', () => {
+  it('moves by an offset, printing the position change', () => {
     const outcome = run('move n4 by=400,0');
     expect(at(applied(outcome).tab, 'n4')).toEqual([400, 300]);
-    expect(lines(outcome)).toEqual(['~ n4  @40,300→@440,300', 'f2  -n4']);
+    expect(lines(outcome)).toEqual(['~ n4  @40,300→@440,300']);
   });
 
   it("places the targets' bounding box as one box", () => {
@@ -44,15 +44,9 @@ describe('move', () => {
     expect(clear).toBe(true);
   });
 
-  it('carries what a moved frame holds, as » lines', () => {
-    const outcome = run('move f2 by=500,0');
-    const { tab, targets } = applied(outcome);
-    expect(at(tab, 'n5')).toEqual([500, 400]);
-    expect(targets).toEqual(['f2']);
-    expect(lines(outcome)).toEqual(['~ f2  @0,280→@500,280', '» n4 n5  +500,+0 (carried)']);
-  });
-
-  it('carries a loose arrow by its free ends', () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: f2 is a stored boundary that
+  // holds nothing, so moving it moves it alone: what sat on it, boxes and loose arrows, stays where it was.
+  it('moves a stored boundary alone, carrying nothing', () => {
     const loose = {
       id: 'loose',
       type: 'arrow',
@@ -60,8 +54,27 @@ describe('move', () => {
       to: { kind: 'free', x: 60, y: 300 },
     } as Element;
     const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, loose] };
-    const moved = applied(run('move f2 by=10,0', tab)).tab.elements.find((e) => e.id === 'loose');
-    expect(moved).toMatchObject({ from: { x: 10 }, to: { x: 70 } });
+    const outcome = run('move f2 by=500,0', tab);
+    const { tab: next, targets } = applied(outcome);
+    expect(at(next, 'n5')).toEqual([0, 400]);
+    expect(next.elements.find((e) => e.id === 'loose')).toEqual(loose);
+    expect(targets).toEqual(['f2']);
+    expect(lines(outcome)).toEqual(['~ f2  @0,280→@500,280']);
+  });
+
+  it('moves an arrow with one pinned end by its free end alone', () => {
+    const half = {
+      id: 'half',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 900 },
+      to: { kind: 'pinned', elementId: 'n8', anchor: 'n' },
+    } as Element;
+    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, half] };
+    const moved = applied(run('move half by=10,0', tab)).tab.elements.find((e) => e.id === 'half');
+    expect(moved).toMatchObject({
+      from: { kind: 'free', x: 10, y: 900 },
+      to: { kind: 'pinned', elementId: 'n8' },
+    });
   });
 
   it('moves several with all, and nothing for a zero move (E4)', () => {
@@ -89,7 +102,7 @@ describe('move', () => {
   });
 
   it('refuses a reference that moves with it', () => {
-    expect(refused(run('move f2 below:n4'))).toMatchObject({
+    expect(refused(run('move type:square below:n4 all'))).toMatchObject({
       code: 'invalid_value',
       details: ['below:n4: n4 moves with it'],
     });
@@ -102,26 +115,9 @@ describe('move and its lines', () => {
     expect(lines(run('move f2 by=10,0\nmove f2 by=-10,0'))).toEqual([]);
   });
 
-  it('prints a carried element an operation also changed as a ~ line', () => {
-    expect(lines(run('set n4 label=Shipping\nmove f2 by=10,0'))).toEqual([
+  it('prints a moved element an operation also changed as one ~ line', () => {
+    expect(lines(run('set n4 label=Shipping\nmove n4 by=10,0'))).toEqual([
       '~ n4  label "Address"→"Shipping" · @40,300→@50,300',
-      '~ f2  @0,280→@10,280',
-      '» n5  +10,+0 (carried)',
     ]);
-  });
-
-  it('carries an arrow with one free end inside, its pinned end following its element', () => {
-    const half = {
-      id: 'half',
-      type: 'arrow',
-      from: { kind: 'free', x: 0, y: 300 },
-      to: { kind: 'pinned', elementId: 'n8', anchor: 'n' },
-    } as Element;
-    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, half] };
-    const moved = applied(run('move f2 by=10,0', tab)).tab.elements.find((e) => e.id === 'half');
-    expect(moved).toMatchObject({
-      from: { kind: 'free', x: 10 },
-      to: { kind: 'pinned', elementId: 'n8' },
-    });
   });
 });

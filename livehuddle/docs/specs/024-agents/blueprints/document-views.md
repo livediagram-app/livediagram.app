@@ -1,6 +1,23 @@
 # Document views: blueprint
 
-> **The Frame left livehuddle** ([The Frame](../../002-project-scope/not-in-livehuddle.md#the-frame)): a stored `frame` is a retired element and holds nothing, and the containers are the lane and the boundary (`wrap … in boundary|lane`, the graph's groups drawn as boundaries). Where this blueprint still names a frame, read a boundary; the identifiers are the code's until #459 removes it.
+> **Nothing nests** ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md) "The element engine", part 3): the frame, the lane, the stack and the
+> boundary are retired kinds that hold nothing, so `deriveContainers` and `containment.ts` are gone from
+> `@livehuddle/document` (`contentOrigin` lives on in `content-origin.ts`). The views follow:
+>
+> - The tree is flat: every printed non-arrow element is a root, in reading order, bare strokes folded. A stored lane,
+>   stack or boundary prints as `? <kind>` with its stored label (counted unknown, `find` still reads it), and what sat
+>   on it prints beside it. `only` prints the one element.
+> - The header counts boxes and arrows only (`ElementCounts { boxes, arrows }`).
+> - No content summaries or state attributes: every kind that had one is retired (`content-summary.ts` and
+>   `state-attribute.ts` are deleted). `OutlineNode.summary` is always `null`, `children` `[]` and `collapsed` `0`;
+>   `ShowView.container` is always `null`; `FindView` match `path` is always `[]`. They stay on the wire for clients.
+> - The outline's ladder is `full`, `notes-dropped`, `attributes-dropped`, then `lines-dropped`: the trailing lines,
+>   as few as the budget asks, counted on the elision line (`… notes hidden; attributes hidden; <n> elements
+hidden: view --budget <full>`). The cut is measured from prefix sums, linear in the outline.
+> - `layout --coarse` prints one `row <n>: <refs>` line per row of the canvas; `rows` is one group, `container: null`.
+> - `find` prints each match on its own outline line, unindented; `show` and `diff` print no `in <container>`.
+>
+> Where the sections below still describe containers, nesting, collapsing or summaries, this note wins.
 
 Derived from [Document views](../document-views.md), with the selector vocabulary and rejection codes of
 [Edit operations](../edit-operations.md), the tab revision of [Agent changesets](../agent-changesets.md), the findings
@@ -15,7 +32,7 @@ Scope, by file:
 | File                                                                      | Role                                                                                                                                                                                      |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/element-refs.ts`                                   | Refs, slug ids and kind words: `computeRefs`, `resolveRef`, `isSlugId`, `slugIdFor`, `kindWordOf`, `isKnownElement`                                                                       |
-| `packages/document/src/containment.ts`                                    | The centre rule and the content origin: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`                                                               |
+| `packages/document/src/content-origin.ts`                                 | `contentOrigin`: the rounded top-left of the boxed content (the centre rule left with part 3)                                                                                             |
 | `../packages/model-core/src/style-keys.ts`                                | `STYLE_KEYS`, `styleKeysFor`: the style keys views print and edit operations write                                                                                                        |
 | `../livediagram/packages/document/src/mermaid-serialise.ts`               | `mermaidFromTab` calls `smallestHolder` over frames; its output is byte-identical                                                                                                         |
 | `packages/document/src/index.ts`                                          | Re-exports `./element-refs`, `./containment` and `./style-keys`                                                                                                                           |
@@ -31,11 +48,9 @@ Scope, by file:
 | `../packages/document-views/src/fields.ts`                                | Typed reads of shared optional fields (`textField`, `boxOf`, `threadOf`, …): views never cast an element (shared, `@liveworkspace/document-views`)                                        |
 | `../packages/document-views/src/view-attribute.ts`                        | `ViewAttribute`, `flagAttribute`, `countAttribute`, `shapeKindOf` (shared, `@liveworkspace/document-views`)                                                                               |
 | `packages/document-views/src/visibility.ts`                               | `pinnedIds`: the ids an arrow's pinned ends name                                                                                                                                          |
-| `packages/document-views/src/tree.ts`                                     | `buildViewTree`: `deriveContainers`, then reading order per container                                                                                                                     |
+| `packages/document-views/src/tree.ts`                                     | `buildViewTree`: every printed non-arrow element in reading order, flat; `nodesOf`, `subtreeItems`                                                                                        |
 | `../packages/document-views/src/reading-order.ts`                         | `readingOrder`, `rowsOf` over any element (shared); `packages/document-views/src/reading-order.ts` binds `Placed` to this product's `Element`                                             |
 | `../packages/document-views/src/freehand-runs.ts`                         | `freehandRuns`: consecutive bare strokes folded into one line (shared); `packages/document-views/src/freehand-runs.ts` binds `FreehandRun` to this product's `Placed`                     |
-| `packages/document-views/src/content-summary.ts`                          | `contentSummaryOf`: table, code block, charts, checklist, timeline, stack                                                                                                                 |
-| `packages/document-views/src/state-attribute.ts`                          | `stateAttributeOf`: the one state attribute of each content kind that has one                                                                                                             |
 | `packages/document-views/src/attributes.ts`                               | `attributesOf`: the ordered attribute list of one element                                                                                                                                 |
 | `packages/document-views/src/style-attributes.ts`                         | `styleAttributesOf` for `style`                                                                                                                                                           |
 | `packages/document-views/src/edges.ts`                                    | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                                                                                     |
@@ -47,7 +62,7 @@ Scope, by file:
 | `../packages/document-views/src/budget.ts`                                | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`) (shared, `@liveworkspace/document-views`)                         |
 | `../packages/document-views/src/elision.ts`                               | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax, and the `ViewDoor` and `Elision` shapes they read (shared, `@liveworkspace/document-views`)            |
 | `packages/document-views/src/render-view.ts`                              | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                                                                              |
-| `packages/document-views/src/performance.test.ts`                         | A 10,000-element tab with 100 containers renders and fits within a second                                                                                                                 |
+| `packages/document-views/src/performance.test.ts`                         | Views and the outline's line cut grow linearly with the tab and the selection                                                                                                             |
 | `packages/document-views/src/__fixtures__/*.ts`                           | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases                                                                      |
 | `packages/document-views/src/__fixtures__/golden/*`                       | One golden file per view (see [Testing](#testing))                                                                                                                                        |
 | `apps/api/package.json`                                                   | Depends on `@livehuddle/document-views`                                                                                                                                                   |
@@ -66,7 +81,7 @@ Scope, by file:
 | `livediagram/apps/mcp/src/image-result.ts`                                | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                                                                                           |
 | liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/connections.ts | The `Agent·Viewed` chart, by view                                                                                                                                                         |
 | `docs/development/architecture.md`, `README.md`                           | The new package in the layout and the package list                                                                                                                                        |
-| `@livehuddle/edit-operations`, `@livehuddle/diagram-lint` (own)           | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livehuddle/document`                                                                                     |
+| `@livehuddle/edit-operations`, `@livehuddle/diagram-lint` (own)           | Import refs, slug ids, kind words and `contentOrigin` from `@livehuddle/document`                                                                                                         |
 | The cross-tab comments route (agent-presence's blueprint)                 | Imports `computeRefs` from `@livehuddle/document`                                                                                                                                         |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
@@ -74,30 +89,27 @@ edited without it); the change names the gap.
 
 ## Domain and naming
 
-| Term            | Identifier                                                               | Meaning                                                                        |
-| --------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| View            | `ViewName`, `VIEW_NAMES`, query `view`                                   | One read-only text projection; `overview` of a document, the rest of a tab     |
-| Door            | `ViewDoor` (`cli`, `mcp`), query `door`                                  | The front door a view is read through; it chooses the elision command's syntax |
-| Ref             | `RefTable` (`refOf(id)`), `computeRefs`                                  | The short name a view prints for an element or tab                             |
-| Slug id         | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
-| Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
-| Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
-| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livehuddle/document` does not know             |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame or lane an element nests under                                       |
-| Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
-| Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
-| Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
-| State attribute | `stateAttributeOf`                                                       | The one attribute saying where a live element stands (`votes=4 revealed`)      |
-| Attribute       | `ViewAttribute { key, value }`, `attributesOf`                           | One `key=value` or flag after the label                                        |
-| Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
-| Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
-| Header line     | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
-| Counts          | `ElementCounts { boxes, frames, lanes, arrows }`                         | The header's element buckets                                                   |
-| Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
-| Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
-| Subtree         | query `only`, `ViewOptions.only`                                         | One element and what nests under it                                            |
-| Content origin  | `contentOrigin`                                                          | Rounded top-left of the visible boxed content                                  |
-| Revision        | `rev` (from [Agent changesets](../agent-changesets.md#the-tab-revision)) | The tab revision a view was rendered from                                      |
+| Term           | Identifier                                                               | Meaning                                                                        |
+| -------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| View           | `ViewName`, `VIEW_NAMES`, query `view`                                   | One read-only text projection; `overview` of a document, the rest of a tab     |
+| Door           | `ViewDoor` (`cli`, `mcp`), query `door`                                  | The front door a view is read through; it chooses the elision command's syntax |
+| Ref            | `RefTable` (`refOf(id)`), `computeRefs`                                  | The short name a view prints for an element or tab                             |
+| Slug id        | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
+| Resolve        | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
+| Kind word      | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
+| Unknown kind   | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livehuddle/document` does not know             |
+| Reading order  | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
+| Freehand run   | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in reading order, printed as one counted line         |
+| Attribute      | `ViewAttribute { key, value }`, `attributesOf`                           | One `key=value` or flag after the label                                        |
+| Edge           | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
+| Own-line arrow | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
+| Header line    | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
+| Counts         | `ElementCounts { boxes, arrows }`                                        | The header's element buckets                                                   |
+| Budget         | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
+| Elision line   | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
+| Subtree        | query `only`, `ViewOptions.only`                                         | One element (nothing nests under it)                                           |
+| Content origin | `contentOrigin`                                                          | Rounded top-left of the visible boxed content                                  |
+| Revision       | `rev` (from [Agent changesets](../agent-changesets.md#the-tab-revision)) | The tab revision a view was rendered from                                      |
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
@@ -117,8 +129,8 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 1. **Printed.** Every element of the tab is **printed**, unknown kinds included.
 2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, arrows included (`VW2`).
 3. **Kinds.** `kindWordOf` and `isKnownElement` per printed element.
-4. **Tree.** `buildViewTree(printed)`: `deriveContainers` gives each printed non-arrow element one container or the
-   root; siblings take reading order; `freehandRuns` folds bare strokes.
+4. **Tree.** `buildViewTree(printed)`: every printed non-arrow element is a root, in reading order; `freehandRuns`
+   folds bare strokes. Nothing nests (part 3 of the element engine).
 5. **Edges.** `edgesOf(printed)`: each printed arrow is either a `ViewEdge` on its source's line or an own-line arrow.
 6. **Header.** `countElements` and the thread counts over printed elements; `rev` and the tab ref from the context.
 
@@ -181,23 +193,10 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 `SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what
 the document model knows.
 
-### Containment (`@livehuddle/document`, `containment.ts`)
+### Content origin (`@livehuddle/document`, `content-origin.ts`)
 
-`deriveContainers(elements) → Map<ElementId, ElementId | null>` assigns each non-arrow element at most one
-container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
-`containerContents`) all read it.
-
-1. **Geometry.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
-   holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
-   element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
-   `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
-   holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
-   candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
-   axis-aligned ones.
-2. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
-
-Containers nest to any depth. `mermaidFromTab`
-keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
+The containment rule (`deriveContainers`, the centre rule) left with part 3 of the element engine
+([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md) "The element engine"): nothing holds an element.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
 pass printed elements; the edit-operations engine reads and writes coordinates against the same origin.
@@ -236,16 +235,15 @@ gives `READ_DOCUMENT_DEFAULT_BUDGET` to every view it reads unless the caller pa
 `fitOutline(model, budget)` steps down a fixed ladder; each state is entered only while the estimate exceeds the
 budget:
 
-| State                  | Entered when                     | Drops                                                                                    |
-| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| `full`                 | always first                     | nothing                                                                                  |
-| `notes-dropped`        | `full` over budget               | every `note=` attribute                                                                  |
-| `attributes-dropped`   | still over                       | every attribute, summary and state attribute except `comments=N open` (`VW38`)           |
-| `containers-collapsed` | still over; repeats              | the children of the container with the most descendants (ties: earlier in reading order) |
-| `root-collapsed`       | still over after every container | every root line                                                                          |
+| State                | Entered when       | Drops                                                                            |
+| -------------------- | ------------------ | -------------------------------------------------------------------------------- |
+| `full`               | always first       | nothing                                                                          |
+| `notes-dropped`      | `full` over budget | every `note=` attribute                                                          |
+| `attributes-dropped` | still over         | every attribute, summary and state attribute except `comments=N open` (`VW38`)   |
+| `lines-dropped`      | still over         | the trailing lines, as few as fit the budget with the elision line, down to none |
 
-- Estimates come from a per-line cost model built once: each node's line length at each detail level, and each
-  subtree's total, so a step subtracts and adds lengths instead of re-rendering. O(n + c log c) for c containers.
+- Estimates come from prefix sums built once: each line's length at each detail level and the elements it carries,
+  so each step reads two sums instead of re-rendering. O(n) for the whole ladder.
 - The header line and the elision line always print, even when they alone exceed the budget.
 - `fitLines(lines, budget)` fits every other view: whole lines in order until the next would exceed the budget,
   then the view's closing line, then the elision line (`VW40`). A closing line (`find`'s `<n> matches: …`) is
@@ -272,12 +270,11 @@ header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"]
                [" · finish=" finish]
                [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
-buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
-bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "lane" | "lanes" | "arrow" | "arrows")
-line        := indent kindWord SP ref [SP label] [SP summary] {SP attribute} [SP "→" SP edge {", " edge}]
-runLine     := indent "freehand ×" count [" (" closed " closed)"]
+buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, arrows)
+bucket      := count SP ("box" | "boxes" | "arrow" | "arrows")
+line        := kindWord SP ref [SP label] {SP attribute} [SP "→" SP edge {", " edge}]
+runLine     := "freehand ×" count [" (" closed " closed)"]
 ownLine     := "arrow" SP ref SP end SP "→" SP end [SP label] {SP style}
-indent      := "  " × depth
 kindWord    := word | "? " unknownName
 label       := jsonString(cut(label, 60)) ["…"]
 edge        := end [SP label] {SP style}
@@ -290,8 +287,8 @@ No tab kind prints: every tab is the one kind, worked in Workshop. `finish=` onl
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
-**Buckets** (`VW9`): `frames` and `lanes` are those shapes; `arrows` are arrows; `boxes` is every other printed
-element, unknown kinds included. `total` is the printed count; `unknown` is counted apart from it
+**Buckets** (`VW9`): `arrows` are arrows; `boxes` is every other printed element, unknown kinds and stored lanes and
+boundaries included. `total` is the printed count; `unknown` is counted apart from it
 (it is also inside `total`).
 
 **Threads** (`VW11`): a printed element whose `commentThread.comments` is non-empty is a thread; open when
@@ -307,43 +304,12 @@ string.
 
 **`cellText(text)`**: `JSON.stringify(text).slice(1, -1)` with `|` escaped as `\|`.
 
-**Content summaries** (`contentSummaryOf`), printed after the label:
+**Content summaries and state attributes** (`VW18` to `VW22`) are gone: every kind that had one (tables, code
+blocks, charts, checklists, Timelines, stacks, pages, cards, badges and steps, the Collaborate panels) is retired
+([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)), and a retired element has none: its kind word is `? <kind>`, and
+`show` has what it stored.
 
-| Element                  | Summary                                                                                 | Ledger |
-| ------------------------ | --------------------------------------------------------------------------------------- | ------ |
-| `table`                  | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                | `VW18` |
-| `code-block`             | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                      | `VW20` |
-| `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                             | `VW21` |
-| `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                  | `VW21` |
-| `checklist`              | `done=<done>/<total>`                                                                   |        |
-| `timeline-rail`          | `rows=` then each milestone's `label` (`?` when it has none) as `cellText`, joined `\|` |        |
-| `stack`                  | `direction=<stackDirection, else row>`                                                  |        |
-
-The table line prints its label first when it has one. Every text a summary prints from the document goes through
-`cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
-
-**State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
-
-| Kind                    | State attribute                                            |
-| ----------------------- | ---------------------------------------------------------- |
-| `stat-row`              | `stats=<stats.length>`                                     |
-| `process`               | `steps=<processSteps.length>`                              |
-| `site-header`           | `links=<navLinks.length>`                                  |
-| `legend`                | `items=<legendItems.length>`                               |
-| `rating`                | `rating=<rating>/5`                                        |
-| `progress-bar`, `-ring` | `progress=<progress, else 50>`                             |
-| `timeline-rail`         | `milestones=<conceptRows.length>`                          |
-| `page`, `card`          | `title=` the `pageTitle` cut at `NOTE_CUT_CHARS`, when set |
-| `badge`, `step`         | `attached` when `attachedTo` is set                        |
-
-Every other kind has no state attribute; `show` has its content. A retired element
-([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)) has none either: its kind word is `? <kind>`.
-
-> **Gone from livehuddle (part 4)**: the Collaborate panels' state attributes (estimate, temperature, done check,
-> idea box, Q&A board, agenda, session button, decision, roll call, quiz, picker, reveal) and `diff`'s matching
-> attribute sources.
-
-**Attributes** (`attributesOf`), in this order after the summary and the state attribute (`VW14`):
+**Attributes** (`attributesOf`), in this order after the label (`VW14`):
 
 | Attribute        | When                                                 | Form                                                                                        |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -371,17 +337,17 @@ dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elem
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
-| View       | Function                                | Served by                | Lines after the header                                                                  |
-| ---------- | --------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
-| `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
-| `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
-| `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
-| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
-| `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livehuddle/diagram-lint` (not built)  | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
-| `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
-| `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
+| View       | Function                                | Served by                | Lines after the header                                                           |
+| ---------- | --------------------------------------- | ------------------------ | -------------------------------------------------------------------------------- |
+| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, in reading order, own-line arrows at the end                  |
+| `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                              |
+| `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                     |
+| `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                    |
+| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                              |
+| `find`     | `findView` (`q` required)               | api, CLI offline         | Matches, each on its outline line                                                |
+| `lint`     | `@livehuddle/diagram-lint` (not built)  | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header |
+| `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                       |
+| `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                 |
 
 `renderView` dispatches `lint` to the diagram-lint package's renderer; this package owns only its header and the
 query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per document, tab and `rev` and runs
@@ -390,7 +356,7 @@ query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it r
 **`graph`** (`VW30`):
 
 ```text
-<kindWord> <ref> <label>                      one per printed element with an arrow in or out, reading order, depth-first
+<kindWord> <ref> <label>                      one per printed element with an arrow in or out, reading order
                                               (blank line)
 <from> -> <to> [<label>] [<arrow ref>]        one per printed arrow, array order; ends as in the outline
 ```
@@ -398,17 +364,16 @@ query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it r
 Arrows print in their stored direction, matching the `a->b` selector. When unconnected elements exist the elision
 line names them with the outline as the command.
 
-**`layout`**, exact (default) (`VW31`): one line per printed element (freehand runs unfolded), depth-first in reading
-order, `<ref> <x>,<y> <w>x<h>` with `r=<deg>` when rotated, then one line per printed arrow,
+**`layout`**, exact (default) (`VW31`): one line per printed element (freehand runs unfolded), in reading order, `<ref> <x>,<y> <w>x<h>` with `r=<deg>` when rotated, then one line per printed arrow,
 `<ref> <from>.<anchor> → <to>.<anchor> [<arrowStyle>]` (`arrowStyle` only when not `straight`; a free end prints
 `<x>,<y>`, an on-arrow end `arrow:<ref>@<t>` with `t` to two decimals). Numbers are integers, rounded, relative to
 `contentOrigin(printed)`. An element without geometry prints `<ref> no geometry` (`VW61`).
 
-**`layout`, coarse** (`VW32`): `canvas: ` then the root's rows, refs separated by spaces, rows by `/`; then one
-`<container ref>: <rows>` line per container with children, depth-first in reading order. Elements without geometry
-form a last row. Arrows are left out.
+**`layout`, coarse** (`VW32`): one `row <n>: <refs>` line per row of the canvas (or of `only`), refs separated by
+spaces, so a budget cuts whole rows. Elements without geometry form a last row. Arrows are left out. The JSON's
+`rows` is one group, `{ container: null, rows }`.
 
-**`comments`** (`VW33`): per open thread, in the outline's depth-first order:
+**`comments`** (`VW33`): per open thread, in the outline's order:
 
 ```text
 <kindWord> <ref> <label> · open · <count>
@@ -421,7 +386,7 @@ them with `all`; with `all` they print with `· resolved ·`. `authorId` never p
 **`show`** (`VW34`):
 
 ```text
-<kindWord> <ref> <label> [in <container kind word> <container ref> <container label>]
+<kindWord> <ref> <label>
   at <x>,<y> <w>x<h> [r=<deg>]                (content-origin coordinates; arrows print their ends instead)
   <field>: <compact JSON value>                every remaining stored field, keys sorted by code unit
   cells:                                       a table: one "  | a | b |" line per row, cellText escaped
@@ -455,9 +420,9 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
 cells, checklist item text, code and comment text, and a printed arrow's label, each
-NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
-`<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
-arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
+NFKC-normalised and lower-cased, as a substring. Each match prints its own outline line, unindented; a matching
+arrow prints as an own-line arrow after its source's line. A stored lane, stack or boundary is found by its stored
+label like any element, and prints as `? <kind>`. The closing line (kept at any budget, before the
 elision line) is
 `<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `item`, `code`,
 `comment`. No match prints `0 matches`.
@@ -467,19 +432,17 @@ elision line) is
 ```text
 tab <ref> <name> · since rev <a> · rev <b> · <n> changes
 - <kindWord> <ref> <label>                                      removed (ref from the before tab)
-+ <kindWord> <ref> <label> [in <container ref> <label>]          added
++ <kindWord> <ref> <label>                                      added
 + arrow <from> → <to> [<label>] [<arrow ref>]
 ~ <kindWord> <ref> <change> {" · " <change>}                     changed
 ```
 
-`<change>` is one of `kind <a> → <b>`, `label <a> → <b>`, `note added|removed|changed`, `in <a> → <b>` (`canvas` for
-the root), a summary `<a> → <b>`, an attribute `<key> <a> → <b>`, `comments <a> → <b>`, `from <a> → <b>`,
+`<change>` is one of `kind <a> → <b>`, `label <a> → <b>`, `note added|removed|changed`, an attribute `<key> <a> → <b>`, `comments <a> → <b>`, `from <a> → <b>`,
 `to <a> → <b>`, `moved +dx,+dy`, `resized +dw,+dh`, `rotated`, `restyled` (any style attribute), `+<n> other fields`.
-A missing label, summary or attribute prints `none` and a flag attribute `on` (`VW63`); a summary change prints the
-two summaries alone. Each change speaks for the stored fields behind it; the others that differ are the other fields.
+A missing label or attribute prints `none` and a flag attribute `on` (`VW63`). Each change speaks for the stored fields behind it; the others that differ are the other fields.
 Removed lines come first in the before tab's order; added and changed follow in the after tab's order.
-The two reads have two ref tables, and one added id can lengthen another's ref (`0bcd` becomes `0bcd1`), so `in`,
-`from` and `to` compare ids (the container's id, each end's element, arrow or free point); refs are only how a
+The two reads have two ref tables, and one added id can lengthen another's ref (`0bcd` becomes `0bcd1`), so `from`
+and `to` compare ids (each end's element, arrow or free point); refs are only how a
 change prints (the before tab's for `<a>`, the after tab's for `<b>`).
 
 **`overview`** (`VW37`):
@@ -503,10 +466,9 @@ the document's `savedAt` and `now`: `just now` under a minute, `<n>m ago`, `<n>h
 part    := "notes hidden" | "attributes hidden" | count " elements in " kindWord " " ref " hidden" | count " " noun " hidden"
 ```
 
-The three largest collapsed containers are named, in reading order; the rest print as one part,
-`<n> elements in <m> other containers hidden` (`ELISION_CONTAINERS_NAMED`, `VW60`); the JSON lists every one. The
-command names only what differs from the current request: `only` the largest collapsed container, else
-`budget` the estimate of the full view, `all` for resolved threads, `view outline` for unconnected graph nodes. It is
+No container is collapsed any more (nothing nests), so the `elements in <kind> <ref>` part never prints and the
+JSON's `collapsed` is `[]`. The command names only what differs from the current request: `budget` the estimate of
+the full view, `all` for resolved threads, `view outline` for unconnected graph nodes. It is
 written in the reading door's syntax (`VW54`):
 
 | Door (`door`)   | Command form                                                                                                      | Example                                         |
@@ -524,7 +486,7 @@ type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; lanes: number; arrows: number };
+  counts: { boxes: number; arrows: number };
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
@@ -544,11 +506,11 @@ type OutlineNode = {
   kind: string;
   unknown: boolean;
   label: string | null;
-  summary: string | null;
+  summary: string | null; // always null since part 3
   attributes: { key: string; value: string | null }[];
   edges: ViewEdgeJson[];
-  children: (OutlineNode | FreehandRunJson)[];
-  collapsed: number;
+  children: (OutlineNode | FreehandRunJson)[]; // always []
+  collapsed: number; // always 0
 };
 type FreehandRunJson = { run: 'freehand'; refs: string[]; closed: number };
 type Elision = {
@@ -595,7 +557,7 @@ type ShowView = {
   header: ViewHeader;
   ref: string;
   kind: string;
-  container: { ref: string; kind: string; label: string | null } | null;
+  container: { ref: string; kind: string; label: string | null } | null; // always null since part 3
   fields: Record<string, unknown>;
   incoming: ViewEdgeJson[];
   outgoing: ViewEdgeJson[];
@@ -727,38 +689,38 @@ the tab and its `rev`.
 
 ## Errors and edge cases
 
-| #    | Case                                           | Handling                                                                                         |
-| ---- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| E1   | Empty tab                                      | Header `0 elements`, nothing else; never an error                                                |
-| E2   | Unlabelled element                             | Kind word and ref only                                                                           |
-| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables                                                       |
-| E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
-| E5   | Element larger than a frame it overlaps        | Not nested (strict area)                                                                         |
-| E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
-| E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
-| E9   | Parallel arrows                                | Both on the source line                                                                          |
-| E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
-| E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
-| E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
-| E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |
-| E15  | Id shorter than 4                              | The full id is the ref                                                                           |
-| E16  | Slug id that is another id's prefix            | Exact match wins; the longer id's ref grows past the common prefix                               |
-| E17  | Prefix ambiguous after a collaborator's add    | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                                 |
-| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                        |
-| E18a | `id:"n1"` after `n1` is deleted, `n10` present | `not-found`; never `n10` by prefix                                                               |
-| E19  | `only` on a non-container                      | The element's line alone                                                                         |
-| E20  | Budget below the header                        | Header and elision line still print                                                              |
-| E21  | Comment thread with zero comments              | Not a thread                                                                                     |
-| E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
-| E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                         |
-| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
-| E25  | Trashed document                               | The GET's 410, unchanged                                                                         |
-| E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                                    |
-| E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
-| E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
-| E30  | `show selected`, nothing selected on the tab   | 404 `target_not_found`, "nothing is selected"                                                    |
-| E31  | `show selected` when the room cannot be read   | 404 `target_not_found`, "the selection could not be read"                                        |
-| E32  | `show selected` on a pulled file, offline      | As E31: a file has no live selection (`VW68`)                                                    |
+| #    | Case                                           | Handling                                                                                 |
+| ---- | ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| E1   | Empty tab                                      | Header `0 elements`, nothing else; never an error                                        |
+| E2   | Unlabelled element                             | Kind word and ref only                                                                   |
+| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables                                               |
+| E4   | Overlapping stored boundaries                  | Each a flat `? boundary` line; what sits on them prints beside them                      |
+| E5   | Element larger than a stored boundary          | A flat line like any other (nothing nests)                                               |
+| E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                           |
+| E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                        |
+| E9   | Parallel arrows                                | Both on the source line                                                                  |
+| E10  | Self-loop                                      | `→ <own ref>`                                                                            |
+| E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, flat like every line          |
+| E13  | Element without geometry                       | Root, after the rows, in array order                                                     |
+| E14  | Id with unsafe characters                      | `id:"…"` ref                                                                             |
+| E15  | Id shorter than 4                              | The full id is the ref                                                                   |
+| E16  | Slug id that is another id's prefix            | Exact match wins; the longer id's ref grows past the common prefix                       |
+| E17  | Prefix ambiguous after a collaborator's add    | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                         |
+| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                |
+| E18a | `id:"n1"` after `n1` is deleted, `n10` present | `not-found`; never `n10` by prefix                                                       |
+| E19  | `only` on any element                          | The element's line alone                                                                 |
+| E20  | Budget below the header                        | Header and elision line still print                                                      |
+| E21  | Comment thread with zero comments              | Not a thread                                                                             |
+| E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                    |
+| E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                 |
+| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                          |
+| E25  | Trashed document                               | The GET's 410, unchanged                                                                 |
+| E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                            |
+| E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element |
+| E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                            |
+| E30  | `show selected`, nothing selected on the tab   | 404 `target_not_found`, "nothing is selected"                                            |
+| E31  | `show selected` when the room cannot be read   | 404 `target_not_found`, "the selection could not be read"                                |
+| E32  | `show selected` on a pulled file, offline      | As E31: a file has no live selection (`VW68`)                                            |
 
 ## Security and trust
 
@@ -781,17 +743,13 @@ the tab and its `rev`.
 - Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements in a tab of up to `MAX_TAB_BYTES`. The outline costs about
   12 tokens (36 characters) an element: about 360 KB of text for a full 10,000-element tab. Through the MCP the
   default budget holds it to `READ_DOCUMENT_DEFAULT_BUDGET` tokens (about 24 KB).
-- Refs O(n log n); reading order O(n log n); containment O(n · c) for c containers, about 10⁶ checks at 100
-  containers, measured by the bench below; budget O(n + c log c) on the precomputed cost model.
-- Collapsing containers one at a time keeps the hidden length and the elided totals running and measures the
-  elision line from its named containers and the rest's totals, so each step is O(`ELISION_CONTAINERS_NAMED`):
-  4,000 frames at a budget take about 30 ms (1.2 s when each step rebuilt the fit and its elision line). The
-  result is byte-equal to the step-by-step rebuild.
+- Refs O(n log n); reading order O(n log n); budget O(n) on prefix sums: cutting trailing lines reads two sums and
+  measures one elision line per step.
 - `show` and `show selected` read the content origin and each element's incoming and outgoing arrows from an
   index built once per model, so a select-all of 8,000 elements takes about 80 ms (3.4 s when each element scanned
   every arrow). The edge model appends each arrow to its source's list in place.
-- `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
-  as much.
+- `performance.test.ts` gates these as growth: eight times the outline's lines, or the selection, costs under 24
+  times as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
   the tab cap) and makes one query per batch.
 - `read_document` makes two service-binding calls (document, view), three with `image: true` (the tab, in parallel).
@@ -819,36 +777,36 @@ view (above), beside the front doors' `Mcp·Used` and `Cli·Used`.
 
 Every rule maps to a deterministic test; the spec's rules are numbered here.
 
-| Rule                                                                 | Test                                                                                                                                       |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| R1 A slug id is its own ref                                          | `packages/document/src/element-refs.test.ts`                                                                                               |
-| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                            |
-| R3 A ref, any unique prefix or a full id resolves                    | `element-refs.test.ts`                                                                                                                     |
-| R4 An ambiguous prefix is refused with candidates, never guessed     | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                                 |
-| R5 A prefix made ambiguous by an add says so                         | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                           |
-| R6 A label is never a ref                                            | `element-refs.test.ts` (an element labelled like another's id)                                                                             |
-| R7 Agent-added elements take label slugs, `-2` on a clash            | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/document/src/collab-index-rows.test.ts`   |
-| R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                               |
-| R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                        |
-| R10 JSON strings, cut 60 / 48 on a word boundary                     | `../packages/document-views/src/text.test.ts`                                                                                              |
-| R11 Smallest frame or lane holding the centre                        | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                   |
-| R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                            |
-| R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                     |
-| R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                             |
-| R15 Bare strokes fold into one counted line                          | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                    |
-| R16 What the outline leaves out                                      | `outline.test.ts`, `header.test.ts`                                                                                                        |
-| R17 Each view holds what the table says                              | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                                |
-| R18 Every view opens with the header and its `rev`                   | `render-view.test.ts` (every served view; `lint` with the lint)                                                                            |
-| R19 `json` carries the same data; the plain GET is the raw tab       | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                             |
-| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's        | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `livediagram/apps/mcp/src/read-document.test.ts` (8,000) |
-| R21 Never silent: one elision line, in the door's syntax             | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                    |
-| R22 One pure package                                                 | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                        |
-| R23 `?view=` answers `text/plain`; overview on the document; no diff | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                  |
-| R24 `read_document` reads a view; JSON and the PNG only on request   | `livediagram/apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                         |
-| R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                          |
-| R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                       |
-| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                                 |
-| OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                           |
+| Rule                                                                   | Test                                                                                                                                       |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| R1 A slug id is its own ref                                            | `packages/document/src/element-refs.test.ts`                                                                                               |
+| R2 Otherwise the shortest unique prefix, at least 4; `id:"…"` unsafe   | `element-refs.test.ts` (collisions at 4, 5, an id that prefixes another, short ids, unsafe ids)                                            |
+| R3 A ref, any unique prefix or a full id resolves                      | `element-refs.test.ts`                                                                                                                     |
+| R4 An ambiguous prefix is refused with candidates, never guessed       | `element-refs.test.ts`, `apps/api/src/routes/document-views-route.test.ts`                                                                 |
+| R5 A prefix made ambiguous by an add says so                           | `element-refs.test.ts` (`stale`), `document-views-route.test.ts`                                                                           |
+| R6 A label is never a ref                                              | `element-refs.test.ts` (an element labelled like another's id)                                                                             |
+| R7 Agent-added elements take label slugs, `-2` on a clash              | `element-refs.test.ts`; `slug-id-roundtrip.test.ts` (isValidTab, `applyElementDelta`); `packages/document/src/collab-index-rows.test.ts`   |
+| R8 One line per element, flat (nothing nests)                          | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                               |
+| R9 Kind words, notations, `es:actor`                                   | `element-refs.test.ts` (kind words)                                                                                                        |
+| R10 JSON strings, cut 60 / 48 on a word boundary                       | `../packages/document-views/src/text.test.ts`                                                                                              |
+| R11 Nothing nests; a stored lane, stack or boundary is a flat line     | `tree.test.ts`, `outline.test.ts`, `find.test.ts` (a stored layout container)                                                              |
+| R12 Arrows on the source line; free ends on their own                  | `edges.test.ts`                                                                                                                            |
+| R13 Reading order                                                      | `../packages/document-views/src/reading-order.test.ts`                                                                                     |
+| R14 No content summaries or state attributes (every such kind retired) | `outline.test.ts` (`summary: null`), `diff.test.ts` (a retired kind's change is other fields)                                              |
+| R15 Bare strokes fold into one counted line                            | `../packages/document-views/src/freehand-runs.test.ts`, golden `edge-cases.outline.txt`                                                    |
+| R16 What the outline leaves out                                        | `outline.test.ts`, `header.test.ts`                                                                                                        |
+| R17 Each view holds what the table says                                | `{graph,layout,comments,show,find,diff,overview}.test.ts` and their goldens                                                                |
+| R18 Every view opens with the header and its `rev`                     | `render-view.test.ts` (every served view; `lint` with the lint)                                                                            |
+| R19 `json` carries the same data; the plain GET is the raw tab         | `render-view.test.ts` (text and JSON agree on refs and counts)                                                                             |
+| R20 Budget ladder, chars ÷ 3; no default budget but the MCP's          | `outline.test.ts` (each ladder state), `fixtures-goldens.test.ts` (300 elements); `livediagram/apps/mcp/src/read-document.test.ts` (8,000) |
+| R21 Never silent: one elision line, in the door's syntax               | `outline.test.ts`, `graph.test.ts`, `comments.test.ts`, `overview.test.ts`, `diff.test.ts` (both doors)                                    |
+| R22 One pure package                                                   | `render-view.test.ts` (twice, byte-equal; no clock)                                                                                        |
+| R23 `?view=` answers `text/plain`; overview on the document; no diff   | `document-views-route.test.ts` (real SQLite: gates, scope, 400s, `diff` refused, headers)                                                  |
+| R24 `read_document` reads a view; JSON and the PNG only on request     | `livediagram/apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                         |
+| R25 Unknown kinds print `?`, counted, never dropped                    | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                                          |
+| R26 One `Agent·Viewed` event per answered view                         | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite                       |
+| R27 `show selected`: the owner's selection, tab order, refusals        | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                                 |
+| OpenAPI parity                                                         | `apps/api/src/openapi/*.test.ts`                                                                                                           |
 
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 `packages/document-views/src/__fixtures__/golden/`:
@@ -858,9 +816,9 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
 | `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky retro tab                                                                                                                  | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
-| `agent-built-tab.ts`    | The Services frame built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
+| `agent-built-tab.ts`    | A services map placed by hand with slug node ids (the graph input left with part 3)                                                                                                          | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
-| `edge-cases-tab.ts`     | E1 to E27 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
+| `edge-cases-tab.ts`     | E1 to E27 in one tab where they compose, separate tabs where they do not; two stored boundaries                                                                                              | `edge-cases.outline.txt`                                                                                                                                                                    |
 
 The checkout tab uses the factories (`createText`, `createShape`, `createSticky`, `createPinnedArrow`,
 `createComment`), with its table a stored one (`storedTableAt`, printed `? table`), and then pins every id to a fixed UUID whose first four characters are the research's prefixes

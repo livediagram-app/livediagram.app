@@ -1,6 +1,5 @@
 // A model's raw elements made safe to author (livediagram/docs/specs/015-api/mcp-server.md §4.7a). Runs BEFORE
-// validation, so a near miss draws correctly rather than failing the call or drawing wrongly (a
-// lane with no title alignment put its title strip down the middle). Every
+// validation, so a near miss draws correctly rather than failing the call or drawing wrongly. Every
 // element takes the text size and layout defaults the editor's own factory
 // gives a new one of its kind, and the content-carrying kinds get their fields
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
@@ -10,14 +9,13 @@ import { anchorPrimarySide } from './anchors';
 import { asText } from '@liveworkspace/model-core/as-text';
 import { orthogonalBends } from './arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
-import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createText } from './factories';
-import { migrateStoredElementsUnsettled } from './stored-elements';
+import { migrateStoredElements } from './stored-elements';
 import { coerceShapeKind } from './validate';
 import type { Element as DocElement } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
-import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
+import { isRetiredElement } from './retired-kinds';
 
 type Raw = Record<string, unknown>;
 
@@ -35,12 +33,11 @@ function normaliseSticky(el: Raw): Raw {
 // edit touched, leaving the rest of the diagram as it is).
 export function normaliseElement(el: unknown): unknown {
   if (!isRecord(el)) return el;
+  // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") is kept exactly as it
+  // came: no factory defaults, no tidying.
+  if (isRetiredElement(el as { type: string; shape?: unknown })) return el;
   // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
-  // Unsettled: a lone element's host is not beside it, so settling it here would detach it; normaliseElements settles
-  // the whole list.
-  const [current] = migrateStoredElementsUnsettled([
-    el,
-  ] as unknown as DocElement[]) as unknown as Raw[];
+  const [current] = migrateStoredElements([el] as unknown as DocElement[]) as unknown as Raw[];
   return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
 }
 
@@ -72,8 +69,7 @@ function factoryOf(el: Raw): Raw | undefined {
 }
 
 // The presentation fields the factory sets that raw JSON usually leaves out.
-// Unset, text falls back to 'scale' (filling the box), so a lane's title came
-// out as one giant word across its contents, and a lane with no title alignment put its title in the wrong place; a box drawn in the
+// Unset, text falls back to 'scale' (filling the box), so a label came out as one giant word; a box drawn in the
 // editor never arrives that way.
 const FACTORY_DEFAULTS = ['textSize', 'textAlignX', 'textAlignY', 'padding'] as const;
 
@@ -86,47 +82,7 @@ function withFactoryDefaults(el: Raw): Raw {
 }
 
 function normaliseContent(el: Raw): unknown {
-  if (el.type === 'sticky') return normaliseSticky(el);
-  if (el.type !== 'shape') return el;
-  return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
-}
-
-// A Timeline's milestones within its range (docs/specs/009-elements/timeline.md): validation takes any 0 to 8, but
-// every edit keeps it to 2 to 8. Past the most, the rest are dropped; short of the fewest, rows named as the menu's
-// Add names them ("Milestone 3") fill the gap.
-function normaliseConcept(el: Raw): Raw {
-  if (!Array.isArray(el.conceptRows)) return el.shape === 'timeline-rail' ? railToTimeline(el) : el;
-  const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
-  const rows = el.conceptRows.slice(0, max);
-  while (rows.length < min) rows.push({ label: `${noun} ${rows.length + 1}` });
-  return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
-}
-
-// A timeline rail saved before it was a Timeline (docs/specs/009-elements/timeline.md): its points
-// become milestones, each point's label its name (an unnamed one "Milestone 2"), and the point count and labels go.
-function railToTimeline(el: Raw): Raw {
-  const { min, max, noun } = CONCEPT_ROWS['timeline-rail'];
-  const labels = Array.isArray(el.railLabels) ? el.railLabels : [];
-  const stored =
-    typeof el.railCount === 'number' && Number.isFinite(el.railCount) ? el.railCount : 3;
-  const count = Math.max(min, Math.min(max, Math.round(stored)));
-  const { railCount: _count, railLabels: _labels, ...rest } = el;
-  return {
-    ...rest,
-    conceptRows: Array.from({ length: count }, (_, i) => {
-      const label = typeof labels[i] === 'string' ? labels[i].trim() : '';
-      return { label: label || `${noun} ${i + 1}` };
-    }),
-  };
-}
-
-const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';
-
-// Lanes moved to the front (their order kept) so they paint behind what they
-// hold, and so each is the backmost box under its contents.
-export function lanesToFront<T>(elements: T[]): T[] {
-  if (!elements.some(isLane)) return elements;
-  return [...elements.filter(isLane), ...elements.filter((el) => !isLane(el))];
+  return el.type === 'sticky' ? normaliseSticky(el) : el;
 }
 
 // A whole element list from the model made safe. Anything that is not an
@@ -148,8 +104,6 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
 const PLAIN_BOX_EXCLUDED = new Set([
-  'lane',
-  'boundary',
   'code-block',
   'bar-chart',
   'pie-chart',
@@ -161,7 +115,8 @@ const isPlainBox = (el: unknown): el is Raw =>
   el.type === 'shape' &&
   typeof el.label === 'string' &&
   el.label.trim() !== '' &&
-  !PLAIN_BOX_EXCLUDED.has(String(el.shape));
+  !PLAIN_BOX_EXCLUDED.has(String(el.shape)) &&
+  !isRetiredElement(el as { type: string; shape?: unknown });
 function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
   if (elements.filter(isPlainBox).length <= LOOK_MD_MAX_NODES) return elements;
   return elements.map((el) =>
@@ -198,15 +153,13 @@ export function normaliseElements<T>(
 ): T {
   if (!Array.isArray(elements)) return elements;
   const sized = withLookTextSize(elements, kept);
-  // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
-  // keep them (docs/specs/009-elements/badge.md "Agents").
-  const normalised = lanesToFront(sized.map(normaliseElement));
-  // Only a list of element records is settled; anything else is left for validation to refuse. The records are not
-  // validated yet (an agent's step with a label of 5), so one that settling (or bending) cannot read is left as it
-  // came, for validation to refuse by name rather than the request failing whole.
+  const normalised = sized.map(normaliseElement);
+  // Only a list of element records is bent; anything else is left for validation to refuse. The records are not
+  // validated yet, so one that bending cannot read is left as it came, for validation to refuse by name rather than
+  // the request failing whole.
   if (!normalised.every(isRecord)) return normalised as T;
   try {
-    return withRawElbows(settleChips([], normalised as DocElement[]), kept) as T;
+    return withRawElbows(normalised as DocElement[], kept) as T;
   } catch {
     return normalised as T;
   }

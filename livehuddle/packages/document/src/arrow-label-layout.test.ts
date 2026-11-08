@@ -175,8 +175,8 @@ describe('layoutArrowLabels: obstacles', () => {
     expect(layoutOf([box('b', -50, -50, 700, 100), line()], 'a').center).toEqual({ x: 300, y: 0 });
   });
 
-  it('ignores frames, which are backdrops', () => {
-    const frame = box('f', -50, -50, 700, 100, { shape: 'boundary' });
+  it('ignores a stored boundary, which is a backdrop', () => {
+    const frame = box('f', -50, -50, 700, 100, { shape: 'boundary' as ShapeElement['shape'] });
     expect(layoutOf([frame, line()], 'a').center).toEqual({ x: 300, y: 0 });
   });
 

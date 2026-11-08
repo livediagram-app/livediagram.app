@@ -4,14 +4,7 @@
 
 import type { EditLog } from '@liveworkspace/edit-operations/parse';
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livehuddle/api-schema';
-import type {
-  ElementId,
-  ElementOp,
-  Finish,
-  GraphInput,
-  Tab,
-  ThemeDefinition,
-} from '@livehuddle/document';
+import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@livehuddle/document';
 import type { PlacementRelation } from './vocabulary';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
@@ -21,12 +14,10 @@ export type Selector = string;
 export type FieldValue = JsonValue;
 export type Fields = Readonly<Record<string, FieldValue>>;
 
-// Where `add` and `move` put an element: beside, after, inside or aligned with a reference, or at a
-// point relative to the content origin.
-// `within` (a boundary or lane, from `inside:<container> right-of:<x>`) says the reference must be inside it; `alignTo`
-// (from `below:<container> align:<x>`) centres the placed box on x across the side.
+// Where `add` and `move` put an element: beside, after or aligned with a reference, or at a point relative to the
+// content origin. `alignTo` (from `below:<x> align:<y>`) centres the placed box on y across the side.
 export type Placement =
-  | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
+  | { rel: PlacementRelation; ref: Selector; gap?: number; alignTo?: Selector }
   | { rel: 'at'; x: number; y: number };
 
 // `add` with a whole raw element, as an API script's changeset sends it: taken as given, its geometry kept.
@@ -73,20 +64,6 @@ export type InsertOperation = {
   between: [Selector, Selector];
 };
 
-// At most one of `absorb` and `makeRoom`.
-export type WrapOperation = {
-  op: 'wrap';
-  targets: Selector[];
-  in: 'boundary' | 'lane';
-  id?: string;
-  fields?: Fields;
-  tidy?: true;
-  absorb?: true;
-  makeRoom?: true;
-};
-
-export type UnwrapOperation = { op: 'unwrap'; target: Selector };
-
 export type OrderOperation = { op: 'order'; target: Selector } & (
   { to: 'front' | 'back' } | { above: Selector } | { below: Selector }
 );
@@ -108,8 +85,6 @@ export type EditOperation =
   | ConnectOperation
   | RewireOperation
   | InsertOperation
-  | WrapOperation
-  | UnwrapOperation
   | OrderOperation
   | LayoutOperation
   | TestOperation;
@@ -138,9 +113,7 @@ export type ReplaceOptions = ApplyOptions & {
 };
 
 export type ReplaceBody =
-  | { graph: GraphInput }
-  | { template: string }
-  | { elements: unknown[]; layout?: 'auto' | 'preserve' };
+  { template: string } | { elements: unknown[]; layout?: 'auto' | 'preserve' };
 
 export type ApplySuccess = {
   tab: Tab;

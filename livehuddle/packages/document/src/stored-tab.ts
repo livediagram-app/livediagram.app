@@ -15,10 +15,7 @@ import { dropRetiredVote } from './retired-vote';
 import { dropRetiredTimer } from './retired-timer';
 import { dropRetiredLocks } from './retired-locks';
 import { migrateStoredElements } from './stored-elements';
-import { settleDiagramKeys } from './diagram-key';
-import { settleStacks } from './stack';
 import { settleTabFields } from './tab-fields';
-import { tagColoursOf } from './tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 
@@ -64,15 +61,7 @@ function upgradeStoredTab<
   );
   if (!Array.isArray(schemed.elements)) return schemed;
   // Element links from before the document rename (./legacy-links) are upgraded here too.
-  // A diagram key's rows are re-derived from the tab (docs/specs/009-elements/diagram-key.md), its tag colours included.
-  // Keys settle before stacks lay out (docs/specs/009-elements/stack.md): a key's rows come from the arrows and tag
-  // colours, not from where anything is, and a key a stack holds must have its height before the stack lays it out.
-  const elements = settleStacks(
-    settleDiagramKeys(
-      upgradeLegacyLinks(migrateStoredElements(schemed.elements)),
-      tagColoursOf(schemed as { tagColours?: unknown }),
-    ),
-  );
+  const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }
 

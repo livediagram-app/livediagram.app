@@ -23,9 +23,9 @@ describe('graphView (R17, VW30)', () => {
     const { text, json } = graphView(checkout(), { budget: 120, door: 'mcp' });
     expect(estimateTokens(text)).toBeLessThanOrEqual(120);
     expect(text.split('\n').at(-1)).toMatch(
-      /^… 7 nodes hidden; 11 arrows hidden; 7 unconnected elements hidden: read_document \{"budget":\d+\}$/,
+      /^… 6 nodes hidden; 11 arrows hidden; 7 unconnected elements hidden: read_document \{"budget":\d+\}$/,
     );
-    expect(json.nodes).toHaveLength(5);
+    expect(json.nodes).toHaveLength(6);
     expect(json.arrows).toHaveLength(0);
     const arrowsCut = graphView(checkout(), { budget: 200 }).json;
     expect(arrowsCut.nodes).toHaveLength(12);

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeKind } from './shape-kind';
 import { SHAPE_KINDS } from './validate';
-import { isRailShape, isSelfDrawingShape } from './data-shapes';
+import { isSelfDrawingShape } from './data-shapes';
 
 // The self-drawing shape family decides real behaviour: elementSupportsText uses isSelfDrawingShape to decide whether
 // an element has an editable label at all, and the context menu hides markers, alignment and morphing for members.
 // The data widgets left with Work Tracker #459 (docs/specs/002-project-scope/not-in-livehuddle.md "The element
-// engine"); what stays is the Timeline, the sticker and the Space pieces.
+// engine"), and the Timeline with part 3; what stays is the sticker and the Space pieces.
 
 const ALL = [...SHAPE_KINDS] as ShapeKind[];
 
@@ -15,8 +15,8 @@ describe('the self-drawing shape family', () => {
     expect(ALL.length).toBeGreaterThan(40);
   });
 
-  it('claims the Timeline, the sticker, the fence and the scenery', () => {
-    for (const kind of ['timeline-rail', 'sticker', 'fence', 'plant', 'corridor'] as ShapeKind[])
+  it('claims the sticker, the fence and the scenery', () => {
+    for (const kind of ['sticker', 'fence', 'plant', 'corridor'] as ShapeKind[])
       expect(isSelfDrawingShape(kind), kind).toBe(true);
   });
 
@@ -25,12 +25,5 @@ describe('the self-drawing shape family', () => {
     expect(isSelfDrawingShape('square')).toBe(false);
     expect(isSelfDrawingShape('circle')).toBe(false);
     expect(isSelfDrawingShape('icon')).toBe(false);
-    // The web components that DO carry a label keep it (docs/specs/009-elements/web-components-and-no-groups.md).
-    expect(isSelfDrawingShape('card')).toBe(false);
-    expect(isSelfDrawingShape('callout')).toBe(false);
-  });
-
-  it('names one kind the rail', () => {
-    expect(ALL.filter(isRailShape)).toEqual(['timeline-rail']);
   });
 });

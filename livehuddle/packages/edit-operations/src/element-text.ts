@@ -12,20 +12,16 @@ export function kindOf(el: Element): string {
   return kindWordOf(el);
 }
 
-// How elements are named on a line: their ref, and the ref of the container holding them.
-export type Naming = {
-  refOf: (id: ElementId) => string;
-  containerOf: (id: ElementId) => string | null;
-};
+// How elements are named on a line: by their ref.
+export type Naming = { refOf: (id: ElementId) => string };
 
 // Ids as they are: what a line uses when no tab names its elements.
-const plainNaming: Naming = { refOf: (id) => id, containerOf: () => null };
+const plainNaming: Naming = { refOf: (id) => id };
 
-// `n7  square "Charge card" in f2`, `a6  arrow n6→n7 "yes"`: one element on a candidate line.
+// `n7  square "Charge card"`, `a6  arrow n6→n7 "yes"`: one element on a candidate line.
 export function describeElement(el: Element, naming: Naming = plainNaming): string {
   const { refOf } = naming;
   const ends = el.type === 'arrow' ? ` ${endRef(el.from, refOf)}→${endRef(el.to, refOf)}` : '';
   const label = labelOf(el);
-  const container = el.type === 'arrow' ? null : naming.containerOf(el.id);
-  return `${refOf(el.id)}  ${kindOf(el)}${ends}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}${container ? ` in ${container}` : ''}`;
+  return `${refOf(el.id)}  ${kindOf(el)}${ends}${label ? ` ${quoteCut(label, LABEL_CUT_CHARS)}` : ''}`;
 }

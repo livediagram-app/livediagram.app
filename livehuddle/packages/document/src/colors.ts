@@ -16,7 +16,6 @@ import type { BorderRadius } from '@liveworkspace/model-core/border-style';
 import { PEN_INK } from './pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
-import { isConceptShape } from './concept';
 import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
 import { isOfficeShape, ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK } from './office';
 import {
@@ -379,10 +378,6 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // A boundary's face paints its tint, deeper as it nests (docs/specs/009-elements/boundary.md).
-  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
-  if (element.type === 'shape' && (element.shape === 'boundary' || element.shape === 'stack'))
-    return 'transparent';
   const skin = behaviourSkin(element, surface);
   if (skin) return skin.fill;
   if (surface === 'dark') {
@@ -495,13 +490,6 @@ export function supportsFillColor(element: Element): boolean {
   return element.type !== 'text' && element.type !== 'image';
 }
 
-// Whether an element has a HEADING area distinct from its body, and so
-// exposes a heading-background control: a lane's title gutter
-// (docs/specs/009-elements/lane.md). Everything else is one surface.
-export function hasHeadingBand(element: Element): boolean {
-  return element.type === 'shape' && element.shape === 'lane';
-}
-
 export function supportsColours(element: Element): boolean {
   // A sticker's colours are the sticker (docs/specs/010-palette/stickers.md): a green APPROVED that
   // could be recoloured violet would be a worse APPROVED, and there is no
@@ -562,15 +550,9 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'actor',
   // A UML final state draws its ring and dot itself (shape-geometry.ts): no box to border.
   'final-state',
-  // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
-  'badge',
-  'step',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
-  // The Timeline draws its own rail and never reads the element's strokeWidth or strokeStyle, so the Border
-  // accordion offers no Strength or Pattern on it (a pick would write, autosave and broadcast for no visual change).
-  'timeline-rail',
   // Behaviour elements (docs/specs/009-elements/portal-element.md): the ring IS the element.
   'portal',
   // A chair (docs/specs/009-elements/chair.md) draws its own furniture and wants no box behind it,
@@ -703,42 +685,19 @@ export function supportsBorderControls(element: Element): boolean {
 // buttons, the chair, a retired element's placeholder...): their face never
 // renders an inline icon, so one folded in would be invisible. Dropped on
 // them, it stands alone too.
-// Kinds that take an inline icon but place it themselves, so its position (`iconPosition`) is not the user's to set:
-// a card's media slot and a callout's badge (docs/specs/009-elements/card.md), a header's logo, a boundary's tab
-// (docs/specs/009-elements/boundary.md). Their Icon position controls would write a field nothing reads.
-const SELF_PLACED_ICON_SHAPES: ReadonlySet<string> = new Set([
-  'card',
-  'callout',
-  'site-header',
-  'boundary',
-]);
-
-/** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. */
+/** Whether a shape's inline icon goes where `iconPosition` says, so offering that choice does something. Every kind
+ *  that takes one places it by `iconPosition` since the card, the callout and the boundary left
+ *  (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"). */
 export function positionsInlineIcon(element: Element): boolean {
-  return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
-}
-
-// The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a
-// Timeline (its rows) and a Diagram key.
-// The chip kinds are named here rather than read from chip.ts, which imports this file.
-function drawsNoInlineIcon(element: ShapeElement): boolean {
-  return (
-    element.shape === 'badge' ||
-    element.shape === 'step' ||
-    isConceptShape(element.shape) ||
-    element.shape === 'diagram-key'
-  );
+  return acceptsInlineIcon(element);
 }
 
 export function acceptsInlineIcon(element: Element): element is ShapeElement {
   return (
     element.type === 'shape' &&
     !hasOwnFace(element.shape) &&
-    // Faces drawn whole, with no place for an icon: a dropped one would vanish (docs/specs/009-elements).
-    !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
-    element.shape !== 'sticker' &&
-    element.shape !== 'stack'
+    element.shape !== 'sticker'
   );
 }
 
@@ -755,14 +714,7 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
-const RADIUS_SHAPES = new Set<string>([
-  'square',
-  'banner',
-  'callout',
-  'card',
-  'site-header',
-  'stat-row',
-]);
+const RADIUS_SHAPES = new Set<string>(['square', 'banner', 'site-header', 'stat-row']);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest
 // its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.

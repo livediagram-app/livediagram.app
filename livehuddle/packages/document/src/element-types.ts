@@ -19,17 +19,11 @@ import type {
 import type { ElementShadow } from './shadow';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { AccentEdge } from './accent-edge';
-import type { CardMedia } from './card';
-import type { ChipLook } from './chip';
-import type { AttachPoint } from './attachment';
-import type { BoundaryStyle } from './boundary';
-import type { ConceptAnim, ConceptRow } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { SelectionMode } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
-import type { HeroCaption } from './web-components';
 import type { ImageCredit } from './image-credit';
 import type { ChairFacing } from './collab-shapes';
 import { SHAPE_KINDS } from './shape-kinds';
@@ -49,8 +43,6 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
-import type { KeyRow } from './diagram-key';
-import type { StackAlign, StackDirection } from './stack';
 
 export type ShapeElement = {
   id: ElementId;
@@ -147,15 +139,6 @@ export type ShapeElement = {
   // wanting a coloured heading over a plain body is the normal case, not an
   // exotic one.
   headerFill?: string;
-  // Thickness of that heading area in element-space px: a lane's gutter is
-  // 132 wide down a side and 64 tall across the top by default, and those
-  // numbers only ever suited the titles they were measured against. Drag the
-  // seam to change it. Unset keeps the default for the lane's orientation, so
-  // an untouched lane is exactly as it was.
-  headerSize?: number;
-  // A lane's title turned a quarter to read bottom to top in its side strip
-  // (docs/specs/009-elements/lane.md "Upright titles"). Absent reads across.
-  titleOrientation?: 'upright';
   // When set, theme transforms (recolour / switch / reset) leave this
   // shape's `fillColor` alone, so an intrinsic fill survives a theme
   // change the way a sticky note keeps its amber. Used by template
@@ -243,58 +226,9 @@ export type ShapeElement = {
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;
-  // A timeline rail saved before the Timeline (docs/specs/009-elements/timeline.md): its point count
-  // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
-  railCount?: number;
-  railLabels?: string[];
   // A retired Reaction Pad's burst (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kept as
   // stored so a save carries it through, never read.
   reaction?: Reaction;
-  // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
-  // Meaningful on the 'page' kind, and reused by two web components
-  // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
-  // multi-line label: a banner's subtitle (`pageSubtitle`) and a callout's
-  // heading (`pageTitle`). Bounded in validate.ts.
-  //
-  // Separate fields, not the first two lines of the body: a page's title is
-  // structure, not prose. Keeping them apart means the body can be reordered,
-  // reformatted or emptied without the heading moving or vanishing, and the
-  // masthead can be styled as a masthead rather than as whatever the first
-  // line of the rich text happens to be.
-  //
-  // Plain strings, not rich runs: a title has one look, set by the element.
-  pageTitle?: string;
-  pageSubtitle?: string;
-  // Card slots (docs/specs/009-elements/card.md): media at the top left (absent = none), the header band (stored
-  // only when on) and up to six tag chips along the bottom. Title and meta line are pageTitle / pageSubtitle.
-  cardMedia?: CardMedia;
-  cardHeader?: boolean;
-  tags?: string[];
-  // Badge and Step number (docs/specs/009-elements/badge.md): the look (absent = the kind's default), the host it is
-  // attached to and the point it sits on (both or neither), and a step's Play in Order (stored only when true).
-  chipLook?: ChipLook;
-  attachedTo?: ElementId;
-  attachAt?: AttachPoint;
-  stepSequence?: boolean;
-  // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
-  pointerTip?: { x: number; y: number };
-  // A diagram key's derived rows and the author's meaning per row id (docs/specs/009-elements/diagram-key.md).
-  keyRows?: KeyRow[];
-  keyMeanings?: Record<string, string>;
-  // A stack's arrangement (docs/specs/009-elements/stack.md); each absent = its default.
-  stackDirection?: StackDirection;
-  stackAlign?: StackAlign;
-  stackGap?: number;
-  stackPadding?: number;
-  stackColumns?: number;
-  // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
-  boundaryStyle?: BoundaryStyle;
-  // The Timeline (docs/specs/009-elements/timeline.md): its milestones (a name and a when each) and its animation
-  // with its speed and repeat.
-  conceptRows?: ConceptRow[];
-  conceptAnim?: ConceptAnim;
-  conceptAnimSpeed?: AnimationSpeed;
-  conceptAnimRepeat?: boolean;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
@@ -582,11 +516,6 @@ export type ImageElement = {
   // box (cropping) — used by the hero + avatar (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/web-components-and-no-groups.md) so a
   // photo fills the area / circle rather than letterboxing.
   objectFit?: 'cover' | 'contain';
-  // Hero caption card (docs/specs/009-elements/web-components-and-no-groups.md): a themed card inset near the bottom of the
-  // image carrying a title + a supporting line, in `fillColor` with
-  // `textColor` (white by default). Present = shown; the palette's Hero is an
-  // image created with one, and any image can gain or lose it from the menu.
-  heroCaption?: HeroCaption;
   // Creator + licence credit of a picture picked from Image search
   // (docs/specs/009-elements/image-search.md). Absent for uploads.
   credit?: ImageCredit;

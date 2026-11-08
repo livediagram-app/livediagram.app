@@ -224,18 +224,12 @@ export function showElement(
 ): { lines: ViewLine[]; json: ShownElement } {
   const ref = model.refs.refOf(el.id);
   const kind = model.kindOf(el);
-  const node = model.tree.nodes.get(el.id);
-  const container = node?.container == null ? undefined : model.tree.nodes.get(node.container)?.el;
   const index = showIndexOf(model);
   const origin = index.origin;
   const { fields, omitted } = shownFields(el);
   const incoming = index.incoming.get(el.id) ?? [];
   const outgoing = index.outgoing.get(el.id) ?? [];
 
-  const inPart =
-    container === undefined
-      ? ''
-      : ` in ${model.kindOf(container)} ${model.refs.refOf(container.id)}${labelOf(container)}`;
   const box = boxOf(el);
   const rotation = Math.round(numberField(el, 'rotation') ?? 0);
   const placement =
@@ -251,7 +245,7 @@ export function showElement(
     .sort()
     .map((key) => ({ text: `  ${key}: ${JSON.stringify(fields[key])}`, noun: LINE }));
   const lines: ViewLine[] = [
-    { text: `${kind} ${ref}${labelOf(el)}${inPart}`, noun: LINE },
+    { text: `${kind} ${ref}${labelOf(el)}`, noun: LINE },
     ...placement.map((text) => ({ text, noun: LINE })),
     ...fieldLines,
     ...blockLines(el, fields),
@@ -265,14 +259,8 @@ export function showElement(
     json: {
       ref,
       kind,
-      container:
-        container === undefined
-          ? null
-          : {
-              ref: model.refs.refOf(container.id),
-              kind: model.kindOf(container),
-              label: textField(container, 'label'),
-            },
+      // Nothing holds an element since part 3 of the element engine; kept on the wire as null.
+      container: null,
       fields: jsonFields,
       incoming: incoming.map(edgeJson),
       outgoing: outgoing.map(edgeJson),

@@ -11,7 +11,6 @@
 import {
   hasShapeSilhouette,
   scaledPolygonPoints,
-  svgLaneGutter,
   svgFreehandShape,
   svgPathElementShape,
   svgShapeSilhouette,
@@ -33,7 +32,6 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { isRetiredElement } from './retired-kinds';
 import { svgRetiredElement } from './svg-render-retired';
-import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
@@ -119,9 +117,7 @@ import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-p
 import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
-import { isPointerNote, pointerTipOf } from './pointer-note';
 import { rotationOf } from './rotation';
-import { tagColoursOf, withTagAccent } from './tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -144,14 +140,6 @@ export function contentBounds(
       }
     } else {
       points.push({ x: el.x, y: el.y }, { x: el.x + el.width, y: el.y + el.height });
-      // A pointer note's tip can sit well outside its box (docs/specs/009-elements/pointer-note.md).
-      if (isPointerNote(el)) {
-        const t = pointerTipOf(el);
-        points.push(
-          { x: el.x + t.x - 4, y: el.y + t.y - 4 },
-          { x: el.x + t.x + 4, y: el.y + t.y + 4 },
-        );
-      }
     }
   }
   const b = boundsOfPoints(points);
@@ -200,8 +188,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
 function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
   const surface = opts.surface ?? 'light';
   // A stock colour stored by name is drawn in its version for this page.
-  // A card under the tab's tag colours renders their accent edge (docs/specs/009-elements/tag-colours.md).
-  const el = resolveStockColours(withTagAccent(source, opts.tagColours), surface);
+  const el = resolveStockColours(source, surface);
   const { opacity, shape, label: described } = describeBoxedExport(el, opts);
   let label = described;
   // What a self-drawing element writes its own text in: the label's resolved
@@ -251,10 +238,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         ? svgImageShape(el, shape.href, shape.objectFit, shape.radius)
         : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="6"` +
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
-      // Its hand-drawn edge (finish.md "Images"), then a hero's caption card
-      // (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
-      (sketch ?? '') +
-      (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
+      // Its hand-drawn edge (finish.md "Images"), over the image. A stored hero caption is not drawn
+      // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
+      (sketch ?? '');
   } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
     shapeStr = sketch;
   } else if (shape.kind === 'ellipse') {
@@ -301,7 +287,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
       surface,
       resolveIconArt: opts.resolveIconArt,
       resolveEmojiArt: opts.resolveEmojiArt,
-      tagColours: opts.tagColours,
       finish,
     });
     // A SELF-PAINTING element's body is its own: the canvas gives it a
@@ -331,8 +316,6 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               finish,
             )
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md).
-    const onBox = el.type === 'shape' && el.shape === 'lane' ? svgLaneGutter(el, shape.stroke) : '';
     // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
     const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
     const edge =
@@ -343,7 +326,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
             radius: el.shape === 'stadium' ? rx : edgeBorder.radius,
           })
         : '';
-    shapeStr = box + edge + onBox + face;
+    shapeStr = box + edge + face;
   } else if (shape.kind === 'icon') {
     shapeStr = svgIconShape(el, shape.art, shape.stroke);
   } else if (shape.kind === 'sticker') {
@@ -553,8 +536,6 @@ export function renderElementsToSvg(
   if (sketchArtDefs) parts.push(sketchArtDefs);
   // In the canvas's paint order (docs/specs/006-document/layers.md "Stacking"): arrows and boxes interleave by
   // array order, so an arrow sent behind a box stays behind it.
-  // The tab's tag colours (docs/specs/009-elements/tag-colours.md): a mapped card's edge and chips.
-  const tagColours = tagColoursOf(tab);
   parts.push(
     ...paintOrder(tab.elements).map((el) =>
       el.type === 'arrow'
@@ -569,7 +550,6 @@ export function renderElementsToSvg(
             sketchBackdrop: backdrops.has(el.id),
             surface,
             paper: bg,
-            tagColours,
           }),
     ),
   );

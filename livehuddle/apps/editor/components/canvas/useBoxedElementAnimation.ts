@@ -5,15 +5,11 @@ import {
   bodyAnimationSetOf,
   defaultFillColor,
   defaultStrokeColor,
-  hasOwnBodySet,
   isOfficeShape,
   isSeatingShape,
   keptAnimation,
-  SHAPE_MOTIONS,
   type BoxedElement,
   type ShapeAnimation,
-  STEP_SEQUENCE_BEAT_S,
-  stepOrdinal,
 } from '@livehuddle/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
@@ -48,13 +44,6 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
       ? undefined
       : (value as ShapeAnimation);
   }
-  // Concept graphics and sequences animate their rows by their own fields; their Shape section offers the motions
-  // alone, so an older Shape value has nothing to clear it from and does not play.
-  if (hasOwnBodySet(element)) {
-    return (SHAPE_MOTIONS as readonly string[]).includes(value)
-      ? (value as ShapeAnimation)
-      : undefined;
-  }
   const set = bodyAnimationSetOf(element);
   // Icons, charts, progress and rating own other fields; a Shape motion, or an old value, here plays.
   if (set === undefined || set === 'shape') return value as ShapeAnimation;
@@ -62,14 +51,6 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
     return value as ShapeAnimation;
   }
   return keptAnimation(set, value);
-}
-
-function stepSequenceDelay(element: BoxedElement): React.CSSProperties {
-  if (element.type !== 'shape' || element.shape !== 'step' || !element.stepSequence) return {};
-  const n = stepOrdinal(element);
-  if (n === null || n <= 1) return {};
-  const speed = ANIMATION_SPEED_FACTOR[element.animationSpeed ?? DEFAULT_ANIMATION_SPEED];
-  return { animationDelay: `${((n - 1) * STEP_SEQUENCE_BEAT_S * speed).toFixed(2)}s` };
 }
 
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
@@ -227,7 +208,6 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
         ...(isTextNativeAnim && animation === 'gradient' ? { '--lvd-anim-text': textColor } : {}),
         // Play in Order (docs/specs/009-elements/step-number.md "Animation"): step n starts n - 1 beats after
         // step 1, the beat scaled like the animation's own duration, so a pulse walks the numbers in turn.
-        ...stepSequenceDelay(element),
       } as React.CSSProperties)
     : {};
 

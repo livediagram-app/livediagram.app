@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement, isChipShape, type Rect } from '@livehuddle/document';
+import { isFixedSizeElement, type Rect } from '@livehuddle/document';
 import {
   drawnBounds,
   elementBounds,
@@ -68,9 +68,7 @@ export function elementGrips(
     !ctx.isPaintMode &&
     (!ctx.readOnly || ctx.resizable === true) &&
     !isFixedSizeElement(el);
-  // A badge or step number takes no connectors (docs/specs/009-elements/badge.md "Connectors").
-  const chip = el.type === 'shape' && isChipShape(el.shape);
-  return { handles, anchors: handles && !ctx.readOnly && !chip };
+  return { handles, anchors: handles && !ctx.readOnly };
 }
 
 export function deriveCanvasSelection(input: {

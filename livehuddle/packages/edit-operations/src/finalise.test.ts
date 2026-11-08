@@ -1,34 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livehuddle/document';
-import { run } from './fixtures/run';
+import type { Element } from '@livehuddle/document';
 import { applyEditOperations } from './apply';
-import { containersBehindMembers } from './finalise';
 import { validateEditOperations } from './parse-json';
-
-const box = (id: string, x: number, y: number, size: number, shape = 'square'): Element =>
-  ({ id, type: 'shape', shape, x, y, width: size, height: size }) as Element;
-
-describe('containersBehindMembers', () => {
-  it('moves each container directly before its earliest member, the inner ones first (I6)', () => {
-    const elements = [
-      box('a', 10, 10, 10),
-      box('inner', 0, 0, 50, 'boundary'),
-      box('b', 30, 30, 10),
-      box('outer', -10, -10, 200, 'boundary'),
-    ];
-    expect(containersBehindMembers(elements).map((el) => el.id)).toEqual([
-      'outer',
-      'inner',
-      'a',
-      'b',
-    ]);
-  });
-
-  it('leaves a container already behind its members as it is', () => {
-    const elements = [box('frame', 0, 0, 100, 'boundary'), box('a', 10, 10, 10)];
-    expect(containersBehindMembers(elements)).toEqual(elements);
-  });
-});
 
 describe('sticky border', () => {
   const note = {
@@ -65,23 +38,5 @@ describe('sticky border', () => {
     expect(after({ fillColor: '#bae6fd' }).el.strokeColor).toBe('transparent');
     // Named by its alias too.
     expect(after({ fill: '#bae6fd' }).el.strokeColor).toBe('transparent');
-  });
-});
-
-describe("a diagram key's rows", () => {
-  it('follow the lines an edit draws, as the editor settles them', () => {
-    const tab: Tab = {
-      id: 't',
-      name: 'T',
-      elements: [
-        box('a', 0, 0, 60),
-        box('b', 200, 0, 60),
-        { ...box('k', 0, 200, 100, 'diagram-key') },
-      ],
-    };
-    const out = run('connect a -> b\nset a->b border=dashed', tab);
-    if (!('tab' in out)) throw new Error(JSON.stringify(out));
-    const key = out.tab.elements.find((el) => el.id === 'k') as { keyRows?: { id: string }[] };
-    expect(key.keyRows?.map((r) => r.id)).toEqual(['line:dashed']);
   });
 });

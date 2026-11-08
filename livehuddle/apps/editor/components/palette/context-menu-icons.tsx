@@ -215,16 +215,6 @@ export function BorderColourIcon() {
   );
 }
 
-/** Heading: the box again, with just its top band filled. */
-export function HeadingColourIcon() {
-  return (
-    <Glyph size={MENU_ICON_PX} units={24}>
-      <path d={BOX} />
-      <path d="M5 4h14a3 3 0 0 1 3 3v2H2V7a3 3 0 0 1 3-3Z" fill="currentColor" />
-    </Glyph>
-  );
-}
-
 /** Pointer: an arrowhead, for the colour of the heads rather than the line. */
 export function PointerColourIcon() {
   return (

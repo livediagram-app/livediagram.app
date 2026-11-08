@@ -13,13 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livehuddle/edit-operations';
-import {
-  isFinish,
-  isRecord,
-  ELEMENT_FINGERPRINT_LENGTH,
-  type Finish,
-  type GraphInput,
-} from '@livehuddle/document';
+import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@livehuddle/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
@@ -45,8 +39,9 @@ export type Refusal = { status: number; body: Record<string, unknown> };
 
 export type ParseResult = { ok: true; value: ParsedChangeset } | { ok: false; refusal: Refusal };
 
-// No `mermaid`: imports from other tools are gone (docs/specs/002-project-scope/not-in-livehuddle.md).
-const REPLACE_SOURCES = ['graph', 'template', 'elements'] as const;
+// No `mermaid`: imports from other tools are gone, and no `graph`: the graph input went with the layout containers
+// (docs/specs/002-project-scope/not-in-livehuddle.md, "The element engine", part 3).
+const REPLACE_SOURCES = ['template', 'elements'] as const;
 const FINGERPRINT = new RegExp(`^[0-9a-f]{${ELEMENT_FINGERPRINT_LENGTH}}$`);
 
 const refuse = (status: number, body: Record<string, unknown>): ParseResult => ({
@@ -151,9 +146,10 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     refusal: { status: 400, body: { error: 'invalid_body', message } },
   });
   if (!isRecord(raw)) return bad('"replace" must be an object');
+  if (raw.graph !== undefined)
+    return bad('"replace.graph" is no longer supported in livehuddle: give template or elements');
   const sources = REPLACE_SOURCES.filter((s) => raw[s] !== undefined);
-  if (sources.length !== 1)
-    return bad('"replace" takes exactly one of graph, template or elements');
+  if (sources.length !== 1) return bad('"replace" takes exactly one of template or elements');
   if (raw.layout !== undefined && raw.layout !== 'auto' && raw.layout !== 'preserve') {
     return bad('"replace.layout" is "auto" or "preserve"');
   }
@@ -182,8 +178,6 @@ function replaceBodyOf(
   layout: 'auto' | 'preserve' | undefined,
 ): ReplaceBody | null {
   switch (source) {
-    case 'graph':
-      return isRecord(raw.graph) ? { graph: raw.graph as GraphInput } : null;
     case 'template':
       return typeof raw.template === 'string' ? { template: raw.template } : null;
     case 'elements':

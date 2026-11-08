@@ -18,13 +18,16 @@ describe('fieldValueIssue', () => {
     expect(fieldValueIssue('borderRadius', 4)).not.toBeNull();
   });
 
-  it('checks the diagram-building kinds’ closed fields', () => {
-    expect(ELEMENT_FIELD_VALUES.chipLook).toContain('solid');
-    expect(fieldValueIssue('cardMedia', 'tile')).toBeNull();
-    expect(fieldValueIssue('boundaryStyle', 'dashed')).toMatch(/tab, inset, c4/);
-    expect(fieldValueIssue('attachAt', 'middle')).not.toBeNull();
+  it('checks the accent edge, and no longer the retired layout kinds’ fields', () => {
     expect(fieldValueIssue('accentEdge', 'right')).toMatch(/left, top, bottom/);
-    expect(fieldValueIssue('stackDirection', 'grid')).toBeNull();
-    expect(fieldValueIssue('stackAlign', 'middle')).toMatch(/start, center, end/);
+    for (const field of [
+      'chipLook',
+      'cardMedia',
+      'boundaryStyle',
+      'attachAt',
+      'stackDirection',
+      'stackAlign',
+    ])
+      expect(ELEMENT_FIELD_VALUES[field], field).toBeUndefined();
   });
 });

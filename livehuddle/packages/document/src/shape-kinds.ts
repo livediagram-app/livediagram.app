@@ -13,17 +13,6 @@ export const SHAPE_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  // Lane (docs/specs/009-elements/lane.md).
-  'lane',
-  // The card and its Callout preset (docs/specs/009-elements/card.md).
-  'callout',
-  'card',
-  'badge',
-  'step',
-  'pointer-note',
-  'diagram-key',
-  'stack',
-  'boundary',
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
@@ -140,7 +129,6 @@ export const SHAPE_KINDS = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'timeline-rail',
   'focus-button',
   'icon',
   'sticker',

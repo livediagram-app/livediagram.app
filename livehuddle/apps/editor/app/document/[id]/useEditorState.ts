@@ -43,11 +43,9 @@ import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
 import { DEFAULT_SCHEME_ID } from '@livehuddle/document';
-import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { selectAllIds } from '@/lib/select-all-ids';
 
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
-import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
 import { useFollowMe } from '@/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
@@ -188,7 +186,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // A tick (a drag landing, a nudge, a resize, a slider) settles chips as a commit does.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
-    (mapTabs: (ts: Tab[]) => Tab[]) => rawTickTabs((ts) => settleChipsInTabs(ts, mapTabs(ts))),
+    (mapTabs: (ts: Tab[]) => Tab[]) => rawTickTabs(mapTabs),
     [rawTickTabs],
   );
   const commitTabs = (mapTabs: (ts: Tab[]) => Tab[]) => {
@@ -201,9 +199,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
       // it look edited to the autosave (docs/specs/006-document/per-tab-storage.md).
       const before = new Set<Tab>(ts);
-      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
-      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment").
-      return settleChipsInTabs(ts, mapped);
+      return mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
     });
   };
   const markCheckpoint = rawMarkCheckpoint;
@@ -975,8 +971,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
-  // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
-  const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
   // The tool the editor starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
   useStartingTool(canvasTool, setCanvasTool, embedMode);
   // A tab that offers the walk opens walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"). After the
@@ -1792,8 +1786,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addAnnotation,
     addLinkCard,
     addImage,
-    addHero,
-    addCallout,
     addAvatar,
     dropPaletteItem,
     addText,
@@ -1870,7 +1862,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sendSelectedToBack,
     setTextSizeSelected,
     setTextAlignSelected,
-    setLaneUprightTitleSelected,
     setFontSelected,
     toggleTextStyleSelected,
     setFillColorSelected,
@@ -1884,7 +1875,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
-    setHeaderFillSelected,
     burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
@@ -1901,12 +1891,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderRadiusSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    setPageHeading,
-    setWebRows,
-    appendWebRowTo,
-    setWebRowsSelected,
-    setHeroCaptionLine,
-    setHeroCaptionSelected,
     setChairFacingSelected,
     turnSelected,
     setRoomDoorSelected,
@@ -1991,10 +1975,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewFillColor,
     previewLabelFill,
     commitLabelFill,
-    previewHeaderFill,
     previewArrowheadColor,
     commitFillColor,
-    commitHeaderFill,
     commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
@@ -2068,7 +2050,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     beginEdit,
     commitLabel,
-    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,
@@ -2277,7 +2258,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     surface,
     tourSquare,
     addCustomColour,
-    setTagColour,
     appChrome,
     // The outlines relayed changesets draw (useChangesetFeed), for the canvas overlay.
     changesetReveals: changesetFeed.reveals,
@@ -2327,8 +2307,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addSticky,
     addAnnotation,
     addLinkCard,
-    addHero,
-    addCallout,
     addAvatar,
     dropPaletteItem,
     toggleDoor,
@@ -2408,7 +2386,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
-    commitHeaderSize,
     contextMenu,
     deleteComment,
     deleteDocument,
@@ -2503,10 +2480,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewFillColor,
     previewLabelFill,
     commitLabelFill,
-    previewHeaderFill,
     previewArrowheadColor,
     commitFillColor,
-    commitHeaderFill,
     commitArrowheadColor,
     previewStrokeColor,
     commitStrokeColor,
@@ -2561,7 +2536,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setArrowThicknessSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
-    setHeaderFillSelected,
     burstSelectedStyle,
     setArrowheadColorSelected,
     setLabelFillSelected,
@@ -2576,12 +2550,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBorderStyleSelected,
     setMarkerSelected,
     setMarkerSizeSelected,
-    setPageHeading,
-    setWebRows,
-    appendWebRowTo,
-    setWebRowsSelected,
-    setHeroCaptionLine,
-    setHeroCaptionSelected,
     setChairFacingSelected,
     turnSelected,
     setRoomDoorSelected,
@@ -2628,7 +2596,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setStrokeColorSelected,
     setFontSelected,
     setTextAlignSelected,
-    setLaneUprightTitleSelected,
     setTextColorSelected,
     setTextSizeSelected,
     setTheme,

@@ -54,8 +54,6 @@ export type LayerPreviewInputs = {
   gridFor: (elements: readonly Element[]) => ElementGrid;
   arrowLabels: ArrowLabels;
   tabFinish: unknown;
-  // A stack's children, which glide when it reflows and so never ride an offset.
-  stackedIds: ReadonlySet<string>;
 };
 
 export type LayerPreviewStore = {
@@ -115,8 +113,7 @@ function sameInputs(a: LayerPreviewInputs | null, b: LayerPreviewInputs): boolea
     a.elementIndex === b.elementIndex &&
     a.arrowLinks === b.arrowLinks &&
     a.arrowLabels === b.arrowLabels &&
-    a.tabFinish === b.tabFinish &&
-    a.stackedIds === b.stackedIds
+    a.tabFinish === b.tabFinish
   );
 }
 
@@ -207,7 +204,6 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       overlay,
       elementIndex ?? elementIndexFor(drawnElements),
       arrowLinks,
-      inputs.stackedIds,
     );
     for (const [id, element] of overlay.changed) if (!rides.has(id)) out.set(id, { element });
     for (const { el } of overlay.added) out.set(el.id, { element: el });

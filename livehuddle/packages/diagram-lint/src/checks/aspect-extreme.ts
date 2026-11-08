@@ -9,12 +9,12 @@ import type { Check } from './types';
 
 export const aspectExtreme: Check = (ctx) => {
   const extent = lintExtent(ctx);
-  // A tab whose boxes sit in frames or lanes takes its shape from its groups, and no tab layout keeps them (LN16); a
-  // graph's fix lays it out again with its groups, so a graph is held to its shape whatever it groups.
-  const framed = ctx.source === 'tab' && framedTab(ctx);
+  // A tab with a stored lane, stack, boundary or frame takes its shape from those backdrops, and no tab layout keeps
+  // them (LN16).
+  const framed = framedTab(ctx);
   // A tab with no lines between its boxes (a board of columns and stickies, a canvas of panels) is no graph: its
   // shape is its design, and laying it out as one would scatter it.
-  const unjoined = ctx.source === 'tab' && ctx.connecting.length === 0;
+  const unjoined = ctx.connecting.length === 0;
   if (!extent || ctx.boxes.length < LINT_ASPECT_MIN_BOXES || framed || unjoined) return [];
   const { width, height } = extent;
   if (width < 1 || height < 1) return [];
@@ -26,7 +26,7 @@ export const aspectExtreme: Check = (ctx) => {
       code: 'aspect-extreme' as const,
       refs: [],
       message: `drawing: ${width}×${height}, ${ratio.toFixed(1)} times ${wide ? 'wider than tall' : 'taller than wide'}`,
-      fix: fixes.aspectExtreme(ctx.source, wide ? 'down' : 'right'),
+      fix: fixes.aspectExtreme(wide ? 'down' : 'right'),
       at: null,
     },
   ];

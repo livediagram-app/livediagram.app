@@ -42,7 +42,7 @@ const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   // Component kinds share one branch and one label table that is already a
   // Record<ComponentKind, string>, so the compiler covers that axis; one
   // sample is enough here.
-  component: [{ type: 'component', kind: 'hero' }],
+  component: [{ type: 'component', kind: 'avatar' }],
   // Plain pen plus every variant.
   freehand: [{ type: 'freehand' }, ...Object.values(FREEHAND_VARIANTS)],
 };
@@ -162,12 +162,6 @@ describe('drawBannerMessage', () => {
   it('uses the friendly component name, not the raw kind', () => {
     // Components have their own label table rather than the shape
     // capitalise-fallback, so each reads as its palette tile does.
-    expect(drawBannerMessage({ type: 'component', kind: 'hero' }, false)).toBe(
-      'Click to drop or drag to draw Hero',
-    );
-    expect(drawBannerMessage({ type: 'component', kind: 'callout' }, false)).toBe(
-      'Click to drop or drag to draw Callout',
-    );
     expect(drawBannerMessage({ type: 'component', kind: 'avatar' }, false)).toBe(
       'Click to drop or drag to draw Avatar',
     );
@@ -215,7 +209,7 @@ describe('drawIntentCursor', () => {
   it('gives every component kind the stacked-blocks glyph cursor', () => {
     // One cursor for the whole category (matching the Components palette
     // tile), so the kind doesn't change it.
-    for (const kind of ['callout', 'hero', 'avatar'] as const) {
+    for (const kind of ['avatar'] as const) {
       expect(isInlineSvgCursor(drawIntentCursor({ type: 'component', kind }))).toBe(true);
     }
   });
@@ -304,7 +298,7 @@ describe('dropsOnTap', () => {
       { type: 'image' },
       { type: 'link-card' },
       { type: 'arrow' },
-      { type: 'component', kind: 'hero' },
+      { type: 'component', kind: 'avatar' },
     ];
     for (const intent of taps) expect(dropsOnTap(intent)).toBe(true);
   });

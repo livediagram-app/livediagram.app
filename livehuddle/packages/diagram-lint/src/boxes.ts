@@ -6,7 +6,7 @@ import {
   type BoxedElement,
   type Element,
   isBoxed,
-  isContainer,
+  isRetiredBackdrop,
   type Point,
   type Rect,
   rotatePoint,
@@ -18,9 +18,12 @@ const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'annotation', 'freehand'
 const finite = (el: BoxedElement) =>
   [el.x, el.y, el.width, el.height].every((v) => Number.isFinite(v));
 
-// A boxed element that is not a container, text, annotation, stroke or path, with a usable rect (LN2).
+// A boxed element that is not text, an annotation, a stroke, a path or a stored backdrop, with a usable rect (LN2). A
+// stored lane, stack, boundary or frame paints at the back with boxes drawn over it by design
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): no box overlaps it, no arrow runs
+// behind it.
 export function isLintBox(el: Element): el is BoxedElement {
-  return isBoxed(el) && !isContainer(el) && !NOT_BOXES.has(el.type) && finite(el);
+  return isBoxed(el) && !isRetiredBackdrop(el) && !NOT_BOXES.has(el.type) && finite(el);
 }
 
 export const centreOf = (el: Rect): Point => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });

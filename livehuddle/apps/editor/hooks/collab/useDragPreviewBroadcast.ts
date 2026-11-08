@@ -33,8 +33,6 @@ export const DRAG_PREVIEW_SEND_MS = 33;
 // changed, so a collaborator who joins mid-gesture, or missed the first message, sees the move within it.
 export const DRAG_PREVIEW_RIDE_IDS_MS = 1000;
 
-const NONE: ReadonlySet<string> = new Set();
-
 // The ride for a very large move: the offset most changed elements ride from where the gesture found them, the
 // ids riding it, and a patch for each other changed element; null when nothing rides, or what does not is too
 // many to send. Linear in what the gesture changed.
@@ -42,7 +40,7 @@ export function rideOf(
   overlay: DragOverlay,
   base: readonly Element[],
 ): { offset: RideOffset; ids: string[]; patches: DragPreviewPatch[] } | null {
-  const rides = ridingElements(overlay, elementIndexFor(base), null, NONE);
+  const rides = ridingElements(overlay, elementIndexFor(base), null);
   const tally = new Map<string, { offset: RideOffset; n: number }>();
   let best: { offset: RideOffset; n: number } | null = null;
   for (const o of rides.values()) {

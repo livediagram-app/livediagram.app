@@ -64,25 +64,10 @@ describe('selector rows', () => {
     expect(ids('type:stadium')).toEqual(['n1', 'n8']);
     expect(ids('type:text')).toEqual(['t1']);
     expect(ids('type:shape shape:diamond')).toEqual(['n6']);
-    expect(ids('Type:boundary')).toEqual(['f2']);
-  });
-
-  it('in: the members of a frame or lane, never arrows', () => {
-    expect(ids('in:f2')).toEqual(['n4', 'n5']);
-    expect(ids('in:"Payment"')).toEqual(['n4', 'n5']);
-  });
-
-  it('in: through nested containers', () => {
-    const lane = {
-      id: 'l1',
-      type: 'shape',
-      shape: 'lane',
-      x: -100,
-      y: 250,
-      width: 400,
-      height: 300,
-    } as Element;
-    expect(ids('in:l1', stateOf(withElements(lane)))).toEqual(['f2', 'n4', 'n5', 'n6']);
+    // A stored boundary is a retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+    // part 3): its kind word is no kind, and shape: still finds it by what it stored.
+    expect(ids('Type:boundary')).toEqual([]);
+    expect(ids('shape:boundary')).toEqual(['f2']);
   });
 
   it('arrows by their ends', () => {
@@ -100,7 +85,7 @@ describe('selector rows', () => {
   it('downstream and upstream along arrows, the start left out', () => {
     expect(ids('downstream:n6')).toEqual(['n7', 'n8']);
     expect(ids('upstream:n3')).toEqual(['n1', 'n2']);
-    expect(ids('downstream:n4 in:f2')).toEqual(['n5']);
+    expect(ids('downstream:n4 type:diamond')).toEqual(['n6']);
   });
 
   it("selected: the owner's selection", () => {
@@ -128,13 +113,15 @@ describe('selector rows', () => {
 describe('selector refusals', () => {
   it('reads what does not parse as a parse error naming the selector', () => {
     expect(
-      ['colour:red', 'type:', 'in:f2,n4', '->n4', 'all', '"open', ''].map(
+      ['colour:red', 'in:f2', 'type:', 'from:f2,n4', '->n4', 'all', '"open', ''].map(
         (s) => refusal(s).details[0],
       ),
     ).toEqual([
-      'selector "colour:red": "colour:" is not a selector key; keys: type shape in from to downstream upstream',
+      'selector "colour:red": "colour:" is not a selector key; keys: type shape from to downstream upstream',
+      // Nothing holds since the layout containers went (not-in-livehuddle.md "The element engine", part 3).
+      'selector "in:f2": "in:" is not a selector key; keys: type shape from to downstream upstream',
       'selector "type:": type: needs a value',
-      'selector "in:f2,n4": one value a term; join terms with spaces',
+      'selector "from:f2,n4": one value a term; join terms with spaces',
       'selector "->n4": a->b with an element on each side',
       'selector "all": "all" is a keyword; reach an element named so by its label or a longer prefix',
       'selector ""open": column 1: expected a closing "',
@@ -142,21 +129,9 @@ describe('selector refusals', () => {
     ]);
   });
 
-  it('refuses in: on what is not a container, naming the containers', () => {
-    expect(refusal('in:n3')).toMatchObject({
-      code: 'invalid_value',
-      details: ['in:n3: n3 is not a boundary or lane', 'containers: f2'],
-    });
-    const tab = {
-      ...checkoutFlow(),
-      elements: checkoutFlow().elements.filter((el) => el.id !== 'f2'),
-    };
-    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a boundary or lane']);
-  });
-
   it('needs a word inside a term to name one element', () => {
-    expect(refusal('in:type:boundary').details[0]).toBe(
-      '"type:boundary" must name one element: a ref or a "label"',
+    expect(refusal('from:type:square').details[0]).toBe(
+      '"type:square" must name one element: a ref or a "label"',
     );
     expect(refusal('from:nope').code).toBe('target_not_found');
     expect(refusal('to:label~c').code).toBe('target_not_found');
@@ -202,7 +177,7 @@ describe('cardinality', () => {
       'error target_ambiguous · op 2 · set "Pay" fill=green',
       '  "Pay" matches 2 elements:',
       '    n9  sticky "Pay"',
-      '    n10  square "Pay" in f2',
+      '    n10  square "Pay"',
       '  hint: use a ref, narrow with type:sticky',
       'nothing was applied',
     ]);
@@ -211,7 +186,7 @@ describe('cardinality', () => {
       '"Pai" matches nothing',
       'nearest:',
       '  n9  sticky "Pay"',
-      '  n10  square "Pay" in f2',
+      '  n10  square "Pay"',
       '  n2  square "Cart"',
       '  a6  arrow n6→n7 "yes"',
     ]);
@@ -258,20 +233,17 @@ describe('the working state', () => {
     putElement(state, sticky('verify', 'New'), 1);
     ids('n6->n7', state);
     ids('verify', state);
-    ids('in:f2', state);
-    expect(state.targets).toEqual(['n6', 'n7', 'a6', 'f2', 'n4', 'n5']);
+    ids('type:diamond', state);
+    expect(state.targets).toEqual(['n6', 'n7', 'a6']);
   });
 });
 
 describe('parseSelector and reachableFrom', () => {
   it('reads terms', () => {
-    expect(
-      parseSelector('"Orders service" label~pay type:square in:f2 n3->n4 selected n7'),
-    ).toEqual([
+    expect(parseSelector('"Orders service" label~pay type:square n3->n4 selected n7')).toEqual([
       { kind: 'label', text: 'Orders service' },
       { kind: 'label~', text: 'pay' },
       { kind: 'type', value: 'square' },
-      { kind: 'in', word: 'f2' },
       { kind: 'arrow', from: 'n3', to: 'n4' },
       { kind: 'selected' },
       { kind: 'ref', text: 'n7' },

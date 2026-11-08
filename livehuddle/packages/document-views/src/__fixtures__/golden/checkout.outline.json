@@ -9,12 +9,10 @@
     },
     "elements": 30,
     "counts": {
-      "boxes": 16,
-      "boundaries": 3,
-      "lanes": 0,
+      "boxes": 19,
       "arrows": 11
     },
-    "unknown": 1,
+    "unknown": 4,
     "threads": {
       "open": 1,
       "total": 2
@@ -37,366 +35,363 @@
     {
       "ref": "048c",
       "id": "048c0000-0000-4000-8000-000000000002",
-      "kind": "boundary",
-      "unknown": false,
+      "kind": "? boundary",
+      "unknown": true,
       "label": "Edge",
       "summary": null,
       "attributes": [],
       "edges": [],
-      "children": [
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "a3cf",
+      "id": "a3cf0000-0000-4000-8000-000000000006",
+      "kind": "square",
+      "unknown": false,
+      "label": "Web app",
+      "summary": null,
+      "attributes": [
         {
-          "ref": "b811",
-          "id": "b8110000-0000-4000-8000-000000000005",
-          "kind": "actor",
-          "unknown": false,
-          "label": "Customer",
-          "summary": null,
-          "attributes": [],
-          "edges": [
-            {
-              "ref": "c74b",
-              "id": "c74b0000-0000-4000-8000-000000000014",
-              "from": {
-                "ref": "b811"
-              },
-              "to": {
-                "ref": "a3cf"
-              },
-              "label": null,
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "a3cf",
-          "id": "a3cf0000-0000-4000-8000-000000000006",
-          "kind": "square",
-          "unknown": false,
-          "label": "Web app",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "nextjs"
-            }
-          ],
-          "edges": [
-            {
-              "ref": "6e71",
-              "id": "6e710000-0000-4000-8000-000000000015",
-              "from": {
-                "ref": "a3cf"
-              },
-              "to": {
-                "ref": "649c"
-              },
-              "label": null,
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "649c",
-          "id": "649c0000-0000-4000-8000-000000000007",
-          "kind": "hexagon",
-          "unknown": false,
-          "label": "API gateway",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Kong. Terminates TLS, rate-limits per API key, forwards to the services."
-            }
-          ],
-          "edges": [
-            {
-              "ref": "9c5e",
-              "id": "9c5e0000-0000-4000-8000-000000000016",
-              "from": {
-                "ref": "649c"
-              },
-              "to": {
-                "ref": "202b"
-              },
-              "label": "JWT",
-              "style": []
-            },
-            {
-              "ref": "111e",
-              "id": "111e0000-0000-4000-8000-000000000017",
-              "from": {
-                "ref": "649c"
-              },
-              "to": {
-                "ref": "146b"
-              },
-              "label": null,
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
+          "key": "icon",
+          "value": "nextjs"
         }
       ],
+      "edges": [
+        {
+          "ref": "6e71",
+          "id": "6e710000-0000-4000-8000-000000000015",
+          "from": {
+            "ref": "a3cf"
+          },
+          "to": {
+            "ref": "649c"
+          },
+          "label": null,
+          "style": []
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "649c",
+      "id": "649c0000-0000-4000-8000-000000000007",
+      "kind": "hexagon",
+      "unknown": false,
+      "label": "API gateway",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "note",
+          "value": "Kong. Terminates TLS, rate-limits per API key, forwards to the services."
+        }
+      ],
+      "edges": [
+        {
+          "ref": "9c5e",
+          "id": "9c5e0000-0000-4000-8000-000000000016",
+          "from": {
+            "ref": "649c"
+          },
+          "to": {
+            "ref": "202b"
+          },
+          "label": "JWT",
+          "style": []
+        },
+        {
+          "ref": "111e",
+          "id": "111e0000-0000-4000-8000-000000000017",
+          "from": {
+            "ref": "649c"
+          },
+          "to": {
+            "ref": "146b"
+          },
+          "label": null,
+          "style": []
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "b811",
+      "id": "b8110000-0000-4000-8000-000000000005",
+      "kind": "actor",
+      "unknown": false,
+      "label": "Customer",
+      "summary": null,
+      "attributes": [],
+      "edges": [
+        {
+          "ref": "c74b",
+          "id": "c74b0000-0000-4000-8000-000000000014",
+          "from": {
+            "ref": "b811"
+          },
+          "to": {
+            "ref": "a3cf"
+          },
+          "label": null,
+          "style": []
+        }
+      ],
+      "children": [],
       "collapsed": 0
     },
     {
       "ref": "c991",
       "id": "c9910000-0000-4000-8000-000000000003",
-      "kind": "boundary",
-      "unknown": false,
+      "kind": "? boundary",
+      "unknown": true,
       "label": "Services",
       "summary": null,
       "attributes": [],
       "edges": [],
-      "children": [
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "202b",
+      "id": "202b0000-0000-4000-8000-000000000008",
+      "kind": "square",
+      "unknown": false,
+      "label": "Auth service",
+      "summary": null,
+      "attributes": [
         {
-          "ref": "202b",
-          "id": "202b0000-0000-4000-8000-000000000008",
-          "kind": "square",
-          "unknown": false,
-          "label": "Auth service",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "shield"
-            }
-          ],
-          "edges": [],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "146b",
-          "id": "146b0000-0000-4000-8000-000000000009",
-          "kind": "square",
-          "unknown": false,
-          "label": "Orders service",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "server"
-            },
-            {
-              "key": "note",
-              "value": "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
-            }
-          ],
-          "edges": [
-            {
-              "ref": "c41d",
-              "id": "c41d0000-0000-4000-8000-000000000018",
-              "from": {
-                "ref": "146b"
-              },
-              "to": {
-                "ref": "e4a8"
-              },
-              "label": "charge",
-              "style": []
-            },
-            {
-              "ref": "892e",
-              "id": "892e0000-0000-4000-8000-00000000001a",
-              "from": {
-                "ref": "146b"
-              },
-              "to": {
-                "ref": "d41e"
-              },
-              "label": null,
-              "style": []
-            },
-            {
-              "ref": "3462",
-              "id": "34620000-0000-4000-8000-00000000001b",
-              "from": {
-                "ref": "146b"
-              },
-              "to": {
-                "ref": "6406"
-              },
-              "label": "OrderPlaced",
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "6406",
-          "id": "64060000-0000-4000-8000-00000000000b",
-          "kind": "stadium",
-          "unknown": false,
-          "label": "Event bus",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Kafka, 3 brokers, 7-day retention."
-            }
-          ],
-          "edges": [
-            {
-              "ref": "1434",
-              "id": "14340000-0000-4000-8000-00000000001c",
-              "from": {
-                "ref": "6406"
-              },
-              "to": {
-                "ref": "12de"
-              },
-              "label": null,
-              "style": []
-            },
-            {
-              "ref": "0cee",
-              "id": "0cee0000-0000-4000-8000-00000000001d",
-              "from": {
-                "ref": "6406"
-              },
-              "to": {
-                "ref": "0556"
-              },
-              "label": null,
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "e4a8",
-          "id": "e4a80000-0000-4000-8000-00000000000a",
-          "kind": "square",
-          "unknown": false,
-          "label": "Payments service",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "credit-card"
-            },
-            {
-              "key": "comments",
-              "value": "1 resolved"
-            }
-          ],
-          "edges": [
-            {
-              "ref": "8e70",
-              "id": "8e700000-0000-4000-8000-000000000019",
-              "from": {
-                "ref": "e4a8"
-              },
-              "to": {
-                "ref": "e6d7"
-              },
-              "label": "HTTPS",
-              "style": [
-                "dashed"
-              ]
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "12de",
-          "id": "12de0000-0000-4000-8000-00000000000c",
-          "kind": "square",
-          "unknown": false,
-          "label": "Inventory service",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "package"
-            }
-          ],
-          "edges": [
-            {
-              "ref": "1fc0",
-              "id": "1fc00000-0000-4000-8000-00000000001e",
-              "from": {
-                "ref": "12de"
-              },
-              "to": {
-                "ref": "822f"
-              },
-              "label": null,
-              "style": []
-            }
-          ],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "0556",
-          "id": "05560000-0000-4000-8000-00000000000d",
-          "kind": "square",
-          "unknown": false,
-          "label": "Notification worker",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "icon",
-              "value": "mail"
-            }
-          ],
-          "edges": [],
-          "children": [],
-          "collapsed": 0
+          "key": "icon",
+          "value": "shield"
         }
       ],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "6406",
+      "id": "64060000-0000-4000-8000-00000000000b",
+      "kind": "stadium",
+      "unknown": false,
+      "label": "Event bus",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "note",
+          "value": "Kafka, 3 brokers, 7-day retention."
+        }
+      ],
+      "edges": [
+        {
+          "ref": "1434",
+          "id": "14340000-0000-4000-8000-00000000001c",
+          "from": {
+            "ref": "6406"
+          },
+          "to": {
+            "ref": "12de"
+          },
+          "label": null,
+          "style": []
+        },
+        {
+          "ref": "0cee",
+          "id": "0cee0000-0000-4000-8000-00000000001d",
+          "from": {
+            "ref": "6406"
+          },
+          "to": {
+            "ref": "0556"
+          },
+          "label": null,
+          "style": []
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "12de",
+      "id": "12de0000-0000-4000-8000-00000000000c",
+      "kind": "square",
+      "unknown": false,
+      "label": "Inventory service",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "icon",
+          "value": "package"
+        }
+      ],
+      "edges": [
+        {
+          "ref": "1fc0",
+          "id": "1fc00000-0000-4000-8000-00000000001e",
+          "from": {
+            "ref": "12de"
+          },
+          "to": {
+            "ref": "822f"
+          },
+          "label": null,
+          "style": []
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "146b",
+      "id": "146b0000-0000-4000-8000-000000000009",
+      "kind": "square",
+      "unknown": false,
+      "label": "Orders service",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "icon",
+          "value": "server"
+        },
+        {
+          "key": "note",
+          "value": "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
+        }
+      ],
+      "edges": [
+        {
+          "ref": "c41d",
+          "id": "c41d0000-0000-4000-8000-000000000018",
+          "from": {
+            "ref": "146b"
+          },
+          "to": {
+            "ref": "e4a8"
+          },
+          "label": "charge",
+          "style": []
+        },
+        {
+          "ref": "892e",
+          "id": "892e0000-0000-4000-8000-00000000001a",
+          "from": {
+            "ref": "146b"
+          },
+          "to": {
+            "ref": "d41e"
+          },
+          "label": null,
+          "style": []
+        },
+        {
+          "ref": "3462",
+          "id": "34620000-0000-4000-8000-00000000001b",
+          "from": {
+            "ref": "146b"
+          },
+          "to": {
+            "ref": "6406"
+          },
+          "label": "OrderPlaced",
+          "style": []
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "e4a8",
+      "id": "e4a80000-0000-4000-8000-00000000000a",
+      "kind": "square",
+      "unknown": false,
+      "label": "Payments service",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "icon",
+          "value": "credit-card"
+        },
+        {
+          "key": "comments",
+          "value": "1 resolved"
+        }
+      ],
+      "edges": [
+        {
+          "ref": "8e70",
+          "id": "8e700000-0000-4000-8000-000000000019",
+          "from": {
+            "ref": "e4a8"
+          },
+          "to": {
+            "ref": "e6d7"
+          },
+          "label": "HTTPS",
+          "style": [
+            "dashed"
+          ]
+        }
+      ],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "0556",
+      "id": "05560000-0000-4000-8000-00000000000d",
+      "kind": "square",
+      "unknown": false,
+      "label": "Notification worker",
+      "summary": null,
+      "attributes": [
+        {
+          "key": "icon",
+          "value": "mail"
+        }
+      ],
+      "edges": [],
+      "children": [],
       "collapsed": 0
     },
     {
       "ref": "ca76",
       "id": "ca760000-0000-4000-8000-000000000004",
-      "kind": "boundary",
-      "unknown": false,
+      "kind": "? boundary",
+      "unknown": true,
       "label": "Data",
       "summary": null,
       "attributes": [],
       "edges": [],
-      "children": [
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "d41e",
+      "id": "d41e0000-0000-4000-8000-00000000000e",
+      "kind": "cylinder",
+      "unknown": false,
+      "label": "Orders DB",
+      "summary": null,
+      "attributes": [
         {
-          "ref": "d41e",
-          "id": "d41e0000-0000-4000-8000-00000000000e",
-          "kind": "cylinder",
-          "unknown": false,
-          "label": "Orders DB",
-          "summary": null,
-          "attributes": [
-            {
-              "key": "note",
-              "value": "Postgres 16, primary + 1 replica."
-            }
-          ],
-          "edges": [],
-          "children": [],
-          "collapsed": 0
-        },
-        {
-          "ref": "822f",
-          "id": "822f0000-0000-4000-8000-00000000000f",
-          "kind": "cylinder",
-          "unknown": false,
-          "label": "Inventory DB",
-          "summary": null,
-          "attributes": [],
-          "edges": [],
-          "children": [],
-          "collapsed": 0
+          "key": "note",
+          "value": "Postgres 16, primary + 1 replica."
         }
       ],
+      "edges": [],
+      "children": [],
+      "collapsed": 0
+    },
+    {
+      "ref": "822f",
+      "id": "822f0000-0000-4000-8000-00000000000f",
+      "kind": "cylinder",
+      "unknown": false,
+      "label": "Inventory DB",
+      "summary": null,
+      "attributes": [],
+      "edges": [],
+      "children": [],
       "collapsed": 0
     },
     {

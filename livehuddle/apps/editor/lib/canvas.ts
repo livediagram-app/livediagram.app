@@ -1,7 +1,7 @@
 import {
   isBoxed,
-  isContainer,
   isFixedSizeShape,
+  isRetiredBackdrop,
   type Anchor,
   type ArrowElement,
   type BendPlan,
@@ -9,9 +9,6 @@ import {
   type BoxedElement,
   type Element,
   type IconPosition,
-  isContainerKind,
-  isChipShape,
-  isConceptShape,
   isSelfDrawingShape,
 } from '@livehuddle/document';
 
@@ -63,31 +60,22 @@ export function inheritedSizeFor(
   if (base.type === 'shape' && (base.shape === 'portal' || isFixedSizeShape(base.shape))) {
     return { width: base.width, height: base.height };
   }
-  // And the kinds drawn to their own proportions or placed around other things: a step number (a disc), a container
-  // (a boundary, a stack: a box to put things in), a concept graphic, a sequence diagram, a Diagram key and a tab
-  // window. A step tapped while a 300 x 150 card is selected came out a 300 x 150 "disc".
-  if (
-    base.type === 'shape' &&
-    (isChipShape(base.shape) ||
-      isContainerKind(base.shape) ||
-      isConceptShape(base.shape) ||
-      base.shape === 'diagram-key' ||
-      // A chart, a meter, a rating, a timeline rail, a legend, a sticker: each draws its own content to its own
-      // proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
-      isSelfDrawingShape(base.shape))
-  ) {
+  // And the kinds drawn to their own proportions: a chart, a meter, a rating, a legend, a sticker each draws its own
+  // content to its own proportions. A progress bar tapped while a legend was selected came out a 200 x 170 blob.
+  if (base.type === 'shape' && isSelfDrawingShape(base.shape)) {
     return { width: base.width, height: base.height };
   }
-  // A CONTAINER never donates its size. A frame, a lane or a boundary (docs/specs/009-elements/lane.md) is a big
-  // backdrop you put things in, so a square added while one is selected came
-  // out 900x200 — the size of the lane, which is never what anyone meant. The
+  // A BACKDROP never donates its size. A stored frame, lane, stack or boundary is a big retired backdrop
+  // (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine"), so a square added while one is
+  // selected came out 900x200, the size of the lane, which is never what anyone meant. The
   // rule reads the other way round from the guards above: those are about what
   // the NEW element is, this is about what the selected one is.
   // The same holds for a self-drawing donor: a square added while a rating or a progress bar was selected came out as
   // thin as the bar.
   const donor = selected && isBoxed(selected) ? selected : null;
   const keepsOwnSize =
-    donor?.type === 'shape' && (isContainerKind(donor.shape) || isSelfDrawingShape(donor.shape));
+    !!donor &&
+    (isRetiredBackdrop(donor) || (donor.type === 'shape' && isSelfDrawingShape(donor.shape)));
   const inherit = keepsOwnSize ? null : donor;
   let width = inherit?.width ?? base.width;
   let height = inherit?.height ?? base.height;
@@ -104,13 +92,17 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Stable reorder that puts containers (lanes, boundaries, stacks) FIRST (lowest paint / z-order): a container
-// is a backdrop that must sit behind its contents so they stay visible + clickable. Both the on-canvas render
-// layer and the exporters route element lists through this, so container ordering is one rule in one place and
-// never depends on array position. Returns the input array unchanged when there are no containers (cheap no-op).
+// Stable reorder that puts stored backdrops (a retired frame, lane, stack or boundary,
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine") FIRST (lowest paint / z-order): what sat
+// on one must stay visible and clickable over its placeholder. Both the on-canvas render layer and the exporters
+// route element lists through this, so the order is one rule in one place and never depends on array position.
+// Returns the input array unchanged when there are no backdrops (cheap no-op).
 export function framesFirst<T extends Element>(elements: T[]): T[] {
-  if (!elements.some(isContainer)) return elements;
-  return [...elements.filter(isContainer), ...elements.filter((el) => !isContainer(el))];
+  if (!elements.some(isRetiredBackdrop)) return elements;
+  return [
+    ...elements.filter(isRetiredBackdrop),
+    ...elements.filter((el) => !isRetiredBackdrop(el)),
+  ];
 }
 
 // One of the gestures a `BoxedElementView` can be in mid-drag. `move`

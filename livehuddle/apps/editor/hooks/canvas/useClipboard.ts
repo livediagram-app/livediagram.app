@@ -31,7 +31,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
-import { duplicateElements, withAttached, type Element, type Tab } from '@livehuddle/document';
+import { duplicateElements, type Element, type Tab } from '@livehuddle/document';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
@@ -142,8 +142,7 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
-    // A host's badges and step numbers copy with it (docs/specs/009-elements/badge.md).
-    const copied = withAttached(activeTab.elements, idSet);
+    const copied = idSet;
     const snapshot = activeTab.elements
       .filter((el) => copied.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed

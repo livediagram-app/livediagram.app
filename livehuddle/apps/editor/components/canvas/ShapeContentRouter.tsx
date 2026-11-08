@@ -11,7 +11,6 @@ import {
   defaultStrokeColor,
   ICON_REMOTE_HIGHLIGHT_PX,
   iconWeightPx,
-  isRailShape,
   type ShapeKind,
 } from '@livehuddle/document';
 import type { ReactNode } from 'react';
@@ -44,7 +43,7 @@ type ShapeContentRouterProps = Pick<
  * self-faced kind takes them on the element (docs/specs/028-animation/element-animations.md).
  */
 export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
-  return isSvgRenderedShape(kind) && kind !== 'sticker' && kind !== 'icon' && !isRailShape(kind);
+  return isSvgRenderedShape(kind) && kind !== 'sticker' && kind !== 'icon';
 }
 
 // The per-shape-type inner content of a boxed element: stickers, tech / curated icons and the SVG-rendered geometric

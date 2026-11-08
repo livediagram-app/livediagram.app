@@ -24,44 +24,46 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 - A label is never a ref. Labels are matched by [selectors](edit-operations.md#selectors).
 - Elements an agent adds take a slug of their label as their id unless it gives one (`Redis cache` becomes
   `redis-cache`, `-2` on a clash), so agent-built tabs read cheaply.
-- Refs, slug ids, kind words, containment and the content origin live in `@livehuddle/document`, so views, edit
-  operations and the lint name elements alike.
+- Refs, slug ids, kind words and the content origin live in `@livehuddle/document`, so views, edit operations and
+  the lint name elements alike.
 
 ## The outline (default)
 
-One line per element: its kind, ref, label, attributes, then its outgoing arrows. Indentation is containment.
+One line per element: its kind, ref, label, attributes, then its outgoing arrows. The outline is flat: nothing
+nests, because the layout containers that once held elements (lane, stack, boundary) are retired kinds that hold
+nothing ([not in livehuddle](../002-project-scope/not-in-livehuddle.md) "The element engine", part 3).
 
 ```text
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · threads 1 open/2 · rev 41
-boundary 048c "Edge"
-  actor b811 "Customer" → a3cf
-  hexagon 649c "API gateway" note="Kong. Terminates TLS, rate-limits per API key,"… → 202b "JWT", 146b
-boundary c991 "Services"
-  square 146b "Orders service" icon=server → e4a8 "charge", d41e, 6406 "OrderPlaced"
-  square e4a8 "Payments service" comments=1 resolved → e6d7 "HTTPS" ~dashed
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 4 unknown · threads 1 open/2 · rev 41
+? boundary 048c "Edge"
+hexagon 649c "API gateway" note="Kong. Terminates TLS, rate-limits per API key,"… → 202b "JWT", 146b
+actor b811 "Customer" → a3cf
+? boundary c991 "Services"
+square 146b "Orders service" icon=server → e4a8 "charge", d41e, 6406 "OrderPlaced"
+square e4a8 "Payments service" comments=1 resolved → e6d7 "HTTPS" ~dashed
 cylinder d41e "Orders DB"
 square cb02 "Order"
-table 480a 4x3 Service | p99 latency | Availability
+? table 480a
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, boundaries, lanes, arrows), its finish when set (`finish=sketch`), elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `boundary`, `lane`), else the element type
-  (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
+- **Header** names the tab, its counts (boxes and arrows; a stored lane or boundary is a box), its finish when set
+  (`finish=sketch`), elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`), else the element type (`text`, `sticky`, `arrow`,
+  `image`, `freehand`). A retired kind prints as `? <kind>` (`? boundary`, `? lane`, `? table`), its stored label
+  kept and searchable by `find`.
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
-- **Containment** is derived: an element nests under the smallest boundary or lane holding its centre, as
-  `mermaidFromTab` decides it. Edit operations report boundary and lane
-  membership by the same rule; the editor's boundary drag keeps its own.
+- **No containment**: nothing holds an element. A stored lane, stack or boundary prints as one line like any other
+  element, and what sat on it prints beside it, unindented ([not in livehuddle](../002-project-scope/not-in-livehuddle.md) "The element engine", part 3).
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.
-- **Order** within a level is reading order: rows top to bottom, then left to right.
-- **Content kinds** say what they hold briefly: a table its size and header row, a
-  code block its language and line count, a chart its slice or series count, a checklist `done=2/5`.
-- **Structured kinds** carry one state attribute: a progress bar `progress=40`, and likewise for stat rows,
-  process steps, legends, ratings, timelines and pages. A retired element carries none.
+- **Order** is reading order: rows top to bottom, then left to right.
+- **No content summaries or state attributes**: the kinds that had them (tables, code blocks, charts, checklists,
+  Timelines, stacks, cards, badges and steps) are retired, and a retired element carries none. The JSON keeps
+  `summary: null` on every node.
 - **Bare strokes** (freehand with no label, note, comment, link or arrow) that sit next to each other fold into one
   line, `freehand ×12 (3 closed)`; `layout` lists each one with its ref.
 - **Left out**: coordinates, sizes, colours, fonts, anchors and routing (the `layout` view and `--style` have them),
@@ -76,8 +78,8 @@ The example is abridged; a real outline prints every element.
 | `graph`        | What connects to what?          | Nodes (ref, kind, label) and arrows (ref, from, to, label), nothing else                                                                                       |
 | `layout`       | Where do things sit?            | Rounded geometry per element from the content origin (the header names the origin when it is not 0,0: stored = shown + origin), or `--coarse` rows and columns |
 | `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full                                                                                         |
-| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container; or `selected`                                                                                       |
-| `find <text>`  | Where is this?                  | Matching elements with their containers                                                                                                                        |
+| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out; or `selected`                                                                                                         |
+| `find <text>`  | Where is this?                  | Matching elements, each on its outline line                                                                                                                    |
 | `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                                                                                                               |
 | `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
 
@@ -95,12 +97,12 @@ compares that copy with the current tab. The api serves no diff.
 ## Budgets
 
 - `--budget <tokens>` fits a view to a budget by dropping detail in a fixed order: notes, then attributes, then the
-  children of the largest containers. Tokens are estimated at characters ÷ 3.
+  outline's trailing lines, as few as the budget asks. Tokens are estimated at characters ÷ 3.
 - The api and the CLI apply no budget unless asked; the MCP's `read_document` applies 8,000 tokens unless its caller
   passes another.
 - A view never truncates silently: it ends with one line naming what it left out and the command that shows it,
-  in the syntax of the door it was read through (`… 12 elements in boundary c991 hidden: view --only c991` in the CLI,
-  `read_document {"only":"c991"}` in the MCP).
+  in the syntax of the door it was read through (`… notes hidden; attributes hidden; 12 elements hidden: view --budget
+420` in the CLI, `read_document {"budget":420}` in the MCP).
 
 ## Where views are made
 

@@ -43,18 +43,6 @@ export const SHAPE_ANIMATIONS: readonly ShapeAnimation[] = [
   'swing',
 ];
 
-// The Shape set's motions a CONTAINER is offered (docs/specs/009-elements/boundary.md "Animation"): the ones that
-// light or trace it, never the ones that move it, since a container that floats while its contents stay still looks
-// broken.
-export const CONTAINER_ANIMATIONS: readonly ShapeAnimation[] = [
-  'blink',
-  'glow',
-  'trace',
-  'gradient',
-  'shimmer',
-  'highlight',
-];
-
 // The Shape set's MOTIONS (docs/specs/028-animation/element-animations.md "Shape motions"): the ones that move or
 // fade the element as a whole, so they suit any silhouette. An element whose own set animates inside it (a photo, a
 // note, a chart, ...) is offered these beside its own set; the rest light or trace a shape's own outline and fill.

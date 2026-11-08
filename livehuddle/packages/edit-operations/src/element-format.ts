@@ -108,7 +108,6 @@ export const SHAPE_COMMON_FIELDS = [
 ] as const;
 
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
-  lane: ['headerFill', 'headerSize', 'titleOrientation'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   // docs/specs/009-elements/furniture-facing.md: every piece of furniture that turns takes a facing.

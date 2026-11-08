@@ -20,16 +20,14 @@ import {
   recolourElementForTheme,
   type BoxedElement,
   type Element,
-  type ElementId,
   type TextSize,
   type ThemeDefinition,
 } from '@livehuddle/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
-import { growContainer, HOLD_PAD } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
-import { type EditState, holdersOf, writeFields } from '../state';
+import { type EditState, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
@@ -76,14 +74,13 @@ export function buildKind(kind: string): Built | { refusal: string } {
 }
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
-// has none of that shape (boundaries and lanes never count, they are containers).
+// has none of that shape.
 function peerLook(
   state: EditState,
   shape: string,
 ): { textSize: TextSize; width: number; height: number } | null {
   const peers = [...state.byId.values()].filter(
-    (e): e is Extract<Element, { type: 'shape' }> =>
-      e.type === 'shape' && e.shape === shape && shape !== 'boundary' && shape !== 'lane',
+    (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && e.shape === shape,
   );
   if (peers.length === 0) return null;
   // A preset or an exact px size, counted as it is stored.
@@ -182,15 +179,6 @@ export function createKind(
   return { el, placed };
 }
 
-// Grows the container `inside:` filled, so the element sits in it (EO27): what sat under it moves on rather than
-// being taken in (grow-container.ts).
-function growInto(state: EditState, placed: Placed, held: ElementId, operation: number): void {
-  if (!placed.grow) return;
-  const { container, height } = placed.grow;
-  const { x, y, width } = container;
-  growContainer(state, container, { x, y, width, height }, held, operation);
-}
-
 // A made element, added.
 export function commitNew(
   state: EditState,
@@ -207,47 +195,9 @@ export function applyAddKind(
   index: number,
 ): EditRejection | null {
   const place = (size: { width: number; height: number }) =>
-    resolvePlacement(state, operation.place, size, new Set(), index, undefined, {
-      growsFrame: true,
-    });
+    resolvePlacement(state, operation.place, size, new Set(), index);
   const made = createKind(state, operation, index, place);
   if ('rejection' in made) return made.rejection;
   commitNew(state, made, index);
-  growInto(state, made.placed, made.el.id, index);
-  if (operation.place && operation.place.rel !== 'at' && operation.place.rel !== 'inside')
-    growToHold(state, made.placed.ref, made.el, index);
   return null;
-}
-
-// A box placed beside a member of a boundary or lane joins it: the container grows to hold it, as an insertion grows
-// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and
-// what sat past it moves on rather than being taken in (grow-container.ts).
-function growToHold(
-  state: EditState,
-  ref: Element | undefined,
-  el: BoxedElement,
-  operation: number,
-): void {
-  // Placement refuses an arrow as its reference (placement.ts), so a relative placement's ref is always a box.
-  const holderId = holdersOf(state).get(ref!.id);
-  const holder = holderId ? state.byId.get(holderId) : undefined;
-  if (!holder || holder.type === 'arrow') return;
-  const right = Math.max(holder.x + holder.width, el.x + el.width + HOLD_PAD);
-  const bottom = Math.max(holder.y + holder.height, el.y + el.height + HOLD_PAD);
-  const x = Math.min(holder.x, el.x - HOLD_PAD);
-  const y = Math.min(holder.y, el.y - HOLD_PAD);
-  if (
-    x === holder.x &&
-    y === holder.y &&
-    right === holder.x + holder.width &&
-    bottom === holder.y + holder.height
-  )
-    return;
-  growContainer(
-    state,
-    holder,
-    { x, y, width: Math.round(right - x), height: Math.round(bottom - y) },
-    el.id,
-    operation,
-  );
 }

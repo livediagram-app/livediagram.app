@@ -94,7 +94,8 @@ export type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; boundaries: number; lanes: number; arrows: number };
+  // A stored lane or boundary counts as a box (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine").
+  counts: { boxes: number; arrows: number };
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;

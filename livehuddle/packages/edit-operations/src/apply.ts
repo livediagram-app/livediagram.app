@@ -15,8 +15,6 @@ import { applyLayout } from './operations/layout';
 import { applyMove } from './operations/move';
 import { applyOrder } from './operations/order';
 import { applyTest } from './operations/test-fields';
-import { applyUnwrap } from './operations/unwrap';
-import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
@@ -49,16 +47,12 @@ function applyOperation(
       return applyRewire(state, operation, index);
     case 'insert':
       return applyInsert(state, operation, index);
-    case 'unwrap':
-      return applyUnwrap(state, operation, index);
     case 'order':
       return applyOrder(state, operation, index);
     case 'test':
       return applyTest(state, operation, index);
     case 'layout':
       return applyLayout(state, operation, index);
-    case 'wrap':
-      return applyWrap(state, operation, index);
   }
 }
 

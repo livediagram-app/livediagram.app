@@ -3,14 +3,12 @@
 // Text set. The menu offers one category per set present in a selection, in a fixed order.
 
 import {
-  CONTAINER_ANIMATIONS,
   SHAPE_ANIMATIONS,
   SHAPE_MOTIONS,
   type AnimationSetId,
   type BodyAnimationSet,
   type ShapeAnimation,
 } from './animation-sets';
-import { isConceptShape } from './concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
@@ -18,13 +16,6 @@ import { selfLabelled } from './svg-render-describe';
 // Shapes with a set of their own (the Icon), owned outside these catalogues.
 function hasOwnShapeSet(el: Element): boolean {
   return el.type === 'shape' && el.shape === 'icon';
-}
-
-// Shapes whose rows are what moves, not the box (the Timeline), so they take their own set instead of Shape. A Shape
-// `animation` stored on one before it had its own set plays only when it is a motion (takesShapeMotions): the menu
-// has no tile for the rest to change or clear it.
-export function hasOwnBodySet(el: Element): boolean {
-  return el.type === 'shape' && isConceptShape(el.shape);
 }
 
 /** The body set that animates the element itself, or undefined when it takes none of these. */
@@ -38,7 +29,7 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
     case 'image':
       return 'media';
     case 'shape':
-      return hasOwnShapeSet(el) || hasOwnBodySet(el) ? undefined : 'shape';
+      return hasOwnShapeSet(el) ? undefined : 'shape';
     case 'annotation':
     case 'link-card':
       return 'shape';
@@ -60,17 +51,15 @@ export function takesShapeMotions(el: Element): boolean {
     case 'image':
       return true;
     case 'shape':
-      return el.shape !== 'icon' && (hasOwnShapeSet(el) || hasOwnBodySet(el));
+      return false;
     default:
       return false;
   }
 }
 
-/** The Shape values a Shape category offers the element: the whole set, a boundary's six, the motions, or none. */
+/** The Shape values a Shape category offers the element: the whole set, the motions, or none. */
 export function shapeAnimationsFor(el: Element): readonly ShapeAnimation[] {
-  if (bodyAnimationSetOf(el) === 'shape') {
-    return el.type === 'shape' && el.shape === 'boundary' ? CONTAINER_ANIMATIONS : SHAPE_ANIMATIONS;
-  }
+  if (bodyAnimationSetOf(el) === 'shape') return SHAPE_ANIMATIONS;
   return takesShapeMotions(el) ? SHAPE_MOTIONS : [];
 }
 
@@ -87,8 +76,8 @@ export function animationSectionOf(
   if (value != null && takesShapeMotions(el)) {
     if ((SHAPE_MOTIONS as readonly string[]).includes(value)) return 'shape';
     // A chart, progress bar or rating has no body set of its own: an older Shape value on it plays as it did, so its
-    // Shape section shows it as the kept tile. A Timeline does not play one (hasOwnBodySet).
-    if (body === undefined && !hasOwnBodySet(el)) return 'shape';
+    // Shape section shows it as the kept tile.
+    if (body === undefined) return 'shape';
   }
   return body;
 }

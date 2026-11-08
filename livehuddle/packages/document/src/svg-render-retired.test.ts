@@ -186,6 +186,50 @@ describe('a retired element in the export', () => {
     expect(boxedNeedsSvgRaster(table)).toBe(true);
   });
 
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: the layout containers.
+  it.each([
+    ['lane', 'Lane'],
+    ['stack', 'Stack'],
+    ['boundary', 'Boundary'],
+    ['timeline-rail', 'Timeline'],
+    ['diagram-key', 'Diagram Key'],
+    ['card', 'Card'],
+    ['callout', 'Callout'],
+    ['badge', 'Badge'],
+    ['step', 'Step Number'],
+    ['pointer-note', 'Pointer Note'],
+  ])(
+    'draws a stored %s as the card named %s, with its label and none of its own colours',
+    (kind, name) => {
+      const svg = svgBoxed(
+        retired(kind, {
+          label: 'Checkout',
+          fillColor: '#ff0000',
+          strokeColor: '#00ff00',
+        }),
+      );
+      expect(texts(svg)).toEqual([name, 'No longer supported in livehuddle', 'Checkout']);
+      expect(svg).not.toContain('#ff0000');
+      expect(svg).not.toContain('#00ff00');
+    },
+  );
+
+  it("never draws an image's stored hero caption", () => {
+    const image = {
+      id: 'cover',
+      type: 'image',
+      x: 0,
+      y: 0,
+      width: 520,
+      height: 300,
+      imageId: null,
+      heroCaption: { title: 'Welcome', subtitle: 'To the team' },
+    } as unknown as BoxedElement;
+    const svg = renderElementsToSvg({ id: 't', name: 'T', elements: [image] });
+    expect(svg).not.toContain('Welcome');
+    expect(svg).not.toContain('To the team');
+  });
+
   it('is rasterised from the SVG for the PNG and PDF, which have no drawer for it', () => {
     expect(boxedNeedsSvgRaster(retired('temperature') as BoxedElement)).toBe(true);
   });

@@ -13,7 +13,7 @@ import { anchorPrimarySide } from './anchors';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { buildElementGrid, queryElementGrid, type ElementGrid } from './element-grid';
 import { buildElementIndex, endpointPosition, type ElementIndex } from './geometry';
-import { isContainer } from './containment';
+import { isRetiredBackdrop } from './retired-kinds';
 import { isBoxed, type Anchor, type ArrowElement, type Element } from './index';
 
 // An arrow's end where the renderers draw it: its anchor, fanned (arrowEndpointSpread).
@@ -94,8 +94,8 @@ function facingAxis(arrow: ArrowElement, elements: Element[] | ElementIndex): 'T
   return null;
 }
 
-// How far a facing arrow's cross run keeps off its own ends, off another box and off a container's border, and the
-// band under a container's top edge its heading takes.
+// How far a facing arrow's cross run keeps off its own ends, off another box and off a stored container's border
+// (retired-kinds.ts isRetiredBackdrop), and the band under its top edge its heading took.
 const FACING_END_CLEAR = 12;
 const FACING_BOX_CLEAR = 8;
 const FACING_HEADING_BAND = 32;
@@ -172,7 +172,7 @@ function crossLevel(
     const [p0, p1] = tb ? [el.y, el.y + el.height] : [el.x, el.x + el.width];
     const [q0, q1] = tb ? [el.x, el.x + el.width] : [el.y, el.y + el.height];
     if (q1 <= c0 || q0 >= c1) continue;
-    if (!isContainer(el)) blocked.push([p0 - FACING_BOX_CLEAR, p1 + FACING_BOX_CLEAR]);
+    if (!isRetiredBackdrop(el)) blocked.push([p0 - FACING_BOX_CLEAR, p1 + FACING_BOX_CLEAR]);
     else
       blocked.push(
         [p0 - FACING_BOX_CLEAR, p0 + (tb ? FACING_HEADING_BAND : FACING_BOX_CLEAR)],

@@ -5,7 +5,6 @@
 
 import type { FieldValue } from './types';
 import { arrowParts, hasQuotes, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
-import { isSingleWord } from './selectors';
 import {
   EDIT_OPERATION_NAMES,
   FLAG_MEMBERS,
@@ -24,7 +23,6 @@ const SPECIAL_KEYS: Readonly<Partial<Record<EditOperationName, readonly string[]
   connect: ['id'],
   rewire: ['from', 'to'],
   insert: ['id'],
-  wrap: ['id'],
   order: ['above', 'below'],
   layout: ['style', 'direction'],
 };
@@ -35,7 +33,6 @@ const FLAGS: Readonly<Partial<Record<EditOperationName, readonly FlagWord[]>>> =
   rm: ['all', 'keep-arrows'],
   move: ['all'],
   connect: ['again'],
-  wrap: ['tidy', 'absorb', 'make-room'],
 };
 
 // The special keys whose value is a selector, kept as written.
@@ -45,7 +42,7 @@ const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 // What an `add` placement can be, for a word that reads as one but is not.
 const PLACEMENT_EXPECTED =
-  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<container>';
+  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or align:<ref>';
 // A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
 const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
@@ -102,35 +99,22 @@ const numbers = (text: string): [number, number] | null => {
 
 type PlacementWord = { word: Word; key: string; text: string };
 
-// Several placement words read as one placement: a side or `after` (the main one) with at most one `inside:<container>`
-// (`within`, the reference must be inside it) and one `align:<x>` (`alignTo`, centred on x across the side). `at:`
-// takes no company.
+// Several placement words read as one placement: a side or `after` (the main one) with at most one `align:<x>`
+// (`alignTo`, centred on x across the side). `at:` takes no company.
 function combinePlacements(
   words: readonly PlacementWord[],
 ): { place: Record<string, unknown> } | { error: LineError } {
   const refused = (w: PlacementWord) => ({
-    error: { column: w.word.column, expected: 'one placement (or inside: and align: with a side)' },
+    error: { column: w.word.column, expected: 'one placement (or align: with a side)' },
   });
   const at = words.find((w) => w.key === 'at');
   if (at) return refused(words.find((w) => w !== at)!);
-  const [main, ...more] = words.filter((w) => w.key !== 'inside' && w.key !== 'align');
-  const insides = words.filter((w) => w.key === 'inside');
+  const [main, ...more] = words.filter((w) => w.key !== 'align');
   const aligns = words.filter((w) => w.key === 'align');
   if (more.length) return refused(more[0]!);
-  if (insides.length > 1) return refused(insides[1]!);
   if (aligns.length > 1) return refused(aligns[1]!);
-  if (!main) {
-    // `inside:` with `align:`: aligned, the reference inside the container.
-    return { place: { rel: 'align', ref: aligns[0]!.text, within: insides[0]!.text } };
-  }
-  return {
-    place: {
-      rel: main.key,
-      ref: main.text,
-      ...(insides[0] ? { within: insides[0].text } : {}),
-      ...(aligns[0] ? { alignTo: aligns[0].text } : {}),
-    },
-  };
+  // Two words, so at least one besides an `align:` when only one `align:` is allowed: `main` is there.
+  return { place: { rel: main!.key, ref: main!.text, alignTo: aligns[0]!.text } };
 }
 
 type Collected = {
@@ -176,7 +160,7 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
         out.gap = word;
         continue;
       }
-      // Placements combine after the loop: a side or `after` with an `inside:` and an `align:`.
+      // Placements combine after the loop: a side or `after` with an `align:`.
       if (out.place || out.pending) {
         // Nothing pending yet means the one placement so far is `out.place`.
         (out.pending ??= [out.placeWord!]).push({ word, ...placement });
@@ -294,26 +278,6 @@ export function parseOperationWords(
       op: name,
       from: selectorOf(fromTerms),
       to: selectorOf(c.terms),
-    };
-    if (c.special.id !== undefined) raw.id = c.special.id;
-    return { raw: withOptional(raw, c, ['fields']) };
-  }
-
-  if (name === 'wrap') {
-    const at = rest.findIndex((w) => !hasQuotes(w) && w.value === 'in');
-    const container = at >= 0 ? rest[at + 1] : undefined;
-    if (!container) return fail(rest[at] ?? rest.at(-1), end, 'in boundary or in lane');
-    const members = rest.slice(0, at);
-    if (!members.length) return fail(rest[0], end, 'the members to wrap');
-    const c = collect(name, rest.slice(at + 2));
-    if ('column' in c) return { error: c };
-    if (c.terms.length) return fail(c.terms[0], end, 'key=value or tidy, absorb, make-room');
-    const single = members.filter(isSingleWord);
-    const together = members.filter((w) => !isSingleWord(w));
-    const raw: Record<string, unknown> = {
-      op: name,
-      targets: [...single.map((w) => w.raw), ...(together.length ? [selectorOf(together)] : [])],
-      in: container.value,
     };
     if (c.special.id !== undefined) raw.id = c.special.id;
     return { raw: withOptional(raw, c, ['fields']) };

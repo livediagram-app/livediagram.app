@@ -515,19 +515,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "AttachPoint": {
-    "enum": [
-      "top-left",
-      "top",
-      "top-right",
-      "right",
-      "bottom-right",
-      "bottom",
-      "bottom-left",
-      "left"
-    ],
-    "type": "string"
-  },
   "BackgroundPattern": {
     "enum": [
       "grid",
@@ -602,14 +589,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "BoundaryStyle": {
-    "enum": [
-      "tab",
-      "inset",
-      "c4"
-    ],
-    "type": "string"
-  },
   "BoxedElement": {
     "anyOf": [
       {
@@ -675,14 +654,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "type": "object"
-  },
-  "CardMedia": {
-    "enum": [
-      "badge",
-      "tile",
-      "initial"
-    ],
-    "type": "string"
   },
   "ChairFacing": {
     "$ref": "#/components/schemas/SeatFacing"
@@ -774,7 +745,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "finish": {
         "$ref": "#/components/schemas/Finish"
       },
-      "graph": {},
       "layout": {
         "enum": [
           "auto",
@@ -955,16 +925,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rebasedOver"
     ],
     "type": "object"
-  },
-  "ChipLook": {
-    "enum": [
-      "solid",
-      "ink",
-      "outline",
-      "tinted",
-      "quiet"
-    ],
-    "type": "string"
   },
   "ClockZone": {
     "additionalProperties": false,
@@ -1503,28 +1463,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "postId",
       "author"
-    ],
-    "type": "object"
-  },
-  "ConceptAnim": {
-    "enum": [
-      "build",
-      "pulse"
-    ],
-    "type": "string"
-  },
-  "ConceptRow": {
-    "additionalProperties": false,
-    "properties": {
-      "label": {
-        "type": "string"
-      },
-      "note": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "label"
     ],
     "type": "object"
   },
@@ -2788,22 +2726,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "HeroCaption": {
-    "additionalProperties": false,
-    "properties": {
-      "subtitle": {
-        "type": "string"
-      },
-      "title": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "title",
-      "subtitle"
-    ],
-    "type": "object"
-  },
   "HuedPenColourName": {
     "description": "The eight hued stock colours, each tuned per board.",
     "enum": [
@@ -2961,9 +2883,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "height": {
         "type": "number"
-      },
-      "heroCaption": {
-        "$ref": "#/components/schemas/HeroCaption"
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
@@ -3134,35 +3053,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ]
-  },
-  "KeyRow": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "id": {
-        "type": "string"
-      },
-      "kind": {
-        "enum": [
-          "line",
-          "tag"
-        ],
-        "type": "string"
-      },
-      "style": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "id",
-      "kind"
-    ],
-    "type": "object"
   },
   "LayoutView": {
     "additionalProperties": false,
@@ -3444,8 +3334,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label-collision",
       "label-overflow",
       "node-isolated",
-      "group-escape",
-      "group-split-edges",
       "duplicate-label",
       "flow-backwards",
       "aspect-extreme",
@@ -3798,20 +3686,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "arrows": {
                 "type": "number"
               },
-              "boundaries": {
-                "type": "number"
-              },
               "boxes": {
-                "type": "number"
-              },
-              "lanes": {
                 "type": "number"
               }
             },
             "required": [
               "boxes",
-              "boundaries",
-              "lanes",
               "arrows"
             ],
             "type": "object"
@@ -4421,10 +4301,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "string"
           },
           "reason": {
-            "enum": [
-              "pinned",
-              "unwrapped"
-            ],
+            "const": "pinned",
             "type": "string"
           },
           "ref": {
@@ -4479,7 +4356,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "reason": {
             "enum": [
               "make room",
-              "carried",
               "laid out"
             ],
             "type": "string"
@@ -4495,37 +4371,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "mark",
           "refs",
           "reason"
-        ],
-        "type": "object"
-      },
-      {
-        "additionalProperties": false,
-        "properties": {
-          "joined": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "left": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "mark": {
-            "const": "container",
-            "type": "string"
-          },
-          "ref": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "mark",
-          "ref",
-          "joined",
-          "left"
         ],
         "type": "object"
       },
@@ -4825,29 +4670,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "aspectLocked": {
         "type": "boolean"
       },
-      "attachAt": {
-        "$ref": "#/components/schemas/AttachPoint"
-      },
-      "attachedTo": {
-        "$ref": "#/components/schemas/ElementId"
-      },
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
       },
-      "boundaryStyle": {
-        "$ref": "#/components/schemas/BoundaryStyle"
-      },
-      "cardHeader": {
-        "type": "boolean"
-      },
-      "cardMedia": {
-        "$ref": "#/components/schemas/CardMedia"
-      },
       "chairFacing": {
         "$ref": "#/components/schemas/ChairFacing"
-      },
-      "chipLook": {
-        "$ref": "#/components/schemas/ChipLook"
       },
       "clockZones": {
         "items": {
@@ -4860,21 +4687,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
-      },
-      "conceptAnim": {
-        "$ref": "#/components/schemas/ConceptAnim"
-      },
-      "conceptAnimRepeat": {
-        "type": "boolean"
-      },
-      "conceptAnimSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "conceptRows": {
-        "items": {
-          "$ref": "#/components/schemas/ConceptRow"
-        },
-        "type": "array"
       },
       "doorClosed": {
         "type": "boolean"
@@ -4896,9 +4708,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "headerFill": {
         "type": "string"
-      },
-      "headerSize": {
-        "type": "number"
       },
       "height": {
         "type": "number"
@@ -4929,18 +4738,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "jukeboxSource": {
         "type": "string"
-      },
-      "keyMeanings": {
-        "additionalProperties": {
-          "type": "string"
-        },
-        "type": "object"
-      },
-      "keyRows": {
-        "items": {
-          "$ref": "#/components/schemas/KeyRow"
-        },
-        "type": "array"
       },
       "label": {
         "type": "string"
@@ -4978,12 +4775,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "padding": {
         "$ref": "#/components/schemas/Padding"
       },
-      "pageSubtitle": {
-        "type": "string"
-      },
-      "pageTitle": {
-        "type": "string"
-      },
       "penColour": {
         "$ref": "#/components/schemas/PenColourName"
       },
@@ -4993,33 +4784,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pieceTimer": {
         "$ref": "#/components/schemas/PieceTimer"
       },
-      "pointerTip": {
-        "additionalProperties": false,
-        "properties": {
-          "x": {
-            "type": "number"
-          },
-          "y": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "x",
-          "y"
-        ],
-        "type": "object"
-      },
       "portalTarget": {
         "$ref": "#/components/schemas/ElementId"
-      },
-      "railCount": {
-        "type": "number"
-      },
-      "railLabels": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
       },
       "reaction": {
         "$ref": "#/components/schemas/Reaction"
@@ -5064,29 +4830,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
       },
-      "stackAlign": {
-        "$ref": "#/components/schemas/StackAlign"
-      },
-      "stackColumns": {
-        "type": "number"
-      },
-      "stackDirection": {
-        "$ref": "#/components/schemas/StackDirection"
-      },
-      "stackGap": {
-        "type": "number"
-      },
-      "stackPadding": {
-        "type": "number"
-      },
       "stageCameras": {
         "type": "boolean"
       },
       "stageSpeakers": {
         "$ref": "#/components/schemas/StageSpeakers"
-      },
-      "stepSequence": {
-        "type": "boolean"
       },
       "stickerId": {
         "type": "string"
@@ -5102,12 +4850,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "strokeWidth": {
         "$ref": "#/components/schemas/BorderStroke"
-      },
-      "tags": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
       },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
@@ -5144,10 +4886,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "themeLockFill": {
         "type": "boolean"
-      },
-      "titleOrientation": {
-        "const": "upright",
-        "type": "string"
       },
       "type": {
         "const": "shape",
@@ -5186,15 +4924,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parallelogram",
       "hexagon",
       "document",
-      "lane",
-      "callout",
-      "card",
-      "badge",
-      "step",
-      "pointer-note",
-      "diagram-key",
-      "stack",
-      "boundary",
       "mode-button",
       "portal",
       "chair",
@@ -5289,7 +5018,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trapezoid",
       "star",
       "speech-bubble",
-      "timeline-rail",
       "focus-button",
       "icon",
       "sticker"
@@ -5629,22 +5357,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "StackAlign": {
-    "enum": [
-      "start",
-      "center",
-      "end"
-    ],
-    "type": "string"
-  },
-  "StackDirection": {
-    "enum": [
-      "row",
-      "column",
-      "grid"
-    ],
-    "type": "string"
-  },
   "StageSpeakers": {
     "description": "Who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md \"Share roles\").",
     "enum": [
@@ -5900,12 +5612,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "patternColor": {
         "type": "string"
       },
-      "tagColours": {
-        "items": {
-          "$ref": "#/components/schemas/TagColour"
-        },
-        "type": "array"
-      },
+      "tagColours": {},
       "templateChosen": {
         "type": "boolean"
       },
@@ -6026,12 +5733,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rev": {
         "type": "number"
       },
-      "tagColours": {
-        "items": {
-          "$ref": "#/components/schemas/TagColour"
-        },
-        "type": "array"
-      },
+      "tagColours": {},
       "templateChosen": {
         "type": "boolean"
       },
@@ -6088,22 +5790,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name",
       "orderIndex",
       "updatedAt"
-    ],
-    "type": "object"
-  },
-  "TagColour": {
-    "additionalProperties": false,
-    "properties": {
-      "color": {
-        "type": "string"
-      },
-      "tag": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "tag",
-      "color"
     ],
     "type": "object"
   },
@@ -6944,20 +6630,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "arrows": {
             "type": "number"
           },
-          "boundaries": {
-            "type": "number"
-          },
           "boxes": {
-            "type": "number"
-          },
-          "lanes": {
             "type": "number"
           }
         },
         "required": [
           "boxes",
-          "boundaries",
-          "lanes",
           "arrows"
         ],
         "type": "object"

@@ -750,41 +750,8 @@ describe('arrow captions in an export', () => {
   });
 });
 
-// Drawn-on-the-box chrome (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/lane.md). The export drew the box and
-// stopped, so a swimlane came out as a plain rectangle with its title floating
-// in the middle of the work, and a browser frame had no window at all.
+// Drawn-on-the-box chrome (docs/specs/008-canvas/canvas-and-palette.md): the border the canvas draws.
 describe('chrome the canvas draws on a box', () => {
-  const laneAt = (o: Partial<ShapeElement> = {}) =>
-    shape('ln', { shape: 'lane', width: 400, height: 200, textAlignX: 'left', ...o });
-
-  it('paints a lane gutter down the edge its title is pinned to', () => {
-    const svg = renderElementsToSvg(tab([laneAt()]));
-    // The gutter's own strip, at the lane's left edge and its default width.
-    expect(svg).toContain('width="132"');
-  });
-
-  it('follows the title to the other edge', () => {
-    const svg = renderElementsToSvg(tab([laneAt({ textAlignX: 'right' })]));
-    // x = 0 + 400 - 132, i.e. the strip moved rather than a second one drawn.
-    expect(svg).toContain('x="268"');
-  });
-
-  it('paints an explicit heading colour at full strength, not as a wash', () => {
-    const washed = renderElementsToSvg(tab([laneAt()]));
-    expect(washed).toContain('opacity="0.1"');
-    const painted = renderElementsToSvg(tab([laneAt({ headerFill: '#fecdd3' })]));
-    expect(painted).toContain('fill="#fecdd3"');
-  });
-
-  it('turns an upright lane title into its one-line strip', () => {
-    const svg = renderElementsToSvg(
-      tab([laneAt({ label: 'Approvals', titleOrientation: 'upright', x: 0, y: 0 })]),
-    );
-    // The strip is one line thick, and the title turns a quarter about the strip's bottom-left.
-    expect(svg).toContain('width="64"');
-    expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Approvals/);
-  });
-
   it("draws a shape's own border width, dash and radius, inside the box", () => {
     const svg = renderElementsToSvg(
       tab([shape('s', { strokeWidth: 'thick', strokeStyle: 'dashed', borderRadius: 'lg' })]),

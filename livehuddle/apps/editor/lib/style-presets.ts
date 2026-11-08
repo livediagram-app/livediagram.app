@@ -43,7 +43,6 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-  withInlineIcon,
 } from '@livehuddle/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
@@ -148,15 +147,6 @@ export function applyLabelFillToEl(el: Element, color: string): Element {
 // only: nothing else has a pointer to paint.
 export function applyArrowheadColorToEl(el: Element, color: string): Element {
   return el.type === 'arrow' ? { ...el, arrowheadColor: color } : el;
-}
-
-// The heading band's fill, for the elements that HAVE a heading distinct from
-// their body: a lane's title gutter. A no-op on
-// anything else, so a multi-selection containing a mix only paints the ones
-// with a heading rather than parking a dead field on the rest.
-export function applyHeaderFillToEl(el: Element, color: string): Element {
-  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
-  return el;
 }
 
 // Border weight / pattern apply to any border-bearing element (shapes + the
@@ -277,6 +267,17 @@ export function applyFontToEl(el: Element, font: string | null): Element {
 // elements only.
 export function applyPaddingToEl(el: Element, padding: Padding): Element {
   return isBoxed(el) ? { ...el, padding } : el;
+}
+
+// An inline icon set on a shape (dropped, picked or folded in), on the side asked when one is; anything but a shape
+// is left as it is.
+export function withInlineIcon<T extends Element>(
+  el: T,
+  iconId: string,
+  position?: IconPosition,
+): T {
+  if (el.type !== 'shape') return el;
+  return { ...el, iconId, ...(position ? { iconPosition: position } : {}) };
 }
 
 // Re-place a shape's inline icon on another side (docs/specs/008-canvas/canvas-and-palette.md icons). Regular

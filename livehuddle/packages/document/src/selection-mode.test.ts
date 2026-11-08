@@ -4,7 +4,7 @@ import { isFixedSizeElement } from './placed-kinds';
 
 describe('fixed-size shapes', () => {
   it('names the controls that never take resize handles', () => {
-    for (const kind of ['mode-button', 'badge']) {
+    for (const kind of ['mode-button']) {
       expect(isFixedSizeShape(kind)).toBe(true);
     }
     expect(isFixedSizeShape('rectangle')).toBe(false);

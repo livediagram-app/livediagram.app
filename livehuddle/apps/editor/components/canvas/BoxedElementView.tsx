@@ -17,20 +17,15 @@ import {
   ownColours,
   isRetiredElement,
   isSelfDrawingShape,
-  isUprightTitle,
   labelBodyInset,
-  uprightTitleStrip,
   type ShapeMarker,
   type TextSize,
-  withTagAccent,
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
 } from '@livehuddle/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
-import { LaneGutter } from '@/components/canvas/LaneGutter';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -50,8 +45,6 @@ import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
-import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators, indicatorClusterRect } from '@/components/canvas/ElementIndicators';
@@ -96,14 +89,7 @@ function BoxedElementViewImpl({
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
-  onCommitHeaderSize,
-  onSnapSeam,
   onDeleteRetired,
-  onSetPageHeading,
-  onSetWebRows,
-  onSetPointerTip,
-  onSetHeroCaptionLine,
-  stackGlide,
   onCancelEdit,
   onFollowLink,
   onPressModeButton,
@@ -233,8 +219,6 @@ function BoxedElementViewImpl({
   // border / stroke colour is overridden with the first remote selector's
   // colour so the realtime "X is here" signal is glanceable from anywhere
   // on the canvas — not just from the small initial-badge.
-  // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
-  const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
@@ -296,21 +280,10 @@ function BoxedElementViewImpl({
   const iconCaptionBand =
     element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
 
-  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
-  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
-  const uprightStrip =
-    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
-      ? uprightTitleStrip(element, element.width, element.height)
-      : null;
-  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
-
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
 
-  const labelPadding = uprightStrip
-    ? // A one-line strip has no room for a roomy padding across it.
-      Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
-    : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
@@ -328,8 +301,8 @@ function BoxedElementViewImpl({
     element,
     label,
     textSize,
-    uprightStrip ? uprightStrip.alongAlign : alignX,
-    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    alignX,
+    iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
     labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
@@ -357,7 +330,6 @@ function BoxedElementViewImpl({
       data-element-kind={elementClickKind(element)}
       // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
       data-ride-id={element.id}
-      data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
       // so its buttons stay reachable, as is one showing indicator buttons (its link, note, action or comments).
@@ -436,18 +408,10 @@ function BoxedElementViewImpl({
         >
           {retired ? null : (
             <AccentEdgeOverlay
-              element={withTagAccent(element, tagColours)}
+              element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
             />
           )}
-          {element.type === 'shape' && element.shape === 'pointer-note' ? (
-            <PointerNoteOverlay
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              editable={isSelected && !readOnly}
-              onSetTip={onSetPointerTip}
-            />
-          ) : null}
           <ShapeContentRouter
             element={element}
             isEditing={isEditing}
@@ -492,27 +456,6 @@ function BoxedElementViewImpl({
               live
             />
           ) : null}
-          {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
-          {element.type === 'shape' && element.shape === 'lane' ? (
-            <LaneGutter
-              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-              headerFill={element.headerFill}
-              headerSize={element.headerSize}
-              titleOrientation={element.titleOrientation}
-              width={element.width}
-              height={element.height}
-              onCommitSize={
-                onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
-              }
-              onSnapSeam={onSnapSeam}
-              elementId={element.id}
-              elementX={element.x}
-              elementY={element.y}
-              rotation={rotation}
-              alignX={alignX}
-              alignY={alignY}
-            />
-          ) : null}
 
           {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
@@ -530,9 +473,6 @@ function BoxedElementViewImpl({
             onFollowLink={onFollowLink}
             onPressModeButton={onPressModeButton}
             onPressFocusButton={onPressFocusButton}
-            onSetPageHeading={onSetPageHeading}
-            onSetWebRows={onSetWebRows}
-            onSetHeroCaptionLine={onSetHeroCaptionLine}
             onOpenElementSettings={onOpenElementSettings}
             onDeleteRetired={onDeleteRetired}
             indicatorRect={
@@ -557,7 +497,6 @@ function BoxedElementViewImpl({
             inlineIcon={inlineIcon}
             marker={marker}
             iconCaptionBand={iconCaptionBand}
-            labelFrame={labelFrame}
           />
         </SketchFace>
       </FaceFinishProvider>

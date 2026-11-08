@@ -71,7 +71,6 @@ import {
   applyTextAlignToEl,
   applyArrowheadColorToEl,
   applyLabelFillToEl,
-  applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
 } from '@/lib/style-presets';
@@ -236,8 +235,6 @@ export function useStylePreview(deps: {
     previewArrowheadColor: (c: string) => previewStyle((el) => applyArrowheadColorToEl(el, c)),
     commitArrowheadColor: (c: string) =>
       commitStyle((el) => applyArrowheadColorToEl(el, c), 'ArrowheadColor'),
-    previewHeaderFill: (c: string) => previewStyle((el) => applyHeaderFillToEl(el, c)),
-    commitHeaderFill: (c: string) => commitStyle((el) => applyHeaderFillToEl(el, c), 'HeaderFill'),
     // Border weight / pattern / radius tiles.
     previewBorderStroke: (v: BorderStroke) => previewStyle((el) => applyBorderStrokeToEl(el, v)),
     commitBorderStroke: (v: BorderStroke) =>

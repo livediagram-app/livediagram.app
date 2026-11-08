@@ -7,16 +7,7 @@
 
 import type { ShapeKind } from './index';
 
-// The Timeline (docs/specs/009-elements/timeline.md); it keeps the rail's kind, so every saved one opens.
-export function isRailShape(kind: ShapeKind): boolean {
-  return kind === 'timeline-rail';
-}
-
-// A card's, a callout's and a boundary's heading lines (docs/specs/009-elements/card.md). A title line, not a
-// paragraph: the renderer clamps it to one line anyway, so anything longer is a paste accident.
-export const PAGE_HEADING_MAX = 200;
-
-// The "self-drawing" shape kinds: the timeline, the sticker and the Space pieces. They render their own bespoke
+// The "self-drawing" shape kinds: the sticker and the Space pieces. They render their own bespoke
 // content (no fill/border box) and carry no editable text label, so the editor suppresses markers, text alignment,
 // the inline label editor, morphing, and double-click / type-to-edit for them.
 //
@@ -24,7 +15,6 @@ export const PAGE_HEADING_MAX = 200;
 // it says in its own artwork, so there is nothing to type into it.
 export function isSelfDrawingShape(kind: ShapeKind): boolean {
   return (
-    isRailShape(kind) ||
     kind === 'sticker' ||
     // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
     kind === 'fence' ||

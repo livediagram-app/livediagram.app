@@ -4,7 +4,6 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { tagColoursOf } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -33,7 +32,6 @@ export function EditorContextMenuHost() {
     contextMenu,
     activeTab,
     isReadOnly,
-    setTagColour,
     editingId,
     closeContextMenu,
     openLinkPicker,
@@ -62,9 +60,6 @@ export function EditorContextMenuHost() {
     setLabelFillSelected,
     commitLabelFill,
     previewLabelFill,
-    commitHeaderFill,
-    previewHeaderFill,
-    setHeaderFillSelected,
     setArrowheadColorSelected,
     commitArrowheadColor,
     previewArrowheadColor,
@@ -88,8 +83,6 @@ export function EditorContextMenuHost() {
     previewMarker,
     commitMarkerSize,
     previewMarkerSize,
-    setWebRowsSelected,
-    setHeroCaptionSelected,
     setChairFacingSelected,
     setRoomDoorSelected,
     setRoomWallsSelected,
@@ -139,7 +132,6 @@ export function EditorContextMenuHost() {
     setArrowStrokeStyleSelected,
     setArrowRouteBehindSelected,
     setArrowExactStartSelected,
-    setLaneUprightTitleSelected,
     setArrowEndsSelected,
     setArrowheadSizeSelected,
     setArrowheadShapeSelected,
@@ -207,7 +199,6 @@ export function EditorContextMenuHost() {
       onPreviewIconWeight={previewIconWeight}
       onSetTextAlign={commitTextAlign}
       onPreviewTextAlign={previewTextAlign}
-      onSetLaneUprightTitle={setLaneUprightTitleSelected}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
       onToggleAspectLock={toggleAspectLockSelected}
@@ -225,9 +216,6 @@ export function EditorContextMenuHost() {
       onSetLabelFill={setLabelFillSelected}
       onPreviewLabelFill={previewLabelFill}
       onCommitLabelFill={commitLabelFill}
-      onSetHeaderFill={setHeaderFillSelected}
-      onPreviewHeaderFill={previewHeaderFill}
-      onCommitHeaderFill={commitHeaderFill}
       onPreviewStrokeColor={previewStrokeColor}
       onCommitStrokeColor={commitStrokeColor}
       onPreviewBorderStroke={previewBorderStroke}
@@ -247,8 +235,6 @@ export function EditorContextMenuHost() {
       onPreviewMarker={previewMarker}
       onSetMarkerSize={commitMarkerSize}
       onPreviewMarkerSize={previewMarkerSize}
-      onSetWebRows={setWebRowsSelected}
-      onSetHeroCaption={setHeroCaptionSelected}
       onSetChairFacing={setChairFacingSelected}
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
@@ -317,8 +303,6 @@ export function EditorContextMenuHost() {
       onResetAspectRatio={resetAspectRatioSelected}
       onSetSize={setSizeSelected}
       colourPalette={swatches}
-      tagColours={tagColoursOf(activeTab)}
-      onSetTagColour={setTagColour}
       onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}

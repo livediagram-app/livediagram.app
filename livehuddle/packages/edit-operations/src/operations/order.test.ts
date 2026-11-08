@@ -20,8 +20,10 @@ describe('order', () => {
     expect(lines(run('order n1 above=n3'))).toEqual(['~ n1  order above n3']);
   });
 
-  it('keeps a container behind its members, whatever it was told (EO37)', () => {
-    expect(ids('order f2 front')).toBe('n1 n2 n3 f2 n4 n5 n6 n7 n8 t1 a1 a2 a3 a4 a5 a6 a7');
+  // f2 is a stored boundary (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): it
+  // holds nothing, so it goes where it is told like any element.
+  it('orders a stored boundary where it is told, as any element', () => {
+    expect(ids('order f2 front')).toBe('n1 n2 n3 n4 n5 n6 n7 n8 t1 a1 a2 a3 a4 a5 a6 a7 f2');
   });
 
   it('refuses ordering against itself and a missing other', () => {

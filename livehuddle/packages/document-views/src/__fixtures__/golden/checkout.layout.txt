@@ -1,15 +1,15 @@
-tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 boundaries, 11 arrows · 1 unknown · threads 1 open/2 · origin 40,20: stored = shown + origin · rev 41
+tab 0b34 "Checkout platform" · 30 elements: 19 boxes, 11 arrows · 4 unknown · threads 1 open/2 · origin 40,20: stored = shown + origin · rev 41
 98eb 0,0 520x48
 048c 0,80 300x440
-b811 110,120 80x110
 a3cf 50,270 200x72
 649c 50,400 200x72
+b811 110,120 80x110
 c991 360,80 580x440
 202b 400,130 200x72
-146b 680,130 200x72
 6406 400,260 200x72
-e4a8 680,260 200x72
 12de 400,390 200x72
+146b 680,130 200x72
+e4a8 680,260 200x72
 0556 680,390 200x72
 ca76 1000,80 280x440
 d41e 1040,130 200x90

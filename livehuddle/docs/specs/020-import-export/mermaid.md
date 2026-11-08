@@ -200,7 +200,7 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL:
 ## Limits
 
 A graph is laid out only within `GRAPH_LAYOUT_MAX_NODES` (500 nodes) and `GRAPH_LAYOUT_MAX_EDGES`
-(1 000 connections), `packages/document/src/graph-limits.ts`. The layered layout's crossing
+(1 000 connections), `livediagram/packages/document/src/graph-limits.ts`. The layered layout's crossing
 reduction grows faster than linearly with the connections: a random 1 000-node / 1 000-edge graph
 took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119` took 21 s. So:
 

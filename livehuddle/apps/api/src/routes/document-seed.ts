@@ -1,4 +1,4 @@
-// A created document's seeded tabs may give `graph` or `template` in place of `elements`
+// A created document's seeded tabs may give a `template` in place of `elements`
 // (docs/specs/015-api/api.md, POST /api/documents): compiled here by the edit-operations engine's `applyReplace`,
 // as a `replace` changeset compiles, so an API script creates documents the way it replaces tabs. A tab the
 // engine refuses refuses the whole create, by its id, before anything is written.
@@ -11,8 +11,10 @@ import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@livehuddle/document';
 
-// No `mermaid`: imports from other tools are gone (docs/specs/002-project-scope/not-in-livehuddle.md).
-const SOURCES = ['graph', 'template'] as const;
+// No `mermaid`: imports from other tools are gone, and no `graph`: the graph input went with the layout containers
+// (docs/specs/002-project-scope/not-in-livehuddle.md, "The element engine", part 3). A tab that still gives one is
+// refused by its id rather than stored without elements.
+const SOURCES = ['template'] as const;
 
 type Refusal = { status: number; body: Record<string, unknown> };
 
@@ -30,13 +32,27 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
   const out: unknown[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
   for (const [index, raw] of tabs.entries()) {
+    if (isRecord(raw) && raw.graph !== undefined) {
+      console.info('[documents] seeded tab refused', { documentId, tabId: raw.id, code: 'graph' });
+      return {
+        refusal: {
+          status: 400,
+          body: {
+            error: 'invalid_body',
+            message:
+              'a seeded tab\'s "graph" is no longer supported in livehuddle: give elements or a template',
+            ...(typeof raw.id === 'string' ? { tabId: raw.id } : {}),
+          },
+        },
+      };
+    }
     const body = isRecord(raw) && typeof raw.id === 'string' ? sourceOf(raw) : null;
     if (!isRecord(raw) || !body) {
       out.push(raw);
       continue;
     }
     const tabId = raw.id as string;
-    const { graph: _g, template: given, ...rest } = raw;
+    const { template: given, ...rest } = raw;
     // A retired template's kind makes its replacement (templateKindOf).
     const template = templateKindOf(given) ?? given;
     const compiled = applyReplace(null, body, {

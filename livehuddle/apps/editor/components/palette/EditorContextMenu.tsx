@@ -90,7 +90,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     colorProps,
     textColorHandlers,
     fillColorHandlers,
-    headerFillHandlers,
     labelFillHandlers,
     arrowheadColorHandlers,
     strokeColorHandlers,
@@ -253,7 +252,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           colorProps={colorProps}
           textColorHandlers={textColorHandlers}
           fillColorHandlers={fillColorHandlers}
-          headerFillHandlers={headerFillHandlers}
           arrowheadColorHandlers={arrowheadColorHandlers}
           strokeColorHandlers={strokeColorHandlers}
           afterGroup
