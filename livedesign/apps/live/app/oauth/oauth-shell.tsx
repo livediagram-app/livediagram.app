@@ -39,5 +39,5 @@ export const OAUTH_PAGES: OauthPagesConfig = {
   Shell: OauthShell,
   titleClass: AUTH_TITLE,
   useSignIn: useOauthSignIn,
-  onTokenCreated: (type) => track('Token', 'Created', type),
+  onTokenCreated: (type) => track('Token', 'Created', type === 'Cli' ? 'Cli' : 'MCP'),
 };
