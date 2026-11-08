@@ -386,7 +386,10 @@ built once here. It is shown here and, through each switched-on app's router, at
   liveplanner does), the embed code and the live image. Its help links go to the app's
   help on sharing.
 - **Guests.** A guest sees a sign-in banner at the foot of the page, with Sign In, Learn More (why an account
-  helps, loaded on first press) and a close this browser remembers, one for every app.
+  helps, loaded on first press) and a close this browser remembers, one for every app. Learn More's reasons are
+  the app's own where the apps differ (`signInReasons(app, words)`, `packages/explorer`): an app with an MCP server
+  offers "Connect AI tools" (API tokens and AI assistants over MCP); livehuddle, which has none, offers "Use the
+  API" (API tokens for your own scripts) instead.
 - **Home's banner.** Closing it is the person's `homeBanner` setting, a common one kept in `all`
   (`PATCH /api/account/settings`; read with the app's scopes, an app's old copy counting until `all` has one,
   [accounts.md](../003-accounts/accounts.md#common-settings)), so it stays closed in every app's Home and editor too, and the

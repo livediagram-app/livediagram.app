@@ -105,5 +105,5 @@ position.
 
 ## Export
 
-The export (SVG, PNG, PDF, thumbnails, the MCP render) lays out and knocks out labels with the same
+The export (SVG, PNG, PDF, thumbnails) lays out and knocks out labels with the same
 code as the canvas, so an exported label wraps at the same words and sits at the same spot.

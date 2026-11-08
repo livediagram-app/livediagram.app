@@ -207,8 +207,9 @@ open the dialog on that panel.
 
 Tabs drift apart in style over time, so the home ends with one grouped settings row, iOS style: **Apply to All Tabs**
 (a brand icon tile, the title, and a line saying what it does: "Give the other N tabs this tab's colours, finish,
-text and canvas."). It sits under Fine-tune, with a short note below the card: "Locked tabs keep their own style.
-Undo puts every tab back."
+text and canvas."). It sits under Fine-tune, with a short note below the card: "Undo puts every tab back." The shared
+row names locked tabs only in an app that locks them; livehuddle passes `tabLocks={false}`
+([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)).
 
 - **What it copies:** the open tab's whole style onto every other tab of the document: its theme (applied as picking that
   theme does, so each tab's elements take the new colours and keep their own picks), and its canvas (pattern,
@@ -217,8 +218,7 @@ Undo puts every tab back."
   untouched (`packages/workbench/src/lib/tab-style-to-all.ts`, `TAB_STYLE_KEYS`).
 - **One change:** a single undo step restores every tab. No confirmation: the dialog applies live, and Undo is there.
 - **Tabs not opened yet** are loaded first (the search sweep), so none is left out for being unopened. A tab whose
-  content could not load keeps its style: it is not written. (The shared row's note still names locked tabs;
-  livehuddle has none, [Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking).) A toast says how many tabs took
+  content could not load keeps its style: it is not written. A toast says how many tabs took
   the style and which kept their own.
 - **One tab:** the row is not shown: with one tab there is nothing to align.
 - **Busy:** while the other tabs load, the row reads "Applying…" with a spinner and takes no second press.

@@ -452,7 +452,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   element, as `penColour` already is.
 - `resolveStockColours`: after `penColour` (stroke), `penTextColour` sets `textColor` when unset
   (its version for the canvas surface). Every renderer resolves it (the canvas through
-  `stock-colour-projector.ts`, exports through `export-as-seen.ts`, the api's thumbnails and MCP images).
+  `stock-colour-projector.ts`, exports through `export-as-seen.ts`, the api's thumbnails).
 - `snappableCustomColours`: the custom colours held in the snap's field table (`SNAP_COLOUR_FIELDS`,
   which gains rows for paths, text boxes and the labels of unfilled shapes and arrows), so the
   custom section and the snap agree.

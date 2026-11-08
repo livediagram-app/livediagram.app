@@ -1,7 +1,11 @@
 # Agent presence
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
+> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
+
 **Status: built.** The comment endpoints and their listing, comment token ids, agent presence in the api, the room
-and the editor, and the CLI's `comment`, `presence`, `wait` and `watch`.
+and the editor.
 
 An agent acts as the person whose token it holds. People see its work and its comments as that person's, and its
 presence as that person's agent, and comments are how people and agents talk on the canvas when nobody is chatting.

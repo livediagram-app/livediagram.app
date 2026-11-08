@@ -31,7 +31,7 @@ the author's to write.
 - **Stored rows**: the rows are worked out at the editor's commit point, when anything on the tab changes, and stored on
   the key (`keyRows`), so an export, a thumbnail or an API reader draws the same rows without re-deriving them. An
   agent's write settles them the same way: a tab built from elements (`buildTab`) and an edit (the edit operations'
-  finalise), so the MCP's preview of a key an agent drew lists its lines rather than the empty hint.
+  finalise), so a preview of a key an agent drew lists its lines rather than the empty hint.
 - A meaning whose row has gone is kept, so a style switched off and on again keeps its meaning; a key keeps at most 24
   meanings, the oldest unused ones dropped first.
 
@@ -60,7 +60,7 @@ A key takes the **Shape** set. It is reference, not story, so it offers no entra
 
 ## Agents
 
-The MCP server and the REST API take `diagram-key` with `label` and `keyMeanings`; the rows are derived when the board
+The REST API takes `diagram-key` with `label` and `keyMeanings`; the rows are derived when the board
 next loads or changes.
 
 ## Element tour

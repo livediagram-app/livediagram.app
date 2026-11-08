@@ -253,7 +253,7 @@ minted, and the api reads a person's teams from it, as in production.
 A spec does what a person does on liveworkspace.app through the stand-in's test-only seeding routes,
 wrapped by `e2e/accounts-stub.ts`: `POST /e2e/accounts/__seed/team` (a team and its admin),
 `…/__seed/member` (someone joining) and `…/__seed/token` (an API token; its `secret` is the `lwt_…` a
-CLI or agent sends). A spec makes the team before minting the token its requests send, so that token
+script or agent sends). A spec makes the team before minting the token its requests send, so that token
 names the team. Making a team, inviting and making tokens are liveworkspace.app's (livehuddle links to them), so no spec covers
 them here.
 

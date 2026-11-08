@@ -53,7 +53,7 @@ video), mirroring how `richText` sits beside `label`:
 - **`note` stays the plain-text mirror**, always `=== runsPlainText(noteRich)`.
   Everything that reads a note (the badge's "has a note" test, the
   menu's Add / Edit Note label, search, the JSON / Excalidraw round-trip, the
-  MCP and API payloads) reads the mirror alone.
+  API payloads) reads the mirror alone.
 - **`noteRich` is absent when the note carries no formatting** (no runs, or a
   single delta-free run). A note without formatting stores only `note`.
 - Committing an empty note strips **both** fields.

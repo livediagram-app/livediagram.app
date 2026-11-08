@@ -39,8 +39,8 @@ because brand tiles must be excluded from tinting and fold-into-shape; neither e
 
 ## Inherited behaviours
 
-Canvas rendering, editor export, the share thumbnail (client-rendered SVG, so the viewer's emoji font applies) and
-the MCP render all come from the catalogue.
+Canvas rendering, editor export, the share thumbnail (client-rendered SVG, so the viewer's emoji font applies) all
+come from the catalogue.
 
 ## Tests
 

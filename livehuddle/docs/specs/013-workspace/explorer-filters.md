@@ -79,7 +79,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
 | Opens in  | `opens-in` | Opens in    | `canvas` livehuddle, `document` liveplanner, `document` livedocuments, `design` livedesign: its app | `apps`       |
 | Mode      | `mode`     | Mode        | `workshop` Workshop: the mode the canvas opens in (its summary's `mode`)                            | `modes`      |
 | Template  | `template` | Template    | None today: the last word of the canvas's creation intent names its template family                 | `intent`     |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)       | `source=ai`  |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool made it                                    | `source=ai`  |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year    | `since`      |
 | People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                          | `owner`      |
 | Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only          | `space`      |

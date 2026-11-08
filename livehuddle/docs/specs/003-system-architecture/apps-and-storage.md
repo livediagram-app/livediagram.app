@@ -58,5 +58,5 @@ D1").
 | `marketing` | Next.js on its own Worker   | Nothing at runtime                                             |
 | `help`      | Next.js on its own Worker   | Nothing at runtime                                             |
 
-The `mcp` and `cli` apps join in v1.1, if the owner takes that recommendation
-([Open decisions](../005-project-roadmap/open-decisions.md) D3).
+There is no `mcp` or `cli` app: they went with workbenches
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).

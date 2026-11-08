@@ -134,7 +134,7 @@ A document in This Browser lives in this browser, so opening it waits on nothing
 server says. The editor bootstrap ([Dedicated route for new-document creation → In-place handoff](../007-editor/new-document-route.md#in-place-handoff-to-the-editor),
 `app/document/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
 auth has settled, the path names a document registered in the local index
-(`isOfflineId`). Share links, embeds and workbenches always wait for auth.
+(`isOfflineId`). Share links and embeds always wait for auth.
 
 - The early open does **not wait for auth to settle**, mint a guest id or fetch
   the participant. It reads the document from IndexedDB and paints it under the
@@ -430,8 +430,7 @@ Offline Mode is independent of sign-in:
 
 When `retired-parts` holds anything, the editor offers once to move those parts where they now live. The offer
 waits until the editor has an identity of its own (a guest token or a signed-in account), because the move is made
-as that person. It is shown in the editor (beside the move prompt after signing in, never in an embed or a
-workbench, and never both at once: this offer goes first).
+as that person. It is shown in the editor (beside the move prompt after signing in, never in an embed, and never both at once: this offer goes first).
 
 - **The offer.** A dialog: **Some Pages and Boards Have a New Home**, with the subtitle "Pages, boards and designs
   you made in this browser now live in livedocuments, liveplanner and livedesign. They're kept safe here until you
@@ -464,8 +463,7 @@ workbench, and never both at once: this offer goes first).
   shown on load again. The set-aside copy stays. The same dialog is always one click away in Settings › Account ›
   Your Data, **Pages and Boards in This Browser** ("Pages, boards and designs from this browser that now belong
   in livedocuments, liveplanner or livedesign. They wait here until you move them."), whose **Move Them** button
-  opens it; the row is there only while `retired-parts` holds anything when Settings opens, and never in a
-  workbench. It stays while Settings is open, so the dialog it opened never vanishes under the person; once
+  opens it; the row is there only while `retired-parts` holds anything when Settings opens. It stays while Settings is open, so the dialog it opened never vanishes under the person; once
   nothing is left its button reads **All Moved**, disabled.
 - **Where it lives**: `lib/offline/retired-parts-upgrade.ts` (the set-aside), `lib/offline/retired-parts.ts` (the
   store: count, list, settle), `lib/offline/retired-parts-merge.ts` (writing `keep` back),

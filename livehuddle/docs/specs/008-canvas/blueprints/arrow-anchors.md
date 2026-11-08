@@ -384,7 +384,7 @@ export function rebindArrowAnchorsAfterMove(
 
 Validation (`validate.ts`): `ANCHORS = new Set<string>(ALL_ANCHORS)`; a pinned endpoint with an
 anchor outside it fails the pinned-end rule in `validate.ts` (`ANCHORS.has`), which rejects the element (a named rejection of the
-existing validator). The api, the MCP tools and every import path validate through it.
+existing validator). The api and every import path validate through it.
 
 ## Data and persistence
 
@@ -430,7 +430,7 @@ existing validator). The api, the MCP tools and every import path validate throu
 ## Security and trust
 
 - Pure client-side geometry over data the user can already edit; no new trust boundary.
-- Anchor ids arriving through the api, MCP, share-link editors or imports pass `ANCHORS`
+- Anchor ids arriving through the api, share-link editors or imports pass `ANCHORS`
   validation before storage.
 - Abuse: a diagram crafted with thousands of arrows on one side cannot make a drag frame quadratic
   beyond `SWAP_MAX_ENDS_PER_SIDE²` pairs (E10); the trigger test is linear in considered arrows and

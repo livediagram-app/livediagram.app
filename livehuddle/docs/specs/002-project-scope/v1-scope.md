@@ -1,7 +1,8 @@
 # v1 scope
 
-Status: **approved, being built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190;
-refocused on meeting by Work Tracker #423, whose parts remove what [Not in livehuddle](not-in-livehuddle.md) lists).
+Status: **approved, built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190;
+refocused on meeting by Work Tracker #423, whose five parts removed what [Not in livehuddle](not-in-livehuddle.md)
+lists; the diagram tools' leftover element engine goes in Work Tracker #459).
 
 What livehuddle's first release holds, what it leaves out, and which apps it ships. Every feature named here comes
 over from livediagram at the fork and **behaves as its forked spec in this tree says** unless this page says otherwise;

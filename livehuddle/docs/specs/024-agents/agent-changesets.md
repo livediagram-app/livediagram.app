@@ -1,5 +1,9 @@
 # Agent changesets
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
+> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
+
 **Status: built.** Closed livediagram-app/livediagram.app#343. Operations are the full
 [edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
 [agent presence](agent-presence.md) refresh is built: each changeset a token applies or reverts refreshes that
@@ -169,7 +173,7 @@ The room's answer is the source; when the room cannot be reached, nothing counts
   while hovered or focused), or until dismissed; a newer burst from the same token replaces it. It is an information toast, so
   the "Show notifications" preference silences it; the outline still shows.
 
-## The MCP server
+## livediagram's MCP server
 
 `update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
 `update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap

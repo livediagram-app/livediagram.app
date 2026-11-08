@@ -60,5 +60,5 @@ An Editor sets it. A Participant and a Viewer cannot (it is styling, and a Parti
 
 ## Agents
 
-The MCP server and the REST API accept `accentEdge` and `accentEdgeColor` on the shapes above, so an agent can mark
+The REST API accepts `accentEdge` and `accentEdgeColor` on the shapes above, so an agent can mark
 status or ownership the way a person would.

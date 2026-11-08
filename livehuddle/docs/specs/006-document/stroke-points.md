@@ -59,7 +59,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
   result in a bounded cache keyed by the block. A stroke that is never drawn is never decoded.
 - **Every edit produces a new block.** Moving or resizing a stroke changes only its box; erasing
   part of it, drawing it, or importing it encodes fresh blocks.
-- **One codec** in `@livehuddle/document` serves the editor, the api worker, the MCP server
+- **One codec** in `@livehuddle/document` serves the editor, the api worker
   and the imports, so there is one reader and one writer of the format.
 - **Developers read a block** with the debug decoder: a function that expands a block into
   readable `{ nx, ny, p }` points, and a script that prints a tab or document file with every
@@ -76,7 +76,7 @@ pen's pressure at each point when it reported one. It replaces the former `point
   whose length differs from the points is dropped, and the stroke draws at the middle pressure.
 - The former shape is accepted **only as migration input**, at every place a stored or foreign
   element arrives: the api's tab writes (create and save, which also serve API-token scripts and
-  the Google Drive sync's Import as a copy), the MCP server's own validation of what a model writes, realtime element operations from peers, clipboard pastes,
+  the Google Drive sync's Import as a copy), realtime element operations from peers, clipboard pastes,
   and tab file imports. Each runs the same migration
   before validation, so nothing downstream ever sees the former shape.
 - The migration is idempotent: a stroke already carrying `packedPoints` is returned unchanged.

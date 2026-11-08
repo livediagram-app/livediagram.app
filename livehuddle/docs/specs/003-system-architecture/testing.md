@@ -72,7 +72,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   test rather than read as `[object Blob]`.
 - **A tight budget is written for a developer's machine and widened on CI and under coverage.** CI's
   shared runners, under coverage, run the same work about 4x slower than an
-  M-series Mac (the Tidy Up hover: 24 ms locally, 101 to 104 ms on CI), so a
+  M-series Mac (the old Tidy Up hover, now the Auto-align press: 24 ms locally, 101 to 104 ms on CI), so a
   budget set for a person's device sits at the line there and fails at random;
   coverage alone slows it too (the pre-push hook's coverage run read a 16 ms
   drag frame at 20 ms). Such a test asserts `cpuBudgetMs(ms)`: `ms` in a plain
@@ -80,7 +80,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   `CI=0` is a developer's machine) or the run collects coverage (the shared
   Vitest config passes `LIVEWORKSPACE_COVERAGE` to its workers). Three is enough
   beside a 4x slower runner because each budget keeps its own room over the
-  local timing (Tidy Up: 100 ms against 24). A loose regression guard (a budget many times what the
+  local timing (Auto-align: 100 ms against 24). A loose regression guard (a budget many times what the
   work measures) needs neither.
 - **A test never pays a cold module load.** When the code under test imports
   a module lazily (`await import(...)`), the test file also imports it

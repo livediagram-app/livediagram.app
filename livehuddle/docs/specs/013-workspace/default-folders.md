@@ -44,7 +44,7 @@ folder drops the defaults that point at it.
 - `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default. The
   `/new` never asks where a canvas goes ([New document route](../007-editor/new-document-route.md#no-welcome-screen)).
 - A template link (`/new?template=`) is filed by its template's family at creation.
-- An API or MCP create that names no place is filed by the template family of its first seeded tab
+- An API create that names no place is filed by the template family of its first seeded tab
   (`apps/api/src/routes/document-seed.ts`).
 - Duplicate and the server copy land beside their source and are never filed by a default.
 - This Browser's canvases have no folder: an offline canvas is kept where it is made
@@ -92,5 +92,4 @@ folder drops the defaults that point at it.
 ## References
 
 [Folders](folders.md), [Team shared documents](team-shared-documents.md),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md),
-[MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md).
+[Dedicated route for new-document creation](../007-editor/new-document-route.md).

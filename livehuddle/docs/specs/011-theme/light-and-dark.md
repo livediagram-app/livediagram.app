@@ -83,7 +83,7 @@ never rewritten. Named colours are a map read built once, since the parse runs f
   exports made from the editor, the palette's tile tint, the theme and look previews in Tab Style, and the quick
   style swatches, and the Explorer's previews, which the export door draws in the half the viewer asks for
   ([Document snapshots](../006-document/document-snapshots.md#in-the-viewers-half)). Server-made images with no
-  viewer (the live image, the share card, the MCP's inline renders) draw what is stored.
+  viewer (the live image, the share card, the thumbnails) draw what is stored.
 
 ## No match prompt
 

@@ -233,7 +233,7 @@ The media service holds each document's whole set, pushed by the document (below
 - **What is a reference.** An element in the tab's top-level `elements` array with `type: 'image'` whose `imageId` is a gallery id: a string of 1 to 128 characters that is not a `data:` URI. So is a page's picture: a page in the tab's top-level `pages` array whose `background.fill` has `kind: 'image'` and a gallery `imageId` (livedocuments' Pages, "Image backgrounds"). A placeholder (`imageId: null`) references nothing, and neither does a data URI (an [Offline Mode](../006-document/offline-mode.md) document embeds its bytes that way; it names no gallery row). Undo history and offline copies are not references.
 - **Keyed by tab, in the tab's document.** A document keeps its own copy of each of its tabs (a tab shared with other documents is a copy in each), so its references go with that copy: the foreign key to `tabs` drops them with the tab. Nothing ties `image_id` to a gallery row: a reference may name another owner's image, one this document has not asked about yet, or one deleted from its gallery.
 - **Maintained in the body's own transaction.** Every write of `tabs.data` carries its index statements in the same batch, one transaction in the document's object, so the index can't drift from the body:
-  - **Replace** (`upsertTab`: the autosave, which the realtime room and the MCP server reach through the tab PUT, and the comment / action routes; `seedTabs`: create, JSON import and Offline Mode's Sync Space): delete the tab's references not in the new set, then insert the new set, ignoring ones already there. A save that changes no image writes no index row.
+  - **Replace** (`upsertTab`: the autosave, which the realtime room and API scripts reach through the tab PUT, and the comment / action routes; `seedTabs`: create, JSON import and Offline Mode's Sync Space): delete the tab's references not in the new set, then insert the new set, ignoring ones already there. A save that changes no image writes no index row.
   - **Copy** (`importDocumentCopy`, Copy to my files): the copy's references come from the copied body.
   - **Compare-and-swap** (`swapTabData`, a Participant's write): add only. The swap can lose to a concurrent save, and a delete would then remove references the winner wrote.
   - **Tab removal** (`deleteTabRow`) and **document removal** (the document's object deletes everything it stores): the references go with the tabs.
@@ -289,26 +289,19 @@ Setting or clearing an image is one undoable step. Undo restores the prior `imag
 
 ## Agents
 
-An assistant places the user's own pictures through the MCP and the CLI; it never uploads them.
+An agent places the user's own pictures through the API (livehuddle has no MCP server or CLI); it never uploads them.
 
-- **Finding a picture.** `list_images` (MCP, [MCP server §4.5b](../../../../livediagram/docs/specs/015-api/mcp-server.md#45b-list_images)) and
-  `image ls` (CLI, [CLI](../../../../livediagram/docs/specs/015-api/cli.md)) list the caller's gallery (`GET /api/images`): each image's id, name,
-  width, height, size and upload time, newest first, filtered by name. The MCP's `image: true` adds a contact sheet
-  of the listed images, so an assistant can tell which screenshot is which without names that say so.
+- **Finding a picture.** `GET /api/images` lists the caller's gallery: each image's id, name,
+  width, height, size and upload time, newest first, filtered by name.
 - **Placing it.** An `image` element takes the id as `imageId`, with optional `alt` and `objectFit`, on any write
-  that takes elements (`create_document`, `add_tab`, `update_document`, a changeset). Before writing, the MCP checks
-  every `imageId` the elements carry against the caller's gallery, in one gallery read for the whole call, and
-  refuses one that is not there, naming the element and `list_images` (`imageId "…" on element "hero" is not in
-your image gallery: list_images lists the pictures you can place`). That keeps the [placement
-  grant](#placement-grants) rule honest: an id read from someone else's document would only draw a placeholder for
-  everyone, so it is refused where it was typed rather than discovered later as a dashed box.
+  that takes elements (a create or a changeset). The [placement grant](#placement-grants) rule holds: an id read
+  from someone else's document only draws a placeholder.
 - **A placeholder on purpose.** An `image` element without `imageId` is the empty "pick an image" placeholder, which
   the user fills in the editor. An assistant laying out a page before the user has uploaded anything places
   captioned placeholders and says so.
-- **Seeing it.** The MCP's preview embeds placed images ([Preview / live
-  image](#preview--live-image-server-rendered-svg)), so the assistant's own picture of the page shows the
-  screenshot, not a box.
-- **Why no upload.** A chat assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
+- **Seeing it.** The server-rendered preview embeds placed images ([Preview / live
+  image](#preview--live-image-server-rendered-svg)), so a picture of the page shows the screenshot, not a box.
+- **Why no upload.** An assistant cannot hand an attachment's bytes to a tool, and a fetch from a URL would bring
   server-side requests to arbitrary hosts and pictures the user never chose. Pictures reach the gallery through the
   editor (upload, paste, drop or Image search), where the user chooses them.
 

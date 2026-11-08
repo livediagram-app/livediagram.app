@@ -26,11 +26,11 @@ to bring people into a meeting, where everyone should be able to speak, comment 
   platform's per-app table (`APP_LINK_LEVELS`, `APP_DEFAULT_LINK_LEVEL`,
   [Sharing and access](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#sharing-and-access)),
   so the other products keep all three and Editor to start.
-- **The api and the MCP refuse a new Viewer link** rather than quietly making a Participant one: `POST
+- **The api refuses a new Viewer link** rather than quietly making a Participant one: `POST
 /api/documents/:id/share {role: "view"}` answers 400 `level_not_offered`, and the index does the same for a
   link made straight on it. A script or an agent that asks for a look-only link learns that livehuddle has none,
   instead of handing out a link that lets people speak and write when they were told it would not. A share with no
-  role is Participant. The MCP's `share_document` offers `participate` (the default) and `edit` only.
+  role is Participant.
 
 ### Legacy Viewer links
 
@@ -164,8 +164,8 @@ someone else.
 
 Each feature ships role tests, as every product's do: one per level for each gate in the table, including the
 room's refusal of a Viewer's speech, reaction and answer. The Viewer cases now cover legacy Viewer links only, and
-the share tests hold the offer: the dialog lists Editor and Participant with Participant chosen, and the api, the
-index and the MCP refuse a new Viewer link while a legacy one still resolves as a Viewer. The table is held whole by two matrices, one row per gate
+the share tests hold the offer: the dialog lists Editor and Participant with Participant chosen, and the api and the
+index refuse a new Viewer link while a legacy one still resolves as a Viewer. The table is held whole by two matrices, one row per gate
 and one case per level: the room's (`apps/api/src/share-roles.test.ts`: the op gate, the participant content rule and
 the baton) and the editor's (`apps/editor/lib/share-roles.test.ts`: `can`, the session gates read from it, the
 palettes (`stripPaletteFor`: building and avatar) and the selection modes). A row added here gets its cases in both.

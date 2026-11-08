@@ -2,7 +2,7 @@
 
 > **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 1): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/code-block.md) is the one to read and change. livehuddle has no tile, menu, dialog or renderer for it: a stored code block is a [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder, which an Editor can delete. The rest of this page describes the element as livediagram has it.
 
-A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (Technology icons, architecture/sequence/class/state templates, the MCP server, Mermaid import); without it, people fake snippets with text elements.
+A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (Technology icons, architecture/sequence/class/state templates, the API, Mermaid import); without it, people fake snippets with text elements.
 
 ## Model: a data shape, not a new element kind
 
@@ -57,7 +57,7 @@ columns as the monospace face draws them: a character takes one, a wide one
 - **Double-click** opens an **Edit code dialog** (`../livediagram/apps/editor/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) plus a language dropdown. Save commits one history entry; read-only gating as usual.
 - The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): a summary of the line count and language, an "Edit Code" row opening the same dialog, and a Wrap toggle. The language is chosen in the dialog only; the menu has no language picker.
 
-## Headless render (share thumbnails, MCP, exports)
+## Headless render (share thumbnails, exports)
 
 `svg-render` has a `code-block` branch (`svgCodeBlockShape`): the scheme's card + plain monospace `<text>` lines (clipped to the box, no highlighting: the tokenizer is deliberately a live-editor-only chunk, and un-highlighted mono is a faithful degrade for a thumbnail).
 

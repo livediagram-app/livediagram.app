@@ -1,5 +1,9 @@
 # Edit operations
 
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
+> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
+
 **Status: built.** `@livehuddle/edit-operations` reads both forms and applies every operation below, by ref or
 selector, through the changeset route. A result's footer names the [lint](diagram-lint.md)
 verdict.

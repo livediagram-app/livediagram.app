@@ -12,7 +12,7 @@ Pages live on `www.livehuddle.app`. A page load on the bare `livehuddle.app` (a 
 `/.well-known`, and not a WebSocket upgrade) answers one `301` to the same path and query on
 `https://www.livehuddle.app`, with `Cache-Control: public, max-age=86400` (`wwwRedirect`,
 `@liveworkspace/sites/workspace-proxy`). Everything else answers on the bare domain as before: API calls, the sign-in
-callback and live rooms from an older page, a CLI or an MCP client keep working, and no `Authorization` header is
+callback and live rooms from an older page or a script keep working, and no `Authorization` header is
 lost to a cross-origin redirect. It is always one hop: `/status` and `/telemetry` go straight to liveworkspace, and a
 help path missing its `/help` goes straight to `www.livehuddle.app/help/…`. Only production's router does it (no
 `DEPLOY_ENV`; `wrangler dev` hands a local router its production host), and `www.`, `staging.` and local hosts never

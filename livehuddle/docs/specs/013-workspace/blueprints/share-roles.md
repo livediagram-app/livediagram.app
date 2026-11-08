@@ -32,7 +32,6 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `apps/api/src/routes/document-room-routes.ts`                                                                  | The ticket carries `adderKey` for a Participant; the upgrade forwards `X-Verified-Adder`      |
 | `apps/api/src/document-room/document-room.ts`, `room-op-gate.ts`, `document-room-rules.ts`                     | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
 | `apps/api/src/participant-write.ts` (new)                                                                      | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
-| `packages/agent-verbs/src/mcp/*`                                                                               | `share_document.role` takes three levels, default `participate`                               |
 | `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
 | `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
 | `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                        | Three cards                                                                                   |
@@ -162,8 +161,8 @@ Editor state:
 `roleGates(can, runBlocked)` answers the canvas's role gates from `can`, never from `isReadOnly`: `run` is
 `level === 'edit' && !runBlocked` (start, end, reveal or configure a session tool; Bring Focus), `shape` is
 `level === 'edit'` (the template start; an estimate's scale), `takePart` is `can.takePart` (answers, reactions,
-speech, comments). `isReadOnly` is `!canEdit`, which equals `can.level !== 'edit'` in every session, preview and
-ended workbench included, so the switch changes no behaviour.
+speech, comments). `isReadOnly` is `!canEdit`, which equals `can.level !== 'edit'` in every session, preview
+included, so the switch changes no behaviour.
 
 A walking click on a control piece reads the same gates through the face's press: Bring Focus gets one on `run`
 (`EditorCanvasHost` passes `onPressFocusButton` only then), a Selection Mode button on `!can.alwaysWalks`, a Timer or
@@ -265,9 +264,7 @@ REST: `POST /api/documents/:id/share` takes `role?: 'view' | 'participate' | 'ed
 400 `invalid role`. `GET /api/share/:code` answers `role: AccessLevel`. `POST .../room-ticket` answers
 `RoomTicketResponse { ticket, adderKey? }`, the key only for a Participant.
 
-MCP: `share_document.role` is `z.enum(['view', 'participate', 'edit']).optional()`, default `participate`; the
-description reads `"participate" (default): recipients add stickies, write and comment but cannot reshape it. "view":
-they only look, with no comments. "edit": they can change anything.`
+No MCP: livehuddle has none ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 ## Data and persistence
 
@@ -356,8 +353,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
   `level_not_offered` before the index is asked (`routes/document-index-routes.ts`), the index's
   `POST /items/:id/share` refuses a non-public `view` link on a livehuddle item with the same code, and its
   `PATCH /share/:code` refuses a change to a level the app does not offer (a rescope that keeps a legacy link's
-  level is allowed). A public link (a Community post's) is always `view` and is outside the table. The MCP's
-  `shareDocumentShape.role` is `z.enum(['participate', 'edit'])`.
+  level is allowed). A public link (a Community post's) is always `view` and is outside the table.
 - Arrow keys step through the offered levels, wrapping; Home and End reach the ends.
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
 - A Participant and a Viewer have no building strip and no Edit | Walk toggle; they are always walking. Tab add, rename and delete and context
@@ -407,7 +403,6 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Participant save branch                                         | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                |
 | Three cards and keys                                            | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`              |
 | Pill per level                                                  | `apps/editor/components/chrome/RoleIndicator.test.tsx`               |
-| MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                              |
 
 ## Constants and configuration
 

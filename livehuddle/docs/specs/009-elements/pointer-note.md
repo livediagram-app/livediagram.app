@@ -75,5 +75,5 @@ to the spot the note is about. CSS only; reduced motion and every export show th
 
 ## Agents
 
-The MCP server and the REST API take `pointer-note` with `label`, `pointerTip` and `attachedTo` / `attachAt`; an agent
+The REST API takes `pointer-note` with `label`, `pointerTip` and `attachedTo` / `attachAt`; an agent
 sets the host and point and the editor places the note's tip on it when the board next loads.

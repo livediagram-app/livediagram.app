@@ -11,8 +11,7 @@ A difference between the canvas and its export is a bug, not a degradation.
 That applies to all four surfaces the headless renderer feeds, because they are
 all "a picture of the document" to whoever is looking at one: the SVG / PNG / PDF
 export, the Explorer's preview thumbnails, the public live-image share link
-([Live image share link](../013-workspace/live-image-share.md)), and the inline images the MCP server
-returns ([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
+([Live image share link](../013-workspace/live-image-share.md)).
 
 ## Why it kept breaking
 

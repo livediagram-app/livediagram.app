@@ -9,7 +9,7 @@ is `apps/help/app/explorer/timeline`.
 ## 1. What is recorded
 
 The index records what it changes itself, in the same batch as the change: a canvas made (`created`, with `source`
-`ai` for an MCP create and `import` for a CLI one, or `copiedFrom` for a copy), `renamed`, `moved`, `trashed`,
+`ai` or `import` for one an older agent made, or `copiedFrom` for a copy), `renamed`, `moved`, `trashed`,
 `restored`, `shared` (a share link made, with its level), `unshared` and `favourited` (on its person's Timeline only).
 
 livehuddle reports `edited`. The canvas's room records the editor of every save made through an HTTP route that

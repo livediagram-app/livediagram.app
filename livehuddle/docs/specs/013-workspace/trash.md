@@ -19,12 +19,11 @@ team library): it only sends the canvas to the Trash, so a question would guard 
 - Deleting the canvas open in the editor (`trashOpenDocument`, `apps/editor/lib/document-delete-undo.ts`) marks it
   deleted first (`lib/document-tombstones.ts`), so neither the autosave nor the unload flush writes it back, asks
   the index to delete it, and leaves for the Explorer at `/explorer?trashed=<id>&title=<name>`, which offers the same
-  Undo on arrival and drops both from the address once read. The workbench frame's Explorer takes the same canvas from
-  sessionStorage, kept for one page load.
+  Undo on arrival and drops both from the address once read.
 - A team canvas goes to the team's Trash, and its Undo restores it there.
 
 Every delete of a whole canvas goes to the Trash: the Explorer, the editor, the team library, the public API with a
-token, the MCP server, and Google Drive sync. So does a canvas left empty, by the index's daily sweep
+token, and Google Drive sync. So does a canvas left empty, by the index's daily sweep
 ([Empty document clean-up](empty-document-cleanup.md)), with the reason `empty`. Tabs are not trashed; deleting a
 tab is unchanged.
 
@@ -49,7 +48,7 @@ references stay referenced until the purge, so the unused-image retention never 
 canvas ([Images](../009-elements/images.md)).
 
 The index grants a trashed canvas to its owner and team alone, and their grant says it is in the Trash (`trashed`).
-Every door about it answers them `410 document_trashed` (the workbench's ticket mint and session redemption among
+Every door about it answers them `410 document_trashed` (the room ticket mint among
 them), and anyone else, a share-link visitor included, as for a canvas that does not exist (404). Only its snapshot
 still serves, for the Trash's own rows. Its room admits nobody: trashing closes its sockets (`document-trashed`), an
 upgrade with a trashed grant is refused 410, and a session renewing with one is closed as the trashing closes it.
@@ -80,9 +79,7 @@ and drops its snapshot. Delete Forever and Empty Trash run the same purge at onc
 
 API clients list, restore and purge trashed canvases at `/api/trash` ([API](../015-api/api.md)), which reads and
 writes the index: `GET /api/trash`, `POST /api/trash/:id/restore`, `DELETE /api/trash/:id`, and `DELETE /api/trash`
-(`?team=<id>` for a team's) to empty livehuddle's canvases from a Trash. The MCP server's `delete_document` bins a
-canvas but never destroys one; `list_trash` and `restore_document` are the way back
-([MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md)).
+(`?team=<id>` for a team's) to empty livehuddle's canvases from a Trash.
 
 ## Google Drive sync
 

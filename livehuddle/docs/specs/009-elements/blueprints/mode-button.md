@@ -176,7 +176,7 @@ onPressModeButton?: (element: ShapeElement) => void; // Canvas.types, BoxedEleme
 ## Security and trust
 
 - A press is local UI state; there is no wire message and no write.
-- `mode` arrives from any writer (guest, signed-in, API token, MCP); the validator is the gate.
+- `mode` arrives from any writer (guest, signed-in, API token); the validator is the gate.
 - Handing out the Eraser is allowed by design; the eraser's own edit gates still apply to the
   presser.
 

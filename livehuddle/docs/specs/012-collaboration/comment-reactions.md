@@ -70,7 +70,7 @@ are not drawn.
   reaction arrived cannot erase it.
 - A tab save keeps whatever reactions it carries, cleaned (malformed ones dropped); an Editor may already change
   anything on the canvas.
-- Agents read reactions: the thread listing (`GET .../comments`, the CLI's `comment ls`) carries, per comment, one
+- Agents read reactions: the thread listing (`GET .../comments`) carries, per comment, one
   entry per emoji used with its glyph, name, count and who. Agents do not react.
 
 ## Shared code

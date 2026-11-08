@@ -17,7 +17,7 @@ images arrive, and when some cannot, see how many and why, never a failed import
 - Every consumer is an importer in the live editor (`apps/editor/lib/*-import.ts`); no other app
   imports boards.
 - It needs the browser: canvas decoding and encoding (`createImageBitmap`, `<canvas>`), the
-  editor's authenticated api client (`apiUploadImage`) and the Offline Mode store check. The MCP
+  editor's authenticated api client (`apiUploadImage`) and the Offline Mode store check. The api
   worker has none of these, and uploading from a worker would spend server CPU the browser can
   spend instead.
 - The pure parts (encoding policy, outcome tallies, error mapping) are separate modules with no

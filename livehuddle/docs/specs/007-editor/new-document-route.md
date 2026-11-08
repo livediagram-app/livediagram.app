@@ -231,11 +231,7 @@ tints on a soft panel (`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), the
 phone** it is the same card, narrower (18rem). On a **short screen** (480px tall or less, a phone on its side) the card
 drops its picture, so it clears the toolbars above and below instead of sliding under the Palette strip.
 
-A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
-the card: thick multi-colour curved lines that slowly flow along their paths via
-animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
-`pointer-events-none` / `aria-hidden`, and stands down under
-`prefers-reduced-motion`.
+The card has no animated backdrop behind it (the old `AnimatedLinesBackdrop` was deleted unused, Work Tracker #583).
 
 ## What a /new link can ask for
 

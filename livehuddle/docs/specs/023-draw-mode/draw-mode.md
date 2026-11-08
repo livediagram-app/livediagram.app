@@ -435,7 +435,7 @@ The eraser offers **both** modes (Stroke and Partial, not editor modes), switche
   chosen. It is never stored on the tab, so choosing it changes nothing for
   anyone else, and it is the pattern of every tab that person works on with a whiteboard
   dock. Without a dock, the tab's own stored pattern shows, shared by
-  everyone. Exports, thumbnails and api or MCP images always use the tab's
+  everyone. Exports, thumbnails and api images always use the tab's
   stored pattern.
 - The pattern is painted in the canvas's pattern colour and scales with zoom,
   as the canvas grid does.

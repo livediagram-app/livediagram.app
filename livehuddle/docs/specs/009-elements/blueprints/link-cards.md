@@ -208,7 +208,7 @@ export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
   network, which is the residual control. Hostnames are never matched by IPv6 prefix `[QB12]`.
 - **Response trust.** Parsed fields are text; the view renders them as text and as `<img src>`
   with `referrerPolicy="no-referrer"`, so markup cannot execute. `meta` also arrives from peers,
-  API tokens and MCP, so it is validated on write (GB13).
+  API tokens, so it is validated on write (GB13).
 - **Privacy.** Viewers' browsers load the OG image and favicon from third-party hosts; no referrer
   is sent. A proxy is out of scope (spec).
 - **Follow.** `normaliseUrl` on store, `isSafeFollowUrl` on follow, `noopener,noreferrer`.

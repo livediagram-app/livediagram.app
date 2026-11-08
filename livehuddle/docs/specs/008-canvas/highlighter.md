@@ -20,7 +20,7 @@ No new element type. The stroke reuses the freehand pipeline end to end: normali
 
 ## Visual treatment
 
-Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` used by share thumbnails and the MCP render) apply the same recipe when `pen === 'highlighter'`:
+Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` used by share thumbnails) apply the same recipe when `pen === 'highlighter'`:
 
 - **Stroke width**: a wide round stroke (`penWidth ?? 14` px, `vector-effect: non-scaling-stroke`), ignoring the `strokeWidth` border presets (they only reach hairline widths).
 - **Round caps + joins**, never dashed, never filled.

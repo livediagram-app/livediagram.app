@@ -39,11 +39,10 @@ Object (`exportImage`):
 - **404** no such document, a tab it does not hold, or a Community post's code while the post is not open.
 
 The drawing is the first tab, or `tab`, through `renderElementsToSvg` (`@livehuddle/document`, the same DOM-free
-renderer the MCP worker uses). Icon elements render their real glyph via the
+renderer the thumbnails use). Icon elements render their real glyph via the
 `@liveworkspace/icons/resolve` resolver. Image
 elements render their real picture: the object reads each upload from the media service and inlines it as a base64
-data URL through `embedTabImages` (`@livehuddle/api-schema`, shared with the MCP preview,
-[MCP server](../../../../livediagram/docs/specs/015-api/mcp-server.md) §5), in document order under a 3 MB total budget so a tab of large photos
+data URL through `embedTabImages` (`@livehuddle/api-schema`), in document order under a 3 MB total budget so a tab of large photos
 can't produce a multi-megabyte picture. An image past the budget, unknown to the media service, not one the
 document may serve, or not a recognised raster format keeps its placeholder box.
 
@@ -72,7 +71,7 @@ never reach a public picture.
 The object stores nothing and stamps nothing about pictures: whether a drawing is current, and who may see it, are
 the platform's. It is **render-on-read**, never render-on-save:
 
-- **Covers every write path.** Every tab write (editor, collaborators, MCP server, API token) moves the index's
+- **Covers every write path.** Every tab write (editor, collaborators, API token) moves the index's
   `updatedAt` through the document's outbox, so the platform's copy goes stale uniformly.
 - **No wasted renders.** A document is drawn only when it has been edited _and_ then looked at. A save costs no
   render at all.

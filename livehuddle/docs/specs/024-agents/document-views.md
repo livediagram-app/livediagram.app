@@ -1,7 +1,11 @@
 # Document views
 
-**Status: built**, the `lint` view answered by the [diagram lint](diagram-lint.md); the CLI reads a pulled file's views
-offline and computes `diff` from its read copies.
+> **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
+> the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
+> doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.
+
+**Status: built**, the `lint` view answered by the [diagram lint](diagram-lint.md). No livehuddle door serves `diff`
+(livediagram's CLI computes it from its read copies).
 
 A **view** is a read-only text projection of a tab, each answering one kind of question at the lowest token cost.
 Views are what an agent reads by default; JSON is what it asks for. The measurements behind every choice here are in

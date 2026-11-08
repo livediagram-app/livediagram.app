@@ -19,7 +19,7 @@ result plus an honest report. The [Microsoft Whiteboard](whiteboard-import.md),
   `excalidraw-scene.ts`) that parses its source into a board scene; the one
   landing (`apps/editor/lib/board-scene/`) and the shared image stage
   (`apps/editor/lib/import-images/`) do the rest. Lazy-loaded by `useTabImport`
-  like the other importers. Nothing here is needed by the MCP worker, so it
+  like the other importers. Nothing here is needed by the api worker, so it
   stays in `apps/editor`.
 
 ## Stages
