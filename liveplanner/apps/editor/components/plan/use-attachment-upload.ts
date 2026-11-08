@@ -5,7 +5,7 @@
 // another, then every one that landed joins the end of the card's list in one write (one undo step), read from the
 // card as it is then, so a change made meanwhile is kept. A file past the card's cap, or one refused, is skipped and
 // said; the rest still land.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ITEM_ATTACHMENTS_MAX,
   attachmentName,
@@ -18,7 +18,7 @@ import { ImageUploadError, apiUploadImage } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { isOfflineId } from '@/lib/offline/offline-store';
-import { usePlan } from './PlanContext';
+import { usePlanCard, usePlanLatest } from './PlanCardContext';
 
 export const ATTACHMENTS_FULL = `A card holds up to ${ITEM_ATTACHMENTS_MAX} images.`;
 export const ATTACHMENTS_OFFLINE = 'Save this plan to your account to add images.';
@@ -50,17 +50,13 @@ export function useAttachmentUpload(
   canEdit: boolean,
   { watchOffline = true }: { watchOffline?: boolean } = {},
 ): AttachmentUpload {
-  const plan = usePlan();
-  const scope = plan?.itemsScope ?? null;
+  const scope = usePlanCard()?.itemsScope ?? null;
   const offline = useIsOfflineProject(watchOffline ? (scope?.projectId ?? null) : null);
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   // The plan as it is now, read when the uploads end (the closure's would be stale by then).
-  const planRef = useRef(plan);
-  useEffect(() => {
-    planRef.current = plan;
-  });
+  const planRef = usePlanLatest();
   const blocked = offline ? ATTACHMENTS_OFFLINE : unavailable ? IMAGE_UNAVAILABLE : null;
   const canAdd = canEdit && !!scope && !blocked;
 
@@ -116,7 +112,7 @@ export function useAttachmentUpload(
       setError(failure);
       return failure;
     },
-    [canAdd, scope, itemId],
+    [canAdd, scope, itemId, planRef],
   );
 
   return {

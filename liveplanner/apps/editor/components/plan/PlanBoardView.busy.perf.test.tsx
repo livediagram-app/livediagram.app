@@ -8,6 +8,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import type { Finish, ShapeElement } from '@liveplanner/project';
 import { PlanBoardView } from './PlanBoardView';
+import { CARD_RUN_MAX } from './card-runs';
 import { PlanProvider, type PlanContextValue } from './PlanContext';
 import { PlanTextScaleProvider } from './PlanTextScaleContext';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
@@ -159,4 +160,70 @@ describe('A Tab Style pick on a busy board', () => {
       expect(ms).toBeLessThan(cpuBudgetMs(THEME_BUDGET_MS));
     }
   }, 120_000);
+
+  // docs/specs/026-plan/plan-board.md "A drag stays smooth": picking a card up (the plan's dragging card, this person's
+  // presence on it) changes nothing a card draws, so no card redraws; every card did.
+  it('redraws no card as a card is picked up', () => {
+    const value = plan(BUSY_CARDS);
+    const tree = (v: PlanContextValue) => (
+      <SelectionStoreProvider store={createSelectionStore()}>
+        <PlanProvider value={v}>
+          <PlanBoardView element={element()} />
+        </PlanProvider>
+      </SelectionStoreProvider>
+    );
+    const r = render(tree(value));
+    counts.face = 0;
+    r.rerender(
+      tree({
+        ...value,
+        draggingItemId: 'i1',
+        presence: new Map([['i1', { name: 'Sam', color: '#7c3aed' }]]),
+      } as unknown as PlanContextValue),
+    );
+    // Only the card the presence ring is on.
+    expect(counts.face).toBeLessThanOrEqual(1);
+  }, 120_000);
+
+  // docs/specs/026-plan/plan-board.md "A drag stays smooth": letting a card go in another column changes that card
+  // alone (the store keeps every other card's object), so only it and the cards of the runs it leaves and joins
+  // (card-runs.ts, CARD_RUN_MAX each) are drawn again; every card on the board was.
+  it('redraws only the moved card and its runs as a card is dropped', () => {
+    const value = plan(BUSY_CARDS);
+    const tree = (v: PlanContextValue) => (
+      <SelectionStoreProvider store={createSelectionStore()}>
+        <PlanProvider value={v}>
+          <PlanBoardView element={element()} />
+        </PlanProvider>
+      </SelectionStoreProvider>
+    );
+    const r = render(tree(value));
+    const moved = new Map(value.items);
+    const card = moved.get('i1')!;
+    moved.set('i1', { ...card, fields: { ...card.fields, status: 'review' } });
+    counts.face = 0;
+    r.rerender(tree({ ...value, items: moved }));
+    expect(counts.face).toBeGreaterThan(0);
+    expect(counts.face).toBeLessThanOrEqual(1 + 2 * CARD_RUN_MAX);
+  }, 120_000);
+
+  // docs/specs/026-plan/plan-board.md "Cards out of view wait": a busy board's cards sit in runs the browser skips out
+  // of view (card-runs.ts); a quiet board draws its cards straight in their lists.
+  it('draws a busy board in runs, a quiet one without', () => {
+    const tree = (n: number) => (
+      <SelectionStoreProvider store={createSelectionStore()}>
+        <PlanProvider value={plan(n)}>
+          <PlanBoardView element={element({ id: `b${n}` })} />
+        </PlanProvider>
+      </SelectionStoreProvider>
+    );
+    const busy = render(tree(400));
+    const cards = [...busy.container.querySelectorAll('[data-plan-card]')];
+    expect(cards.length).toBeGreaterThan(100);
+    expect(cards.every((c) => c.parentElement?.hasAttribute('data-plan-run'))).toBe(true);
+    busy.unmount();
+    const quiet = render(tree(40));
+    expect(quiet.container.querySelectorAll('[data-plan-card]').length).toBeGreaterThan(0);
+    expect(quiet.container.querySelector('[data-plan-run]')).toBeNull();
+  }, 60_000);
 });

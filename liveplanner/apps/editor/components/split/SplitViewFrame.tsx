@@ -14,6 +14,7 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
+import { useBodyEndAnchor } from '@/hooks/ui/useBodyEndAnchor';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {
   anchorFromEditorView,
@@ -60,6 +61,8 @@ export function SplitViewFrame({
     splitShowing: boolean,
   ) => ReactNode;
 }) {
+  // The editor's root never the body's last element, so an overlay coming and going restyles none of it in Safari.
+  useBodyEndAnchor();
   const ctx = useEditorContext();
   const {
     tabs,
