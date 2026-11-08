@@ -289,6 +289,35 @@ describe('HintRing', () => {
     }
   });
 
+  it('skips a target another layer covers, and rings it again once uncovered', () => {
+    vi.useFakeTimers();
+    const had = Object.getOwnPropertyDescriptor(document, 'elementFromPoint');
+    try {
+      drawn('under', 100);
+      drawn('beside', 300);
+      const sheet = document.createElement('div');
+      document.body.appendChild(sheet);
+      let top: Element = sheet;
+      // A dialog over #under; #beside, and a child of a target, are what is hit at their own centres.
+      const inner = document.createElement('span');
+      document.getElementById('beside')!.appendChild(inner);
+      Object.defineProperty(document, 'elementFromPoint', {
+        configurable: true,
+        value: (x: number) => (x < 250 ? top : inner),
+      });
+      render(<HintRing selector={['#under', '#beside']} />);
+      expect(ringLeft()).toBe('296px');
+      top = document.getElementById('under')!;
+      act(() => void vi.advanceTimersByTime(150));
+      expect(ringLeft()).toBe('96px');
+      sheet.remove();
+    } finally {
+      if (had) Object.defineProperty(document, 'elementFromPoint', had);
+      else delete (document as { elementFromPoint?: unknown }).elementFromPoint;
+      vi.useRealTimers();
+    }
+  });
+
   it('takes one selector too', () => {
     drawn('only', 20);
     render(<HintRing selector="#only" />);
