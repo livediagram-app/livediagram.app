@@ -2,8 +2,9 @@
 
 **Status in livehuddle: retired.** Nothing in livehuddle arms these tools. Work Tracker #329 removed the whiteboard
 dock, its keys and settings, the Fill tool's paint bucket, Snap colours, the board's own style memory and the quick
-style panel's board and pen rows. What is left in the editor (the whiteboard pen, Path and Fill intents and the canvas
-gestures that serve them) is unreachable and goes in a later pass. The specs below describe livediagram's tools.
+style panel's board and pen rows. Work Tracker #459, part 4 deleted what was left (the whiteboard pen, Path and Fill
+intents, the canvas gestures that served them, and the stroke and path elements, which a stored tab now shows as
+placeholders). The specs below describe livediagram's tools.
 
 > The whiteboard eraser is retired with the Eraser (6 November 2026,
 > [Eraser panel](../008-canvas/eraser-panel.md)): what these specs say of it, and of its Stroke and Partial modes,

@@ -1,5 +1,7 @@
 # Path tool: blueprint
 
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/023-draw-mode/blueprints/path-tool.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored path is a [retired element](../../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Path**, which an Editor can delete. The rest of this page describes it as livediagram has it.
+
 Derived from [Path tool](../path-tool.md), with [Draw mode](../draw-mode.md) for the ink, and
 [Multi-point line / polygon tool](../../008-canvas/polygon-tool.md)
 for the click-to-place gesture it grows from. The spec decides; this file adds engineering precision.

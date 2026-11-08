@@ -1,6 +1,6 @@
 # Annotations: blueprint
 
-> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/annotations.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md#the-element-engine)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/annotations.md) is the one to read and change. livehuddle has no tool, gesture, setter or renderer for it: a stored annotation is a [retired element](../../002-project-scope/not-in-livehuddle.md#retired-elements), kept exactly as stored and drawn as its placeholder named **Annotation**, which an Editor can delete. The rest of this page describes it as livediagram has it.
 
 Derived from [Annotations](../annotations.md). The note it carries is specified in
 [Rich-text notes](../rich-text-notes.md) and blueprinted in [rich-text-notes.md](rich-text-notes.md).

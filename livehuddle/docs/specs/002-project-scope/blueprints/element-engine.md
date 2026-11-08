@@ -208,4 +208,4 @@ height }`.
 
 ## Defaults ledger
 
-- D17 to D24 in [DEFAULTS.md](DEFAULTS.md).
+- D17 to D27 in [DEFAULTS.md](DEFAULTS.md).

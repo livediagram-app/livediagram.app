@@ -360,9 +360,12 @@ The **Arrow** section of the **Animation** row (the underlying field is still `f
 
 ## Arrows
 
-> **Leaving livehuddle** (Work Tracker #423): arrows and lines are diagram tools, offered nowhere in livehuddle since
-> part 3 ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). A stored arrow still draws. livediagram's
-> [Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) is the spec to change.
+> **Gone from livehuddle** (Work Tracker #423; its code deleted by Work Tracker #459, part 4): arrows and lines are
+> diagram tools ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-element-engine)). A stored arrow is a
+> [retired element](../002-project-scope/not-in-livehuddle.md#retired-elements): a faint dashed line between its ends
+> with its placeholder on the middle, which an Editor can delete. livediagram's
+> [Canvas and palette](../../../../livediagram/docs/specs/008-canvas/canvas-and-palette.md) is the spec to change; the
+> rest of this section describes arrows as livediagram has them.
 
 Arrows are a second element kind. They link two points on the canvas.
 

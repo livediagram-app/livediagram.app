@@ -612,7 +612,14 @@ What every part does:
     because they are worked out each time it is drawn. Nothing about it is written back.
   - **What it pinned to.** Moving an element a retired arrow is pinned to moves that end of the line with it. Deleting
     one leaves the arrow exactly as stored (Delete no longer takes the arrows pinned to an element with it); that end
-    then sits on the other end's point. Copying a selection copies a retired arrow as stored, with a new id.
+    then sits on the other end's point. Copying a selection copies a retired arrow with a new id and otherwise as
+    stored, except where it points: an end pinned to a copied element is pinned to its copy, and a free end moves with
+    the copy (the rule copies always had, so a copied pair still reads as joined).
+  - **Auto layout goes.** With no arrow ever drawn, no tab is a graph the layered layout could arrange, so the auto
+    layout code goes too. The agents' `layout` keeps its one remaining job: it sweeps the boxes it is given into rows
+    below the ones it leaves alone.
+  - **Multicolour themes** still read a stored arrow's pinned ends, read only, to give a tree's branches their colours.
+    That code is the diagram theming that goes with the shapes in part 5; until then a stored tree keeps its colours.
   - **The whiteboard engine goes with them**: the pen, Path and Fill intents and their gestures (the stroke capture,
     the live ink and the whiteboard pen preview, the path draft and point editing, the fill's region search), shape
     recognition, the arrow's gestures (drawing, re-pinning an end, bending, the label editor and its drag), the
