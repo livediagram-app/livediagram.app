@@ -79,7 +79,9 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   the union of that card and the line's box, so a marquee, fit-to-content, the selection toolbar and the minimap
   read a retired arrow through it. `RetiredArrowView` (editor) draws the line (`pointer-events: none`) and, over it,
   `RetiredElementFace` in a wrapper at the card's box that selects on press, opens the context menu and shows the
-  selection ring; it takes no drag. The export draws the same line and card (`svg-render-retired.ts`).
+  selection ring; it takes no drag. The card carries the arrow's id, so the comment, note and action popovers anchor
+  to it. Every element is now boxed or a retired arrow, and both store a thread, a note and an action, so the
+  popovers, the quick bar, the note and action setters and the api's comment add take any element (D28). The export draws the same line and card (`svg-render-retired.ts`).
 - Part 4: the drag, nudge, resize, duplicate-drag and arrow-gesture paths skip a retired arrow; removing an element
   removes only the ids asked (the pinned-arrow cascade is deleted, D23); a copy carries a retired arrow verbatim with
   a new id, its pinned `elementId`s remapped to the copies only when the pinned element was copied with it.
@@ -208,4 +210,4 @@ height }`.
 
 ## Defaults ledger
 
-- D17 to D27 in [DEFAULTS.md](DEFAULTS.md).
+- D17 to D28 in [DEFAULTS.md](DEFAULTS.md).
