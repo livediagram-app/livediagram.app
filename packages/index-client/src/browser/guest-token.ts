@@ -1,7 +1,7 @@
 // A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Guests"). The first time a browser needs one, the editor sends it to the accounts site through its api's
 // `/api/auth/guest` (which names the app's client there), and it comes back to the editor's /auth/guest page with a
-// year-long guest token in the fragment. The token is kept in localStorage and sent as the Bearer, exactly as an
+// 45-day guest token in the fragment. The token is kept in localStorage and sent as the Bearer, exactly as an
 // account's access token is. A token with fewer than GUEST_TOKEN_REFRESH_BEFORE_MS left is replaced on the next page
 // load that needs it.
 //
@@ -10,7 +10,10 @@
 
 import { isSameSitePath } from '@liveworkspace/auth-client/return-path';
 
-export const GUEST_TOKEN_REFRESH_BEFORE_MS = 30 * 24 * 3600 * 1000;
+// Under the token's 45 days (liveworkspace/apps/accounts GUEST_TOKEN_TTL_SECONDS), so a fresh one is never replaced
+// at once: a handoff about once a month while the guest keeps using the app. Its `lw_guest` cookie on liveworkspace
+// names the same guest again, so renewing never makes a new one.
+export const GUEST_TOKEN_REFRESH_BEFORE_MS = 15 * 24 * 3600 * 1000;
 
 // A handoff that came back without a token (the accounts site down, a deployment without one): no other is started
 // for this long, so a failure never turns into a redirect loop. The page carries on without an identity, as a link

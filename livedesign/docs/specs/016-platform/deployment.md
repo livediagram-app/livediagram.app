@@ -138,7 +138,7 @@ Production lives at **`https://www.livedesign.app`**. Only two workers have a ho
 - `https://www.livedesign.app/help` → help centre (prefix-stripped); `https://www.livedesign.app/telemetry` redirects to liveworkspace's telemetry dashboard ([Router app](router-app.md)).
 - Everything else → marketing.
 
-The workers themselves remain reachable at their default `*.workers.dev` URLs for direct testing.
+No worker has a `*.workers.dev` address or preview URLs: every `wrangler.toml` sets `workers_dev = false` and `preview_urls = false` at the top level and in each `[env.*]`, so nothing reaches a worker around the zone's WAF and rate-limit rules.
 
 ## Not covered here
 

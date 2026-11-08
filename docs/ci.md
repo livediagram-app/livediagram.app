@@ -143,6 +143,8 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
 - **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
   [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
+  One job installs (with `--ignore-scripts`) and regenerates under a read-only token; a second, which installs
+  nothing, applies only the two generated files and holds the write token in its last step alone.
 - **Dependency updates** (`dependabot.yml`): Dependabot, weekly, for the npm tree (one lockfile for every
   product) and the actions. Minor and patch bumps come grouped, dev apart from production; each major
   comes on its own. It carries the products' own rules, such as livediagram's hold on the

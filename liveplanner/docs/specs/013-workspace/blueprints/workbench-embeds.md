@@ -3,8 +3,8 @@
 > **Platform parts.** Pairing, tickets, sessions, revocation, the sweep and the pairing page are liveworkspace's
 > ([Workbenches](../../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), in the accounts Worker; the router forwards
 > `/api/workbench/*` there unchanged, and the Explorer and teams are `@liveworkspace/explorer` over liveworkspace's index
-> ([One Explorer](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). A workbench ticket is
-> `<grant>~<pairing>~<cap>~<hmac>`. This app's part is the `lvw_` bearer's check and confinement
+> ([One Explorer](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). A workbench session's room ticket is
+> `rt2~<grant, pairing and cap, AES-GCM sealed>`. This app's part is the `lvw_` bearer's check and confinement
 > (`auth/workbench-session.ts` over `@liveworkspace/auth-client` `createWorkbenchSessionChecker`,
 > `auth/workbench-confinement.ts`), the tab check a ticket's tab must pass (`planHasTab`), the workbench page and the
 > editor in it, and the CLI's verbs. Ending access closes this app's rooms through

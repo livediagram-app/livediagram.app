@@ -156,8 +156,8 @@ function mintAccessToken(sub, email) {
   });
 }
 
-// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): a year long.
-const GUEST_TOKEN_TTL_SECONDS = 365 * 24 * 60 * 60;
+// A guest token shaped like the accounts Worker's (liveworkspace/apps/accounts/src/guests.ts): 45 days long.
+const GUEST_TOKEN_TTL_SECONDS = 45 * 24 * 60 * 60;
 function mintGuestToken(guestId = `guest_${randomUUID()}`) {
   const now = Math.floor(Date.now() / 1000);
   const token = signToken({

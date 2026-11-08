@@ -40,6 +40,7 @@ import {
 import { indexPurgeConfig, retryPendingPurges } from './index-purge.ts';
 import { withSessionColour } from './profiles.ts';
 import { networkOf, overCodeLimit } from './rate-limit.ts';
+import { sweepCodeDays, withCodeDay } from './code-day.ts';
 import { withOwnCookies } from './own-cookies.ts';
 
 const GET_SESSION_PATH = '/get-session';
@@ -138,12 +139,13 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
   }
   // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
   // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
-  const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
+  // Outside production, every production cookie it can tell apart goes too, doubled or not.
+  const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET, env.ENVIRONMENT);
 
   if (request.method === 'GET') {
     if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
     if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
-      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
+      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request, env)}` })).success) {
         return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
       return guestHandoff(request, env, getAuth(env));
@@ -215,11 +217,9 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
 
   if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
     const route = pathname.slice(AUTH_BASE_PATH.length);
-    if (
-      request.method === 'POST' &&
-      (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH) &&
-      (await overCodeLimit(request, env, route === SEND_CODE_PATH))
-    ) {
+    const codeRoute =
+      request.method === 'POST' && (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH);
+    if (codeRoute && (await overCodeLimit(request, env, route === SEND_CODE_PATH))) {
       return Response.json({ code: 'RATE_LIMITED', message: 'Too many requests' }, { status: 429 });
     }
     // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
@@ -234,7 +234,11 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
       await endSessionTokensOf(request, route, auth, env.AUTH_DB);
     }
-    let response = await auth.handler(request);
+    // Sending a code is also held to the address's day of codes (code-day.ts).
+    let response =
+      codeRoute && route === SEND_CODE_PATH
+        ? await withCodeDay(request, env.AUTH_DB, () => auth.handler(request))
+        : await auth.handler(request);
     // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
     if (request.method === 'GET' && route === GET_SESSION_PATH) {
       // With the browser's time zone, kept for the send window (send-window.ts).
@@ -380,6 +384,11 @@ export default {
         await flushServerEvents(env);
       });
     }
+    // Address days whose 24 hours are over (code-day.ts).
+    await step('code days', async () => {
+      const swept = await sweepCodeDays(env.AUTH_DB, now);
+      if (swept > 0) console.log('[accounts] code days swept', swept);
+    });
     if (!daily) return;
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     await step('idle guests', async () => {

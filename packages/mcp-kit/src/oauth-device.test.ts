@@ -98,7 +98,9 @@ describe('starting', () => {
     expect(s.device_code).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(s.user_code).toMatch(/^[B-Z]{4}-[B-Z]{4}$/);
     expect(s.verification_uri).toBe('https://live.test/oauth/device');
-    expect(s.verification_uri_complete).toBe(`https://live.test/oauth/device?code=${s.user_code}`);
+    // Never the code in the address: a link someone else sends must not bring a code to approve.
+    expect(s.verification_uri_complete).toBe('https://live.test/oauth/device');
+    expect(s.verification_uri_complete).not.toContain(s.user_code);
     expect([s.expires_in, s.interval]).toEqual([DEVICE_CODE_TTL_S, 5]);
   });
 
@@ -133,9 +135,57 @@ describe('the device page', () => {
     const s = await start();
     const typed = s.user_code.toLowerCase().replace('-', ' ');
     const found = await app.request(`/oauth/device/session/${encodeURIComponent(typed)}`, {}, env);
-    expect(await found.json()).toEqual({ clientName: 'example CLI' });
+    // No `request.cf` here (as in local development): the time, and no place.
+    expect(await found.json()).toEqual({
+      clientName: 'example CLI',
+      startedAt: now,
+      startedIn: null,
+    });
     expect((await app.request('/oauth/device/session/BBBB-BBBB', {}, env)).status).toBe(404);
     expect((await app.request('/oauth/device/session/nope', {}, env)).status).toBe(404);
+  });
+
+  it('says roughly where the grant started, from Cloudflare, never the address', async () => {
+    const startFrom = async (cf: unknown) => {
+      const req = new Request(
+        'http://mcp.test/oauth/device_authorization',
+        form({ client_id: 'example-cli' }),
+      );
+      Object.defineProperty(req, 'cf', { value: cf });
+      return (await app.request(req, undefined, env)).json<Started>();
+    };
+    const lookup = async (s: Started) =>
+      (await app.request(`/oauth/device/session/${s.user_code}`, {}, env)).json();
+    const placed = await startFrom({ city: 'Dublin', country: 'IE', asn: 1 });
+    expect(await lookup(placed)).toEqual({
+      clientName: 'example CLI',
+      startedAt: now,
+      startedIn: { city: 'Dublin', country: 'IE' },
+    });
+    expect(JSON.stringify(await lookup(placed))).not.toContain('1.2.3.4');
+    const countryOnly = await startFrom({ country: 'NZ', city: '' });
+    expect(await lookup(countryOnly)).toMatchObject({ startedIn: { country: 'NZ' } });
+    const cityOnly = await startFrom({ city: 'x'.repeat(200) });
+    expect(await lookup(cityOnly)).toMatchObject({ startedIn: { city: 'x'.repeat(80) } });
+    expect(await lookup(await startFrom({ colo: 'DUB' }))).toMatchObject({ startedIn: null });
+    expect(await lookup(await startFrom(null))).toMatchObject({ startedIn: null });
+  });
+
+  it('answers a record written before it kept the time with none', async () => {
+    const s = await start();
+    const deviceCode = await env.OAUTH_KV.get(`usercode:${s.user_code.replace('-', '')}`);
+    const record = (await env.OAUTH_KV.get(`device:${deviceCode}`, 'json')) as Record<
+      string,
+      unknown
+    >;
+    delete record.startedAt;
+    await env.OAUTH_KV.put(`device:${deviceCode}`, JSON.stringify(record));
+    const found = await app.request(`/oauth/device/session/${s.user_code}`, {}, env);
+    expect(await found.json()).toEqual({
+      clientName: 'example CLI',
+      startedAt: null,
+      startedIn: null,
+    });
   });
 
   it('caps lookups at 30 in ten minutes from one address', async () => {

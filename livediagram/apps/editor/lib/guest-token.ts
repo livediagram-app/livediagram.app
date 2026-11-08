@@ -1,7 +1,7 @@
 // A guest's identity is liveworkspace's, the same guest in every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md
 // "Guests"): @liveworkspace/index-client/browser's guest tokens, kept under livediagram's own keys. The first time
 // this browser needs one, it goes to the accounts site through this app's `/api/auth/guest` and comes back to
-// /auth/guest with a year-long guest token in the fragment, sent as the Bearer exactly as an account's access token
+// /auth/guest with a 45-day guest token in the fragment, sent as the Bearer exactly as an account's access token
 // is.
 import { createGuestTokens } from '@liveworkspace/index-client/browser';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';

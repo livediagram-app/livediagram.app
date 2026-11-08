@@ -189,7 +189,7 @@ delete. Their items stay in the index.
 
 ## Constants and configuration
 
-`GUEST_PATH` `/guest`, `GUEST_COOKIE` `lw_guest`, `GUEST_TOKEN_TTL_SECONDS` 365 d, `COOKIE_MAX_AGE_SECONDS` 10 years,
+`GUEST_PATH` `/guest`, `GUEST_COOKIE` `lw_guest`, `GUEST_TOKEN_TTL_SECONDS` 45 d, `COOKIE_MAX_AGE_SECONDS` 10 years,
 `STATE_MAX_LENGTH` 200, `MERGE_TIMEOUT_MS` 5 s, `AUTHORIZE_PATH` `/oauth2/authorize` (`guests.ts`);
 `WORKSPACE_TOKEN_TTL_SECONDS` 900 (`workspace-token.ts`); `END_SESSION_PATH` `/end-session`, `TICKET_TTL_SECONDS` 300,
 `REDIRECT_MAX_LENGTH` 2,000, `SESSIONS_PER_STATEMENT` 40 (`end-session.ts`); `KEYS_TTL_MS` 5 min (`bearer.ts`); `LEGACY_CLAIM_HOLD_MS`

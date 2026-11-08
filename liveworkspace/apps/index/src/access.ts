@@ -9,7 +9,7 @@ import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
 import { fail, notFound, unauthorized } from './http';
 import { isRememberedSharePassword, verifySharePassword } from './password-hash';
-import { guessRefusal } from './share-guesses';
+import { guessRefusal, wrongGuessRefusal } from './share-guesses';
 import { directAccess, getItemRow, LIVE_LINK, type Access, type ItemRow } from './rows';
 
 type LinkRow = {
@@ -46,7 +46,8 @@ async function linkFor(env: Env, itemId: string, caller: Caller): Promise<LinkRo
 
 // A link's access, after its password. A refusal is the response to send. A public link (a Community post's) never
 // asks for one: behind a password it is closed, and answers as missing. A password this isolate hasn't already found
-// right is a guess, counted against the visitor's network and the item before it is checked (share-guesses.ts).
+// right is a guess (share-guesses.ts): counted against the visitor's network before it is checked, and, when wrong,
+// against the item. The right one opens the item even while others' wrong guesses hold the item over its limit.
 export async function linkAccess(
   env: Env,
   itemId: string,
@@ -60,8 +61,10 @@ export async function linkAccess(
     if (!(await isRememberedSharePassword(link.hash, password))) {
       const refused = await guessRefusal(env, itemId, visitor);
       if (refused) return refused;
+      if (!(await verifySharePassword(link.hash, password))) {
+        return wrongGuessRefusal(env, itemId, visitor);
+      }
     }
-    if (!(await verifySharePassword(link.hash, password))) return fail(403, 'password_invalid');
   }
   return {
     level: link.level,

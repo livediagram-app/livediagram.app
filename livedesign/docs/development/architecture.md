@@ -109,7 +109,7 @@ The repo's shape isn't accidental. Three rules keep the stack honest:
 
 ## Auth model in one sentence
 
-Every person is a liveworkspace identity sent as `Authorization: Bearer`: a guest's year-long guest token (kept in `localStorage`) or a signed-in account's access token (whose `sub` claim becomes the owner id), and every request about one design also carries the index's grant on it as `X-Index-Grant`. The canvas always works without signing in. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model and [API app](../specs/015-api/api.md) for how the api worker resolves the owner.
+Every person is a liveworkspace identity sent as `Authorization: Bearer`: a guest's 45-day guest token (kept in `localStorage`) or a signed-in account's access token (whose `sub` claim becomes the owner id), and every request about one design also carries the index's grant on it as `X-Index-Grant`. The canvas always works without signing in. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model and [API app](../specs/015-api/api.md) for how the api worker resolves the owner.
 
 ## Deployment
 

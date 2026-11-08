@@ -10,7 +10,14 @@ import { isLoopbackHostname, oauthRedirectUrl } from '@liveworkspace/api-kit/req
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 import type { Hono } from 'hono';
-import { lookupClient, type BuiltInClients, type ClientReg, type OauthEnv } from './oauth-clients';
+import {
+  builtInClient,
+  lookupClient,
+  type BuiltInClients,
+  type ClientReg,
+  type OauthEnv,
+} from './oauth-clients';
+import { reservedNameRefusal } from './oauth-names';
 import { formText } from './oauth-form';
 import { handleDeviceToken, registerDeviceRoutes } from './oauth-device';
 
@@ -141,8 +148,14 @@ export function registerOauthRoutes<E extends OauthEnv>(
         400,
       );
     }
-    const clientId = randomId();
     const clientName = registeredName(body.client_name);
+    // A name that reads as one of our apps, or as a well-known AI tool whose code would go elsewhere (oauth-names.ts).
+    const refusal = reservedNameRefusal(clientName, uris);
+    if (refusal) {
+      console.warn('[oauth] registration refused', { reason: refusal });
+      return c.json({ error: 'invalid_client_metadata', error_description: refusal }, 400);
+    }
+    const clientId = randomId();
     const reg: ClientReg = { redirectUris: uris, clientName };
     await c.env.OAUTH_KV.put(`client:${clientId}`, JSON.stringify(reg), {
       expirationTtl: CLIENT_TTL,
@@ -183,10 +196,13 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const reg = await lookupClient(c.env, server.builtInClients, clientId);
     // Re-check the scheme: a client registered before the scheme check was
     // tightened can still hold an unsafe redirect_uri until its record expires.
+    // And the name, for one registered before reserved names were refused.
     if (
       !reg ||
       !redirectUriAllowed(reg.redirectUris, redirectUri) ||
-      !isAllowedRedirectUri(redirectUri)
+      !isAllowedRedirectUri(redirectUri) ||
+      (!builtInClient(server.builtInClients, clientId) &&
+        reservedNameRefusal(registeredName(reg.clientName), reg.redirectUris) !== null)
     ) {
       console.warn('[oauth] authorize refused', { clientId, known: Boolean(reg) });
       return c.text('unknown client or unregistered redirect_uri', 400);
@@ -252,7 +268,14 @@ export function registerOauthRoutes<E extends OauthEnv>(
       // rather than failing the lookup.
     }
     // The client id is public; the consent page reads it only to tell the CLI apart for telemetry (CLI77).
-    return c.json({ clientName: session.clientName, redirectHost, clientId: session.clientId });
+    // `verified` is true for a built-in client only: every registered one is shown as Unverified App, since
+    // registration is open and its name is whatever it sent.
+    return c.json({
+      clientName: session.clientName,
+      redirectHost,
+      clientId: session.clientId,
+      verified: builtInClient(server.builtInClients, session.clientId) !== null,
+    });
   });
 
   // --- Complete: the signed-in consent page posts the minted token here,
@@ -291,7 +314,9 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const verifier = formText(form, 'code_verifier');
     const redirectUri = formText(form, 'redirect_uri');
     const clientId = formText(form, 'client_id');
-    if (grantType !== 'authorization_code' || !code || !verifier) {
+    // RFC 6749 §4.1.3: redirect_uri is required when authorize had one (ours always does), and a public client
+    // sends its client_id; both are required, so a code is never redeemed without naming where it was bound.
+    if (grantType !== 'authorization_code' || !code || !verifier || !redirectUri || !clientId) {
       return c.json({ error: 'invalid_request' }, 400);
     }
     // RFC 7636: the code_verifier is 43-128 chars. Enforce it so a weak verifier
@@ -304,10 +329,10 @@ export function registerOauthRoutes<E extends OauthEnv>(
     // One-time: burn the code regardless of outcome.
     await c.env.OAUTH_KV.delete(`code:${code}`);
     // RFC 6749 §4.1.3: a code is redeemable only by the client it was issued to.
-    if (clientId && clientId !== record.clientId) {
+    if (clientId !== record.clientId) {
       return c.json({ error: 'invalid_grant', error_description: 'client_id mismatch' }, 400);
     }
-    if (redirectUri && redirectUri !== record.redirectUri) {
+    if (redirectUri !== record.redirectUri) {
       return c.json({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' }, 400);
     }
     const challenge = await pkceChallenge(verifier);

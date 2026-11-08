@@ -86,9 +86,9 @@ point every app on the host passes through.
 sites differ from production's in their build id, their hosted build vars (the staging entries of the hosted
 profile, [Deployment](deployment.md#hosted-profile)) and one more value:
 
-| Variable                 | Production                                        | Staging                                        |
-| ------------------------ | ------------------------------------------------- | ---------------------------------------------- |
-| `NEXT_PUBLIC_MCP_ORIGIN` | unset (blank falls back to `mcp.liveplanner.app`) | the staging mcp worker's `workers.dev` address |
+| Variable                 | Production                                        | Staging                                                                       |
+| ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_MCP_ORIGIN` | unset (blank falls back to `mcp.liveplanner.app`) | `https://mcp-staging.liveplanner.app`, the staging mcp worker's custom domain |
 
 `NEXT_PUBLIC_API_BASE` stays unset in both, so staging resolves `/api` same-origin through its own router, and
 `NEXT_PUBLIC_TELEMETRY_ENABLED` is `true` in both, so the staging build runs the same code as production's.

@@ -29,7 +29,7 @@ Each service's contract is its own category's spec and blueprint. The shared con
 | Caller                         | Credential                                                                  | Checked by                                                 |
 | ------------------------------ | --------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | A browser on liveworkspace.app | the accounts session cookie (writes same-origin only)                       | accounts; the index, Drive and community through it        |
-| A browser on an app            | an access token (ES256 JWT, `aud` the app's API) or a year-long guest token | the app's API offline against `/api/auth/jwks`; the index  |
+| A browser on an app            | an access token (ES256 JWT, `aud` the app's API) or a guest token (45 days) | the app's API offline against `/api/auth/jwks`; the index  |
 | A CLI or MCP client            | an API token (`lwt_`, or a carried-over `lvd_`)                             | accounts' `internal/tokens/verify`, cached by the app 60 s |
 | A workbench frame              | a workbench session (`lvw_…`)                                               | accounts' `internal/workbench/session`, per request        |
 | An app's server to accounts    | its OAuth client id and secret (HTTP Basic)                                 | accounts, by introspection, cached 5 min                   |

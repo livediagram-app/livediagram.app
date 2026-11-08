@@ -350,7 +350,7 @@ function noStore(cookies: string[] = []): Headers {
 }
 
 // A guest's identity is liveworkspace's (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"): the browser goes to the accounts
-// site with this app's client (@liveworkspace/auth-client guestHandoffUrl), which answers with a year-long guest
+// site with this app's client (@liveworkspace/auth-client guestHandoffUrl), which answers with a 45-day guest
 // token in the fragment of /auth/guest. Routed through here so the client id and resource live in one place; the
 // editor makes and checks `state` itself.
 function guest(request: Request, env: Env, config: Configured | null): Response {

@@ -24,7 +24,7 @@ import { isAccountOwner } from '../person/owner';
 import { getParticipant } from '../person/profiles';
 import { documentUrl, elementUrl, pusher, pushItemOf, pushTag } from '../person/push';
 import { badRequest, forbidden, json, notFound } from '../responses';
-import { gateRead, readBody, requireOwner, type DocumentRouteContext } from './context';
+import { gateEdit, gateRead, readBody, requireOwner, type DocumentRouteContext } from './context';
 
 // Body caps: generous against any real action, tight against abuse.
 export const ACTION_NAME_MAX = 200;
@@ -97,6 +97,9 @@ export async function handleNotifyAction(ctx: DocumentRouteContext, id: string):
   // The caller has joined the team (their token says so) and can open the document (their grant).
   if (!(ctx.teams ?? []).some((t) => t.id === teamId)) return notFound();
   if (!(await gateRead(ctx, id))) return notFound();
+  // Assigning is an edit (assigned-actions.md §2, §7): a Viewer or Participant, who can open the document and so name
+  // it, is refused outright rather than allowed to send email in someone else's name.
+  if (!(await gateEdit(ctx, id))) return forbidden();
   const document = await getDocumentMeta(ctx.env, id);
   if (!document) return notFound();
   const people = await teamPeople(ctx.env, teamId);

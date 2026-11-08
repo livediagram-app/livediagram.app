@@ -109,8 +109,9 @@ change (D46).
 Guards run in this order; the first failure answers.
 
 1. `MEDIA_KEY` unset (`mediaClient(env)` null) → 503 `images_unavailable`.
-2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES` →
-   413 `payload_too_large`; `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
+2. Pre-dispatch in `index.ts`: read-only token → 403; `Content-Length > MAX_IMAGE_BYTES`, or a
+   body that streams past it (`withCappedBody`, whatever the header says) → 413 `payload_too_large`;
+   `WRITE_RATE_LIMITER` exhausted → 429 `rate_limited`.
 3. No resolved owner → 400 (`requireOwner`, D33).
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413

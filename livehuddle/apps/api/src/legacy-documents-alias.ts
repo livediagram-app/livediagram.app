@@ -4,6 +4,7 @@
 // `/api/documents…` with its body's old keys renamed, and the response's keys are renamed
 // back, marked `Deprecation` / `Sunset` with a `Link` to the successor.
 
+import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { DOCUMENT_CONVERSION_HEADER } from '@livehuddle/api-schema';
 import { downgradeLinks, upgradeLegacyLinks } from '@livehuddle/document';
 
@@ -55,9 +56,11 @@ export async function fromLegacyRequest(
   url.pathname = CURRENT_PREFIX + url.pathname.slice(LEGACY_PREFIX.length);
   let body: BodyInit | null = null;
   if (request.body !== null) {
-    const text = await request.text();
-    // A chunked body declares no length, so the cap is re-checked on what arrived.
-    if (text.length > maxBytes) return null;
+    // A chunked body declares no length, so it is read through a byte counter that stops at the cap.
+    // A request body streams bytes; the Workers types leave its chunks untyped.
+    const bytes = await readCappedBody(request.body as ReadableStream<Uint8Array>, maxBytes);
+    if (!bytes) return null;
+    const text = new TextDecoder().decode(bytes);
     body = isJson(request.headers) && text ? upgradeLegacyBody(text) : text;
   }
   const headers = new Headers(request.headers);

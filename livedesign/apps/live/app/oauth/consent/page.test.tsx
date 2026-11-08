@@ -27,11 +27,12 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
   useAccountBootstrap: () => bootstrap,
 }));
-vi.mock('@/lib/mcp-consent-session', () => ({
+vi.mock('@liveworkspace/workbench/lib/mcp-consent-session', () => ({
   fetchConsentSession: async () => ({
     clientName: 'Claude',
     redirectHost: 'claude.ai',
     clientId: 'c1',
+    verified: false,
   }),
 }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));

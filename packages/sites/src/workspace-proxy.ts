@@ -19,6 +19,10 @@ export const WORKSPACE_PROXY_HEADER = 'X-Liveworkspace-Proxy';
 // The visitor's address as the router saw it. A Worker's request to another site arrives from the Worker, so
 // liveworkspace's per-network limits (a sign-in code's) would otherwise count every app's visitors as one.
 export const WORKSPACE_CLIENT_IP_HEADER = 'X-Liveworkspace-Client-IP';
+// The router's proof that it named that address: the secret every router shares with accounts and the index
+// (`WORKSPACE_PROXY_SECRET`). Both are publicly routed, so without it anyone could name any address
+// (@liveworkspace/sites/network trustedClientAddress).
+export const WORKSPACE_PROXY_SECRET_HEADER = 'X-Liveworkspace-Proxy-Secret';
 
 // ---------- The status page ---------------------------------------------------------------------------------------
 // liveworkspace.app keeps one status page for the platform and every app (liveworkspace/docs/specs/010-site/site.md "Status"). The
@@ -311,6 +315,8 @@ export type ProxyOptions = {
   origin?: string;
   // The routes to answer; the app's own by default.
   routes?: readonly WorkspaceRoute[];
+  // `WORKSPACE_PROXY_SECRET`: sent beside the visitor's address, so accounts counts it. Unset, none is sent.
+  proxySecret?: string;
   // For tests.
   fetch?: typeof fetch;
 };
@@ -383,7 +389,7 @@ async function forwardToWorkspace(
     else headers.delete('Cookie');
   }
   headers.set(WORKSPACE_PROXY_HEADER, options.app);
-  carryVisitorAddress(request, headers);
+  carryVisitorAddress(request, headers, options.proxySecret);
   headers.set('X-Forwarded-Host', url.host);
   // Built from the request itself, so its method and body come along as they are.
   const forwarded = new Request(new Request(target.toString(), request), {
@@ -421,21 +427,22 @@ export const PRODUCTION_INDEX_ORIGIN = 'https://www.liveworkspace.app';
 /**
  * `/api/index/*` on an app's address: the same request (method, body, Authorization, the share headers) at the
  * index's origin, minus this site's cookies, which are not the index's to read. Its redirects pass back as they are.
- * The visitor's address goes along (WORKSPACE_CLIENT_IP_HEADER, never one the caller sent), so what the index counts
- * per network (a Community post's copies) counts the visitor's, not the router's.
+ * The visitor's address goes along (WORKSPACE_CLIENT_IP_HEADER, never one the caller sent), with the router's proof
+ * (`proxySecret`), so what the index counts per network (a share password's guesses, a Community post's copies)
+ * counts the visitor's, not the router's.
  */
 export function forwardToIndex(
   request: Request,
   url: URL,
   origin: string,
-  doFetch: typeof fetch = fetch,
+  options: { proxySecret?: string; fetch?: typeof fetch } = {},
 ): Promise<Response> {
   const target = new URL(`${url.pathname}${url.search}`, origin);
   if (target.host === url.host) return Promise.resolve(loop('INDEX_ORIGIN is this site'));
   const forwarded = new Request(target.toString(), request);
   forwarded.headers.delete('Cookie');
-  carryVisitorAddress(request, forwarded.headers);
-  return doFetch(forwarded);
+  carryVisitorAddress(request, forwarded.headers, options.proxySecret);
+  return (options.fetch ?? fetch)(forwarded);
 }
 
 // ---------- Google Drive, on the app's address -----------------------------------------------------------------------
@@ -467,12 +474,16 @@ export function forwardToDrive(
   return doFetch(forwarded);
 }
 
-// The visitor's address, as the platform's services count it (@liveworkspace/sites/network visitorAddress): the
-// connection's own, never one the caller sent.
-function carryVisitorAddress(request: Request, headers: Headers): void {
+// The visitor's address, as the platform's services count it (@liveworkspace/sites/network trustedClientAddress): the
+// connection's own, never one the caller sent, with the router's proof when it has a secret. A proof the caller sent
+// never passes on: only the secret's holder sets one, and only for accounts and the index, which read it.
+function carryVisitorAddress(request: Request, headers: Headers, proxySecret?: string): void {
   const client = request.headers.get('CF-Connecting-IP');
   if (client) headers.set(WORKSPACE_CLIENT_IP_HEADER, client);
   else headers.delete(WORKSPACE_CLIENT_IP_HEADER);
+  const secret = proxySecret?.trim();
+  if (secret) headers.set(WORKSPACE_PROXY_SECRET_HEADER, secret);
+  else headers.delete(WORKSPACE_PROXY_SECRET_HEADER);
 }
 
 // ---------- Previews, on the app's address ---------------------------------------------------------------------------

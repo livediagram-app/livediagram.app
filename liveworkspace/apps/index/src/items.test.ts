@@ -416,6 +416,29 @@ describe('copies', () => {
     ]);
   });
 
+  it("believes a named address only beside the routers' secret, once the index has one", async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth, { title: 'Roadmap' });
+    const env = { ...h.db.env, WORKSPACE_PROXY_SECRET: 'router-secret' };
+    const named = {
+      'X-Liveworkspace-Client-IP': '198.51.100.7',
+      'CF-Connecting-IP': '203.0.113.9',
+    };
+    for (const proof of ['router-secret', 'guess']) {
+      await call(`/items/${item.id}/copy`, {
+        method: 'POST',
+        auth: ada.auth,
+        body: {},
+        env,
+        headers: { ...named, 'X-Liveworkspace-Proxy-Secret': proof },
+      });
+    }
+    expect(h.appCalls.map((c) => (c.body as { ip: string | null }).ip)).toEqual([
+      '198.51.100.7',
+      '203.0.113.9',
+    ]);
+  });
+
   it('removes the row and answers 502 when the app fails', async () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);

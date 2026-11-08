@@ -31,7 +31,10 @@ same way: the Explorer (`/explorer/*` and the site's assets under `/_liveworkspa
 (`/api/workspace/account` to `/api/account`), workbench pairing (`/api/workbench` to `/api/account/workbench`),
 the index (`/api/index`), Drive (`/api/drive`), previews (`/api/previews` and the share-link picture doors), and the
 old `/status` page to liveworkspace.app's. The Explorer's, the index's and Drive's forwards drop the app's cookies,
-and forwards carry the visitor's address in `X-Liveworkspace-Client-IP`. Each router names its environment's platform with `WORKSPACE_ORIGIN`.
+and forwards carry the visitor's address in `X-Liveworkspace-Client-IP`. The forwards to accounts and the index also
+carry `X-Liveworkspace-Proxy-Secret`, the secret `WORKSPACE_PROXY_SECRET` the routers share with those two Workers:
+they are publicly routed, so a named address counts as the visitor's only beside it, and a request without it is
+counted by its own connection. Each router names its environment's platform with `WORKSPACE_ORIGIN`.
 
 ## Who calls whom
 

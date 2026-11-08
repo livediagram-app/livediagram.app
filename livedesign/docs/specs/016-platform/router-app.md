@@ -73,7 +73,9 @@ Without a signed request, `/sign-in` stays the app's own page (its sign-in hand-
 accounts route the app's own cookies never leave; liveworkspace's cookies land here renamed
 `lw_flow.<name>`, on `/api/workspace/auth` alone, for at most 15 minutes, and the hand-off to
 liveworkspace.app clears them. The router names the visitor's address in
-`X-Liveworkspace-Client-IP`. Once signed in, one top-level hop to liveworkspace.app sets its
+`X-Liveworkspace-Client-IP`, and proves it sent it with `X-Liveworkspace-Proxy-Secret` (its
+`WORKSPACE_PROXY_SECRET` secret, the same value accounts and the index hold; a copy the caller sent is
+dropped), so a per-network limit counts the visitor rather than this router. Once signed in, one top-level hop to liveworkspace.app sets its
 session (so the other apps sign in without a click) and comes straight back to `/auth/callback`.
 
 ## The Explorer on livedesign.app

@@ -322,7 +322,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `packages/index-app/src/person-events.ts`           | Timeline events about a person rather than an item (docs/one-explorer-contracts.md "Timeline"): images uploaded, one entry per person, app and day whose count grows with …                     |
 | `packages/index-app/src/purge.ts`                   | Dropping items' content for good (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Purging"): the index has already removed the rows (a permanent delete, the Trash's sweep, …     |
 | `packages/index-app/src/request.ts`                 | The index's grant on the item a request is about (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), as an app's worker settles it before the request goes to the ite…     |
-| `packages/index-app/src/room-ticket.ts`             | The ticket a socket joins an item's room with (`…/ws?t=`), and renews its session with: the index's grant itself (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants")        |
+| `packages/index-app/src/room-ticket.ts`             | A socket's ticket into an item's room (`…/ws?t=`) and its renewals: the index's grant, encrypted for a workbench (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants")        |
 | `packages/index-app/src/service.ts`                 | An app's api reaching liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md, one-explorer-contracts.md): where every item is and who may open it                            |
 | `packages/index-app/src/tab-link.ts`                | "Add to <Item>": `POST /api/<items>/:target/tabs/:tabId/link {from}` shares a tab of another of the caller's items (`from`) into `target` (tab-shares.ts)                                       |
 | `packages/index-app/src/tab-shares.ts`              | A tab shared between items: one tab in several of a person's items at once, an edit in any reaching the others (each app's "Add to <Item>", its `tab-<item>-many-to-many.m…                     |
@@ -468,7 +468,7 @@ Migrations, in order:
 | `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `timeline.ts`                         |
 | `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                                  | `workbench-close.ts`                  |
 | `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                                   | `workbench-close.ts`                  |
-| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
+| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `15 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
 | `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                                           | `guest-token.ts`                      |
 | `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                               | `item-grants.ts`                      |
 | `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                               | `item-grants.ts`                      |

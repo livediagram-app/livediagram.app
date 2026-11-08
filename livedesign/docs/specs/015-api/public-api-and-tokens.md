@@ -308,7 +308,7 @@ dependency beyond the optional sign-in that teams already need.
 
 **A guest is a liveworkspace guest** ([Auth + guest access](../014-identity/auth-and-guest-access.md)
 "Hybrid identity"; liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). The editor fetches
-a year-long guest token from the accounts site through the api's
+a 45-day guest token from the accounts site through the api's
 `GET /api/auth/guest` handoff, keeps it in `localStorage` under
 `livedesign:v2:guest-token`, and sends it as `Authorization: Bearer`, exactly
 like an account's access token. The api verifies it locally against the
@@ -343,7 +343,7 @@ hardening landed first:
   required fields, endpoints, array bounds + unique ids. The design routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
-- **Size caps**: a global Content-Length body cap, per-tab byte cap, and
+- **Size caps**: a global body cap (by Content-Length, then by counting the bytes read), per-tab byte cap, and
   name / theme-definition / participant / share-password caps
   (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Design
   and tab names are shortened to the 60-character name cap rather than

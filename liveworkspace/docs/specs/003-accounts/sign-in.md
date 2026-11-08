@@ -213,6 +213,23 @@ app after it. A test checks each app's example against the fixture, so the two c
   minute per IP, and at 3 a minute per email address, so nobody can flood an inbox from many
   IPs. Better Auth's own limiter is off: on Workers it would count per isolate, which an attacker
   can spread across.
+- **A day's codes per address:** a new code resets the 3 tries, so the per-minute limits alone would still let
+  someone guess about 13,000 times a day at one address. So each address may be sent 20 codes a day, counted in D1
+  (`sign_in_code_limit`, keyed by the SHA-256 of the trimmed, lower-case address, so addresses nobody signed up with
+  are never stored) over a 24 hour window that starts with its first code. With 3 tries a code, that bounds guessing
+  to 60 tries a day at one address: a 60 in 1,000,000 chance, about 0.006% a day.
+  - A send counts once Better Auth has accepted it (Turnstile passed, the code mailed), so requests that fail
+    Turnstile use up nothing. Over the cap, `429 { code: 'TOO_MANY_CODES' }`, and the page says "Too many codes sent
+    to this address today. Continue with Google, or try again tomorrow." ("Try again tomorrow." where Google is
+    off). Sends at once can each pass the check before any counts, so the cap can be overshot by a send or two,
+    never more than the per-minute limit lets through.
+  - Checks are not counted and never lock an address. Checking needs no Turnstile, so a lock after so many wrong
+    codes would let anyone shut any email-only person out of signing in for a day, for free.
+  - What remains: someone who solves 20 Turnstile challenges can use up an address's day of codes, so its owner gets
+    no new code until the window ends. A code already sent still works for its 10 minutes, Google still signs them
+    in, and nobody is signed out. That costs the attacker 20 solves per address per day, where a lock on checks
+    would have cost nothing.
+  - The hourly cron deletes windows that ended, up to 5,000 a run, the oldest first.
 - **Registering clients:** only `POST /api/auth/internal/clients` with `ADMIN_TOKEN` can do it. Better
   Auth's default would let any signed-in account register its own OAuth client, so
   `clientPrivileges` refuses everything without the admin token. Dynamic registration stays off.
@@ -231,8 +248,11 @@ app after it. A test checks each app's example against the fixture, so the two c
   (a nonce cookie) and returns only to the app's own registered redirect URIs. The sign-in's
   cookies on the app's address are renamed, scoped to `/api/workspace/auth` and gone within 15
   minutes. The code limit per IP counts the address the app's router names
-  (`X-Liveworkspace-Client-IP`): a caller going straight to the Worker could name any address
-  there, but sending a code still needs Turnstile and the per-email limit holds.
+  (`X-Liveworkspace-Client-IP`) only beside the routers' shared secret
+  (`X-Liveworkspace-Proxy-Secret`, `WORKSPACE_PROXY_SECRET` on both sides). A caller going
+  straight to the Worker that names an address without it is counted by its own connection, so it
+  can't rotate a made-up address past the limit. Until the secret is set, the named address is
+  trusted as it was, but sending a code still needs Turnstile and the per-email limit holds.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile (the site's Trusted Types policy).
 
@@ -251,7 +271,9 @@ see [site.md](../010-site/site.md) for their weight.
 
 There is no cost per app request: apps check tokens against cached keys, and the accounts
 Worker is only involved at sign-in and on an hourly refresh. Each sign-in writes to D1 a
-handful of times (code, session, authorization code, tokens).
+handful of times (code, session, authorization code, tokens). The day's code count adds two small queries by
+primary key to sending a code: a read before and a write once it is sent. Checking a code, signing in with Google and
+every other door pay nothing.
 
 **Startup is the risk to watch.** It grows with Better Auth upgrades. If it nears the 1 s
 limit, start by checking which plugins are loaded.

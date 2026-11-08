@@ -40,7 +40,7 @@ beforeEach(() => {
 
 const REDIRECT = 'https://client.test/cb';
 
-async function register(clientName: unknown = 'Claude'): Promise<string> {
+async function register(clientName: unknown = 'Example Assistant'): Promise<string> {
   const res = await app.request(
     '/oauth/register',
     {
@@ -190,17 +190,18 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
     const res = await app.request(`/oauth/session/${session}`, {}, env);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      clientName: 'Claude',
+      clientName: 'Example Assistant',
       redirectHost: 'client.test',
       clientId: expect.any(String),
+      verified: false,
     });
   });
 
   // The name is whatever a client sent, drawn in the consent screen's own sentence: an override in it turned the
   // words after it backwards, and a blank one read "Connect  wants to act as you".
   it.each([
-    ['\u202EClaude', 'Claude'],
-    [' \u200BClaude\uFEFF ', 'Claude'],
+    ['\u202ENotion', 'Notion'],
+    [' \u200BNotion\uFEFF ', 'Notion'],
     ['\u2067\u2069', 'MCP client'],
     ['   ', 'MCP client'],
     [42, 'MCP client'],
@@ -233,7 +234,12 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
       string,
       unknown
     >;
-    expect(Object.keys(body).sort()).toEqual(['clientId', 'clientName', 'redirectHost']);
+    expect(Object.keys(body).sort()).toEqual([
+      'clientId',
+      'clientName',
+      'redirectHost',
+      'verified',
+    ]);
     expect(JSON.stringify(body)).not.toContain('code_challenge');
   });
 
@@ -281,6 +287,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
       clientName: 'Notion',
       redirectHost: 'evil.test',
       clientId: expect.any(String),
+      verified: false,
     });
   });
 });
@@ -325,6 +332,7 @@ describe('full authorize -> complete -> token flow', () => {
           code,
           code_verifier: verifier,
           redirect_uri: REDIRECT,
+          client_id: clientId,
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       },
@@ -366,6 +374,8 @@ describe('full authorize -> complete -> token flow', () => {
           grant_type: 'authorization_code',
           code,
           code_verifier: 'w'.repeat(64), // valid length, wrong value
+          redirect_uri: REDIRECT,
+          client_id: clientId,
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       },
@@ -382,6 +392,8 @@ describe('full authorize -> complete -> token flow', () => {
           grant_type: 'authorization_code',
           code,
           code_verifier: verifier,
+          redirect_uri: REDIRECT,
+          client_id: clientId,
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       },
@@ -419,6 +431,7 @@ describe('full authorize -> complete -> token flow', () => {
           grant_type: 'authorization_code',
           code,
           code_verifier: verifier,
+          redirect_uri: REDIRECT,
           client_id: 'someone-else',
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -426,6 +439,61 @@ describe('full authorize -> complete -> token flow', () => {
       env,
     );
     expect((await res.json<{ error: string }>()).error).toBe('invalid_grant');
+  });
+
+  // RFC 6749 §4.1.3: both were bound at authorize, so both are required, and each must match.
+  it('requires client_id and redirect_uri at the token endpoint, each as bound', async () => {
+    const clientId = await register();
+    const verifier = 'q'.repeat(64);
+    const codeFor = async () => {
+      const auth = await app.request(
+        `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${await pkceChallenge(verifier)}`,
+        {},
+        env,
+      );
+      const session = new URL(auth.headers.get('location')!).searchParams.get('session')!;
+      const comp = await app.request(
+        '/oauth/complete',
+        {
+          method: 'POST',
+          body: JSON.stringify({ session, token: 'lwt_secret' }),
+          headers: { 'Content-Type': 'application/json' },
+        },
+        env,
+      );
+      const { redirectTo } = await comp.json<{ redirectTo: string }>();
+      return new URL(redirectTo).searchParams.get('code')!;
+    };
+    const redeem = async (fields: Record<string, string>) => {
+      const res = await app.request(
+        '/oauth/token',
+        {
+          method: 'POST',
+          body: new URLSearchParams({
+            grant_type: 'authorization_code',
+            code_verifier: verifier,
+            ...fields,
+          }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        },
+        env,
+      );
+      return res.json<{ error?: string; error_description?: string; access_token?: string }>();
+    };
+    const code = await codeFor();
+    // A missing one is refused before the code is spent.
+    expect((await redeem({ code, client_id: clientId })).error).toBe('invalid_request');
+    expect((await redeem({ code, redirect_uri: REDIRECT })).error).toBe('invalid_request');
+    expect(await redeem({ code, redirect_uri: REDIRECT, client_id: clientId })).toMatchObject({
+      access_token: 'lwt_secret',
+    });
+    expect(
+      await redeem({
+        code: await codeFor(),
+        redirect_uri: 'https://client.test/other',
+        client_id: clientId,
+      }),
+    ).toEqual({ error: 'invalid_grant', error_description: 'redirect_uri mismatch' });
   });
 
   it('rejects authorize for an unregistered redirect uri', async () => {
@@ -476,6 +544,8 @@ describe('full authorize -> complete -> token flow', () => {
           grant_type: 'authorization_code',
           code,
           code_verifier: 'tooshort',
+          redirect_uri: REDIRECT,
+          client_id: clientId,
         }),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       },
@@ -518,6 +588,7 @@ describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", C
       expect(await looked.json()).toMatchObject({
         clientName: 'example CLI',
         clientId: 'example-cli',
+        verified: true,
       });
     }
   });
@@ -548,5 +619,78 @@ describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", C
       'authorization_code',
       'urn:ietf:params:oauth:grant-type:device_code',
     ]);
+  });
+});
+
+describe('reserved client names (oauth-names.ts)', () => {
+  const registerAs = (client_name: string, redirect_uris: string[]) =>
+    app.request(
+      '/oauth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ redirect_uris, client_name }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+
+  it('refuses a name that reads as one of our apps, unless its code stays on this machine', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    for (const name of [
+      'livediagram CLI',
+      'Live Diagram',
+      'ＬＩＶＥＷＯＲＫＳＰＡＣＥ',
+      'my-livePlanner',
+      'L.i.v.e.H.u.d.d.l.e',
+    ]) {
+      const res = await registerAs(name, ['https://evil.test/cb']);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: 'invalid_client_metadata' });
+    }
+    expect(warn).toHaveBeenCalledWith('[oauth] registration refused', expect.any(Object));
+    expect((await registerAs('livediagram helper', ['http://127.0.0.1:9/callback'])).status).toBe(
+      201,
+    );
+    expect((await registerAs('Olivediagrams', ['https://evil.test/cb'])).status).toBe(201);
+  });
+
+  it('refuses a well-known tool sending its code elsewhere, and lets the real one register', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect((await registerAs('Claude', ['https://evil.test/cb'])).status).toBe(400);
+    expect(
+      (await registerAs('ChatGPT', ['https://chatgpt.com/cb', 'https://evil.test/cb'])).status,
+    ).toBe(400);
+    expect((await registerAs('Claude', ['https://claude.ai/api/mcp/auth_callback'])).status).toBe(
+      201,
+    );
+    expect(
+      (await registerAs('ChatGPT', ['https://chatgpt.com/connector_platform_oauth_redirect']))
+        .status,
+    ).toBe(201);
+    // Claude Code names the server it connects to, on a loopback redirect.
+    expect(
+      (await registerAs('Claude Code (livediagram)', ['http://localhost:5555/callback'])).status,
+    ).toBe(201);
+    expect((await registerAs('Claude (livediagram)', ['https://claude.ai/cb'])).status).toBe(201);
+    expect((await registerAs('Claude (livediagram)', ['https://evil.test/cb'])).status).toBe(400);
+    expect((await registerAs('MyClaude', ['https://evil.test/cb'])).status).toBe(400);
+    expect((await registerAs('Claude', ['https://claude.ai.evil.test/cb'])).status).toBe(400);
+    expect((await registerAs('Claude', ['https://api.claude.ai/cb'])).status).toBe(201);
+    expect((await registerAs('Cursor', ['http://127.0.0.1:7777/callback'])).status).toBe(201);
+    expect((await registerAs('Precursor', ['https://precursor.test/cb'])).status).toBe(201);
+  });
+
+  it('refuses to authorize a client registered under a reserved name before the rule', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    await env.OAUTH_KV.put(
+      'client:old',
+      JSON.stringify({ redirectUris: [REDIRECT], clientName: 'Claude' }),
+    );
+    const res = await app.request(
+      `/oauth/authorize?client_id=old&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${'c'.repeat(43)}`,
+      {},
+      env,
+    );
+    expect(res.status).toBe(400);
   });
 });

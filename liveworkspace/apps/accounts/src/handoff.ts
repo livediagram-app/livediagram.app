@@ -33,8 +33,14 @@ import { sameSecret } from './secrets.ts';
 
 export const HANDOFF_PATH = '/handoff';
 export const HANDOFF_START_PATH = '/handoff/start';
-// The nonce cookie, on this Worker's hand-off path alone.
+// The nonce cookie, on this Worker's hand-off path alone. Production's name; every other deployment's has its own, so
+// production's nonce (on the domain, so it reaches staging) is never taken for staging's (own-cookies.ts).
 export const HANDOFF_NONCE_COOKIE = 'lw_handoff';
+export function handoffNonceCookie(environment: AppEnvironment): string {
+  return environment === 'production'
+    ? HANDOFF_NONCE_COOKIE
+    : `${HANDOFF_NONCE_COOKIE}_${environment}`;
+}
 // The query parameter the sign-in pages carry the nonce's hash in, and send back as `bind`.
 export const HANDOFF_BIND_PARAM = 'handoff';
 // A token lives this long: the hop is one redirect, so a minute is generous.
@@ -168,7 +174,7 @@ export async function signInOnAppAddress(
 function nonceCookie(value: string, maxAge: number, environment: AppEnvironment): string {
   // On the domain in production (cookie-scope.ts): the authorize that sets it and the hand-off that reads it may be
   // on either host while the move to www. lasts.
-  return `${HANDOFF_NONCE_COOKIE}=${value}; Path=/api/auth${HANDOFF_PATH}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${
+  return `${handoffNonceCookie(environment)}=${value}; Path=/api/auth${HANDOFF_PATH}; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${
     environment === 'development' ? '' : '; Secure'
   }${domainAttribute(cookieDomain(environment))}`;
 }
@@ -278,7 +284,10 @@ export function handoffPlugin(config: HandoffPluginConfig): BetterAuthPlugin {
           const back = new URL(row.returnUrl).origin;
           if (row.expiresAt < Date.now()) return refusal('This sign-in link has expired.', back);
           // The browser that started the sign-in holds the nonce; any other does not.
-          const nonce = readCookie(request.headers.get('cookie'), HANDOFF_NONCE_COOKIE);
+          const nonce = readCookie(
+            request.headers.get('cookie'),
+            handoffNonceCookie(config.environment),
+          );
           if (!nonce || !(await sameSecret(await digest(nonce), row.bindHash))) {
             return refusal('This sign-in was started in another browser.', back);
           }
@@ -310,7 +319,7 @@ export function handoffPlugin(config: HandoffPluginConfig): BetterAuthPlugin {
             if (domain) ctx.setCookie(name, '', { ...cleared, domain });
             ctx.setCookie(name, '', cleared);
           };
-          clear(HANDOFF_NONCE_COOKIE, `/api/auth${HANDOFF_PATH}`);
+          clear(handoffNonceCookie(config.environment), `/api/auth${HANDOFF_PATH}`);
           if (await config.mergeGuest?.(request, row.userId).catch(() => false)) {
             clear(GUEST_COOKIE, '/');
           }

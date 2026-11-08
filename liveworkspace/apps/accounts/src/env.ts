@@ -11,6 +11,9 @@ export interface Env {
   BETTER_AUTH_SECRET: string;
   TURNSTILE_SECRET_KEY: string;
   ADMIN_TOKEN: string;
+  // The secret every app's router sends beside the visitor's address (X-Liveworkspace-Proxy-Secret): set, a named
+  // address counts in the per-network limits only beside it (rate-limit.ts). Unset, it counts as named.
+  WORKSPACE_PROXY_SECRET?: string;
   // Cloudflare Email Service's send_email binding. Required in staging and production; without it, development
   // logs each email.
   EMAIL?: SendEmail;

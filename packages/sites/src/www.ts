@@ -15,9 +15,10 @@ export const ACCOUNTS_ISSUER = `${WORKSPACE_WWW_ORIGIN}/api/auth`;
  * are one name: token checks accept either issuer and audience, origin checks either origin.
  *
  * Drop a domain (and then the bare API routes) no earlier than `keepUntil`. The longest-lived credential naming a bare
- * host is a guest token (a year, liveworkspace/apps/accounts GUEST_TOKEN_TTL_SECONDS), so it is at least a year after
- * the accounts Worker first deployed with its issuer on www., with a month's margin. Refresh tokens (30 days), access
- * tokens (an hour) and API tokens (opaque, no host) are inside that. The bare domains' page redirects stay after it.
+ * host is a guest token minted before the move (a year then; 45 days since 2026-11, GUEST_TOKEN_TTL_SECONDS in
+ * liveworkspace/apps/accounts), so it is at least a year after the accounts Worker first deployed with its issuer on
+ * www., with a month's margin. Refresh tokens (30 days), access tokens (an hour) and API tokens (opaque, no host) are
+ * inside that. The bare domains' page redirects stay after it.
  */
 export const BARE_WWW_TRANSITION = {
   domains: [

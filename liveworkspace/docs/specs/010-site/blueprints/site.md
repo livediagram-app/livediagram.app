@@ -323,99 +323,100 @@ Every access is wrapped so a blocked storage reads as empty.
 
 ## Constants and configuration: named constants
 
-| Constant                      | Value                                                           | File                        |
-| ----------------------------- | --------------------------------------------------------------- | --------------------------- |
-| `ACCOUNT_API`                 | `'/api/account'`                                                | `account-api.ts`            |
-| `ACCOUNT_PAGE_METADATA`       | `(object or list, see file)`                                    | `account-metadata.ts`       |
-| `SETTINGS_CONTENTS`           | `(object or list, see file)`                                    | `account-settings.ts`       |
-| `ACCOUNTS_API`                | `'/api/auth'`                                                   | `accounts.ts`               |
-| `EMAIL_PATTERN`               | `/^[^@\s]+@[^@\s]+\.[^@\s]+$/`                                  | `accounts.ts`               |
-| `RETURN_PARAM`                | `'return'`                                                      | `accounts.ts`               |
-| `HANDOFF_PARAM`               | `'handoff'`                                                     | `accounts.ts`               |
-| `APP_COPY`                    | `(object or list, see file)`                                    | `apps.ts`                   |
-| `DRIVE_SETTINGS_PARAM`        | `'profile'`                                                     | `client.ts`                 |
-| `SIGNED_IN_HINTS`             | `(object or list, see file)`                                    | `app-session.ts`            |
-| `LAST_APP_KEY`                | `'liveworkspace:explorer-app'`                                  | `host.ts`                   |
-| `SETTINGS_PARAM`              | `'settings'`                                                    | `host.ts`                   |
-| `SECTION_PARAM`               | `'section'`                                                     | `host.ts`                   |
-| `NOTIFICATIONS_SETTINGS`      | `/explorer?${SETTINGS_PARAM}=notifications`                     | `host.ts`                   |
-| `ENDED_PARAM`                 | `'ended'`                                                       | `host.ts`                   |
-| `RETIRED_TARGETS`             | `(object or list, see file)`                                    | `host.ts`                   |
-| `PREVIEW_CACHE_MAX`           | `200`                                                           | `previews.tsx`              |
-| `PREVIEW_CACHE_CEILING`       | `1000`                                                          | `previews.tsx`              |
-| `PREVIEW_CONCURRENCY`         | `4`                                                             | `previews.tsx`              |
-| `WORKSPACE_TOKEN_URL`         | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
-| `LEGAL_UPDATED`               | `'25 October 2026'`                                             | `legal.ts`                  |
-| `CONTACT_URL`                 | `'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj'`     | `legal.ts`                  |
-| `LICENCE_APPS`                | `(object or list, see file)`                                    | `apps.ts`                   |
-| `EMBEDDED_WORKS`              | `(object or list, see file)`                                    | `embedded-works.ts`         |
-| `OVERRIDES`                   | `(object or list, see file)`                                    | `overrides.ts`              |
-| `HISTORY_REFRESH_MS`          | `5 * 60_000`                                                    | `history.ts`                |
-| `CHECK_COOLDOWN_MS`           | `30_000`                                                        | `probe.ts`                  |
-| `HISTORY_MAX`                 | `30`                                                            | `probe.ts`                  |
-| `OVERALL_COPY`                | `(object or list, see file)`                                    | `probe.ts`                  |
-| `INVITES_PATH`                | `'/explorer/invites'`                                           | `teams.ts`                  |
-| `AVATAR_TONES`                | `(object or list, see file)`                                    | `teams.ts`                  |
-| `TURNSTILE_ORIGIN`            | `'https://challenges.cloudflare.com'`                           | `turnstile.ts`              |
-| `LOCAL_PORTS`                 | `(object or list, see file)`                                    | `index.ts`                  |
-| `PLATFORM_SITE`               | `(object or list, see file)`                                    | `index.ts`                  |
-| `APP_SITES`                   | `(object or list, see file)`                                    | `index.ts`                  |
-| `SITES`                       | `[PLATFORM_SITE, ...APP_SITES]`                                 | `index.ts`                  |
-| `APP_ITEMS`                   | `(object or list, see file)`                                    | `index.ts`                  |
-| `APP_NAMES`                   | `Object.keys(APP_ITEMS) as AppName[]`                           | `index.ts`                  |
-| `EXPLORER_PATH`               | `'/explorer'`                                                   | `index.ts`                  |
-| `EXPLORER_FROM_PARAM`         | `'from'`                                                        | `index.ts`                  |
-| `TERMS_LABEL`                 | `'Terms of Use'`                                                | `index.ts`                  |
-| `PROFILE_PICTURE_HOST`        | `'lh3.googleusercontent.com'`                                   | `picture.ts`                |
-| `PROFILE_PICTURE_ORIGIN`      | `https://${PROFILE_PICTURE_HOST}`                               | `picture.ts`                |
-| `MAX_PICTURE_URL_LEN`         | `512`                                                           | `picture.ts`                |
-| `DEFAULT_PICTURE_PX`          | `96`                                                            | `picture.ts`                |
-| `PRODUCTION_WORKSPACE_ORIGIN` | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
-| `WORKSPACE_PROXY_HEADER`      | `'X-Liveworkspace-Proxy'`                                       | `workspace-proxy.ts`        |
-| `WORKSPACE_CLIENT_IP_HEADER`  | `'X-Liveworkspace-Client-IP'`                                   | `workspace-proxy.ts`        |
-| `STATUS_PATH`                 | `'/status'`                                                     | `workspace-proxy.ts`        |
-| `EXPLORER_ROUTE`              | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `ACCOUNT_ROUTE`               | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `SIGN_IN_PAGE_ROUTES`         | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `ACCOUNTS_ON_APP_PATH`        | `'/api/workspace/auth'`                                         | `workspace-proxy.ts`        |
-| `ACCOUNTS_ROUTE`              | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `FLOW_COOKIE_MAX_AGE_SECONDS` | `900`                                                           | `workspace-proxy.ts`        |
-| `FLOW_COOKIE_PREFIX`          | `'lw_flow.'`                                                    | `workspace-proxy.ts`        |
-| `SITE_ASSET_PREFIX`           | `'/_liveworkspace'`                                             | `workspace-proxy.ts`        |
-| `SITE_ASSETS_ROUTE`           | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `WORKBENCH_ROUTE`             | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
-| `PRODUCTION_INDEX_ORIGIN`     | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
-| `PRODUCTION_DRIVE_ORIGIN`     | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
-| `DRIVE_PATH`                  | `'/api/drive'`                                                  | `workspace-proxy.ts`        |
-| `PRODUCTION_PREVIEWS_ORIGIN`  | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
-| `PREVIEWS_PATH`               | `'/api/previews'`                                               | `workspace-proxy.ts`        |
-| `SETTINGS_HREF`               | `'/explorer?settings=all'`                                      | `AccountMenu.tsx`           |
-| `ACCOUNT_TRIGGER_CLASS`       | `'relative touch-target-y inline-flex max-w-56 cursor-pointer…` | `face.tsx`                  |
-| `GUEST_LABEL`                 | `'Guest'`                                                       | `face.tsx`                  |
-| `ACCOUNT_GROUP`               | `'account'`                                                     | `CatalogueSettingsView.tsx` |
-| `APPS_GROUP`                  | `'apps'`                                                        | `CatalogueSettingsView.tsx` |
-| `SETTINGS_CARD`               | `'rounded-xl border border-slate-200 bg-white dark:border-sla…` | `SettingsGroup.tsx`         |
-| `SETTINGS_CARD_SLOT`          | `'border-t border-slate-100 first:rounded-t-xl first:border-t…` | `SettingsGroup.tsx`         |
-| `SETTINGS_ROW_BUTTON`         | `'shrink-0 cursor-pointer rounded-lg border border-slate-200 …` | `SettingsRowShell.tsx`      |
-| `DRIVE_ROW_REFRESH_MS`        | `5_000`                                                         | `GoogleDriveRow.tsx`        |
-| `DRIVE_NOT_SYNCED_YET`        | `'Not synced yet'`                                              | `cloud-sync-copy.ts`        |
-| `DRIVE_CONNECT_FAILED`        | `'Couldn’t reach Google. Check your connection and try again.'` | `cloud-sync-copy.ts`        |
-| `DRIVE_CONNECT_CANCELLED`     | `'Connection cancelled. Connect whenever you’re ready.'`        | `cloud-sync-copy.ts`        |
-| `DRIVE_OFFLINE`               | `'Can’t reach Google Drive. Trying again automatically.'`       | `cloud-sync-copy.ts`        |
-| `DRIVE_NEEDS_RECONNECT`       | `'Google Drive needs reconnecting. Your files are safe.'`       | `cloud-sync-copy.ts`        |
-| `DRIVE_NOTICE_TEXT`           | `'Moved to a Drive folder liveworkspace can’t see.'`            | `cloud-sync-copy.ts`        |
-| `DRIVE_NOT_CONNECTED_TEXT`    | `'Your work from every app, copied to your Google Drive in ma…` | `cloud-sync-copy.ts`        |
-| `DRIVE_SINCE_STEPS_MS`        | `[DRIVE_JUST_NOW_MS, DRIVE_UNDER_A_MINUTE_MS] as const`         | `cloud-sync-copy.ts`        |
-| `CLOUD_SYNC_PROVIDERS`        | `(object or list, see file)`                                    | `cloud-sync-host.tsx`       |
-| `COMMON_GROUP`                | `'common'`                                                      | `common-model.ts`           |
-| `SETTINGS_DIALOG_SIZE`        | `'3xl' as const`                                                | `frame.ts`                  |
-| `SETTINGS_DIALOG_CLASS`       | `'max-h-[calc(100%-2rem)] sm:h-[min(44rem,calc(100%-6rem))] s…` | `frame.ts`                  |
-| `NAME_SAVE_DELAY_MS`          | `800`                                                           | `ProfileEditor.tsx`         |
-| `SETTINGS_INPUT`              | `'w-full rounded-xl border border-slate-300 bg-white px-3 py-…` | `ProfileEditor.tsx`         |
-| `PROFILE_SECTIONS`            | `(object or list, see file)`                                    | `profile-rows.tsx`          |
-| `SETTINGS_ROW_ATTRIBUTE`      | `'data-settings-row'`                                           | `settings-scroll-anchor.ts` |
-| `SETTINGS_APP_IDS`            | `APP_SITES`' ids that have a catalogue (livehuddle's included)  | `store.ts`                  |
-| `TEST_KIT`                    | `(object or list, see file)`                                    | `kit.tsx`                   |
+| Constant                        | Value                                                           | File                        |
+| ------------------------------- | --------------------------------------------------------------- | --------------------------- |
+| `ACCOUNT_API`                   | `'/api/account'`                                                | `account-api.ts`            |
+| `ACCOUNT_PAGE_METADATA`         | `(object or list, see file)`                                    | `account-metadata.ts`       |
+| `SETTINGS_CONTENTS`             | `(object or list, see file)`                                    | `account-settings.ts`       |
+| `ACCOUNTS_API`                  | `'/api/auth'`                                                   | `accounts.ts`               |
+| `EMAIL_PATTERN`                 | `/^[^@\s]+@[^@\s]+\.[^@\s]+$/`                                  | `accounts.ts`               |
+| `RETURN_PARAM`                  | `'return'`                                                      | `accounts.ts`               |
+| `HANDOFF_PARAM`                 | `'handoff'`                                                     | `accounts.ts`               |
+| `APP_COPY`                      | `(object or list, see file)`                                    | `apps.ts`                   |
+| `DRIVE_SETTINGS_PARAM`          | `'profile'`                                                     | `client.ts`                 |
+| `SIGNED_IN_HINTS`               | `(object or list, see file)`                                    | `app-session.ts`            |
+| `LAST_APP_KEY`                  | `'liveworkspace:explorer-app'`                                  | `host.ts`                   |
+| `SETTINGS_PARAM`                | `'settings'`                                                    | `host.ts`                   |
+| `SECTION_PARAM`                 | `'section'`                                                     | `host.ts`                   |
+| `NOTIFICATIONS_SETTINGS`        | `/explorer?${SETTINGS_PARAM}=notifications`                     | `host.ts`                   |
+| `ENDED_PARAM`                   | `'ended'`                                                       | `host.ts`                   |
+| `RETIRED_TARGETS`               | `(object or list, see file)`                                    | `host.ts`                   |
+| `PREVIEW_CACHE_MAX`             | `200`                                                           | `previews.tsx`              |
+| `PREVIEW_CACHE_CEILING`         | `1000`                                                          | `previews.tsx`              |
+| `PREVIEW_CONCURRENCY`           | `4`                                                             | `previews.tsx`              |
+| `WORKSPACE_TOKEN_URL`           | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
+| `LEGAL_UPDATED`                 | `'25 October 2026'`                                             | `legal.ts`                  |
+| `CONTACT_URL`                   | `'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj'`     | `legal.ts`                  |
+| `LICENCE_APPS`                  | `(object or list, see file)`                                    | `apps.ts`                   |
+| `EMBEDDED_WORKS`                | `(object or list, see file)`                                    | `embedded-works.ts`         |
+| `OVERRIDES`                     | `(object or list, see file)`                                    | `overrides.ts`              |
+| `HISTORY_REFRESH_MS`            | `5 * 60_000`                                                    | `history.ts`                |
+| `CHECK_COOLDOWN_MS`             | `30_000`                                                        | `probe.ts`                  |
+| `HISTORY_MAX`                   | `30`                                                            | `probe.ts`                  |
+| `OVERALL_COPY`                  | `(object or list, see file)`                                    | `probe.ts`                  |
+| `INVITES_PATH`                  | `'/explorer/invites'`                                           | `teams.ts`                  |
+| `AVATAR_TONES`                  | `(object or list, see file)`                                    | `teams.ts`                  |
+| `TURNSTILE_ORIGIN`              | `'https://challenges.cloudflare.com'`                           | `turnstile.ts`              |
+| `LOCAL_PORTS`                   | `(object or list, see file)`                                    | `index.ts`                  |
+| `PLATFORM_SITE`                 | `(object or list, see file)`                                    | `index.ts`                  |
+| `APP_SITES`                     | `(object or list, see file)`                                    | `index.ts`                  |
+| `SITES`                         | `[PLATFORM_SITE, ...APP_SITES]`                                 | `index.ts`                  |
+| `APP_ITEMS`                     | `(object or list, see file)`                                    | `index.ts`                  |
+| `APP_NAMES`                     | `Object.keys(APP_ITEMS) as AppName[]`                           | `index.ts`                  |
+| `EXPLORER_PATH`                 | `'/explorer'`                                                   | `index.ts`                  |
+| `EXPLORER_FROM_PARAM`           | `'from'`                                                        | `index.ts`                  |
+| `TERMS_LABEL`                   | `'Terms of Use'`                                                | `index.ts`                  |
+| `PROFILE_PICTURE_HOST`          | `'lh3.googleusercontent.com'`                                   | `picture.ts`                |
+| `PROFILE_PICTURE_ORIGIN`        | `https://${PROFILE_PICTURE_HOST}`                               | `picture.ts`                |
+| `MAX_PICTURE_URL_LEN`           | `512`                                                           | `picture.ts`                |
+| `DEFAULT_PICTURE_PX`            | `96`                                                            | `picture.ts`                |
+| `PRODUCTION_WORKSPACE_ORIGIN`   | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
+| `WORKSPACE_PROXY_HEADER`        | `'X-Liveworkspace-Proxy'`                                       | `workspace-proxy.ts`        |
+| `WORKSPACE_CLIENT_IP_HEADER`    | `'X-Liveworkspace-Client-IP'`                                   | `workspace-proxy.ts`        |
+| `WORKSPACE_PROXY_SECRET_HEADER` | `'X-Liveworkspace-Proxy-Secret'`                                | `workspace-proxy.ts`        |
+| `STATUS_PATH`                   | `'/status'`                                                     | `workspace-proxy.ts`        |
+| `EXPLORER_ROUTE`                | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `ACCOUNT_ROUTE`                 | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `SIGN_IN_PAGE_ROUTES`           | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `ACCOUNTS_ON_APP_PATH`          | `'/api/workspace/auth'`                                         | `workspace-proxy.ts`        |
+| `ACCOUNTS_ROUTE`                | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `FLOW_COOKIE_MAX_AGE_SECONDS`   | `900`                                                           | `workspace-proxy.ts`        |
+| `FLOW_COOKIE_PREFIX`            | `'lw_flow.'`                                                    | `workspace-proxy.ts`        |
+| `SITE_ASSET_PREFIX`             | `'/_liveworkspace'`                                             | `workspace-proxy.ts`        |
+| `SITE_ASSETS_ROUTE`             | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `WORKBENCH_ROUTE`               | `(object or list, see file)`                                    | `workspace-proxy.ts`        |
+| `PRODUCTION_INDEX_ORIGIN`       | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
+| `PRODUCTION_DRIVE_ORIGIN`       | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
+| `DRIVE_PATH`                    | `'/api/drive'`                                                  | `workspace-proxy.ts`        |
+| `PRODUCTION_PREVIEWS_ORIGIN`    | `'https://www.liveworkspace.app'`                               | `workspace-proxy.ts`        |
+| `PREVIEWS_PATH`                 | `'/api/previews'`                                               | `workspace-proxy.ts`        |
+| `SETTINGS_HREF`                 | `'/explorer?settings=all'`                                      | `AccountMenu.tsx`           |
+| `ACCOUNT_TRIGGER_CLASS`         | `'relative touch-target-y inline-flex max-w-56 cursor-pointer…` | `face.tsx`                  |
+| `GUEST_LABEL`                   | `'Guest'`                                                       | `face.tsx`                  |
+| `ACCOUNT_GROUP`                 | `'account'`                                                     | `CatalogueSettingsView.tsx` |
+| `APPS_GROUP`                    | `'apps'`                                                        | `CatalogueSettingsView.tsx` |
+| `SETTINGS_CARD`                 | `'rounded-xl border border-slate-200 bg-white dark:border-sla…` | `SettingsGroup.tsx`         |
+| `SETTINGS_CARD_SLOT`            | `'border-t border-slate-100 first:rounded-t-xl first:border-t…` | `SettingsGroup.tsx`         |
+| `SETTINGS_ROW_BUTTON`           | `'shrink-0 cursor-pointer rounded-lg border border-slate-200 …` | `SettingsRowShell.tsx`      |
+| `DRIVE_ROW_REFRESH_MS`          | `5_000`                                                         | `GoogleDriveRow.tsx`        |
+| `DRIVE_NOT_SYNCED_YET`          | `'Not synced yet'`                                              | `cloud-sync-copy.ts`        |
+| `DRIVE_CONNECT_FAILED`          | `'Couldn’t reach Google. Check your connection and try again.'` | `cloud-sync-copy.ts`        |
+| `DRIVE_CONNECT_CANCELLED`       | `'Connection cancelled. Connect whenever you’re ready.'`        | `cloud-sync-copy.ts`        |
+| `DRIVE_OFFLINE`                 | `'Can’t reach Google Drive. Trying again automatically.'`       | `cloud-sync-copy.ts`        |
+| `DRIVE_NEEDS_RECONNECT`         | `'Google Drive needs reconnecting. Your files are safe.'`       | `cloud-sync-copy.ts`        |
+| `DRIVE_NOTICE_TEXT`             | `'Moved to a Drive folder liveworkspace can’t see.'`            | `cloud-sync-copy.ts`        |
+| `DRIVE_NOT_CONNECTED_TEXT`      | `'Your work from every app, copied to your Google Drive in ma…` | `cloud-sync-copy.ts`        |
+| `DRIVE_SINCE_STEPS_MS`          | `[DRIVE_JUST_NOW_MS, DRIVE_UNDER_A_MINUTE_MS] as const`         | `cloud-sync-copy.ts`        |
+| `CLOUD_SYNC_PROVIDERS`          | `(object or list, see file)`                                    | `cloud-sync-host.tsx`       |
+| `COMMON_GROUP`                  | `'common'`                                                      | `common-model.ts`           |
+| `SETTINGS_DIALOG_SIZE`          | `'3xl' as const`                                                | `frame.ts`                  |
+| `SETTINGS_DIALOG_CLASS`         | `'max-h-[calc(100%-2rem)] sm:h-[min(44rem,calc(100%-6rem))] s…` | `frame.ts`                  |
+| `NAME_SAVE_DELAY_MS`            | `800`                                                           | `ProfileEditor.tsx`         |
+| `SETTINGS_INPUT`                | `'w-full rounded-xl border border-slate-300 bg-white px-3 py-…` | `ProfileEditor.tsx`         |
+| `PROFILE_SECTIONS`              | `(object or list, see file)`                                    | `profile-rows.tsx`          |
+| `SETTINGS_ROW_ATTRIBUTE`        | `'data-settings-row'`                                           | `settings-scroll-anchor.ts` |
+| `SETTINGS_APP_IDS`              | `APP_SITES`' ids that have a catalogue (livehuddle's included)  | `store.ts`                  |
+| `TEST_KIT`                      | `(object or list, see file)`                                    | `kit.tsx`                   |
 
 ## Observability
 

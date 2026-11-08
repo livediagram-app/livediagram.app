@@ -42,6 +42,10 @@ export interface Env {
   // (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
   // and local dev name their own.
   WORKSPACE_ORIGIN?: string;
+  // The secret this router shares with liveworkspace's accounts and index (liveworkspace/docs/specs/002-architecture/
+  // blueprints/architecture.md "Security and trust"), sent beside the visitor's address so their per-network limits
+  // count the visitor rather than this router. Unset, none is sent.
+  WORKSPACE_PROXY_SECRET?: string;
   // liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): `/api/previews/*` and a share link's image.svg,
   // image.png and card go there, not to the api. Unset means production's.
   PREVIEWS_ORIGIN?: string;
@@ -242,7 +246,12 @@ async function route(request: Request, env: Env): Promise<Response> {
   const community = routeCommunity(request, {
     site: COMMUNITY_SITE,
     communityUrl: env.COMMUNITY_URL,
-    forward: (req) => routeToWorkspace(req, { app: 'livedocuments', origin: env.WORKSPACE_ORIGIN }),
+    forward: (req) =>
+      routeToWorkspace(req, {
+        app: 'livedocuments',
+        origin: env.WORKSPACE_ORIGIN,
+        proxySecret: env.WORKSPACE_PROXY_SECRET,
+      }),
   });
   if (community) return community;
   // liveworkspace's Explorer under this address, while livedocuments's switch is on (@liveworkspace/sites/workspace-proxy):
@@ -250,6 +259,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   const workspace = routeToWorkspace(request, {
     app: 'livedocuments',
     origin: env.WORKSPACE_ORIGIN,
+    proxySecret: env.WORKSPACE_PROXY_SECRET,
   });
   if (workspace) return workspace;
   // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
@@ -258,7 +268,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   // The Explorer's own calls (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the index answers them, so the editor
   // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
   if (hasPrefix(url.pathname, INDEX_PATH)) {
-    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN);
+    return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN, {
+      proxySecret: env.WORKSPACE_PROXY_SECRET,
+    });
   }
   // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/specs/005-drive/drive.md): the Drive mirror answers them, cookies
   // dropped.
