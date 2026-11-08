@@ -12,7 +12,8 @@ import {
 import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT } from '../account-ui';
 import { DestinationPicker, EventPicker, FormStep, ScopePicker, type TeamChoice } from './pickers';
-import { attempt, KINDS, webhookError, webhooksClient } from './webhooks-api';
+import { useAccountPanelsHost } from '../host';
+import { attempt, KINDS, webhookError } from './webhooks-api';
 
 export type { TeamChoice } from './pickers';
 
@@ -42,6 +43,7 @@ export function AddWebhook({
   const [scope, setScope] = useState('');
   const [url, setUrl] = useState('');
   const [events, setEvents] = useState<Set<WebhookEvent>>(() => new Set(WEBHOOK_EVENTS));
+  const { index } = useAccountPanelsHost();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +60,7 @@ export function AddWebhook({
     setBusy(true);
     setError(null);
     const result = await attempt(() =>
-      webhooksClient.createWebhook({
+      index.createWebhook({
         name: name.trim(),
         kind,
         url: url.trim(),

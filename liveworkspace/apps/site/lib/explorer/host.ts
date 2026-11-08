@@ -202,7 +202,7 @@ export const SETTINGS_PARAM = 'settings';
 export const SECTION_PARAM = 'section';
 
 /** Why Download Your Data's emailed link didn't open (`?settings=data&export=expired`): Settings › Your Data says. */
-export const EXPORT_LINK_PARAM = 'export';
+export { EXPORT_LINK_PARAM } from '@liveworkspace/data-export';
 
 /** The account's notification settings: every notification email's unsubscribe link lands here. */
 export const NOTIFICATIONS_SETTINGS = `/explorer?${SETTINGS_PARAM}=notifications`;

@@ -79,7 +79,7 @@ hands it to the client; from then on every request is just
 from [Public API and API tokens](public-api-and-tokens.md) (storage, hashing, 6-month expiry,
 per-account cap, revoke, account-deletion cascade, rate limiting) instead of
 inventing a parallel credential. An MCP-minted token is an ordinary liveworkspace
-account token: it is listed on liveworkspace.app and can be revoked there like any
+account token: it is listed in Settings › API Tokens (any app's, or liveworkspace.app's) and can be revoked there like any
 other, and it works with every liveworkspace app's MCP server.
 
 This implements the OAuth flow Manager Toolkit uses:

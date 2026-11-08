@@ -1,10 +1,9 @@
-// Settings › Webhooks' side of the index (liveworkspace/docs/specs/004-index/webhooks.md "Routes"): the person's client,
-// asking as the Explorer does (the workspace token, on liveworkspace.app and on an app's address alike), what each
+// Settings › Webhooks' side of the index (liveworkspace/docs/specs/004-index/webhooks.md "Routes"): the person's client
+// is the panel host's (AccountPanelsHost.index, asking as that page's Explorer does, with the person's token), what each
 // refusal tells the person, and the words for each destination, event, pause and delivery, written for someone who
 // has never met a webhook (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks).
 
 import {
-  createIndexClient,
   IndexError,
   WEBHOOK_EVENT_LABELS,
   type Webhook,
@@ -15,10 +14,6 @@ import {
 } from '@liveworkspace/index-client';
 import { formatRelativeTime } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
-import { workspaceToken } from '@/lib/explorer/token';
-
-export const webhooksClient = createIndexClient({ getToken: workspaceToken });
-
 export type WebhookResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 /** A client call as a result: an index refusal by its code, anything else (no network) `offline`. */

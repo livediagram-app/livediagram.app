@@ -101,3 +101,46 @@ describe('Where You’re Signed In by keyboard', () => {
     await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('dialog')));
   });
 });
+
+describe('Sign-in and Security over a host without every route', () => {
+  const other = {
+    id: 'other',
+    token: 'other',
+    current: false,
+    userAgent: 'Mozilla/5.0 (Macintosh; Mac OS X) Firefox/120.0',
+    createdAt: '2026-10-20T10:00:00Z',
+    updatedAt: '2026-10-24T10:00:00Z',
+  };
+
+  it('has no Sign Out Others where the host can’t sign out the others at once', async () => {
+    const host = security({ sessions: vi.fn(async () => [other]) });
+    delete host.revokeOtherSessions;
+    render(<SessionsRows security={host} />);
+    expect(await screen.findByText('Firefox on macOS')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Sign Out Others' })).toBeNull();
+  });
+
+  it('says why Google wasn’t connected when the browser comes back refused, once', async () => {
+    window.history.replaceState(
+      null,
+      '',
+      '/document/d1?settings=account%3Aaccount&error=already_connected',
+    );
+    render(<SignInMethodsRows security={security({})} />);
+    expect(await screen.findByText('Google is already connected to this account.')).toBeTruthy();
+    expect(window.location.search).toBe('?settings=account%3Aaccount');
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('says a general line for a refusal it has no words for, and nothing without Settings open', async () => {
+    window.history.replaceState(null, '', '/?error=whatever');
+    const first = render(<SignInMethodsRows security={security({})} />);
+    await screen.findByRole('button', { name: 'Connect' });
+    expect(screen.queryByRole('alert')).toBeNull();
+    first.unmount();
+    window.history.replaceState(null, '', '/?settings=profile&error=whatever');
+    render(<SignInMethodsRows security={security({})} />);
+    expect(await screen.findByText(/Google couldn’t be connected just now/)).toBeTruthy();
+    window.history.replaceState(null, '', '/');
+  });
+});

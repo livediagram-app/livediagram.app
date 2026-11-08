@@ -2,7 +2,7 @@
 
 import { useRef, useState, type ReactNode } from 'react';
 import { Button, Chip, ConfirmPopover, Tooltip, TrashIcon } from '@liveworkspace/ui';
-import { AccordionSection } from '@liveworkspace/settings-ui';
+import { AccordionSection } from '../../AccordionSection';
 import {
   WEBHOOK_EVENTS,
   type Webhook,
@@ -10,6 +10,7 @@ import {
   type WebhookKind,
 } from '@liveworkspace/index-client';
 import { BUTTON, ErrorNote } from '../account-ui';
+import { useAccountPanelsHost } from '../host';
 import { Deliveries } from './Deliveries';
 import {
   AppName,
@@ -30,7 +31,6 @@ import {
   KINDS,
   stateOf,
   webhookError,
-  webhooksClient,
   whenOf,
   type WebhookTone,
 } from './webhooks-api';
@@ -147,6 +147,7 @@ export function WebhookRow({
   onChanged: (webhook: Webhook) => void;
   onDeleted: () => Promise<void>;
 }) {
+  const { index } = useAccountPanelsHost();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -171,7 +172,7 @@ export function WebhookRow({
 
   const setPaused = (next: boolean) =>
     run(
-      () => webhooksClient.updateWebhook(webhook.id, { paused: next }),
+      () => index.updateWebhook(webhook.id, { paused: next }),
       (data) => {
         test.clear();
         onChanged(data.webhook);
@@ -183,7 +184,7 @@ export function WebhookRow({
     setOpen(next);
     if (next)
       void run(
-        () => webhooksClient.webhookDeliveries(webhook.id),
+        () => index.webhookDeliveries(webhook.id),
         (data) => setDeliveries(data.deliveries),
       );
   };
@@ -313,7 +314,7 @@ export function WebhookRow({
           onConfirm={() => {
             setConfirming(null);
             void run(
-              () => webhooksClient.deleteWebhook(webhook.id),
+              () => index.deleteWebhook(webhook.id),
               () => void onDeleted(),
             );
           }}

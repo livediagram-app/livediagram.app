@@ -2,16 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  EXPORT_LINK_PARAM,
   EXPORT_POLL_MS,
   isExportLinkRefusal,
   type DataExportState,
   type ExportView,
 } from '@liveworkspace/data-export';
-import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
-import { accountApi, errorMessage } from '@/lib/account-api';
-import { EXPORT_LINK_PARAM } from '@/lib/explorer/host';
+import { SettingsSharedGlyph } from '../../glyphs';
+import type { SettingsRequest } from '../../request';
 import { BUTTON, ErrorNote } from '../account-ui';
 import { EveryAppName } from '../app-names';
+import { accountErrorMessage as errorMessage } from '../errors';
+import { useAccountPanelsHost } from '../host';
 import { REFUSALS, startError } from './data-export-copy';
 import { ExportRow } from './ExportRow';
 
@@ -22,7 +24,7 @@ type Load =
   | { state: 'ready'; data: DataExportState; at: number };
 
 const PATH = '/data-export';
-const read = () => accountApi<DataExportState>(PATH);
+const read = (request: SettingsRequest) => request<DataExportState>(PATH);
 const loadOf = (result: Awaited<ReturnType<typeof read>>): Load =>
   result.ok
     ? { state: 'ready', data: result.data, at: Date.now() }
@@ -45,24 +47,25 @@ function refusalOnArrival(): string | null {
 // liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): one card saying what a download holds and which
 // apps it covers, then the person's own export and each team's they run, in its state. Read when the category is
 // first shown, and again every few seconds while one is being made, never otherwise. Signed in only: the panel draws
-// it on liveworkspace.app for an account alone (SiteSettingsDialog).
+// it for an account alone, wherever it opens, over the host's request (accountPanels).
 export function DataExportPanel() {
+  const { request } = useAccountPanelsHost();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [busy, setBusy] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const refusal = useMemo(() => refusalOnArrival(), []);
 
-  const refresh = useCallback(async () => setLoad(loadOf(await read())), []);
+  const refresh = useCallback(async () => setLoad(loadOf(await read(request))), [request]);
 
   useEffect(() => {
     let live = true;
-    void read().then((result) => {
+    void read(request).then((result) => {
       if (live) setLoad(loadOf(result));
     });
     return () => {
       live = false;
     };
-  }, []);
+  }, [request]);
 
   // While one is being made, ask again in a few seconds; nothing runs once none is.
   const polling = load.state === 'ready' && running(load.data);
@@ -75,7 +78,7 @@ export function DataExportPanel() {
   const start = async (key: string) => {
     setBusy(key);
     setErrors((current) => ({ ...current, [key]: '' }));
-    const result = await accountApi<{ export: ExportView }>(
+    const result = await request<{ export: ExportView }>(
       PATH,
       'POST',
       key === PERSONAL ? {} : { team: key },

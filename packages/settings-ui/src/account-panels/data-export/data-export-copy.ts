@@ -2,7 +2,7 @@
 // each state of an export, its size and dates, and why an emailed link was refused. Pure, so each reads the same in the
 // panel and its tests.
 import type { ExportLinkRefusal, ExportView } from '@liveworkspace/data-export';
-import { formatDate } from '@/lib/account-api';
+import { formatAccountDate as formatDate } from '../errors';
 
 /** The state a row draws: an export's own, with a lapsed ready one read as expired. */
 export type RowState = 'none' | 'running' | 'ready' | 'failed' | 'expired';

@@ -39,7 +39,7 @@ or the no-required-SaaS rule ([Open source + distribution](../002-project-scope/
 ## 3. Design: API tokens
 
 **API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
-"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
+"API tokens"). They are made, listed and revoked in Settings › API Tokens, in any app's Settings or on liveworkspace.app, and one token works on every app's API and
 MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows is how livedocuments uses them.
 
@@ -54,8 +54,11 @@ account). What follows is how livedocuments uses them.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
-- **Management** is on liveworkspace.app; this app has no routes for listing, minting or revoking tokens. The Settings dialog's API Tokens row links to liveworkspace.app and
-  lists the account's paired workbenches with Unpair.
+- **Management** is liveworkspace's; this app has no routes for listing, minting or revoking tokens. The Settings dialog's Account › API Tokens category draws the shared token panel in place for a signed-in account
+  (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
+  is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and
+  says that connecting an AI tool makes its own token; it links to liveworkspace.app (**Manage API Tokens**) only on a
+  self-hosted editor without liveworkspace accounts.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
 - **Expiry reminders** are liveworkspace's: a week before a token expires, its owner gets one email from the
@@ -159,15 +162,19 @@ independently of the owner's interactive app use, and `API_TOKEN_READ_RATE_LIMIT
 
 ### 3.6 Management: the Settings dialog's API Tokens category
 
-Tokens are made, listed and revoked on liveworkspace.app (the head of §3). The **Settings dialog**
+Tokens are the liveworkspace account's (the head of §3). The **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)) has an **API Tokens** sub-category of **Account** (id
-`tokens`, `parent: 'account'`, shown as "Account › API Tokens"), reachable from the Explorer and the editor alike. It
-holds one row (`kind: 'tokens'`, `apps/editor/components/dialogs/settings/SettingsTokensRow.tsx`):
+`tokens`, `parent: 'account'`, shown as "Account › API Tokens"), reachable from the Explorer and the editor alike.
+For a signed-in account it first draws the shared token panel in place, the same one liveworkspace.app's Settings has
+(`@liveworkspace/settings-ui/account-panels`, loaded when the category is first opened): make a token (a name and a
+Read Only option), its secret shown once with Copy, and revoke one. Under it, this app's own row (`kind: 'tokens'`,
+`apps/editor/components/dialogs/settings/SettingsTokensRow.tsx`):
 
 - The key tile, the row's title and its line on what tokens are for.
-- A line saying the tokens belong to the liveworkspace account, so one token works in every liveworkspace app, and a
-  **Manage API Tokens** button that opens liveworkspace.app's token page (`manageTokensUrl` from
-  `@liveworkspace/workbench/lib/auth-config`).
+- On a self-hosted editor without liveworkspace accounts only, a line saying the tokens belong to the liveworkspace
+  account, so one token works in every liveworkspace app, and a **Manage API Tokens** button that opens
+  liveworkspace.app's token page (`manageTokensUrl` from `@liveworkspace/workbench/lib/auth-config`). With the
+  account section's panel above, the button is gone: the tokens are made right there.
 - A quiet line for people connecting an AI tool: it creates its own token when they approve it, with a link to the
   Connect an AI Tool guide.
 - **Paired workbenches** ([Workbench embeds](../013-workspace/workbench-embeds.md#pairing)), read once per account
@@ -195,7 +202,7 @@ out cleanly:
 - A session or guest has no token to describe and is refused `403 not_a_token`; a revoked token is refused at the
   front door like any dead token (§3.3).
 
-Every other `/api/tokens` path is a 404 (management is on liveworkspace.app; see the head of §3).
+Every other `/api/tokens` path is a 404 (management is liveworkspace's; see the head of §3).
 
 ### 3.7 Without sign-in
 
@@ -241,5 +248,5 @@ Every full token inherits the owner's read and write access.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
 Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
-items, and a team's admins for the team's, in liveworkspace's Settings (this app's Settings links there); a share
+items, and a team's admins for the team's, in Settings › Webhooks (this app's Settings draws the same panel as liveworkspace.app's, in place); a share
 link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

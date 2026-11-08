@@ -3,11 +3,10 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WEBHOOK_EVENTS, type Webhook, type WebhookDelivery } from '@liveworkspace/index-client';
+import { withAccountHost } from '../../test/account-host';
 import { WebhooksPanel } from './WebhooksPanel';
 import { testDeliveryOf, READ_AT } from './useSendTest';
 import { deliveryLine, eventName, failureOf, stateOf, webhookError, whenOf } from './webhooks-api';
-
-vi.mock('@/lib/explorer/token', () => ({ workspaceToken: async () => 'tok' }));
 
 // Settings › Webhooks (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks; liveworkspace/docs/specs/004-index/
 // webhooks.md): the card's head, the list, adding one step by step for your own items or a team you run (a plain
@@ -153,7 +152,7 @@ const field = (label: string) =>
     .find((l) => l.firstChild?.textContent === label)!
     .querySelector('input')!;
 const render = async () => {
-  act(() => root.render(<WebhooksPanel />));
+  act(() => root.render(withAccountHost(<WebhooksPanel />)));
   await settle();
 };
 const row = (id = 'w1') => container.querySelector(`[data-webhook="${id}"]`)!;

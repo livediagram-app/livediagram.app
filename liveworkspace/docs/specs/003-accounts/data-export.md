@@ -16,8 +16,10 @@ packages/app-doors             @liveworkspace/app-doors: the calls the platform 
 
 ## Who and what
 
-- **Signed-in people only.** A guest owns nothing that outlives their browser. Every door is the accounts session's
-  (`/api/account/data-export`), as API tokens are; an API token, a guest or no session is refused.
+- **Signed-in people only.** A guest owns nothing that outlives their browser. The doors (`/api/account/data-export`)
+  answer the accounts session on liveworkspace.app and an account's app bearer in every app's Settings, as API
+  tokens do ([accounts.md "Every account setting in every app"](accounts.md#every-account-setting-in-every-app)); an
+  API token, a guest or no session is refused. The emailed download link still needs the liveworkspace session.
 - **What I own, never what is shared with me.** A personal export holds the person's own items (the index's personal
   scope, in every app), the comments they wrote **inside those items**, their profile and the images they uploaded.
   An item someone else owns, shared with them through a link or a team, is never in it, and nor is a comment they
@@ -145,7 +147,7 @@ through its `EXPORT` service binding, with `EXPORT_KEY_ACCOUNTS`; it calls accou
 scope's latest export. The zip is the R2 object `exports/<key>/<export id>.zip` in the `liveworkspace-exports` bucket
 (`-staging`).
 
-Accounts' doors, for the signed-in person by their session:
+Accounts' doors, for the signed-in person by their session, or (the first two) by an account's app bearer:
 
 | Route                                          | For                                                                           |
 | ---------------------------------------------- | ----------------------------------------------------------------------------- |

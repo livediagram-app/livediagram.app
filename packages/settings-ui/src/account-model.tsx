@@ -4,8 +4,8 @@
 // every app rather than to one, built once here and shown in the All view wherever the panel opens. Its switches
 // are the `all` scope's (@liveworkspace/settings/account), read from and written to whatever holds that scope where
 // the panel is: the accounts API on liveworkspace.app and an app's Explorer, the editor's own preferences in an
-// editor (which sync them). The profile is edited in place by every host (ProfileHost); the API tokens and the webhooks
-// are the host's to draw or link to.
+// editor (which sync them). Everything in it is edited in place, wherever the panel opens: the profile (ProfileHost),
+// sign-in and devices (AccountSecurity), and the API tokens, webhooks and Download Your Data (accountPanels).
 import type { ReactNode } from 'react';
 import type { SettingsBlob } from '@liveworkspace/settings';
 import {
@@ -20,7 +20,7 @@ import {
   type AccountToggle,
 } from '@liveworkspace/settings/account';
 import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
-import { linkOut, profileRows } from './profile/profile-rows';
+import { profileRows } from './profile/profile-rows';
 import type { AccountIdentity } from './profile/ProfileHeader';
 import type { ProfileHost } from './profile/profile-host';
 import type { AccountSecurity } from './profile/SecurityRows';
@@ -39,24 +39,17 @@ export interface AccountSection {
   // session on liveworkspace.app, the app's token on an app's address and in an editor. There is no address to link
   // to for it, on purpose: Name and Colour never leaves the panel.
   profile?: ProfileHost;
-  // How they sign in and where they are signed in: drawn here where the host can reach the session
-  // (liveworkspace.app), else a link to where they are.
+  // How they sign in and where they are signed in: the session's endpoints on liveworkspace.app, the bearer door
+  // (bearerAccountSecurity) in an editor and on an app's address.
   security?: AccountSecurity;
-  securityHref?: string;
   // Signing out, where the host can.
   onSignOut?: () => Promise<boolean> | boolean | void;
-  // The API tokens: drawn here where the host can make and revoke them (liveworkspace.app, with its session), else a
-  // link to where they are.
+  // The API tokens, the webhooks (liveworkspace/docs/specs/004-index/webhooks.md) and Download Your Data
+  // (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"), drawn here (accountPanels) for a signed-in
+  // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.
   renderTokens?: () => ReactNode;
-  tokensHref?: string;
-  // The webhooks (liveworkspace/docs/specs/004-index/webhooks.md): drawn here where the host can reach the index with the
-  // person's own session (liveworkspace.app, an app's Explorer), else a link to where they are.
   renderWebhooks?: () => ReactNode;
-  webhooksHref?: string;
-  // Download Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): drawn here where the host has
-  // the person's session (liveworkspace.app), else a link to where it is.
   renderDataExport?: () => ReactNode;
-  dataExportHref?: string;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
@@ -85,17 +78,7 @@ const TOKENS_KEYWORDS =
 
 /** The Account section's categories, by their own ids (the panel files them under the Account heading). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const {
-    all,
-    set,
-    renderTokens,
-    tokensHref,
-    renderWebhooks,
-    webhooksHref,
-    renderDataExport,
-    dataExportHref,
-    emails = true,
-  } = section;
+  const { all, set, renderTokens, renderWebhooks, renderDataExport, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -143,18 +126,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
         section: 'API Tokens',
         render: renderTokens,
       }
-    : tokensHref
-      ? {
-          ...linkOut(
-            'apiTokens',
-            'API Tokens',
-            'One token works on every app’s API and MCP server. Make one for a script or an AI tool, and revoke it any time.',
-            tokensHref,
-            'Manage',
-          ),
-          keywords: TOKENS_KEYWORDS,
-        }
-      : null;
+    : null;
   if (tokens) {
     categories.push({
       id: 'tokens',
@@ -178,18 +150,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
         section: WEBHOOKS_CATEGORY.label,
         render: renderWebhooks,
       }
-    : webhooksHref
-      ? {
-          ...linkOut(
-            'webhooks',
-            WEBHOOKS_CATEGORY.label,
-            WEBHOOKS_CATEGORY.description,
-            webhooksHref,
-            'Manage',
-          ),
-          keywords: WEBHOOKS_CATEGORY.keywords,
-        }
-      : null;
+    : null;
   if (webhooks) {
     categories.push({
       id: 'webhooks',
@@ -213,18 +174,7 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
         section: DATA_EXPORT_CATEGORY.label,
         render: renderDataExport,
       }
-    : dataExportHref
-      ? {
-          ...linkOut(
-            'dataExport',
-            DATA_EXPORT_CATEGORY.label,
-            DATA_EXPORT_CATEGORY.description,
-            dataExportHref,
-            'Open',
-          ),
-          keywords: DATA_EXPORT_CATEGORY.keywords,
-        }
-      : null;
+    : null;
   if (data) {
     categories.push({
       id: 'data',

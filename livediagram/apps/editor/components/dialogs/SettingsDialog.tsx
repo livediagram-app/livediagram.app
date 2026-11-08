@@ -12,7 +12,6 @@ import {
   useSettingsScope,
   type AccountHost,
 } from '@liveworkspace/settings-ui';
-import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useCursorsDrawn } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
@@ -28,6 +27,7 @@ import { visibleCategories } from '@/components/dialogs/settings/settings-catalo
 import { SETTINGS_KIT } from '@/components/dialogs/settings/settings-kit';
 import { settingsModel } from '@/components/dialogs/settings/settings-model';
 import {
+  ACCOUNT_SETTINGS,
   cloudSyncHost,
   renderSettingsLogo,
   SETTINGS_APP,
@@ -145,16 +145,14 @@ export function SettingsDialog({
             }
           : null,
       ...(profile ? { profile } : {}),
-      // Sign-in methods and devices are liveworkspace.app's session's.
-      securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
-      // Webhooks are added and managed in liveworkspace's Settings (liveworkspace/docs/specs/004-index/webhooks.md).
-      webhooksHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=webhooks`,
-      // Download Your Data is made in liveworkspace's Settings too (liveworkspace/docs/specs/003-accounts/data-export.md).
-      dataExportHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=data`,
+      // Sign-in and devices, the API tokens, webhooks and Download Your Data, in place for an account; a guest, a
+      // workbench and a self-hosted editor have none. Phone notifications stay this editor's own (none here).
+      ...(allowAll ? ACCOUNT_SETTINGS : {}),
+      phone: null,
       emails: emailEnabled,
       cloudSync,
     }),
-    [settings, model, onChange, emailEnabled, signedIn, user, profile, cloudSync],
+    [settings, model, onChange, emailEnabled, signedIn, user, profile, cloudSync, allowAll],
   );
 
   // Which categories people actually open is the signal for whether this

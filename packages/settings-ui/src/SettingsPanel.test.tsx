@@ -53,7 +53,7 @@ function Host({
       scope={scope}
       onScopeChange={setScope}
       store={store}
-      account={{ ...(shared ? { shared } : {}), tokensHref: '/explorer?settings=tokens' }}
+      account={{ ...(shared ? { shared } : {}), renderTokens: () => null }}
       renderLogo={(id) => <svg data-logo={id} />}
       isMobile={false}
       onClose={() => {}}

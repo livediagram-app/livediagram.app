@@ -254,8 +254,8 @@ A spec does what a person does on liveworkspace.app through the stand-in's test-
 wrapped by `e2e/accounts-stub.ts`: `POST /e2e/accounts/__seed/team` (a team and its admin),
 `…/__seed/member` (someone joining) and `…/__seed/token` (an API token; its `secret` is the `lwt_…` a
 script or agent sends). A spec makes the team before minting the token its requests send, so that token
-names the team. Making a team, inviting and making tokens are liveworkspace.app's (livehuddle links to them), so no spec covers
-them here.
+names the team. Making a team, inviting and making tokens are liveworkspace's (the shared Explorer and Settings panels, tested in
+their own packages), so no spec covers them here.
 
 The sign-in round trip itself (`/api/auth/*` against the accounts Worker) is covered by the api's unit
 tests (`apps/api/src/routes/auth.test.ts`), not here.

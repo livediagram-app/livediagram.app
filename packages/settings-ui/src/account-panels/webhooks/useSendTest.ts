@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { WebhookDelivery } from '@liveworkspace/index-client';
-import { attempt, webhooksClient } from './webhooks-api';
+import { useAccountPanelsHost } from '../host';
+import { attempt } from './webhooks-api';
 
 // Send Test's result, shown on the webhook's row (liveworkspace/docs/specs/010-site/site.md "Settings", Webhooks). The
 // index queues a test as it would an event and answers 202 at once, so the row reads the webhook's deliveries back a
@@ -38,6 +39,7 @@ export function useSendTest(
   // Every list read on the way, so an open Recent Deliveries shows the test too.
   onRead: (deliveries: WebhookDelivery[]) => void,
 ) {
+  const { index } = useAccountPanelsHost();
   const [result, setResult] = useState<TestResult | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Bumped by each send and on unmount, so a read that lands late is dropped.
@@ -60,14 +62,14 @@ export function useSendTest(
     if (timer.current) clearTimeout(timer.current);
     setResult({ state: 'sending' });
     const sentAt = Date.now();
-    const queued = await attempt(() => webhooksClient.testWebhook(webhookId));
+    const queued = await attempt(() => index.testWebhook(webhookId));
     if (mine !== run.current) return;
     if (!queued.ok) {
       setResult({ state: 'refused', error: queued.error });
       return;
     }
     const read = async (n: number) => {
-      const listed = await attempt(() => webhooksClient.webhookDeliveries(webhookId));
+      const listed = await attempt(() => index.webhookDeliveries(webhookId));
       if (mine !== run.current) return;
       const test = listed.ok ? testDeliveryOf(listed.data.deliveries, sentAt) : null;
       if (listed.ok) onReadRef.current(listed.data.deliveries);
@@ -81,7 +83,7 @@ export function useSendTest(
       timer.current = setTimeout(() => void read(n), Math.max(0, wait));
     };
     schedule(0);
-  }, [webhookId]);
+  }, [index, webhookId]);
 
   const clear = useCallback(() => {
     run.current += 1;

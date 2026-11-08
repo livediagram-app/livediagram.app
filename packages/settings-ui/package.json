@@ -33,8 +33,10 @@
     "@liveworkspace/account-menu": "workspace:^",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:^",
+    "@liveworkspace/data-export": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:^"

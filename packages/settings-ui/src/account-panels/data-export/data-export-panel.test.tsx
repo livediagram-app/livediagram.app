@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EXPORT_POLL_MS, type DataExportState, type ExportView } from '@liveworkspace/data-export';
+import { withAccountHost } from '../../test/account-host';
 import { DataExportPanel } from './DataExportPanel';
 import {
   leftOutLine,
@@ -109,7 +110,7 @@ const press = async (name: string) => {
 };
 const row = (kind: string) => container.querySelector(`[data-export-row="${kind}"]`)!;
 const render = async () => {
-  await act(async () => root.render(<DataExportPanel />));
+  await act(async () => root.render(withAccountHost(<DataExportPanel />)));
   await settle();
 };
 

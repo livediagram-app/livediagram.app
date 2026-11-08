@@ -2,15 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CompactEmptyState, PlusIcon } from '@liveworkspace/ui';
-import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
-import { WEBHOOK_SIGNATURE_HEADER, type Webhook } from '@liveworkspace/index-client';
-import { accountApi, type MyTeam } from '@/lib/account-api';
+import { SettingsSharedGlyph } from '../../glyphs';
+import {
+  WEBHOOK_SIGNATURE_HEADER,
+  type IndexClient,
+  type Webhook,
+} from '@liveworkspace/index-client';
+import { useAccountPanelsHost } from '../host';
+import type { AccountTeam } from '../types';
 import { BUTTON, ErrorNote } from '../account-ui';
 import { SecretReveal } from '../SecretReveal';
 import { AddWebhook, type TeamChoice } from './AddWebhook';
 import { EveryAppName } from './marks';
 import { WebhookRow } from './WebhookRow';
-import { attempt, webhookError, webhooksClient } from './webhooks-api';
+import { attempt, webhookError } from './webhooks-api';
 
 type Load =
   | { state: 'loading' }
@@ -18,7 +23,7 @@ type Load =
   // `at`: when it was read, so every row's "2 hours ago" agrees.
   | { state: 'ready'; webhooks: Webhook[]; at: number };
 
-const listWebhooks = () => attempt(() => webhooksClient.listWebhooks());
+const listWebhooks = (index: IndexClient) => attempt(() => index.listWebhooks());
 const loadOf = (result: Awaited<ReturnType<typeof listWebhooks>>): Load =>
   result.ok
     ? { state: 'ready', webhooks: result.data.webhooks, at: Date.now() }
@@ -29,10 +34,11 @@ const loadOf = (result: Awaited<ReturnType<typeof listWebhooks>>): Load =>
 // the person's own webhooks and those of the teams they run, adding one (a plain one's signing secret shown once),
 // and each one's test, pause, delete and recent deliveries. Read when the category is first shown: the index's
 // list, and the person's teams from accounts for their names and which they run. Signed in only: the panel never
-// draws it for a guest (SiteSettingsDialog), and the index refuses one.
+// draws it for a guest, and the index refuses one.
 export function WebhooksPanel() {
+  const { request, index } = useAccountPanelsHost();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
-  const [teams, setTeams] = useState<MyTeam[]>([]);
+  const [teams, setTeams] = useState<AccountTeam[]>([]);
   const [adding, setAdding] = useState(false);
   const [made, setMade] = useState<{ name: string; secret: string } | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
@@ -40,20 +46,20 @@ export function WebhooksPanel() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const addRef = useRef<HTMLButtonElement>(null);
 
-  const refresh = useCallback(async () => setLoad(loadOf(await listWebhooks())), []);
+  const refresh = useCallback(async () => setLoad(loadOf(await listWebhooks(index))), [index]);
 
   useEffect(() => {
     let live = true;
-    void listWebhooks().then((result) => {
+    void listWebhooks(index).then((result) => {
       if (live) setLoad(loadOf(result));
     });
-    void accountApi<{ teams: MyTeam[] }>('/teams').then((result) => {
+    void request<{ teams: AccountTeam[] }>('/teams').then((result) => {
       if (live && result.ok) setTeams(result.data.teams ?? []);
     });
     return () => {
       live = false;
     };
-  }, []);
+  }, [request, index]);
 
   // The form's first choice takes the keyboard as it opens.
   useEffect(() => {

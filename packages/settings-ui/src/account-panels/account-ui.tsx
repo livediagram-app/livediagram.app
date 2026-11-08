@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { SETTINGS_INPUT } from '@liveworkspace/settings-ui';
+import { SETTINGS_INPUT } from '../profile/ProfileEditor';
 
-// The site's buttons, field, card and error note, as the account's own parts use them: the Settings panel's Profile
-// and API Tokens, and the join, decline and workbench pairing pages.
+// The account panels' buttons, field, card and error note (API Tokens, Webhooks, Download Your Data), as
+// liveworkspace.app's own account pages use them too: the join, decline, Drive and workbench pairing pages.
 
 // The site's buttons, by weight.
 export const BUTTON = {

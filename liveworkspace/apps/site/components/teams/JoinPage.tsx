@@ -7,7 +7,7 @@ import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/t
 import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { Button } from '@liveworkspace/ui';
-import { BUTTON } from '../settings/account-ui';
+import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 import { TeamAvatar } from './Avatars';
 
 const noChange = () => () => {};

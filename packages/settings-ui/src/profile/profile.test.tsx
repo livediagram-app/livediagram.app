@@ -118,11 +118,11 @@ describe('the Profile category', () => {
     ]);
   });
 
-  it('elsewhere: the header, Name and Colour edited in place, and Manage for sign-in and devices', async () => {
+  it('with no sign-in and devices handed in: the header and Name and Colour, and nothing that leaves the panel', async () => {
     const profile = fakeProfile();
-    const rows = profileRows({ ...base, identity: ada, profile, securityHref: '/s' });
-    expect(rows.map((r) => r.key)).toEqual(['identity', 'profile', 'security']);
-    const { container, unmount } = drawn(rows[1]);
+    const rows = profileRows({ ...base, identity: ada, profile });
+    expect(rows.map((r) => r.key)).toEqual(['identity', 'profile']);
+    const { container } = drawn(rows[1]);
     expect(await screen.findByRole('textbox', { name: 'Display name' })).toBeTruthy();
     expect(screen.getByRole('radiogroup')).toBeTruthy();
     expect(screen.getAllByRole('radio')).toHaveLength(11);
@@ -131,16 +131,13 @@ describe('the Profile category', () => {
     // Nothing in Name and Colour leaves the panel.
     expect(container.querySelector('a')).toBeNull();
     expect(profile.load).toHaveBeenCalledTimes(1);
-    unmount();
-    drawn(rows[2]);
-    expect(screen.getByRole('link', { name: 'Manage' }).getAttribute('href')).toBe('/s');
   });
 
   it('has no Name and Colour row that links away, on any host', () => {
     for (const host of [
       { ...base, identity: ada },
-      { ...base, identity: ada, securityHref: '/s', tokensHref: '/t' },
-      { ...base, identity: ada, profile: fakeProfile(), securityHref: '/s' },
+      { ...base, identity: ada, renderTokens: () => null },
+      { ...base, identity: ada, profile: fakeProfile() },
     ]) {
       for (const row of profileRows(host).filter((r) => r.key === 'profile')) {
         const { container, unmount } = drawn(row);

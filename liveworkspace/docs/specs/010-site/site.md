@@ -446,8 +446,9 @@ the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-i
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
   (`appOrigin`); share links are always the app's public site. The Settings panel opens here in place (the bottom
   bar, the account menu, `?settings=`). Its Profile's Name and Colour is set in place there, over the app's token
-  (`/api/workspace/account/profile`); its Sign-in Methods and API Tokens rows link to the panel on liveworkspace.app
-  (`/explorer?settings=profile`, `?settings=tokens`, `workspaceHref`), where the session that runs them lives.
+  (`/api/workspace/account/profile`), and its Sign-in Methods, Where You're Signed In, API Tokens, Webhooks and Your
+  Data draw in place too, over the same token ([Settings](#settings), "On an app's address"), never a link to
+  liveworkspace.app. Its search opens Profile and API Tokens in place as well.
 - **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
 - **The Inbox's This Browser rows** come from the app's snapshot in localStorage
@@ -574,13 +575,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
-  `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
-  address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
-  them (`components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's address alike, since
-  both reach the index with the person's token; an editor's Settings links to it,
+  `packages/settings-ui/src/account-panels/tokens/`, its own chunk fetched when the category is first shown),
+  **Webhooks** beside them (`account-panels/webhooks/`, its own chunk,
   [webhooks.md](../004-index/webhooks.md#managing-them)), **Your Data** beside those (downloading everything the
-  person owns, or a team they run owns, as one zip, `components/settings/data-export/`, its own chunk; on an app's
-  address and in an editor a link to the same category on liveworkspace.app, since its doors are the session's,
+  person owns, or a team they run owns, as one zip, `account-panels/data-export/`, its own chunk,
   [data-export.md](../003-accounts/data-export.md#settings)), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
@@ -660,9 +658,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     built and the panel is open, never otherwise. A refused emailed link lands here with an amber note saying why
     (the link lapsed, it is for another account, or there is no file any more). Loading shows the card's skeleton;
     a failed read says why with **Try Again**.
-  - **Signed in only, as API Tokens are.** On liveworkspace.app the session's; on an app's address and in an editor,
-    a link to liveworkspace.app's Your Data; a guest finds the editor's stand-in row, "Sign in to download your
-    data." with **Sign In**.
+  - **Signed in only, as API Tokens are.** On liveworkspace.app over the session; on an app's address and in an
+    editor the same card in place, over the app's token; a guest finds the editor's stand-in row, "Sign in to
+    download your data." with **Sign In**. The emailed link still downloads from liveworkspace.app.
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
   folded into the Account section rather than listed again under the app: the app's rows the Account section
@@ -688,14 +686,15 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     There is no link-out for it: `AccountHost` has no profile address to link to. A saved colour repaints the host's
     own avatar at once (the header's, or in an editor its cursor, name tag and presence avatar in the room, with the
     name), with no reload.
-  - **Sign-in Methods** and **Where You’re Signed In**, two sections (on liveworkspace.app, `AccountHost.security`): the methods (an emailed code to
+  - **Sign-in Methods** and **Where You’re Signed In**, two sections (`AccountHost.security`): the methods (an emailed code to
     the account's address, always; Google, **Connected** or **Connect**, when the deployment has Google), and
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
     `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
     Signing another device out signs its apps out too ([accounts.md](../003-accounts/accounts.md#signing-out)).
     Either section that can't be read says so with **Try again**.
-    On an app's address and in an editor, a link to the same section on liveworkspace.app.
+    On an app's address and in an editor, the same two sections in place, over the app's token; Google's
+    **Connect** goes to Google and comes back to the app with Settings open.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
     editor's Trash, Cloud Sync and Delete Account, folded in as above.
   - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
@@ -730,8 +729,12 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   cached one.
 - **On an app's address** (the Explorer there) the panel is the same, over `/api/workspace/account/settings…` with
   the app's token; its Profile header is the app's session's, its Name and Colour is set in place over the same
-  token (`/api/workspace/account/profile`), and its Sign-in Methods and API Tokens rows link to liveworkspace.app,
-  since sessions and tokens are the session's.
+  token (`/api/workspace/account/profile`), and so are its Sign-in Methods, Where You're Signed In, API Tokens,
+  Webhooks and Your Data: the same panels as here, from `@liveworkspace/settings-ui/account-panels`, each its own
+  chunk loaded only when its category is first opened. Nothing in the Account section links away to
+  liveworkspace.app (before 8 November 2026 these five were **Manage** and **Open** links to
+  `/explorer?settings=profile|tokens|webhooks|data` there). The same holds in every editor's own Settings for a
+  signed-in account; a self-hosted editor without liveworkspace accounts shows none of them.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
   tokens or webhooks, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and

@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withAccountHost } from '../../test/account-host';
 import { TokensPanel } from './TokensPanel';
 
 // Settings › API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token and seeing it once,
@@ -61,7 +62,7 @@ const press = async (name: string) => {
 
 describe('API Tokens', () => {
   it('moves focus to Keep when Revoke asks, and back to Revoke when kept', async () => {
-    act(() => root.render(<TokensPanel />));
+    act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
     await press('Revoke');
     expect(document.activeElement).toBe(button('Keep'));
@@ -70,7 +71,7 @@ describe('API Tokens', () => {
   });
 
   it('puts focus on the list’s heading once a token is revoked, not on the page', async () => {
-    act(() => root.render(<TokensPanel />));
+    act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
     await press('Revoke');
     await press('Revoke now');
@@ -80,7 +81,7 @@ describe('API Tokens', () => {
   it('says so and selects the token when the browser refuses the clipboard', async () => {
     const writeText = vi.fn(() => Promise.reject(new DOMException('denied', 'NotAllowedError')));
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
-    act(() => root.render(<TokensPanel />));
+    act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
     await press('Make token');
     await press('Copy');
@@ -90,7 +91,7 @@ describe('API Tokens', () => {
   });
 
   it('keeps Make token focusable while it makes one, and makes only one for a second press', async () => {
-    act(() => root.render(<TokensPanel />));
+    act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
     const make = button('Make token');
     make.focus();
@@ -107,7 +108,7 @@ describe('API Tokens', () => {
   });
 
   it('returns focus to the name field when the new token is put away', async () => {
-    act(() => root.render(<TokensPanel />));
+    act(() => root.render(withAccountHost(<TokensPanel />)));
     await settle();
     await press('Make token');
     await press('Done');

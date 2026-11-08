@@ -2,6 +2,7 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { preloadAccountPanels } from '@liveworkspace/settings-ui';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import SiteSettingsDialog from './SiteSettingsDialog';
 
@@ -36,11 +37,7 @@ const json = (status: number, body: unknown) =>
 // a cold import on a busy CI runner took longer than until()'s 5s on its own, so the tests timed the transform rather
 // than the panel. Warm, each lazy panel resolves in a tick and until() waits only for it to draw.
 beforeAll(async () => {
-  await Promise.all([
-    import('./TokensPanel'),
-    import('./webhooks/WebhooksPanel'),
-    import('./data-export/DataExportPanel'),
-  ]);
+  await preloadAccountPanels();
 }, 60_000);
 
 beforeEach(() => {

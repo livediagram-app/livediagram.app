@@ -146,8 +146,9 @@ index know someone's teams" above).
 
 A token (`lwt_…`, 32 random bytes) acts as its account on every app's API and MCP server, read
 and write or read only, for six months. Only its SHA-256 hash is kept; the secret is shown once.
-An account holds up to 20. They are made and revoked in the Settings panel, Account › API Tokens
-(`/explorer?settings=tokens` on liveworkspace.app, [site.md](../010-site/site.md#settings)).
+An account holds up to 20. They are made and revoked in the Settings panel, Account › API Tokens, wherever it opens:
+on liveworkspace.app (`/explorer?settings=tokens`, [site.md](../010-site/site.md#settings)) over the session, and in
+every app over the app's bearer ([Every account setting in every app](#every-account-setting-in-every-app)).
 
 Connecting an AI tool in an app (its MCP OAuth flow) makes one too: the app's consent page sends
 the person's access token to liveworkspace (`POST /api/account/internal/tokens`), which makes the
@@ -540,6 +541,66 @@ client, the session lookup, one batch). No other request changes.
 
 **What it can't reach.** An app with no refresh token to send (it had already lapsed) gets no ticket, so only its
 own cookies go; and a browser whose liveworkspace session is another account's than the app's keeps that session.
+
+## Every account setting in every app
+
+The Settings panel shows every account setting in place wherever it opens, so nothing in an app's Settings sends the
+person to liveworkspace.app. Over the app's bearer (the access token the accounts Worker minted for one of the app
+APIs, through the app's router at `/api/workspace/account/…`, [The API](#the-api)) the account API answers, beside
+teams, settings, the profile and phone devices: API tokens, Download Your Data, Where You're Signed In and Sign-in
+Methods. API tokens and Download Your Data are the session door's own handlers on both doors; the sessions and
+sign-in methods routes are the bearer's (liveworkspace.app's Settings uses Better Auth's own endpoints for those).
+
+**The trade-off, accepted.** These routes make an app's access token as strong as the liveworkspace session for them.
+Whoever holds a copied access token can, until it lapses (an hour from its last refresh), list, make and revoke API
+tokens (and an API token lasts six months, so a stolen access token can become a six-month credential), start a data
+export, list and end the account's sessions, and start connecting Google. This was decided knowingly, so that no
+setting needs a trip to liveworkspace.app. What still holds:
+
+- Only an account's access token passes. A guest token is refused (`401 signed_out`), and an API token (`lwt_…`,
+  `lvd_…`) is an opaque random string, never a signed JWT, so the bearer check refuses it outright: no tool or script
+  with an API token can mint more, end sessions or export.
+- The emailed Download Your Data link still needs the liveworkspace session to download.
+- A session's token is never answered, over either door: it is the credential itself. Sessions are named by their id.
+- Connecting Google links only a Google account whose address Google has verified and which is the account's own, so
+  it grants nothing that signing in with that Google account wouldn't already (signing in with Google joins an
+  account of the same verified address anyway).
+
+**Where You're Signed In.** `GET /api/account/sessions` answers the account's unexpired liveworkspace sessions, the
+most recently active first, each `{ id, current, userAgent, createdAt, updatedAt }`. `current` marks the session the
+app's access token was minted under: the provider writes that session's id into every access token as its `sid`
+claim, so the app's own browser session is the current one. `DELETE /api/account/sessions/:id` ends one of the
+account's own sessions (any other id is `404`), and `POST /api/account/sessions/revoke-others` ends every one but
+the current. Each ends as Sign out ends one ([Signing out](#signing-out)): every app's tokens issued on it go, then
+the session. A token whose session has already gone has no current session, so revoke-others refuses it
+(`409 no_current_session`). Ending the current session signs this app out at its next refresh (its access token
+lasts until then).
+
+**Sign-in Methods.** `GET /api/account/sign-in-methods` answers `{ google }`: `connected` when a Google account is
+linked, `available` when it isn't and this Worker has a Google client, `off` otherwise. Connecting Google is a trip to
+Google that has to start and end on the accounts Worker's own address, where Google comes back and the flow's state
+cookie must be (the app's router passes no cookies on `/api/workspace/account`):
+
+1. `POST /api/account/sign-in-methods/google` `{ callbackURL }` checks the bearer, that Google is on
+   (`409 google_off`) and not yet connected (`409 already_connected`), the return address (below; `400
+invalid_callback`), and that the access token's session is still live (`409 session_ended`). It answers
+   `{ url }`: `GET /api/auth/link-google?ticket=…` on the accounts Worker, the ticket naming the account, that session
+   and the return address, signed with the Worker's secret and good for five minutes.
+2. The page sends the browser there, top level. The Worker checks the ticket, and that the session is still live and
+   the account's, then starts Better Auth's own link-social for that session. Of what that sets, only the flow's state
+   cookie reaches the browser (never a session cookie), and the browser goes on to Google.
+3. Google comes back to the Worker's own callback, which Better Auth runs as for any link: the state names the
+   account, the session that started it must still be live, and Google's address must be verified and the account's
+   own. Then the browser goes to `callbackURL`; a refusal goes there with `?error=<code>`.
+
+The return address must be an absolute `http` or `https` address, with no user name or password, at most 2,000
+characters, on one of the apps' own origins in this environment or the accounts Worker's own (and its twin while the
+move to www. lasts), the same origins Better Auth trusts. It never goes anywhere else.
+
+**What it costs.** API tokens and Download Your Data cost what they do on the session's door, plus the bearer's
+signature check. Reading sessions is one query on the session table's `userId` index; ending one is a read and one
+batch; reading sign-in methods is one query on the account table's `userId` index. Starting Google costs a session
+read and the hop costs one more, Better Auth's own session check and its state row.
 
 ## Signing in on the app's own address
 
@@ -1221,7 +1282,9 @@ router (`/api/workspace/account/…`; `src/bearer.ts`). A bearer is no ambient c
 same-origin check. A guest's bearer reads names alone; an API token (`lwt_…`) is not a bearer here, so no tool or
 script runs a team. An account's bearer also reads and sets its own profile (`GET` and `PATCH /api/account/profile`,
 the session door's own handler), which grants nothing new: the app's API already sets the same name and colour with
-the same token (`PUT /api/participants/:id`). Joining by link and tokens stay the session's.
+the same token (`PUT /api/participants/:id`). It also runs API tokens and Download Your Data, and reads and ends
+sessions and connects Google, a trade-off accepted on purpose
+([Every account setting in every app](#every-account-setting-in-every-app)). Joining by link stays the session's.
 
 | Route                                                          | Does                                                                                                                 |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -1238,8 +1301,14 @@ the same token (`PUT /api/participants/:id`). Joining by link and tokens stay th
 | `DELETE /api/account/teams/:id/members/:member`                | removes someone (admins), or leaves (oneself)                                                                        |
 | `POST /api/account/invitations/:member/accept`                 | joins (the invited, verified address only)                                                                           |
 | `POST /api/account/invitations/:member/decline`                | declines                                                                                                             |
-| `GET` / `POST /api/account/tokens`                             | lists / makes a token (the secret once)                                                                              |
-| `DELETE /api/account/tokens/:id`                               | revokes one                                                                                                          |
+| `GET` / `POST /api/account/tokens`                             | lists / makes a token (the secret once); bearer too                                                                  |
+| `DELETE /api/account/tokens/:id`                               | revokes one; bearer too                                                                                              |
+| `GET` / `POST /api/account/data-export`                        | their export and their teams' / starts one ([data-export.md](data-export.md)); bearer too                            |
+| `GET /api/account/sessions`                                    | bearer only: `{ sessions: [{ id, current, userAgent, createdAt, updatedAt }] }`, never a session's token             |
+| `DELETE /api/account/sessions/:id`                             | bearer only: ends one of their sessions and its apps' tokens: `{ id }`                                               |
+| `POST /api/account/sessions/revoke-others`                     | bearer only: ends every session but the token's own: `{ ended }`                                                     |
+| `GET /api/account/sign-in-methods`                             | bearer only: `{ google: 'connected' \| 'available' \| 'off' }`                                                       |
+| `POST /api/account/sign-in-methods/google` `{ callbackURL }`   | bearer only: `{ url }`, the hop that starts connecting Google                                                        |
 | `GET /api/account/profile`                                     | their profile: `{ profile }`                                                                                         |
 | `GET /api/account/people?ids=a,b`                              | names (up to 100): `{ people: [{ id, name, picture }] }`, found ids only; a guest may ask too, and gets no `picture` |
 | `PATCH /api/account/profile` `{ name?, color?, showPicture? }` | sets their display name or colour (null clears) or the picture switch; answers `{ profile }`                         |

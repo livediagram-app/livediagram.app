@@ -78,7 +78,13 @@ export {
   type AccountSession,
   type AccountSignInMethods,
 } from './profile/SecurityRows';
+export { bearerAccountSecurity } from './profile/bearer-security';
 export { foldIntoAccount } from './fold-account';
+export { accountPanels, preloadAccountPanels } from './account-panels/lazy';
+export type { AccountPanelsHost } from './account-panels/host';
+export { useAccountTokensInPlace } from './account-panels/tokens-in-place';
+export { accountErrorMessage } from './account-panels/errors';
+export { BUTTON as ACCOUNT_BUTTON } from './account-panels/account-ui';
 export {
   CLOUD_SYNC_PROVIDERS,
   cloudSyncRows,

@@ -30,8 +30,13 @@ const signedIn: AccountHost = {
     load: async () => ({ ok: true, data: null }),
     save: async () => ({ ok: true, data: null }),
   },
-  securityHref: '/explorer?settings=profile',
-  tokensHref: '/explorer?settings=tokens',
+  security: {
+    sessions: async () => [],
+    revokeSession: async () => true,
+    signInMethods: async () => ({ google: 'off' }),
+    connectGoogle: async () => false,
+  },
+  renderTokens: () => null,
 };
 
 const toggle = (key: string, label: string, extra: Partial<SettingsRow> = {}): SettingsRow =>

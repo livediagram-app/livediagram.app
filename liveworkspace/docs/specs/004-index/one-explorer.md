@@ -236,8 +236,10 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   account menu is the app's: Sign In and Sign Out are the app's, and its Settings opens the Settings panel here,
   in place. The logo's site switcher marks the app and keeps the person on the Explorer: each row opens that
   site's Explorer at the same view ([site-switcher.md](../010-site/site-switcher.md#on-an-explorer-page)).
-- **Links.** Items of that app open on the same origin; other apps' items open on their own sites. Only what needs
-  liveworkspace.app's session (the profile, API tokens) links there, to the panel on that section.
+- **Links.** Items of that app open on the same origin; other apps' items open on their own sites.
+  Nothing in Settings links away: the Account section's Profile, Sign-in Methods, API Tokens, Webhooks and Your Data
+  draw in place, over the app's token ([site.md "Settings"](../010-site/site.md#settings)), and the Explorer's
+  search opens Profile and API Tokens here too.
 - **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
   offline store as it writes. The Explorer reads it: a sidebar row with the count, `/explorer/offline`, a This

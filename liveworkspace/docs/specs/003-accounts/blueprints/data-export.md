@@ -5,24 +5,24 @@ the code. Defaults are cited as `ACCn`. Paths are relative to the repository roo
 
 Scope, by file:
 
-| File                                                       | Role                                                                          |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/data-export/src/`                                | The contract: keys, states, wire shapes, constants, the link's message        |
-| `packages/app-doors/src/doors.ts`                          | `createAppDoors`: file, svg, csv, comments and import calls, the item's URL   |
-| `packages/index-app/src/data-export-door.ts`               | The apps' side: the `csv` and `comments` formats and `DATA_EXPORT_KEY`        |
-| `liveworkspace/apps/export/src/index.ts`                   | The Worker: the internal routes, the key check, the object's class            |
-| `liveworkspace/apps/export/src/job/durable-object.ts`      | `DataExport`: start, status, file, delete, and the alarm that runs chunks     |
-| `liveworkspace/apps/export/src/job/store.ts`               | The object's SQLite: the job, the queue, the zip's directory, parts, the rest |
-| `liveworkspace/apps/export/src/job/steps.ts`               | One chunk: list, items, images, finish, within its budget                     |
-| `liveworkspace/apps/export/src/zip/`                       | The zip writer: CRC-32, headers, deflate, the directory, the end record       |
-| `liveworkspace/apps/export/src/upload.ts`                  | The R2 multipart upload in fixed parts, and what is left between chunks       |
-| `liveworkspace/apps/export/src/sources.ts`                 | The index, the media service and the apps' doors as the job reads them        |
-| `liveworkspace/apps/export/src/files.ts`                   | Names, the README, comments as JSON and CSV, the profile and team files       |
-| `liveworkspace/apps/accounts/src/data-export/routes.ts`    | The session's doors, the download and the service's `ready` call              |
-| `liveworkspace/apps/accounts/src/data-export/link.ts`      | Signing and checking the emailed link                                         |
-| `liveworkspace/apps/accounts/src/data-export/email.ts`     | The ready and failed emails                                                   |
-| `liveworkspace/apps/site/components/settings/data-export/` | The Your Data category                                                        |
-| `packages/settings-ui/src/account-model.tsx`               | The category: `renderDataExport` / `dataExportHref`                           |
+| File                                                    | Role                                                                          |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/data-export/src/`                             | The contract: keys, states, wire shapes, constants, the link's message        |
+| `packages/app-doors/src/doors.ts`                       | `createAppDoors`: file, svg, csv, comments and import calls, the item's URL   |
+| `packages/index-app/src/data-export-door.ts`            | The apps' side: the `csv` and `comments` formats and `DATA_EXPORT_KEY`        |
+| `liveworkspace/apps/export/src/index.ts`                | The Worker: the internal routes, the key check, the object's class            |
+| `liveworkspace/apps/export/src/job/durable-object.ts`   | `DataExport`: start, status, file, delete, and the alarm that runs chunks     |
+| `liveworkspace/apps/export/src/job/store.ts`            | The object's SQLite: the job, the queue, the zip's directory, parts, the rest |
+| `liveworkspace/apps/export/src/job/steps.ts`            | One chunk: list, items, images, finish, within its budget                     |
+| `liveworkspace/apps/export/src/zip/`                    | The zip writer: CRC-32, headers, deflate, the directory, the end record       |
+| `liveworkspace/apps/export/src/upload.ts`               | The R2 multipart upload in fixed parts, and what is left between chunks       |
+| `liveworkspace/apps/export/src/sources.ts`              | The index, the media service and the apps' doors as the job reads them        |
+| `liveworkspace/apps/export/src/files.ts`                | Names, the README, comments as JSON and CSV, the profile and team files       |
+| `liveworkspace/apps/accounts/src/data-export/routes.ts` | The doors (session or bearer), the download and the service's `ready` call    |
+| `liveworkspace/apps/accounts/src/data-export/link.ts`   | Signing and checking the emailed link                                         |
+| `liveworkspace/apps/accounts/src/data-export/email.ts`  | The ready and failed emails                                                   |
+| `packages/settings-ui/src/account-panels/data-export/`  | The Your Data category, drawn in place in every app                           |
+| `packages/settings-ui/src/account-model.tsx`            | The category: `renderDataExport` / `dataExportHref`                           |
 
 ## Domain and naming
 
@@ -69,7 +69,7 @@ Scope, by file:
   accounts first checks `requestedBy` is still the team's admin (the same `adminOf` query as the start and the
   download: joined, `admin`, team not deleted) and sends nothing otherwise, still answering `204` so the service
   settles as usual.
-- **The browser** (session): `GET /api/account/data-export` answers `{ personal: ExportView | null, teams: [{ id, name,
+- **The browser** (session, or an account's app bearer; the same handler with the same actor): `GET /api/account/data-export` answers `{ personal: ExportView | null, teams: [{ id, name,
 export }] }`, each ready view carrying `downloadUrl` (a signed link for this person); `POST /api/account/data-export`
   `{ team? }` answers `202 { export }`, `403 admin_only`, `409 export_running`, `503 export_unavailable`.
 - **The link**: `sig` is lowercase hex HMAC-SHA-256 of `exportLinkMessage(requestedBy, key, exportId, exp)`

@@ -17,7 +17,7 @@ liveplanner --help
 ## Sign in
 
 Sign in through your browser with `liveplanner auth login` (or `--device` on a machine without one). Or make an API token
-on liveworkspace.app (in liveplanner, Settings › Account › API Tokens › Manage API Tokens), then either set it for a command:
+on liveworkspace.app or in any app's Settings (in liveplanner, Settings › Account › API Tokens), then either set it for a command:
 
 ```bash
 export LIVEPLANNER_TOKEN=lwt_...

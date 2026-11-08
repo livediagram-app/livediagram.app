@@ -7589,12 +7589,18 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:^
         version: link:../brand
+      '@liveworkspace/data-export':
+        specifier: workspace:^
+        version: link:../data-export
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../drive
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
+      '@liveworkspace/index-client':
+        specifier: workspace:*
+        version: link:../index-client
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings

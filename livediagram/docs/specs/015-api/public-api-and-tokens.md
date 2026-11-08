@@ -86,7 +86,7 @@ closed the escalation. The fix is [§4](#4-guest-identity-a-verified-guest-token
 ## 3. Design: API tokens
 
 **API tokens belong to the liveworkspace account** ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
-"API tokens"). They are made, listed and revoked on liveworkspace.app, and one token works on every app's API and
+"API tokens"). They are made, listed and revoked in Settings › API Tokens, in any app's Settings or on liveworkspace.app, and one token works on every app's API and
 MCP server. liveworkspace holds the hash, the name, the read-only flag, the 6-month expiry and the cap (20 per
 account). What follows records how livediagram uses them; where it describes livediagram minting, listing or
 storing tokens itself, the account-level design below supersedes it.
@@ -102,9 +102,12 @@ storing tokens itself, the account-level design below supersedes it.
 - **Minting for an AI tool.** The OAuth exchange (`POST /api/oauth/exchange`) asks liveworkspace to mint the
   token with the person's access token (`POST /api/account/internal/tokens`). A token the MCP then refuses is
   revoked by presenting it to `DELETE /api/tokens/current`.
-- **Management** is on liveworkspace.app. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
-  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's API Tokens row links to liveworkspace.app and
-  lists the account's paired workbenches with Unpair.
+- **Management** is liveworkspace's. `GET/POST /api/tokens` and `DELETE /api/tokens/:id` answer
+  `410 { error: 'tokens_moved', manageAt }`. The Settings dialog's Account › API Tokens category draws the shared token panel in place for a signed-in account
+  (`@liveworkspace/settings-ui/account-panels`, the same one liveworkspace.app's Settings has, loaded when the category
+  is first opened): make a token (a name, Read Only), its secret shown once with Copy, and revoke one. Under it the editor's own API Tokens row lists the account's paired workbenches with Unpair and
+  says that connecting an AI tool makes its own token; it links to liveworkspace.app (**Manage API Tokens**) only on a
+  self-hosted editor without liveworkspace accounts.
 - **Self-revoke.** `DELETE /api/tokens/current` revokes the presenting token on liveworkspace
   (`POST /api/account/internal/tokens/revoke`) and ends its pairings here.
 - **Expiry reminders** are not sent: liveworkspace sends none yet.
@@ -223,7 +226,7 @@ backstop.
 
 ### 3.6 Management: the Settings dialog's API Tokens category
 
-> **Superseded**: tokens are managed on liveworkspace.app (see the head of §3). This section records the manager livediagram had.
+> **Superseded**: tokens are the liveworkspace account's, managed in the shared panel every app's Settings and liveworkspace.app draw (see the head of §3). This section records the manager livediagram had.
 
 Tokens are created, viewed and revoked in the **Settings dialog**
 ([User preferences](../007-editor/user-preferences.md)), in the **API Tokens**
@@ -499,5 +502,5 @@ later if demand appears.
 
 **Webhooks** are no longer out of scope: liveworkspace sends them for every app's items, from the index's
 Timeline events, to any HTTPS endpoint, a Slack channel or a Microsoft Teams channel. A person adds one for their own
-items, and a team's admins for the team's, in liveworkspace's Settings (this app's Settings links there); a share
+items, and a team's admins for the team's, in Settings › Webhooks (this app's Settings draws the same panel as liveworkspace.app's, in place); a share
 link's Editor never can. See [Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md).

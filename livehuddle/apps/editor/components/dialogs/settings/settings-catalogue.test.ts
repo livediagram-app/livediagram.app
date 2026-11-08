@@ -184,11 +184,11 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the account, its tokens and the Appearance choice to a signed-in person', () => {
+  it('offers the account and the Appearance choice to a signed-in person, whose tokens the Account section draws', () => {
     const categories = visibleCategories({ emailEnabled: true, signedIn: true });
-    expect(categories.map((c) => c.id)).toEqual(
-      expect.arrayContaining(['account', 'tokens', 'editor']),
-    );
+    expect(categories.map((c) => c.id)).toEqual(expect.arrayContaining(['account', 'editor']));
+    // The shared panel's Account section makes and revokes them in place; this editor has no pairings to add.
+    expect(categories.map((c) => c.id)).not.toContain('tokens');
     const appearance = categories.find((c) => c.id === 'appearance')!;
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(true);
   });

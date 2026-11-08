@@ -1,16 +1,19 @@
 'use client';
 
 import { useRef, useState, type FormEvent, type RefObject } from 'react';
-import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/account-api';
 import { Button } from '@liveworkspace/ui';
-import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
-import { ConfirmAction } from './ConfirmAction';
-import { SecretReveal } from './SecretReveal';
-import { useAccountData } from './useAccountData';
+import { BUTTON, ErrorNote, INPUT, Panel } from '../account-ui';
+import { ConfirmAction } from '../ConfirmAction';
+import { accountErrorMessage as errorMessage, formatAccountDate as formatDate } from '../errors';
+import { useAccountPanelsHost } from '../host';
+import { SecretReveal } from '../SecretReveal';
+import type { ApiToken } from '../types';
+import { useAccountData } from '../useAccountData';
 
 // The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
 // and revoking it. A token is the account's, so it works on every app's API and MCP server; the AI
-// tools connected in an app show up here too.
+// tools connected in an app show up here too. Drawn in place wherever a signed-in account opens Settings, over the
+// host's request (the session on liveworkspace.app, the app's bearer door elsewhere).
 export function TokensPanel() {
   const [load, refresh] = useAccountData<{ tokens: ApiToken[] }>('/tokens');
   const [made, setMade] = useState<(ApiToken & { secret: string }) | null>(null);
@@ -87,6 +90,7 @@ function CreateToken({
 }) {
   const [name, setName] = useState('');
   const [readOnly, setReadOnly] = useState(false);
+  const { request } = useAccountPanelsHost();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -94,7 +98,7 @@ function CreateToken({
     event.preventDefault();
     setBusy(true);
     setError(null);
-    const result = await accountApi<ApiToken & { secret: string }>('/tokens', 'POST', {
+    const result = await request<ApiToken & { secret: string }>('/tokens', 'POST', {
       name,
       readOnly,
     });
@@ -145,10 +149,11 @@ function CreateToken({
 }
 
 function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Promise<void> }) {
+  const { request } = useAccountPanelsHost();
   const [error, setError] = useState<string | null>(null);
 
   async function revoke() {
-    const result = await accountApi(`/tokens/${token.id}`, 'DELETE');
+    const result = await request(`/tokens/${token.id}`, 'DELETE');
     if (result.ok) await onRevoked();
     else setError(result.error);
   }

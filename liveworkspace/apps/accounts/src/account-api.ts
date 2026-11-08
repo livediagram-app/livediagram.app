@@ -7,6 +7,8 @@
 //     reading profiles and setting one's own, an app's sign-ups and milestones, accounts' emails, and
 //     for notification emails, many people's notify switches at once and a team's people; and for livediagram's
 //     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
+//   - for an app's Settings, by the app's bearer (bearer.ts): the same teams, settings, profile, phone devices, API
+//     tokens and Download Your Data, and the account's sessions and sign-in methods (own-sessions.ts, link-google.ts);
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
 import { basicClientId } from './app-caller.ts';
@@ -14,7 +16,9 @@ import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { sameSiteOrigin } from '@liveworkspace/sites/www';
 import { introspectWithLegacy } from './legacy-issuer.ts';
-import { bearerOf, bearerPerson } from './bearer.ts';
+import { bearerOf, bearerPerson, bearerSessionId } from './bearer.ts';
+import { endOtherSessions, endOwnSession, listOwnSessions } from './own-sessions.ts';
+import { signInMethods, startGoogleLink } from './link-google.ts';
 import { noteGuestSeen } from './guest-sweep.ts';
 import { guestOfRequest } from './guests.ts';
 import type { Auth } from './auth.ts';
@@ -159,7 +163,7 @@ export async function handleAccountApi(
     return handleIndexPeople(request, env);
   }
   const bearer = bearerOf(request);
-  if (bearer) return handleBearer(request, env, auth, parts, bearer);
+  if (bearer) return handleBearer(request, env, auth, parts, bearer, waitUntil);
   return handleSignedIn(request, env, auth, parts, waitUntil);
 }
 
@@ -361,26 +365,8 @@ async function handleSignedIn(
     return answer(result);
   }
 
-  if (section === 'tokens') {
-    if (!id && method === 'GET') return json({ tokens: await listApiTokens(db, actor.id) });
-    if (!id && method === 'POST') {
-      const body = await readBody(request);
-      const token = await mintApiToken(db, actor.id, {
-        name: cleanTokenName(body.name, 'API token'),
-        readOnly: body.readOnly === true,
-      });
-      if (!token) return error(409, 'token_limit_reached');
-      reportServerEvent(env, 'Token', 'Created', 'Manual', home);
-      return json(token, 201);
-    }
-    if (id && !sub && method === 'DELETE') {
-      if (!(await revokeApiToken(db, actor.id, id))) return error(404, 'not_found');
-      // Its workbench pairings go with it (workbench/revoke.ts).
-      await endTokenWorkbench(env, actor.id, id, waitUntil);
-      reportServerEvent(env, 'Token', 'Removed', null, home);
-      return json({ id });
-    }
-  }
+  const tokens = await tokenRoutes(request, env, actor.id, parts, waitUntil);
+  if (tokens) return tokens;
 
   // Other people's display names and pictures, by id (the Explorer's Owner column, its Inbox and Timeline).
   if (section === 'people' && !id && method === 'GET') {
@@ -415,6 +401,44 @@ async function handleSignedIn(
   }
 
   return error(404, 'not_found');
+}
+
+// --- API tokens, on both doors: the session's on liveworkspace.app, the bearer's in an app's Settings
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Every account setting in every app") ---
+
+// GET lists the live ones, POST `{ name?, readOnly? }` makes one (the secret once), DELETE `/:id` revokes one and ends
+// its workbench pairings. Counted under the app the owner signed up through. Null for a route that isn't one of these.
+async function tokenRoutes(
+  request: Request,
+  env: Env,
+  owner: string,
+  parts: string[],
+  waitUntil: WaitUntil,
+): Promise<Response | null> {
+  const [section, id, sub] = parts;
+  if (section !== 'tokens') return null;
+  const { method } = request;
+  const db = env.AUTH_DB;
+  const home = () => signupAppOf(db, owner);
+  if (!id && method === 'GET') return json({ tokens: await listApiTokens(db, owner) });
+  if (!id && method === 'POST') {
+    const body = await readBody(request);
+    const token = await mintApiToken(db, owner, {
+      name: cleanTokenName(body.name, 'API token'),
+      readOnly: body.readOnly === true,
+    });
+    if (!token) return error(409, 'token_limit_reached');
+    reportServerEvent(env, 'Token', 'Created', 'Manual', home);
+    return json(token, 201);
+  }
+  if (id && !sub && method === 'DELETE') {
+    if (!(await revokeApiToken(db, owner, id))) return error(404, 'not_found');
+    // Its workbench pairings go with it (workbench/revoke.ts).
+    await endTokenWorkbench(env, owner, id, waitUntil);
+    reportServerEvent(env, 'Token', 'Removed', null, home);
+    return json({ id });
+  }
+  return null;
 }
 
 // --- The profile, on both doors: the session's on liveworkspace.app, the bearer's on an app's address and in the
@@ -617,14 +641,19 @@ async function appSettings(
 // What that page and the editors' Explorer panels and Settings need: names for a guest or an account, and for an
 // account its settings (the shared scope and each app's, read and patched), its profile (profileRoute: the app's API
 // already sets the same name and colour with this token, PUT /api/participants/:id, so this grants nothing new) and
-// its teams, run in place (teamRoutes). A bearer is no ambient credential, so a write needs no same-origin check: a
-// page can only send one it holds. Joining by link and API tokens stay the session's.
+// its teams, run in place (teamRoutes). And so that no setting sends anyone to liveworkspace.app, its API tokens and
+// Download Your Data (the session door's own handlers), and its sessions and sign-in methods: the owner accepted that
+// a stolen access token gains these until it lapses (liveworkspace/docs/specs/003-accounts/accounts.md "Every account
+// setting in every app"). Only an account's access token passes: a guest stops below, and an API token is no JWT, so
+// bearerPerson refuses it. A bearer is no ambient credential, so a write needs no same-origin check: a page can only
+// send one it holds. Joining by link stays the session's.
 async function handleBearer(
   request: Request,
   env: Env,
   auth: Auth,
   parts: string[],
   token: string,
+  waitUntil: WaitUntil,
 ): Promise<Response> {
   const person = await bearerPerson(token, env, auth);
   if (!person) return error(401, 'signed_out');
@@ -668,6 +697,34 @@ async function handleBearer(
   // And its Phone section registers this device and lists and removes the rest (push/routes.ts).
   const push = await pushDeviceRoutes(request, env, actor.id, parts);
   if (push) return push;
+  const tokens = await tokenRoutes(request, env, actor.id, parts, waitUntil);
+  if (tokens) return tokens;
+  // Download Your Data, with the actor the session's door builds (sessionActor). The emailed link still needs the
+  // session (handleDataExportDownload).
+  if (section === 'data-export' && !id) {
+    return handleDataExport(request, env, { ...actor, name: await accountName(db, actor.id) });
+  }
+  // Where You're Signed In (own-sessions.ts). `sid` is the session this access token was minted under.
+  if (section === 'sessions') {
+    const current = bearerSessionId(token);
+    if (!id && method === 'GET') {
+      return json({ sessions: await listOwnSessions(db, actor.id, current) });
+    }
+    if (id === 'revoke-others' && !sub && method === 'POST') {
+      if (!current) return error(409, 'no_current_session');
+      return json({ ended: await endOtherSessions(db, actor.id, current) });
+    }
+    if (id && !sub && method === 'DELETE') {
+      return (await endOwnSession(db, actor.id, id)) ? json({ id }) : error(404, 'not_found');
+    }
+  }
+  // Sign-in Methods (link-google.ts).
+  if (section === 'sign-in-methods') {
+    if (!id && method === 'GET') return signInMethods(env, actor.id);
+    if (id === 'google' && !sub && method === 'POST') {
+      return startGoogleLink(request, env, actor.id, bearerSessionId(token));
+    }
+  }
   return error(404, 'not_found');
 }
 

@@ -581,15 +581,15 @@ and the dialog stays as the one complete, browsable index of them.
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
 
-  **Webhooks** are an account's too, made and managed in liveworkspace's Settings
+  **Webhooks** are an account's too, the same panel as in liveworkspace's Settings
   ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
-  section's **Webhooks** links there. A guest gets a **Webhooks** category under Account (id `webhooks`, so
+  section's **Webhooks** draws it in place (add, test, pause, delete, recent deliveries). A guest gets a **Webhooks** category under Account (id `webhooks`, so
   `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
   the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
 
-  **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, made in
+  **Your Data** is an account's too: downloading everything the person owns, in every app, as one zip, the same card as in
   liveworkspace's Settings ([Download your data](../../../../liveworkspace/docs/specs/003-accounts/data-export.md#settings)).
-  Signed in, the Account section's **Your Data** links there (`?settings=data`). A guest gets a **Your Data** category
+  Signed in, the Account section's **Your Data** draws it in place (`?settings=data` opens it); the emailed link still downloads from liveworkspace.app. A guest gets a **Your Data** category
   under Account (id `data`) holding one stand-in row, "Sign in to download your data." with the **Sign In** link, as
   for Webhooks. A workbench has neither.
 
@@ -783,8 +783,9 @@ and the dialog stays as the one complete, browsable index of them.
   same door (`/api/workspace/account/profile`, `requestProfileHost`). A saved name or colour is the
   editor's own at once: its cursor, name tag and presence avatar in the room follow it without a
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
-  a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
-  session holds them. Nothing of All is fetched
+  a stored name with the account name. Sign-in Methods and Where You're Signed In are drawn in place too, as are API Tokens,
+  Webhooks and Your Data (the shared panels of `@liveworkspace/settings-ui/account-panels`, each loaded when its category is
+  first opened): none links to liveworkspace.app. Nothing of All is fetched
   until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account
   outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,

@@ -592,13 +592,40 @@ describe('the account API, for the apps', () => {
   });
 });
 
+// An access token as the provider shapes it, minted under Ada's session `s-here` (its `sid`). The stub verifier below
+// takes it for Ada, as the real one would after checking its signature.
+const b64 = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
+const ADA_ON_SESSION = `${b64({ alg: 'EdDSA' })}.${b64({ sub: 'user_ada', sid: 's-here' })}.sig`;
+
+// A session row, as Better Auth keeps it (its dates as ISO text).
+function addSession(
+  id: string,
+  userId: string,
+  { updated = 0, expiresIn = 86_400_000 }: { updated?: number; expiresIn?: number } = {},
+) {
+  const at = (ms: number) => new Date(Date.UTC(2026, 10, 1) + ms).toISOString();
+  sql
+    .prepare(
+      'INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId, userAgent) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    )
+    .run(
+      id,
+      new Date(Date.now() + expiresIn).toISOString(),
+      `token-${id}`,
+      at(0),
+      at(updated),
+      userId,
+      'Firefox',
+    );
+}
+
 describe("the account API, for the Explorer on an app's address (by the app's bearer)", () => {
   // Stands in for this Worker's keys: 'tok-ada' is Ada's access token, 'tok-guest' a guest's, anything else forged.
   beforeEach(() => {
     signedIn = null;
     __setBearerVerifier(
       () => async (token) =>
-        token === 'tok-ada'
+        token === 'tok-ada' || token === ADA_ON_SESSION
           ? {
               kind: 'account',
               userId: 'user_ada',
@@ -715,7 +742,10 @@ describe("the account API, for the Explorer on an app's address (by the app's be
       (await call('/teams', bearer('tok-guest', { method: 'POST', body: { name: 'x' } }))).status,
     ).toBe(401);
     expect((await call('/join/abc', bearer('tok-ada', { method: 'POST' }))).status).toBe(404);
-    expect((await call('/tokens', bearer('tok-ada'))).status).toBe(404);
+    expect((await call('/sessions/a/b', bearer('tok-ada'))).status).toBe(404);
+    expect(
+      (await call('/sign-in-methods/github', bearer('tok-ada', { method: 'POST' }))).status,
+    ).toBe(404);
   });
 
   it('reads and sets the account’s own profile, for the Settings panel’s Profile in place', async () => {
@@ -753,5 +783,241 @@ describe("the account API, for the Explorer on an app's address (by the app's be
         .status,
     ).toBe(401);
     expect((await call('/profile', bearer('forged'))).status).toBe(401);
+  });
+
+  it('makes, lists and revokes API tokens in the app’s Settings, as on the session’s door', async () => {
+    const made = await call(
+      '/tokens',
+      bearer('tok-ada', { method: 'POST', body: { name: 'Script', readOnly: true } }),
+    );
+    expect(made.status).toBe(201);
+    const token = (await made.json()) as { id: string; secret: string; readOnly: boolean };
+    expect(token).toMatchObject({ readOnly: true, secret: expect.stringMatching(/^lwt_/) });
+    const listed = await (await call('/tokens', bearer('tok-ada'))).text();
+    expect(listed).toContain(token.id);
+    expect(listed).not.toContain(token.secret);
+    // Only Ada's own token: Bea's id is not found for Ada.
+    signedIn = { id: 'user_bea', name: 'Bea', email: 'bea@example.com', emailVerified: true };
+    const beas = (await (await call('/tokens', { method: 'POST', body: {} })).json()) as {
+      id: string;
+    };
+    signedIn = null;
+    expect((await call(`/tokens/${beas.id}`, bearer('tok-ada', { method: 'DELETE' }))).status).toBe(
+      404,
+    );
+    const revoked = await call(`/tokens/${token.id}`, bearer('tok-ada', { method: 'DELETE' }));
+    expect(await revoked.json()).toEqual({ id: token.id });
+    expect(await (await call('/tokens', bearer('tok-ada'))).json()).toEqual({ tokens: [] });
+    // A guest has no tokens to run.
+    expect((await call('/tokens', bearer('tok-guest'))).status).toBe(401);
+    expect((await call('/tokens', bearer('tok-guest', { method: 'POST', body: {} }))).status).toBe(
+      401,
+    );
+  });
+
+  it('keeps the token limit on the bearer’s door too', async () => {
+    for (let i = 0; i < 20; i++) {
+      expect(
+        (await call('/tokens', bearer('tok-ada', { method: 'POST', body: { name: `t${i}` } })))
+          .status,
+      ).toBe(201);
+    }
+    const over = await call('/tokens', bearer('tok-ada', { method: 'POST', body: {} }));
+    expect(over.status).toBe(409);
+    expect(await over.json()).toEqual({ error: 'token_limit_reached' });
+  });
+
+  it('answers Download Your Data for the bearer’s account, with its name and verified email', async () => {
+    const calls: { path: string; body: unknown }[] = [];
+    env.EXPORT_KEY_ACCOUNTS = 'export-key';
+    env.EXPORT = {
+      fetch: async (url: string, init: RequestInit = {}) => {
+        const path = new URL(url).pathname;
+        const body: unknown = init.body ? JSON.parse(String(init.body)) : null;
+        calls.push({ path, body });
+        if (path.endsWith('/status')) return Response.json({ exports: {} });
+        return Response.json({ export: { status: 'running' } }, { status: 202 });
+      },
+    } as unknown as Env['EXPORT'];
+    const read = await call('/data-export', bearer('tok-ada'));
+    expect(read.status).toBe(200);
+    expect(await read.json()).toEqual({ personal: null, teams: [] });
+    const started = await call('/data-export', bearer('tok-ada', { method: 'POST', body: {} }));
+    expect(started.status).toBe(202);
+    expect(calls.at(-1)?.body).toMatchObject({
+      key: 'personal:user_ada',
+      requestedBy: 'user_ada',
+      profile: { account: { id: 'user_ada', name: 'Ada', email: 'ada@example.com' } },
+    });
+    expect((await call('/data-export', bearer('tok-guest'))).status).toBe(401);
+  });
+
+  it('lists the account’s live sessions, newest first, marking the token’s own and never a token', async () => {
+    addSession('s-old', 'user_ada', { updated: 1_000 });
+    addSession('s-here', 'user_ada', { updated: 5_000 });
+    addSession('s-gone', 'user_ada', { expiresIn: -1_000 });
+    addSession('s-bea', 'user_bea');
+    const res = await call('/sessions', bearer(ADA_ON_SESSION));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { sessions: Record<string, unknown>[] };
+    expect(body.sessions).toEqual([
+      {
+        id: 's-here',
+        current: true,
+        userAgent: 'Firefox',
+        createdAt: '2026-11-01T00:00:00.000Z',
+        updatedAt: '2026-11-01T00:00:05.000Z',
+      },
+      expect.objectContaining({ id: 's-old', current: false }),
+    ]);
+    expect(JSON.stringify(body)).not.toContain('token-');
+    // A token with no `sid` marks none.
+    const plain = (await (await call('/sessions', bearer('tok-ada'))).json()) as {
+      sessions: { current: boolean }[];
+    };
+    expect(plain.sessions.map((s) => s.current)).toEqual([false, false]);
+  });
+
+  it('ends one of the account’s own sessions with its apps’ tokens, and no one else’s', async () => {
+    addSession('s-old', 'user_ada');
+    addSession('s-bea', 'user_bea');
+    sql
+      .prepare(
+        `INSERT INTO oauthRefreshToken (id, token, clientId, sessionId, userId, expiresAt, createdAt, scopes)
+         VALUES ('r1', 'rt', 'liveplanner', 's-old', 'user_ada', '2099', '2026', 'openid')`,
+      )
+      .run();
+    expect((await call('/sessions/s-bea', bearer('tok-ada', { method: 'DELETE' }))).status).toBe(
+      404,
+    );
+    expect((await call('/sessions/nope', bearer('tok-ada', { method: 'DELETE' }))).status).toBe(
+      404,
+    );
+    const ended = await call('/sessions/s-old', bearer('tok-ada', { method: 'DELETE' }));
+    expect(await ended.json()).toEqual({ id: 's-old' });
+    expect(sql.prepare('SELECT id FROM session ORDER BY id').all()).toEqual([{ id: 's-bea' }]);
+    expect(sql.prepare('SELECT id FROM oauthRefreshToken').all()).toEqual([]);
+    expect((await call('/sessions/s-bea', bearer('tok-guest', { method: 'DELETE' }))).status).toBe(
+      401,
+    );
+  });
+
+  it('ends every other session, keeping the token’s own, and refuses a token with none', async () => {
+    addSession('s-here', 'user_ada');
+    addSession('s-old', 'user_ada');
+    addSession('s-older', 'user_ada');
+    addSession('s-bea', 'user_bea');
+    expect(
+      (await call('/sessions/revoke-others', bearer('tok-ada', { method: 'POST' }))).status,
+    ).toBe(409);
+    const ended = await call('/sessions/revoke-others', bearer(ADA_ON_SESSION, { method: 'POST' }));
+    expect(await ended.json()).toEqual({ ended: 2 });
+    expect(sql.prepare('SELECT id FROM session ORDER BY id').all()).toEqual([
+      { id: 's-bea' },
+      { id: 's-here' },
+    ]);
+  });
+
+  it('answers whether Google is connected, available or off', async () => {
+    const methods = async () =>
+      (await (await call('/sign-in-methods', bearer('tok-ada'))).json()) as { google: string };
+    expect(await methods()).toEqual({ google: 'off' });
+    env.GOOGLE_CLIENT_ID = 'google-id';
+    env.GOOGLE_CLIENT_SECRET = 'google-secret';
+    expect(await methods()).toEqual({ google: 'available' });
+    sql
+      .prepare(
+        `INSERT INTO account (id, accountId, providerId, userId, createdAt, updatedAt)
+         VALUES ('a1', 'g-1', 'google', 'user_ada', '2026', '2026')`,
+      )
+      .run();
+    expect(await methods()).toEqual({ google: 'connected' });
+    expect((await call('/sign-in-methods', bearer('tok-guest'))).status).toBe(401);
+  });
+
+  it('starts connecting Google with a hop on this Worker, back only to an app’s own address', async () => {
+    env.BETTER_AUTH_SECRET = 'test-secret-that-is-at-least-32-characters';
+    const start = (callbackURL: unknown, token = ADA_ON_SESSION) =>
+      call('/sign-in-methods/google', bearer(token, { method: 'POST', body: { callbackURL } }));
+    const back = 'https://liveplanner.app/p/1?settings=profile';
+    expect(await (await start(back)).json()).toEqual({ error: 'google_off' });
+    env.GOOGLE_CLIENT_ID = 'google-id';
+    env.GOOGLE_CLIENT_SECRET = 'google-secret';
+    // Its session gone (or none named), there is nothing to link for.
+    expect(await (await start(back)).json()).toEqual({ error: 'session_ended' });
+    addSession('s-here', 'user_ada');
+    expect(await (await start(back, 'tok-ada')).json()).toEqual({ error: 'session_ended' });
+    for (const foreign of [
+      'https://evil.example/p',
+      'https://liveplanner.app.evil.example/',
+      'https://user:pw@liveplanner.app/',
+      'javascript:alert(1)',
+      '/relative',
+      `https://liveplanner.app/${'x'.repeat(2_000)}`,
+      42,
+    ]) {
+      const refused = await start(foreign);
+      expect(refused.status).toBe(400);
+      expect(await refused.json()).toEqual({ error: 'invalid_callback' });
+    }
+    const started = await start(back);
+    expect(started.status).toBe(200);
+    const { url } = (await started.json()) as { url: string };
+    expect(url).toMatch(/^https:\/\/liveworkspace\.app\/api\/auth\/link-google\?ticket=/);
+    // The Worker's own address and its twin are trusted too.
+    expect((await start('https://www.liveworkspace.app/explorer')).status).toBe(200);
+    expect(
+      (await call('/sign-in-methods/google', bearer('tok-guest', { method: 'POST' }))).status,
+    ).toBe(401);
+  });
+});
+
+// The real bearer check, against a key set this Worker would publish: an API token is no JWT, so it never passes,
+// on any of the routes the bearer now answers.
+describe('the account API, refusing an API token as a bearer', () => {
+  it('refuses an API token on every bearer route, while an access token passes', async () => {
+    const { generateKeyPair, exportJWK, SignJWT } = await import('jose');
+    const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
+    const jwk = { ...(await exportJWK(pair.publicKey)), kid: 'k1', alg: 'EdDSA' };
+    const realAuth = { ...auth, api: { ...auth.api, getJwks: async () => ({ keys: [jwk] }) } };
+    const access = await new SignJWT({ email: 'ada@example.com', email_verified: true, sid: 's1' })
+      .setProtectedHeader({ alg: 'EdDSA', kid: 'k1' })
+      .setIssuer(`${BASE}/api/auth`)
+      .setAudience('https://liveplanner.app/api')
+      .setSubject('user_ada')
+      .setIssuedAt()
+      .setExpirationTime('5m')
+      .sign(pair.privateKey);
+    const minted = (await (await call('/tokens', { method: 'POST', body: {} })).json()) as {
+      secret: string;
+    };
+    signedIn = null;
+    const send = (path: string, token: string, method = 'GET', body?: unknown) =>
+      handleAccountApi(
+        new Request(`${BASE}/api/account${path}`, {
+          method,
+          headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        }),
+        env,
+        realAuth as unknown as Auth,
+      );
+    expect((await send('/tokens', access)).status).toBe(200);
+    expect((await send('/sessions', access)).status).toBe(200);
+    for (const [path, method, body] of [
+      ['/tokens', 'GET'],
+      ['/tokens', 'POST', { name: 'more' }],
+      ['/tokens/x', 'DELETE'],
+      ['/data-export', 'GET'],
+      ['/data-export', 'POST', {}],
+      ['/sessions', 'GET'],
+      ['/sessions/s1', 'DELETE'],
+      ['/sessions/revoke-others', 'POST'],
+      ['/sign-in-methods', 'GET'],
+      ['/sign-in-methods/google', 'POST', { callbackURL: 'https://liveplanner.app/' }],
+    ] as const) {
+      const res = await send(path, minted.secret, method, body);
+      expect([path, method, res.status]).toEqual([path, method, 401]);
+    }
   });
 });

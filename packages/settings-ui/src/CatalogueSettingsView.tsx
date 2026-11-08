@@ -19,6 +19,7 @@ import {
   type CommonCatalogue,
 } from '@liveworkspace/settings/common';
 import { accountCategories, type AccountSection } from './account-model';
+import { AccountTokensInPlace } from './account-panels/tokens-in-place';
 import { catalogueModel } from './catalogue-model';
 import { foldIntoAccount } from './fold-account';
 import { SettingsCategoryTile } from './glyphs';
@@ -262,7 +263,7 @@ function ReadyView({
   // the host hands in its own: signed in only, gated as API Tokens are (a host offers tokens only to an account).
   const withPhone = useMemo<AccountHost>(
     () =>
-      account.phone !== undefined || account.guest || !(account.renderTokens || account.tokensHref)
+      account.phone !== undefined || account.guest || !account.renderTokens
         ? account
         : { ...account, phone: phoneHost(store.request, current) },
     [account, store, current],
@@ -286,27 +287,30 @@ function ReadyView({
   );
 
   return (
-    <SettingsView
-      {...view}
-      categories={model.categories}
-      groups={model.groups}
-      placeholder={
-        model.categories.length === 0 ? (
-          <p className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
-            Everything else is set in the app itself.
-          </p>
-        ) : undefined
-      }
-      footer={
-        <>
-          {footer}
-          <p aria-live="polite" className="sr-only">
-            {saved > 0 && !error ? 'Saved' : ''}
-          </p>
-          {error ? <ErrorNote>{errorMessage(error)}</ErrorNote> : null}
-        </>
-      }
-    />
+    // An editor's own API Tokens row, folded in under the Account section's, reads whether the tokens are drawn above.
+    <AccountTokensInPlace value={Boolean(account.renderTokens)}>
+      <SettingsView
+        {...view}
+        categories={model.categories}
+        groups={model.groups}
+        placeholder={
+          model.categories.length === 0 ? (
+            <p className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
+              Everything else is set in the app itself.
+            </p>
+          ) : undefined
+        }
+        footer={
+          <>
+            {footer}
+            <p aria-live="polite" className="sr-only">
+              {saved > 0 && !error ? 'Saved' : ''}
+            </p>
+            {error ? <ErrorNote>{errorMessage(error)}</ErrorNote> : null}
+          </>
+        }
+      />
+    </AccountTokensInPlace>
   );
 }
 

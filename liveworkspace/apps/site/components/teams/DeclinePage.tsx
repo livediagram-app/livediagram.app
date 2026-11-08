@@ -4,7 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { accountApi, errorMessage } from '@/lib/account-api';
 import { joinTokenFrom, INVITES_PATH } from '@/lib/teams';
 import { Button } from '@liveworkspace/ui';
-import { BUTTON } from '../settings/account-ui';
+import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 import { JoinShell, Notice } from './JoinPage';
 
 const noChange = () => () => {};

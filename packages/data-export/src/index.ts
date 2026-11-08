@@ -119,6 +119,9 @@ export type DataExportTeam = { id: string; name: string; export: ExportView | nu
 /** `GET /api/account/data-export`. */
 export type DataExportState = { personal: ExportView | null; teams: DataExportTeam[] };
 
+/** The query parameter the redirect to Settings names a refused link's reason in (`?settings=data&export=`). */
+export const EXPORT_LINK_PARAM = 'export';
+
 /** Why an emailed link was refused, as the redirect to Settings names it (`?settings=data&export=`). */
 export const EXPORT_LINK_REFUSALS = ['expired', 'other-account', 'missing'] as const;
 export type ExportLinkRefusal = (typeof EXPORT_LINK_REFUSALS)[number];

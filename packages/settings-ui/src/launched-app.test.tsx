@@ -54,7 +54,7 @@ describe('a launched app in the Settings panel', () => {
         Object.entries(catalogues).map(([app, catalogue]) => ({ app, catalogue })),
       ),
       value: { all: {}, apps: {} },
-      account: { tokensHref: '/explorer?settings=tokens' },
+      account: { renderTokens: () => null },
       renderLogo: () => null,
       saver: { changeApp: () => {}, changeShared: () => {} },
     });

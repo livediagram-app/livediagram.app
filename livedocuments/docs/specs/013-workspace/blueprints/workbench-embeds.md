@@ -407,8 +407,8 @@ Reconnect line, "Reconnect in <workbench> to keep editing.", sits at the top cen
 `SettingsTokensRow` lists each token's paired workbenches (`useWorkbenchPairings`: `GET /api/workbench/pairings` once,
 grouped by token, WB46) through `SettingsTokenPairings`: name (or unnamed), origin, scope ("One document at a time" or
 "Whole workspace", WB67) and when paired, each with **Unpair**, which asks first (WB36) and removes the row once the
-pairing has ended. A token with no pairings shows nothing extra (WB35). The tokens themselves are managed on
-liveworkspace.app.
+pairing has ended. A token with no pairings shows nothing extra (WB35). The tokens themselves are made in the
+shared panel above the row, in place.
 
 ## Accessibility
 

@@ -1,6 +1,6 @@
 import { CompactEmptyState } from '@liveworkspace/ui';
 import { dateFormat } from '@liveworkspace/ui/date-format';
-import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
+import { SettingsSharedGlyph } from '../../glyphs';
 import type { WebhookDelivery, WebhookEvent } from '@liveworkspace/index-client';
 import { AppName, DeliveredGlyph, FailedGlyph, WaitingGlyph } from './marks';
 import { deliveryLine, EVENT_APP, eventName } from './webhooks-api';

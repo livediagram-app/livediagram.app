@@ -897,6 +897,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'tokens',
         key: 'apiTokens',
+        // Signed in, the Account section draws the tokens in place (the shared panel's API Tokens), and this editor
+        // has no workbench pairings to add under it: the row is a guest's way in alone.
+        available: (ctx) => !ctx.signedIn,
         keywords: 'api token key integration script developer access create revoke secret',
         label: 'API Tokens',
         description:

@@ -6,13 +6,14 @@ import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
-// where they are signed in, from the accounts Worker's own session endpoints. Only liveworkspace.app can reach them
-// (they are the session's), so the host hands them over as `AccountSecurity`; elsewhere the Profile links there.
+// where they are signed in, from the accounts Worker: Better Auth's own session endpoints on liveworkspace.app, the
+// account API's bearer door (bearer-security.ts) in an editor and an app's Explorer. The host hands them over as
+// `AccountSecurity`, and the rows are drawn in place wherever a signed-in account opens Settings.
 
 /** One place the person is signed in. */
 export type AccountSession = {
   id: string;
-  // What revokes it.
+  // What revokes it: the session's token on liveworkspace.app, its id over the bearer door.
   token: string;
   current: boolean;
   userAgent: string | null;
@@ -24,11 +25,12 @@ export type AccountSession = {
 /** The ways in: an emailed code always; Google connected, connectable, or not offered here. */
 export type AccountSignInMethods = { google: 'connected' | 'available' | 'off' };
 
-/** What liveworkspace.app's session can do for Sign-in and Security. Each answers null (or false) when refused. */
+/** What the host's door can do for Sign-in and Security. Each answers null (or false) when refused. */
 export type AccountSecurity = {
   sessions: () => Promise<AccountSession[] | null>;
   revokeSession: (token: string) => Promise<boolean>;
-  revokeOtherSessions: () => Promise<boolean>;
+  // Signing out of every other session at once, where the host can (else no Sign Out Others).
+  revokeOtherSessions?: () => Promise<boolean>;
   signInMethods: () => Promise<AccountSignInMethods | null>;
   // Starts linking Google (the browser leaves for Google and comes back).
   connectGoogle: () => Promise<boolean>;
@@ -124,6 +126,24 @@ const GoogleGlyph = () => (
   </svg>
 );
 
+// Why linking Google was refused, as the browser comes back with `?error=<code>` (Settings open, `?settings=`).
+const LINK_REFUSALS: Record<string, string> = {
+  google_off: 'Google sign-in isn’t offered here just now.',
+  already_connected: 'Google is already connected to this account.',
+  session_ended: 'Your session ended before Google answered. Sign in again, then connect Google.',
+};
+
+/** The refusal Google's way back named, read once (and taken off the address, so a reload doesn't say it again). */
+export function linkRefusalOnReturn(): string | null {
+  if (typeof window === 'undefined') return null;
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get('error');
+  if (!code || !url.searchParams.has('settings')) return null;
+  url.searchParams.delete('error');
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  return LINK_REFUSALS[code] ?? 'Google couldn’t be connected just now. Try again in a moment.';
+}
+
 /** Sign-in Methods: an emailed code to the account's address, and Google. */
 export function SignInMethodsRows({
   security,
@@ -135,6 +155,7 @@ export function SignInMethodsRows({
   const [load, , retry] = useLoad(security.signInMethods);
   const [connecting, setConnecting] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [refused] = useState(linkRefusalOnReturn);
   const google = load.state === 'ready' ? load.data.google : null;
   return (
     <>
@@ -205,6 +226,10 @@ export function SignInMethodsRows({
           ) : failed ? (
             <p role="alert" className={ERROR_NOTE}>
               Couldn’t reach your account just now. Try again in a moment.
+            </p>
+          ) : refused ? (
+            <p role="alert" className={ERROR_NOTE}>
+              {refused}
             </p>
           ) : null}
         </SettingsRowShell>
@@ -375,7 +400,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
           }
         />
       ))}
-      {others > 0 ? (
+      {others > 0 && security.revokeOtherSessions ? (
         <SettingsRowShell
           row={{
             key: 'sessionsOthers',
@@ -388,7 +413,7 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
               className={SETTINGS_ROW_BUTTON}
               busy={busy !== null}
               data-session-sign-out=""
-              onClick={(e) => void act('others', security.revokeOtherSessions, e.currentTarget)}
+              onClick={(e) => void act('others', security.revokeOtherSessions!, e.currentTarget)}
             >
               {busy === 'others' ? 'Signing out…' : 'Sign Out Others'}
             </Button>

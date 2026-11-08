@@ -6,7 +6,7 @@ import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { manageTokensUrl } from '@liveworkspace/workbench/lib/auth-config';
 import { useRelativeNow } from '@/lib/relative-time';
-import { SettingsSharedGlyph } from '@liveworkspace/settings-ui';
+import { SettingsSharedGlyph, useAccountTokensInPlace } from '@liveworkspace/settings-ui';
 import { SettingsRowShell } from '@liveworkspace/settings-ui';
 import { SettingsSignInLink } from './SettingsSignInLink';
 import { SettingsTokenPairings } from './SettingsTokenPairings';
@@ -14,12 +14,15 @@ import type { SettingsTokensRowSpec } from './settings-catalogue';
 
 // The API Tokens category's one row (docs/specs/015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category).
 // API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): one token
-// works on every app's API and MCP server, and they are made, listed and revoked on liveworkspace.app,
-// so this row says so and links there. Workbenches paired through a token stay this app's, so they
+// works on every app's API and MCP server. Signed in with the Account section, they are made, listed and revoked
+// right above this row (the shared panel's API Tokens); where there is none (an editor without liveworkspace
+// accounts), this row links to liveworkspace.app. Workbenches paired through a token stay this app's, so they
 // are listed here with Unpair. Tokens are signed-in only, so a guest gets the reason and a way to
 // sign in.
 export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
   const { authLoaded, accountUserId, isSignedIn } = useAccountBootstrap();
+  // Under the Account section's own API Tokens, which makes and revokes them right above: no way elsewhere.
+  const inPlace = useAccountTokensInPlace();
   const enabled = Boolean(isSignedIn && accountUserId);
   const pairings = useWorkbenchPairings(accountUserId ?? null, { enabled });
   const now = useRelativeNow();
@@ -51,16 +54,20 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
     >
       {!authLoaded || !enabled ? null : (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Your API tokens belong to your liveworkspace account, so one token works in every
-            liveworkspace app. Make, see and revoke them on liveworkspace.app.
-          </p>
-          <a
-            href={manageTokensUrl}
-            className={buttonClassName({ size: 'sm', className: 'w-fit shadow-sm' })}
-          >
-            <ButtonContent>Manage API Tokens</ButtonContent>
-          </a>
+          {inPlace ? null : (
+            <>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Your API tokens belong to your liveworkspace account, so one token works in every
+                liveworkspace app. Make, see and revoke them on liveworkspace.app.
+              </p>
+              <a
+                href={manageTokensUrl}
+                className={buttonClassName({ size: 'sm', className: 'w-fit shadow-sm' })}
+              >
+                <ButtonContent>Manage API Tokens</ButtonContent>
+              </a>
+            </>
+          )}
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
             Connecting Claude or another AI tool? It creates its own token when you approve it.{' '}
             <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />

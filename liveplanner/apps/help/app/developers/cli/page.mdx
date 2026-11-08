@@ -74,7 +74,7 @@ A code lasts **ten minutes**. If the page says it couldn't find the code, check 
 
 ### With an API Token
 
-For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) on liveworkspace.app (in liveplanner, **Settings**, **Account**, **API Tokens**, then **Manage API Tokens**), and either set it for the commands you run:
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, **Account**, **API Tokens** (in liveplanner, any liveworkspace app, or on liveworkspace.app), and either set it for the commands you run:
 
 ```bash
 export LIVEPLANNER_TOKEN=lwt_your_token_here
@@ -95,9 +95,9 @@ liveplanner auth status    # host, account, token name, role, expiry, and where 
 liveplanner auth logout    # revoke the stored token and forget it
 ```
 
-`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEPLANNER_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token on liveworkspace.app.
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEPLANNER_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **Settings**, **API Tokens**.
 
-The browser and device sign-ins create an ordinary API token named **liveplanner CLI**. It appears in your token list on liveworkspace.app beside any others (with a **Read only** badge if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
+The browser and device sign-ins create an ordinary API token named **liveplanner CLI**. It appears in your token list in **Settings**, **Account**, **API Tokens** beside any others (with a **Read only** badge if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
 
 ## Where Your Token Is Kept
 
@@ -255,8 +255,8 @@ The CLI counts which commands succeed, and which fail because of the server or t
 <Note>
   A full-access token can change and share everything you can. Give an agent a read-only token when
   it only needs to read, keep `LIVEPLANNER_TOKEN` out of source control and logs, and revoke a token
-  on liveworkspace.app (or with `liveplanner auth logout`) the moment you no longer need it or think
-  it may have leaked.
+  in **Settings**, **API Tokens** (or with `liveplanner auth logout`) the moment you no longer need
+  it or think it may have leaked.
 </Note>
 
 </ArticleLayout>

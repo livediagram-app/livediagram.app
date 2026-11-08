@@ -6,7 +6,7 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { signInHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
-import { BUTTON } from '../settings/account-ui';
+import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
 import { JoinShell } from '../teams/JoinPage';
 
 export { JoinShell as DriveShell };

@@ -22,7 +22,7 @@ livedesign auth login --device   # on a machine without a browser: enter a code 
 ```
 
 For CI and agents, create an API token on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)
-(livedesign's Settings › Account › API Tokens › Manage API Tokens takes you there), then either set it for a command:
+or in livedesign's Settings › Account › API Tokens (any liveworkspace app's Settings has it), then either set it for a command:
 
 ```bash
 export LIVEDESIGN_TOKEN=lwt_...
