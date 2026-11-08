@@ -119,9 +119,7 @@ export function SettingsPanel({
   const withShared = shown === 'app' && allowAll && !account.guest;
   // A guest's editor: its own settings, drawn at once, with nothing fetched.
   if (shown === 'app' && own && !withShared) {
-    return (
-      <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />
-    );
+    return <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />;
   }
 
   const catalogueProps: CatalogueSettingsViewProps = {

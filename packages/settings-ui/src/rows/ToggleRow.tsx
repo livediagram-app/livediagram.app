@@ -19,7 +19,15 @@ export function SettingsToggleRowView({
   // than growing a second copy of the toggle cell.
   row: Pick<
     SettingsRowBase,
-    'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration' | 'allApps' | 'link' | 'section'
+    | 'key'
+    | 'label'
+    | 'description'
+    | 'helpArticle'
+    | 'alsoIn'
+    | 'illustration'
+    | 'allApps'
+    | 'link'
+    | 'section'
   >;
   checked: boolean;
   onChange: (next: boolean) => void;

@@ -51,11 +51,7 @@ export type BindableToggleGroup<P> = SettingsRowText & {
 export type BindableNote = SettingsRowText & { kind: 'note'; note: string; signIn?: boolean };
 
 export type BindableRow<P> =
-  | BindableToggle<P>
-  | BindableChoice<P>
-  | BindableSlider<P>
-  | BindableToggleGroup<P>
-  | BindableNote;
+  BindableToggle<P> | BindableChoice<P> | BindableSlider<P> | BindableToggleGroup<P> | BindableNote;
 
 const BINDABLE = new Set(['toggle', 'choice', 'slider', 'toggleGroup', 'link', 'note']);
 

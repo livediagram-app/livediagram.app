@@ -114,7 +114,9 @@ export function commonModel({
 function withSectionOf(own: SettingsRow, common: SettingsRow): SettingsRow {
   if (own.section === common.section) return own;
   const { section: _section, ...rest } = own;
-  return (common.section !== undefined ? { ...rest, section: common.section } : rest) as SettingsRow;
+  return (
+    common.section !== undefined ? { ...rest, section: common.section } : rest
+  ) as SettingsRow;
 }
 
 /** Every Common row's id: what each app's own group leaves out. */

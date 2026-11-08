@@ -137,7 +137,14 @@ export const AppMarks = memo(function AppMarks({
   }, [marks, apps, hidden]);
   // The column stays when there is nothing to draw, so the row's name lines up with its neighbours'.
   if (!shown) {
-    return <span aria-hidden data-settings-app-marks-spacer="" className="block shrink-0" style={{ width }} />;
+    return (
+      <span
+        aria-hidden
+        data-settings-app-marks-spacer=""
+        className="block shrink-0"
+        style={{ width }}
+      />
+    );
   }
   return (
     <span className="flex shrink-0 justify-start" style={{ width }}>

@@ -102,7 +102,9 @@ function seed(sql: DatabaseSync): void {
     INSERT INTO purge_tombstones (item_id, app, created_at) VALUES ('gone', 'livediagram', 140);
   `);
   // Webhooks belonged to an account or team scope until 0014, which ties each to one item.
-  const scoped = sql.prepare("SELECT 1 FROM pragma_table_info('webhooks') WHERE name = 'scope'").get();
+  const scoped = sql
+    .prepare("SELECT 1 FROM pragma_table_info('webhooks') WHERE name = 'scope'")
+    .get();
   sql.exec(
     scoped
       ? `INSERT INTO webhooks (id, scope, kind, name, url_sealed, host, events, created_by, created_at) VALUES

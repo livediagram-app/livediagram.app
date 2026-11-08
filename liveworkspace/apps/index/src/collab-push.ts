@@ -234,12 +234,8 @@ export async function pushCollab(
   const key = [app, itemId, tabId] as const;
   const now = Date.now();
   // What the tab held, to tell what changed: one round trip of three primary-key ranges.
-  const [itemRead, threadRead, actionRead] = await db.batch<
-    Record<string, unknown>
-  >([
-    db
-      .prepare('SELECT title, scope, created_at FROM items WHERE id = ?')
-      .bind(itemId),
+  const [itemRead, threadRead, actionRead] = await db.batch<Record<string, unknown>>([
+    db.prepare('SELECT title, scope, created_at FROM items WHERE id = ?').bind(itemId),
     db
       .prepare(
         `SELECT element_id, resolved, comment_count FROM collab_threads

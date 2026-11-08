@@ -1,5 +1,13 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SettingsApiResult, SettingsRequest } from '../request';
 import { STORED_APP_IDS, storeFor } from '../store';

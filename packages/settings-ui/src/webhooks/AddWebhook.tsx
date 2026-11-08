@@ -76,8 +76,8 @@ export function AddWebhook({
           Add a Webhook
         </h4>
         <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-          It posts only what happens to this {one}. Each message carries what its History shows:
-          the {one}’s name and link, who did it, and a short detail, like a comment’s first words.
+          It posts only what happens to this {one}. Each message carries what its History shows: the{' '}
+          {one}’s name and link, who did it, and a short detail, like a comment’s first words.
         </p>
       </div>
 

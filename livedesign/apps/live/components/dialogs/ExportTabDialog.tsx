@@ -7,11 +7,7 @@ import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from '@liveworkspace/workbench/components/dialogs/TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
 import { LogoKitPanel } from './LogoKitPanel';
-import {
-  type LaidOutPage,
-  type Tab,
-  tabToJsonText,
-} from '@livedesign/design';
+import { type LaidOutPage, type Tab, tabToJsonText } from '@livedesign/design';
 import {
   downloadBlob,
   exportTabAsPng,

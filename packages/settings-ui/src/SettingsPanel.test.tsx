@@ -390,7 +390,9 @@ describe('SettingsPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /^All/ }));
     first.unmount();
     renderWithKit(<Host own={fixtureCategories()} request={request} />);
-    expect(screen.getByRole('button', { name: /^liveplanner/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: /^liveplanner/ }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
   });
 });
 

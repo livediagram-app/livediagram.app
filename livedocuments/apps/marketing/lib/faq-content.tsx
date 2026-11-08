@@ -370,10 +370,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there an API?',
         a: (
           <>
-            Yes. Once you sign in, make an API token from Settings › API Tokens (tokens
-            belong to your liveworkspace account) and call the livedocuments REST API to read and
-            change your documents, tabs and pages from scripts, CI or anything that can send a
-            header. See the <a href="/help/developers/api-overview/">API overview</a>.
+            Yes. Once you sign in, make an API token from Settings › API Tokens (tokens belong to
+            your liveworkspace account) and call the livedocuments REST API to read and change your
+            documents, tabs and pages from scripts, CI or anything that can send a header. See the{' '}
+            <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:

@@ -347,7 +347,9 @@ describe('the Open Explorer cookie', () => {
     mockBrowser();
     const writes = mockCookies();
     writeUserPreferences({ autoOpenExplorer: true }, 'owner-1');
-    expect(writes.at(-1)).toMatch(/^lw_open_explorer=1; Max-Age=\d+; Path=\/; SameSite=Lax; Secure$/);
+    expect(writes.at(-1)).toMatch(
+      /^lw_open_explorer=1; Max-Age=\d+; Path=\/; SameSite=Lax; Secure$/,
+    );
     writeUserPreferences({ autoOpenExplorer: false }, 'owner-1');
     expect(writes.at(-1)).toMatch(/^lw_open_explorer=; Max-Age=0;/);
   });

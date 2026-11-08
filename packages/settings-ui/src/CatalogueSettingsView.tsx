@@ -499,11 +499,7 @@ export function panelModel({
       group: DEVELOPER_CATEGORY_IDS.has(bare as AccountCategoryId)
         ? DEVELOPERS_GROUP
         : ACCOUNT_GROUP,
-      aliases: [
-        ...(c.aliases ?? []),
-        bare,
-        ...(bare === 'account' ? ['profile', 'webhooks'] : []),
-      ],
+      aliases: [...(c.aliases ?? []), bare, ...(bare === 'account' ? ['profile', 'webhooks'] : [])],
     };
   });
   return {

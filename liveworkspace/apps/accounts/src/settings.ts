@@ -189,7 +189,9 @@ export async function resetSettings(
   if (keeps) {
     statements.push(
       db
-        .prepare(`INSERT INTO settings (owner_id, scope, prefs, updated_at) VALUES (?, 'all', ?, ?)`)
+        .prepare(
+          `INSERT INTO settings (owner_id, scope, prefs, updated_at) VALUES (?, 'all', ?, ?)`,
+        )
         .bind(owner, JSON.stringify(kept), now),
     );
   }

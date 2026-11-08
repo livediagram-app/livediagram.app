@@ -23,7 +23,10 @@ export const queuedCount = () => queued;
 // (`,shared,`). One set to Only Me (`who = 'me'`) hears only what its creator did: `actor` is the event's person, and
 // an event without one (a form response) never reaches it. `w`, `i` and the event's columns come from the statement
 // around it; `?4` is WEBHOOK_PENDING_MAX.
-const listening = (type: string, actor: string) => `JOIN webhooks w ON w.item_id = i.id AND w.paused_at IS NULL
+const listening = (
+  type: string,
+  actor: string,
+) => `JOIN webhooks w ON w.item_id = i.id AND w.paused_at IS NULL
   WHERE instr(w.events, ',' || ${type} || ',') > 0
     AND (w.who = 'anyone' OR w.created_by = ${actor})
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p

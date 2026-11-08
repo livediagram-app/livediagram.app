@@ -378,7 +378,7 @@ function ZoneList({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium">
-                  {entry.value === null ? 'Automatic' : entry.option?.city ?? entry.value}
+                  {entry.value === null ? 'Automatic' : (entry.option?.city ?? entry.value)}
                 </span>
                 <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
                   {entry.value === null

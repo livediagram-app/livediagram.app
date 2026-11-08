@@ -423,7 +423,10 @@ describe('changing one', () => {
       auth: cy.auth,
       body: { who: 'me' },
     });
-    expect((await body<{ webhook: Webhook }>(res)).webhook).toMatchObject({ who: 'me', mine: true });
+    expect((await body<{ webhook: Webhook }>(res)).webhook).toMatchObject({
+      who: 'me',
+      mine: true,
+    });
     expect(h.db.sql.prepare('SELECT created_by, who FROM webhooks').get()).toEqual({
       created_by: 'user_wc8',
       who: 'me',

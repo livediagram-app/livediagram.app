@@ -64,7 +64,10 @@ export function WebhookEvents({
               </Chip>
             ))
           )}
-          <span data-webhook-who={webhook.who} className="ml-1 text-xs text-slate-500 dark:text-slate-400">
+          <span
+            data-webhook-who={webhook.who}
+            className="ml-1 text-xs text-slate-500 dark:text-slate-400"
+          >
             {webhook.who === 'me'
               ? webhook.mine
                 ? 'Only what you do'
@@ -113,7 +116,9 @@ function EventsEditor({
     >
       <div className="flex flex-col gap-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">What Should It Send?</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+            What Should It Send?
+          </p>
           <EventControls events={offered} value={draft} onChange={setDraft} />
         </div>
         <EventPicker app={app} value={draft} onChange={setDraft} />

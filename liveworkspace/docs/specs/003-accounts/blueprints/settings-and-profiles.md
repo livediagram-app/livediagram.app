@@ -64,7 +64,7 @@ invalid_name`; empty clears); `color` a string or null, trimmed, at most 64, not
 - `writeProfile`: one upsert gated like settings (`404 unknown_owner`), setting only the named fields, then the row
   read back in the same batch. The upsert is left out when only `timeZone` is named, so a zone pick makes no profile
   row. A zone is written on the account's `"user"` row in the same batch: a pick `SET timeZone = ?, timeZoneChosen =
-  1`; Automatic `SET timeZoneChosen = NULL, timeZone = COALESCE(<noted zone>, timeZone)`.
+1`; Automatic `SET timeZoneChosen = NULL, timeZone = COALESCE(<noted zone>, timeZone)`.
 - The own-profile doors' `?timeZone=` (`profileRoute`), checked by `parseTimeZone` (an unknown one is ignored, as
   `X-Time-Zone` is): a `GET` writes it in the read's batch, guarded like the session sighting and skipped while a
   picked zone stands; an Automatic `PATCH` keeps it at once.
@@ -119,12 +119,12 @@ name: COALESCE(profile name, account name), color, picture }`; ids that are neit
 
 ## Testing
 
-| Test                                                        | Pins                                           |
-| ----------------------------------------------------------- | ---------------------------------------------- |
-| `liveworkspace/apps/accounts/src/settings.test.ts` (17)     | settings; a reset; a closed account; a guest signing in |
+| Test                                                        | Pins                                                                       |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/settings.test.ts` (17)     | settings; a reset; a closed account; a guest signing in                    |
 | `liveworkspace/apps/accounts/src/profiles.test.ts` (20)     | profiles; profile pictures; a time zone picked by hand; a guest signing in |
-| `liveworkspace/apps/accounts/src/auth-options.test.ts` (11) | Google sign-in pictures                        |
-| `packages/settings/src/*.test.ts`                           | the catalogue, common keys, presence colours   |
+| `liveworkspace/apps/accounts/src/auth-options.test.ts` (11) | Google sign-in pictures                                                    |
+| `packages/settings/src/*.test.ts`                           | the catalogue, common keys, presence colours                               |
 
 ## Constants and configuration
 

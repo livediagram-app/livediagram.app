@@ -349,15 +349,17 @@ describe('the account API, signed in', () => {
     });
 
     // From another origin, nothing goes.
-    await writeSettings(env.AUTH_DB, 'user_ada', 'livediagram.app', { app: { showMinimap: false } });
+    await writeSettings(env.AUTH_DB, 'user_ada', 'livediagram.app', {
+      app: { showMinimap: false },
+    });
     const crossOrigin = await call('/settings', {
       method: 'DELETE',
       headers: { origin: 'https://evil.example' },
     });
     expect(crossOrigin.status).toBe(403);
-    expect(
-      (await readSettings(env.AUTH_DB, 'user_ada', 'livediagram.app')).app,
-    ).toEqual({ showMinimap: false });
+    expect((await readSettings(env.AUTH_DB, 'user_ada', 'livediagram.app')).app).toEqual({
+      showMinimap: false,
+    });
   });
 
   it('refuses a reset signed out', async () => {
@@ -793,7 +795,7 @@ describe("the account API, for the Explorer on an app's address (by the app's be
     ).toBe(401);
   });
 
-  it('resets every scope of the account the token is, for the Danger Zone, and nobody else\'s', async () => {
+  it("resets every scope of the account the token is, for the Danger Zone, and nobody else's", async () => {
     await writeSettings(env.AUTH_DB, 'user_ada', 'liveplanner.app', {
       all: { notifyTips: false },
       app: { homeBanner: false },
@@ -817,14 +819,24 @@ describe("the account API, for the Explorer on an app's address (by the app's be
   });
 
   it("refuses a guest's reset: a guest has no account settings", async () => {
-    await writeSettings(env.AUTH_DB, 'guest_00000000-0000-4000-8000-000000000009', 'liveplanner.app', {
-      app: { homeBanner: false },
-    });
+    await writeSettings(
+      env.AUTH_DB,
+      'guest_00000000-0000-4000-8000-000000000009',
+      'liveplanner.app',
+      {
+        app: { homeBanner: false },
+      },
+    );
     expect((await call('/settings', bearer('tok-guest', { method: 'DELETE' }))).status).toBe(401);
     expect((await call('/settings', bearer('forged', { method: 'DELETE' }))).status).toBe(401);
     expect(
-      (await readSettings(env.AUTH_DB, 'guest_00000000-0000-4000-8000-000000000009', 'liveplanner.app'))
-        .app,
+      (
+        await readSettings(
+          env.AUTH_DB,
+          'guest_00000000-0000-4000-8000-000000000009',
+          'liveplanner.app',
+        )
+      ).app,
     ).toEqual({ homeBanner: false });
   });
 

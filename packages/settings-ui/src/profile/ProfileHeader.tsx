@@ -182,28 +182,120 @@ function ProfileBanner({ name, colour }: { name: string; colour: string | null }
       >
         <g className="text-brand-300 dark:text-brand-500/50">
           <g transform="rotate(-5 172 40)">
-            <rect x="150" y="18" width="46" height="42" rx="3" className="fill-amber-100 dark:fill-amber-400/20" />
-            <rect x="158" y="28" width="28" height="4" rx="2" className="fill-amber-300/80 dark:fill-amber-300/40" />
-            <rect x="158" y="37" width="20" height="4" rx="2" className="fill-amber-300/60 dark:fill-amber-300/30" />
+            <rect
+              x="150"
+              y="18"
+              width="46"
+              height="42"
+              rx="3"
+              className="fill-amber-100 dark:fill-amber-400/20"
+            />
+            <rect
+              x="158"
+              y="28"
+              width="28"
+              height="4"
+              rx="2"
+              className="fill-amber-300/80 dark:fill-amber-300/40"
+            />
+            <rect
+              x="158"
+              y="37"
+              width="20"
+              height="4"
+              rx="2"
+              className="fill-amber-300/60 dark:fill-amber-300/30"
+            />
           </g>
-          <path d="M200 44c18 0 16-12 34-12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
-          <rect x="234" y="16" width="80" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <path
+            d="M200 44c18 0 16-12 34-12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
+          <rect
+            x="234"
+            y="16"
+            width="80"
+            height="40"
+            rx="8"
+            className="fill-white dark:fill-slate-800"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
           <rect x="246" y="28" width="46" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
           <rect x="246" y="39" width="30" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
-          <path d="M314 36c30 0 24 38 54 38" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
-          <rect x="368" y="54" width="80" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <path
+            d="M314 36c30 0 24 38 54 38"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
+          <rect
+            x="368"
+            y="54"
+            width="80"
+            height="40"
+            rx="8"
+            className="fill-white dark:fill-slate-800"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
           <rect x="380" y="66" width="40" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
           <rect x="380" y="77" width="54" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
-          <path d="M448 74c26 0 22-34 46-34" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
-          <rect x="497" y="23" width="34" height="34" rx="5" transform="rotate(45 514 40)" className="fill-brand-50 dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M538 40c22 0 20 30 42 30" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
-          <rect x="580" y="50" width="86" height="40" rx="8" className="fill-white dark:fill-slate-800" stroke="currentColor" strokeWidth="1.5" />
+          <path
+            d="M448 74c26 0 22-34 46-34"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
+          <rect
+            x="497"
+            y="23"
+            width="34"
+            height="34"
+            rx="5"
+            transform="rotate(45 514 40)"
+            className="fill-brand-50 dark:fill-slate-800"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <path
+            d="M538 40c22 0 20 30 42 30"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+          />
+          <rect
+            x="580"
+            y="50"
+            width="86"
+            height="40"
+            rx="8"
+            className="fill-white dark:fill-slate-800"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
           <rect x="592" y="62" width="50" height="5" rx="2.5" fill="currentColor" opacity="0.7" />
           <rect x="592" y="73" width="34" height="5" rx="2.5" fill="currentColor" opacity="0.45" />
         </g>
         {/* A collaborator, faint. */}
-        <path d="M612 14l10 4.8-4.5 1.2-2.2 4.6z" className="fill-slate-400/70 dark:fill-slate-500/70" />
-        <rect x="620" y="24" width="34" height="11" rx="5.5" className="fill-slate-300/70 dark:fill-slate-600/60" />
+        <path
+          d="M612 14l10 4.8-4.5 1.2-2.2 4.6z"
+          className="fill-slate-400/70 dark:fill-slate-500/70"
+        />
+        <rect
+          x="620"
+          y="24"
+          width="34"
+          height="11"
+          rx="5.5"
+          className="fill-slate-300/70 dark:fill-slate-600/60"
+        />
       </svg>
       {/* Their own cursor and tag, in their colour. */}
       <div className="absolute top-3 left-[38%] flex items-start">

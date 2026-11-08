@@ -780,7 +780,11 @@ describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-ex
   });
 
   it('serves the homepage without the cookie, or signed out', async () => {
-    for (const Cookie of ['lp_signed_in=1', 'lw_open_explorer=1', 'lp_signed_in=0; lw_open_explorer=1']) {
+    for (const Cookie of [
+      'lp_signed_in=1',
+      'lw_open_explorer=1',
+      'lp_signed_in=0; lw_open_explorer=1',
+    ]) {
       const { env, marketing } = makeEnv();
       const res = await router.fetch(home('/', { ...on, Cookie }), env);
       expect(res.status).toBe(200);

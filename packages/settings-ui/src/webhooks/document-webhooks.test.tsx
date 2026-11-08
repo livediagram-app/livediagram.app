@@ -84,7 +84,12 @@ function fakeClient(): IndexClient {
     createWebhook: (...args: unknown[]) => {
       const refused = record('createWebhook', args);
       if (refused) return fail(refused);
-      const input = args[1] as { name: string; kind: Webhook['kind']; events: Webhook['events']; who?: Webhook['who'] };
+      const input = args[1] as {
+        name: string;
+        kind: Webhook['kind'];
+        events: Webhook['events'];
+        who?: Webhook['who'];
+      };
       const made: Webhook = {
         ...HOOK,
         id: 'w2',
@@ -100,7 +105,10 @@ function fakeClient(): IndexClient {
     updateWebhook: (...args: unknown[]) => {
       const refused = record('updateWebhook', args);
       if (refused) return fail(refused);
-      const [id, input] = args as [string, { paused?: boolean; events?: Webhook['events']; who?: Webhook['who'] }];
+      const [id, input] = args as [
+        string,
+        { paused?: boolean; events?: Webhook['events']; who?: Webhook['who'] },
+      ];
       const was = webhooks.find((w) => w.id === id) ?? HOOK;
       const next: Webhook = {
         ...was,
@@ -121,7 +129,9 @@ function fakeClient(): IndexClient {
     },
     testWebhook: (...args: unknown[]) => {
       const refused = record('testWebhook', args);
-      return refused ? Promise.reject(new IndexError(409, refused)) : Promise.resolve({ queued: true });
+      return refused
+        ? Promise.reject(new IndexError(409, refused))
+        : Promise.resolve({ queued: true });
     },
     webhookDeliveries: (...args: unknown[]) => {
       const refused = record('webhookDeliveries', args);
@@ -185,7 +195,9 @@ const field = (label: string) =>
     .querySelector('input')!;
 const render = async (app: App = 'livediagram', share: { code: string } | null = SHARE) => {
   act(() =>
-    root.render(<DocumentWebhooks client={fakeClient()} itemId={ITEM_ID} app={app} share={share} />),
+    root.render(
+      <DocumentWebhooks client={fakeClient()} itemId={ITEM_ID} app={app} share={share} />,
+    ),
   );
   await settle();
 };
@@ -201,7 +213,10 @@ describe('A document’s webhooks', () => {
     expect(container.querySelector('[data-webhooks-scope]')?.textContent).toBe(
       'Only for this canvas. Your other canvases have their own.',
     );
-    expect(calls[0]).toEqual({ method: 'listWebhooks', args: [ITEM_ID, { code: 'abc123', password: null }] });
+    expect(calls[0]).toEqual({
+      method: 'listWebhooks',
+      args: [ITEM_ID, { code: 'abc123', password: null }],
+    });
   });
 
   it('speaks in the document’s own words: a plan’s', async () => {
@@ -251,7 +266,11 @@ describe('A document’s webhooks', () => {
     expect(row().querySelector('[data-state="warn"]')?.textContent).toBe('Needs Attention');
     expect(row().textContent).toContain('20 deliveries in a row failed');
     await press('Resume', row());
-    expect(updates()[0]!.args).toEqual(['w1', { paused: false }, { code: 'abc123', password: null }]);
+    expect(updates()[0]!.args).toEqual([
+      'w1',
+      { paused: false },
+      { code: 'abc123', password: null },
+    ]);
     expect(row().querySelector('[data-state="live"]')).not.toBeNull();
   });
 
@@ -275,11 +294,15 @@ describe('A document’s webhooks', () => {
     expect(form.textContent).toContain('It posts only what happens to this canvas.');
     // Each destination brings its own Connect panel, field and how to get the address.
     act(() => choice('Microsoft Teams').click());
-    expect(form.querySelector('[data-connect="teams"]')?.textContent).toContain('Connect Microsoft Teams');
+    expect(form.querySelector('[data-connect="teams"]')?.textContent).toContain(
+      'Connect Microsoft Teams',
+    );
     expect(field('Teams Workflow URL')).toBeTruthy();
     expect(form.textContent).toContain('Workflows');
     act(() => choice('Your Own Service').click());
-    expect(form.querySelector('[data-connect="json"]')?.textContent).toContain('Connect Your Service');
+    expect(form.querySelector('[data-connect="json"]')?.textContent).toContain(
+      'Connect Your Service',
+    );
     const submit = button('Add Webhook', form);
     expect(submit.disabled).toBe(true);
     expect(form.textContent).toContain('Add a name to finish.');
@@ -375,7 +398,9 @@ describe('A document’s webhooks', () => {
     type(field('Name'), 'x');
     act(() => choice('Canvas Renamed', form).click());
     await press('Add Webhook', form);
-    expect(container.querySelector('[role=alert]')?.textContent).toContain('hooks.slack.com/services');
+    expect(container.querySelector('[role=alert]')?.textContent).toContain(
+      'hooks.slack.com/services',
+    );
     expect(document.activeElement).toBe(button('Add Webhook', form));
   });
 
@@ -540,11 +565,16 @@ describe('A document’s webhooks', () => {
   });
 
   it('hides Add Webhook at the limit, and says so', async () => {
-    webhooks = Array.from({ length: WEBHOOKS_PER_DOCUMENT_MAX }, (_, i) => ({ ...HOOK, id: `w${i + 1}` }));
+    webhooks = Array.from({ length: WEBHOOKS_PER_DOCUMENT_MAX }, (_, i) => ({
+      ...HOOK,
+      id: `w${i + 1}`,
+    }));
     await render();
     expect(container.querySelectorAll('[data-webhook]')).toHaveLength(WEBHOOKS_PER_DOCUMENT_MAX);
     expect(button('Add Webhook')).toBeUndefined();
-    expect(container.textContent).toContain('A canvas can have up to 10 webhooks. Delete one to add another.');
+    expect(container.textContent).toContain(
+      'A canvas can have up to 10 webhooks. Delete one to add another.',
+    );
   });
 
   it('says who may manage them when the index refuses, with no Try Again', async () => {
@@ -560,7 +590,9 @@ describe('A document’s webhooks', () => {
   it('offers Try Again for a passing failure', async () => {
     refuse = (m) => (m === 'listWebhooks' ? 'webhooks_unavailable' : null);
     await render();
-    expect(container.querySelector('[role=alert]')?.textContent).toContain('aren’t available just now');
+    expect(container.querySelector('[role=alert]')?.textContent).toContain(
+      'aren’t available just now',
+    );
     refuse = () => null;
     await press('Try Again');
     await settle();
@@ -614,10 +646,12 @@ describe('words', () => {
     const spy = new Proxy(
       {},
       {
-        get: (_t, name: string) => (...args: unknown[]) => {
-          seen.push([name, args]);
-          return Promise.resolve({});
-        },
+        get:
+          (_t, name: string) =>
+          (...args: unknown[]) => {
+            seen.push([name, args]);
+            return Promise.resolve({});
+          },
       },
     ) as IndexClient;
     const api = documentWebhooksApi(spy, 'doc', { code: 'c' });

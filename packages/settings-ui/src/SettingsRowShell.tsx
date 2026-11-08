@@ -121,7 +121,14 @@ export function SettingsRowShell({
                       className="relative touch-target inline-flex items-center gap-1 font-medium text-brand-700 underline-offset-2 hover:underline dark:text-brand-400"
                     >
                       {row.link.label}
-                      <svg viewBox="0 0 20 20" className="size-3" fill="none" stroke="currentColor" strokeWidth={1.75} aria-hidden>
+                      <svg
+                        viewBox="0 0 20 20"
+                        className="size-3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={1.75}
+                        aria-hidden
+                      >
                         <path d="M8 4H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3M12 4h4v4M16 4l-7 7" />
                       </svg>
                       <span className="sr-only"> (opens in a new tab)</span>

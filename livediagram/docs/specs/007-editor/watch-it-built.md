@@ -18,15 +18,15 @@ multiplayer canvas, so the tour also previews working together.
 
 ## Domain language
 
-| Term               | Means                                                                                                |
-| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| Term               | Means                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
 | **Watch It Built** | This tour. In the interface: **Watch It Built** on the footer button and in Settings' Getting Started category |
-| **The replay**     | One run of it, from the press to its end                                                             |
-| **Example**        | The replay's cursor and its name chip                                                                |
-| **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                              |
-| **A chapter**      | One named part of the replay: **Add**, **Connect**, **Label**, **Style**                             |
-| **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                |
-| **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                        |
+| **The replay**     | One run of it, from the press to its end                                                                       |
+| **Example**        | The replay's cursor and its name chip                                                                          |
+| **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                                        |
+| **A chapter**      | One named part of the replay: **Add**, **Connect**, **Label**, **Style**                                       |
+| **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                          |
+| **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                                  |
 
 ## Where it appears
 

@@ -520,7 +520,14 @@ describe('Automatically Open Explorer row', () => {
     if (row.kind !== 'toggle') throw new Error('expected a toggle');
     expect(row.read({})).toBe(false);
     expect(row.read({ autoOpenExplorer: true })).toBe(true);
-    expect(row.write({ homeBanner: false }, true)).toEqual({ homeBanner: false, autoOpenExplorer: true });
-    expect(row.event).toEqual({ category: 'UI', on: 'AutoOpenExplorerOn', off: 'AutoOpenExplorerOff' });
+    expect(row.write({ homeBanner: false }, true)).toEqual({
+      homeBanner: false,
+      autoOpenExplorer: true,
+    });
+    expect(row.event).toEqual({
+      category: 'UI',
+      on: 'AutoOpenExplorerOn',
+      off: 'AutoOpenExplorerOff',
+    });
   });
 });

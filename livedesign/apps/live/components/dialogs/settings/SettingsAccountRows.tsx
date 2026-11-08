@@ -75,9 +75,13 @@ export function SettingsResetSettingsRow({
 }) {
   const reset = () => {
     const apply = () => onChange(resetSettingsBlob(settings) as UserPreferences);
-    return accountRequest ? resetAccountSettings(accountRequest, apply) : resetBrowserSettings(apply);
+    return accountRequest
+      ? resetAccountSettings(accountRequest, apply)
+      : resetBrowserSettings(apply);
   };
-  return <ResetSettingsRow row={row} reach={accountRequest ? 'account' : 'browser'} reset={reset} />;
+  return (
+    <ResetSettingsRow row={row} reach={accountRequest ? 'account' : 'browser'} reset={reset} />
+  );
 }
 
 // Delete account. Signed-in only, and not because of the UI: the api's

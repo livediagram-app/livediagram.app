@@ -40,7 +40,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX33 | team-audit-log  | when accounts can't name people, the read falls back to the names the events carried rather than failing.                                    |
 | IDX34 | team-audit-log  | Export CSV joins at most 20 files (200,000 rows), newest first, and says so when more matched.                                               |
 | IDX35 | connected-tabs  | the Connect list shows the 40 most recent items across every app (`CONNECT_RECENT_LIMIT`), without paging.                                   |
-| IDX36 | webhooks        | an event the document's app never sends (a canvas's card moves) is refused.                                                                   |
-| IDX37 | webhooks        | a test delivery's app is `liveworkspace`; the Webhooks dialog names it Test.                                                                  |
-| IDX40 | webhooks        | an Editor link limited to one tab can't manage the document's webhooks: they would carry the other tabs' comments and actions.                |
-| IDX41 | webhooks        | a card move or form response with no account behind it never reaches an Only Me webhook.                                                      |
+| IDX36 | webhooks        | an event the document's app never sends (a canvas's card moves) is refused.                                                                  |
+| IDX37 | webhooks        | a test delivery's app is `liveworkspace`; the Webhooks dialog names it Test.                                                                 |
+| IDX40 | webhooks        | an Editor link limited to one tab can't manage the document's webhooks: they would carry the other tabs' comments and actions.               |
+| IDX41 | webhooks        | a card move or form response with no account behind it never reaches an Only Me webhook.                                                     |

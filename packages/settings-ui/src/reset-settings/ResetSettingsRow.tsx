@@ -39,7 +39,9 @@ type Phase = 'idle' | 'resetting' | 'done' | { failed: string };
 const GENERAL = accountErrorMessage('');
 function failedMessage(error: string): string {
   const why = accountErrorMessage(error);
-  return why === GENERAL ? 'Your settings weren’t reset. Please try again.' : `Your settings weren’t reset. ${why}`;
+  return why === GENERAL
+    ? 'Your settings weren’t reset. Please try again.'
+    : `Your settings weren’t reset. ${why}`;
 }
 
 export function ResetSettingsRow({
@@ -107,7 +109,10 @@ export function ResetSettingsRow({
 
   return (
     <SettingsRowShell
-      row={{ ...row, description: reach === 'account' ? RESET_SETTINGS_ACCOUNT : RESET_SETTINGS_BROWSER }}
+      row={{
+        ...row,
+        description: reach === 'account' ? RESET_SETTINGS_ACCOUNT : RESET_SETTINGS_BROWSER,
+      }}
       control={
         phase === 'done' ? (
           <span

@@ -1,9 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  migrateIncomingElements,
-  migrateIncomingTab,
-  migrateStoredTab,
-} from './stored-tab';
+import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import type { Tab } from './index';
 
 // Every tab-level migration on the way in, in one call (docs/specs/011-theme/retired-schemes.md): the api's

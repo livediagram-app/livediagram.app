@@ -105,9 +105,9 @@ describe('the Time Zone row', () => {
     render(<TimeZoneRow initial={profile('Asia/Tokyo', false)} host={host} />);
     expect(screen.getByText('Tokyo (GMT+9)')).toBeTruthy();
     const list = open();
-    expect(
-      within(list).getByRole('option', { name: /Tokyo/ }).getAttribute('aria-selected'),
-    ).toBe('true');
+    expect(within(list).getByRole('option', { name: /Tokyo/ }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
     fireEvent.click(within(list).getByRole('option', { name: /Automatic/ }));
     expect(host.save).toHaveBeenCalledWith({ timeZone: null });
     expect(await screen.findByText(automaticLabel())).toBeTruthy();

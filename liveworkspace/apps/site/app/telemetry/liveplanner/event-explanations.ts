@@ -1600,7 +1600,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on Automatically Open Explorer in Settings > Explorer, so opening the homepage while signed in takes them straight to their Explorer.',
   'UI|Toggled|HomeBannerOff':
     "Someone hid Explorer Home's banner, from its close button or Settings > Explorer. Home then opens on its page header.",
-  'UI|Toggled|HomeBannerOn': "Someone turned Explorer Home's banner back on, in Settings > Explorer.",
+  'UI|Toggled|HomeBannerOn':
+    "Someone turned Explorer Home's banner back on, in Settings > Explorer.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':

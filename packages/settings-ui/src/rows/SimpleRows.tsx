@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { AccordionSection } from '../AccordionSection';
 import { useSettingsUiKit } from '../kit';
-import type {
-  SettingsNoteRow,
-  SettingsShortcutListRow,
-  SettingsShortcutSection,
-} from '../model';
+import type { SettingsNoteRow, SettingsShortcutListRow, SettingsShortcutSection } from '../model';
 import { SettingsRowShell } from '../SettingsRowShell';
 
 // A row with no control, standing in for settings the reader cannot use yet. Same shape as the

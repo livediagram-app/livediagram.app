@@ -86,7 +86,11 @@ describe('queuing Timeline events', () => {
     const anyone = await addWebhook(bo.auth, item.id, { events: ['renamed'] });
     await call(`/items/${item.id}`, { method: 'PATCH', auth: bo.auth, body: { title: 'By Bo' } });
     await call(`/items/${item.id}`, { method: 'PATCH', auth: cy.auth, body: { title: 'By Cy' } });
-    expect(deliveries().map((d) => `${d.webhook_id} ${d.title}`).sort()).toEqual(
+    expect(
+      deliveries()
+        .map((d) => `${d.webhook_id} ${d.title}`)
+        .sort(),
+    ).toEqual(
       [
         `${mine.webhook.id} By Bo`,
         `${anyone.webhook.id} By Bo`,
@@ -98,7 +102,9 @@ describe('queuing Timeline events', () => {
   it('queues comments and actions from a collab push, once however often it is sent', async () => {
     const ada = await person('user_wo4');
     const item = await makeItem(ada.auth, { title: 'Board' });
-    await addWebhook(ada.auth, item.id, { events: ['commented', 'action_assigned', 'action_done'] });
+    await addWebhook(ada.auth, item.id, {
+      events: ['commented', 'action_assigned', 'action_done'],
+    });
     const now = Date.now();
     const push = {
       threads: [
@@ -252,7 +258,7 @@ describe('card moves', () => {
     expect((await asApp(`/app/items/${plan.id}/card-moves`, { moves: [] })).status).toBe(204);
   });
 
-  it('sends an Only Me webhook its creator\'s moves alone, never one with no mover', async () => {
+  it("sends an Only Me webhook its creator's moves alone, never one with no mover", async () => {
     const ada = await person('user_wm4');
     const plan = await makeItem(ada.auth);
     const { webhook } = await addWebhook(ada.auth, plan.id, { events: ['card_moved'], who: 'me' });

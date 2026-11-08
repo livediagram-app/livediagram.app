@@ -44,7 +44,12 @@ describe('Reset All Settings', () => {
   it('for a guest, drops this editor’s copy to its defaults in this browser, sending nothing', async () => {
     const onChange = vi.fn();
     render(
-      <SettingsResetSettingsRow row={ROW} settings={STORED} onChange={onChange} accountRequest={null} />,
+      <SettingsResetSettingsRow
+        row={ROW}
+        settings={STORED}
+        onChange={onChange}
+        accountRequest={null}
+      />,
     );
     expect(screen.getByText(/in this browser/)).toBeTruthy();
     confirmReset();
@@ -61,7 +66,12 @@ describe('Reset All Settings', () => {
     })) as unknown as SettingsRequest;
     const onChange = vi.fn();
     render(
-      <SettingsResetSettingsRow row={ROW} settings={STORED} onChange={onChange} accountRequest={request} />,
+      <SettingsResetSettingsRow
+        row={ROW}
+        settings={STORED}
+        onChange={onChange}
+        accountRequest={request}
+      />,
     );
     confirmReset();
     const note = await screen.findByRole('alert');
@@ -78,7 +88,12 @@ describe('Reset All Settings', () => {
     }) as unknown as SettingsRequest;
     const onChange = vi.fn(() => order.push('local'));
     render(
-      <SettingsResetSettingsRow row={ROW} settings={STORED} onChange={onChange} accountRequest={request} />,
+      <SettingsResetSettingsRow
+        row={ROW}
+        settings={STORED}
+        onChange={onChange}
+        accountRequest={request}
+      />,
     );
     expect(screen.getByText(/in every liveworkspace app/)).toBeTruthy();
     confirmReset();

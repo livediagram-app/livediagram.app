@@ -10,11 +10,11 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 
 ## Domain language
 
-| Term             | Means                                                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Term             | Means                                                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
 | **Diagram tour** | The Diagram tab's tour. In the interface: **Watch It Built**, on the button and in Settings' Getting Started category |
-| **welcome tour** | A name kept only in code identifiers and telemetry tokens                                                   |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)                    |
+| **welcome tour** | A name kept only in code identifiers and telemetry tokens                                                             |
+| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)                              |
 
 ## Where it appears
 

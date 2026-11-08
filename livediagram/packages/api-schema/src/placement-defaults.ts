@@ -53,7 +53,11 @@ export const DEFAULT_FOLDER_OPTIONS: readonly {
   value: string;
   label: string;
   noun: string;
-}[] = EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] }));
+}[] = EDITOR_MODES.map((mode) => ({
+  dimension: 'mode' as const,
+  value: mode,
+  ...MODE_WORDS[mode],
+}));
 
 /** The create's refusal of a malformed `intent`. */
 export const INTENT_INVALID = 'intent_invalid';

@@ -188,7 +188,11 @@ function itemWords(app: App, choice: EventChoice): EventChoice {
     case 'moved':
       return { ...choice, label: `${one} Moved`, hint: `This ${lower} moves to another folder` };
     case 'trashed':
-      return { ...choice, label: `${one} Moved to the Trash`, hint: `This ${lower} goes to the Trash` };
+      return {
+        ...choice,
+        label: `${one} Moved to the Trash`,
+        hint: `This ${lower} goes to the Trash`,
+      };
     case 'shared':
       return { ...choice, hint: `Someone makes a link to share this ${lower}` };
     default:

@@ -308,9 +308,7 @@ describe('settings sub-categories', () => {
     expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;
     expect(panels.rows[0]!.key).toBe('panelOpacity');
-    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual([
-      'Collaborate',
-    ]);
+    expect([...new Set(panels.rows.slice(1).map((r) => r.section))]).toEqual(['Collaborate']);
     // Their old sub-category ids still land on Panels.
     expect(panels.aliases).toEqual(['collaborate']);
   });
@@ -393,7 +391,14 @@ describe('Automatically Open Explorer row', () => {
     if (row.kind !== 'toggle') throw new Error('expected a toggle');
     expect(row.read({})).toBe(false);
     expect(row.read({ autoOpenExplorer: true })).toBe(true);
-    expect(row.write({ homeBanner: false }, true)).toEqual({ homeBanner: false, autoOpenExplorer: true });
-    expect(row.event).toEqual({ category: 'UI', on: 'AutoOpenExplorerOn', off: 'AutoOpenExplorerOff' });
+    expect(row.write({ homeBanner: false }, true)).toEqual({
+      homeBanner: false,
+      autoOpenExplorer: true,
+    });
+    expect(row.event).toEqual({
+      category: 'UI',
+      on: 'AutoOpenExplorerOn',
+      off: 'AutoOpenExplorerOff',
+    });
   });
 });

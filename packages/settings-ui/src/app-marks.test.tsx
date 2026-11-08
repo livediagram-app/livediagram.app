@@ -67,16 +67,18 @@ describe('app marks', () => {
     ]);
     expect(screen.getByRole('img', { name: 'livea' })).toBeTruthy();
     const two = screen.getByRole('img', { name: 'livea and livec' });
-    expect([...two.querySelectorAll('[data-logo]')].map((l) => l.getAttribute('data-logo'))).toEqual(
-      ['a.app', 'c.app'],
-    );
+    expect(
+      [...two.querySelectorAll('[data-logo]')].map((l) => l.getAttribute('data-logo')),
+    ).toEqual(['a.app', 'c.app']);
     // Every app: liveworkspace's mark alone, and no "All apps" words beside it.
     const every = screen.getByRole('img', { name: 'Every App' });
     expect(every.querySelector('[data-logo="all"]')).not.toBeNull();
     expect(cell('every').querySelector('[data-settings-all-apps]')).toBeNull();
     // Each name starts at the same place: every row's column is as wide as the widest cluster.
     const widths = ['mine', 'two', 'every'].map(
-      (key) => (cell(key).querySelector('[data-settings-app-marks]')!.parentElement as HTMLElement).style.width,
+      (key) =>
+        (cell(key).querySelector('[data-settings-app-marks]')!.parentElement as HTMLElement).style
+          .width,
     );
     expect(new Set(widths).size).toBe(1);
     expect(widths[0]).toBe(`${marksWidth(2)}px`);
@@ -117,7 +119,13 @@ describe('a row that draws its own cell from its unfiled spec', () => {
                 label: 'Theme',
                 description: '',
                 apps: ['a.app'],
-                render: () => <SettingsToggleRowView row={{ key: 'theme', label: 'Theme', description: '' }} checked={false} onChange={() => {}} />,
+                render: () => (
+                  <SettingsToggleRowView
+                    row={{ key: 'theme', label: 'Theme', description: '' }}
+                    checked={false}
+                    onChange={() => {}}
+                  />
+                ),
               },
             ],
           }}

@@ -20,7 +20,11 @@ function answer(href: string, headers: Record<string, string> = {}, method = 'GE
   });
 }
 
-const signedIn = { Cookie: `ld_signed_in=1; ${ON}`, 'Sec-Fetch-Site': 'none', 'Sec-Fetch-Dest': 'document' };
+const signedIn = {
+  Cookie: `ld_signed_in=1; ${ON}`,
+  'Sec-Fetch-Site': 'none',
+  'Sec-Fetch-Dest': 'document',
+};
 
 describe('openExplorerRedirect', () => {
   it('sends a signed-in person with the switch on from the homepage to the Explorer, never cached', () => {
@@ -34,7 +38,9 @@ describe('openExplorerRedirect', () => {
   it('leaves the homepage be without the cookie, or with another cookie of a similar name', () => {
     expect(answer(HOME, { ...signedIn, Cookie: 'ld_signed_in=1' })).toBeNull();
     expect(answer(HOME, { ...signedIn, Cookie: `ld_signed_in=1; x${ON}` })).toBeNull();
-    expect(answer(HOME, { ...signedIn, Cookie: `ld_signed_in=1; ${OPEN_EXPLORER_COOKIE}=0` })).toBeNull();
+    expect(
+      answer(HOME, { ...signedIn, Cookie: `ld_signed_in=1; ${OPEN_EXPLORER_COOKIE}=0` }),
+    ).toBeNull();
   });
 
   it('needs the signed-in hint when the product names one', () => {
@@ -200,7 +206,9 @@ describe('openExplorerBootScript', () => {
   it('stays on the homepage without the cookie, with a query, from inside the site, or on any other page', () => {
     expect(run('https://www.liveworkspace.app/', 'a=1')).toEqual([]);
     expect(run('https://www.liveworkspace.app/?home', ON)).toEqual([]);
-    expect(run('https://www.liveworkspace.app/', ON, 'https://www.liveworkspace.app/compare')).toEqual([]);
+    expect(
+      run('https://www.liveworkspace.app/', ON, 'https://www.liveworkspace.app/compare'),
+    ).toEqual([]);
     expect(run('https://www.liveworkspace.app/explorer/home', ON)).toEqual([]);
     expect(run('https://www.livediagram.app/explorer/recent', ON)).toEqual([]);
   });

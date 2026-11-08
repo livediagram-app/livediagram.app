@@ -100,7 +100,13 @@ describe('the entries', () => {
     );
     // A default whose folder is out of reach has no app entry to fall back to.
     expect(
-      destinationOf(entries[1]!, entries, new Map([[entries[1]!.key, 'gone']]), new Map(), () => null),
+      destinationOf(
+        entries[1]!,
+        entries,
+        new Map([[entries[1]!.key, 'gone']]),
+        new Map(),
+        () => null,
+      ),
     ).toEqual({ kind: 'unreachable', fallback: null });
   });
 

@@ -135,12 +135,7 @@ function WebhooksList() {
           </p>
         </div>
         {!adding && listed.length > 0 && !full ? (
-          <button
-            ref={addRef}
-            type="button"
-            className={`${BUTTON.primary} gap-1.5`}
-            onClick={open}
-          >
+          <button ref={addRef} type="button" className={`${BUTTON.primary} gap-1.5`} onClick={open}>
             <PlusIcon size={14} />
             Add Webhook
           </button>

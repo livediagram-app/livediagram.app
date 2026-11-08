@@ -151,7 +151,12 @@ describe('resetting every setting', () => {
     expect(RESET_KEEPS).toEqual(['telemetryEnabled']);
     for (const key of RESET_KEEPS) expect(isAllSetting(key)).toBe(true);
     expect(
-      resetSettingsBlob({ telemetryEnabled: false, tourSeen: true, uiScale: 1.2, customSwatches: ['#fff'] }),
+      resetSettingsBlob({
+        telemetryEnabled: false,
+        tourSeen: true,
+        uiScale: 1.2,
+        customSwatches: ['#fff'],
+      }),
     ).toEqual({ telemetryEnabled: false });
   });
 

@@ -936,7 +936,7 @@ for every app. An app keeps no participants table of its own.
 - **Setting it from Settings.** The Settings panel's Profile sets an account's name and colour in place wherever
   it opens: over the session on liveworkspace.app, and over the app's bearer (`/api/workspace/account/profile`) on
   an app's address and in each editor. Both doors answer `GET` (`{ profile }`) and `PATCH { name?, color?,
-  showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 signed_out`), since a guest
+showPicture?, timeZone? }` with one handler; a guest's bearer is refused (`401 signed_out`), since a guest
   sets its name in the app itself. The [time zone](#the-send-window) is an account's only, set over these two
   doors; an app's own profile write (`POST /internal/profiles/write`) leaves it alone.
 - **An editor never overwrites a stored name.** On opening, an editor uses the profile as it is; only a first

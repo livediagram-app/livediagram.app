@@ -95,7 +95,8 @@ const places = new Map<string, string>();
 function placeOf(zone: string): string {
   let place = places.get(zone);
   if (place === undefined) {
-    const resolved = new Intl.DateTimeFormat('en-US', { timeZone: zone }).resolvedOptions().timeZone;
+    const resolved = new Intl.DateTimeFormat('en-US', { timeZone: zone }).resolvedOptions()
+      .timeZone;
     place = RENAMED[resolved] ?? resolved;
     places.set(zone, place);
   }

@@ -74,7 +74,9 @@ const toggleRow =
     ...(row.keywords ? { keywords: row.keywords } : {}),
     ...(section ? { section } : {}),
     ...(row.closesSection ? { closesSection: true } : {}),
-    ...(row.more ? { link: { href: `${workspaceOrigin()}${row.more.path}`, label: row.more.label } } : {}),
+    ...(row.more
+      ? { link: { href: `${workspaceOrigin()}${row.more.path}`, label: row.more.label } }
+      : {}),
     value: readAccountToggle(all, row),
     onChange: (next) => set(row.key, next),
   });

@@ -155,20 +155,16 @@ export const KEYBOARD_SETTINGS = settingsStack(
   ],
 );
 
-export const PANELS_SETTINGS = settingsStack(
-  'Panels Settings',
-  'What the minimap shows.',
-  [
-    toggle(
-      'UI',
-      'MapDimOn',
-      'MapDimOff',
-      'Dim Outside the View',
-      'The minimap dimming what is off screen.',
-    ),
-    changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
-  ],
-);
+export const PANELS_SETTINGS = settingsStack('Panels Settings', 'What the minimap shows.', [
+  toggle(
+    'UI',
+    'MapDimOn',
+    'MapDimOff',
+    'Dim Outside the View',
+    'The minimap dimming what is off screen.',
+  ),
+  changed('MapSize', 'Minimap Size', 'Short, Medium or Tall.'),
+]);
 
 export const COLLABORATE_SETTINGS = settingsStack(
   'Collaborate Settings',
