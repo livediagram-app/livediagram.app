@@ -8,7 +8,6 @@ import {
   isSlugId,
   contentOrigin,
   DEFAULT_SCHEME_ID,
-  deriveContainers,
   getBuiltInTheme,
   THEMES,
   type ThemeDefinition,
@@ -26,7 +25,7 @@ import { RESERVED_WORDS } from './vocabulary';
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
 // Why an element moved without an operation naming it.
-export type MoveReason = 'make room' | 'carried' | 'laid out';
+export type MoveReason = 'make room' | 'laid out';
 
 // `moved` marks an element only moved along, which prints as a » line and is not normalised.
 // How `layout` laid elements out, as its `»` line says.
@@ -48,7 +47,7 @@ export type Touch = {
 };
 
 // Why an element left: named by an operation, or pinned to one that was.
-export type Removal = { pinnedTo?: ElementId; unwrapped?: true };
+export type Removal = { pinnedTo?: ElementId };
 
 export type EditState = {
   readonly tab: Tab;
@@ -75,11 +74,10 @@ export type EditState = {
   readonly origin: { x: number; y: number };
   // Every id the tab holds or the changeset used, and every keyword: what a new id may not be.
   readonly taken: Set<string>;
-  // Refs, recomputed when an element is added or removed; holders and the element list, after any
-  // write. Every write goes through the functions below, which clear them.
+  // Refs, recomputed when an element is added or removed; the element list, after any write. Every
+  // write goes through the functions below, which clear them.
   readonly memo: {
     refs: RefTable | null;
-    holders: Map<ElementId, ElementId | null> | null;
     elements: readonly Element[] | null;
   };
 };
@@ -114,7 +112,7 @@ export function createState(tab: Tab, options: ApplyOptions, log: EditLog): Edit
     theme: options.theme ?? themeOf(tab, log),
     origin: contentOrigin(tab.elements),
     taken: new Set([...before.keys(), ...RESERVED_WORDS]),
-    memo: { refs: null, holders: null, elements: null },
+    memo: { refs: null, elements: null },
   };
 }
 
@@ -133,7 +131,6 @@ export function currentElements(state: EditState): readonly Element[] {
 // What a write leaves stale.
 function written(state: EditState, { added }: { added: boolean }): void {
   if (added) state.memo.refs = null;
-  state.memo.holders = null;
   state.memo.elements = null;
 }
 
@@ -169,7 +166,7 @@ export function putElement(state: EditState, el: Element, operation: number): vo
   touch(state, el.id, operation);
 }
 
-// Writes an element an operation moved without naming it (carried, made room for, laid out, landed).
+// Writes an element an operation moved without naming it (made room for, laid out).
 export function moveElement(
   state: EditState,
   el: Element,
@@ -187,17 +184,16 @@ export function moveElement(
     touched.shift = [(touched.shift?.[0] ?? 0) + shift[0], (touched.shift?.[1] ?? 0) + shift[1]];
 }
 
-// Adds a new element at a place in the element order: directly after `after`, or before `before`.
+// Adds a new element at a place in the element order: directly after `after`.
 export function insertElement(
   state: EditState,
   el: Element,
   operation: number,
-  at: { after: ElementId } | { before: ElementId },
+  at: { after: ElementId },
 ): void {
   putElement(state, el, operation);
   state.order.splice(state.order.lastIndexOf(el.id), 1);
-  const anchor = state.order.indexOf('after' in at ? at.after : at.before);
-  state.order.splice('after' in at ? anchor + 1 : anchor, 0, el.id);
+  state.order.splice(state.order.indexOf(at.after) + 1, 0, el.id);
   written(state, { added: false });
 }
 
@@ -246,21 +242,9 @@ export function refsOf(state: EditState): RefTable {
   return state.memo.refs;
 }
 
-// Each working element's container (the smallest boundary or lane holding its centre), or null.
-export function holdersOf(state: EditState): ReadonlyMap<ElementId, ElementId | null> {
-  state.memo.holders ??= deriveContainers(currentElements(state));
-  return state.memo.holders;
-}
-
-// How refusals name working elements: by ref, with their container.
+// How refusals name working elements: by ref.
 export function namingOf(state: EditState): Naming {
-  return {
-    refOf: (id) => refsOf(state).refOf(id),
-    containerOf: (id) => {
-      const holder = holdersOf(state).get(id);
-      return holder ? refsOf(state).refOf(holder) : null;
-    },
-  };
+  return { refOf: (id) => refsOf(state).refOf(id) };
 }
 
 // A working element with a box, or undefined for an arrow or an id no element holds.

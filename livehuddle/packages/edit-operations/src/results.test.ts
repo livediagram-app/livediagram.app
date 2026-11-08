@@ -36,7 +36,6 @@ describe('formatResultLines', () => {
         delta: [0, 160],
         reason: 'make room',
       },
-      { mark: 'container', ref: 'f2', joined: ['verify'], left: [] },
     ];
     const footer = formatResultFooter({
       dryRun: false,
@@ -55,7 +54,6 @@ describe('formatResultLines', () => {
         '~ a3  to n4→verify',
         '+ arrow  verify→n4 (style of a3)',
         '» n4 n5 n6 n7 n8  +0,+160 (make room)',
-        'f2  +verify',
         'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livehuddle changeset revert d-auth cs_8k2m4q7d1x',
       ].join('\n'),
     );
@@ -110,10 +108,8 @@ describe('formatResultLines', () => {
           reason: 'pinned',
           pinnedTo: 'n7',
         },
-        { mark: '-', ref: 'f2', kind: 'boundary', label: 'Payment', reason: 'unwrapped' },
         { mark: '»', refs: ['n5', 'n6'], reason: 'laid out' },
-        { mark: '»', refs: ['t1'], delta: [-20, 0], reason: 'carried' },
-        { mark: 'container', ref: 'f2', joined: [], left: ['n5'] },
+        { mark: '»', refs: ['t1'], delta: [-20, 0], reason: 'make room' },
         {
           mark: '!',
           warning: { code: 'label_capped', ref: 'n3', message: 'n3 label kept as "Orders"' },
@@ -123,10 +119,8 @@ describe('formatResultLines', () => {
       ]),
     ).toEqual([
       '- a4  arrow n3→n7 (pinned to n7)',
-      '- f2  boundary "Payment" (unwrapped)',
       '» n5 n6  laid out',
-      '» t1  -20,+0 (carried)',
-      'f2  -n5',
+      '» t1  -20,+0 (make room)',
       '! label_capped  n3 label kept as "Orders"',
       '+ e1  n1→n2 "yes"',
       '+ bare  sticky',

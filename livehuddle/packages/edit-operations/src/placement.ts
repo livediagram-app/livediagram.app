@@ -1,5 +1,5 @@
 // Where `add` and `move` put an element (docs/specs/024-agents/edit-operations.md "Placement";
-// blueprint "Placement", EO23 to EO27, EO50): beside, after, inside or aligned with a reference, at a
+// blueprint "Placement", EO23 to EO26, EO50): beside, after or aligned with a reference, at a
 // point from the content origin, or, for a new element, beside the last one added. Side, `after` and
 // default spots move along their axis past whatever already sits there; `at:` and `align:` are exact.
 
@@ -7,16 +7,13 @@ import type { EditRejection } from '@livehuddle/api-schema';
 import {
   ELEMENT_GRID_CELL,
   ELEMENT_GRID_MAX_CELLS,
-  FRAME_PAD,
-  FRAME_TOP,
-  isContainer,
-  type BoxedElement,
+  isRetiredBackdrop,
   type Element,
   type Endpoint,
   type ElementId,
 } from '@livehuddle/document';
 import { resolveOne } from './selectors';
-import { currentElements, holdersOf, refsOf, type EditState } from './state';
+import { currentElements, refsOf, type EditState } from './state';
 import type { Placement } from './types';
 import { PLACEMENT_GAP } from './vocabulary';
 
@@ -28,8 +25,6 @@ export type Placed = {
   y: number;
   // The element placed against.
   ref?: Element;
-  // A container `inside:` had to grow to hold the element (EO27).
-  grow?: { container: BoxedElement; height: number };
 };
 
 const shiftEnd = (end: Endpoint, dx: number, dy: number): Endpoint =>
@@ -50,32 +45,13 @@ const centre = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
 const overlaps = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-// What a placed box must not land on: boxed elements other than containers and the moving set.
+// What a placed box must not land on: boxed elements other than the moving set. A stored lane, stack, boundary or
+// frame is a backdrop that paints at the back (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+// engine"): what it held sits over it, so a box placed among them lands on it too.
 function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
   return currentElements(state).flatMap((el) => {
     const box = boxOf(el);
-    return box && !isContainer(el) && !moving.has(el.id) ? [box] : [];
-  });
-}
-
-// The boxes a new box beside a framed one makes way for: the frame's own contents, at any depth. What lies outside
-// the frame is moved on when the frame grows to hold it (make room), so the new box sits beside its neighbour
-// rather than being pushed past the frame's surroundings. Null when the box is in no frame.
-function frameOccupiers(
-  state: EditState,
-  ref: Element,
-  moving: ReadonlySet<ElementId>,
-): Box[] | null {
-  const holders = holdersOf(state);
-  const frame = holders.get(ref.id);
-  if (!frame) return null;
-  const within = (id: ElementId): boolean => {
-    const holder = holders.get(id);
-    return holder === frame || (!!holder && within(holder));
-  };
-  return currentElements(state).flatMap((el) => {
-    const box = boxOf(el);
-    return box && !isContainer(el) && !moving.has(el.id) && within(el.id) ? [box] : [];
+    return box && !isRetiredBackdrop(el) && !moving.has(el.id) ? [box] : [];
   });
 }
 
@@ -188,33 +164,6 @@ function sideAfter(state: EditState, ref: Element, refBox: Box): Side {
   return dy >= 0 ? 'below' : 'above';
 }
 
-// `inside:<container>`: the first free slot of the interior, in rows top to bottom and left to right in
-// steps of the gap; none free: below the lowest member, the container growing to hold it (EO27).
-function insideSlot(
-  container: Box,
-  size: { width: number; height: number },
-  taken: readonly Box[],
-  gap: number,
-) {
-  const left = container.x + FRAME_PAD;
-  const right = container.x + container.width - FRAME_PAD;
-  const top = container.y + FRAME_TOP;
-  const bottom = container.y + container.height - FRAME_PAD;
-  const inside = taken.filter((b) => overlaps(b, container));
-  for (let y = top; y + size.height <= bottom; y += gap) {
-    for (let x = left; x + size.width <= right; x += gap) {
-      const box = { x, y, width: size.width, height: size.height };
-      if (!inside.some((b) => overlaps(box, b))) return { box };
-    }
-  }
-  const lowest = inside.reduce((max, b) => Math.max(max, b.y + b.height), top - gap);
-  const y = lowest + gap;
-  return {
-    box: { x: left, y, width: size.width, height: size.height },
-    height: y + size.height + FRAME_PAD - container.y,
-  };
-}
-
 // `align:x` on the axis where `box`'s centre is already nearer x's; the column on a tie (EO50).
 function aligned(box: Box, ref: Box): Box {
   const [c, r] = [centre(box), centre(ref)];
@@ -266,9 +215,6 @@ export function resolvePlacement(
   moving: ReadonlySet<ElementId>,
   operation: number,
   start?: Box,
-  // An add, which grows a frame to hold what lands beside one of its members (growToHold), so it need only keep
-  // clear of that frame's contents. A move grows nothing, so it keeps clear of everything on the tab.
-  { growsFrame = false }: { growsFrame?: boolean } = {},
 ): Placed | { rejection: EditRejection } {
   if (placement === undefined) {
     const box = start ?? defaultSpot(state, size, moving);
@@ -290,43 +236,15 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
-  // `inside:<container> right-of:<x>`: x must be inside that boundary or lane, at any depth.
-  if (placement.within !== undefined) {
-    const holder = resolveOne(state, placement.within, operation);
-    if ('rejection' in holder) return holder;
-    if (!isContainer(holder.el))
-      return refusal(`is placed inside ${placement.within}, which is not a boundary or lane`);
-    const holders = holdersOf(state);
-    const inside = (id: ElementId): boolean => {
-      const h = holders.get(id);
-      return h === holder.el.id || (!!h && inside(h));
-    };
-    if (!inside(ref.id)) return refusal(`is not inside ${placement.within}`);
-  }
   const gap = placement.gap ?? PLACEMENT_GAP;
   const taken = occupiers(state, moving);
   switch (placement.rel) {
-    case 'inside': {
-      if (!isContainer(ref)) return refusal('is not a boundary or lane');
-      const slot = insideSlot(refBox, size, taken, PLACEMENT_GAP);
-      return {
-        x: Math.round(slot.box.x),
-        y: Math.round(slot.box.y),
-        ref,
-        ...(slot.height !== undefined
-          ? // isContainer above: a boundary or a lane, never an arrow.
-            { grow: { container: ref as BoxedElement, height: Math.round(slot.height) } }
-          : {}),
-      };
-    }
     case 'align': {
       const box = aligned(start ?? defaultSpot(state, size, moving), refBox);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
-      const among =
-        placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
       let start = beside(refBox, side, size, gap);
       // `below:<container> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {
@@ -340,7 +258,7 @@ export function resolvePlacement(
             ? { ...start, x: c.x - start.width / 2 }
             : { ...start, y: c.y - start.height / 2 };
       }
-      const box = nudgeUntilFree(start, side, gap, among ?? taken);
+      const box = nudgeUntilFree(start, side, gap, taken);
       return { x: Math.round(box.x), y: Math.round(box.y), ref };
     }
   }

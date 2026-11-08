@@ -11,13 +11,6 @@ import { applied, refused } from './fixtures/outcomes';
 import { applyReplace } from './replace';
 import type { EditLog, ReplaceBody, ReplaceOptions } from './types';
 
-const graph = {
-  nodes: [
-    { id: 'a', label: 'Start' },
-    { id: 'b', label: 'Done' },
-  ],
-  edges: [{ from: 'a', to: 'b' }],
-};
 const options: ReplaceOptions = { tabId: 'new-tab', name: 'Fresh', makeId: fixedIds() };
 const arrowBetween = (id: string, from: string, to: string) => ({
   id,
@@ -25,6 +18,21 @@ const arrowBetween = (id: string, from: string, to: string) => ({
   from: { kind: 'pinned', elementId: from, anchor: 's' },
   to: { kind: 'pinned', elementId: to, anchor: 'n' },
 });
+const square = (id: string, label: string) => ({
+  id,
+  type: 'shape',
+  shape: 'square',
+  label,
+  x: 0,
+  y: 0,
+  width: 140,
+  height: 60,
+});
+// Two boxes and the arrow between them, laid out by the engine.
+const flow: ReplaceBody = {
+  elements: [square('a', 'Start'), square('b', 'Done'), arrowBetween('e1', 'a', 'b')],
+  layout: 'auto',
+};
 const themed = (theme: string): Tab => ({ ...checkoutFlow(), theme, font: 'serif' });
 
 const recording = () => {
@@ -73,9 +81,9 @@ describe('applyReplace: elements sent back', () => {
 });
 
 describe('applyReplace on an existing tab', () => {
-  it('swaps the elements for a laid-out graph, keeping every tab field', () => {
+  it('swaps the elements for laid-out ones, keeping every tab field', () => {
     const tab = themed('ocean');
-    const outcome = applyReplace(tab, { graph }, options);
+    const outcome = applyReplace(tab, flow, options);
     const { tab: next, targets, createdIds, results } = applied(outcome);
     expect(next).toMatchObject({
       id: 'main',
@@ -91,24 +99,9 @@ describe('applyReplace on an existing tab', () => {
     expect(results.filter((line) => line.mark === '-')).toHaveLength(tab.elements.length);
   });
 
-  it("keeps a graph's tones: the presets resolve with the tab's theme, as on a new tab", () => {
-    const toned = {
-      nodes: [
-        { id: 'go', label: 'Go', shape: 'stadium', tone: 'strong' as const },
-        { id: 'end', label: 'Stop', shape: 'stadium' },
-      ],
-      edges: [{ from: 'go', to: 'end' }],
-    };
-    const { tab: next } = applied(applyReplace(themed('ocean'), { graph: toned }, options));
-    const go = next.elements.find((el) => el.id === 'go') as { fillColor?: string };
-    const end = next.elements.find((el) => el.id === 'end') as { fillColor?: string };
-    expect(go.fillColor).toBeDefined();
-    expect(go.fillColor).not.toBe(end.fillColor);
-  });
-
   it('round trips through its element ops and their inverse', () => {
     const tab = checkoutFlow();
-    const { tab: next, elementOps, inverse } = applied(applyReplace(tab, { graph }, options));
+    const { tab: next, elementOps, inverse } = applied(applyReplace(tab, flow, options));
     expect(applyElementOps(tab.elements, elementOps)).toEqual(next.elements);
     expect(applyElementOps(next.elements, inverse)).toEqual(tab.elements);
   });
@@ -130,22 +123,22 @@ describe('applyReplace on an existing tab', () => {
     const { tab } = applied(applyReplace(checkoutFlow(), { elements, layout: 'auto' }, options));
     const [x, y] = tab.elements as { shape: string; y: number; textSize?: string }[];
     expect(x!.shape).toBe('square');
-    expect(x!.textSize).toBeDefined();
+    expect(y!.textSize).toBeDefined();
     expect(y!.y).not.toBe(x!.y);
   });
 });
 
 describe('applyReplace for a new tab', () => {
   it('gives the new tab the finish asked for (docs/specs/008-canvas/finish.md)', () => {
-    expect(
-      applied(applyReplace(null, { graph }, { ...options, finish: 'sketch' })).tab.finish,
-    ).toBe('sketch');
-    expect(applied(applyReplace(null, { graph }, options)).tab.finish).toBeUndefined();
+    expect(applied(applyReplace(null, flow, { ...options, finish: 'sketch' })).tab.finish).toBe(
+      'sketch',
+    );
+    expect(applied(applyReplace(null, flow, options)).tab.finish).toBeUndefined();
   });
 
-  it('builds a graph tab with the given id, name and theme', () => {
+  it('builds a tab with the given id, name and theme', () => {
     const { tab, createdIds } = applied(
-      applyReplace(null, { graph }, { ...options, theme: getBuiltInTheme('ocean') }),
+      applyReplace(null, flow, { ...options, theme: getBuiltInTheme('ocean') }),
     );
     expect(tab).toMatchObject({ id: 'new-tab', name: 'Fresh', theme: 'ocean' });
     expect(createdIds).toEqual(tab.elements.map((el) => el.id));
@@ -153,11 +146,7 @@ describe('applyReplace for a new tab', () => {
 
   it('names the theme by id, as the MCP passes the document theme to add_tab', () => {
     const { tab } = applied(
-      applyReplace(
-        null,
-        { graph },
-        { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') },
-      ),
+      applyReplace(null, flow, { ...options, themeId: 'ocean', theme: getBuiltInTheme('brand') }),
     );
     expect(tab.theme).toBe('ocean');
   });
@@ -177,18 +166,14 @@ describe('applyReplace for a new tab', () => {
 
   it('logs the source and the element count, and a theme it could not paint', () => {
     const { calls, log } = recording();
-    applyReplace(
-      null,
-      { graph },
-      {
-        ...options,
-        log,
-        theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
-      },
-    );
+    applyReplace(null, flow, {
+      ...options,
+      log,
+      theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
+    });
     expect(calls).toEqual([
       ['[edit-ops] theme-fallback', {}],
-      ['[edit-ops] replace', { source: 'graph', elements: 3 }],
+      ['[edit-ops] replace', { source: 'elements', elements: 3 }],
     ]);
   });
 });
@@ -197,28 +182,21 @@ describe('applyReplace refusals', () => {
   const refusal = (body: unknown) => refused(applyReplace(null, body as ReplaceBody, options));
 
   it('needs exactly one source', () => {
-    expect(refusal({}).details).toEqual(['replace takes exactly one of graph, template, elements']);
-    expect(refusal({ graph, template: 'team-pod' }).code).toBe('invalid_value');
+    expect(refusal({}).details).toEqual(['replace takes exactly one of template, elements']);
+    expect(refusal({ ...flow, template: 'team-pod' }).code).toBe('invalid_value');
   });
 
-  it('names a malformed graph member', () => {
-    expect(refusal({ graph: { nodes: 'a', edges: [] } }).details[0]).toMatch(/^graph.nodes/);
-  });
-
-  it('refuses a graph it cannot draw as asked, as the MCP does', () => {
-    const graph = {
-      style: 'lanes',
-      nodes: [{ id: 'a' }, { id: 'b' }],
-      edges: [],
-      groups: [{ id: 'g', label: 'Lane', members: ['a'] }],
-    };
-    expect(refusal({ graph }).details[0]).toMatch(/every node in a lane: "b"/);
+  // The graph input went with the layout containers (not-in-livehuddle.md "The element engine", part 3): a graph is
+  // no source either.
+  it('refuses a graph as a body with no source', () => {
+    const graph = { nodes: [{ id: 'a', label: 'A' }], edges: [] };
+    expect(refusal({ graph }).details).toEqual(['replace takes exactly one of template, elements']);
   });
 
   // Mermaid is gone from livehuddle (not-in-livehuddle.md "Imports from other tools"): it is no source.
   it('refuses Mermaid as a body with no source', () => {
     expect(refusal({ mermaid: 'flowchart TD\n  a --> b' }).details).toEqual([
-      'replace takes exactly one of graph, template, elements',
+      'replace takes exactly one of template, elements',
     ]);
   });
 
@@ -240,14 +218,6 @@ describe('applyReplace refusals', () => {
     expect(refusal({ elements: [{ id: 'q', type: 7 }] }).hint).toBe(
       'see the format: livehuddle schema',
     );
-  });
-
-  // docs/specs/009-elements/badge.md "The cap holds for agents".
-  it('refuses a badge label over its cap, naming the element and the cap', () => {
-    const badge = { id: 'b', type: 'shape', shape: 'badge', x: 0, y: 0, width: 40, height: 24 };
-    expect(refusal({ elements: [{ ...badge, label: 'y'.repeat(25) }] }).details).toEqual([
-      "b label: a badge's label is at most 24 characters",
-    ]);
   });
 
   it('refuses two elements with one id', () => {

@@ -3,39 +3,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   arrowPolyline,
-  buildGraphTab,
   elementIndexFor,
-  resolveGraphInput,
   type ArrowElement,
   type BoxedElement,
   type Tab,
 } from '@livehuddle/document';
+import { gatewayTab } from '../fixtures/gateway';
 import { applied } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';
 
-const gateway = (direction: 'down' | 'right' = 'down'): Tab =>
-  buildGraphTab(
-    't',
-    'T',
-    resolveGraphInput({
-      graph: {
-        style: 'flow',
-        direction,
-        nodes: [
-          { id: 'gw', label: 'Gateway' },
-          { id: 'a', label: 'Service A' },
-          { id: 'b', label: 'Service B' },
-          { id: 'c', label: 'Service C' },
-        ],
-        edges: [
-          { from: 'gw', to: 'a' },
-          { from: 'gw', to: 'b' },
-          { from: 'gw', to: 'c' },
-        ],
-      },
-    }).graph!,
-    undefined,
-  );
+const gateway = (direction: 'down' | 'right' = 'down'): Tab => gatewayTab(direction);
 
 const arrowTo = (tab: Tab, to: string) =>
   tab.elements.find(

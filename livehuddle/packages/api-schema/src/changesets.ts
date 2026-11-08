@@ -94,7 +94,6 @@ export const EDIT_REJECTION_CODES = [
   'id_taken',
   'arrow_exists',
   'not_connected',
-  'frame_captures',
   'test_failed',
   'changeset_conflict',
   'elements_held',
@@ -153,18 +152,17 @@ export type ResultLine =
       kind: string;
       label?: string;
       ends?: [string, string];
-      reason?: 'pinned' | 'unwrapped';
+      reason?: 'pinned';
       pinnedTo?: string;
     }
   | {
       mark: '»';
       refs: string[];
       delta?: [number, number];
-      reason: 'make room' | 'carried' | 'laid out';
+      reason: 'make room' | 'laid out';
       // How `layout` laid them out; a direction only for the flow style.
       layout?: { style: 'flow' | 'tree'; direction?: 'down' | 'right' };
     }
-  | { mark: 'container'; ref: string; joined: string[]; left: string[] }
   | { mark: '!'; warning: EditWarning };
 
 // ---------------------------------------------------------------------
@@ -177,7 +175,6 @@ export type ChangesetBase = { rev: number; elements?: Record<string, string> };
 // The whole-tab body: exactly one source; `layout` for elements, `theme` and `name` for a tab it
 // creates (a `name` on an existing tab is ignored).
 export type ChangesetReplaceBody = {
-  graph?: unknown;
   template?: string;
   elements?: unknown[];
   layout?: 'auto' | 'preserve';

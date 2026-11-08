@@ -6,70 +6,49 @@ import { boxIn, flowWith, run } from './fixtures/run';
 
 describe('make room', () => {
   // Each inserted box is sized 140×120 here, so the shifts read in its height plus the gap (160).
-  it("shifts within b's container, and grows it so nothing leaves", () => {
+  it("shifts b's connected group past the midline, and nothing else", () => {
     const outcome = run('insert square width=140 height=120 between n4 n5');
     expect(lines(outcome)).toEqual([
       '+ square  square @40,400 140×120',
-      '~ f2  taller 200→360',
       '~ a4  to n5→square',
       '+ arrow  square→n5 (style of a4)',
       '» n5 n6 n7 n8  +0,+160 (make room)',
-      'f2  +square',
     ]);
   });
 
-  it("without a container, shifts b's connected group and the containers in it, whole", () => {
+  // docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: f2 is a stored boundary, a
+  // retired kind that holds nothing. Making room neither grows it nor carries it.
+  it('leaves a stored boundary as it was, whether the insert lands on it or before it', () => {
+    for (const between of ['n4 n5', 'n2 n3']) {
+      const tab = applied(run(`insert square width=140 height=120 between ${between}`)).tab;
+      expect(tab.elements.find((el) => el.id === 'f2')).toEqual(
+        checkoutFlow().elements.find((el) => el.id === 'f2'),
+      );
+    }
     expect(lines(run('insert diamond width=140 height=120 between n2 n3'))).toEqual([
       '+ diamond  diamond @40,200 140×120',
       '~ a2  to n3→diamond',
       '+ arrow  diamond→n3 (style of a2)',
-      '» f2 n3 n4 n5 n6 n7 n8  +0,+160 (make room)',
+      '» n3 n4 n5 n6 n7 n8  +0,+160 (make room)',
     ]);
   });
 
-  it('leaves what is not connected to b where it is', () => {
-    const tab = applied(run('insert square width=140 height=120 between n6 n7')).tab;
-    expect(boxIn(tab, 't1')).toEqual(boxIn(checkoutFlow(), 't1'));
-  });
-
-  it('shifts a container with everything it carries (EO47)', () => {
-    const tab = applied(
-      run('insert diamond width=140 height=120 between n2 n3', checkoutFlow()),
-    ).tab;
-    for (const id of ['f2', 'n4', 'n5'])
-      expect(boxIn(tab, id)[1]).toBe(boxIn(checkoutFlow(), id)[1] + 160);
-  });
-
-  it('grows the container an insert lands in, and shifts what lies past it (EO47)', () => {
-    const before = checkoutFlow();
-    const tab = applied(run('insert square width=140 height=120 between n4 n5', before)).tab;
-    expect(boxIn(tab, 'f2')[3]).toBeGreaterThan(boxIn(before, 'f2')[3]);
-    expect(boxIn(tab, 'n5')[1]).toBe(boxIn(before, 'n5')[1] + 160);
-  });
-
-  it('grows nested containers outward and shifts what lies past the outer one', () => {
-    const outer: Element = {
-      id: 'big',
-      type: 'shape',
-      shape: 'boundary',
-      x: -80,
-      y: 240,
-      width: 300,
-      height: 300,
+  it('leaves what is not connected to b where it is, a free-ended arrow included', () => {
+    const loose: Element = {
+      id: 'loose',
+      type: 'arrow',
+      from: { kind: 'free', x: 300, y: 650 },
+      to: { kind: 'free', x: 320, y: 700 },
     };
     const flow = checkoutFlow();
-    const tab: Tab = { ...flow, elements: [outer, ...flow.elements] };
-    const out = applied(run('insert square width=140 height=120 between n4 n5', tab)).tab;
-    expect(boxIn(out, 'f2')[3]).toBe(360);
-    expect(boxIn(out, 'big')[3]).toBe(460);
-    // n6's centre (540) lay inside big, past f2: it shifts as big's member.
-    expect(boxIn(out, 'n6')[1]).toBe(660);
-    expect(boxIn(out, 'n8')[1]).toBe(880);
+    const tab: Tab = { ...flow, elements: [...flow.elements, loose] };
+    const out = applied(run('insert square width=140 height=120 between n6 n7', tab)).tab;
+    expect(boxIn(out, 't1')).toEqual(boxIn(checkoutFlow(), 't1'));
+    expect(out.elements.find((e) => e.id === 'loose')).toEqual(loose);
   });
 
-  it('grows a container leftwards when the flow runs left', () => {
+  it('shifts left when the flow runs left', () => {
     const row = flowWith((el) => {
-      if (el.id === 'f2') return { ...el, x: 200, y: 580, width: 400, height: 140 } as Element;
       if (el.id === 'n8') return { ...el, x: 420, y: 620 } as Element;
       if (el.id === 'n7') return { ...el, x: 240, y: 620 } as Element;
       return el;
@@ -88,61 +67,22 @@ describe('make room', () => {
         ],
       }),
     ).tab;
-    const [x, , width] = boxIn(out, 'f2');
-    expect(width).toBeGreaterThan(400);
-    expect(x).toBeLessThan(200);
+    expect(boxIn(out, 'n8')[0]).toBe(420);
+    expect(boxIn(out, 'n7')[0]).toBeLessThan(240);
   });
 
-  it('carries a free-ended arrow inside a shifted container', () => {
-    const loose: Element = {
-      id: 'loose',
-      type: 'arrow',
-      from: { kind: 'free', x: 300, y: 650 },
-      to: { kind: 'free', x: 320, y: 700 },
-    };
-    const outer: Element = {
-      id: 'pay',
-      type: 'shape',
-      shape: 'boundary',
-      x: -40,
-      y: 600,
-      width: 400,
-      height: 200,
-    };
-    const flow = checkoutFlow();
-    const tab: Tab = { ...flow, elements: [outer, ...flow.elements, loose] };
-    const out = applied(run('insert square width=140 height=120 between n5 n6', tab)).tab;
-    expect(out.elements.find((e) => e.id === 'loose')).toMatchObject({
-      from: { x: 300, y: 810 },
-      to: { x: 320, y: 860 },
-    });
-  });
-
-  it('logs what it shifted and grew', () => {
-    const logged: [string, unknown][] = [];
-    run('insert square width=140 height=120 between n4 n5', checkoutFlow(), {
-      log: (message, fields) => logged.push([message, fields]),
-    });
-    expect(logged).toContainEqual([
-      '[edit-ops] make-room',
-      { operation: 1, shifted: 4, axis: 'y', grown: 1 },
-    ]);
-  });
-
-  it('grows a container rightwards when the flow runs right', () => {
+  it('shifts right when the flow runs right', () => {
     const row = flowWith((el) => {
-      if (el.id === 'f2') return { ...el, x: 200, y: 580, width: 400, height: 140 } as Element;
       if (el.id === 'n7') return { ...el, x: 240, y: 620 } as Element;
       if (el.id === 'n8') return { ...el, x: 420, y: 620 } as Element;
       return el;
     });
     const out = applied(run('insert square width=140 height=120 between n7 n8', row)).tab;
-    const [x, , width] = boxIn(out, 'f2');
-    expect(x).toBe(200);
-    expect(width).toBeGreaterThan(400);
+    expect(boxIn(out, 'n7')[0]).toBe(240);
+    expect(boxIn(out, 'n8')[0]).toBeGreaterThan(420);
   });
 
-  it('grows a container upwards when the flow runs up', () => {
+  it('shifts up when the flow runs up', () => {
     const up = flowWith((el) =>
       el.id === 'a4'
         ? ({
@@ -153,8 +93,35 @@ describe('make room', () => {
         : el,
     );
     const out = applied(run('insert square width=140 height=120 between n5 n4', up)).tab;
-    const [, y, , height] = boxIn(out, 'f2');
-    expect(height).toBeGreaterThan(200);
-    expect(y).toBeLessThan(280);
+    expect(boxIn(out, 'n4')[1]).toBeLessThan(boxIn(checkoutFlow(), 'n4')[1]);
+    expect(boxIn(out, 'n5')[1]).toBe(boxIn(checkoutFlow(), 'n5')[1]);
+  });
+
+  it('logs what it shifted', () => {
+    const logged: [string, unknown][] = [];
+    run('insert square width=140 height=120 between n4 n5', checkoutFlow(), {
+      log: (message, fields) => logged.push([message, fields]),
+    });
+    expect(logged).toContainEqual([
+      '[edit-ops] make-room',
+      { operation: 1, shifted: 4, axis: 'y' },
+    ]);
+  });
+
+  it('sums the shifts of two inserts, and keeps what an operation wrote or made a written line', () => {
+    const outcome = run(
+      [
+        'set n5 label=Pay',
+        'add square id=z label=Z below:n8',
+        'connect n8 -> z',
+        'insert square id=i1 width=140 height=120 between n4 n5',
+        'insert square id=i2 width=140 height=120 between n6 n7',
+      ].join('\n'),
+    );
+    const out = lines(outcome);
+    expect(out).toContain('» n6  +0,+160 (make room)');
+    expect(out).toContain('» n7 n8  +0,+320 (make room)');
+    expect(out.find((l) => l.startsWith('~ n5'))).toMatch(/label "Card details"→"Pay"/);
+    expect(out.find((l) => l.startsWith('+ z '))).toBeDefined();
   });
 });

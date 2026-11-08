@@ -14,7 +14,6 @@ export {
 } from './element-format';
 export { applyEditOperations } from './apply';
 export { applyReplace } from './replace';
-export { graphBodyIssue } from './graph-body';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';
 export { EDIT_MAX_ERRORS, EDIT_OPERATION_NAMES, type EditOperationName } from './vocabulary';
@@ -31,8 +30,6 @@ export type {
   Placement,
   RewireOperation,
   TestOperation,
-  UnwrapOperation,
-  WrapOperation,
   ApplyOptions,
   ApplyOutcome,
   ApplyRejection,

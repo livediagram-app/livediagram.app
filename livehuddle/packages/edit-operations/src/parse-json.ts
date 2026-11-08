@@ -15,7 +15,6 @@ import {
   ORDER_ENDS,
   PLACEMENT_GAP_MAX,
   PLACEMENT_RELATIONS,
-  WRAP_CONTAINERS,
   type EditOperationName,
 } from './vocabulary';
 import { isRecord } from '@livehuddle/document';
@@ -43,18 +42,11 @@ export function placementIssue(value: unknown): string | null {
   }
   if (!isOneOf(PLACEMENT_RELATIONS, value.rel))
     return expected('place', `"rel" one of ${[...PLACEMENT_RELATIONS, 'at'].join(', ')}`);
-  const extra = Object.keys(value).find(
-    (key) => !['rel', 'ref', 'gap', 'within', 'alignTo'].includes(key),
-  );
+  const extra = Object.keys(value).find((key) => !['rel', 'ref', 'gap', 'alignTo'].includes(key));
   if (extra !== undefined) return expected('place', `no "${extra}" with "${value.rel}"`);
   if (!isText(value.ref)) return expected('place', '"ref" a non-empty selector');
-  if (value.within !== undefined) {
-    if (value.rel === 'inside') return expected('place', 'no "within" with "inside"');
-    if (!isText(value.within)) return expected('place', '"within" a non-empty selector');
-  }
   if (value.alignTo !== undefined) {
-    if (value.rel === 'inside' || value.rel === 'align')
-      return expected('place', `no "alignTo" with "${value.rel}"`);
+    if (value.rel === 'align') return expected('place', `no "alignTo" with "${value.rel}"`);
     if (!isText(value.alignTo)) return expected('place', '"alignTo" a non-empty selector');
   }
   const gap = value.gap;
@@ -94,12 +86,6 @@ function memberIssue(name: EditOperationName, raw: Raw, member: string): string 
       return Array.isArray(value) && value.length === 2 && value.every(isText)
         ? null
         : expected(member, '[a, b] selectors');
-    case 'targets':
-      return Array.isArray(value) && value.length > 0 && value.every(isText)
-        ? null
-        : expected(member, 'a non-empty array of selectors');
-    case 'in':
-      return isOneOf(WRAP_CONTAINERS, value) ? null : expected(member, 'boundary or lane');
     case 'style':
       return isOneOf(LAYOUT_STYLES, value) ? null : expected(member, LAYOUT_STYLES.join(', '));
     case 'direction':
@@ -119,8 +105,6 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
   connect: ['from', 'to'],
   rewire: ['target'],
   insert: ['kind', 'between'],
-  wrap: ['targets', 'in'],
-  unwrap: ['target'],
   order: ['target'],
   layout: ['target'],
   test: ['target', 'fields'],
@@ -130,10 +114,7 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
 // and how the line form says them.
 const CHOICES: Readonly<
   Partial<
-    Record<
-      EditOperationName,
-      { members: readonly string[]; atMostOne?: true; atLeastOne?: true; inLines: string }
-    >
+    Record<EditOperationName, { members: readonly string[]; atLeastOne?: true; inLines: string }>
   >
 > = {
   add: { members: ['kind', 'element'], inLines: 'add <kind> key=value…' },
@@ -143,7 +124,6 @@ const CHOICES: Readonly<
   },
   rewire: { members: ['from', 'to'], atLeastOne: true, inLines: 'from=<x>, to=<y> or both' },
   order: { members: ['to', 'above', 'below'], inLines: 'front, back, above=<x> or below=<x>' },
-  wrap: { members: ['absorb', 'makeRoom'], atMostOne: true, inLines: 'absorb or make-room' },
 };
 
 function choiceIssue(name: EditOperationName, raw: Raw): string | null {
@@ -152,10 +132,10 @@ function choiceIssue(name: EditOperationName, raw: Raw): string | null {
   const given = choice.members.filter(
     (member) => raw[member] !== undefined && raw[member] !== false,
   );
-  if (given.length === 1 || (given.length === 0 && choice.atMostOne)) return null;
+  if (given.length === 1) return null;
   if (given.length > 1 && choice.atLeastOne) return null;
   const quoted = choice.members.map((member) => `"${member}"`).join(', ');
-  const which = choice.atMostOne ? 'at most' : choice.atLeastOne ? 'at least' : 'exactly';
+  const which = choice.atLeastOne ? 'at least' : 'exactly';
   return `${which} one of ${quoted} (in a line: ${choice.inLines})`;
 }
 

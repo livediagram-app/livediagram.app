@@ -1,19 +1,12 @@
 // `move <selector> <placement> | by=dx,dy [all]` (docs/specs/024-agents/blueprints/edit-operations.md
-// "Placement", "Carry"): the targets' bounding box is placed as one box, or shifted by exactly
-// `by`, and every element in the moving set (the targets and what a moved boundary or lane carries)
-// translates by the same delta. Pinned arrows follow by construction; finalise re-anchors them.
+// "Placement"): the targets' bounding box is placed as one box, or shifted by exactly `by`, and every
+// target translates by the same delta. Pinned arrows follow by construction; finalise re-anchors them.
 
 import type { EditRejection } from '@livehuddle/api-schema';
-import {
-  containerContents,
-  type BoxedElement,
-  type Element,
-  type ElementId,
-} from '@livehuddle/document';
-import { growContainer, HOLD_PAD } from '../grow-container';
+import type { Element, ElementId } from '@livehuddle/document';
 import { boxOf, resolvePlacement, shifted } from '../placement';
 import { resolveSome } from '../selectors';
-import { currentElements, holdersOf, moveElement, type EditState, writeFields } from '../state';
+import { type EditState, writeFields } from '../state';
 import type { MoveOperation } from '../types';
 
 // The bounding box of boxed elements, or null when none is boxed.
@@ -43,8 +36,7 @@ export function applyMove(
   const resolved = resolveSome(state, operation.target, index, operation.all === true);
   if ('rejection' in resolved) return resolved.rejection;
   const targets = resolved.els;
-  const named = new Set<ElementId>(targets.map((el) => el.id));
-  const moving = containerContents(currentElements(state), named);
+  const moving = new Set<ElementId>(targets.map((el) => el.id));
   let dx: number;
   let dy: number;
   if ('by' in operation) [dx, dy] = operation.by;
@@ -65,51 +57,9 @@ export function applyMove(
     [dx, dy] = [placed.x - bounds.x, placed.y - bounds.y];
   }
   if (dx === 0 && dy === 0) return null;
-  // Each target's container before the move, when the container itself stays.
-  const before = holdersOf(state);
-  const left = targets.flatMap((el) => {
-    const holder = before.get(el.id);
-    const box = boxOf(el);
-    return holder && box && !moving.has(holder) ? [{ id: el.id, holder, box }] : [];
-  });
   for (const id of moving) {
     const el = shifted(state.byId.get(id)!, dx, dy);
-    if (named.has(id))
-      writeFields(state, el, index, el.type === 'arrow' ? ['from', 'to'] : ['x', 'y']);
-    else moveElement(state, el, index, 'carried', { shift: [dx, dy] });
+    writeFields(state, el, index, el.type === 'arrow' ? ['from', 'to'] : ['x', 'y']);
   }
-  const after = holdersOf(state);
-  for (const { id, holder, box } of left)
-    if (after.get(id) !== holder) giveBackRoom(state, holder, box, id, index);
   return null;
-}
-
-// A container a box has left comes in, on each side but the top (its heading's), to what stays with its padding,
-// where the box reached past what stays (docs/specs/024-agents/edit-operations.md "Layout on edit"); what lay past
-// that edge moves back with it, as growing moved it on. A container left empty keeps its size.
-function giveBackRoom(
-  state: EditState,
-  holderId: ElementId,
-  gone: { x: number; y: number; width: number; height: number },
-  goneId: ElementId,
-  operation: number,
-): void {
-  // A holder is a boundary or lane, always a box.
-  const c = state.byId.get(holderId) as BoxedElement;
-  const holders = holdersOf(state);
-  const stays = boundsOf(currentElements(state).filter((el) => holders.get(el.id) === holderId));
-  if (!stays) return;
-  const [right, bottom] = [c.x + c.width, c.y + c.height];
-  const reached = {
-    left: gone.x < stays.x,
-    right: gone.x + gone.width > stays.x + stays.width,
-    bottom: gone.y + gone.height > stays.y + stays.height,
-  };
-  const x = reached.left ? Math.max(c.x, Math.round(stays.x - HOLD_PAD)) : c.x;
-  const r = reached.right ? Math.min(right, Math.round(stays.x + stays.width + HOLD_PAD)) : right;
-  const b = reached.bottom
-    ? Math.min(bottom, Math.round(stays.y + stays.height + HOLD_PAD))
-    : bottom;
-  if (x === c.x && r === right && b === bottom) return;
-  growContainer(state, c, { x, y: c.y, width: r - x, height: b - c.y }, goneId, operation);
 }

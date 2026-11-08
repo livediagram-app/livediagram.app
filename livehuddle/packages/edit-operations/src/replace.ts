@@ -1,24 +1,21 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, a template or raw elements, built exactly as the MCP's
+// body, a whole tab from a template or raw elements, built exactly as the MCP's
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
-  buildGraphTab,
   buildTab,
   coerceShapeKind,
   contentOrigin,
   diffToElementOps,
-  chipLabelIssue,
   elementValidationIssue,
   getBuiltInTheme,
   invertElementOps,
   isValidTab,
   normaliseElements,
   type Element,
-  type GraphInput,
   type Tab,
 } from '@livehuddle/document';
 import {
@@ -28,14 +25,14 @@ import {
   validTemplateKinds,
 } from '@livehuddle/templates';
 import { tabRejection } from './finalise';
-import { graphBodyIssue } from './graph-body';
 import { invalidResult } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
 
-// No `mermaid`: imports from other tools are gone (docs/specs/002-project-scope/not-in-livehuddle.md).
-type Source = 'graph' | 'template' | 'elements';
-const SOURCES: readonly Source[] = ['graph', 'template', 'elements'];
+// No `mermaid`: imports from other tools are gone, and no `graph`: the graph input went with the layout containers
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3).
+type Source = 'template' | 'elements';
+const SOURCES: readonly Source[] = ['template', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
 type Built = { elements: Element[]; tab: (tabId: string, name: string) => Tab } | EditRejection;
@@ -47,13 +44,7 @@ const invalidBody = (detail: string, hint?: string): EditRejection => ({
 });
 
 // The elements a replace writes onto an existing tab are built exactly as a new tab's are, themed included: a
-// graph's tones and a template's presets are colour presets the theme resolves, and an existing tab took them
-// unresolved, so a replace drew every toned node plain.
-function fromGraph(graph: GraphInput, themeId: string | undefined): Built {
-  const tab = (tabId: string, name: string) => buildGraphTab(tabId, name, graph, themeId);
-  return { elements: tab('graph', 'graph').elements, tab };
-}
-
+// template's presets are colour presets the theme resolves, and an existing tab took them unresolved.
 function fromElements(
   raw: unknown,
   layout: 'auto' | 'preserve' | undefined,
@@ -64,8 +55,7 @@ function fromElements(
   // Elements the tab already holds keep their own look; only new ones take a raw element's defaults.
   const normalised = normaliseElements(raw, { kept }) as unknown[];
   for (const el of normalised) {
-    // A chip's label cap holds for agent writes (docs/specs/009-elements/badge.md "The cap holds for agents").
-    const issue = elementValidationIssue(el) ?? chipLabelIssue(el);
+    const issue = elementValidationIssue(el);
     if (issue) {
       const subject = el as { id?: unknown; type?: unknown; shape?: unknown };
       const ref = typeof subject.id === 'string' && subject.id !== '' ? subject.id : 'an element';
@@ -90,11 +80,6 @@ function build(
   kept: ReadonlySet<string> = new Set(),
 ): Built {
   switch (source) {
-    case 'graph': {
-      const { graph } = body as { graph: unknown };
-      const issue = graphBodyIssue(graph);
-      return issue ? invalidBody(issue) : fromGraph(graph as GraphInput, themeId);
-    }
     case 'template': {
       const { template } = body as { template: unknown };
       const kind = typeof template === 'string' ? resolveTemplate(template) : null;

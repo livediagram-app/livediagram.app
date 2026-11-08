@@ -1,6 +1,7 @@
 // The research's checkout flow (docs/research/agent-cli/editing-models.md §6): one tab, eight steps
-// down a column joined by pinned arrows, a note beside the payment, and a boundary `f2` holding the
-// address and card steps. Every suite starts from a fresh copy.
+// down a column joined by pinned arrows, a note beside the payment, and a stored boundary `f2` behind the
+// address and card steps: a retired kind (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 3), kept as a placeholder that holds nothing. Every suite starts from a fresh copy.
 
 import type { ArrowElement, Element, ShapeKind, Tab } from '@livehuddle/document';
 
@@ -32,7 +33,7 @@ export function checkoutFlow(): Tab {
       {
         id: 'f2',
         type: 'shape',
-        shape: 'boundary',
+        shape: 'boundary' as ShapeKind,
         label: 'Payment',
         x: -40,
         y: 280,

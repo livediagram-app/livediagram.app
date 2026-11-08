@@ -190,20 +190,6 @@ export function notConnected(
   };
 }
 
-// `wrap` would hold elements that are not its members.
-export function frameCaptures(
-  operation: number,
-  container: string,
-  bystanders: readonly string[],
-): EditRejection {
-  return {
-    code: 'frame_captures',
-    operation,
-    details: [`the ${container} would hold non-members:`, ...bystanders.map((b) => `  ${b}`)],
-    hint: 'add them to the members, or add absorb or make-room',
-  };
-}
-
 // `test` found a value other than the one it expected.
 export function testFailed(
   operation: number,

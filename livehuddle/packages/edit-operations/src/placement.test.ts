@@ -62,7 +62,7 @@ describe('the four sides (n3 is 0,200 140x60)', () => {
     expect(place({ rel: 'above', ref: 'n2', gap: 10 })).toMatchObject({ y: -50 });
   });
 
-  it('never lands on what moves with it, and ignores containers', () => {
+  it('never lands on what moves with it, nor minds a stored backdrop', () => {
     expect(
       place({ rel: 'below', ref: 'n3', gap: 10 }, undefined, ['n4', 'n5', 'n6', 'n7', 'n8']),
     ).toMatchObject({ y: 270 });
@@ -111,36 +111,26 @@ describe('after', () => {
   });
 });
 
-describe('inside', () => {
-  it('takes the first free slot of the interior', () => {
-    const empty = withElements(box('frame-x', 2000, 0, 400, 300));
-    const tab: Tab = {
-      ...empty,
-      elements: empty.elements.map((el) =>
-        el.id === 'frame-x' && el.type === 'shape' ? { ...el, shape: 'boundary' } : el,
-      ),
-    };
-    expect(place({ rel: 'inside', ref: 'frame-x' }, tab)).toEqual({
-      x: 2032,
-      y: 64,
-      ref: expect.objectContaining({ id: 'frame-x' }),
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: a stored lane, stack, boundary or
+// frame is a backdrop. What sat on it sits over it, so a box placed beside one of those lands on the backdrop too.
+describe('a stored backdrop', () => {
+  it('is not in the way of a box placed beside what sits on it', () => {
+    // n4 (0,300 140x60) sits on the stored boundary f2 (-40,280 220x200).
+    expect(place({ rel: 'right-of', ref: 'n4' })).toMatchObject({
+      x: 140 + PLACEMENT_GAP,
+      y: 330 - size.height / 2,
     });
+    for (const shape of ['lane', 'stack', 'frame']) {
+      const backdrop = { ...box('back', -100, 250, 2000, 400), shape } as unknown as Element;
+      expect(place({ rel: 'right-of', ref: 'n4' }, withElements(backdrop)), shape).toMatchObject({
+        x: 140 + PLACEMENT_GAP,
+      });
+    }
   });
 
-  it('goes below the lowest member and grows a full container', () => {
-    // f2 (-40,280 220x200) holds n4 and n5: no slot fits a 100x40 box between its padding.
-    const out = place({ rel: 'inside', ref: 'f2' });
-    expect(out).toMatchObject({ x: -8, y: 460 + PLACEMENT_GAP });
-    expect(out.grow).toEqual({
-      container: expect.objectContaining({ id: 'f2' }),
-      height: 460 + PLACEMENT_GAP + 40 + 32 - 280,
-    });
-  });
-
-  it('refuses what is not a container', () => {
-    expect(refusal({ rel: 'inside', ref: 'n3' }).details).toEqual([
-      'inside:n3: n3 is not a boundary or lane',
-    ]);
+  it('is in the way when it is a stored kind that is no backdrop', () => {
+    const card = { ...box('card', 150, 300, 200, 60), shape: 'card' } as unknown as Element;
+    expect(place({ rel: 'right-of', ref: 'n4' }, withElements(card)).x).toBeGreaterThanOrEqual(350);
   });
 });
 

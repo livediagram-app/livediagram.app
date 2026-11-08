@@ -9,7 +9,6 @@ import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element, Tab } from '@livehuddle/document';
 import { applyEditOperations } from './apply';
-import { containersBehindMembers } from './finalise';
 import { createState, noteTarget } from './state';
 import { parseEditOperations } from './parse';
 import type { EditOperation } from './types';
@@ -21,7 +20,8 @@ const RUNS = 3;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
-// `FRAMES` frames, each holding `perFrame` boxes in a column joined by arrows.
+// `FRAMES` stored boundaries (a retired kind, docs/specs/002-project-scope/not-in-livehuddle.md "The element engine",
+// part 3), each behind `perFrame` boxes in a column joined by arrows.
 function tabOf(perFrame: number): Tab {
   const elements: Element[] = [];
   for (let frame = 0; frame < FRAMES; frame++) {
@@ -34,7 +34,7 @@ function tabOf(perFrame: number): Tab {
       y: 0,
       width: 400,
       height: perFrame * 100 + 100,
-    });
+    } as unknown as Element);
     for (let i = 0; i < perFrame; i++) {
       elements.push({
         id: `n${frame}x${i}`,
@@ -104,20 +104,10 @@ function rowOf(count: number): Tab {
   return { id: 'row', name: 'Row', elements };
 }
 
-// One frame holding `count` boxes: a container with every element as its member.
-function frameOf(count: number): Tab {
+// `count` small boxes in rows.
+function boxesOf(count: number): Tab {
   const columns = 100;
-  const elements: Element[] = [
-    {
-      id: 'f0',
-      type: 'shape',
-      shape: 'boundary',
-      x: 0,
-      y: 0,
-      width: columns * 200 + 20,
-      height: 4000,
-    },
-  ];
+  const elements: Element[] = [];
   for (let i = 0; i < count; i++)
     elements.push({
       id: `b${i}`,
@@ -128,31 +118,10 @@ function frameOf(count: number): Tab {
       width: 10,
       height: 10,
     });
-  return { id: 'frame', name: 'Frame', elements };
+  return { id: 'boxes', name: 'Boxes', elements };
 }
 
 describe('performance', () => {
-  // The container order pass once scanned the order per member and copied the member list per member: 157 ms
-  // of a one-field set at 10,000 members, now 19 ms. Timed alone, so the rest of an apply does not hide it.
-  it(
-    'orders containers behind their members in time linear in the tab',
-    { timeout: TIMEOUT_MS },
-    () => {
-      const fastest = (tab: Tab) => {
-        let best = Infinity;
-        for (let run = 0; run < RUNS; run++)
-          best = Math.min(
-            best,
-            cpuMsOf(() => containersBehindMembers(tab.elements)),
-          );
-        return best;
-      };
-      const small = fastest(frameOf(2400));
-      const large = fastest(frameOf(2400 * GROWTH));
-      expect(large / small).toBeLessThan(RATIO_CEILING);
-    },
-  );
-
   // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
   it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
     const fastest = (tab: Tab) => {
@@ -168,8 +137,8 @@ describe('performance', () => {
       }
       return best;
     };
-    const small = fastest(frameOf(2400));
-    const large = fastest(frameOf(2400 * GROWTH));
+    const small = fastest(boxesOf(2400));
+    const large = fastest(boxesOf(2400 * GROWTH));
     expect(large / small).toBeLessThan(RATIO_CEILING);
   });
 

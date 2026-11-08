@@ -2,13 +2,7 @@
 // I1 to I7), held by one changeset per operation of the vocabulary on the checkout flow.
 
 import { describe, expect, it } from 'vitest';
-import {
-  applyElementOps,
-  deriveContainers,
-  isContainer,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { applyElementOps, type Element, type Tab } from '@livehuddle/document';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { applied } from './fixtures/outcomes';
 import { run } from './fixtures/run';
@@ -22,8 +16,6 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
   connect: 'connect n2 -> n8 label=skip',
   rewire: 'rewire a6 to=n8',
   insert: 'insert square id=verify label="Verify email" between n3 n4',
-  wrap: 'wrap n7 n8 in boundary label=Payment',
-  unwrap: 'unwrap f2',
   order: 'order f2 front',
   layout: 'layout n5 n6 n7 n8 direction=right',
   test: 'test n3 label=Login',
@@ -72,29 +64,27 @@ describe('invariants', () => {
     expect(run(text)).toEqual(run(text));
   });
 
-  it.each(samples)('%s: lanes first, and every container behind its members (I6)', (_, text) => {
-    const lane: Element = {
-      id: 'lane',
-      type: 'shape',
-      shape: 'lane',
-      x: -400,
-      y: -100,
-      width: 2000,
-      height: 1200,
-    };
-    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, lane] };
-    const { tab: next } = applied(run(text, tab));
-    const order = next.elements.map((el) => el.id);
-    const firstOther = next.elements.findIndex(
-      (el) => !(el.type === 'shape' && el.shape === 'lane'),
-    );
-    expect(
-      next.elements.slice(firstOther).some((el) => el.type === 'shape' && el.shape === 'lane'),
-    ).toBe(false);
-    const byId = new Map(next.elements.map((el) => [el.id, el]));
-    for (const [id, holder] of deriveContainers(next.elements)) {
-      if (holder && isContainer(byId.get(holder)!))
-        expect(order.indexOf(holder)).toBeLessThan(order.indexOf(id));
-    }
-  });
+  // I6 (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): a stored lane is a retired
+  // element that holds nothing, so no operation reorders, settles or rewrites it.
+  it.each(samples)(
+    '%s: a stored lane is kept as stored, never sent to the back (I6)',
+    (_, text) => {
+      const lane = {
+        id: 'lane',
+        type: 'shape',
+        shape: 'lane',
+        x: -400,
+        y: -100,
+        width: 2000,
+        height: 1200,
+        headerSize: 96,
+      } as unknown as Element;
+      const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, lane] };
+      const { tab: next } = applied(run(text, tab));
+      expect(next.elements.find((el) => el.id === 'lane')).toBe(lane);
+      // Never moved behind the rest: what came before it still does.
+      const order = next.elements.map((el) => el.id);
+      expect(order.indexOf('lane')).toBeGreaterThan(order.indexOf('n1'));
+    },
+  );
 });

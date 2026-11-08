@@ -37,13 +37,13 @@ describe('the element format', () => {
   });
 
   it('gives a kind its add form, first size, aliases with their values, and its own fields', () => {
-    const lane = elementFormatText('lane')!;
-    expect(lane).toMatch(
-      /^lane: a shape\. add lane \[id=<id>\] key=value… \[<placement>\]\nSize: \d+×\d+ at first/,
+    const room = elementFormatText('room')!;
+    expect(room).toMatch(
+      /^room: a shape\. add room \[id=<id>\] key=value… \[<placement>\]\nSize: \d+×\d+ at first/,
     );
-    expect(lane).toContain('fill=theme|');
-    expect(lane).toContain('headerFill');
-    expect(lane).toContain('Any other stored field by name');
+    expect(room).toContain('fill=theme|');
+    expect(room).toContain('roomDoor');
+    expect(room).toContain('Any other stored field by name');
     const sticky = elementFormatText('sticky')!;
     expect(sticky).toContain('fill=classic|');
     expect(sticky).not.toContain('Any other stored field');
@@ -58,6 +58,9 @@ describe('the element format', () => {
     expect(elementFormatText('code-block')).toBeNull();
     expect(elementFormatText('video')).toBeNull();
     expect(elementFormatText('table')).toBeNull();
+    // Nor of a layout container (part 3 of the element engine).
+    for (const kind of ['lane', 'stack', 'boundary', 'card', 'callout', 'badge', 'step'])
+      expect(elementFormatText(kind), kind).toBeNull();
   });
 
   it('names only stored shape fields, so the map cannot drift', () => {
@@ -68,6 +71,6 @@ describe('the element format', () => {
   });
 
   it('teaches an add form the parser reads', () => {
-    expect(parseEditOperations('add lane id=c label="x = 1"')).toHaveProperty('operations');
+    expect(parseEditOperations('add room id=c label="x = 1"')).toHaveProperty('operations');
   });
 });

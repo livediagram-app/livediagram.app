@@ -1,5 +1,6 @@
-// Placements that pair a side with a group or an alignment (docs/specs/024-agents/blueprints/edit-operations.md
-// "Placement"): `inside:<g> right-of:<x>` (within), `below:<x> align:<y>` (alignTo) and `inside:<g> align:<y>`.
+// Placements that pair a side with an alignment (docs/specs/024-agents/blueprints/edit-operations.md "Placement"):
+// `below:<x> align:<y>` (alignTo). Nothing holds since the layout containers went
+// (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3), so there is no `inside:`.
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livehuddle/document';
 import { checkoutFlow } from '../fixtures/checkout-flow';
@@ -12,10 +13,10 @@ type Box = Element & { x: number; y: number; width: number; height: number };
 const at = (tab: Tab, id: string) => tab.elements.find((e) => e.id === id) as Box;
 
 describe('placement combinations', () => {
-  it('reads inside with align as an alignment within the group, and refuses an empty alignTo', () => {
-    const parsed = parseEditOperations('add square inside:f2 align:n4');
+  it('reads a side with align, and refuses an empty alignTo', () => {
+    const parsed = parseEditOperations('add square align:n4 below:f2');
     expect('operations' in parsed ? parsed.operations[0] : null).toMatchObject({
-      place: { rel: 'align', ref: 'n4', within: 'f2' },
+      place: { rel: 'below', ref: 'f2', alignTo: 'n4' },
     });
     // Two alignments in one placement say two things.
     expect('errors' in parseEditOperations('add square align:n4 align:n5 below:f2')).toBe(true);
@@ -24,29 +25,11 @@ describe('placement combinations', () => {
     );
   });
 
-  it('refuses a group that names nothing, and an alignment to nothing or to an arrow', () => {
-    expect(refused(run('add square inside:nowhere right-of:n4'))).toBeTruthy();
+  it('refuses an alignment to nothing or to an arrow', () => {
     expect(refused(run('add square below:f2 align:nowhere'))).toBeTruthy();
     const arrowId = checkoutFlow().elements.find((e) => e.type === 'arrow')!.id;
     const outcome = run(`add square below:f2 align:${arrowId}`);
     expect(JSON.stringify(refused(outcome))).toMatch(/an arrow; align to a box/);
-  });
-
-  it('places beside a member of a group nested in the one named', () => {
-    const tab = checkoutFlow();
-    const outer: Element = {
-      id: 'outer',
-      type: 'shape',
-      shape: 'boundary',
-      label: 'Checkout',
-      x: -80,
-      y: 240,
-      width: 600,
-      height: 300,
-    };
-    const nested = { ...tab, elements: [outer, ...tab.elements] };
-    const { tab: out } = applied(run('add square id=x label=X inside:outer right-of:n4', nested));
-    expect(at(out, 'x').x).toBeGreaterThan(at(out, 'n4').x);
   });
 
   it('centres a box placed right of a frame on the box it aligns to, across the side', () => {
