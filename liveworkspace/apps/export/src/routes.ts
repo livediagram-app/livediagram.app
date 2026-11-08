@@ -84,6 +84,16 @@ export function parseStart(body: Record<string, unknown> | null): StartExportCal
   };
 }
 
+// The key a path segment carries, or null when there is none or it doesn't decode (a stray `%`): a missing export.
+function decodedKey(segment: string | undefined): string | null {
+  if (segment === undefined) return null;
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
+  }
+}
+
 export async function handle(request: Request, deps: RouteDeps): Promise<Response> {
   const url = new URL(request.url);
   if (!url.pathname.startsWith(EXPORT_SERVICE_PATH)) return notFound();
@@ -113,8 +123,8 @@ export async function handle(request: Request, deps: RouteDeps): Promise<Respons
     const views = await Promise.all(unique.map((k) => deps.object(k).status()));
     return json({ exports: Object.fromEntries(unique.map((k, i) => [k, views[i]])) });
   }
-  const key = rest[0] !== undefined ? decodeURIComponent(rest[0]) : '';
-  if (!parseExportKey(key)) return notFound();
+  const key = decodedKey(rest[0]);
+  if (!key || !parseExportKey(key)) return notFound();
   if (rest.length === 2 && rest[1] === 'file' && request.method === 'GET') {
     const view = await deps.object(key).status();
     if (view?.status !== 'ready' || (view.expiresAt ?? 0) <= deps.now()) return notFound();

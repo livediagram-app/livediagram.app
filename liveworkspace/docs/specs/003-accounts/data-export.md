@@ -144,7 +144,7 @@ through its `EXPORT` service binding, with `EXPORT_KEY_ACCOUNTS`; it calls accou
 | `DELETE /internal/exports/<key>`   | stop it and delete its file (an account closing)                               |
 
 `key` is `personal:<account id>` or `team:<team id>`; each names one SQLite Durable Object (`DataExport`) holding that
-scope's latest export. The zip is the R2 object `exports/<key>/<export id>.zip` in the `liveworkspace-exports` bucket
+scope's latest export. A path whose key is anything else, or doesn't decode, answers `404`. The zip is the R2 object `exports/<key>/<export id>.zip` in the `liveworkspace-exports` bucket
 (`-staging`).
 
 Accounts' doors, for the signed-in person by their session, or (the first two) by an account's app bearer:
