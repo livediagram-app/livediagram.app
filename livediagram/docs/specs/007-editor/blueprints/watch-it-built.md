@@ -49,9 +49,11 @@ Style flyout and its Presets section the same way, by pressing their own buttons
 `[data-context-menu]` / `[data-menu-flyout]`) when they are not yet expanded. The pick itself is not pressed: B's green
 comes from the demo, as `applyColorPresetToEl` with the theme's Success preset gives it. Example's position is eased
 between the screen points of `cursorPlan`'s waypoints, resolved each frame from the DOM (a tour target, a demo element's
-rect, the open menu), so it follows a pan or a resize. A carry out of the palette is the exception: Example is the
-carried shape's centre, pressed, for the whole carry. The tile it left closes with the palette, so easing from it would
-jump the cursor away from the shape it holds.
+rect, the open menu), so it follows a pan or a resize. Each move starts from where Example was last drawn, never
+from its last target looked up again: that target can be gone (the palette closed, the menu shut at the end) or moved
+(the Presets accordion pushing its rows down), and easing from it made the cursor jump at chapter changes. A carry out
+of the palette is the exception: Example is the carried shape's centre, pressed, worked out from the frame (the DOM is
+a frame behind as the carry starts), and only when the tile was seen; without it the shape just drops into place.
 
 Seek (a chapter press, Back, reduced motion's Next) just sets `(chapter, 0)`: `demoAt` is a pure function of time,
 so there is nothing to replay.
