@@ -36,8 +36,8 @@ import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
-// EditorContext — the same host pattern as EditorModals /
-// EditorContextMenuHost — plus the handful of locals only the Canvas
+// EditorContext, the same host pattern as EditorModals /
+// EditorContextMenuHost, plus the handful of locals only the Canvas
 // props consume (the memoised Explorer list props, the owner-badge
 // resolution).
 export function EditorCanvasHost() {
@@ -238,7 +238,7 @@ export function EditorCanvasHost() {
   // The canvas paints the backdrop the VIEWER resolves, not blindly the one
   // the tab stores: a tab on the Default theme follows this browser's
   // appearance (docs/specs/007-editor/editor-app.md). Subscribing to the appearance here is what makes the
-  // canvas repaint when it changes — resolveViewBackdrop would otherwise read a
+  // canvas repaint when it changes, resolveViewBackdrop would otherwise read a
   // module store nothing re-renders for.
   const { appearance } = useAppearance();
   const landscapePhone = useIsLandscapePhone();
@@ -274,7 +274,7 @@ export function EditorCanvasHost() {
   const tabLoadState = activeTabLoadState;
 
   // While a label is being edited, ride the element context menu alongside
-  // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.
+  // the editor (docs/specs/008-canvas/canvas-and-palette.md), see useEditModeContextMenu.
   useEditModeContextMenu({
     editingId,
     elements: activeTab.elements,
@@ -377,7 +377,7 @@ export function EditorCanvasHost() {
         onSetCanvasTool={setCanvasTool}
         onExitAvatarMode={exitAvatarTool}
         // Mode button (docs/specs/009-elements/mode-button.md): pressing one is exactly picking that mode from
-        // the palette, so it goes through the same setter — telemetry, the
+        // the palette, so it goes through the same setter, telemetry, the
         // selection clear, and the empty-canvas guard all included. Pressing it
         // again, while already in that mode, hands you back your previous one.
         // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS, docs/specs/013-workspace/share-roles.md).
@@ -408,7 +408,7 @@ export function EditorCanvasHost() {
         }
         // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
         // ELEMENT's rect, not the trigger's, so it lands exactly where a
-        // right-click on the same element would — one menu, one position,
+        // right-click on the same element would, one menu, one position,
         // whichever way you asked for it.
         onOpenElementSettings={
           isReadOnly
@@ -551,7 +551,7 @@ export function EditorCanvasHost() {
         }}
         onDeselect={() => {
           // Clicking empty canvas also cancels an armed arrow-connect, and
-          // wraps up the Format tool — restoring the pre-Format tool — so a
+          // wraps up the Format tool (restoring the pre-Format tool) so a
           // background click is the quick way out of paint mode (docs/specs/008-canvas/canvas-and-palette.md).
           if (canvasTool === 'format') exitFormatTool();
           cancelConnect();
@@ -564,7 +564,7 @@ export function EditorCanvasHost() {
         onSelect={selectElement}
         onElementContextMenu={(id, sx, sy) => {
           // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-          // element, so it can't be selected, dragged, or edited — don't
+          // element, so it can't be selected, dragged, or edited, don't
           // pop a dead context menu on it either. Same gate as
           // selectElement. A Participant or a Viewer still opens its own menu there
           // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
@@ -603,8 +603,8 @@ export function EditorCanvasHost() {
             ? undefined
             : // Right-click on a group / multi-selection always OPENS at the
               // cursor (a direct set, like onElementContextMenu). A toggle here
-              // meant a lingering multi menu — which clicking elsewhere doesn't
-              // dismiss, since element pointerdown stops propagation — got
+              // meant a lingering multi menu (which clicking elsewhere doesn't
+              // dismiss, since element pointerdown stops propagation) got
               // closed by the next right-click instead of reopening, so the
               // group menu "wouldn't open".
               (sx, sy) => setContextMenu({ mode: 'multi', x: sx, y: sy })
