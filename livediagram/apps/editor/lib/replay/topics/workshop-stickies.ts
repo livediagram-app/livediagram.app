@@ -58,8 +58,9 @@ export const TILES = { note: 'Add Sticky Note', thumbs: 'Thumbs up', heart: 'Red
 
 // Stickies: each one opens Write and carries its tile out (Write closes as the carry leaves it).
 export const ADD = [0, 1, 2].map((i) => {
-  const open = 900 + i * 2300;
-  return { open, carry: [open + 900, open + 2000] as const };
+  // 700 ms from each drop to the next press on Write, so the way back to the palette is never a leap.
+  const open = 800 + i * 2500;
+  return { open, carry: [open + 900, open + 1800] as const };
 });
 // Write: each sticky is double-clicked, then typed on.
 export const WRITE = [0, 1, 2].map((i) => ({
@@ -69,8 +70,8 @@ export const WRITE = [0, 1, 2].map((i) => ({
 // Stickers: open it, pick Reactions on its rail, carry a sticker out; again for the second. Closing puts the rail
 // back on its first group (replay-dom.ts byRailGroup), so each visit picks Reactions again.
 export const STICK = [
-  { open: 900, group: 1700, carry: [2500, 3700] as const },
-  { open: 4100, group: 4800, carry: [5500, 6700] as const },
+  { open: 900, group: 1700, carry: [2500, 3500] as const },
+  { open: 4300, group: 5000, carry: [5700, 6700] as const },
 ] as const;
 
 const CARRIES: readonly Carry[] = [
