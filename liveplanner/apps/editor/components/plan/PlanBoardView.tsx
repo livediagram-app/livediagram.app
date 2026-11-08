@@ -41,6 +41,7 @@ import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
 import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
+import { cardRuns } from './card-runs';
 import {
   cardsMovingRefused,
   cardsStayedMessage,
@@ -925,38 +926,53 @@ export function PlanBoardView({
                                     />
                                   ))
                                 : null}
-                              {cell.map((item) => (
-                                <PlanBoardCard
-                                  key={item.id}
-                                  item={item}
-                                  palette={palette}
-                                  placeholderBefore={
-                                    slotHere?.beforeId === item.id && held?.itemId !== item.id
-                                      ? held?.height
-                                      : undefined
-                                  }
-                                  lifted={dragging?.itemId === item.id || carried.has(item.id)}
-                                  selected={selection.ids.has(item.id)}
-                                  done={done}
-                                  // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
-                                  setupFields={CARD_FIELDS}
-                                  cardSize={cardSize}
-                                  stacked={slotBoard}
-                                  touch={look.cardTouch}
-                                  faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
-                                  presence={plan?.presence.get(item.id)}
-                                  interactive={interactive}
-                                  canMove={canEditCards}
-                                  onPress={cardHandlers.onPress}
-                                  onOpen={cardHandlers.onOpen}
-                                  onKey={cardHandlers.onKey}
-                                  onMenu={cardHandlers.onMenu}
-                                  cardVote={cardVote}
-                                  {...(interactive && canEditCards
-                                    ? { onLongPress: cardHandlers.onLongPress }
-                                    : {})}
-                                />
-                              ))}
+                              {(() => {
+                                const drawCard = (item: Item) => (
+                                  <PlanBoardCard
+                                    key={item.id}
+                                    item={item}
+                                    palette={palette}
+                                    placeholderBefore={
+                                      slotHere?.beforeId === item.id && held?.itemId !== item.id
+                                        ? held?.height
+                                        : undefined
+                                    }
+                                    lifted={dragging?.itemId === item.id || carried.has(item.id)}
+                                    selected={selection.ids.has(item.id)}
+                                    done={done}
+                                    // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
+                                    setupFields={CARD_FIELDS}
+                                    cardSize={cardSize}
+                                    stacked={slotBoard}
+                                    touch={look.cardTouch}
+                                    faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
+                                    presence={plan?.presence.get(item.id)}
+                                    interactive={interactive}
+                                    canMove={canEditCards}
+                                    onPress={cardHandlers.onPress}
+                                    onOpen={cardHandlers.onOpen}
+                                    onKey={cardHandlers.onKey}
+                                    onMenu={cardHandlers.onMenu}
+                                    cardVote={cardVote}
+                                    {...(interactive && canEditCards
+                                      ? { onLongPress: cardHandlers.onLongPress }
+                                      : {})}
+                                  />
+                                );
+                                // A busy board draws its cards in runs, each skipped while out of view (card-runs.ts).
+                                return busy
+                                  ? cardRuns(cell).map((run) => (
+                                      <div
+                                        key={run[0]!.id}
+                                        data-plan-run=""
+                                        className={`plan-card-run flex flex-col ${simplified ? 'gap-1.5' : 'gap-2'}`}
+                                        style={{ ['--run-cards' as string]: run.length }}
+                                      >
+                                        {run.map(drawCard)}
+                                      </div>
+                                    ))
+                                  : cell.map(drawCard);
+                              })()}
                               {slotHere && slotHere.beforeId === null ? (
                                 <DropGap
                                   height={held!.height}

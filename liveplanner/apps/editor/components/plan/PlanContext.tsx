@@ -6,7 +6,9 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { PlanCardContext, PlanLatestContext, type PlanCardData } from './PlanCardContext';
 import type { PlanCardRef, PlanViewRef, Tab } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
@@ -152,7 +154,41 @@ export type PlanContextValue = {
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);
 
-export const PlanProvider = PlanContext.Provider;
+const NO_NAMES: ReadonlyMap<string, string> = new Map();
+const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
+
+// The plan, and what its cards draw from (PlanCardContext.tsx), kept apart so a change no card shows redraws none.
+export function PlanProvider({
+  value,
+  children,
+}: {
+  value: PlanContextValue | undefined;
+  children?: ReactNode;
+}) {
+  const latest = useLatest(value);
+  const { items, types, statusNames, statusPhases, canEditCards, itemsScope } = value ?? {};
+  const card = useMemo<PlanCardData | undefined>(
+    () =>
+      items && types
+        ? {
+            items,
+            types,
+            statusNames: statusNames ?? NO_NAMES,
+            statusPhases: statusPhases ?? NO_PHASES,
+            canEditCards: !!canEditCards,
+            ...(itemsScope !== undefined ? { itemsScope } : {}),
+          }
+        : undefined,
+    [items, types, statusNames, statusPhases, canEditCards, itemsScope],
+  );
+  return (
+    <PlanContext.Provider value={value}>
+      <PlanLatestContext.Provider value={latest}>
+        <PlanCardContext.Provider value={card}>{children}</PlanCardContext.Provider>
+      </PlanLatestContext.Provider>
+    </PlanContext.Provider>
+  );
+}
 
 export function usePlan(): PlanContextValue | undefined {
   return useContext(PlanContext);

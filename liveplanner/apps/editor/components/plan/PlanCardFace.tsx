@@ -47,7 +47,8 @@ import {
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
 import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
-import { usePlan, type PlanCardPresence } from './PlanContext';
+import type { PlanCardPresence } from './PlanContext';
+import { usePlanCard } from './PlanCardContext';
 import { planBlocking } from './blocking';
 import { customFieldText } from './custom-field-text';
 import { calculatedFieldOutcome } from './calculated-values';
@@ -141,7 +142,7 @@ export function PlanCardFace({
   stacked = false,
   headAction,
 }: PlanCardFaceProps) {
-  const plan = usePlan();
+  const plan = usePlanCard();
   const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
   // Leaned until it reads on the card: Project's black on a dark card, Idea's yellow on a light one.
   const accent = accentOn(type.color, palette);

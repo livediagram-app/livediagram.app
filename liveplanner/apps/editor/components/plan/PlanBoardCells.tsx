@@ -24,7 +24,7 @@ import {
   type Item,
   type LaneHead,
 } from '@liveplanner/items';
-import { usePlan } from './PlanContext';
+import { usePlanCard } from './PlanCardContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
@@ -173,7 +173,7 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   // "Voting on Plan cards"): the card carries the vote's stepper, unless it is face down.
   cardVote?: CardVote | null;
 }) {
-  const types = usePlan()?.types ?? ITEM_TYPES;
+  const types = usePlanCard()?.types ?? ITEM_TYPES;
   const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
   // A card that takes a finger as a scroll is picked up by a hold: past it, its finger stops scrolling
   // (usePlanCardDrag holdCardTouch). Non-passive from the start, so the browser waits on it.
@@ -310,10 +310,12 @@ export function PlanDragGhost({
   const behind = Math.min(GROUP_GHOST_STACK, count - 1);
   return createPortal(
     <div
-      className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
+      // Moved by `translate` rather than left and top, so following the pointer lays nothing out (plan-board.md "A drag
+      // stays smooth"). Not a layer of its own: over a busy board's run layers, Safari spent over a second re-sorting
+      // them as the copy left the board.
+      className="pointer-events-none fixed left-0 top-0 z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
       style={{
-        left: at.clientX - drag.offsetX,
-        top: at.clientY - drag.offsetY,
+        translate: `${at.clientX - drag.offsetX}px ${at.clientY - drag.offsetY}px`,
         width: drag.width,
         height: drag.height,
         ...planTextScaleVars(textScale),

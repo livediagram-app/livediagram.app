@@ -2,7 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { useRef } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { FLIP_CARDS_MAX, usePlanCardFlip } from './usePlanCardFlip';
+import { FLIP_CARDS_MAX, cardsToMeasure, usePlanCardFlip } from './usePlanCardFlip';
 
 // docs/specs/026-plan/plan-board.md "Cards move visibly".
 afterEach(cleanup);
@@ -84,5 +84,43 @@ describe('cards moving on a board', () => {
     for (const id of many) places.set(id, { x: 240, y: 0 });
     second.rerender(<Board ids={many} signature="2" />);
     expect(card('c0').classList.contains('plan-card-flip')).toBe(false);
+  });
+});
+
+describe('the cards a busy board measures', () => {
+  const rect = (top: number, height: number) =>
+    ({ top, bottom: top + height, left: 0, right: 300, width: 300, height }) as DOMRect;
+  function board(runTops: number[]) {
+    const body = document.createElement('div');
+    body.getBoundingClientRect = () => rect(0, 800);
+    runTops.forEach((top, r) => {
+      const run = document.createElement('div');
+      run.setAttribute('data-plan-run', '');
+      run.getBoundingClientRect = () => rect(top, 500);
+      for (let i = 0; i < 3; i++) {
+        const card = document.createElement('div');
+        card.setAttribute('data-plan-card', `r${r}c${i}`);
+        run.appendChild(card);
+      }
+      body.appendChild(run);
+    });
+    return body;
+  }
+  const ids = (cards: HTMLElement[]) => cards.map((c) => c.dataset.planCard);
+
+  it('reads only the runs within a view of the view, never one skipped far off', () => {
+    // In view, just below it, a view and more below, and far above.
+    const body = board([100, 900, 2200, -3000]);
+    expect(ids(cardsToMeasure(body))).toEqual(['r0c0', 'r0c1', 'r0c2', 'r1c0', 'r1c1', 'r1c2']);
+  });
+
+  it('reads every card on a board drawn without runs', () => {
+    const body = document.createElement('div');
+    for (const id of ['a', 'b']) {
+      const card = document.createElement('div');
+      card.setAttribute('data-plan-card', id);
+      body.appendChild(card);
+    }
+    expect(ids(cardsToMeasure(body))).toEqual(['a', 'b']);
   });
 });
