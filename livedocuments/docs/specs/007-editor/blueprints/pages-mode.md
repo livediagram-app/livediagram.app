@@ -689,7 +689,11 @@ joinedMenuCardWidth(joinedWidth, toolbarScale)` (the sidebar less the card's 12 
   its row's `paddingLeft` (in the toolbar's surface px), so the strip centres beside the sidebar;
   `useStripCrowded`, `useBarLabels`, `useBarFold` measure its room with `stripRoomBesideMenu` (the
   editor less the box and the gap on both sides, or, on a `data-menu-joined` box, the box
-  and a gap on the left and a gap from the right edge, so a strip that fills it keeps the gap from the sidebar too). `TabNameInBox` lets its name and its rename
+  and a gap on the left and a gap from the right edge, so a strip that fills it keeps the gap from the sidebar too).
+  `useStripCrowding` returns that crowding with `clear` (the box's right edge less the editor's left, plus
+  `STRIP_MENU_GAP_PX`); crowded with the article dock, `ToolbarPalette` pads its row's left by
+  `max(clear, besideWidth)` and draws the card as a phone's (`CardWidth` `flex min-w-0 max-w-full`, the card
+  `min-w-0`, all but the `data-strip-rail` dock `shrink-0`), so the dock's rail scrolls beside the box. `TabNameInBox` lets its name and its rename
   box shrink (`min-w-0`) inside the fixed width.
   - The strip's room (toolbar-layout.md "The strip's room"): `useBarFold` (`../packages/workbench/src/components/palette/useBarFold.ts`,
     on while the bar is bare and off on a phone) measures the whole bare bar once (`BarMeasure`: each

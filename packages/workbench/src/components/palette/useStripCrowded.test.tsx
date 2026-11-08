@@ -2,7 +2,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useRef } from 'react';
-import { useStripCrowded } from './useStripCrowded';
+import { useStripCrowded, useStripCrowding } from './useStripCrowded';
 
 // docs/specs/007-editor/toolbar-layout.md "The category bar": a strip too wide to centre between the menu card's
 // sides sits at the right instead of running under the card.
@@ -81,5 +81,57 @@ describe('useStripCrowded', () => {
     const seen: boolean[] = [];
     render(<Strip width={425} enabled={false} onCrowded={(c) => seen.push(c)} />);
     expect(seen.every((c) => !c)).toBe(true);
+  });
+});
+
+function Crowding({
+  width,
+  enabled = true,
+  onSeen,
+}: {
+  width: number;
+  enabled?: boolean;
+  onSeen: (s: { crowded: boolean; clear: number }) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  onSeen(useStripCrowding(ref, enabled));
+  return (
+    <div
+      ref={(el) => {
+        ref.current = el;
+        if (el) el.getBoundingClientRect = () => new DOMRect(0, 12, width, 50);
+      }}
+    />
+  );
+}
+
+describe('useStripCrowding', () => {
+  it('says where a crowded strip starts clear of the menu card: its right edge and the gap', () => {
+    vi.stubGlobal('innerWidth', 790);
+    const seen: { crowded: boolean; clear: number }[] = [];
+    // An article's docked formatting, 660 wide, in a 790px window: crowded, and it starts 185 + 8 in.
+    render(<Crowding width={660} onSeen={(s) => seen.push(s)} />);
+    expect(seen.at(-1)).toEqual({ crowded: true, clear: 193 });
+  });
+
+  it('keeps the same answer when nothing changed, and is off where disabled', () => {
+    vi.stubGlobal('innerWidth', 1580);
+    const seen: { crowded: boolean; clear: number }[] = [];
+    render(<Crowding width={660} onSeen={(s) => seen.push(s)} />);
+    const before = seen.at(-1);
+    at(1580);
+    expect(seen.at(-1)).toBe(before);
+    expect(before).toEqual({ crowded: false, clear: 193 });
+    const off: { crowded: boolean; clear: number }[] = [];
+    render(<Crowding width={660} enabled={false} onSeen={(s) => off.push(s)} />);
+    expect(off.every((s) => !s.crowded && s.clear === 0)).toBe(true);
+  });
+
+  it('clears nothing with no menu card', () => {
+    document.querySelector('[data-toolbar-menu]')?.remove();
+    vi.stubGlobal('innerWidth', 790);
+    const seen: { crowded: boolean; clear: number }[] = [];
+    render(<Crowding width={900} onSeen={(s) => seen.push(s)} />);
+    expect(seen.at(-1)).toEqual({ crowded: true, clear: 0 });
   });
 });

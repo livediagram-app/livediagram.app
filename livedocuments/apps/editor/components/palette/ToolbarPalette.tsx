@@ -28,7 +28,7 @@ import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
-import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
+import { useStripCrowding } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
 import { CategoryBarButtons, CategoryBarFlyout, useCategoryBar } from './CategoryBar';
 import { usePaletteKindMotion } from './usePaletteKindMotion';
@@ -93,10 +93,11 @@ function StripRow({ leading, children }: { leading?: ReactNode; children: ReactN
 }
 
 // Centred alone (desktop), the card is whole-pixel wide with the canvas's
-// parity (see SnapWidth). Beside the menu card (a phone) it is left-aligned
-// and may shrink to the row, its bar scrolling, so it is not snapped there.
+// parity (see SnapWidth). Beside the menu card (a phone), or an article's
+// formatting crowded clear of it, it may shrink to the room, its rail
+// scrolling, so it is not snapped there.
 function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode }) {
-  if (swipe) return <div className="flex min-w-0">{children}</div>;
+  if (swipe) return <div className="flex min-w-0 max-w-full">{children}</div>;
   return <SnapWidth matchParentParity>{children}</SnapWidth>;
 }
 
@@ -158,8 +159,12 @@ export function ToolbarPalette(props: Props) {
     categoriesKey: barCategories.map((c) => c.id).join('|'),
     scale,
   });
-  // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
-  const crowded = useStripCrowded(cardRef, leading == null);
+  // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead. An article's
+  // docked formatting, wider still than the room beside the card (a narrow window, a side by side pane), starts
+  // clear of the card and its controls scroll, as on a phone's row, rather than running under the card.
+  const { crowded, clear } = useStripCrowding(cardRef, leading == null);
+  const dockGivesWay = crowded && articleDock;
+  const giveWay = swipe || dockGivesWay;
 
   // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
   const beforeSearch = () => {
@@ -210,7 +215,11 @@ export function ToolbarPalette(props: Props) {
         ...(scale === 1 ? {} : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale) }),
         alignItems: crowded ? 'flex-end' : 'center',
         paddingRight: crowded ? '0.75rem' : 0,
-        ...(besideWidth ? { paddingLeft: toSurfacePx(besideWidth, scale) } : {}),
+        ...(dockGivesWay
+          ? { paddingLeft: toSurfacePx(Math.max(clear, besideWidth ?? 0), scale) }
+          : besideWidth
+            ? { paddingLeft: toSurfacePx(besideWidth, scale) }
+            : {}),
       }}
       // While one of its popovers is open (a category's flyout, Search) the strip rises to the popover layer,
       // so what hangs from it sits over everything on the canvas, an element's toolbar and menus included.
@@ -228,7 +237,7 @@ export function ToolbarPalette(props: Props) {
           <PaletteTintProvider tint={themeTint}>
             {/* Whole-pixel wide where centred (see CardWidth). */}
             <StripRow leading={leading}>
-              <CardWidth swipe={swipe}>
+              <CardWidth swipe={giveWay}>
                 {/* The tour's Palette anchor (docs/specs/007-editor/pages-tour.md) is the card, not the
                     full-width row around it, so the ring frames the strip. */}
                 <div
@@ -243,7 +252,7 @@ export function ToolbarPalette(props: Props) {
                   // Beside the menu card only the bar gives way (and scrolls): the
                   // selection mode and Search keep their size.
                   className={
-                    swipe
+                    giveWay
                       ? `${CARD_CLASS} min-w-0 [&>:not([data-strip-rail])]:shrink-0`
                       : CARD_CLASS
                   }
