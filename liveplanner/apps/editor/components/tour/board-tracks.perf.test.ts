@@ -2,6 +2,7 @@
 // Budgets for the board tracks' checks, run on each render while a track is up (plan-tour.md "Boards: Card Types",
 // "Boards: Board Setup"), at the largest plan they meet: 200 card types, a 12-column board with every widget.
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ItemTypeDef, PlanBoardSetup } from '@liveplanner/items';
 import { newTypeOf, setupChanged, setupMissions, typeShape, typesMissions } from './board-tracks';
 
@@ -37,9 +38,11 @@ const now = {
 
 function perCall(fn: () => void, n = 2000): number {
   for (let i = 0; i < 100; i++) fn();
-  const t = performance.now();
-  for (let i = 0; i < n; i++) fn();
-  return (performance.now() - t) / n;
+  return (
+    cpuMsOf(() => {
+      for (let i = 0; i < n; i++) fn();
+    }) / n
+  );
 }
 
 describe('board track check budgets', () => {
@@ -52,7 +55,7 @@ describe('board track check budgets', () => {
       newTypeOf(ctx);
     });
     console.log(`card types checks: ${(ms * 1000).toFixed(1)} µs per render`);
-    expect(ms).toBeLessThan(1);
+    expect(ms).toBeLessThan(cpuBudgetMs(1));
   });
   it('checks every Board Setup mission and setupChanged in well under a millisecond on 12 columns', () => {
     const missions = setupMissions('b');
@@ -61,6 +64,6 @@ describe('board track check budgets', () => {
       setupChanged(start, now);
     });
     console.log(`board setup checks: ${(ms * 1000).toFixed(1)} µs per render`);
-    expect(ms).toBeLessThan(1);
+    expect(ms).toBeLessThan(cpuBudgetMs(1));
   });
 });
