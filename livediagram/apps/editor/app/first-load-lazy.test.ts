@@ -18,4 +18,17 @@ describe('every route’s first load', () => {
     expect(staticImports(src).some((p) => p.includes('editor-page'))).toBe(false);
     expect(src).toContain("import('./document/[id]/editor-page')");
   });
+
+  // The template builders (every template's elements, about 110 KiB gzipped) load when a template is picked, not
+  // with the editor: a static import from the start screen's pick once put them all in the document page's first load.
+  it('loads the template builders only on a template pick', () => {
+    for (const path of [
+      'components/start/useTemplatePickMove.ts',
+      'app/document/[id]/useTemplateFlow.ts',
+    ]) {
+      const src = read(path);
+      expect(staticImports(src), path).not.toContain('@/lib/template-builders');
+      expect(src, path).toContain("import('@/lib/template-builders')");
+    }
+  });
 });
