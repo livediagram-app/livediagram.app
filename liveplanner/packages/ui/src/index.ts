@@ -92,3 +92,5 @@ export {
 // Everything above is this product's own. The design system every liveworkspace app shares (buttons,
 // fields, dialogs, menus, hints, the optical primitives and the hooks they use) is @liveworkspace/ui.
 export * from '@liveworkspace/ui';
+// The loaders' shared motion clock, for this product's loading screens' own loops.
+export { firstPaintAt, useLoopPhase } from '@liveworkspace/ui/build-animation-kit';

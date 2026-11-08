@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { act, render, screen } from '@testing-library/react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -70,5 +72,30 @@ describe('ProjectLoading', () => {
     });
     expect(screen.queryByText(/You’re offline/)).toBeNull();
     expect(screen.getByRole('button', { name: /refresh/i })).toBeTruthy();
+  });
+
+  // docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser only": the prerendered
+  // screen (no paint yet, a different clock) and the hydrating browser (after its first paint) render the same HTML.
+  it('hydrates its prerendered copy without a mismatch', async () => {
+    vi.useRealTimers();
+    const getEntries = vi.spyOn(performance, 'getEntriesByType').mockReturnValue([]);
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<ProjectLoading stage="creating" />);
+    document.body.appendChild(container);
+    getEntries.mockReturnValue([{ startTime: 12 } as PerformanceEntry]);
+    const nowSpy = vi.spyOn(performance, 'now').mockReturnValue(31_234);
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const recoverable = vi.fn();
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    await act(async () => {
+      root = hydrateRoot(container, <ProjectLoading stage="creating" />, {
+        onRecoverableError: recoverable,
+      });
+    });
+    expect(errors).not.toHaveBeenCalled();
+    expect(recoverable).not.toHaveBeenCalled();
+    act(() => root?.unmount());
+    container.remove();
+    nowSpy.mockRestore();
   });
 });
