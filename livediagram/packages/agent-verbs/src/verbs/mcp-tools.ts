@@ -161,7 +161,7 @@ export const mcpDeleteDocument = mcpTool('delete_document', {
   title: 'Delete a document or tab',
   description:
     'Delete a document by moving it to the Trash, where it can be restored for ' +
-    `${TRASH_RETENTION_DAYS} days (with restore_document, or from Settings › Trash) before ` +
+    `${TRASH_RETENTION_DAYS} days (with restore_document, or from the Trash in the Explorer) before ` +
     'it is purged. With tabId, delete just one of its tabs, outright: tabs have no ' +
     'Trash. Confirm with the user first. A document must keep at least one tab.',
   inputSchema: deleteDocumentShape,

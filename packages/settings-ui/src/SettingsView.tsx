@@ -26,7 +26,6 @@ export function SettingsView({
   isMobile,
   onClose,
   title = 'Settings',
-  leading,
   footer,
   placeholder,
   focus = null,
@@ -42,8 +41,6 @@ export function SettingsView({
   onClose: () => void;
   // The header's title on the front screen (a pushed pane is titled by its category).
   title?: string;
-  // Before the title on the front screen: liveworkspace.app's app mark.
-  leading?: ReactNode;
   footer?: ReactNode;
   // Shown in place of the rail and pane (loading, a failed load).
   placeholder?: ReactNode;
@@ -157,7 +154,6 @@ export function SettingsView({
         data-settings-header
         className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800"
       >
-        {showBack ? null : leading}
         <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {showBack ? selected?.label : title}
         </h2>

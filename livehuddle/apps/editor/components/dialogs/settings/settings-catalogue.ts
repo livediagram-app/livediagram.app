@@ -229,11 +229,6 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
-// The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and deployments without accounts included, because
-// Settings is the one menu every deployment has.
-export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
-
 // Pages and boards set aside from documents in This Browser (docs/specs/006-document/offline-mode.md "Moving
 // retired parts to the other apps"): not a preference, the way back to the offer. Only while there are any.
 export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
@@ -255,7 +250,6 @@ export type SettingsRowSpec =
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
-  | SettingsTrashRowSpec
   | SettingsRetiredPartsRowSpec
   | SettingsDefaultFoldersRowSpec;
 
@@ -782,19 +776,9 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'guestVsAccount',
       },
       {
-        kind: 'trash',
-        key: 'trash',
-        section: 'Your Data',
-        label: 'Trash',
-        keywords:
-          'trash bin recycle deleted undo undelete restore recover get back space canvas document diagram permanently empty',
-        description: 'Deleted spaces wait here for 30 days, ready to restore.',
-        helpArticle: 'trash',
-      },
-      {
         kind: 'retiredParts',
         key: 'retiredParts',
-        section: 'Your Data',
+        section: 'This Browser',
         label: 'Pages and Boards in This Browser',
         keywords:
           'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
@@ -948,7 +932,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "Your Data" → "your-data". Settings can open on one
+// A section's target id: "This Browser" → "this-browser". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

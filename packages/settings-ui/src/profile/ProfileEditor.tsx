@@ -500,7 +500,7 @@ function Preview({
             className={`mt-4 -ml-1 inline-flex h-6 max-w-36 items-center rounded-full px-2.5 text-xs font-semibold shadow-sm ${fill} ${color ? 'text-white' : 'text-white dark:text-slate-950'}`}
             style={style}
           >
-            <span className="text-optical-centre min-w-0 truncate">{name}</span>
+            <span className="text-optical-line min-w-0 truncate">{name}</span>
           </span>
         </div>
       </div>

@@ -278,13 +278,6 @@ export const DESIGN_ACTIONS: MetricStack = {
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
 // design delete. Whether anyone comes back for a deleted design is the
 // question, so restores lead; each chart counts every Trash (Personal, Team).
-export const TRASH_OPENED = chart(
-  'Trash',
-  'Opened',
-  'Trash Opened',
-  'The Trash opened from Settings.',
-);
-
 export const DESIGNS_RESTORED = chart(
   'Trash',
   'Restored',
@@ -314,7 +307,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted designs wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DESIGNS_RESTORED, TRASH_OPENED, DESIGNS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [DESIGNS_RESTORED, DESIGNS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [

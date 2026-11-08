@@ -238,7 +238,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted designs wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team designs go to their team’s Trash.',
+        a: 'Deleted designs wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer. Team designs go to their team’s Trash.',
       },
     ],
   },

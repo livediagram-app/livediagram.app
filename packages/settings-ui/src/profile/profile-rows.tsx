@@ -84,7 +84,7 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       keywords: 'account profile identity name email avatar joined',
       render: () => (
         <HeaderCell>
-          <ProfileHeaderCard identity={identity} />
+          <ProfileHeaderCard identity={identity} {...(profile ? { profile } : {})} />
         </HeaderCell>
       ),
     });

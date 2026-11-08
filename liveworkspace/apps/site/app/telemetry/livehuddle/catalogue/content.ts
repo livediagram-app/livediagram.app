@@ -303,13 +303,6 @@ export const DOCUMENT_ACTIONS: MetricStack = {
 // document delete. Whether anyone comes back for a deleted document is the
 // question, so restores lead; each chart counts every Trash (Personal, Team,
 // Local).
-export const TRASH_OPENED = chart(
-  'Trash',
-  'Opened',
-  'Trash Opened',
-  'The Trash opened from Settings.',
-);
-
 export const DOCUMENTS_RESTORED = chart(
   'Trash',
   'Restored',
@@ -339,7 +332,7 @@ export const TRASH: MetricStack = {
   title: 'Trash',
   blurb:
     'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+  members: [DOCUMENTS_RESTORED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [

@@ -5,6 +5,8 @@ import { avatarFill, initials } from '@liveworkspace/account-menu/initials';
 import { presenceColour } from '@liveworkspace/settings/presence';
 import { buttonClassName, PictureDisc } from '@liveworkspace/ui';
 import { MONTH_YEAR } from '@liveworkspace/ui/date-format';
+import { useLiveProfile } from './live-profile';
+import type { ProfileHost } from './profile-host';
 
 // The Profile's header card (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): who is signed in, as the old
 // livediagram Profile page opened with, richer. A banner in the app's brand tint, drawn as a canvas where the person's
@@ -62,13 +64,17 @@ function cursorColour(name: string, colour: string | null | undefined): string {
 export function ProfileHeaderCard({
   identity,
   guest,
+  profile,
 }: {
   identity?: AccountIdentity | null;
   guest?: AccountGuest | null;
+  // Where the panel edits the profile: the card reads its name and colour from there and follows each save.
+  profile?: ProfileHost;
 }) {
+  const live = useLiveProfile(identity ? profile : undefined);
   const isGuest = !identity && Boolean(guest);
-  const name = identity?.name || guest?.name || (isGuest ? 'Guest' : 'You');
-  const colour = identity?.colour ?? guest?.colour ?? null;
+  const name = live?.name || identity?.name || guest?.name || (isGuest ? 'Guest' : 'You');
+  const colour = live ? live.color : (identity?.colour ?? guest?.colour ?? null);
   const joined = joinedText(identity?.joined);
   return (
     <div data-profile-header="" className="rounded-[inherit]">
@@ -267,7 +273,7 @@ function ProfileBanner({ name, colour }: { name: string; colour: string | null }
           className="mt-4 -ml-1 inline-flex h-6 max-w-40 items-center rounded-full px-2.5 text-xs font-semibold text-white shadow-sm"
           style={{ backgroundColor: fill }}
         >
-          <span className="text-optical-centre min-w-0 truncate">{name}</span>
+          <span className="text-optical-line min-w-0 truncate">{name}</span>
         </span>
       </div>
     </div>

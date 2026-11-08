@@ -155,7 +155,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
-  'Trash·Opened',
   'Trash·Restored',
   'UI·Added',
   'UI·Changed',

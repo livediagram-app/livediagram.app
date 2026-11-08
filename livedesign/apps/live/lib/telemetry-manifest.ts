@@ -165,7 +165,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Cleared',
   'Trash·Deleted',
   // Trash (docs/specs/013-workspace/trash.md): a trashed design's card, and the design restored from it.
-  'Trash·Opened',
   'Trash·Restored',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).

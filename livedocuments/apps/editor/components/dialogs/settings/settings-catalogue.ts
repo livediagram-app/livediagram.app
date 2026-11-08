@@ -264,11 +264,6 @@ export type SettingsShortcutListRowSpec = RowBase & { kind: 'shortcutList' };
 export type SettingsIdentityRowSpec = RowBase & { kind: 'identity' };
 export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 
-// The Trash (docs/specs/013-workspace/trash.md): not a preference, a way in.
-// Here for everyone, guests and deployments without accounts included, because
-// Settings is the one menu every deployment has.
-export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
-
 // Default Folders (docs/specs/013-workspace/default-folders.md "Settings"): where new documents go when made without
 // a place. Not a preference: the shared Explorer reads and writes them on the index.
 export type SettingsDefaultFoldersRowSpec = RowBase & { kind: 'defaultFolders' };
@@ -287,7 +282,6 @@ export type SettingsRowSpec =
   | SettingsShortcutListRowSpec
   | SettingsIdentityRowSpec
   | SettingsDeleteAccountRowSpec
-  | SettingsTrashRowSpec
   | SettingsDefaultFoldersRowSpec;
 
 export type SettingsCategorySpec = {
@@ -1183,16 +1177,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         helpArticle: 'guestVsAccount',
       },
       {
-        kind: 'trash',
-        key: 'trash',
-        section: 'Your Data',
-        label: 'Trash',
-        keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
-        helpArticle: 'trash',
-      },
-      {
         kind: 'deleteAccount',
         key: 'deleteAccount',
         section: 'Danger Zone',
@@ -1355,7 +1339,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "Your Data" → "your-data". Settings can open on one
+// A section's target id: "This Browser" → "this-browser". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

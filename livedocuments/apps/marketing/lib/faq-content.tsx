@@ -227,7 +227,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team documents go to their team’s Trash.',
+        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer. Team documents go to their team’s Trash.',
       },
     ],
   },

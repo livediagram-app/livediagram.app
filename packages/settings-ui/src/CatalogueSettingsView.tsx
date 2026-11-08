@@ -3,7 +3,8 @@
 // The Settings panel's view over what it reads from the accounts API (liveworkspace/docs/specs/010-site/site.md "Settings"): one
 // app's settings from its plain-data catalogue (liveworkspace.app, where no app's own Settings is loaded), or the
 // All view: the Account section, then one set of categories, Common's and every app's merged by their place
-// (merge-categories.ts), each app's own rows under its logo and name. Its own chunk, loaded only when
+// (merge-categories.ts), each row marked with the logos of the apps it applies to; signed in, the app's side is the
+// same, kept to the rows that apply to it. Its own chunk, loaded only when
 // one of those is first shown, with each app's catalogue fetched beside it; an editor showing its own settings
 // never loads it.
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
@@ -22,6 +23,7 @@ import { accountCategories, type AccountSection } from './account-model';
 import { AccountTokensInPlace } from './account-panels/tokens-in-place';
 import { catalogueModel } from './catalogue-model';
 import { foldIntoAccount } from './fold-account';
+import { SettingsAppMarksProvider, type SettingsAppMarks } from './app-marks';
 import { SettingsCategoryTile } from './glyphs';
 import { guestProfileRows } from './profile/profile-rows';
 import type { AccountGuest } from './profile/ProfileHeader';
@@ -94,7 +96,6 @@ export type CatalogueSettingsViewProps = {
   isMobile: boolean;
   onClose: () => void;
   title?: string;
-  leading?: ReactNode;
   footer?: ReactNode;
   switcher?: ReactNode;
   focus?: SettingsFocus | null;
@@ -164,6 +165,13 @@ export default function CatalogueSettingsView({
     };
   }, [apps, store, attempt]);
 
+  // While the rest of the app's side loads, its own rows already carry their logos.
+  const loadingMarks = useAppMarks(withShared && current ? current : undefined, props.renderLogo);
+  const loadingOwn = useMemo(
+    () => (own && current ? markedOwn(own, current, panelAppIds(current)) : []),
+    [own, current],
+  );
+
   const retry = () => {
     setLoad({ state: 'loading' });
     setAttempt((n) => n + 1);
@@ -172,21 +180,23 @@ export default function CatalogueSettingsView({
   // that read fails: only the account's and the shared parts are missing, so the note and Try again say so below them.
   if (load.state !== 'ready' && mode === 'app' && own) {
     return (
-      <SettingsView
-        {...view(props)}
-        categories={own}
-        memoryKey={props.memoryKey ?? null}
-        footer={
-          load.state === 'error' ? (
-            <>
-              {props.footer}
-              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
-            </>
-          ) : (
-            props.footer
-          )
-        }
-      />
+      <SettingsAppMarksProvider value={withShared && current ? loadingMarks : null}>
+        <SettingsView
+          {...view(props)}
+          categories={withShared && current ? loadingOwn : own}
+          memoryKey={props.memoryKey ?? null}
+          footer={
+            load.state === 'error' ? (
+              <>
+                {props.footer}
+                <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+              </>
+            ) : (
+              props.footer
+            )
+          }
+        />
+      </SettingsAppMarksProvider>
     );
   }
   if (load.state !== 'ready') {
@@ -196,7 +206,6 @@ export default function CatalogueSettingsView({
         isMobile={props.isMobile}
         onClose={props.onClose}
         title={props.title}
-        leading={props.leading}
         switcher={props.switcher}
         footer={props.footer}
         placeholder={
@@ -245,7 +254,7 @@ function ReadyView({
     saver.connect({ show: setValue, error: setError, saved: () => setSaved((n) => n + 1) });
   }, [saver]);
 
-  // The Common group's rows, from every catalogue read, in the apps' order: built once.
+  // The common settings, from every catalogue read, in the apps' order: built once.
   const common = useMemo(
     () =>
       mode === 'all' || withShared
@@ -286,32 +295,74 @@ function ReadyView({
     [mode, withShared, current, own, catalogues, common, value, withPhone, renderLogo, saver],
   );
 
+  // The apps' logos beside each row, wherever the panel holds more than one app's settings.
+  const marks = useAppMarks(mode === 'all' || withShared ? current : undefined, renderLogo);
+
   return (
     // An editor's own API Tokens row, folded in under the Account section's, reads whether the tokens are drawn above.
     <AccountTokensInPlace value={Boolean(account.renderTokens)}>
-      <SettingsView
-        {...view}
-        categories={model.categories}
-        groups={model.groups}
-        placeholder={
-          model.categories.length === 0 ? (
-            <p className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
-              Everything else is set in the app itself.
-            </p>
-          ) : undefined
-        }
-        footer={
-          <>
-            {footer}
-            <p aria-live="polite" className="sr-only">
-              {saved > 0 && !error ? 'Saved' : ''}
-            </p>
-            {error ? <ErrorNote>{errorMessage(error)}</ErrorNote> : null}
-          </>
-        }
-      />
+      <SettingsAppMarksProvider value={marks}>
+        <SettingsView
+          {...view}
+          categories={model.categories}
+          groups={model.groups}
+          placeholder={
+            model.categories.length === 0 ? (
+              <p className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
+                Everything else is set in the app itself.
+              </p>
+            ) : undefined
+          }
+          footer={
+            <>
+              {footer}
+              <p aria-live="polite" className="sr-only">
+                {saved > 0 && !error ? 'Saved' : ''}
+              </p>
+              {error ? <ErrorNote>{errorMessage(error)}</ErrorNote> : null}
+            </>
+          }
+        />
+      </SettingsAppMarksProvider>
     </AccountTokensInPlace>
   );
+}
+
+/** The panel's apps, their names and logos, for the logos beside each row; null for one app's settings alone
+ *  (`current` undefined). Built once per panel. */
+function useAppMarks(
+  current: SettingsAppId | null | undefined,
+  renderLogo: (id: SettingsAppId | 'all') => ReactNode,
+): SettingsAppMarks | null {
+  return useMemo(
+    () =>
+      current === undefined
+        ? null
+        : {
+            apps: panelAppIds(current).map((id) => ({
+              id,
+              name: APP_NAMES[id],
+              logo: renderLogo(id),
+            })),
+            every: renderLogo('all'),
+          },
+    [current, renderLogo],
+  );
+}
+
+/** An editor's own Settings, drawn while the rest of its side loads, with its rows marked as its own (or every app's,
+ *  for a setting they all share), so the names do not shift when the other apps' logos join them. */
+function markedOwn(
+  own: readonly SettingsCategory[],
+  app: SettingsAppId,
+  every: readonly string[],
+): SettingsCategory[] {
+  return own.map((category) => ({
+    ...category,
+    rows: category.rows.map((row) =>
+      row.apps ? row : { ...row, apps: row.allApps ? every : [app] },
+    ),
+  }));
 }
 
 /** The panel's categories and the rail's headings: one app's (its side of the switch), or All's. Plain, so a test can
@@ -344,7 +395,7 @@ export function panelModel({
     const catalogue = catalogues[app];
     if (!catalogue) return [];
     return catalogueModel(
-      // In All, an app's group holds only its own settings: the common ones are under Common.
+      // Beside the common settings, an app's own categories hold only its own: the common ones are Common's rows.
       mode === 'all' || withShared ? withoutCommonRows(catalogue) : catalogue,
       { all: shared?.all ?? value.all, app: value.apps[app] ?? {} },
       (binding, stored) => saver.changeApp(app, binding, stored),
@@ -371,6 +422,18 @@ export function panelModel({
   const groups: SettingsGroupHeading[] = [
     { id: ACCOUNT_GROUP, label: 'Account', icon: renderLogo('all') },
   ];
+  // Every app the panel lists, the app opened for first: whose rows are read, and whose wording and old copies of a
+  // common setting win. An Account row, and an app's row over a setting every app shares, applies to all of them.
+  const shownIds = panelAppIds(current);
+  const order = current ? [current, ...shownIds.filter((app) => app !== current)] : shownIds;
+  const every: readonly string[] = shownIds;
+  const markApps = (app: SettingsAppId, categories: SettingsCategory[]) =>
+    categories.map((category) => ({
+      ...category,
+      rows: category.rows.map((row) =>
+        row.apps ? row : { ...row, apps: row.allApps ? every : [app] },
+      ),
+    }));
   // The Account section's categories, which each app's own copies are folded into below, so it shows once.
   const accountListed: SettingsCategory[] = groupCategories(
     ACCOUNT_GROUP,
@@ -379,105 +442,93 @@ export function panelModel({
       all: shared?.all ?? value.all,
       set: shared?.set ?? ((key, next) => saver.changeShared(key, next)),
     }),
-  );
+  ).map((category) => ({
+    ...category,
+    rows: category.rows.map((row) => ({ ...row, apps: every })),
+  }));
   // An editor's own copies of the Account section's switches and of the common settings are left out of its
   // categories.
   const commonIds = common ? commonRowIds(common) : new Set<string>();
-  const ownFiled = (app: SettingsAppId, keepEmpty: boolean) =>
+  const ownFiled = (app: SettingsAppId) =>
     groupCategories(app, own ?? [], {
       omit: (row) => (row.allApps === true && ACCOUNT_KEYS.has(row.key)) || commonIds.has(row.key),
-      keepEmpty,
+      keepEmpty: true,
     });
-  // An app's sub-heading inside a category: its logo and name.
-  const heading = (app: SettingsAppId) => ({ label: APP_NAMES[app], icon: renderLogo(app) });
-  // Common reads an app's old copy of a common setting from the app the panel was opened for first.
-  const shownIds = panelAppIds(current);
-  const order = current ? [current, ...shownIds.filter((app) => app !== current)] : shownIds;
 
-  if (mode === 'all') {
-    // One set of categories (merge-categories.ts): Common's, then each app's own, the app opened for first, merged
-    // by their place, each app's own rows under its logo and name.
-    const sources: MergeSource[] = [];
-    if (common) {
-      sources.push({
-        group: COMMON_GROUP,
-        categories: commonModel({
-          common,
-          all: value.all,
-          apps: value.apps,
-          order,
-          ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
-          change: (app, binding, stored) => saver.changeApp(app, binding, stored),
-          structure: true,
-        }),
-      });
-    }
-    for (const app of order) {
-      const filed =
-        own && app === current
-          ? ownFiled(app, true)
-          : groupCategories(app, appModel(app, true), { keepEmpty: true });
-      sources.push({
-        group: app,
-        heading: heading(app),
-        categories: foldIntoAccount({
-          account: accountListed,
-          accountGroup: ACCOUNT_GROUP,
-          app: filed,
-          appGroup: app,
-          appHeading: heading(app),
-        }),
-      });
-    }
-    const merged = mergeAppCategories(sources, APPS_GROUP);
-    if (merged.length > 0) groups.push({ id: APPS_GROUP, label: 'Apps', flat: true });
-    return {
-      // The Account section's categories answer to their bare ids too (`notifications`).
-      categories: [
-        ...accountListed.map((c) => ({
-          ...c,
-          aliases: [...(c.aliases ?? []), c.id.slice(ACCOUNT_GROUP.length + 1)],
-        })),
-        ...merged,
-      ],
-      groups,
-    };
+  // One set of categories (merge-categories.ts): Common's, then each app's own, the app opened for first, merged by
+  // their place, every row marked with the apps it applies to. This App's side is the same, kept to the rows that
+  // apply to that app (`only`), so the two sides never disagree about where a setting is.
+  const sources: MergeSource[] = [];
+  if (common) {
+    sources.push({
+      group: COMMON_GROUP,
+      shared: true,
+      categories: commonModel({
+        common,
+        all: value.all,
+        apps: value.apps,
+        order,
+        ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
+        ...(own && current
+          ? {
+              editor: {
+                app: current,
+                keys: new Set(own.flatMap((category) => category.rows.map((row) => row.key))),
+              },
+            }
+          : {}),
+        change: (app, binding, stored) => saver.changeApp(app, binding, stored),
+        structure: true,
+      }),
+    });
   }
+  for (const app of order) {
+    const filed = markApps(
+      app,
+      own && app === current
+        ? ownFiled(app)
+        : groupCategories(app, appModel(app, true), { keepEmpty: true }),
+    );
+    sources.push({
+      group: app,
+      categories: foldIntoAccount({
+        account: accountListed,
+        accountGroup: ACCOUNT_GROUP,
+        app: filed,
+        appGroup: app,
+      }),
+    });
+  }
+  const only = mode === 'app' && current ? current : undefined;
+  const merged = mergeAppCategories(sources, APPS_GROUP, only ? { only } : {});
+  if (merged.length > 0) groups.push({ id: APPS_GROUP, label: 'Apps', flat: true });
+  return {
+    // The Account section's categories answer to their bare ids too (`notifications`).
+    categories: [
+      ...keepFor(accountListed, only).map((c) => ({
+        ...c,
+        aliases: [...(c.aliases ?? []), c.id.slice(ACCOUNT_GROUP.length + 1)],
+      })),
+      ...merged,
+    ],
+    groups,
+  };
+}
 
-  const categories: SettingsCategory[] = [];
-  // The app's own view: Common's rows that app has, then its group alone.
-  const shownCommon = common && current ? commonFor(common, current, own) : common;
-  const shownApps = current ? [current] : [];
-  if (shownCommon) {
-    const listed = commonModel({
-      common: shownCommon,
-      all: value.all,
-      apps: value.apps,
-      order,
-      ...(own && shared ? { own: { categories: own, prefs: shared.all } } : {}),
-      change: (app, binding, stored) => saver.changeApp(app, binding, stored),
-    });
-    if (listed.length > 0) {
-      groups.push({ id: COMMON_GROUP, label: 'Common', icon: renderLogo('all') });
-      categories.push(...listed);
-    }
-  }
-  for (const app of shownApps) {
-    const filed =
-      own && app === current ? ownFiled(app, false) : groupCategories(app, appModel(app));
-    const listed = foldIntoAccount({
-      account: accountListed,
-      accountGroup: ACCOUNT_GROUP,
-      app: filed,
-      appGroup: app,
-      appHeading: heading(app),
-    });
-    // An app left with no settings of its own is left out of the rail, rather than shown with a note.
-    if (listed.length === 0) continue;
-    groups.push({ id: app, label: APP_NAMES[app], icon: renderLogo(app) });
-    categories.push(...listed);
-  }
-  return { categories: [...accountListed, ...categories], groups };
+// The Account section's categories kept to the rows that apply to `app` (another app's own email switches are left
+// out of this app's side), and those left with any; a sub-category whose parent is left out stands on its own.
+function keepFor(categories: readonly SettingsCategory[], app: string | undefined) {
+  if (app === undefined) return categories;
+  const kept = categories
+    .map((category) => ({
+      ...category,
+      rows: category.rows.filter((row) => !row.apps || row.apps.includes(app)),
+    }))
+    .filter((category) => category.rows.length > 0);
+  const ids = new Set(kept.map((c) => c.id));
+  return kept.map(({ parent, ...category }) =>
+    parent !== undefined && ids.has(parent) ? { ...category, parent } : category,
+  );
 }
 
 // A read of the account's settings that failed: what went wrong, and the way to ask again.
@@ -521,33 +572,11 @@ export function SettingsSkeleton() {
   );
 }
 
-// The Common settings one app has: the rest don't touch it.
-function commonFor(
-  common: CommonCatalogue,
-  app: SettingsAppId,
-  own?: readonly SettingsCategory[],
-): CommonCatalogue {
-  // An editor's own catalogue is never read (its own Settings stands in for it), so the rows it has are the ones its
-  // own Settings has.
-  const ownIds = new Set((own ?? []).flatMap((category) => category.rows.map((row) => row.key)));
-  const has = (id: string) => ownIds.has(id) || (common.apps.get(id)?.includes(app) ?? false);
-  return {
-    ...common,
-    catalogue: {
-      ...common.catalogue,
-      categories: common.catalogue.categories
-        .map((category) => ({ ...category, rows: category.rows.filter((row) => has(row.id)) }))
-        .filter((category) => category.rows.length > 0),
-    },
-  };
-}
-
 // The SettingsView's own props, from the view's.
 function view({
   isMobile,
   onClose,
   title,
-  leading,
   footer,
   switcher,
   focus,
@@ -559,7 +588,6 @@ function view({
     isMobile,
     onClose,
     title,
-    leading,
     footer,
     switcher,
     focus,

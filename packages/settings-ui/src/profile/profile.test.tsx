@@ -84,6 +84,40 @@ describe('the Profile header card', () => {
     expect(screen.queryByRole('link', { name: 'Sign in' })).toBeNull();
   });
 
+  it('reads the colour from the profile, not the host’s identity, and follows each save', async () => {
+    // An editor's identity carries no colour: the card still shows the one the profile holds.
+    const profile = fakeProfile({
+      load: vi.fn(async () => ({
+        ok: true as const,
+        data: { id: 'user_ada', name: 'Countess Ada', color: '#10b981' },
+      })),
+    });
+    render(<ProfileHeaderCard identity={{ name: 'Ada Lovelace' }} profile={profile} />);
+    const about = screen.getByRole('list', { name: 'About this account' });
+    await waitFor(() => expect(within(about).getByText('Colour: Emerald')).toBeTruthy());
+    expect(screen.getByRole('heading', { name: 'Countess Ada' })).toBeTruthy();
+    const request = vi.fn(async () => ({
+      ok: true as const,
+      data: { profile: { id: 'user_ada', name: null, color: null } },
+    }));
+    await act(async () => {
+      await requestProfileHost(request as never, { accountName: 'Ada Lovelace' }).save({
+        color: null,
+      });
+    });
+    expect(within(about).getByText('Colour: Automatic')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Ada Lovelace' })).toBeTruthy();
+  });
+
+  it('keeps the identity’s colour when the profile can’t be read', async () => {
+    const profile = fakeProfile({
+      load: vi.fn(async () => ({ ok: false as const, error: 'offline' })),
+    });
+    render(<ProfileHeaderCard identity={ada} profile={profile} />);
+    await waitFor(() => expect(profile.load).toHaveBeenCalled());
+    expect(screen.getByText('Colour: Violet')).toBeTruthy();
+  });
+
   it('shows a guest as a guest, with the way to sign in and what an account adds', () => {
     render(
       <ProfileHeaderCard
@@ -411,6 +445,19 @@ describe('a host over a request', () => {
       },
     );
     stop();
+  });
+
+  it('answers reads made together with one request, and reads again once that one is done', async () => {
+    const request = vi.fn(async () => ({
+      ok: true as const,
+      data: { profile: { id: 'user_ada', name: 'Ada', color: null } },
+    }));
+    const host = requestProfileHost(request as never, { accountName: 'Ada' });
+    const [first, second] = await Promise.all([host.load(), host.load()]);
+    expect(first).toEqual(second);
+    expect(request).toHaveBeenCalledTimes(1);
+    await host.load();
+    expect(request).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, type CSSProperties, type ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import type { CatalogueBinding, StoredValue } from '@liveworkspace/settings/catalogue';
 import type { AccountHost, CatalogueSettingsViewProps } from './CatalogueSettingsView';
 import type { SettingsCategory } from './model';
@@ -40,7 +40,9 @@ export function settingsPanelApp(site: {
 // liveworkspace/docs/specs/010-site/site.md "Settings"): every app's Settings and liveworkspace.app's render it, inside their own
 // dialog frame. Its header switch, as the Explorer's, picks between this app's settings alone and All: the
 // account's own (its profile, emails, privacy and accessibility, API tokens), then one set of categories merged
-// across every app, each app's own rows under its name and logo (merge-categories.ts). The host passes only what differs: which app it is, its own settings model where it has one
+// across every app, each row marked with the logos of the apps it applies to (merge-categories.ts, app-marks.tsx);
+// signed in, this app's side is the same set kept to the rows that apply to it. The host passes only what differs:
+// which app it is, its own settings model where it has one
 // (an editor), how to reach the accounts API, and the logos.
 export function SettingsPanel({
   app,
@@ -87,7 +89,6 @@ export function SettingsPanel({
   isMobile: boolean;
   onClose: () => void;
   title?: string;
-  leading?: ReactNode;
   footer?: ReactNode;
   onCategoryOpened?: (categoryId: string) => void;
 }) {
@@ -102,13 +103,8 @@ export function SettingsPanel({
         allLogo={renderLogo('all')}
       />
     ) : undefined;
-  // Opened for an app, the title reads as the app's: its logo and wordmark, then "Settings".
-  const leading =
-    view.leading ??
-    (app ? <AppWordmark name={app.name} logo={renderLogo(app.id)} live={app.live} /> : undefined);
   const common = {
     ...view,
-    leading,
     switcher,
     focus,
     initialCategoryId,
@@ -153,44 +149,5 @@ export function SettingsPanel({
     >
       <CatalogueSettingsView key={shown} {...catalogueProps} />
     </Suspense>
-  );
-}
-
-// The app's logo and name, "live" in its accent as its own wordmark has it. A logotype: WCAG 1.4.3 sets text that is
-// part of a logo no contrast minimum, and the contrast audits skip it by this mark.
-function AppWordmark({
-  name,
-  logo,
-  live: colours,
-}: {
-  name: string;
-  logo: ReactNode;
-  live?: { light: string; dark: string } | undefined;
-}) {
-  const live = name.startsWith('live') ? 'live' : '';
-  return (
-    <span
-      data-settings-app-title=""
-      className="flex shrink-0 items-center gap-1.5 text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100 [&_svg]:size-5"
-    >
-      {logo}
-      <span data-logotype="">
-        {live ? (
-          <span
-            className={
-              colours ? 'text-[var(--live-light)] dark:text-[var(--live-dark)]' : undefined
-            }
-            style={
-              colours
-                ? ({ '--live-light': colours.light, '--live-dark': colours.dark } as CSSProperties)
-                : undefined
-            }
-          >
-            {live}
-          </span>
-        ) : null}
-        {name.slice(live.length)}
-      </span>
-    </span>
   );
 }

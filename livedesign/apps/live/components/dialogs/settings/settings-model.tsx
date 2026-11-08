@@ -29,7 +29,6 @@ import { settingsCategoryIcon } from './settings-icons';
 import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
 import { SettingsDefaultFoldersRow } from './SettingsDefaultFoldersRow';
 import { SettingsTokensRow } from './SettingsTokensRow';
-import { SettingsTrashRow } from './SettingsTrashRow';
 
 // This editor's Settings catalogue (settings-catalogue.ts, rows that read and write themselves over
 // UserPreferences) as the shared Settings view's model (@liveworkspace/settings-ui;
@@ -64,8 +63,6 @@ export function settingsModel(
         return { ...row, kind: 'custom', render: () => <SettingsIdentityRow row={row} /> };
       case 'deleteAccount':
         return { ...row, kind: 'custom', render: () => <SettingsDeleteAccountRow row={row} /> };
-      case 'trash':
-        return { ...row, kind: 'custom', render: () => <SettingsTrashRow row={row} /> };
       case 'defaultFolders':
         return { ...row, kind: 'custom', render: () => <SettingsDefaultFoldersRow row={row} /> };
     }

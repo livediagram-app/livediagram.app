@@ -515,7 +515,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Designs** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write the index's placement defaults), and an **Explorer** section with **Show Home Banner**
-  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
+  (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, delete account, see
   [Account settings & email notifications](../014-identity/profile-and-email-notifications.md); with the
   sub-categories **Notifications** (in-editor, plus the seven email preferences) and **API Tokens** (create, view and
   revoke API tokens, see [Public API and tokens §3.6](../015-api/public-api-and-tokens.md#36-management-the-settings-dialogs-api-tokens-category);
@@ -713,24 +713,28 @@ and the dialog stays as the one complete, browsable index of them.
   `settings-catalogue.ts`, `settings-model.tsx` (its catalogue bound to the live preferences: the
   standard kinds through the package's `bindStandardRow`, which tracks each change before writing it,
   and its own rows as `custom` rows), its icons and illustrations, and the rows only it has
-  (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders).
+  (appearance, shortcuts, tokens and pairings, identity, delete account, default folders).
   liveworkspace.app renders the same view over this app's derived catalogue
   ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
   settings look the same there as here.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livedesign**
-  (this app's logo and name) and **All** (liveworkspace's logo). livedesign shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
-  own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
+  (this app's logo and name) and **All** (liveworkspace's logo). Both sides are one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings"): **All** shows
+  every row, and **livedesign**, signed in, only the rows that apply to livedesign (the Account section's, the common settings
+  livedesign has, and its own), and only the categories left with any. Each row shows, to the left of its name, the logos
+  of the apps it applies to (liveworkspace's mark alone for every app), so a setting shared with other apps says so
+  on both sides; there is no **Common** group and no group under the app's name (before 8 November 2026 there
+  were). Its own rows draw
   at once and the rest join them when read (a read that fails leaves this app's own rows, with a note and Try again
   for the rest); a guest sees this app's own Settings alone, asking the network
-  for nothing. All shows every setting the account
+  for nothing, with no logos beside its rows (only one app is in play). All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
   merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so
-  on, with no group per app. In each, the shared rows come first: every editor setting two or more apps have
-  (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row two apps keep under the
-  same key and wording, once, written to each; then each app's own rows under a small sub-heading with its logo and
-  name. This app's rows are its own Settings minus the shared switches the Account section already
+  on, with no group per app and no app sub-headings. In each, every setting is one row: every editor setting two
+  or more apps have (`COMMON_SETTING_KEYS`, liveworkspace/docs/specs/003-accounts/accounts.md "Common settings"), once, and any row
+  two apps keep under the same key and wording, once, written to each; each section shows once, holding every
+  app's rows filed under it; and each row carries its apps' logos. This app's rows are its own Settings minus the shared switches the Account section already
   holds (a row marked "All apps" whose key is one of the Account section's), and its common rows are this editor's
   own rows (so a change there is counted and synced as here), so a setting never shows twice; the other apps' rows are their own rows of their
   plain-data catalogues (`@liveworkspace/settings/catalogues/<app>`), read and written over

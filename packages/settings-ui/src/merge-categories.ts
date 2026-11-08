@@ -1,29 +1,27 @@
-// The All view's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): Common's and every app's
-// categories merged by their place, the category's name under its parent's ("Editor", "Editor › Draw",
-// "Panels › Layers"), so two apps' Editor are one Editor. Inside a merged category the shared rows come first (Common's,
-// which every app that has them reads from `all`, and any row two apps keep under the same key with the same
-// meaning, which writes to each of them), then each app's own rows under its logo and name (`SettingsRow.app`,
-// `SettingsCategory.appHeadings`). A category only one app has is still listed once, under its own name.
+// The Settings panel's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "One set of categories"):
+// Common's and every app's categories merged by their place, the category's name under its parent's ("Editor",
+// "Editor › Draw", "Panels › Layers"), so two apps' Editor are one Editor. Inside a merged category each section shows
+// once, holding every app's rows filed under it (section-order.ts), and each setting is one row: Common's, which every
+// app that has it reads from `all`, and any row two apps keep under the same key with the same meaning, which writes to
+// each of them. Every row carries the apps it applies to (`SettingsRow.apps`), drawn as their logos; `only` keeps the
+// rows that apply to one app (the header's This App side), and the categories left with any.
 //
 // Every id the old per-app layout used (`common:editor`, `livediagram.app:draw`) and each category's bare id
 // (`editor`) is kept as an alias of the merged category, so a remembered category or a deep link lands on it.
 //
 // Linear in rows and categories: one pass files every category and row by key, one more lays them out. The panel
-// runs it when All opens and again only when a value changes (panelModel's memo).
+// runs it when it opens and again only when a value changes (panelModel's memo).
 import { shortLabel } from './catalogue-model';
-import type {
-  SettingsAppHeading,
-  SettingsCategory,
-  SettingsRow,
-  SettingsSectionNote,
-} from './model';
+import type { SettingsCategory, SettingsRow, SettingsSectionNote } from './model';
+import { bySection } from './section-order';
 
 export type MergeSource = {
   // The prefix every id of this source carries (`common`, `livediagram.app`): groupCategories'.
   group: string;
-  // An app's sub-heading for its own rows. Absent: the rows are shared (Common), drawn first with no sub-heading.
-  heading?: SettingsAppHeading;
-  // The source's categories as it nests them, empty ones kept (catalogueModel's `structure`), ids prefixed.
+  // Common's: each setting already once, never merged again with an app's row of the same key.
+  shared?: boolean;
+  // The source's categories as it nests them, empty ones kept (catalogueModel's `structure`), ids prefixed. Each row
+  // carries its `apps`.
   categories: readonly SettingsCategory[];
 };
 
@@ -38,15 +36,6 @@ type Node = {
   nestedIcon?: SettingsCategory['icon'];
   sectionNotes?: Record<string, SettingsSectionNote>;
   collapsed?: Set<string>;
-  appHeadings?: Record<
-    string,
-    {
-      label: string;
-      icon?: SettingsAppHeading['icon'];
-      sectionNotes?: Record<string, SettingsSectionNote>;
-      collapsedSections?: string[];
-    }
-  >;
   next: Node | null;
 };
 
@@ -85,8 +74,14 @@ function shape(row: SettingsRow): string | null {
 }
 
 // One row standing for the same setting in several apps: it shows the first app's value and a change goes to every
-// one of them, each through its own row, so each app saves and counts it as its own Settings does.
+// one of them, each through its own row, so each app saves and counts it as its own Settings does. It applies to
+// every app any of them applies to.
 function fanOut(rows: readonly SettingsRow[]): SettingsRow {
+  const apps = [...new Set(rows.flatMap((row) => row.apps ?? []))];
+  return { ...fanOutChange(rows), apps };
+}
+
+function fanOutChange(rows: readonly SettingsRow[]): SettingsRow {
   const first = rows[0]!;
   switch (first.kind) {
     case 'toggle':
@@ -127,9 +122,14 @@ function fanOut(rows: readonly SettingsRow[]): SettingsRow {
   }
 }
 
+// Whether a row is shown where the panel keeps one app's settings (`only`): a row that names no apps always is.
+const appliesTo = (row: SettingsRow, only: string | undefined) =>
+  only === undefined || !row.apps || row.apps.includes(only);
+
 export function mergeAppCategories(
   sources: readonly MergeSource[],
   group: string,
+  { only }: { only?: string } = {},
 ): SettingsCategory[] {
   const nodes = new Map<string, Node>();
   let head = null as Node | null;
@@ -178,35 +178,13 @@ export function mergeAppCategories(
         if (nested) node.nestedIcon ??= category.icon;
         else node.topIcon ??= category.icon;
       }
-      if (source.heading) {
-        node.appHeadings ??= {};
-        const heading = (node.appHeadings[source.group] ??= {
-          label: source.heading.label,
-          ...(source.heading.icon !== undefined ? { icon: source.heading.icon } : {}),
-          ...(source.heading.sectionNotes
-            ? { sectionNotes: { ...source.heading.sectionNotes } }
-            : {}),
-          ...(source.heading.collapsedSections
-            ? { collapsedSections: [...source.heading.collapsedSections] }
-            : {}),
-        });
-        if (category.sectionNotes) {
-          heading.sectionNotes = { ...category.sectionNotes, ...heading.sectionNotes };
-        }
-        if (category.collapsedSections) {
-          heading.collapsedSections = [
-            ...(heading.collapsedSections ?? []),
-            ...category.collapsedSections,
-          ];
-        }
-      } else {
-        if (category.sectionNotes) {
-          node.sectionNotes = { ...category.sectionNotes, ...node.sectionNotes };
-        }
-        if (category.collapsedSections) {
-          node.collapsed ??= new Set();
-          for (const s of category.collapsedSections) node.collapsed.add(s);
-        }
+      // A section's note from the first source that has one; a section closed in any source stays closed.
+      if (category.sectionNotes) {
+        node.sectionNotes = { ...category.sectionNotes, ...node.sectionNotes };
+      }
+      if (category.collapsedSections) {
+        node.collapsed ??= new Set();
+        for (const s of category.collapsedSections) node.collapsed.add(s);
       }
       for (const row of category.rows) {
         node.entries.push({ row, source, local: localId(source.group, row.key) });
@@ -214,15 +192,15 @@ export function mergeAppCategories(
     }
   }
 
-  // 2. Lay out each category's rows: shared first, then each app's own under its heading.
+  // 2. Lay out each category's rows: each setting once, each section once, only the ones `only` keeps.
   const rowAlias = new Map<string, string>();
-  const built = new Map<Node, { rows: SettingsRow[]; heldApps: Set<string> }>();
+  const built = new Map<Node, SettingsRow[]>();
   for (const node of nodes.values()) {
     if (node.entries.length === 0) continue;
     // The same setting in two or more apps: the same key, control and wording.
     const bySignature = new Map<string, Entry[]>();
     for (const entry of node.entries) {
-      if (!entry.source.heading) continue;
+      if (entry.source.shared) continue;
       const kind = shape(entry.row);
       if (kind === null) continue;
       const signature = `${entry.local}\u0000${kind}\u0000${entry.row.label}`;
@@ -239,28 +217,14 @@ export function mergeAppCategories(
         if (i > 0) rowAlias.set(entry.row.key, row.key);
       });
     }
-    const shared: SettingsRow[] = [];
-    const own: SettingsRow[] = [];
-    const heldApps = new Set<string>();
+    const rows: SettingsRow[] = [];
     for (const entry of node.entries) {
       const merged = mergedOf.get(entry);
       if (merged === null) continue;
-      if (merged) {
-        shared.push(merged);
-        // Its section note, from the first app's, beside the shared ones.
-        const note =
-          merged.section && node.appHeadings?.[entry.source.group]?.sectionNotes?.[merged.section];
-        if (note && merged.section) {
-          node.sectionNotes ??= {};
-          node.sectionNotes[merged.section] ??= note;
-        }
-      } else if (!entry.source.heading) shared.push(entry.row);
-      else {
-        own.push({ ...entry.row, app: entry.source.group });
-        heldApps.add(entry.source.group);
-      }
+      const row = merged ?? entry.row;
+      if (appliesTo(row, only)) rows.push(row);
     }
-    built.set(node, { rows: [...shared, ...own], heldApps });
+    if (rows.length > 0) built.set(node, bySection(rows));
   }
 
   // 3. Which categories show, nested where their parent shows too, and their ids.
@@ -299,11 +263,6 @@ export function mergeAppCategories(
         ? shortLabel(node.path.join(' › '), orphans)
         : node.path[0]!;
     const icon = nested ? node.nestedIcon : (node.topIcon ?? parent?.topIcon);
-    const appHeadings = node.appHeadings
-      ? Object.fromEntries(
-          Object.entries(node.appHeadings).filter(([app]) => layout.heldApps.has(app)),
-        )
-      : undefined;
     out.push({
       id,
       label,
@@ -312,9 +271,8 @@ export function mergeAppCategories(
       ...(icon !== undefined ? { icon } : {}),
       ...(node.sectionNotes ? { sectionNotes: node.sectionNotes } : {}),
       ...(node.collapsed ? { collapsedSections: [...node.collapsed] } : {}),
-      ...(appHeadings && Object.keys(appHeadings).length > 0 ? { appHeadings } : {}),
       aliases: [...new Set(node.aliases)].filter((alias) => alias !== id),
-      rows: layout.rows,
+      rows: layout,
     });
   }
 

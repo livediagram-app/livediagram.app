@@ -2,10 +2,11 @@
 // once"). Each editor's own Settings carries Account, Notifications, API Tokens, Privacy and Accessibility categories
 // of its own, and each app's catalogue an Account › Notifications; listed under the app as well, the account read
 // twice. Here an app's copies are folded into the Account section's category of the same name: the rows the Account
-// section doesn't already hold (an editor's Trash and Delete Account, an app's own email switches, its own
-// accessibility rows) join it under the app's sub-heading (its logo and name, as in the merged categories), and the
-// editor's identity row gives way to the Profile's header card.
-import type { SettingsAppHeading, SettingsCategory, SettingsRow } from './model';
+// section doesn't already hold (an editor's Delete Account, an app's own email switches, its own
+// accessibility rows) join it, each section once (section-order.ts), marked with the app's logo as every row of the
+// panel is (`SettingsRow.apps`), and the editor's identity row gives way to the Profile's header card.
+import type { SettingsCategory, SettingsRow } from './model';
+import { bySection } from './section-order';
 
 // An app's category ids that are the Account section's, by the Account section's own id for them.
 const FOLDED: Readonly<Record<string, string>> = {
@@ -34,13 +35,11 @@ export function foldIntoAccount({
   accountGroup,
   app,
   appGroup,
-  appHeading,
 }: {
   account: SettingsCategory[];
   accountGroup: string;
   app: readonly SettingsCategory[];
   appGroup: string;
-  appHeading: SettingsAppHeading;
 }): SettingsCategory[] {
   const left: SettingsCategory[] = [];
   const profileId = `${accountGroup}:account`;
@@ -51,30 +50,28 @@ export function foldIntoAccount({
       left.push(category);
       continue;
     }
+    // The app's rows keep the apps they were marked with (the caller's), else they are the app's own.
     const rows: SettingsRow[] = category.rows
       .filter((row) => !DRAWN_BY_ACCOUNT.has(local(appGroup, row.key)))
-      // The Profile keeps an editor's own sections (Your Data, Cloud Sync, Danger Zone), which only an editor has;
-      // anywhere else the app's rows sit under its logo and name, beside the Account section's own.
-      .map((row) => (target === 'account' ? row : { ...row, app: appGroup }));
+      .map((row) => (row.apps ? row : { ...row, apps: [appGroup] }));
     if (rows.length === 0) continue;
-    const heading: SettingsAppHeading = {
-      ...appHeading,
-      ...(category.sectionNotes ? { sectionNotes: category.sectionNotes } : {}),
-      ...(category.collapsedSections ? { collapsedSections: category.collapsedSections } : {}),
-    };
-    const headings = (existing?: SettingsCategory) =>
-      target === 'account'
-        ? existing?.appHeadings
-        : { ...existing?.appHeadings, [appGroup]: heading };
     const targetId = `${accountGroup}:${target}`;
     const at = account.findIndex((c) => c.id === targetId);
     if (at >= 0) {
       const existing = account[at]!;
-      const appHeadings = headings(existing);
+      // The Account section's own notes and closed sections first; the app's fill in the sections it adds.
+      const sectionNotes =
+        existing.sectionNotes || category.sectionNotes
+          ? { ...category.sectionNotes, ...existing.sectionNotes }
+          : undefined;
+      const collapsed = [
+        ...new Set([...(existing.collapsedSections ?? []), ...(category.collapsedSections ?? [])]),
+      ];
       account[at] = {
         ...existing,
-        ...(appHeadings ? { appHeadings } : {}),
-        rows: [...existing.rows, ...rows],
+        ...(sectionNotes ? { sectionNotes } : {}),
+        ...(collapsed.length > 0 ? { collapsedSections: collapsed } : {}),
+        rows: bySection([...existing.rows, ...rows]),
       };
       continue;
     }
@@ -89,14 +86,6 @@ export function foldIntoAccount({
       rows,
     };
     delete made.parent;
-    delete made.sectionNotes;
-    delete made.collapsedSections;
-    const appHeadings = headings();
-    if (appHeadings) made.appHeadings = appHeadings;
-    else {
-      if (category.sectionNotes) made.sectionNotes = category.sectionNotes;
-      if (category.collapsedSections) made.collapsedSections = category.collapsedSections;
-    }
     if (hasProfile && target !== 'account' && target !== 'privacy' && target !== 'accessibility') {
       made.parent = profileId;
     }

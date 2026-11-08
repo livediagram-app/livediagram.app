@@ -4,16 +4,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { AppCatalogue, CatalogueRow } from '@liveworkspace/settings/catalogue';
 import { commonCatalogue } from '@liveworkspace/settings/common';
+import { CATALOGUE as LIVEDESIGN } from '@liveworkspace/settings/catalogues/livedesign';
+import { CATALOGUE as LIVEDIAGRAM } from '@liveworkspace/settings/catalogues/livediagram';
+import { CATALOGUE as LIVEDOCUMENTS } from '@liveworkspace/settings/catalogues/livedocuments';
+import { CATALOGUE as LIVEHUDDLE } from '@liveworkspace/settings/catalogues/livehuddle';
+import { CATALOGUE as LIVEPLANNER } from '@liveworkspace/settings/catalogues/liveplanner';
 import { APPS_GROUP, panelModel } from './CatalogueSettingsView';
 import { groupCategories } from './groups';
 import { mergeAppCategories, type MergeSource } from './merge-categories';
 import type { SettingsCategory, SettingsRow } from './model';
+import { SettingsCategoryPane } from './SettingsCategoryPane';
 import { searchSettings } from './settings-search';
+import { SETTINGS_APP_IDS, type SettingsAppId } from './store';
 import { SettingsView } from './SettingsView';
 import { renderWithKit } from './test/kit';
 
-// All's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): Common's and every app's merged by
-// their place, a setting the apps share shown once and written to each, each app's own rows under its logo and name.
+// The panel's one set of categories (liveworkspace/docs/specs/010-site/site.md "Settings", "One set of categories"): Common's
+// and every app's merged by their place, each setting once and each section once, every row naming the apps it applies
+// to, and This App's side the same kept to that app's rows.
 
 const toggle = (key: string, label: string, extra: Partial<SettingsRow> = {}): SettingsRow =>
   ({
@@ -26,35 +34,59 @@ const toggle = (key: string, label: string, extra: Partial<SettingsRow> = {}): S
     ...extra,
   }) as SettingsRow;
 
-const app = (group: string, label: string, categories: SettingsCategory[]): MergeSource => ({
+// An app's own categories, every row marked as that app's, as panelModel marks them.
+const app = (group: string, categories: SettingsCategory[]): MergeSource => ({
   group,
-  heading: { label, icon: <svg data-logo={group} /> },
-  categories: groupCategories(group, categories, { keepEmpty: true }),
+  categories: groupCategories(group, categories, { keepEmpty: true }).map((c) => ({
+    ...c,
+    rows: c.rows.map((r) => ({ ...r, apps: r.apps ?? [group] })),
+  })),
 });
 
+// Common's, each row naming the apps that have it.
 const common = (categories: SettingsCategory[]): MergeSource => ({
   group: 'common',
+  shared: true,
   categories: groupCategories('common', categories, { keepEmpty: true }),
 });
+
+const both = ['a.app', 'b.app'];
 
 describe('mergeAppCategories', () => {
   it('lists one category per place across Common and every app, nesting sub-categories the same way', () => {
     const merged = mergeAppCategories(
       [
         common([
-          { id: 'editor', label: 'Editor', rows: [toggle('alignmentGuides', 'Alignment Guides')] },
-          { id: 'pages', label: 'Pages', parent: 'editor', rows: [toggle('contents', 'Contents')] },
-          { id: 'layers', label: 'Panels › Layers', rows: [toggle('layersOn', 'Layers')] },
-          { id: 'map', label: 'Panels › Map', rows: [toggle('showMinimap', 'Map')] },
+          {
+            id: 'editor',
+            label: 'Editor',
+            rows: [toggle('alignmentGuides', 'Alignment Guides', { apps: both })],
+          },
+          {
+            id: 'pages',
+            label: 'Pages',
+            parent: 'editor',
+            rows: [toggle('contents', 'Contents', { apps: both })],
+          },
+          {
+            id: 'layers',
+            label: 'Panels › Layers',
+            rows: [toggle('layersOn', 'Layers', { apps: both })],
+          },
+          {
+            id: 'map',
+            label: 'Panels › Map',
+            rows: [toggle('showMinimap', 'Map', { apps: both })],
+          },
         ]),
-        app('a.app', 'livea', [
+        app('a.app', [
           { id: 'editor', label: 'Editor', rows: [] },
           { id: 'draw', label: 'Draw', parent: 'editor', rows: [toggle('pen', 'Pen')] },
-          // Left empty once its common rows are under Common: it still says where Tours goes.
+          // Left empty once its common rows are Common's: it still says where Tours goes.
           { id: 'map', label: 'Panels › Map', rows: [] },
           { id: 'tours', label: 'Tours', rows: [toggle('tourA', 'Tour A')] },
         ]),
-        app('b.app', 'liveb', [
+        app('b.app', [
           { id: 'editor', label: 'Editor', rows: [toggle('snap', 'Snap')] },
           { id: 'pages', label: 'Pages', parent: 'editor', rows: [toggle('margin', 'Margins')] },
           { id: 'tours', label: 'Tours', rows: [toggle('tourB', 'Tour B')] },
@@ -75,34 +107,32 @@ describe('mergeAppCategories', () => {
     ]);
     expect(new Set(merged.map((c) => c.group))).toEqual(new Set([APPS_GROUP]));
     const editor = merged[0]!;
-    // The shared row first, then each app's own under its heading.
-    expect(editor.rows.map((r) => [r.key, r.app ?? null])).toEqual([
-      ['common:alignmentGuides', null],
-      ['b.app:snap', 'b.app'],
+    // Every row says which apps it applies to; none sits under an app's heading.
+    expect(editor.rows.map((r) => [r.key, r.apps])).toEqual([
+      ['common:alignmentGuides', both],
+      ['b.app:snap', ['b.app']],
     ]);
-    expect(editor.appHeadings?.['b.app']?.label).toBe('liveb');
-    // An app with no rows of its own here has no heading here.
-    expect(editor.appHeadings?.['a.app']).toBeUndefined();
+    expect(Object.keys(editor)).not.toContain('appHeadings');
     const tours = merged.find((c) => c.label === 'Tours')!;
-    expect(tours.rows.map((r) => r.app)).toEqual(['a.app', 'b.app']);
+    expect(tours.rows.map((r) => r.apps)).toEqual([['a.app'], ['b.app']]);
   });
 
-  it('shows a setting two apps keep under the same key and wording once, and writes it to each', () => {
+  it('shows a setting two apps keep under the same key and wording once, for both, and writes it to each', () => {
     const a = toggle('grid', 'Show Grid');
     const b = toggle('grid', 'Show Grid');
     const differs = toggle('join', 'Someone Joins My Canvas');
     const other = toggle('join', 'Someone Joins My Document');
     const [editor] = mergeAppCategories(
       [
-        app('a.app', 'livea', [{ id: 'editor', label: 'Editor', rows: [a, differs] }]),
-        app('b.app', 'liveb', [{ id: 'editor', label: 'Editor', rows: [b, other] }]),
+        app('a.app', [{ id: 'editor', label: 'Editor', rows: [a, differs] }]),
+        app('b.app', [{ id: 'editor', label: 'Editor', rows: [b, other] }]),
       ],
       APPS_GROUP,
     );
-    expect(editor!.rows.map((r) => [r.key, r.app ?? null])).toEqual([
-      ['a.app:grid', null],
-      ['a.app:join', 'a.app'],
-      ['b.app:join', 'b.app'],
+    expect(editor!.rows.map((r) => [r.key, r.apps])).toEqual([
+      ['a.app:grid', both],
+      ['a.app:join', ['a.app']],
+      ['b.app:join', ['b.app']],
     ]);
     const shared = editor!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
     shared.onChange(true);
@@ -110,11 +140,92 @@ describe('mergeAppCategories', () => {
     expect(b.kind === 'toggle' && b.onChange).toHaveBeenCalledWith(true);
   });
 
+  it('lists each section once, every app’s rows under it, with the first note and any closed section', () => {
+    const [tours] = mergeAppCategories(
+      [
+        app('a.app', [
+          {
+            id: 'tours',
+            label: 'Tours',
+            sectionNotes: { 'Offer Again': { note: 'From the bottom bar.' } },
+            collapsedSections: ['Show Me'],
+            rows: [
+              toggle('diagram', 'Diagram Tour', { section: 'Offer Again' }),
+              toggle('showSankey', 'Sankey', { section: 'Show Me' }),
+            ],
+          },
+        ]),
+        app('b.app', [
+          {
+            id: 'tours',
+            label: 'Tours',
+            sectionNotes: { 'Offer Again': { note: 'Another note.' } },
+            rows: [
+              toggle('forms', 'Forms Tour', { section: 'Offer Again' }),
+              toggle('showChart', 'Chart', { section: 'Show Me' }),
+            ],
+          },
+        ]),
+      ],
+      APPS_GROUP,
+    );
+    expect(tours!.rows.map((r) => [r.section, r.label])).toEqual([
+      ['Offer Again', 'Diagram Tour'],
+      ['Offer Again', 'Forms Tour'],
+      ['Show Me', 'Sankey'],
+      ['Show Me', 'Chart'],
+    ]);
+    expect(tours!.sectionNotes?.['Offer Again']?.note).toBe('From the bottom bar.');
+    expect(tours!.collapsedSections).toEqual(['Show Me']);
+    renderWithKit(<SettingsCategoryPane category={tours!} isMobile={false} />);
+    expect(screen.getAllByRole('heading', { name: 'Offer Again' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /Show Me/ })).toHaveLength(1);
+  });
+
+  it('keeps one app’s rows for This App, the categories left with any, and a shared row for both', () => {
+    const merged = mergeAppCategories(
+      [
+        common([
+          {
+            id: 'editor',
+            label: 'Editor',
+            rows: [
+              toggle('guides', 'Guides', { apps: both }),
+              toggle('bOnly', 'Only B', { apps: ['b.app'] }),
+            ],
+          },
+        ]),
+        app('a.app', [
+          { id: 'panels', label: 'Panels', rows: [toggle('grid', 'Show Grid')] },
+          { id: 'map', label: 'Map', parent: 'panels', rows: [toggle('size', 'Size')] },
+        ]),
+        app('b.app', [
+          { id: 'panels', label: 'Panels', rows: [toggle('grid', 'Show Grid')] },
+          { id: 'plans', label: 'Plans', rows: [toggle('sort', 'Sort')] },
+        ]),
+      ],
+      APPS_GROUP,
+      { only: 'a.app' },
+    );
+    expect(merged.map((c) => c.label)).toEqual(['Editor', 'Panels', 'Map']);
+    expect(merged[0]!.rows.map((r) => r.key)).toEqual(['common:guides']);
+    // The same setting in both apps is still one row for both, and still writes to each.
+    expect(merged[1]!.rows.map((r) => [r.key, r.apps])).toEqual([['a.app:grid', both]]);
+    // Plans is b's alone: gone from a's side, its ids with it.
+    expect(merged.some((c) => c.aliases?.includes('b.app:plans'))).toBe(false);
+    const onlyB = mergeAppCategories(
+      [app('b.app', [{ id: 'panels', label: 'Panels', rows: [toggle('x', 'X')] }])],
+      APPS_GROUP,
+      { only: 'a.app' },
+    );
+    expect(onlyB).toEqual([]);
+  });
+
   it('keeps every old id as an alias, and points links and readouts at the merged category', () => {
     const merged = mergeAppCategories(
       [
         common([{ id: 'editor', label: 'Editor', rows: [toggle('guides', 'Guides')] }]),
-        app('a.app', 'livea', [
+        app('a.app', [
           { id: 'editor', label: 'Editor', rows: [] },
           { id: 'draw', label: 'Draw', parent: 'editor', rows: [toggle('pen', 'Pen')] },
           {
@@ -132,7 +243,7 @@ describe('mergeAppCategories', () => {
             ],
           },
         ]),
-        app('b.app', 'liveb', [
+        app('b.app', [
           { id: 'panels', label: 'Panels', rows: [] },
           { id: 'map', label: 'Map', parent: 'panels', rows: [toggle('size', 'Size')] },
         ]),
@@ -149,18 +260,22 @@ describe('mergeAppCategories', () => {
     expect(byLabel('Panels').parent).toBeUndefined();
   });
 
-  it('finds an app’s own rows by the app’s name, and a shared row by its own words', () => {
-    const merged = mergeAppCategories(
-      [
-        common([{ id: 'editor', label: 'Editor', rows: [toggle('guides', 'Alignment Guides')] }]),
-        app('a.app', 'livediagram', [
-          { id: 'editor', label: 'Editor', rows: [toggle('pen', 'Pen Pressure')] },
-        ]),
-      ],
-      APPS_GROUP,
-    );
-    expect(searchSettings(merged, 'livediagram').totalMatches).toBe(1);
-    expect(searchSettings(merged, 'alignment').totalMatches).toBe(1);
+  it('searches only what the filter keeps', () => {
+    const sources = [
+      common([
+        {
+          id: 'editor',
+          label: 'Editor',
+          rows: [toggle('guides', 'Alignment Guides', { apps: both })],
+        },
+      ]),
+      app('a.app', [{ id: 'editor', label: 'Editor', rows: [toggle('pen', 'Pen Pressure')] }]),
+      app('b.app', [{ id: 'editor', label: 'Editor', rows: [toggle('ink', 'Pen Ink')] }]),
+    ];
+    expect(searchSettings(mergeAppCategories(sources, APPS_GROUP), 'pen').totalMatches).toBe(2);
+    const onlyA = mergeAppCategories(sources, APPS_GROUP, { only: 'a.app' });
+    expect(searchSettings(onlyA, 'pen').totalMatches).toBe(1);
+    expect(searchSettings(onlyA, 'alignment').totalMatches).toBe(1);
   });
 
   it('stays linear on a large catalogue', () => {
@@ -169,14 +284,15 @@ describe('mergeAppCategories', () => {
     const source = (group: string) =>
       app(
         group,
-        group,
         Array.from({ length: CATEGORIES }, (_, c) => ({
           id: `c${c}`,
           label: `Category ${c}`,
           ...(c % 4 ? { parent: `c${c - (c % 4)}` } : {}),
           rows: Array.from({ length: ROWS }, (_, r) =>
-            // Half the rows are the same setting in every app, half each app's own.
-            toggle(r % 2 ? `${group}-r${c}-${r}` : `r${c}-${r}`, `Row ${c}.${r}`),
+            // Half the rows are the same setting in every app, half each app's own, in five sections.
+            toggle(r % 2 ? `${group}-r${c}-${r}` : `r${c}-${r}`, `Row ${c}.${r}`, {
+              section: `Section ${r % 5}`,
+            }),
           ),
         })),
       );
@@ -188,10 +304,16 @@ describe('mergeAppCategories', () => {
       merged = mergeAppCategories(sources, APPS_GROUP);
     });
     expect(merged).toHaveLength(CATEGORIES);
-    // Each category: 13 shared rows once, then 12 own rows for each of the 4 apps.
+    // Each category: 13 shared rows once, and 12 own rows for each of the 4 apps.
     expect(merged[0]!.rows).toHaveLength(13 + 12 * 4);
     expect(took).toBeLessThan(cpuBudgetMs(250));
-  });
+    const onlyTook = cpuMsOf(() => {
+      merged = mergeAppCategories(sources, APPS_GROUP, { only: 'a.app' });
+    });
+    expect(merged[0]!.rows).toHaveLength(13 + 12);
+    expect(onlyTook).toBeLessThan(cpuBudgetMs(250));
+    // Three merges of 40,000 rows and the sources' build: more than the default 5 s on a loaded machine.
+  }, 30_000);
 });
 
 describe('All in the Settings panel', () => {
@@ -231,7 +353,7 @@ describe('All in the Settings panel', () => {
     expect(tours).toHaveLength(1);
     expect(tours[0]!.rows).toHaveLength(1);
     const row = tours[0]!.rows[0] as Extract<SettingsRow, { kind: 'toggle' }>;
-    expect(row.app).toBeUndefined();
+    expect(row.apps).toEqual(['livediagram.app', 'liveplanner.app']);
     row.onChange(false);
     expect(saver.changeApp.mock.calls.map(([app]) => app)).toEqual([
       'livediagram.app',
@@ -288,5 +410,70 @@ describe('All in the Settings panel', () => {
     expect(screen.getByRole('switch', { name: 'Welcome Tour' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Settings/ }));
     expect(screen.getByRole('group', { name: 'Apps' })).toBeTruthy();
+  });
+});
+
+describe('the five apps’ catalogues in one set of categories', () => {
+  const catalogues = {
+    'livediagram.app': LIVEDIAGRAM,
+    'liveplanner.app': LIVEPLANNER,
+    'livedocuments.app': LIVEDOCUMENTS,
+    'livedesign.app': LIVEDESIGN,
+    'livehuddle.app': LIVEHUDDLE,
+  };
+  const common = commonCatalogue(
+    Object.entries(catalogues).map(([app, catalogue]) => ({ app, catalogue })),
+  );
+  const model = (mode: 'all' | 'app', current: SettingsAppId | null = null) =>
+    panelModel({
+      mode,
+      withShared: true,
+      current,
+      catalogues,
+      common,
+      value: { all: {}, apps: {} },
+      account: { renderTokens: () => null },
+      renderLogo: () => null,
+      saver: { changeApp: vi.fn(), changeShared: vi.fn() },
+    });
+  const rows = (categories: readonly SettingsCategory[]) => categories.flatMap((c) => c.rows);
+
+  it('lists every category once, with no Common or per-app group, every row naming its apps', () => {
+    const { categories, groups } = model('all');
+    expect(groups?.map((g) => g.id)).toEqual(['account', APPS_GROUP]);
+    const labels = categories.map((c) => `${c.parent ?? ''}/${c.label}`);
+    expect(new Set(labels).size).toBe(labels.length);
+    for (const row of rows(categories)) {
+      expect(row.apps?.length, row.key).toBeGreaterThan(0);
+    }
+    // The Account section's rows are every app's.
+    const notifications = categories.find((c) => c.id === 'account:notifications')!;
+    expect(notifications.rows.some((r) => r.apps?.length === SETTINGS_APP_IDS.length)).toBe(true);
+  });
+
+  it('keeps This App to the rows that apply to it, the same rows All shows for it', () => {
+    for (const app of SETTINGS_APP_IDS) {
+      const all = rows(model('all', app).categories).filter((r) => r.apps?.includes(app));
+      const mine = model('app', app);
+      expect(
+        rows(mine.categories).map((r) => r.key),
+        app,
+      ).toEqual(all.map((r) => r.key));
+      expect(mine.categories.every((c) => c.rows.length > 0)).toBe(true);
+      // A category every row of which belongs to another app is gone from the rail.
+      const ids = new Set(mine.categories.map((c) => c.id));
+      for (const c of mine.categories) if (c.parent) expect(ids.has(c.parent)).toBe(true);
+    }
+  });
+
+  it('merges all five catalogues fast: the panel’s whole model, timed', () => {
+    model('all');
+    const took = cpuMsOf(() => {
+      for (let i = 0; i < 20; i++) model('all');
+    });
+    const each = took / 20;
+    // Printed for the spec's and the PR's measured number.
+    console.info(`[perf] five-app Settings model: ${each.toFixed(2)} ms per build`);
+    expect(each).toBeLessThan(cpuBudgetMs(20));
   });
 });

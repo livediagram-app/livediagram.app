@@ -245,21 +245,21 @@ describe('the Settings panel, on All', () => {
     );
   });
 
-  it("opens a merged category, each app's own rows under its name, written to its own scope", async () => {
+  it("opens a merged category, each app's own rows marked with its logo, written to its own scope", async () => {
     fetchMock.mockImplementation(answer);
     await open(null);
     act(() => railButton('Tours')!.click());
     await settle();
     const pane = document.querySelector<HTMLElement>('[data-settings-pane]')!;
-    const blocks = [...pane.querySelectorAll('[data-settings-app]')];
-    expect(blocks.map((b) => b.getAttribute('data-settings-app'))).toEqual([
-      'livediagram.app',
-      'liveplanner.app',
-    ]);
-    expect(blocks[0]!.querySelector('[data-settings-app-heading]')?.textContent).toBe(
-      'livediagram',
-    );
-    const row = blocks[1]!.querySelector<HTMLButtonElement>('[role="switch"]')!;
+    // No app sub-headings: one list, each row naming the apps it applies to.
+    expect(pane.querySelector('[data-settings-app-heading]')).toBeNull();
+    const plannerMarks = [...pane.querySelectorAll('[data-settings-app-marks]')].find(
+      (el) => el.getAttribute('aria-label') === 'Applies to liveplanner',
+    )!;
+    expect(plannerMarks).toBeTruthy();
+    const row = plannerMarks
+      .closest('[data-settings-cell]')!
+      .querySelector<HTMLButtonElement>('[role="switch"]')!;
     act(() => row.click());
     await settle();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')!;

@@ -137,7 +137,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // Trash (docs/specs/013-workspace/trash.md): a trashed document's card, and the document restored from it.
   'Trash·Cleared',
   'Trash·Deleted',
-  'Trash·Opened',
   'Trash·Restored',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).

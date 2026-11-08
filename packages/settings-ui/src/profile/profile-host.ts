@@ -44,9 +44,18 @@ export function requestProfileHost(
 ): ProfileHost {
   const profileOf = (result: SettingsApiResult<{ profile?: Profile | null }>) =>
     result.ok ? ({ ok: true, data: result.data.profile ?? null } as const) : result;
+  // The header card and the Name and Colour editor both read it as the Profile opens: one request answers both.
+  let reading: Promise<ProfileResult<Profile | null>> | null = null;
   return {
     ...options,
-    load: async () => profileOf(await request<{ profile?: Profile | null }>('/profile')),
+    load: () => {
+      reading ??= request<{ profile?: Profile | null }>('/profile')
+        .then(profileOf)
+        .finally(() => {
+          reading = null;
+        });
+      return reading;
+    },
     save: async (patch) => {
       const result = profileOf(
         await request<{ profile?: Profile | null }>('/profile', 'PATCH', patch),

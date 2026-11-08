@@ -91,16 +91,16 @@ describe('SettingsCategoryPane: targeting a section', () => {
         category={account}
         settings={{}}
         onChange={vi.fn()}
-        focusSectionId="your-data"
+        focusSectionId="danger-zone"
       />,
     );
     await new Promise((r) => requestAnimationFrame(r));
-    const heading = screen.getByRole('heading', { name: 'Your Data' });
-    expect(heading.id).toBe('settings-section-your-data');
+    const heading = screen.getByRole('heading', { name: 'Danger Zone' });
+    expect(heading.id).toBe('settings-section-danger-zone');
     expect(document.activeElement).toBe(heading);
     expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: 'start' }));
     expect(heading.closest('[data-settings-section]')!.getAttribute('data-settings-section')).toBe(
-      'your-data',
+      'danger-zone',
     );
   });
 });

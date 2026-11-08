@@ -28,13 +28,14 @@ export type SettingsRowText = {
   illustration?: string;
   // The note shown on a phone, where the row has no effect: it stays visible, greyed and inert.
   desktopOnly?: string;
-  // The app this row is one app's own, in the All view's merged categories: a key into its category's
-  // `appHeadings`, drawn under that app's logo and name. Rows of one app are adjacent.
-  app?: string;
+  // The apps this setting applies to (their ids, `livediagram.app`), in the Settings panel's merged categories: drawn
+  // as their logos to the left of the label (app-marks.tsx), and what the header's This App side filters on. Absent
+  // where only one app is in play (an editor's own Settings, a guest's).
+  apps?: readonly string[];
 };
 
 export type SettingsRowBase = SettingsRowText & {
-  // The setting is one every liveworkspace app shares: the row says "All apps".
+  // The setting is one every liveworkspace app shares: the row says "All apps" (where no app marks are drawn).
   allApps?: boolean;
 };
 
@@ -94,7 +95,7 @@ export type SettingsShortcutListRow = SettingsRowBase & {
   sections: readonly SettingsShortcutSection[];
 };
 
-// A row the app draws itself (API tokens, the Trash, account rows, Cloud Sync and the rest), with
+// A row the app draws itself (API tokens, account rows, Cloud Sync and the rest), with
 // SettingsRowShell for the common cell. `render` is called where the row is drawn, so a row backed
 // by a hook returns its own component.
 export type SettingsCustomRow = SettingsRowBase & { kind: 'custom'; render: () => ReactNode };
@@ -124,21 +125,10 @@ export type SettingsCategory = {
   sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
   // Sections drawn as a closed accordion.
   collapsedSections?: readonly string[];
-  // The apps whose own rows sit here under their logo and name (a row's `app`), with each app's section notes
-  // and closed sections, which may differ between apps.
-  appHeadings?: Readonly<Record<string, SettingsAppHeading>>;
   // Ids this category also answers to: an old layout's (a remembered `livediagram.app:editor`, `common:editor`) or a
   // bare deep link's (`editor`).
   aliases?: readonly string[];
   rows: readonly SettingsRow[];
-};
-
-// An app's sub-heading inside a category of the All view: its logo and name.
-export type SettingsAppHeading = {
-  label: string;
-  icon?: ReactNode;
-  sectionNotes?: Readonly<Record<string, SettingsSectionNote>>;
-  collapsedSections?: readonly string[];
 };
 
 // A heading the rail lists categories under, in the order given: the All view's Account, with its logo. A `flat`
