@@ -54,7 +54,7 @@ under the pointer as a category is switched.
   (`useBarLabels`). Measured, not estimated: the menu card is wider with a long tab name, and an
   estimate let the bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs can need more
   than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
-  the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
+  the card (`useStripCrowded`, measured the same way); it centres again once there is room. An article's docked formatting crowded so ([Article pages](article-pages.md) "The page toolbar"), wider than the room beside the card (a narrow window, or a side by side pane), starts clear of the card instead, its gap after it, and its controls scroll in the strip's rail as on a phone, the selection mode and Search keeping their size: it never runs under the card and the tab's name. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put ("On a phone"). A swiping rail (the bar, an article's dock)
   fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
