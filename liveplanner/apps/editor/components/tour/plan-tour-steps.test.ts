@@ -218,3 +218,25 @@ describe('telemetry', () => {
     expect(planTourStepTelemetryType(FINISH_STEP.id)).toBe('PlanTourStepOutro');
   });
 });
+
+describe('mission titles', () => {
+  it('are in Title Case, small words aside', async () => {
+    const { layoutMissions } = await import('./layout-missions');
+    const { dashboardFromPreset } = await import('@liveplanner/project');
+    let n = 0;
+    const layout = dashboardFromPreset('two-by-two', () => `id${n++}`);
+    const titles = [
+      ...sprintMissions(SHAPE),
+      ...sheetMissions(false),
+      ...layoutMissions(layout, false),
+      ...layoutMissions(
+        { ...layout, rows: layout.rows.map((r) => ({ ...r, slots: r.slots.slice(0, 1) })) },
+        false,
+      ),
+    ].map((m) => m.title);
+    const small = new Set(['a', 'an', 'the', 'of', 'to', 'in', 'on', 'and']);
+    for (const t of titles)
+      for (const [i, w] of t.split(' ').entries())
+        if (i === 0 || !small.has(w)) expect(w[0], t).toBe(w[0]!.toUpperCase());
+  });
+});

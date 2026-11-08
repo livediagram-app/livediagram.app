@@ -1100,3 +1100,9 @@ main:has(> [data-canvas-cover] [data-fill-tab-board]) > [data-canvas-content] {
 main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
   visibility: hidden;
 }
+
+/* The practice sheet's dialog (docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins"): the Sheet toolbar's
+   dropdowns portal to the page at the overlay layer, which is under a dialog; while it is open they sit above it. */
+:root[data-practice-sheet-open] body > [data-palette-dropdown-menu] {
+  z-index: var(--z-popover);
+}

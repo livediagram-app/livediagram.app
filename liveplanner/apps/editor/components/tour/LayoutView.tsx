@@ -182,8 +182,9 @@ function RowGuides({ row, condensed }: { row: RowBox; condensed: boolean }) {
         <span
           key={`${s.id}:${s.span}`}
           data-layout-span=""
-          className="absolute animate-fade-in rounded-md bg-slate-900/85 px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-white/90 dark:text-slate-900"
-          style={{ left: s.left + 8, top: s.top + 8 }}
+          // On the slot's top edge, like a frame's label in a design tool: never over the slot's own title.
+          className="absolute -translate-y-1/2 animate-fade-in whitespace-nowrap rounded-md bg-slate-900 px-1.5 py-0.5 font-mono text-[11px] font-medium leading-none tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-white dark:text-slate-900"
+          style={{ left: s.left + 10, top: s.top }}
         >
           {s.span} / {DASHBOARD_SPANS}
         </span>
@@ -192,7 +193,7 @@ function RowGuides({ row, condensed }: { row: RowBox; condensed: boolean }) {
         <span
           key={`${row.id}:${row.heightPx}`}
           data-layout-height=""
-          className="absolute -translate-x-full -translate-y-full animate-fade-in rounded-md bg-brand-600 px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-brand-500"
+          className="absolute -translate-x-full -translate-y-full animate-fade-in whitespace-nowrap rounded-md bg-brand-600 px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-white shadow-[0_1px_2px_rgba(15,23,42,0.25)] dark:bg-brand-500"
           style={{ left: row.left + row.width - 8, top: row.top + row.height - 8 }}
         >
           {row.heightPx} px

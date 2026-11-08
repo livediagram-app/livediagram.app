@@ -7,7 +7,7 @@
 // sheet (at the top while a dialog of its own covers the bottom, as a card's panel does on a phone).
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { Button, lucideGlyph, Portal } from '@liveplanner/ui';
+import { Button, lucideGlyph, Portal, useMediaQuery } from '@liveplanner/ui';
 import { lucideCheck, lucideLightbulb, lucideX } from '@liveworkspace/icons/lucide';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useOpenModalCount } from '@liveworkspace/workbench/lib/modal-guard';
@@ -20,6 +20,10 @@ const EndIcon = lucideGlyph(lucideX, 14);
 
 // The gap between the strip and the footer (or the window's edge on a phone).
 const STRIP_GAP_PX = 12;
+// Below this width (a tablet, a narrow window) the canvas's corner controls reach the middle: the strip floats
+// above them (their height and gap).
+const TIGHT_QUERY = '(max-width: 899px)';
+const CORNER_CONTROLS_PX = 60;
 
 // How far above the window's bottom the strip floats: clear of the editor's footer (the tab bar), measured.
 function useFooterClearance(): number {
@@ -57,6 +61,7 @@ export function MissionStrip<Ctx>({
   placement?: 'page' | 'dialog';
 }) {
   const phone = useIsMobileViewport();
+  const tight = useMediaQuery(TIGHT_QUERY) && !phone;
   const clearance = useFooterClearance();
   const coveredBelow = useOpenModalCount() > 0 && placement === 'page' && phone;
   const { mission, phase, index, count } = run;
@@ -155,7 +160,15 @@ export function MissionStrip<Ctx>({
         className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex justify-center ${
           phone ? '' : 'px-4'
         }`}
-        style={coveredBelow ? { top: 0 } : { bottom: phone ? clearance : clearance + STRIP_GAP_PX }}
+        style={
+          coveredBelow
+            ? { top: 0 }
+            : {
+                bottom: phone
+                  ? clearance
+                  : clearance + STRIP_GAP_PX + (tight ? CORNER_CONTROLS_PX : 0),
+              }
+        }
       >
         <div className={phone ? 'w-full' : 'w-[26rem] max-w-full'}>{body}</div>
       </div>

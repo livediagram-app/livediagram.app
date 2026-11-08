@@ -102,8 +102,24 @@ export function takePlacedSheet(sheetId: string): PlacedSheet | null {
   return from ?? null;
 }
 
-export function stashSheetSeeds(sheets: readonly SheetJson[]): void {
-  for (const s of sheets) seeds.set(s.id, s);
+// `keepTitle`: the copies take the seeds' titles as they are, not "<title> (copy)" (a kept practice sheet,
+// docs/specs/026-plan/plan-tour.md "Sheets: Five Small Wins"); a paste's copies are marked as copies.
+const titlesKept = new Set<string>();
+
+export function stashSheetSeeds(
+  sheets: readonly SheetJson[],
+  { keepTitle = false }: { keepTitle?: boolean } = {},
+): void {
+  for (const s of sheets) {
+    seeds.set(s.id, s);
+    if (keepTitle) titlesKept.add(s.id);
+    else titlesKept.delete(s.id);
+  }
+}
+
+// Whether a copy of `sheetId` keeps its seed's title as it is.
+export function seedKeepsTitle(sheetId: string): boolean {
+  return titlesKept.has(sheetId);
 }
 
 // The seed for a copy of `sheetId`, if a paste brought one.

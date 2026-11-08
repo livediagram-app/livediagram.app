@@ -55,6 +55,13 @@ export function PracticeSheetDialog({
   const [practice, setPractice] = useState<Practice | null>(null);
   // The practice sheet's own undo (its writes are never the plan's): ⌘Z / Ctrl+Z inside the dialog.
   const undo = useRef<{ done: ItemUndoStep[]; undone: ItemUndoStep[] }>({ done: [], undone: [] });
+  // The Sheet toolbar's dropdowns are drawn above the dialog while it is open (globals.css).
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-practice-sheet-open', '');
+    return () => root.removeAttribute('data-practice-sheet-open');
+  }, []);
+
   // One practice sheet a run: the bridge is read when used, so a new one each render never starts another.
   const bridge = useLatest(ctx.sheetsBridge);
   useEffect(() => {
@@ -188,7 +195,7 @@ function PracticeBody({
   const keep = () => {
     track('UI', 'Selected', 'PlanTourKeepSheet');
     const seed = keptSheetSeed(store.sheet(sheetId)!);
-    stashSheetSeeds([seed]);
+    stashSheetSeeds([seed], { keepTitle: true });
     const tab: Tab = {
       id: crypto.randomUUID(),
       name: PRACTICE_TITLE,

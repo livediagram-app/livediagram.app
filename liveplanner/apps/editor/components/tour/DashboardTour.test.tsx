@@ -130,7 +130,7 @@ describe('Dashboard Show Me: Layout View', () => {
     );
     expect(heights).toEqual(layout.rows.map((r) => `${r.height} px`));
     expect(screen.getByRole('img', { name: 'Mission 1 of 3' })).toBeTruthy();
-    expect(strip().textContent).toContain('Resize two slots');
+    expect(strip().textContent).toContain('Resize Two Slots');
     // The filled slot's cog shows while it runs.
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
@@ -162,7 +162,7 @@ describe('Dashboard Show Me: Layout View', () => {
     expect(strip().textContent).toContain('a row’s spans always add up to twelve');
     await settle(1700);
     expect(screen.getByRole('img', { name: 'Mission 2 of 3' })).toBeTruthy();
-    expect(strip().textContent).toContain('Change a row’s height');
+    expect(strip().textContent).toContain('Change a Row’s Height');
   });
 
   it('reports a skip from End, and lets go of the page', async () => {

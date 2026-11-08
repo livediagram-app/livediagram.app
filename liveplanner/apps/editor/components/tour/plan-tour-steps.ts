@@ -88,7 +88,7 @@ const hasValue = (v: unknown) => v !== undefined && v !== null && v !== '';
 export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   const move: Mission<SprintCtx> = {
     id: 'move-card',
-    title: 'Move one on',
+    title: 'Move One On',
     why: shape.phone
       ? `Hold a dashed practice card, then drag it into ${shape.nextName}.`
       : `Drag a dashed practice card into ${shape.nextName}.`,
@@ -109,7 +109,7 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   const open: Mission<SprintCtx> = {
     id: 'open-card',
-    title: 'Open one',
+    title: 'Open One',
     why: shape.phone ? 'Tap a practice card to open it.' : 'Click a practice card to open it.',
     lesson: 'Everything about one piece of work lives here, saved as you type.',
     hints: [
@@ -124,7 +124,7 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   const due: Mission<SprintCtx> = {
     id: 'due-date',
-    title: 'Give it a date',
+    title: 'Give It a Date',
     why: 'Set a due date on a practice card, in its panel.',
     lesson: 'Dates show on the card, and on calendars and dashboards.',
     hints: [
@@ -138,7 +138,7 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   };
   const ship: Mission<SprintCtx> = {
     id: 'ship-card',
-    title: 'Ship it',
+    title: 'Ship It',
     why: `Drag a practice card all the way into ${shape.shipName}.`,
     lesson: `Done is a column too. The header's widgets count what reaches ${shape.shipName}.`,
     hints: [
@@ -212,7 +212,7 @@ export function sheetMissions(touch: boolean): SheetMission[] {
   const typeValue: SheetMission = {
     id: 'type-value',
     cells: ['C4'],
-    title: 'Type a number',
+    title: 'Type a Number',
     why: 'Transport came to 122 this month. Type it into C4.',
     lesson: 'Numbers, dates and percentages are read as you type them.',
     hints: [
@@ -224,7 +224,7 @@ export function sheetMissions(touch: boolean): SheetMission[] {
   const sum: SheetMission = {
     id: 'sum',
     cells: ['C7'],
-    title: 'Add it up',
+    title: 'Add It Up',
     why: 'Total what you spent, in C7.',
     lesson: 'Start with = to write a formula, and drag over cells to point at them.',
     hints: [
@@ -241,7 +241,7 @@ export function sheetMissions(touch: boolean): SheetMission[] {
   const fill: SheetMission = {
     id: 'fill-down',
     cells: a1Range('D2', 'D6'),
-    title: 'Fill it down',
+    title: 'Fill It Down',
     why: "D2 works out what's left of Rent. Fill it down to D6.",
     lesson: 'A filled formula follows its row: each one now reads its own Planned and Actual.',
     hints: [
@@ -265,7 +265,7 @@ export function sheetMissions(touch: boolean): SheetMission[] {
   const currency: SheetMission = {
     id: 'currency',
     cells: a1Range('B2', 'D7'),
-    title: 'Make it money',
+    title: 'Make It Money',
     why: 'Show B2 to D7 as currency.',
     lesson: 'The toolbar acts on whatever you have selected.',
     hints: [
@@ -280,7 +280,7 @@ export function sheetMissions(touch: boolean): SheetMission[] {
   const chart: SheetMission = {
     id: 'chart',
     cells: a1Range('A1', 'C6'),
-    title: 'Chart it',
+    title: 'Chart It',
     why: 'Chart planned against actual.',
     lesson: 'Charts read the cells, so they change when the numbers do.',
     hints: [

@@ -118,7 +118,7 @@ tab (Boards first), the first not taken, else the first. `seen`: every track wit
 - Ctx per render: `practiceSheetCtx(sheet, value, charted)`. The current mission's `cells` are marks (`'glow'`, or
   `'ok'` in its lesson) through `SheetCellMarksContext`; `SheetCells` draws a mark per drawn cell with
   `data-practice-cell` and `data-mark`.
-- Finish: **Done**, **Keep This Sheet** (`stashSheetSeeds([keptSheetSeed(sheet)])`, then a `kind: 'sheet'` tab named
+- Finish: **Done**, **Keep This Sheet** (`stashSheetSeeds([keptSheetSeed(sheet)], { keepTitle: true })`, so the copy keeps the title,, then a `kind: 'sheet'` tab named
   Practice Budget with one `plan-sheet` whose `planSheet.copyOf` is the seed, through `planTabs.addTabAfter`, then
   `setActiveId`; `UI` · `Selected` · `PlanTourKeepSheet`), Learn More (`/help/plan/sheets/`).
 
