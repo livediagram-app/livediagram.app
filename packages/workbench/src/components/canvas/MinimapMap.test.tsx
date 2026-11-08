@@ -112,10 +112,10 @@ describe('MinimapMap', () => {
   it('grows the viewBox on the short axis to the panel shape', () => {
     // A tall board in a short panel grows sideways; a wide one in a tall panel grows up and down.
     const tall = mount({ bounds: { x: 0, y: 0, width: 100, height: 1000 }, size: 'short' });
-    const [, , w1, h1] = tall.map.getAttribute('viewBox')!.split(' ').map(Number);
+    const [, , w1 = 0, h1 = 1] = tall.map.getAttribute('viewBox')!.split(' ').map(Number);
     expect(w1 / h1).toBeCloseTo(256 / 96);
     const wide = mount({ size: 'tall' });
-    const [, , w2, h2] = wide.map.getAttribute('viewBox')!.split(' ').map(Number);
+    const [, , w2 = 0, h2 = 1] = wide.map.getAttribute('viewBox')!.split(' ').map(Number);
     expect(w2 / h2).toBeCloseTo(256 / 224);
   });
 
