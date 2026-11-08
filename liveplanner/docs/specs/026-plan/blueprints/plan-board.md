@@ -736,7 +736,7 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
 - A busy board (spec "A busy board"; `PlanBoardView` `PLAN_BUSY_CARDS`): the board root carries
   `data-plan-busy` (its card size, `detailed` when unset) past that many shown cards (`projection.total`).
   Its cells then draw their cards in runs (`card-runs.ts` `cardRuns`): a run starts at a card whose id hashes (FNV-1a)
-  to a start, one in `RUN_SPREAD` (8), or once a run holds `CARD_RUN_MAX` (16), so a card moving in or out of a cell
+  to a start, one in `RUN_SPREAD` (4), or once a run holds `CARD_RUN_MAX` (8), so a card moving in or out of a cell
   changes only the run it lands in or leaves; each run is a `div[data-plan-run]` keyed by its first card, a flex
   column with the list's own gap. `app/globals.css` `plan-card-run` gives a run `content-visibility: auto`,
   `contain-intrinsic-size: auto calc(var(--run-cards) * 140px - 8px)` (`52px` a card under `minimal`), 24 px of
@@ -756,8 +756,9 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
 - The drag copy (`PlanDragGhost`) is fixed at the top left and follows the pointer by its `translate`, never `left` /
   `top`, so following the pointer lays nothing out. It is no layer of its own: a composited copy over a busy board's
   run layers cost Safari 1.5 s re-sorting them as it left the board. Carrying a card off a busy board, or back on,
-  still costs Safari one frame of 0.3 to 1.4 s with nothing in the page changing: turning the runs' skipping off
-  takes it to 0.06 to 0.15 s, so the skipping itself is the cost (open; main took 0.15 to 0.37 s there).
+  cost Safari a frame of 0.3 to 1.4 s with runs of 8: the text the mouse's drag selected (below), then a cost that
+  grew with the runs' length (runs of 32 took 1.1 to 1.4 s; of 4, 0.15 to 0.34 s off the board and 0.12 to 0.15 s
+  back on, against 0.27 to 0.34 s and 0.07 to 0.12 s for the board before runs).
 - Card redraws: `PlanBoardCard` is `memo`; `PlanBoardView` hands it a `palette` kept by value (`useMemo` on the
   surface and the element's `fillColor` / `strokeColor` / `textColor` / `colorPreset`) and `cardHandlers` of one
   identity (`useLatest` of `onCardPress`, `onCardKey`, the plan and `drag.cancelPress`; `onOpen(id)` takes the card's
@@ -765,11 +766,24 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   `app/face-finish.css` empties both on `.plan-card` under `[data-face-finish]` Professional and Marker. The
   `PlanContextValue` keeps its identity across editor renders: `useFormActions` `newFormFor` reads its inputs
   through `useLatest` and `useLinkedActionCards` `showOnCanvas` is a `useStableCallbacks` wrapper. Cards read
-  none of it: `PlanProvider` also hands down `usePlanCard()` (`PlanCardData`: `items`, `types`, `statusNames`,
+  none of it: `PlanProvider` also hands down `usePlanCard()` (`PlanCardData`: `types`, `statusNames`,
   `statusPhases`, `canEditCards`, `itemsScope`, a `useMemo` on those parts) and `usePlanLatest()` (a ref to the
   value, for handlers: `card-file-drop` `notify`, `useAttachmentUpload` at an upload's end), so a change to anything
   else (`draggingItemId` as a card is picked up and let go, `presence`, `openItemId`) re-renders the board, never its
-  cards; `PlanBoardCard`, `PlanCardFace`, `useCardFileDrop` and `useAttachmentUpload` read only those.
+  cards; `PlanBoardCard`, `PlanCardFace`, `useCardFileDrop` and `useAttachmentUpload` read only those. The plan's
+  items reach a card through `plan-items-store.ts`: `PlanProvider`'s `usePlanItemsStore` (one store, the new map set
+  in an insertion effect, readers told in a layout effect) and `usePlanItemsSelect(select, equal, deps)`
+  (`useSyncExternalStore`, the last pick kept while `equal`), so `PlanCardFace` picks its Card fields' linked cards
+  (`sameEntries`), its Calculated fields' outcomes (alike answer or problem) and its open blockers (a number), and
+  a drop, which changes one item, redraws that card alone (it redrew all 2,000 faces: each card's Parent field read
+  the whole map). Each cell's cards are `PlanBoardCellCards` (`memo` on the cell's `cards`, from the projection, and
+  `cellBase`, a `useMemo` in `PlanBoardView` of what every card shares), the drop gap passed only to its cell
+  (`gapBefore`, `gapHeight`), so a slot change renders one or two cells, not 2,000 card elements. A card's element
+  comes from the module-level `cardElement`: drawn by a closure inside the cell, the React Compiler cached it by the
+  card's id alone, and a presence ring or selection never showed (`e2e/plan-collab.spec.ts`).
+- A card drag selects no text (`usePlanCardDrag`): a `selectstart` listener refuses a selection while a card is
+  pressed, and the drag's start clears any already made. The mouse's drag had selected the page's text as it went,
+  and on a busy board Safari took up to 1.4 s each time the card crossed the board's edge with text selected.
   `accentOn` and `chipInkOn` (`@liveplanner/project` `plan-palette.ts`) remember their answers by colour
   (`PLAN_INK_MEMO_MAX` entries, emptied when full).
 - `BoxedElementView` renders a `plan-board` element's `SketchFace` with `keepTree`, so a finish change never
@@ -973,8 +987,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
 | `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
 | `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
-| `RUN_SPREAD`               | 8                  | `card-runs.ts`: a run's average cards; small enough to skip in view; 4-16   |
-| `CARD_RUN_MAX`             | 16                 | `card-runs.ts`: bounds a run of cards hashing to no start; 8-32             |
+| `RUN_SPREAD`               | 4                  | `card-runs.ts`: 8 cost 0.3-0.5 s an edge crossing, 2 slowed each gap; 3-6   |
+| `CARD_RUN_MAX`             | 8                  | `card-runs.ts`: bounds a run of cards hashing to no start; 6-12             |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

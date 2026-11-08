@@ -694,7 +694,9 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
   person with the hashed id (`itemPersonId` of the editor's self id, the id the api resolves as owner).
   - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
     then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
-  - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; `removed` deletes; a rev past
+  - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; an item back at the rev it holds and alike
+    field for field keeps its object, and a fold that changes no item keeps the store itself (plan-board.md "A drag
+    stays smooth": the answer to a drop redraws nothing); `removed` deletes; a rev past
     `serverRevRef + 1`, or an op with no items (a tab-scoped session), refetches (`ITEM_REFETCH_DEBOUNCE_MS`). Room
     resync and reconnect (`onRoomJoined`) refetch.
 - `apps/editor/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends

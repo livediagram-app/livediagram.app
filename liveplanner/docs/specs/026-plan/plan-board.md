@@ -1315,8 +1315,11 @@ theme, with the page answering throughout.
 - **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:
   picking a card up and letting it go redraw only that card (its copy appearing over the page never restyles the
   board), a drop gap opening or closing in a long column slides the cards below it rather than redrawing them, the
-  copy under the pointer moves without laying anything out, a column's hover colour snaps rather than eases, and
-  letting go settles the cards in view (the cards out of view simply sit in their new places).
+  copy under the pointer moves without laying anything out, a column's hover colour snaps rather than eases, carrying
+  a card selects none of the page's text, the gap moving within a column redraws that column's cards alone, and
+  letting go settles the cards in view (the cards out of view simply sit in their new places) and redraws only the
+  cards it moved: a card showing another card (a Parent, a Card field, a Calculated field, its blockers) redraws when
+  that card changes, never for another.
 - **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
   usual limit; a card scrolled into view takes them the next time the board settles after a change.
 - **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed
