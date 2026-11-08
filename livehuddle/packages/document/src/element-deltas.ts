@@ -95,8 +95,8 @@ const threadOf = (el: Element): CommentThread | undefined =>
 
 // The element with its thread set, or removed when `thread` is undefined.
 function withThread(el: Element, thread: CommentThread | undefined): Element {
-  const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
-  return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+  const { commentThread: _drop, ...rest } = el;
+  return thread ? { ...rest, commentThread: thread } : rest;
 }
 
 // A piece that takes note changes (a Notice Board, a Calendar Wall: docs/specs/009-elements/team-pieces.md).
@@ -267,7 +267,7 @@ function withoutNotes(el: ShapeElement): ShapeElement {
 
 // Everything about an element EXCEPT what deltas carry, for comparing.
 function withoutDeltaFields(el: Element): unknown {
-  const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
+  const { commentThread: _t, ...rest } = el;
   if (rest.type !== 'shape') return rest;
   const { noticeNotes: _n, pieceTimer: _p, arcadeScores: _a, ...shape } = rest as ShapeElement;
   return shape;
