@@ -56,7 +56,10 @@ export function WatchItBuiltPlayer({ onEnded }: { onEnded: () => void }) {
   const layoutRef = useRef<ReplayLayout | null>(null);
   // Screen to canvas, measured from A where it waits unseen (the script's first frames).
   const mapRef = useRef<{ zoom: number; left: number; top: number } | null>(null);
+  // Where Example was last drawn, and the move it is on: each move starts from where the cursor is, never from a
+  // target looked up again (a palette that closed, a menu row an accordion pushed down), so it never jumps.
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const legRef = useRef<Leg | null>(null);
   const signatureRef = useRef('');
   const inDiagram = ctx.editorMode.mode === 'diagram';
 
@@ -205,11 +208,17 @@ export function WatchItBuiltPlayer({ onEnded }: { onEnded: () => void }) {
     if (frame.paletteOpen !== !!findTour('palette-category-menu')) clickTour('palette-category');
     if (frame.paletteOpen) captureTile(mapRef, layoutRef, settling);
     if (frame.menuOnB) openMenuTo(frame.menuDepth);
-    const point = cursorAt(clock.index, clock.ms, lastPointRef.current);
-    if (point) {
-      if (clock.ms >= CHAPTERS[clock.index]!.ms - 1) lastPointRef.current = point;
-      setCursor(point);
-    }
+    const point = cursorAt(
+      clock.index,
+      clock.ms,
+      legRef,
+      lastPointRef.current,
+      frame,
+      mapRef.current,
+      !!layoutRef.current.tile,
+    );
+    lastPointRef.current = point;
+    setCursor(point);
   }, [active, clock]);
 
   // Space, the arrows and Escape (watch-it-built.md "The player").
@@ -403,29 +412,56 @@ function resolve(to: CursorTarget): { x: number; y: number } | null {
 
 const easeInOut = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - (-2 * p + 2) ** 3 / 2);
 
-// Example between the waypoint it left and the one it is heading to, arriving at the next one's time.
+type Point = { x: number; y: number };
+type Leg = { key: string; from: Point };
+type ScreenMap = { zoom: number; left: number; top: number };
+
+// Example between where it was when this move began and the waypoint it is heading to, arriving at that one's time.
 function cursorAt(
   index: number,
   ms: number,
-  carriedFrom: { x: number; y: number } | null,
-): ReplayCursor | null {
+  legRef: { current: Leg | null },
+  last: Point | null,
+  frame: DemoFrame,
+  map: ScreenMap | null,
+  carriesFromTile: boolean,
+): ReplayCursor {
   const plan = cursorPlan(index);
   const nextAt = plan.findIndex((w) => w.at > ms);
   const prev = nextAt === -1 ? plan[plan.length - 1] : plan[nextAt - 1];
   const next = nextAt === -1 ? null : plan[nextAt]!;
   // Carrying a shape out of the palette, Example holds it: the cursor is the carried shape's centre, pressed, so the
-  // two never part. (The tile it left is gone once the palette closes, so it can't be where the cursor starts from.)
-  if (prev?.to.kind === 'tile' && next?.to.kind === 'element') {
-    const held = resolve(next.to);
-    if (held) return { ...held, pressing: true };
+  // two never part. Taken from the frame itself, not the DOM, which is still a frame behind as the carry starts. With
+  // no tile seen the shape just drops where it lands, so Example eases there like any other move.
+  if (prev?.to.kind === 'tile' && next?.to.kind === 'element' && carriesFromTile) {
+    const held = heldPoint(frame, next.to.id, map);
+    if (held) {
+      legRef.current = { key: 'held', from: held };
+      return { ...held, pressing: true };
+    }
   }
-  const from = (prev ? resolve(prev.to) : carriedFrom) ?? fallbackPoint();
+  const key = `${index}:${prev?.at ?? -1}`;
+  if (legRef.current?.key !== key) {
+    legRef.current = { key, from: last ?? (prev ? resolve(prev.to) : null) ?? fallbackPoint() };
+  }
+  const from = legRef.current.from;
   const pressing = !!prev?.press && ms - prev.at < 260;
   if (!next) return { ...from, pressing };
   const to = resolve(next.to) ?? from;
   const leave = prev ? prev.at + 180 : 0;
   const p = ms <= leave ? 0 : easeInOut(Math.min(1, (ms - leave) / Math.max(1, next.at - leave)));
   return { x: from.x + (to.x - from.x) * p, y: from.y + (to.y - from.y) * p, pressing };
+}
+
+// A demo shape's centre on the screen, from where this frame puts it on the canvas.
+function heldPoint(frame: DemoFrame, id: string, map: ScreenMap | null): Point | null {
+  const el = frame.elements.find((e) => e.id === id);
+  if (!map || !el || !('width' in el)) return null;
+  const shape = el as { x: number; y: number; width: number; height: number };
+  return {
+    x: map.left + (shape.x + shape.width / 2) * map.zoom,
+    y: map.top + (shape.y + shape.height / 2) * map.zoom,
+  };
 }
 
 function fallbackPoint() {

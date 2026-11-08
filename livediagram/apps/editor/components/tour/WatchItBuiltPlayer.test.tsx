@@ -9,7 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ShapeElement } from '@livediagram/document';
 import { replayStore } from '@/lib/replay/replay-store';
 import { ADD, CHAPTERS } from '@/lib/replay/watch-it-built-script';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { WatchItBuiltPlayer } from './WatchItBuiltPlayer';
 
 const telemetry = vi.hoisted(() => {
@@ -226,15 +225,32 @@ describe('WatchItBuiltPlayer clock', () => {
     a.setAttribute('data-element-id', 'wib-a');
     a.getBoundingClientRect = () => ({ left: 600, top: 200, width: 200, height: 56 }) as DOMRect;
     document.body.append(a);
+    const menu = document.createElement('div');
+    const tile = document.createElement('button');
+    tile.getBoundingClientRect = () => ({ left: 359, top: 227, width: 73, height: 73 }) as DOMRect;
+    menu.append(tile);
+    tourEls.set('palette-category-menu', menu);
     try {
       render(<WatchItBuiltPlayer onEnded={onEnded} />);
       act(() => {
-        vi.advanceTimersByTime((ADD.drag1[0] + ADD.drag1[1]) / 2);
+        vi.advanceTimersByTime(ADD.drag1[0] - 100);
       });
-      expect(document.querySelector(elementSelector('wib-a'))).toBe(a);
-      expect(overlay.props!.cursor).toEqual({ x: 700, y: 228, pressing: true });
+      const landed = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      // The palette closes during the carry; the cursor stays on the shape all the same.
+      tourEls.clear();
+      act(() => {
+        vi.advanceTimersByTime((ADD.drag1[1] - ADD.drag1[0]) / 2 + 100);
+      });
+      const carried = replayStore.get().elements.find((e) => e.id === 'wib-a') as ShapeElement;
+      // Settled map: zoom 1, A's landing at (600, 200) on the screen.
+      expect(overlay.props!.cursor).toEqual({
+        x: 600 + (carried.x - landed.x) + 100,
+        y: 200 + (carried.y - landed.y) + 28,
+        pressing: true,
+      });
     } finally {
       a.remove();
+      tourEls.clear();
     }
   });
 
@@ -270,6 +286,48 @@ describe('WatchItBuiltPlayer clock', () => {
       expect(Math.abs(screenX - 395.5)).toBeLessThan(12);
     } finally {
       a.remove();
+      tourEls.clear();
+    }
+  });
+
+  it('never jumps: frame to frame through every chapter, Example moves at most a step', () => {
+    editor();
+    const shapes = (['wib-a', 'wib-b'] as const).map((id, i) => {
+      const el = document.createElement('div');
+      el.setAttribute('data-element-id', id);
+      el.getBoundingClientRect = () =>
+        ({
+          left: 600,
+          top: 200 + i * 200,
+          width: 200,
+          height: 56,
+          bottom: 256 + i * 200,
+        }) as DOMRect;
+      document.body.append(el);
+      return el;
+    });
+    const menu = document.createElement('div');
+    const tile = document.createElement('button');
+    tile.getBoundingClientRect = () => ({ left: 359, top: 227, width: 73, height: 73 }) as DOMRect;
+    menu.append(tile);
+    tourEls.set('palette-category-menu', menu);
+    try {
+      render(<WatchItBuiltPlayer onEnded={onEnded} />);
+      let last = overlay.props!.cursor as { x: number; y: number } | null;
+      let worst = 0;
+      const total = CHAPTERS.reduce((sum, c) => sum + c.ms, 0);
+      for (let t = 0; t < total; t += 16) {
+        act(() => {
+          vi.advanceTimersByTime(16);
+        });
+        const now = overlay.props!.cursor as { x: number; y: number } | null;
+        if (last && now) worst = Math.max(worst, Math.hypot(now.x - last.x, now.y - last.y));
+        last = now;
+      }
+      // The fastest leg covers about 300 px in under a second: no frame should move it more than ~40 px.
+      expect(worst).toBeLessThan(40);
+    } finally {
+      shapes.forEach((el) => el.remove());
       tourEls.clear();
     }
   });
