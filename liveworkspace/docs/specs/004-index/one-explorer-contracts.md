@@ -79,7 +79,9 @@ A guest's id lives on liveworkspace.app, so it is the same in every app.
 3. The app keeps the token (local storage) and sends it as the Bearer token.
 
 Guest token: a JWT signed with accounts' keys, `iss` the accounts issuer, `aud` the client's API
-resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for a year. A newer one replaces it silently.
+resource, `sub: guest_<uuid>`, `kind: "guest"`, valid for 45 days (a year before 2026-11). A newer one replaces it
+silently. The app hands off again on the first page load that needs it once it has fewer than 15 days left
+(`GUEST_TOKEN_REFRESH_BEFORE_MS`), and accounts' `lw_guest` cookie names the same guest again.
 
 **Becoming an account.** When someone signs in or signs up on liveworkspace.app with an `lw_guest`
 cookie, accounts tells the index (`POST /internal/merge`, accounts' own key), which moves the guest's

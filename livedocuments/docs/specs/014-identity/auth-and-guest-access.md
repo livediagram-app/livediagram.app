@@ -69,7 +69,7 @@ A guest's identity is liveworkspace's, so the same guest reaches the same things
 2. The accounts site reads or sets its long-lived `lw_guest` cookie and redirects to `/auth/guest#guest_token=<jwt>&state=<state>`. The fragment keeps the token out of logs.
 3. `/auth/guest` (`apps/editor/app/auth/guest/`) checks the `state`, keeps the token in `localStorage` under `livedocuments:v2:guest-token`, and returns to the page it came from (a same-site path only). Every request then carries it as the Bearer, exactly as an account's access token is.
 
-- **Refreshed before it runs out.** A kept token with fewer than 30 days left (`GUEST_TOKEN_REFRESH_BEFORE_MS`) is replaced by the same handoff on the next page load that needs it.
+- **Refreshed before it runs out.** A kept token with fewer than 15 days left (`GUEST_TOKEN_REFRESH_BEFORE_MS`) is replaced by the same handoff on the next page load that needs it.
 - **Never a loop.** A handoff that comes back without a token (no accounts site, or a deployment without one, which answers `/auth/guest#error=guest_not_configured` as a path, so behind the local router it lands back on the app, not on the api worker) is remembered for five minutes, and the page carries on without an identity in the meantime, with a stand-in id for this page load only.
 - **No redirect for a link.** Opening a document through a share link or an embed needs no identity: the share code is enough for the index to grant what the link allows.
 - **A new guest is counted once.** A guest token for a guest this browser has not had reports `Participant·Created` ([Telemetry](../017-telemetry/telemetry.md)).

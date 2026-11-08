@@ -53,6 +53,19 @@ function storage<T>(action: (s: Storage) => T): T | null {
   }
 }
 
+// The accounts Worker's refusals for an address's day of codes (liveworkspace/docs/specs/003-accounts/sign-in.md "A
+// day's codes per address"): signing in with a code is locked, or the day's codes are all sent. Google still works.
+const CODE_SIGN_IN_LOCKED = 'CODE_SIGN_IN_LOCKED';
+const TOO_MANY_CODES = 'TOO_MANY_CODES';
+
+/** What the page says for one of those refusals, or null for any other answer. */
+export function codeDayMessage(code: unknown, google: boolean): string | null {
+  const then = google ? 'Continue with Google, or try again tomorrow.' : 'Try again tomorrow.';
+  if (code === CODE_SIGN_IN_LOCKED) return `Too many wrong codes for this address today. ${then}`;
+  if (code === TOO_MANY_CODES) return `Too many codes sent to this address today. ${then}`;
+  return null;
+}
+
 // A text field's trimmed value.
 function field(form: HTMLFormElement, name: string): string {
   const value = new FormData(form).get(name);
@@ -152,10 +165,13 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     );
     captchaSpent.current = true;
     if (result.ok) return true;
+    // Locked for the day: back to the first step, where Continue with Google is.
+    if (result.data.code === CODE_SIGN_IN_LOCKED) setStep('email');
     setError(
-      result.status === 429
-        ? 'Too many codes requested. Wait a minute and try again.'
-        : 'We could not send a code. Check the address and try again.',
+      codeDayMessage(result.data.code, options?.google === true) ??
+        (result.status === 429
+          ? 'Too many codes requested. Wait a minute and try again.'
+          : 'We could not send a code. Check the address and try again.'),
     );
     return false;
   }
@@ -203,6 +219,12 @@ export function SignInFlow({ flow }: { flow: Flow }) {
     setBusy(null);
     if (!result.ok) {
       setDigits(EMPTY_CODE);
+      const locked = codeDayMessage(result.data.code, options?.google === true);
+      if (locked) {
+        // No code will do today: back to the first step, where Continue with Google is.
+        setStep('email');
+        return setError(locked);
+      }
       // After the render that enables the boxes again: a disabled box takes no focus.
       requestAnimationFrame(() => digitBoxes.current?.focus());
       return setError(

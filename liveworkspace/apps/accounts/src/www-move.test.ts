@@ -117,6 +117,61 @@ describe('withOwnCookies', () => {
       `${GUEST_COOKIE}=${ours}; a=1`,
     );
   });
+
+  // accounts.md "Staging never takes production's cookies".
+  describe('outside production', () => {
+    const onStaging = async (cookie: string) =>
+      (
+        await withOwnCookies(
+          new Request('https://staging.liveworkspace.app/', { headers: { cookie } }),
+          SECRET,
+          'staging',
+        )
+      ).headers.get('cookie');
+
+    it("drops production's session, guest and every other Better Auth cookie even when it comes alone", async () => {
+      const production = await signed('prodtoken', OTHER_SECRET);
+      const theirGuest = await signGuestCookie(`guest_${crypto.randomUUID()}`, OTHER_SECRET);
+      expect(
+        await onStaging(
+          `${SESSION}=${production}; ${GUEST_COOKIE}=${theirGuest}; better-auth.state=${production}; theme=dark`,
+        ),
+      ).toBe('theme=dark');
+      expect(await onStaging(`${SESSION}=${production}`)).toBeNull();
+    });
+
+    it("drops production's hand-off nonce outright, and keeps staging's own", async () => {
+      expect(await onStaging(`lw_handoff=prodnonce; lw_handoff_staging=ournonce`)).toBe(
+        'lw_handoff_staging=ournonce',
+      );
+    });
+
+    it("keeps staging's own signed cookies, the first of each name", async () => {
+      const ours = await signed('stagingtoken', SECRET);
+      const ourGuest = await signGuestCookie(`guest_${crypto.randomUUID()}`, SECRET);
+      const production = await signed('prodtoken', OTHER_SECRET);
+      expect(
+        await onStaging(
+          `${SESSION}=${production}; ${SESSION}=${ours}; ${GUEST_COOKIE}=${ourGuest}; ${SESSION}=${ours}`,
+        ),
+      ).toBe(`${SESSION}=${ours}; ${GUEST_COOKIE}=${ourGuest}`);
+    });
+
+    it('passes a request with none of production’s cookies through as it came', async () => {
+      const request = new Request('https://staging.liveworkspace.app/', {
+        headers: { cookie: 'theme=dark' },
+      });
+      expect(await withOwnCookies(request, SECRET, 'staging')).toBe(request);
+    });
+
+    it('leaves production as it was: a single foreign cookie passes, for Better Auth to refuse', async () => {
+      const production = await signed('prodtoken', OTHER_SECRET);
+      const request = new Request('https://www.liveworkspace.app/', {
+        headers: { cookie: `${SESSION}=${production}; lw_handoff=n` },
+      });
+      expect(await withOwnCookies(request, SECRET, 'production')).toBe(request);
+    });
+  });
 });
 
 describe('an access token minted under the bare issuer', () => {

@@ -468,7 +468,7 @@ Migrations, in order:
 | `FUTURE_SLACK_MS`               | `5 * 60 * 1000`                                                                        | `timeline.ts`                         |
 | `WORKBENCH_CLOSE_MAX_ITEMS`     | `500`                                                                                  | `workbench-close.ts`                  |
 | `WORKBENCH_CLOSE_CONCURRENCY`   | `10`                                                                                   | `workbench-close.ts`                  |
-| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `30 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
+| `GUEST_TOKEN_REFRESH_BEFORE_MS` | `15 * 24 * 3600 * 1000`                                                                | `guest-token.ts`                      |
 | `GUEST_HANDOFF_BACKOFF_MS`      | `5 * 60_000`                                                                           | `guest-token.ts`                      |
 | `GRANT_RENEW_BEFORE_MS`         | `60_000`                                                                               | `item-grants.ts`                      |
 | `GRANT_REFUSAL_MEMORY_MS`       | `30_000`                                                                               | `item-grants.ts`                      |

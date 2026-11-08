@@ -38,7 +38,9 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 ### Routing (`index.ts`), in order
 
 1. No `BETTER_AUTH_SECRET`: every request `503 { error: 'not_configured' }` (logged). Shorter than 32 characters,
-   `getAuth` throws.
+   `getAuth` throws. Then the Cookie header is narrowed (`withOwnCookies`, own-cookies.ts): a doubled signed cookie
+   keeps its first copy signed here; outside production every Better Auth cookie and `lw_guest` not signed here goes,
+   doubled or not, and production's nonce `lw_handoff` goes outright.
 2. `GET`: `/api/auth/sign-in-options`; `/api/auth/guest` (first `GUEST_LIMITER` keyed `ip:<network>`, `429 {
 error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` (the browser's hop); the two
    discovery documents at the root.
@@ -47,7 +49,8 @@ error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` 
 4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account/code`;
    `POST /api/auth/delete-account/check`; `POST /api/auth/delete-account`;
    `POST /api/auth/end-session` (an app's Worker).
-5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
+5. Anything else under `/api/auth`: the code routes are limited first (below: the per-minute limiters, then the
+   address's day in `sign_in_code_limit`, code-day.ts), then Better Auth's handler (for
    Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
    app's tokens on the sessions they end are deleted, `endSessionTokensOf`), then three rewrites of the answer: `GET
 /get-session` gains the presence colour; `GET /oauth2/authorize` may move the sign-in page to the app's address,
@@ -75,10 +78,10 @@ parse is read as `{}`.
 
 Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` and the run goes on.
 
-| Cron           | Steps, in order                                                                                                                                                                                                                                      |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                                          |
-| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. in the 09:17 UTC run only, `idle guests`. |
+| Cron           | Steps, in order                                                                                                                                                                                                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                                                                                                                  |
+| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. `code days`: up to 5,000 ended `sign_in_code_limit` windows deleted; 7. in the 09:17 UTC run only, `idle guests`. |
 
 The hourly run's emails keep to the send window ([email.md](email.md) "The send window"): the window is read from
 `EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE` once per run (`sendWindowOf`). Without an `EMAIL` binding outside
@@ -274,6 +277,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | `liveworkspace/apps/accounts/src/lifecycle.ts`                | The onboarding series (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"): one per account, not one per app, so a person who uses all four apps hears it once                                  |
 | `liveworkspace/apps/accounts/src/notify.ts`                   | What an app's notification emails need from accounts (liveworkspace/docs/specs/003-accounts/accounts.md "Notification emails"), beside the addresses (account-apps.ts `verifiedEmails`): whet…                     |
 | `liveworkspace/apps/accounts/src/profiles.ts`                 | A person's display name and presence colour (liveworkspace/docs/specs/003-accounts/accounts.md "Profiles"): what collaborators see on their cursor, their comments and the presence list, the…                     |
+| `liveworkspace/apps/accounts/src/code-day.ts`                 | An address's day of email codes (liveworkspace/docs/specs/003-accounts/sign-in.md "A day's codes per address")                                                                                                     |
 | `liveworkspace/apps/accounts/src/rate-limit.ts`               |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/resources.ts`                |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/secrets.ts`                  | Constant-time comparison of two secrets of any length: both sides are hashed first, so neither the content nor the length leaks through timing.                                                                    |
@@ -395,7 +399,7 @@ Env fields (`env.ts`): `ADMIN_TOKEN`, `BASE_URL`, `BETTER_AUTH_SECRET`, `DRIVE_K
 ## Data and persistence
 
 One D1 database (`AUTH_DB`). Each table's indexes, and what writes and reads it, are in the feature file that
-owns it: Better Auth's own tables and `sign_in_handoff` in [sign-in.md](sign-in.md) and [oauth.md](oauth.md); `guest_seen`,
+owns it: Better Auth's own tables, `sign_in_handoff` and `sign_in_code_limit` in [sign-in.md](sign-in.md) and [oauth.md](oauth.md); `guest_seen`,
 `legacy_guest` in [sessions-and-guests.md](sessions-and-guests.md); `team`, `team_member`, `team_seq` in [teams.md](teams.md);
 `api_token` in [tokens.md](tokens.md); `settings`, `profile` in [settings-and-profiles.md](settings-and-profiles.md);
 `email_lifecycle`, `account_app` in [email.md](email.md). `pending_purges` (`pending_purges_due (lastAttemptAt)`) and
@@ -421,6 +425,10 @@ Migrations, in order:
 - `0015_drop_migration_notice.sql`: drops `migration_notice` once that email was sent, so the recipients'
   addresses aren't kept
 - `0016_user_time_zone.sql`: `user.timeZone`, the account's IANA zone for the send window
+- `0017_push_devices.sql`: `push_device`, phone notifications' devices ([push.md](push.md))
+- `0018_livehuddle.sql`: widens every app CHECK to livehuddle
+- `0019_sign_in_code_limit.sql`: `sign_in_code_limit`, each address's day of code sends and checks
+  ([sign-in.md](sign-in.md))
 
 Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would
 read D1's schema before a Worker's first answer. `src/schema-check.test.ts` runs the same check against
@@ -488,11 +496,11 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `GUEST_SWEEP_LIMIT`                 | `500`                                                                    | `guest-sweep.ts`     |
 | `GUEST_PATH`                        | `'/guest'`                                                               | `guests.ts`          |
 | `GUEST_COOKIE`                      | `'lw_guest'`                                                             | `guests.ts`          |
-| `GUEST_TOKEN_TTL_SECONDS`           | `365 * 24 * 60 * 60`                                                     | `guests.ts`          |
+| `GUEST_TOKEN_TTL_SECONDS`           | `45 * 24 * 60 * 60`                                                      | `guests.ts`          |
 | `AUTHORIZE_PATH`                    | `'/oauth2/authorize'`                                                    | `guests.ts`          |
 | `HANDOFF_PATH`                      | `'/handoff'`                                                             | `handoff.ts`         |
 | `HANDOFF_START_PATH`                | `'/handoff/start'`                                                       | `handoff.ts`         |
-| `HANDOFF_NONCE_COOKIE`              | `'lw_handoff'`                                                           | `handoff.ts`         |
+| `HANDOFF_NONCE_COOKIE`              | `'lw_handoff'` (production's, `handoffNonceCookie`)                      | `handoff.ts`         |
 | `HANDOFF_BIND_PARAM`                | `'handoff'`                                                              | `handoff.ts`         |
 | `HANDOFF_TTL_SECONDS`               | `60`                                                                     | `handoff.ts`         |
 | `HANDOFF_NONCE_MAX_AGE_SECONDS`     | `900`                                                                    | `handoff.ts`         |

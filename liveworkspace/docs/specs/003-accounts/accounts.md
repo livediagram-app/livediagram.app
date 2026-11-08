@@ -248,7 +248,13 @@ identity it sends the browser to `GET /api/auth/guest?client_id=&redirect_uri=&s
   development, and set again on every visit (browsers cap a cookie at about 400 days);
 - redirects to `<redirect_uri>#guest_token=<jwt>&state=<state>`. The token is signed by the jwt
   plugin with the same keys as access tokens (`/api/auth/jwks`): `iss` the issuer, `aud` the client's
-  API, `sub` the guest id, `kind: "guest"`, for a year.
+  API, `sub` the guest id, `kind: "guest"`, for 45 days (`GUEST_TOKEN_TTL_SECONDS`; a year before 2026-11). The
+  app hands off again on the first page load that needs the token once it has fewer than 15 days left, and the
+  same `lw_guest` cookie (ten years, set again on every hand-off) names the same guest, so a guest who keeps using
+  an app is never signed out by it, and one who comes back after the token has lapsed gets the same guest back.
+  45 days rather than 30: apps built before this refresh at 30 days left, and a token that starts with 30 days or
+  fewer would send those pages round the hand-off on every load. Once no page from before is left (a month after
+  every app has deployed the 15 day refresh), it can come down to 30 days.
 - once the client and `redirect_uri` have checked out, never leaves the browser on an error page: if
   anything after that fails (reading or setting the cookie, the seen stamp's database, signing the
   token) it logs it and redirects to `<redirect_uri>#error=server_error&state=<state>`, with no cookie
@@ -522,6 +528,12 @@ Explorer on liveworkspace.app gets a guest's token at its next ask (within 15 mi
 **Guests.** Signing out leaves the browser's guest (`lw_guest`) and each app's stored guest token as they are, so
 afterwards the browser is the guest it was before signing in.
 
+**Tokens already handed out.** An app's API checks access and guest tokens offline against the key set, so there is
+no list of revoked tokens: a token copied before signing out keeps working until it lapses, an hour for an access
+token (the provider's default, `accessTokenExpiresIn` unset) and 45 days for a guest token. Signing out ends what can
+mint new ones (the session and the app's refresh tokens). A revocation list the apps check is a known limit, not
+built.
+
 **What it costs.** Only a sign-out pays: one request from the app's Worker to the accounts Worker (an introspection,
 one read and one batch of deletes in D1) and one extra full-page hop through liveworkspace.app (a read of the
 client, the session lookup, one batch). No other request changes.
@@ -638,7 +650,8 @@ transition window the old bare names keep working beside the new ones.
 **Both hosts answer.** Every API Worker (accounts, the index, media, the Community, telemetry, status, Drive) has the
 same routes on `www.liveworkspace.app` as on `liveworkspace.app`. The bare routes stay for old clients.
 
-**Tokens.** A token minted before the move names the bare issuer: access tokens for an hour, guest tokens for a year.
+**Tokens.** A token minted before the move names the bare issuer: access tokens for an hour, guest tokens for a year
+(they were minted for a year until 2026-11, 45 days since).
 Every check of a liveworkspace token (`@liveworkspace/auth-client` `createVerifier` and `createPersonVerifier`, in
 each app's API, the index, Drive and this Worker's own bearer check) accepts the issuer it is configured with and its
 twin on the other host, and the same for each audience. The twins are one named constant,
@@ -667,6 +680,19 @@ A production cookie on `Domain=liveworkspace.app` also reaches `staging.livework
 staging's own, and Better Auth reads the first of two cookies with one name. So before Better Auth reads a request,
 this Worker drops any copy of its signed cookies whose signature isn't its own (`own-cookies.ts`), only when a
 name comes more than once; and a guest cookie is read from whichever copy is signed with this Worker's secret.
+
+**Staging never takes production's cookies.** Moving production to host-only cookies has to wait for the move to
+www. (`BARE_WWW_TRANSITION.keepUntil`), so staging keeps them out itself. Outside production, the first thing this
+Worker does with a request is drop from its Cookie header every cookie of production's that it can tell apart:
+each of Better Auth's cookies (`better-auth.*`, with or without `__Secure-`; every one Better Auth sets here is
+signed) and `lw_guest` that isn't signed with this deployment's own secret, whether it comes once or twice, and
+production's hand-off nonce `lw_handoff` outright, since a nonce carries no signature: staging's own nonce is
+`lw_handoff_staging` (`lw_handoff_development` locally). Nothing after that step on staging (Better Auth, the guest
+hand-off, the Explorer's token, signing out) ever reads a production cookie, and no Worker logs a Cookie header. It
+costs one HMAC per such cookie per request, on staging only: production keeps the check above, which costs nothing
+without a doubled name. `staging.liveworkspace.app`'s other Workers (the index, media, the Community, telemetry,
+status, Drive, export) and the site never read a cookie. When the twins go and production's cookies become
+host-only, this step can go too.
 
 **Redirect URIs.** Every app's client already has its `www.` callbacks registered beside the bare ones
 (`/api/auth/callback` and `/auth/guest` on both hosts; checked read-only on production on 2026-10-26).
@@ -913,8 +939,8 @@ accounts (`b964b391d`, `46ae449b1`, `ff9a2d834`, `ff2ef0123`), since the account
 
 Every guest hand-off stamps when that guest id was last seen (`guest_seen`, at most one write a day
 per guest), and so does an app reading the guest's settings or writing its profile, so a guest an app
-already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its year is up, so it is never
-more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
+already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its 45 days are up (a year for
+one minted before 2026-11), so it is never more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
 daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
 run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.

@@ -308,7 +308,7 @@ dependency beyond the optional sign-in that teams already need.
 
 **A guest is a liveworkspace guest** ([Auth + guest access](../014-identity/auth-and-guest-access.md)
 "Hybrid identity"; liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). The editor fetches
-a year-long guest token from the accounts site through the api's
+a 45-day guest token from the accounts site through the api's
 `GET /api/auth/guest` handoff, keeps it in `localStorage` under
 `livedesign:v2:guest-token`, and sends it as `Authorization: Bearer`, exactly
 like an account's access token. The api verifies it locally against the

@@ -109,7 +109,7 @@ The repo's shape isn't accidental. Three rules keep the stack honest:
 
 ## Auth model in one sentence
 
-Every caller is a verified token: a liveworkspace account's access token, or a liveworkspace guest token (a year-long `guest_…` identity fetched once through the accounts site, the same in every app), sent as `Authorization: Bearer`, whose `sub` is the owner id; API tokens and workbench sessions have their own paths, and a share link alone admits a link visitor. The canvas always works without signing in. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full model and [API app](../specs/015-api/api.md) for how the api worker resolves the caller and checks the index's grant.
+Every caller is a verified token: a liveworkspace account's access token, or a liveworkspace guest token (a 45-day `guest_…` identity fetched once through the accounts site, the same in every app), sent as `Authorization: Bearer`, whose `sub` is the owner id; API tokens and workbench sessions have their own paths, and a share link alone admits a link visitor. The canvas always works without signing in. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full model and [API app](../specs/015-api/api.md) for how the api worker resolves the caller and checks the index's grant.
 
 ## Deployment
 

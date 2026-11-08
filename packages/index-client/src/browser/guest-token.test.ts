@@ -10,7 +10,7 @@ import { fakeWindow } from './fake-window';
 
 // A guest is liveworkspace's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"): the editor sends the browser
 // to the accounts site through its api's /api/auth/guest, keeps the token the /auth/guest page brings back, and asks
-// again when fewer than 30 days are left.
+// again when fewer than 15 days are left.
 
 const KEY = 'app:v2:guest-token';
 let w: ReturnType<typeof fakeWindow>;
@@ -46,7 +46,7 @@ describe('parseGuestToken', () => {
   });
 });
 
-it('asks again with fewer than 30 days left', () => {
+it('asks again with fewer than 15 days left', () => {
   const now = Date.now();
   expect(guestTokenNeedsRefresh(null, now)).toBe(true);
   const fresh = {
@@ -116,6 +116,27 @@ describe('the handoff', () => {
       `#guest_token=${guestTokenFor('guest_a')}&state=abcdefgh`,
     );
     expect(done.returnTo).toBe('/home');
+  });
+
+  // The accounts Worker mints 45 days (GUEST_TOKEN_TTL_SECONDS): a fresh one is kept for 30, then renewed through
+  // the same handoff, and the lw_guest cookie names the same guest, so renewing is never a new guest.
+  it('renews a token near its end for the same guest, and never a fresh one', async () => {
+    const DAY = 24 * 3600;
+    const t = tokens();
+    w.win.localStorage.setItem(KEY, guestTokenFor('guest_kept', 45 * DAY));
+    expect((await t.ensureGuestToken())?.id).toBe('guest_kept');
+    expect(w.replace).not.toHaveBeenCalled();
+
+    w.win.localStorage.setItem(KEY, guestTokenFor('guest_kept', 14 * DAY));
+    void t.ensureGuestToken();
+    vi.runAllTimers();
+    const url = new URL(w.replace.mock.calls[0]![0] as string, 'http://localhost');
+    const state = url.searchParams.get('state')!;
+    const renewed = guestTokenFor('guest_kept', 45 * DAY);
+    expect(t.completeGuestHandoff(`#guest_token=${renewed}&state=${state}`).ok).toBe(true);
+    expect(w.win.localStorage.getItem(KEY)).toBe(renewed);
+    expect(onNewGuest).not.toHaveBeenCalled();
+    expect(guestTokenNeedsRefresh(t.readGuestToken())).toBe(false);
   });
 
   it('answers the kept token without leaving while it has time left, and forgets it when cleared', async () => {

@@ -253,7 +253,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The editor always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **One kind of identity, two kinds of person**: every caller sends a liveworkspace token as `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`); the api uses its `sub` claim as the owner id:
-  - **Guest**: a year-long guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`livedocuments:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
+  - **Guest**: a 45-day guest token (`kind: "guest"`, `sub: guest_<uuid>`) fetched once through the accounts site (`/api/auth/guest`, back to `/auth/guest`) and kept in `localStorage` (`livedocuments:v2:guest-token`). The same guest in every liveworkspace app. Full feature set.
   - **Account**: an account access token from signing in, or from signing in without a click (`/api/auth/silent`) when the browser already has a liveworkspace session.
   - There is no `X-Owner-Id` header, guest signature or `/api/migrate`.
 - **Access is the index's.** Where a document is filed, who may open it and its sharing live in liveworkspace's index ([one-explorer.md](../liveworkspace/docs/specs/004-index/one-explorer.md)); the editor sends the index's grant as `X-Index-Grant`, and the room takes it as `?t=`. A share link alone admits a link visitor.

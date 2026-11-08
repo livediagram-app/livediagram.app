@@ -369,7 +369,7 @@ After the sunset the alias module and this section go; `/api/diagrams…` then a
 ## 4. Guest identity: a verified guest token
 
 A guest is liveworkspace's guest ([Auth + guest access](../014-identity/auth-and-guest-access.md#guest-identity)):
-a year-long guest token minted by the liveworkspace accounts site, whose id is
+a 45-day guest token minted by the liveworkspace accounts site, whose id is
 `guest_<uuid>`, the same in every liveworkspace app. The editor sends it as
 `Authorization: Bearer <guest token>`, exactly as it sends an account's access
 token, and the api verifies both with `createPersonVerifier` from
