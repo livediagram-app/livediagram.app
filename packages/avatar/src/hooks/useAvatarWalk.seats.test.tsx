@@ -75,8 +75,8 @@ describe('useAvatarWalk seats', () => {
     rerender({ elements: [rug, turned] });
     const seat = seatPoints({ ...turned, shape: 'sofa' })[1]!;
     expect(result.current.seatedOn).toBe('sofa');
-    expect(result.current.pos).toEqual({ x: seat.x, y: seat.y });
-    expect(result.current.facing).toBe('left');
+    expect(result.current.readPos()).toEqual({ x: seat.x, y: seat.y });
+    expect(result.current.poseStore.get().facing).toBe('left');
     expect(onPresence).toHaveBeenLastCalledWith(
       expect.objectContaining({ x: seat.x, y: seat.y, facing: 'left', seatedOn: 'sofa' }),
     );
@@ -108,20 +108,20 @@ describe('useAvatarWalk seats', () => {
     };
     const [stoolSeat] = seatPoints({ ...stool, shape: 'bar-stool' });
     rerender({ elements: [rug, stool] });
-    expect(result.current.pos).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
-    expect(result.current.facing).toBe('up');
+    expect(result.current.readPos()).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
+    expect(result.current.poseStore.get().facing).toBe('up');
     rerender({ elements: [rug, { ...stool, chairFacing: 'e' as const }] });
-    expect(result.current.pos).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
-    expect(result.current.facing).toBe('left');
+    expect(result.current.readPos()).toEqual({ x: stoolSeat!.x, y: stoolSeat!.y });
+    expect(result.current.poseStore.get().facing).toBe('left');
   });
 
   it('leaves a sitter where they are when the piece is gone or no longer seats anyone', () => {
     const { result, rerender } = setup();
     act(() => result.current.sitOn('sofa', left!, 'down'));
     rerender({ elements: [rug] });
-    expect(result.current.pos).toEqual(left);
+    expect(result.current.readPos()).toEqual(left);
     rerender({ elements: [rug, { ...sofa, shape: 'plant' }] });
-    expect(result.current.pos).toEqual(left);
+    expect(result.current.readPos()).toEqual(left);
   });
 
   it('claims the first seat of a one-seat piece', () => {
@@ -153,14 +153,14 @@ describe('useAvatarWalk seats', () => {
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    expect(result.current.pos).toEqual({ x: 50, y: 70 });
+    expect(result.current.readPos()).toEqual({ x: 50, y: 70 });
     expect(result.current.seatedOn).toBe('chair');
     act(() => result.current.standUp());
     act(() => result.current.shove(1, 0));
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    expect(result.current.pos!.x).toBeGreaterThan(50);
+    expect(result.current.readPos()!.x).toBeGreaterThan(50);
   });
 
   // Any movement stands you up (docs/specs/009-elements/chair.md, Work Tracker #560): a click, a tap and a route all
@@ -176,7 +176,7 @@ describe('useAvatarWalk seats', () => {
     act(() => {
       vi.advanceTimersByTime(500);
     });
-    expect(result.current.pos!.x).toBeGreaterThan(50);
+    expect(result.current.readPos()!.x).toBeGreaterThan(50);
   });
 
   it('a walk onto the piece you sit on keeps you in it', () => {
@@ -188,7 +188,7 @@ describe('useAvatarWalk seats', () => {
       vi.advanceTimersByTime(500);
     });
     expect(result.current.seatedOn).toBe('sofa');
-    expect(result.current.pos).toEqual(left);
+    expect(result.current.readPos()).toEqual(left);
     expect(onPresence).not.toHaveBeenCalledWith(expect.objectContaining({ seatedOn: null }));
   });
 
@@ -207,7 +207,7 @@ describe('useAvatarWalk seats', () => {
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
     });
-    expect(result.current.pos!.x).toBeGreaterThan(50);
+    expect(result.current.readPos()!.x).toBeGreaterThan(50);
   });
 
   it('keys typed into a field never stand you up', () => {
@@ -222,7 +222,7 @@ describe('useAvatarWalk seats', () => {
       vi.advanceTimersByTime(300);
     });
     expect(result.current.seatedOn).toBe('chair');
-    expect(result.current.pos).toEqual({ x: 50, y: 70 });
+    expect(result.current.readPos()).toEqual({ x: 50, y: 70 });
     field.remove();
   });
 
@@ -232,13 +232,13 @@ describe('useAvatarWalk seats', () => {
     onPresence.mockClear();
     act(() => result.current.stepAside({ x: 90, y: 70 }));
     expect(result.current.seatedOn).toBeNull();
-    expect(result.current.pos).toEqual({ x: 90, y: 70 });
+    expect(result.current.readPos()).toEqual({ x: 90, y: 70 });
     expect(onPresence).toHaveBeenLastCalledWith(
       expect.objectContaining({ x: 90, y: 70, seatedOn: null }),
     );
     // Stepping aside while standing (a full piece) just moves the feet.
     act(() => result.current.stepAside({ x: 10, y: 10 }));
-    expect(result.current.pos).toEqual({ x: 10, y: 10 });
+    expect(result.current.readPos()).toEqual({ x: 10, y: 10 });
   });
 });
 

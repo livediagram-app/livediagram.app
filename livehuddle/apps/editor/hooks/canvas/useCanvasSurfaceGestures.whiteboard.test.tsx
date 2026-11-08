@@ -40,7 +40,7 @@ function setup(
       setMarquee: vi.fn(),
       spotlight: {},
       avatar: {},
-      peerAvatars: [],
+      readPeerAvatars: () => [],
       isoCamera: {},
       onDeselect: vi.fn(),
       beginPendingDrawGesture,

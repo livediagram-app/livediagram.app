@@ -10,7 +10,18 @@
 // ephemeral presence snapshot handed to `onPresence` for peers (docs/specs/008-canvas/avatar-mode.md
 // Realtime), which the room relays like a cursor.
 
-import { useEffect, useEffectEvent, useInsertionEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useInsertionEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
+import { useStoreSlice } from '@liveworkspace/workbench/hooks/ui/useStoreSlice';
+import { mergePose, NO_POSE, posePlaced, type AvatarPose } from '../pose';
 import { drinkFrom, DRINK_HOLD_MS, seatsACharacter, type DrinkKind } from '../office-geometry';
 import { hasSceneBox, isSceneShape, type AvatarSceneElement, type SceneShapeOf } from '../scene';
 import {
@@ -25,7 +36,7 @@ import {
 } from '../collision';
 import { avatarScale, type AvatarConfig } from '../config';
 import type { AvatarStatus } from '../status';
-import { reactionPose, type AvatarReactionKind, type ReactionPose } from '../reactions';
+import { reactionPose, type AvatarReactionKind } from '../reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { padEntry } from '../pad';
 import { seatPoints } from '../seats';
@@ -168,20 +179,23 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // character nears an edge; 'centred' keeps it in the middle and gravitates back after a hand pan.
   camera?: 'edge' | 'centred';
 }) {
-  // Rendered state. `pos` survives a detour to another tool (Canvas stays
-  // mounted), so coming back finds the avatar where you left it; null until
-  // the mode is entered for the first time.
-  const [pos, setPos] = useState<AvatarPoint | null>(null);
-  const [facing, setFacing] = useState<AvatarFacing>('down');
-  // Total distance walked, in canvas px. Drives the leg swing off DISTANCE
-  // rather than wall-clock, so the cadence matches the speed at any zoom.
-  const [travelled, setTravelled] = useState(0);
-  const [walking, setWalking] = useState(false);
-  // Jump height above the ground (canvas px) and the flag-wave frame.
-  const [lift, setLift] = useState(0);
-  const [wave, setWave] = useState<number | null>(null);
-  // The pose of a reaction in progress, or null while just standing / walking.
-  const [pose, setPose] = useState<ReactionPose | null>(null);
+  // What the sprite draws frame to frame (the feet, facing, step, hop, wave and a reaction's pose), held in a store
+  // rather than state (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas";
+  // blueprint: avatar-pose-store.md): a step renders what subscribes to it, never the canvas that owns this hook.
+  // Its `pos` is null outside the mode; the loop's `posRef` remembers the spot through a detour to another tool
+  // (Canvas stays mounted), so coming back finds the avatar where you left it.
+  const [poseStore] = useState(() => createStateStore<AvatarPose>(NO_POSE));
+  // Whether the mode is on, as the last enter or leave set it: a position set while it is off moves the ref only.
+  const activeRef = useRef(false);
+  // The facing as last drawn, for the presence snapshots and the seat's turn.
+  const facingRef = useRef<AvatarFacing>('down');
+  const show = (patch: Partial<AvatarPose>) => {
+    if (patch.facing) facingRef.current = patch.facing;
+    if (!activeRef.current) return;
+    poseStore.set((prev) => mergePose(prev, patch));
+  };
+  const setPos = (at: AvatarPoint) => show({ pos: at });
+  const setFacing = (facing: AvatarFacing) => show({ facing });
   // Chair (docs/specs/009-elements/chair.md): the chair this character is sitting on, or null when
   // standing. Kept in state (the sprite and the presence packet both read it)
   // AND in a ref (the rAF tick and walkTo read it between renders).
@@ -371,10 +385,6 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   if (active !== wasActive) {
     setWasActive(active);
     if (!active) {
-      setPose(null);
-      setWalking(false);
-      setLift(0);
-      setWave(null);
       setSeatedOn(null);
       setSeatClaim(null);
       setDrink(null);
@@ -382,6 +392,11 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   }
   const enterOrLeave = useEffectEvent((isActive: boolean) => {
     if (!isActive) {
+      // Nothing drawn: the walk, hop, wave and reaction end with the mode, and the spot stays in the ref.
+      poseStore.set((prev) =>
+        mergePose(prev, { pos: null, walking: false, lift: 0, wave: null, pose: null }),
+      );
+      activeRef.current = false;
       stopWalk();
       heldRef.current = { ...NO_KEYS_HELD };
       liftRef.current = 0;
@@ -396,6 +411,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       holdingRef.current = null;
       return;
     }
+    activeRef.current = true;
+    // The remembered spot shows again; the entry below may move it.
+    if (posRef.current) setPos(posRef.current);
     const r = rects();
     const centre = viewportCentre();
     const onScreen = (p: AvatarPoint) => {
@@ -695,6 +713,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       const dx = next.x - from.x;
       const dy = next.y - from.y;
       const moved = Math.hypot(dx, dy);
+      // This frame's changes to what is drawn, written to the pose store once at the end: a frame that changes
+      // nothing notifies nobody, so an idle character renders nothing.
+      const patch: Partial<AvatarPose> = {};
       // --- Reactions (docs/specs/008-canvas/avatar-mode.md) ---
       // A reaction owns the pose (and its own hop height) for its duration.
       const playing = reactionRef.current;
@@ -703,16 +724,16 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         const next = reactionPose(playing.kind, elapsed);
         if (next.done) {
           reactionRef.current = null;
-          setPose(null);
-          setLift(0);
+          patch.pose = null;
+          patch.lift = 0;
           liftRef.current = 0;
         } else {
-          setPose(next);
+          patch.pose = next;
           // The reaction's hop drives the same lift the jump uses, so the
           // contact shadow and the sprite's rise come along for free.
           liftRef.current = next.lift;
-          setLift(next.lift);
-          if (next.facing) setFacing(next.facing);
+          patch.lift = next.lift;
+          if (next.facing) patch.facing = next.facing;
         }
       }
       // --- Jump + flag wave ---
@@ -720,7 +741,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         const hop = jumpStep(liftRef.current, jumpVyRef.current, dt);
         liftRef.current = hop.lift;
         jumpVyRef.current = hop.vy;
-        setLift(hop.lift);
+        patch.lift = hop.lift;
       }
       if (waveStartRef.current !== null) {
         const frame = waveFrame(
@@ -729,17 +750,17 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
           // celebration rather than stopping dead on landing.
           AVATAR_WAVE_TAIL_MS + 600,
         );
-        setWave(frame);
+        patch.wave = frame;
         if (frame === null) waveStartRef.current = null;
       }
       if (moved > 0) {
         posRef.current = next;
         travelledRef.current += moved;
-        setPos(next);
-        setTravelled(travelledRef.current);
-        setWalking(true);
+        patch.pos = next;
+        patch.stepFrame = Math.floor(travelledRef.current / STEP_LENGTH) % 2;
+        patch.walking = true;
         const nextFacing = facingFromDelta(dx, dy);
-        if (nextFacing) setFacing(nextFacing);
+        if (nextFacing) patch.facing = nextFacing;
         // Camera: keep the avatar centred, or clear of the viewport edges.
         const r = rects();
         if (r) {
@@ -747,8 +768,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
           else follow(next, r);
         }
       } else {
-        setWalking(false);
+        patch.walking = false;
       }
+      show(patch);
       // Publish to the room. The broadcaster throttles; sending only on
       // frames where the character is doing something (moving, airborne, or
       // waving) keeps an idle avatar off the wire entirely.
@@ -762,7 +784,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         onPresence?.({
           x: next.x,
           y: next.y,
-          facing: facingFromDelta(dx, dy) ?? facing,
+          facing: facingRef.current,
           config,
           walking: moved > 0,
           stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
@@ -793,8 +815,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
 
   // Publish a STANDING snapshot on entry and whenever the look flips, so a peer
   // sees the character (and any costume change) without waiting for it to move.
-  // Movement publishes from the loop instead. `pos` is in the deps because it
-  // arrives a commit after `active` flips — keying on `active` alone published
+  // Movement publishes from the loop instead. `placed` is in the deps because the
+  // position arrives a commit after `active` flips — keying on `active` alone published
   // a null position, i.e. nothing, and a peer saw no character until the
   // walker moved (which needs animation frames the tab may not be getting).
   const publishStanding = useEffectEvent((at: AvatarPoint) => {
@@ -805,7 +827,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     onPresence?.({
       x: at.x,
       y: at.y,
-      facing,
+      facing: facingRef.current,
       config,
       walking: false,
       stepFrame: 0,
@@ -817,18 +839,26 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       ...(status ? { status } : null),
     });
   });
-  // `facing` is read as the snapshot's value only (an effect event), since re-publishing on a turn would
+  // Placed or not, as a by-value slice of the pose: the host renders when the character appears or goes, never for
+  // a step.
+  const placed = useStoreSlice(poseStore, posePlaced);
+  // The facing is read from its ref (the snapshot's value only), since re-publishing on a turn would
   // fight the loop, which already publishes while walking.
   useEffect(() => {
-    if (active && pos) publishStanding(pos);
-  }, [active, pos, config, status]);
+    if (active && placed && posRef.current) publishStanding(posRef.current);
+  }, [active, placed, config, status]);
 
-  // Which element the avatar is standing on (the "you are here" ring). Cheap
-  // rectangle scan, and only while the mode is on.
-  const standingOnId = active && pos ? elementUnderFeet(elements, pos) : null;
+  // Which element the avatar is standing on (the "you are here" ring). Cheap rectangle scan, run on each change of
+  // the pose (and of the board, a new selector), held by value: the host renders only when the element changes.
+  const underFeet = useCallback(
+    (p: AvatarPose) => (p.pos ? elementUnderFeet(elements, p.pos) : null),
+    [elements],
+  );
+  const standingOnId = useStoreSlice(poseStore, underFeet);
+  const isActive = active && placed;
 
   // An idle snapshot, for the heartbeat and for a change that is not a step (a drink taken or put down).
-  const publishIdle = (at: AvatarPoint, faceTo: AvatarFacing = facing) =>
+  const publishIdle = (at: AvatarPoint, faceTo: AvatarFacing = facingRef.current) =>
     onPresence?.({
       x: at.x,
       y: at.y,
@@ -956,7 +986,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       Math.abs(at.x - from.x) < SEAT_FOLLOW_EPSILON &&
       Math.abs(at.y - from.y) < SEAT_FOLLOW_EPSILON
     ) {
-      if (seat.facing !== facing) {
+      if (seat.facing !== facingRef.current) {
         setFacing(seat.facing);
         publishIdle(from, seat.facing);
       }
@@ -1019,21 +1049,17 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       arrivedPortalRef.current = null;
       return;
     }
-    arriveOn(standingOnId);
-  }, [active, standingOnId]);
+    arriveOn(isActive ? standingOnId : null);
+  }, [active, isActive, standingOnId]);
 
   return {
-    pos: active ? pos : null,
-    // The live position between renders (the loop owns it), for the editor's Fit and zoom anchor; null outside the mode.
+    // What the sprite draws frame to frame (AvatarSelfWalker subscribes to it; useAvatarPose takes a slice).
+    poseStore,
+    // In the mode with a position: changes when the character appears or goes, never for a step.
+    placed: isActive,
+    // The live position (the loop owns it), for handlers and the editor's Fit and zoom anchor; null outside the mode.
     readPos: () => (active ? posRef.current : null),
-    facing,
-    walking,
-    lift,
-    wave,
-    // Two-frame leg swing, advanced by distance walked.
-    stepFrame: Math.floor(travelled / STEP_LENGTH) % 2,
-    standingOnId,
-    pose,
+    standingOnId: isActive ? standingOnId : null,
     seatedOn,
     seatClaim,
     holding: active ? (drink?.kind ?? null) : null,

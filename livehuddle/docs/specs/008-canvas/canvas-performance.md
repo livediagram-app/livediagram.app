@@ -85,6 +85,19 @@ large move rides as one layer").
   or the canvas that draws the characters (for a character) and nothing else: the editor root, the
   panels and the chrome do not render for it. What reads presence coarsely (who is on which tab, the
   people lists) is kept by value and changes only when someone joins, leaves or changes tab.
+- **Walking renders the characters, not the canvas.** Your own character's pose from frame to frame
+  (where its feet are, which way it faces, its step, hop, flag wave and reaction pose) is held in one
+  pose store per canvas, not as the canvas's render state, and peers' characters are read from the
+  peer-motion store by the characters layer alone. A frame of anyone walking renders that layer (the
+  characters, the hearing ring, the talking bars, raised hands, call bubbles, pad arrivals and speech
+  bubbles) and the sprites that changed; it renders neither the canvas nor the element layer. What
+  follows a character as a fact (the element under your feet and its ring, the stage you speak from,
+  who sits or stands on each piece, which pod is shut) subscribes by value and renders only when the
+  fact changes; what acts on a position (a click on a peer, Walk There, a climb, a seat on arrival)
+  reads it when it runs. A character is placed by a transform, not by `left` and `top`, so a step
+  moves a layer without laying the page out, and a peer's glide is a transition of that transform. The
+  centred camera pans with every step, and that pan renders what a pan renders (the canvas view,
+  never an element view).
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
@@ -187,7 +200,8 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **Counts, not timings, pin the structural rules** deterministically. In the unit suite: an
   editor render that changes nothing renders no element view, a zoom renders only counter-scaled
   parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
-  holds its drawing through a gesture. In a real browser, in the end-to-end suite: a still board
+  holds its drawing through a gesture, and two seconds of walking render the walk's host (the canvas)
+  no more often than the facts under the feet change. In a real browser, in the end-to-end suite: a still board
   with a selection showing asks for no animation frames.
 - **A large-selection bench** (`e2e/perf/large-selection-drag.perf.ts`) opens the large-selection
   board, drags its whole selection and a five-element one, and times each pointer move in the page:

@@ -5,16 +5,16 @@ what shows them, not the editor**. The same shape as the [Viewport store](viewpo
 
 ## Files
 
-| File                                                  | Role                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `../packages/workbench/src/lib/state-store.ts`        | `createStateStore(initial)`: one value outside React, a setState-shaped `set`  |
-| `apps/editor/lib/peer-motion.ts`                      | `createPeerMotion`, `PeerMotion`, `PeerRowsSource`, `CursorPos`, `PeerAvatar`  |
-| `apps/editor/app/document/[id]/usePresenceState.ts`   | Makes the store once; `setRemoteCursors` / `setRemoteAvatars` are its setters  |
-| `apps/editor/app/document/[id]/presence-coalescer.ts` | Unchanged contract: writes both maps once a frame through those setters        |
-| `apps/editor/app/document/[id]/usePresenceRows.ts`    | Builds `peerRows` by value; `participantsByTab` memoised                       |
-| `apps/editor/hooks/collab/usePeerRows.ts`             | `usePeerCursorRows`, `usePeerAvatarRows`: subscribe and join with presence     |
-| `apps/editor/components/canvas/PeerCursors.tsx`       | The cursor layer: the element layer's only subscriber to cursors               |
-| `apps/editor/components/canvas/Canvas.tsx`            | Subscribes to characters; hands the rows to the avatar, call and gesture hooks |
+| File                                                      | Role                                                                                                    |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `../packages/workbench/src/lib/state-store.ts`            | `createStateStore(initial)`: one value outside React, a setState-shaped `set`                           |
+| `apps/editor/lib/peer-motion.ts`                          | `createPeerMotion`, `PeerMotion`, `PeerRowsSource`, `CursorPos`, `PeerAvatar`                           |
+| `apps/editor/app/document/[id]/usePresenceState.ts`       | Makes the store once; `setRemoteCursors` / `setRemoteAvatars` are its setters                           |
+| `apps/editor/app/document/[id]/presence-coalescer.ts`     | Unchanged contract: writes both maps once a frame through those setters                                 |
+| `apps/editor/app/document/[id]/usePresenceRows.ts`        | Builds `peerRows` by value; `participantsByTab` memoised                                                |
+| `apps/editor/hooks/collab/usePeerRows.ts`                 | `usePeerCursorRows`, `usePeerAvatarRows`: subscribe and join with presence                              |
+| `apps/editor/components/canvas/PeerCursors.tsx`           | The cursor layer: the element layer's only subscriber to cursors                                        |
+| `apps/editor/components/canvas/CanvasCharactersLayer.tsx` | Subscribes to characters; draws them and runs the call hook ([Avatar pose store](avatar-pose-store.md)) |
 
 ## Domain and naming
 
@@ -38,9 +38,10 @@ what shows them, not the editor**. The same shape as the [Viewport store](viewpo
 - `usePeerCursorRows(peers)` and `usePeerAvatarRows(peers)` subscribe with `useStoreSlice` and run the
   same builders as before (`buildRemoteCursorRows`, `buildRemoteAvatarRows`), memoised on the snapshot
   and `peers`.
-- `CanvasView` calls `usePeerAvatarRows` once and hands the rows to `useCanvasAvatar`, `useCanvasCall`,
-  `useCanvasSurfaceGestures`, the peers' `AvatarWalker`s and the speech layer. `CanvasElementsLayer`
-  renders `PeerCursors`, which alone subscribes to cursors.
+- `CanvasCharactersLayer` calls `usePeerAvatarRows` and hands the rows to `useCanvasCall`, the peers'
+  `AvatarWalker`s and the speech layer. `CanvasView` reads no row: `useCanvasAvatar` takes by-value slices
+  (`usePeerAvatarSlice`) and `useCanvasSurfaceGestures` reads the rows when a press runs
+  (`readPeerAvatarRows`). `CanvasElementsLayer` renders `PeerCursors`, which alone subscribes to cursors.
 
 ## Errors and edge cases
 
@@ -53,7 +54,8 @@ what shows them, not the editor**. The same shape as the [Viewport store](viewpo
 ## Performance and limits
 
 - Per presence frame: at most two notifications (cursors, characters). Renders: `PeerCursors` for a
-  cursor frame; the canvas view for a character frame. The editor root, the chrome and every other
+  cursor frame; the characters layer for a character frame (the canvas view only when a by-value fact,
+  such as who sits where, changes). The editor root, the chrome and every other
   reader of the editor context render 0 times.
 - Measured by the render counter in `peer-motion.perf.test.tsx`: 30 peers by 60 frames rendered the root
   and a context reader 60 times each before, and 0 times now; the layers render 60 times each.

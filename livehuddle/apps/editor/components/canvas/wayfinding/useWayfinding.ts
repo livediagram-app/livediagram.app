@@ -1,18 +1,13 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type Ref } from 'react';
 import type { Element, Tab } from '@livehuddle/document';
-import type { AvatarPresence } from '@livehuddle/api-schema';
 import type { AvatarPoint } from '@liveworkspace/avatar/walk';
-import type { AvatarConfig } from '@liveworkspace/avatar/config';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { viewportOffsetCentredOn } from '@/lib/portals';
 import {
-  peopleKey,
-  placeFinder,
   stairsFootPoint,
   stairsTopPoint,
   walkThereRoute,
-  whoIsWhere,
   type WayPoint,
   type WayTab,
 } from '@/lib/wayfinding';
@@ -29,8 +24,6 @@ import {
 // Stairs' panel, and re-entering Avatar mode on another tab.
 // Composed into useCanvasAvatar, which has the walk, the viewport and the tabs.
 
-type Person = { id: string; name: string; color: string };
-
 export type WayfindingInput = {
   walking: boolean;
   activeTabId: string | undefined;
@@ -41,14 +34,11 @@ export type WayfindingInput = {
   loadFloors?: () => void;
   /** The current tab's visible elements. */
   elements: readonly Element[];
-  self: Person;
-  /** Your own character, for the Team Photo Wall's portrait of you. */
-  selfConfig?: AvatarConfig;
-  remoteAvatars: readonly (Person & { avatar: AvatarPresence })[];
-  /** The tab bar's people on each tab (docs/specs/009-elements/directory.md "Another tab"). */
-  tabPresence?: ReadonlyMap<string, readonly Person[]>;
   avatar: {
-    pos: AvatarPoint | null;
+    /** In the mode with a position (useAvatarWalk's `placed`): changes when the character appears or goes. */
+    placed: boolean;
+    /** Where the feet are now, read when an action runs, so a step renders nothing here. */
+    readPos: () => AvatarPoint | null;
     standingOnId: string | null;
     walkTo: (point: AvatarPoint, onArrive?: () => void) => void;
     teleportTo: (point: AvatarPoint, arrivedPortalId?: string) => void;
@@ -73,12 +63,9 @@ export const CLIMB_MAX_MS = 1500;
 // The pieces a walk-in opens the panel of.
 const PANEL_KINDS: ReadonlySet<string> = new Set(['elevator', 'stairs']);
 
-const NO_PRESENCE: ReadonlyMap<string, readonly Person[]> = new Map();
-
 export function useWayfinding(input: WayfindingInput): Wayfinding {
-  const { walking, activeTabId, tabs, elements, self, selfConfig, remoteAvatars, avatar } = input;
+  const { walking, activeTabId, tabs, elements, avatar } = input;
   const { loadedTabIds } = input;
-  const tabPresence = input.tabPresence ?? NO_PRESENCE;
   const [store] = useState(createWayfindingStore);
 
   // The space as the faces read it: the current tab with only what is on visible layers.
@@ -100,33 +87,8 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
     store.set({ tabs: wayTabs, activeTabId: activeTabId ?? wayTabs[0]?.id ?? '' });
   }, [store, wayTabs, activeTabId]);
 
-  // Who is where, from presence (docs/specs/009-elements/directory.md "The list"). A few box tests per person, per
-  // frame of a walk; published only when the by-value key changes, so an open list re-renders on a move between
-  // places, never on a step.
-  const findPlace = useMemo(() => placeFinder(elements), [elements]);
-  const selfFeet = walking ? avatar.pos : null;
-  const people = useMemo(
-    () =>
-      whoIsWhere({
-        activeTabId: activeTabId ?? '',
-        findPlace,
-        self: { ...self, feet: selfFeet, config: selfConfig },
-        peers: remoteAvatars.map((p) => ({
-          id: p.id,
-          name: p.name,
-          color: p.color,
-          feet: { x: p.avatar.x, y: p.avatar.y },
-          config: p.avatar.config,
-        })),
-        byTab: tabPresence,
-      }),
-    [activeTabId, findPlace, self, selfConfig, selfFeet, remoteAvatars, tabPresence],
-  );
-  const key = peopleKey(people);
-  const peopleNow = useLatest(people);
-  useEffect(() => {
-    store.set({ people: peopleNow.current });
-  }, [store, key, peopleNow]);
+  // Who is where is published by useWayfindingPeople, beside the characters (CanvasCharactersLayer), which follows
+  // every step; this half follows only the facts that change rarely.
 
   // --- Moving ------------------------------------------------------------------------------------------------
   const latest = useLatest(input);
@@ -152,7 +114,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
   // approach and the arrival, each leg's arrival starting the next. A leg a wall stops ends the walk there.
   const startWalk = (to: WalkTarget) => {
     // Started only once the character stands somewhere (walkThere, settle); the arrival stands in for a missing one.
-    const route = walkThereRoute(latest.current.avatar.pos ?? to.arrival, to);
+    const route = walkThereRoute(latest.current.avatar.readPos() ?? to.arrival, to);
     const leg = (i: number) => {
       const next = i + 1 < route.length ? () => leg(i + 1) : undefined;
       latest.current.avatar.walkTo(route[i]!, next);
@@ -167,7 +129,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
   const settle = useEffectEvent(() => {
     const { walking: on, activeTabId: tabNow, avatar: walk } = latest.current;
     const wanted = pendingWalkRef.current;
-    if (wanted && on && walk.pos) {
+    if (wanted && on && walk.placed) {
       pendingWalkRef.current = null;
       startWalk(wanted);
     }
@@ -182,7 +144,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
   });
   useEffect(() => {
     settle();
-  }, [walking, activeTabId, avatar.pos]);
+  }, [walking, activeTabId, avatar.placed]);
 
   // Walking into an Elevator opens its floor panel, once on arrival; stepping off closes a panel the walk opened
   // (elevator.md "The floor panel").
@@ -248,7 +210,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
     actions: {
       walkThere: (to) => {
         const { walking: on, avatar: walk } = latest.current;
-        if (on && walk.pos) {
+        if (on && walk.placed) {
           startWalk(to);
           return;
         }
@@ -275,7 +237,7 @@ export function useWayfinding(input: WayfindingInput): Wayfinding {
               : { tabId: flight.tabId, point: landing.foot, ignoreId: landing.id },
           );
         };
-        const feet = walk.pos;
+        const feet = walk.readPos();
         const foot = stairsFootPoint(from);
         const near =
           feet !== null &&

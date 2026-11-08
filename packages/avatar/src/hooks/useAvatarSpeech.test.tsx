@@ -16,7 +16,8 @@ type Args = Parameters<typeof useAvatarSpeech>[0];
 const base: Args = {
   active: true,
   canSpeak: true,
-  feet: { x: 100, y: 200 },
+  placed: true,
+  readFeet: () => ({ x: 100, y: 200 }),
   scale: 1,
   tabId: 't1',
 };

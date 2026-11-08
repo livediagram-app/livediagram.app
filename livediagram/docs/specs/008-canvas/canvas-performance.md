@@ -79,6 +79,15 @@ large move rides as one layer").
   render for it. Handlers read the view from the store when they run. A touch pinch, whose events can
   outrun the display, changes the view at most once a frame, and measures the canvas once, as it
   starts.
+- **Walking renders your character, not the canvas.** Your own character's pose from frame to frame
+  (where its feet are, which way it faces, its step, hop, flag wave and reaction pose) is held in one
+  pose store per canvas, not as the canvas's render state. A frame of your walk renders your
+  character and the sprite, never the canvas or the element layer. What follows your feet as a fact
+  (the element under them and its ring) subscribes by value and renders only when the fact changes;
+  what acts on your position (a click on a peer, a door, the speech composer's send) reads it when it
+  runs. A character is placed by a transform, not by `left` and `top`, so a step moves a layer
+  without laying the page out, and a peer's glide is a transition of that transform. The camera pans
+  only when you near an edge, and that pan renders what a pan renders.
 - **A gesture frame never reads layout after writing it.** Chrome that follows a selection (the
   floating toolbar, the selection popover) is **hidden while a selection is being moved or
   resized** and placed again when the gesture ends; elsewhere it positions from canvas geometry
@@ -174,7 +183,8 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
 - **Counts, not timings, pin the structural rules** deterministically. In the unit suite: an
   editor render that changes nothing renders no element view, a zoom renders only counter-scaled
   parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
-  holds its drawing through a gesture. In a real browser, in the end-to-end suite: a still board
+  holds its drawing through a gesture, and two seconds of walking render the walk's host (the canvas)
+  no more often than the facts under the feet change. In a real browser, in the end-to-end suite: a still board
   with a selection showing asks for no animation frames.
 - **A large-selection bench** (`e2e/perf/large-selection-drag.perf.ts`) opens the large-selection
   board, drags its whole selection and a five-element one, and times each pointer move in the page:

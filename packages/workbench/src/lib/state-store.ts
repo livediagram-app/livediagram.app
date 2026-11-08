@@ -27,3 +27,33 @@ export function createStateStore<T>(initial: T): StateStore<T> {
     },
   };
 }
+
+/** A store's read side: what useStoreSlice subscribes to. */
+export type ReadableStore<T> = Pick<StateStore<T>, 'get' | 'subscribe'>;
+
+/**
+ * Two stores read as one pair, for a slice that needs both (who stands on a stage: your character's pose and the
+ * peers'). The pair keeps its identity until either value changes, and a change to either notifies.
+ */
+export function joinStores<A, B>(
+  a: ReadableStore<A>,
+  b: ReadableStore<B>,
+): ReadableStore<readonly [A, B]> {
+  let pair: readonly [A, B] = [a.get(), b.get()];
+  return {
+    get() {
+      const left = a.get();
+      const right = b.get();
+      if (left !== pair[0] || right !== pair[1]) pair = [left, right];
+      return pair;
+    },
+    subscribe(listener) {
+      const offA = a.subscribe(listener);
+      const offB = b.subscribe(listener);
+      return () => {
+        offA();
+        offB();
+      };
+    },
+  };
+}

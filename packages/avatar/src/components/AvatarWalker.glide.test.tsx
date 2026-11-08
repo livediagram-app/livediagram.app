@@ -27,7 +27,7 @@ describe('a peer’s character in a busy room', () => {
   it('slides a walking step over one step', () => {
     const { container, rerender } = render(peer(100, true, 66));
     rerender(peer(117, true, 66));
-    expect(box(container).style.transition).toBe('left 66ms linear, top 66ms linear');
+    expect(box(container).style.transition).toBe('transform 66ms linear');
   });
 
   it('lands a jump, a stop and a quiet room’s packet at once', () => {

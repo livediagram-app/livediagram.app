@@ -48,12 +48,12 @@ describe('useAvatarWalk standing up in a footprint', () => {
     act(() => result.current.teleportTo({ x: 120, y: 160 }));
     const seat = seatFor({ ...stool, shape: 'bar-stool' }, { x: 120, y: 160 });
     act(() => result.current.sitOn('stool', seat, seat.facing));
-    expect(result.current.pos).toEqual({ x: seat.x, y: seat.y, facing: 'up' });
+    expect(result.current.readPos()).toEqual({ x: seat.x, y: seat.y, facing: 'up' });
     act(() => result.current.standUp());
     act(() => result.current.walkTo({ x: 120, y: 200 }));
     act(() => {
       vi.advanceTimersByTime(2_000);
     });
-    expect(result.current.pos!.y).toBeCloseTo(200, 0);
+    expect(result.current.readPos()!.y).toBeCloseTo(200, 0);
   });
 });

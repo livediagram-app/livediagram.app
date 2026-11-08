@@ -67,7 +67,7 @@ export function useCanvasSurfaceGestures({
   setPan,
   setMarquee,
   avatar,
-  peerAvatars,
+  readPeerAvatars,
   onPushPeer,
   elements,
   onToggleDoor,
@@ -93,7 +93,8 @@ export function useCanvasSurfaceGestures({
   setMarquee: PanAndMarquee['setMarquee'];
   avatar: ReturnType<typeof useAvatarWalk>;
   // Peers' characters on this tab (docs/specs/008-canvas/avatar-mode.md), so a click can land on one.
-  peerAvatars: RemoteAvatarRow[];
+  // Read when a press runs (hooks/collab/usePeerRows readPeerAvatarRows), so a peer's step renders nothing here.
+  readPeerAvatars: () => readonly RemoteAvatarRow[];
   // Shove a peer: fired once our character has walked up to theirs.
   onPushPeer?: (targetId: string, dx: number, dy: number) => void;
   // The tab's elements, for the Door under a walking click (lib/avatar-door-press), and the swing it may ask for:
@@ -121,14 +122,14 @@ export function useCanvasSurfaceGestures({
   // it the peers as the presence packets describe them.
   const peerAvatarAt = (point: { x: number; y: number }) =>
     peerPushTarget(
-      peerAvatars.map((peer) => ({
+      readPeerAvatars().map((peer) => ({
         id: peer.id,
         feet: { x: peer.avatar.x, y: peer.avatar.y },
         lift: peer.avatar.lift,
         scale: avatarScale(parseAvatarConfig(peer.avatar.config).size),
       })),
       point,
-      avatar.pos,
+      avatar.readPos(),
     );
 
   const focusCanvas = () => {
@@ -274,7 +275,7 @@ export function useCanvasSurfaceGestures({
           const peer = peerAvatarAt(point);
           if (peer) {
             // A seated character cannot be pushed (docs/specs/009-elements/chair.md "Sitting"): walk up to them only.
-            const seated = peerAvatars.some((p) => p.id === peer.id && p.avatar.seatedOn);
+            const seated = readPeerAvatars().some((p) => p.id === peer.id && p.avatar.seatedOn);
             avatar.walkTo(
               peer.standAt,
               seated ? undefined : () => onPushPeer?.(peer.id, peer.dx, peer.dy),
@@ -283,10 +284,9 @@ export function useCanvasSurfaceGestures({
           }
           // A Door: next to it the click swings it where you stand; farther away (or a Viewer) it walks you to its
           // near side and swings nothing (docs/specs/008-canvas/avatar-mode.md "Clicking a piece").
+          const feet = avatar.readPos();
           const door =
-            elements && avatar.pos
-              ? avatarDoorPress(elements, point, avatar.pos, viewportZoom)
-              : null;
+            elements && feet ? avatarDoorPress(elements, point, feet, viewportZoom) : null;
           if (door) {
             if (door.next && onToggleDoor?.(door.doorId)) return;
             avatar.walkTo(door.nearSide);

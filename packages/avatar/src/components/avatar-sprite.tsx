@@ -23,7 +23,9 @@
 // hairstyles-by-three-facings combinations live), avatar-sprite-outfit.tsx
 // (the clothes) and avatar-sprite-palette.ts (the colours they agree on).
 
+import { memo } from 'react';
 import type { DrinkKind } from '../office-geometry';
+import { propsEqualByField } from './props-equal';
 import type { AvatarConfig } from '../config';
 import { BARE_LEG_CLOTHING } from '../config';
 import type { ReactionPose } from '../reactions';
@@ -561,7 +563,7 @@ function Flag({ frame }: { frame: number }) {
   );
 }
 
-export function AvatarSprite({
+function AvatarSpriteView({
   facing,
   config,
   walking,
@@ -722,3 +724,8 @@ export function AvatarSprite({
     </svg>
   );
 }
+
+// Memoised (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the canvas"): a step
+// moves the walker's box every frame, and the figure (a few hundred SVG nodes) draws again only when its frame,
+// facing, hop, wave, pose or costume changes, about a dozen times a second at a walk rather than every frame.
+export const AvatarSprite = memo(AvatarSpriteView, propsEqualByField);

@@ -114,7 +114,7 @@ export function useCanvasSurfaceGestures({
         scale: avatarScale(parseAvatarConfig(peer.avatar.config).size),
       })),
       point,
-      avatar.pos,
+      avatar.readPos(),
     );
 
   const focusCanvas = () => {

@@ -31,7 +31,7 @@ function setup(wrapper: HTMLElement) {
       setMarquee,
       spotlight: {},
       avatar: {},
-      peerAvatars: [],
+      readPeerAvatars: () => [],
       isoCamera: {},
       onDeselect: vi.fn(),
       beginPendingDrawGesture: () => false,
