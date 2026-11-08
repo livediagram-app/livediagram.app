@@ -26,7 +26,7 @@ missions, checked from live state, in a mission strip of their own.
 | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/editor/components/tour/missions.ts`             | `useMissions`, `Mission`, `MissionHint`: the runner every track shares (a lesson waits for `next`)                                        |
 | `apps/editor/components/tour/MissionStrip.tsx`        | The strip: name, segments, mission or lesson (Next) or finish, Hint / More Help, End; `StripFrame`, the corner strip over a dialog        |
-| `apps/editor/components/tour/TourStart.tsx`           | The start panel a press opens: one track (Start) or a board's three (rows with a Done tick); Not Now                                      |
+| `apps/editor/components/tour/TourStart.tsx`           | The start panel a press opens: one track (Start) or a board's three (the workbench's `TourTopics` rows, shared with livediagram); Not Now |
 | `apps/editor/components/tour/board-tracks.ts`         | `typesMissions`, `setupMissions`, `newTypeOf`, `typeShape`, `setupChanged`: the Card Types and Board Setup checks                         |
 | `apps/editor/components/tour/CardTypesTrack.tsx`      | The Card Types track: new type, its first shape, capture of its card, board `addTypes`, Keep the Type / Put It Back                       |
 | `apps/editor/components/tour/BoardSetupTrack.tsx`     | The Board Setup track: the board's setup at start, missions, Keep Changes / Put It Back (`updateBoard(boardId, start)`)                   |
