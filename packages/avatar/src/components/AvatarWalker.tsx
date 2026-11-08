@@ -23,6 +23,7 @@ import {
   avatarBox,
 } from '../walk';
 import { AvatarSprite } from './avatar-sprite';
+import { propsEqualByField } from './props-equal';
 import { avatarStatusHeadroomPx } from './avatar-status-effects';
 
 // An Away character fades to half (docs/specs/008-canvas/avatar-mode.md "Status").
@@ -126,7 +127,7 @@ function AvatarWalkerView({
     const at = { x, y };
     const glides = avatarGlides(from.current, at, glideMs, walking);
     from.current = at;
-    if (el) el.style.transition = glides ? `left ${glideMs}ms linear, top ${glideMs}ms linear` : '';
+    if (el) el.style.transition = glides ? `transform ${glideMs}ms linear` : '';
   }, [x, y, glideMs, walking]);
   return (
     <>
@@ -169,8 +170,12 @@ function AvatarWalkerView({
           // so placing it means offsetting from the feet rather than the
           // sprite's own corner. The contact shadow stays on the ground while
           // the body rises.
-          left: pos.x - box.offsetX,
-          top: pos.y - box.offsetY,
+          // Placed by a transform from the canvas's corner, never by left and top: a step then moves the box
+          // without laying the page out (docs/specs/008-canvas/canvas-performance.md "Walking renders the
+          // characters, not the canvas"), and a peer's glide is a transition of it.
+          left: 0,
+          top: 0,
+          transform: `translate(${pos.x - box.offsetX}px, ${pos.y - box.offsetY}px)`,
           width: box.width,
           height: box.height,
         }}
@@ -247,21 +252,8 @@ type WalkerProps = Parameters<typeof AvatarWalkerView>[0];
 
 // The props equal when each is the same value, or a plain object (pos, config, pose, standingOn) with the same fields:
 // callers build those afresh every render (a peer's position and parsed costume from their latest packet).
-export function walkerPropsEqual(prev: WalkerProps, next: WalkerProps): boolean {
-  const keys = new Set([...Object.keys(prev), ...Object.keys(next)]) as Set<keyof WalkerProps>;
-  for (const key of keys) {
-    const a: unknown = prev[key];
-    const b: unknown = next[key];
-    if (a === b) continue;
-    if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
-    const ra = a as Record<string, unknown>;
-    const rb = b as Record<string, unknown>;
-    const fields = Object.keys(ra);
-    if (fields.length !== Object.keys(rb).length) return false;
-    for (const f of fields) if (ra[f] !== rb[f]) return false;
-  }
-  return true;
-}
+export const walkerPropsEqual: (prev: WalkerProps, next: WalkerProps) => boolean =
+  propsEqualByField;
 
 // Memoised: a room's presence flush re-renders the layer that maps every peer, and only the peers who moved, turned
 // or changed costume need their sprite (a few hundred SVG nodes) drawn again.

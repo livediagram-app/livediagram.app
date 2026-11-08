@@ -52,7 +52,7 @@ describe('useAvatarWalk sitting on arrival', () => {
     act(() => result.current.walkTo(onChair));
     run(4_000);
     // The callback here never sits, so the character stands on the chair for many frames after arriving.
-    expect(result.current.pos!.x).toBeCloseTo(onChair.x, 0);
+    expect(result.current.readPos()!.x).toBeCloseTo(onChair.x, 0);
     expect(onWalkIntoChair).toHaveBeenCalledTimes(1);
     expect(onWalkIntoChair).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'chair' }),

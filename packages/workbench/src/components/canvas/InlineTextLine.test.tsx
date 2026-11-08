@@ -86,4 +86,28 @@ describe('InlineTextLine', () => {
       expect(onElementDown).toHaveBeenCalledOnce();
     });
   });
+
+  // docs/specs/008-canvas/finish.md "Performance": a zoom restyled every line on the board, so every Sketch and
+  // Marker face took its finish again; the focus ring's width follows the zoom only while the line is edited.
+  it('follows the zoom only while it is being edited', () => {
+    const at = (zoom: number) => (
+      <InlineTextLine
+        value="Payments"
+        placeholder="Title"
+        editable
+        onCommit={() => {}}
+        zoom={zoom}
+        maxLength={80}
+        ariaLabel="Card title"
+      />
+    );
+    const { rerender } = render(at(1));
+    const field = screen.getByRole('textbox', { name: 'Card title' });
+    const style = field.getAttribute('style');
+    rerender(at(2));
+    expect(field.getAttribute('style')).toBe(style);
+    fireEvent.focus(field);
+    rerender(at(4));
+    expect(field.style.outlineWidth).toBe('0.25px');
+  });
 });

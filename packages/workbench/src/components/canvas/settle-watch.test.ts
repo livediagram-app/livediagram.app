@@ -88,4 +88,22 @@ describe('watchUntilSettled', () => {
     expect(take).toHaveBeenCalledTimes(1);
     stop();
   });
+
+  it('drops the changes a take has just read, and waits for the next', async () => {
+    vi.useFakeTimers();
+    const live = document.createElement('div');
+    const take = vi.fn();
+    const watch = watchUntilSettled(live, take);
+    live.setAttribute('data-a', '1');
+    // A batched take read the face after that change: it is in the copy already.
+    watch.taken();
+    await Promise.resolve();
+    vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS);
+    expect(take).not.toHaveBeenCalled();
+    live.setAttribute('data-a', '2');
+    await Promise.resolve();
+    vi.advanceTimersByTime(SKETCH_INK_SETTLE_MS);
+    expect(take).toHaveBeenCalledTimes(1);
+    watch();
+  });
 });

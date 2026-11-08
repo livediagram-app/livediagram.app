@@ -23,12 +23,16 @@ const NO_ARRIVALS: readonly PadArrival[] = [];
 // Cheap on the hot path: the arrival rule runs only when the SET of characters on screen changes (somebody appears
 // or goes), never per walked frame or per presence packet, and a tab with no pad keeps no state at all.
 export function useAvatarPadArrivals({
-  self,
+  selfPlaced,
+  readSelf,
   selfColor,
   peers,
   elements,
 }: {
-  self: AvatarPoint | null;
+  // Your character is on the canvas (useAvatarWalk's `placed`), and where, read when someone appears or goes: a step
+  // renders nothing here.
+  selfPlaced: boolean;
+  readSelf: () => AvatarPoint | null;
   selfColor: string;
   peers: readonly { id: string; color: string; avatar: { x: number; y: number } }[];
   // What is drawn: a hidden layer's pads are not there.
@@ -38,7 +42,7 @@ export function useAvatarPadArrivals({
   const [arrivals, setArrivals] = useState<readonly PadArrival[]>(NO_ARRIVALS);
   const seenRef = useRef<ReadonlySet<string>>(new Set());
   // Who is on screen, as one string, so the rule below re-runs on an arrival or a departure and on nothing else.
-  const presentKey = (self ? SELF : '') + '|' + peers.map((p) => p.id).join(',');
+  const presentKey = (selfPlaced ? SELF : '') + '|' + peers.map((p) => p.id).join(',');
   const step = useEffectEvent(() => {
     const present: ArrivalCandidate[] = peers.map((p) => ({
       id: p.id,
@@ -46,6 +50,7 @@ export function useAvatarPadArrivals({
       y: p.avatar.y,
       color: p.color,
     }));
+    const self = selfPlaced ? readSelf() : null;
     if (self) present.push({ id: SELF, x: self.x, y: self.y, color: selfColor });
     // Who was on screen BEFORE this change, read now: the updater runs later, after `seenRef` moves on.
     const seen = seenRef.current;

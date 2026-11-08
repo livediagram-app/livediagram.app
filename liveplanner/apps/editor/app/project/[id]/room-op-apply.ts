@@ -1,9 +1,11 @@
+import { applyMergedElementOps } from '@liveworkspace/workbench/lib/merged-element-ops';
+import type { RemoteOp } from '@liveworkspace/workbench/lib/remote-op-log';
 import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
 import {
   applyDashboardPatch,
   settleTabFields,
   applyElementDelta,
-  applyElementOp,
+  applyElementOps,
   applyRoomElementOp,
   applyVoteDelta,
   mergeIncomingElement,
@@ -28,9 +30,10 @@ import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops'
 // Returns `tabs` itself when the op changes nothing (an op for a tab we don't
 // have, an update for a removed element, a dot for a closed round), so callers
 // keep identity and the autosave sees no phantom change.
-// One peer's layout delta reaches the present and every undo and redo snapshot (historyApplyRemoteOp), which share
-// unchanged tabs. Remembering each tab's result for the delta's patch applies it once per distinct tab, not once per
-// snapshot, and keeps the snapshots sharing one result rather than holding up to 1,000 copies of the layout.
+// One peer's layout delta reaches the present and, when they are restored or the op log fills, the undo and redo
+// snapshots (historyApplyRemoteOp), which share unchanged tabs. Remembering each tab's result for the delta's patch
+// applies it once per distinct tab, not once per snapshot, and keeps the snapshots sharing one result rather than
+// holding up to 1,000 copies of the layout.
 const dashboardApplied = new WeakMap<DashboardPatch, WeakMap<Tab, Tab>>();
 
 function applyDashboardDelta(tab: Tab, patch: DashboardPatch): Tab {
@@ -95,18 +98,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         ? updateTab(created, op.tabId, (tab) => ({ ...tab, dashboard: rebuilt }))
         : created;
       if (ops.length === 0) return withTab;
-      return updateTab(withTab, op.tabId, (tab) => {
-        let elements = tab.elements;
-        for (const elOp of ops) {
-          // An agent sends no deltas, so its copy of a board's set-up is taken (phase 6).
-          const merged =
-            elOp.kind === 'update' || elOp.kind === 'add'
-              ? mergeOpOverLocal({ ...tab, elements }, elOp, { keepBoard: false })
-              : elOp;
-          elements = applyElementOp(elements, merged);
-        }
-        return elements === tab.elements ? tab : { ...tab, elements };
-      });
+      return applyChangesetRun(withTab, op.tabId, ops);
     }
     case 'vote':
       // ONE dot, as a delta, so concurrent dots commute (docs/specs/012-collaboration/session-tools.md). Dropped
@@ -186,6 +178,58 @@ export function applyDeltaToTabs(
   });
 }
 
+// A run of element ops on one tab, each merged over the element as the ops before it left it, all applied in one
+// pass (applyMergedElementOps): a run of peers' `el` ops an undo snapshot takes together (remoteRoomOp). It costs the
+// tab's size plus the ops', not one walk of the tab per op. `keepBoard` is the merge's: a person's `el` keeps our
+// board set-up (it reached us as deltas), an agent's changeset, which sends none, has its own taken.
+function applyMergedRun(
+  tabs: Tab[],
+  tabId: string,
+  ops: readonly unknown[],
+  keepBoard: boolean,
+): Tab[] {
+  return updateTab(tabs, tabId, (tab) => {
+    const elements = applyMergedElementOps(
+      tab.elements,
+      ops as ElementOp[],
+      (local, incoming) =>
+        mergeIncomingElement(local, incoming, keepBoard ? {} : { keepBoard: false }),
+      applyElementOps,
+    );
+    return elements === tab.elements ? tab : { ...tab, elements };
+  });
+}
+
+// Two runs, so a peer's `el` ops and an agent's changeset ops never join one merge.
+const applyElementRun = (tabs: Tab[], tabId: string, ops: readonly unknown[]): Tab[] =>
+  applyMergedRun(tabs, tabId, ops, true);
+const applyChangesetRun = (tabs: Tab[], tabId: string, ops: readonly unknown[]): Tab[] =>
+  applyMergedRun(tabs, tabId, ops, false);
+
+// The op as the undo history logs it (historyApplyRemoteOp, docs/specs/012-collaboration/realtime-conflict-resolution.md
+// "Locked decisions"): a pure function of the tabs, and for an element op (a peer's `el`, a changeset that creates
+// no tab and rebuilds no Dashboard) the run it can join with the ops beside it, so a snapshot catching up on many of
+// them walks the tab once.
+export function remoteRoomOp(op: RoomOp): RemoteOp<Tab[]> {
+  const apply = (tabs: Tab[]) => applyRoomOpToTabs(tabs, op);
+  const run = elementRunOf(op);
+  return run ? Object.assign(apply, { run }) : apply;
+}
+
+// The element ops an op applies to one tab whatever else the tabs hold: a non-patch `el` op, or a changeset that
+// creates no tab and rebuilds no Dashboard. Anything else is applied alone.
+function elementRunOf(op: RoomOp): RemoteOp<Tab[]>['run'] | null {
+  if (op.kind === 'el') {
+    return op.op.kind === 'patch'
+      ? null
+      : { key: op.tabId, items: [op.op], applyAll: applyElementRun };
+  }
+  if (op.kind === 'changeset' && !op.tab && !op.dashboard) {
+    return { key: op.tabId, items: op.elementOps ?? [], applyAll: applyChangesetRun };
+  }
+  return null;
+}
+
 // Replace one tab by id, keeping the array (and so the autosave's identity
 // check) when there is no such tab or `fn` changes nothing.
 function updateTab(tabs: Tab[], tabId: string, fn: (tab: Tab) => Tab): Tab[] {
@@ -201,12 +245,8 @@ function updateTab(tabs: Tab[], tabId: string, fn: (tab: Tab) => Tab): Tab[] {
 // An incoming add / update, with the element merged over our copy of it when
 // we have one. A racing double-add degrades to an update in applyElementOp,
 // so it gets the same merge.
-function mergeOpOverLocal(
-  tab: Tab,
-  op: Extract<ElementOp, { kind: 'add' | 'update' }>,
-  opts: { keepBoard?: boolean } = {},
-): ElementOp {
+function mergeOpOverLocal(tab: Tab, op: Extract<ElementOp, { kind: 'add' | 'update' }>): ElementOp {
   const local = tab.elements.find((e) => e.id === op.element.id);
   if (!local) return op;
-  return { ...op, element: mergeIncomingElement(local, op.element, opts) };
+  return { ...op, element: mergeIncomingElement(local, op.element) };
 }

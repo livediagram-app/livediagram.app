@@ -38,6 +38,31 @@ function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; y: numb
   return { x, y };
 }
 
+// The cards to measure. A busy board draws its cards in runs (components/plan/card-runs.ts), and the browser skips a run
+// out of view: reading a place in one lays all its cards out again, so on a 2,000-card board one drop laid out the whole
+// board. Only the runs within a view's length of the body's view are read; a card further off never glides, as none
+// would see it.
+export function cardsToMeasure(body: HTMLElement): HTMLElement[] {
+  const runs = body.querySelectorAll<HTMLElement>('[data-plan-run]');
+  if (runs.length === 0) return [...body.querySelectorAll<HTMLElement>('[data-plan-card]')];
+  const view = body.getBoundingClientRect();
+  const my = view.height;
+  const mx = view.width;
+  const cards: HTMLElement[] = [];
+  for (const run of runs) {
+    const r = run.getBoundingClientRect();
+    if (
+      r.bottom < view.top - my ||
+      r.top > view.bottom + my ||
+      r.right < view.left - mx ||
+      r.left > view.right + mx
+    )
+      continue;
+    for (const card of run.querySelectorAll<HTMLElement>('[data-plan-card]')) cards.push(card);
+  }
+  return cards;
+}
+
 // `signature` changes when the cards' order or columns change; the board's body is `root`; `skipId` is the card
 // being dragged; `hold` says a column is gliding (useColumnMoveFlip), its cards riding in their cells, so they are
 // measured but not played.
@@ -51,7 +76,7 @@ export function usePlanCardFlip(
   useLayoutEffect(() => {
     const body = root.current;
     if (!body) return;
-    const cards = body.querySelectorAll<HTMLElement>('[data-plan-card]');
+    const cards = cardsToMeasure(body);
     const before = last.current;
     const after = new Map<string, { x: number; y: number }>();
     const moves: [HTMLElement, number, number][] = [];

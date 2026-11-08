@@ -24,7 +24,7 @@ import {
   type Item,
   type LaneHead,
 } from '@liveplanner/items';
-import { usePlan } from './PlanContext';
+import { usePlanCard } from './PlanCardContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
@@ -177,10 +177,10 @@ export const PlanBoardCard = memo(function PlanBoardCard({
   // "Voting on Plan cards"): the card carries the vote's stepper, unless it is face down.
   cardVote?: CardVote | null;
 }) {
-  const plan = usePlan();
-  const types = plan?.types ?? ITEM_TYPES;
+  const card = usePlanCard();
+  const types = card?.types ?? ITEM_TYPES;
   // A practice card of the Boards tour (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn as practice.
-  const practiceIds = plan?.practiceIds;
+  const practiceIds = card?.practiceIds;
   const practice = practiceIds?.has(item.id) === true;
   // Its place in the deal, for its drop-in delay (canvas-motion.css practice-deal): three cards at most.
   const dealIndex = practice && practiceIds ? [...practiceIds].indexOf(item.id) : 0;
@@ -323,10 +323,12 @@ export function PlanDragGhost({
   const behind = Math.min(GROUP_GHOST_STACK, count - 1);
   return createPortal(
     <div
-      className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
+      // Moved by `translate` rather than left and top, so following the pointer lays nothing out (plan-board.md "A drag
+      // stays smooth"). Not a layer of its own: over a busy board's run layers, Safari spent over a second re-sorting
+      // them as the copy left the board.
+      className="pointer-events-none fixed left-0 top-0 z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
       style={{
-        left: at.clientX - drag.offsetX,
-        top: at.clientY - drag.offsetY,
+        translate: `${at.clientX - drag.offsetX}px ${at.clientY - drag.offsetY}px`,
         width: drag.width,
         height: drag.height,
         ...planTextScaleVars(textScale),

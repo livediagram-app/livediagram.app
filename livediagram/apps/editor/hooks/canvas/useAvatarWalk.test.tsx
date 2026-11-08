@@ -39,10 +39,10 @@ describe('useAvatarWalk leaving the mode', () => {
 
     rerender({ active: false });
     expect(result.current.seatedOn).toBeNull();
-    expect(result.current.walking).toBe(false);
-    expect(result.current.lift).toBe(0);
-    expect(result.current.wave).toBeNull();
-    expect(result.current.pose).toBeNull();
+    expect(result.current.poseStore.get().walking).toBe(false);
+    expect(result.current.poseStore.get().lift).toBe(0);
+    expect(result.current.poseStore.get().wave).toBeNull();
+    expect(result.current.poseStore.get().pose).toBeNull();
     expect(onPresence).toHaveBeenCalledWith(null);
   });
 
@@ -69,18 +69,18 @@ describe('useAvatarWalk with a fence', () => {
       act(() => {
         vi.advanceTimersByTime(5000);
       });
-      expect(result.current.pos!.x).toBeCloseTo(120, 0);
-      expect(result.current.pos!.y).toBeCloseTo(0, 0);
+      expect(result.current.readPos()!.x).toBeCloseTo(120, 0);
+      expect(result.current.readPos()!.y).toBeCloseTo(0, 0);
       // A push is direct (never routed): from just below the fence, straight at it, it stops at the reach.
       act(() => result.current.teleportTo({ x: 120, y: 150 }));
       act(() => result.current.shove(0, -1));
       act(() => {
         vi.advanceTimersByTime(3000);
       });
-      const pos = result.current.pos!;
+      const pos = result.current.readPos()!;
       expect(pos.y).toBeGreaterThanOrEqual(112 + FENCE_REACH);
       expect(pos.y).toBeLessThan(112 + FENCE_REACH + 1);
-      expect(result.current.walking).toBe(false);
+      expect(result.current.poseStore.get().walking).toBe(false);
     } finally {
       vi.useRealTimers();
     }

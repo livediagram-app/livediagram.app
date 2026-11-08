@@ -37,7 +37,7 @@ import {
 } from './presence-coalescer';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
-import { applyRoomOpToTabs } from './room-op-apply';
+import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
@@ -403,10 +403,11 @@ export function useRoomConnection(opts: {
         // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
         // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
         const savedBefore = saveBaseline.tabs.current;
-        applyRemoteOp((prev) =>
+        // The undo snapshots take the op when one is restored, a run of element ops together (remoteRoomOp).
+        applyRemoteOp(
           op.kind === 'document-meta'
-            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op),
+            ? (prev) => keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
+            : remoteRoomOp(op),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         // In the same batch as the tabs update, so the render that shows the op also counts it.

@@ -234,12 +234,15 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### The Map is one image
 
 - `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
-  top) and wraps it in a standalone design over the padded content box (`PAD_FRACTION`,
-  `PAD_MIN`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
+  top) and wraps it in a standalone design over the padded content box (`minimapPicture`, `MinimapMap` in
+  `@liveworkspace/workbench`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
   are inline polygons and masks travel with their arrows, so nothing references the page's defs.
 - It is shown as one SVG `<image>` at that box in the map's world-space `viewBox`, from a
-  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke). The window
-  overlay, navigation and paper colour are unchanged.
+  `data:image/svg+xml;charset=utf-8,` URL (pure: no object URL to create or revoke), on the paper
+  colour. The window and the dim are a second `<svg>` over it (`data-minimap-view`, same box and
+  `viewBox`, `pointer-events-none`, `will-change: transform`), so a pan repaints that layer alone;
+  presses land on the picture's `<svg>`, whose `getScreenCTM` maps them to the board. Each app's
+  `Minimap` builds the picture and puts `MinimapMap` in its own panel.
 - No labels: the memo draws `elements.map(withoutLabel)` (each element without `label` / `richText`),
   so the picture carries no `<text>` and the arrow label pass has nothing to lay out. Measured on the
   reference board: the picture drops from 417 KB to 305 KB (550 texts, 642 lines gone), and Chrome's
