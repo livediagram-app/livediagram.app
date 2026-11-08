@@ -164,10 +164,10 @@ describe('deriveCanvasSelection', () => {
     // No boxed members, so the resize box (and its handles) stays hidden...
     expect(s.showUnionResize).toBe(false);
     expect(s.unionResizeBounds).toBeNull();
-    // ...but the toolbar still appears, over the union of the lines and their 160 by 56 cards, so an Editor can
+    // ...but the toolbar still appears, over the union of the lines and their 160 by 96 cards, so an Editor can
     // reach Delete.
     expect(s.showMultiToolbar).toBe(true);
-    expect(s.multiToolbarBounds).toEqual({ x: -60, y: -18, width: 220, height: 101 });
+    expect(s.multiToolbarBounds).toEqual({ x: -60, y: -38, width: 220, height: 141 });
   });
 
   it('suppresses the floating toolbar in read-only mode', () => {
@@ -247,13 +247,13 @@ describe('deriveCanvasSelection — popover yields to an open context menu', () 
 });
 
 // A stored arrow is retired (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 4): its
-// bounds are its line and the 160 by 56 card centred on the line's middle, so the toolbars sit clear of the card.
+// bounds are its line and the 160 by 96 card centred on the line's middle, so the toolbars sit clear of the card.
 describe('deriveCanvasSelection, a stored arrow', () => {
   const line = arrow('ar', { x: 100, y: 200 }, { x: 500, y: 200 });
 
   it('spans the line and its card in a selected arrow’s bounds', () => {
     const s = derive({ elements: [line], selectedId: 'ar' });
-    expect(s.selectionBounds).toEqual({ x: 100, y: 172, width: 400, height: 56 });
+    expect(s.selectionBounds).toEqual({ x: 100, y: 152, width: 400, height: 96 });
   });
 
   it('spans the card in the multi-selection toolbar bounds', () => {
@@ -261,7 +261,7 @@ describe('deriveCanvasSelection, a stored arrow', () => {
       elements: [line, box('b', { x: 100, y: 300 })],
       multiSelectedIds: new Set(['ar', 'b']),
     });
-    expect(s.multiToolbarBounds).toEqual({ x: 100, y: 172, width: 400, height: 188 });
+    expect(s.multiToolbarBounds).toEqual({ x: 100, y: 152, width: 400, height: 208 });
   });
 });
 
