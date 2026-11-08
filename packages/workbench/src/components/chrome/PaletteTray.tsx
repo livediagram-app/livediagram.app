@@ -4,7 +4,7 @@
 // about the next press (a mode banner, the modifier hint) sits just under the strip instead of floating in the
 // top-centre stack. One look for all of them: a card of the strip's own surface, a small gap below it (close
 // enough to read as the strip's, apart so the two are not stuck together), centred under the strip's card and
-// never wider. Without a strip on screen there is no box,
+// never wider, unless the strip is narrower than the tray's minimum. Without a strip on screen there is no box,
 // and the caller draws its usual top-centre pill instead.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -15,6 +15,24 @@ const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
 
 /** The gap between the strip's bottom edge and the tray, in px. */
 export const PALETTE_TRAY_GAP_PX = 6;
+
+/** The narrowest the tray's slot gets, in px: under a strip narrower than this (a locked article's, holding only
+ *  the selection mode and Search) the slot keeps this width, centred under the strip, so a message is not cut to
+ *  its first letter ("C… Cancel"). Room for "Click to drop or drag to draw an arrow" and its Cancel. */
+export const PALETTE_TRAY_MIN_WIDTH_PX = 360;
+
+/** The tray's slot under `box`: the strip's width, or the minimum centred under it, kept 8 px inside the window.
+ *  A phone (below `sm`) keeps the strip's width: its card sits beside the menu button, and a long message wraps. */
+export function traySlot(box: StripBox, viewportWidth: number): { left: number; width: number } {
+  if (viewportWidth < 640) return { left: box.left, width: box.width };
+  const width = Math.min(
+    Math.max(box.width, PALETTE_TRAY_MIN_WIDTH_PX),
+    Math.max(0, viewportWidth - 16),
+  );
+  if (width === box.width) return { left: box.left, width };
+  const centred = box.left + box.width / 2 - width / 2;
+  return { left: Math.max(8, Math.min(centred, viewportWidth - 8 - width)), width };
+}
 
 export type StripBox = { left: number; width: number; bottom: number; top: number };
 
@@ -140,13 +158,14 @@ export function PaletteTray({
 }) {
   if (typeof document === 'undefined') return null;
   const host = trayHost();
+  const slot = traySlot(box, window.innerWidth);
   return createPortal(
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
       className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       style={{
-        left: box.left - host.dx,
-        width: box.width,
+        left: slot.left - host.dx,
+        width: slot.width,
         top: box.bottom + PALETTE_TRAY_GAP_PX - host.dy,
       }}
     >

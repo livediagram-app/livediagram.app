@@ -320,7 +320,8 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
     close enough to read as the strip's, apart so the two don't look stuck together.
   - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
-    menu button). It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
+    menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
+    8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box).
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries. On a
