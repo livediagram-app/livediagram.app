@@ -62,8 +62,12 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
   },
   'livehuddle.app': {
     summary:
-      'A shared space for meetings and workshops: walk in together, run the timer and the votes, and keep what the room made.',
-    highlights: ['Rooms you walk into', 'Timers, votes and idea boxes', 'Stand-ups and retros'],
+      'A Space your team meets in: walk in as your own character, find everyone round the table, and talk with whoever is near you.',
+    highlights: [
+      'Rooms you walk round together',
+      'Calls with the people near you',
+      'Offices, homes, venues and campuses',
+    ],
     art: 'huddle',
     deep: '#047857',
     tagline: 'Get everyone in the room.',

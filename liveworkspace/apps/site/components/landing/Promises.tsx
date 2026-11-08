@@ -54,7 +54,7 @@ export function Promises() {
           <Tile
             art={<LiveArt />}
             title="Live by default"
-            body="Everyone in a document sees each change as it happens, with a cursor for every person in it."
+            body="Work together in real time: everyone sees each change as it happens, and who else is there, as each app shows them."
           />
           <Tile
             art={<ShareArt />}
@@ -65,7 +65,7 @@ export function Promises() {
             className="sm:col-span-2 lg:col-span-3"
             side={<ExplorerArt />}
             title="One Explorer for everything"
-            body="Every diagram, plan, document and design you make is in one Explorer, which every app shows. One folder can hold work from all of them."
+            body="Every diagram, plan, document, design and Space you make is in one Explorer, which every app shows. One folder can hold work from all of them."
           />
           <Tile
             art={<InboxArt />}
@@ -158,6 +158,7 @@ const EXPLORER_ITEMS: Partial<Record<SiteId, { name: string; kind: string }>> = 
   'liveplanner.app': { name: 'Launch plan', kind: 'Plan' },
   'livedocuments.app': { name: 'Launch announcement', kind: 'Document' },
   'livedesign.app': { name: 'Launch logo', kind: 'Design' },
+  'livehuddle.app': { name: 'Launch party', kind: 'Space' },
 };
 
 function ExplorerArt() {
@@ -179,7 +180,8 @@ function ExplorerArt() {
             ? [
                 <div
                   key={app.id}
-                  className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+                  // An odd one out runs across the foot, so the folder has no gap.
+                  className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm sm:last:odd:col-span-2 dark:border-slate-700 dark:bg-slate-900"
                   style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                 >
                   <AppMark app={app} className="size-5 shrink-0" />
