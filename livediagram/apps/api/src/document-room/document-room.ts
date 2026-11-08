@@ -1061,6 +1061,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const renewal = await renewRoomGrant(indexService, env, ticket, session.documentId, {
       level: session.verifiedRole,
       tab: session.tabScope,
+      pairing: session.workbenchPairing ?? null,
     });
     if (renewal.kind === 'invalid') {
       console.warn('[grant] renewal refused', { reason: 'invalid' });

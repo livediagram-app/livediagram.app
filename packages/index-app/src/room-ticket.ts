@@ -2,15 +2,20 @@
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"). A browser can't put headers on a WebSocket upgrade, so it
 // goes on the URL; it is short-lived (ten minutes) and names its item.
 //
-// A workbench session's ticket carries one fact more, its pairing (so unpairing closes exactly its sockets) and its
-// level cap, sealed to the grant with the app's key: `<grant>~<pairing>~<cap>~<hmac>`. Nothing else may claim a
-// pairing.
+// A workbench session's ticket carries two facts more, its pairing (so unpairing closes exactly its sockets) and its
+// level cap, and it must never hand the session the grant itself: the index's grant is the owner's, at the owner's
+// full level, and a bare grant opens the room (`?t=`) and the REST routes (`X-Index-Grant`) uncapped and unpaired.
+// So the grant, the pairing and the cap are encrypted together (AES-GCM, a key derived from the app's INDEX_KEY):
+// `rt2~<base64url(iv | ciphertext)>`. The session can read none of it and change none of it. Nothing else may claim
+// a pairing.
 
 import { isLevel, type GrantClaims, type Level } from '@liveworkspace/index-client';
 import type { IndexEnv, IndexService } from './service';
-import { timingSafeEqual } from './timing-safe';
 
 const SEP = '~';
+const SEALED_PREFIX = `rt2${SEP}`;
+const IV_BYTES = 12;
+const AAD = new TextEncoder().encode('liveworkspace room-ticket v2');
 
 export type RoomTicketWorkbench = { pairing: string; cap: Level };
 
@@ -20,23 +25,70 @@ export type RoomTicket = {
   workbench: RoomTicketWorkbench | null;
 };
 
-async function hmacHex(key: string, text: string): Promise<string> {
-  const k = await crypto.subtle.importKey(
+// The sealing key, derived once per isolate (and again only if INDEX_KEY changes) rather than on every ticket.
+let sealingKey: { secret: string; key: Promise<CryptoKey> } | null = null;
+
+async function deriveSealingKey(secret: string): Promise<CryptoKey> {
+  const raw = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(key),
-    { name: 'HMAC', hash: 'SHA-256' },
+    new TextEncoder().encode(secret),
+    'HKDF',
     false,
-    ['sign'],
+    ['deriveKey'],
   );
-  const sig = await crypto.subtle.sign('HMAC', k, new TextEncoder().encode(text));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return crypto.subtle.deriveKey(
+    {
+      name: 'HKDF',
+      hash: 'SHA-256',
+      salt: new Uint8Array(0),
+      info: new TextEncoder().encode('liveworkspace room-ticket aes-gcm v2'),
+    },
+    raw,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
+  );
 }
 
-function sealed(grant: string, pairing: string, cap: Level): string {
-  return `room-ticket:v1${SEP}${grant}${SEP}${pairing}${SEP}${cap}`;
+function sealingKeyFor(secret: string): Promise<CryptoKey> {
+  if (sealingKey?.secret !== secret) sealingKey = { secret, key: deriveSealingKey(secret) };
+  return sealingKey.key;
 }
 
-// The room's ticket for a grant: the grant as it is, or sealed to a workbench session's pairing and cap.
+function toBase64Url(bytes: Uint8Array): string {
+  let text = '';
+  for (const b of bytes) text += String.fromCharCode(b);
+  return btoa(text).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(text: string): Uint8Array {
+  const plain = atob(text.replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(plain, (c) => c.charCodeAt(0));
+}
+
+type SealedFacts = { g: string; p: string; c: Level };
+
+// The ticket's sealed facts, or null for anything this key did not seal (forged, tampered, another key, garbage).
+async function unseal(secret: string, body: string): Promise<SealedFacts | null> {
+  try {
+    const bytes = fromBase64Url(body);
+    if (bytes.length <= IV_BYTES) return null;
+    const plain = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: bytes.slice(0, IV_BYTES), additionalData: AAD },
+      await sealingKeyFor(secret),
+      bytes.slice(IV_BYTES),
+    );
+    const facts = JSON.parse(new TextDecoder().decode(plain)) as Partial<SealedFacts>;
+    if (typeof facts.g !== 'string' || typeof facts.p !== 'string' || !isLevel(facts.c))
+      return null;
+    return { g: facts.g, p: facts.p, c: facts.c };
+  } catch {
+    return null;
+  }
+}
+
+// The room's ticket for a grant: the grant as it is, or, for a workbench session, the grant sealed with its pairing
+// and cap so the session never holds the grant itself.
 export async function sealRoomTicket(
   env: Pick<IndexEnv, 'INDEX_KEY'>,
   grant: string,
@@ -44,13 +96,24 @@ export async function sealRoomTicket(
 ): Promise<string> {
   if (!workbench) return grant;
   if (!env.INDEX_KEY) throw new Error('no INDEX_KEY to seal a workbench ticket');
-  if (workbench.pairing.includes(SEP)) throw new Error('a pairing id may not hold the separator');
-  const mac = await hmacHex(env.INDEX_KEY, sealed(grant, workbench.pairing, workbench.cap));
-  return [grant, workbench.pairing, workbench.cap, mac].join(SEP);
+  const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+  const facts: SealedFacts = { g: grant, p: workbench.pairing, c: workbench.cap };
+  const sealed = new Uint8Array(
+    await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv, additionalData: AAD },
+      await sealingKeyFor(env.INDEX_KEY),
+      new TextEncoder().encode(JSON.stringify(facts)),
+    ),
+  );
+  const out = new Uint8Array(IV_BYTES + sealed.length);
+  out.set(iv);
+  out.set(sealed, IV_BYTES);
+  return SEALED_PREFIX + toBase64Url(out);
 }
 
 // The ticket's grant, checked against the index's keys and this item, and its sealed workbench facts. Null for
-// anything forged, lapsed or for another item.
+// anything forged, lapsed or for another item. A grant never holds the separator, so a ticket that does is a sealed
+// one or nothing (the old `<grant>~<pairing>~<cap>~<hmac>` shape, which showed the grant, is refused).
 export async function openRoomTicket(
   service: Pick<IndexService, 'verifyGrant'>,
   env: IndexEnv,
@@ -58,18 +121,17 @@ export async function openRoomTicket(
   itemId: string,
 ): Promise<RoomTicket | null> {
   if (!ticket) return null;
-  const parts = ticket.split(SEP);
+  let grant = ticket;
   let workbench: RoomTicketWorkbench | null = null;
-  if (parts.length === 4) {
-    const [grant, pairing, cap, mac] = parts as [string, string, string, string];
-    if (!env.INDEX_KEY || !isLevel(cap)) return null;
-    const expected = await hmacHex(env.INDEX_KEY, sealed(grant, pairing, cap));
-    if (!(await timingSafeEqual(expected, mac))) return null;
-    workbench = { pairing, cap };
-  } else if (parts.length !== 1) {
+  if (ticket.startsWith(SEALED_PREFIX)) {
+    if (!env.INDEX_KEY) return null;
+    const facts = await unseal(env.INDEX_KEY, ticket.slice(SEALED_PREFIX.length));
+    if (!facts) return null;
+    grant = facts.g;
+    workbench = { pairing: facts.p, cap: facts.c };
+  } else if (ticket.includes(SEP)) {
     return null;
   }
-  const grant = parts[0]!;
   const claims = await service.verifyGrant(env, grant, itemId);
   return claims ? { claims, grant, workbench } : null;
 }
@@ -151,7 +213,14 @@ export async function renewRoomGrant(
   env: IndexEnv,
   ticket: unknown,
   itemId: string,
-  held: { level: Level | null | undefined; tab: string | null | undefined },
+  // `pairing`: the workbench pairing the session was opened with (null or absent for none). A renewal must be sealed
+  // to the same one, so a workbench session never renews with a bare grant or another pairing's ticket, and keeps
+  // its cap.
+  held: {
+    level: Level | null | undefined;
+    tab: string | null | undefined;
+    pairing?: string | null | undefined;
+  },
 ): Promise<RoomGrantRenewal> {
   if (typeof ticket !== 'string' || ticket.length > ROOM_GRANT_MAX_LENGTH)
     return { kind: 'invalid' };
@@ -159,6 +228,8 @@ export async function renewRoomGrant(
   if (!opened) return { kind: 'invalid' };
   const level = roomTicketLevel(opened);
   const tab = opened.claims.tab ?? null;
-  if (level !== held.level || tab !== (held.tab ?? null)) return { kind: 'changed', level, tab };
+  const pairing = opened.workbench?.pairing ?? null;
+  if (level !== held.level || tab !== (held.tab ?? null) || pairing !== (held.pairing ?? null))
+    return { kind: 'changed', level, tab };
   return { kind: 'renewed', grantExp: opened.claims.exp * 1000, claims: opened.claims };
 }

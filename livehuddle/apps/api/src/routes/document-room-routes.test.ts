@@ -162,13 +162,35 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Role')).toBe('view');
   });
 
-  it('refuses a sealed ticket whose pairing or cap was changed', async () => {
+  it('refuses a workbench ticket that was tampered with, or the old readable shape', async () => {
     const { env, seen } = roomEnv();
     const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
     const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });
-    const [g, , , mac] = ticket.split('~');
-    for (const forged of [`${g}~wp-2~view~${mac}`, `${g}~wp-1~edit~${mac}`]) {
-      const res = await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(forged)}`);
+    const body = ticket.slice('rt2~'.length);
+    const flipped = `rt2~${body.slice(0, 20)}${body[20] === 'A' ? 'B' : 'A'}${body.slice(21)}`;
+    const forged = [
+      flipped,
+      `rt2~${body.slice(0, -4)}`,
+      'rt2~',
+      'rt2~!!!',
+      // The old `<grant>~<pairing>~<cap>~<hmac>` shape, which showed the grant in plaintext.
+      `${grant}~wp-1~edit~${'0'.repeat(64)}`,
+    ];
+    for (const bad of forged) {
+      const res = await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(bad)}`);
+      expect(res?.status).toBe(403);
+    }
+    expect(seen).toHaveLength(0);
+  });
+
+  it('never shows a workbench session the grant it seals', async () => {
+    const { env, seen } = roomEnv();
+    const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
+    const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });
+    expect(ticket.startsWith('rt2~')).toBe(true);
+    expect(ticket).not.toContain(grant);
+    for (const part of ticket.split(/[~.]/)) {
+      const res = await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(part)}`);
       expect(res?.status).toBe(403);
     }
     expect(seen).toHaveLength(0);

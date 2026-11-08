@@ -131,8 +131,9 @@ wb_meta             (key, value)        -- whose store it is
    session for up to a minute (never past its expiry), an unknown one for ten seconds, up to 1,000 per isolate, as it
    keeps API tokens. A session minted for another app is refused. The app then confines the request to the
    session's scope (its own `workbenchRouteVerdict`), exactly as before.
-4. **Rooms.** A session's room ticket is sealed to its pairing and level by the app (`<grant>~<pairing>~<cap>~<hmac>`,
-   @liveworkspace/index-app `room-ticket.ts`); room messages never touch the workbench service. A workspace session
+4. **Rooms.** A session's room ticket is the grant, its pairing and its level, encrypted together by the app
+   (`rt2~<AES-GCM sealed>`, key derived from INDEX_KEY, @liveworkspace/index-app `room-ticket.ts`), so the session
+   never holds the owner's grant in a form it could use bare; its renewals are sealed tickets of the same pairing; room messages never touch the workbench service. A workspace session
    that joins a room tells accounts once per isolate (`POST internal/workbench/rooms`), off the response's path, so
    ending its access closes that room too.
 

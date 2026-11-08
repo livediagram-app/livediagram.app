@@ -381,13 +381,16 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   `tab` confining it to one tab). A caller without one, such as an API token from the CLI or an AI tool,
   gets one from the index as a delegated caller (above), cached until a minute before it lapses.
 - **WebSocket**: a socket cannot send headers, so the grant rides the upgrade as `?t=<grant>`. A session
-  the app opens for a paired tool seals its own limits into the ticket:
-  `<grant>~<pairing>~<cap>~<HMAC(INDEX_KEY)>`, so neither can be raised. When the pairing ends (unpaired, its token
+  the app opens for a paired tool gets no grant it could read: its ticket is `rt2~<sealed>`, the grant, the pairing
+  and the cap encrypted together (AES-GCM, key derived from INDEX_KEY), so the session can neither raise its limits
+  nor take the owner's full-level grant out of the ticket and use it bare (`?t=` or `X-Index-Grant`). A room opens
+  the seal with the same key. When the pairing ends (unpaired, its token
   revoked, its account closed), accounts asks the index to close its sockets and the index tells each item
   (`POST <app>/api/internal/items/:id/workbench-close` `{pairingId}`, [workbench.md](../011-workbench/workbench.md)).
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
-  editor answers `{kind: "grant", grant}` with a fresh one. A fresh grant saying the same moves the lapse
-  on; one with another level or tab closes the socket (4005) so it reconnects as what it now is; none in
+  editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
+  ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired
+  session's renewal must be sealed to its own pairing, and is held to its cap) closes the socket (4005) so it reconnects as what it now is; none in
   time closes it (4007). Revoking a link closes the sockets that link admitted. Only open sockets count: one the
   room has closed can stay listed until its peer answers the close (a laptop asleep never does), and it has nothing
   left to ask or lapse, so it never sets the room's alarm.
