@@ -13,8 +13,8 @@ let search = 'session=s1';
 vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(search),
 }));
-const exchange = vi.fn();
-const revoke = vi.fn();
+const exchange = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const revoke = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 vi.mock('../../lib/api/oauth', () => ({
   apiExchangeOauthToken: (...args: unknown[]) => exchange(...args),
 }));

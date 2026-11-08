@@ -107,7 +107,7 @@ export function UnverifiedAppBadge() {
 }
 
 // A caution on an approval card: the warning glyph, a heading line, and what to check under it.
-export function OauthWarning({ title, children }: { title: string; children?: ReactNode }) {
+export function OauthWarning({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div
       role="note"
@@ -116,7 +116,7 @@ export function OauthWarning({ title, children }: { title: string; children?: Re
       <WarningGlyph aria-hidden className="mt-0.5 shrink-0" />
       <div className="min-w-0 text-sm">
         <p className="font-semibold">{title}</p>
-        {children ? <div className="mt-1 text-xs leading-relaxed">{children}</div> : null}
+        <div className="mt-1 text-xs leading-relaxed">{children}</div>
       </div>
     </div>
   );

@@ -461,9 +461,8 @@ describe('full authorize -> complete -> token flow', () => {
         },
         env,
       );
-      return new URL(((await comp.json()) as { redirectTo: string }).redirectTo).searchParams.get(
-        'code',
-      )!;
+      const { redirectTo } = await comp.json<{ redirectTo: string }>();
+      return new URL(redirectTo).searchParams.get('code')!;
     };
     const redeem = async (fields: Record<string, string>) => {
       const res = await app.request(
@@ -479,11 +478,7 @@ describe('full authorize -> complete -> token flow', () => {
         },
         env,
       );
-      return (await res.json()) as {
-        error?: string;
-        error_description?: string;
-        access_token?: string;
-      };
+      return res.json<{ error?: string; error_description?: string; access_token?: string }>();
     };
     const code = await codeFor();
     // A missing one is refused before the code is spent.

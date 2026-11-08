@@ -152,7 +152,7 @@ describe('the device page', () => {
         form({ client_id: 'example-cli' }),
       );
       Object.defineProperty(req, 'cf', { value: cf });
-      return (await (await app.request(req, undefined, env)).json()) as Started;
+      return (await app.request(req, undefined, env)).json<Started>();
     };
     const lookup = async (s: Started) =>
       (await app.request(`/oauth/device/session/${s.user_code}`, {}, env)).json();

@@ -153,7 +153,7 @@ function Consent({ config }: { config: OauthPagesConfig }) {
   }
   // No session in the URL, or the server doesn't recognise it (expired, they last 10 minutes, or never existed).
   // One message for all three: the fix is the same, and naming which one would confirm session ids to a prober.
-  if (resolved === null) {
+  if (resolved === null || !session) {
     return (
       <Shell>
         <h1 className={titleClass}>This link has expired</h1>
@@ -169,7 +169,6 @@ function Consent({ config }: { config: OauthPagesConfig }) {
   }
 
   const approve = async () => {
-    if (!session) return;
     setStatus('connecting');
     // Checks the session is still live before minting, and revokes a token the MCP did not take, so a failed
     // Connect never leaves a six-month token behind (lib/oauth-handover.ts).

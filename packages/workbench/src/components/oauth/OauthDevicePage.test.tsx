@@ -10,8 +10,8 @@ import type { SignInGate } from '../../hooks/auth/useSignInGate';
 import type { OauthPagesConfig } from './oauth-chrome';
 import { createOauthDevicePage, startedLine } from './OauthDevicePage';
 
-const exchange = vi.fn();
-const revoke = vi.fn();
+const exchange = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const revoke = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 vi.mock('../../lib/api/oauth', () => ({
   apiExchangeOauthToken: (...args: unknown[]) => exchange(...args),
 }));
@@ -58,7 +58,7 @@ beforeEach(() => {
       return session && path.endsWith('/BCDF-GHJK')
         ? Response.json(session)
         : Response.json({ error: 'invalid_code' }, { status: 404 });
-    posted.push({ path, body: JSON.parse(String(init?.body)) });
+    posted.push({ path, body: typeof init?.body === 'string' ? JSON.parse(init.body) : null });
     return path === '/oauth/device/complete' && !completeOk
       ? Response.json({ error: 'invalid_code' }, { status: 400 })
       : Response.json({ ok: true });
@@ -85,9 +85,7 @@ describe('/oauth/device', () => {
     window.history.replaceState(null, '', '/oauth/device?code=BCDF-GHJK');
     render(<Page />);
     expect(screen.getByRole('heading', { name: 'Connect a terminal' })).toBeTruthy();
-    expect((screen.getByLabelText('Code shown in your terminal') as HTMLInputElement).value).toBe(
-      '',
-    );
+    expect(screen.getByLabelText('Code shown in your terminal')).toHaveProperty('value', '');
     expect(screen.getByText('Only enter a code shown by a terminal you are using.')).toBeTruthy();
   });
 
