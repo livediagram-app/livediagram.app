@@ -32,9 +32,10 @@ describe('the card type chips', () => {
     chips(two);
     expect(screen.getByRole('group', { name: 'Add Cards' })).toBeTruthy();
     const buttons = screen.getAllByRole('button');
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(
-      ['Add a Project', 'Add a Task'],
-    );
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Add a Project',
+      'Add a Task',
+    ]);
     expect(buttons.map((b) => b.textContent)).toEqual(two.map((t) => t.label));
   });
 
