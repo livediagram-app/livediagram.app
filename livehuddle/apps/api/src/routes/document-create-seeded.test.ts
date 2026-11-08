@@ -7,8 +7,8 @@ import { asUser } from './test-route-context';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
 import { indexIntentOf } from '@livehuddle/api-schema';
 
-// A create's seeded tabs given as a graph or a template (docs/specs/015-api/api.md): compiled by
-// applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
+// A create's seeded tabs given as a template (docs/specs/015-api/api.md): compiled by applyReplace before anything
+// is written, the intent derived from the first, a refusal naming the tab.
 
 let db: SqliteD1;
 
@@ -32,27 +32,27 @@ afterEach(() => {
 });
 
 describe('seeded tabs compiled on create', () => {
-  it('lays out a graph tab, and records the CLI as the source', async () => {
-    const res = await create(
-      [
-        {
-          id: 't1',
-          name: 'Arch',
-          graph: {
-            nodes: [
-              { id: 'web', label: 'Web' },
-              { id: 'api', label: 'API' },
-            ],
-            edges: [{ from: 'web', to: 'api' }],
-          },
-        },
-      ],
-      { source: 'cli' },
-    );
+  it('records the CLI as the source', async () => {
+    const res = await create([{ id: 't1', name: 'Pod', template: 'team-pod' }], {
+      source: 'cli',
+    });
     expect(res.status).toBe(201);
-    const arch = await getTab(db.env, 'd1', 't1');
-    expect(arch?.elements.map((e) => e.type).sort()).toEqual(['arrow', 'shape', 'shape']);
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
+  });
+
+  // The graph input went with the layout containers (docs/specs/002-project-scope/not-in-livehuddle.md "The element
+  // engine", part 3): a tab that still gives one refuses the create by its id, rather than landing empty.
+  it('refuses a seeded graph tab by its id, writing nothing', async () => {
+    const res = await create([
+      { id: 't1', name: 'Ok', elements: [] },
+      { id: 't2', name: 'Arch', graph: { nodes: [{ id: 'web', label: 'Web' }], edges: [] } },
+    ]);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: 'invalid_body', tabId: 't2' });
+    expect(await getDocument(db.env, 'd1')).toBeNull();
+    expect(compileSeededTabs([{ graph: {} }], 'd1')).toMatchObject({
+      refusal: { status: 400, body: { error: 'invalid_body' } },
+    });
   });
 
   // The intent is the index's (it files the create by it, docs/specs/013-workspace/default-folders.md): what the
@@ -100,10 +100,10 @@ describe('seeded tabs compiled on create', () => {
 });
 
 describe('compileSeededTabs', () => {
-  it('passes through what is not a single source: elements, two sources, no id, not a tab', () => {
+  it('passes through what is not a single source: elements, a source with elements, no id, not a tab', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
-      { id: 'b', name: 'B', graph: { nodes: [] }, template: 'team-pod' },
+      { id: 'b', name: 'B', elements: [], template: 'team-pod' },
       { name: 'C', template: 'team-pod' },
       'not a tab',
     ];
@@ -115,7 +115,7 @@ describe('compileSeededTabs', () => {
       [
         {
           id: 't1',
-          graph: { nodes: [{ id: 'a', label: 'A' }], edges: [] },
+          template: 'team-pod',
           theme: 'ocean',
           background: 'dots',
         },
@@ -126,40 +126,5 @@ describe('compileSeededTabs', () => {
       tabs: [{ id: 't1', name: 'Tab', background: 'dots' }],
       intent: { mode: 'workshop' },
     });
-  });
-});
-
-// A tree takes a direction as a flow does (livediagram/docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
-describe('a seeded tree graph', () => {
-  const tree = (direction?: 'down' | 'right') => ({
-    id: 't1',
-    name: 'Org',
-    graph: {
-      style: 'tree',
-      ...(direction ? { direction } : {}),
-      nodes: ['ceo', 'cto', 'coo'].map((id) => ({ id, label: id.toUpperCase() })),
-      edges: [
-        { from: 'ceo', to: 'cto' },
-        { from: 'ceo', to: 'coo' },
-      ],
-    },
-  });
-  const laid = async (direction?: 'down' | 'right') => {
-    expect((await create([tree(direction)])).status).toBe(201);
-    const els = (await getTab(db.env, 'd1', 't1'))!.elements;
-    return (id: string) =>
-      els.find((e) => e.id === id) as { x: number; y: number; width: number; height: number };
-  };
-
-  it('runs left to right when asked right', async () => {
-    const at = await laid('right');
-    expect(at('cto').x).toBeGreaterThan(at('ceo').x + at('ceo').width);
-    expect(at('cto').x).toBe(at('coo').x);
-  });
-
-  it('runs down when asked down', async () => {
-    const at = await laid('down');
-    expect(at('cto').y).toBeGreaterThan(at('ceo').y + at('ceo').height);
-    expect(at('cto').y).toBe(at('coo').y);
   });
 });

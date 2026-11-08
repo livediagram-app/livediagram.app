@@ -177,7 +177,23 @@ describe('submitting a changeset', () => {
       db,
       'POST',
       '/api/documents/D/tabs/t2/changesets',
-      { replace: { graph: { nodes: [{ id: 'x', label: 'X' }], edges: [] }, name: 'Detail' } },
+      {
+        replace: {
+          elements: [
+            {
+              id: 'x',
+              type: 'shape',
+              shape: 'square',
+              x: 0,
+              y: 0,
+              width: 120,
+              height: 60,
+              label: 'X',
+            },
+          ],
+          name: 'Detail',
+        },
+      },
       { token: true },
     );
     expect(res.status).toBe(200);
