@@ -10,8 +10,7 @@ import type { Env } from '../types';
 // Wipe what this app keeps for a person beside their canvases (docs/specs/015-api/api.md "Owner-keyed data"): their
 // images in liveworkspace's media service (src/media.ts), which deletes every image the account uploaded, in any app;
 // their own store (person-store.ts: shape libraries); and the Community copies they took, which stop
-// counting. Their workbench (pairings, tickets and sessions) is liveworkspace's, which drops it when the account
-// closes (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access"). Called from DELETE
+// counting. Called from DELETE
 // /api/account and when the index tells this app an account closed (routes/internal-items.ts `personClosed`),
 // wherever it was closed. Their name and colour, settings, address, sign-up, teams and API tokens are the
 // liveworkspace accounts Worker's, which deletes them when it closes the account (liveworkspace/docs/specs/003-accounts/accounts.md
@@ -38,7 +37,6 @@ export async function deleteAccount(env: Env, ownerId: string): Promise<{ images
 // A guest who became an account (accounts merged them, with their settings and profile; the index moved their
 // canvases, folders, stars and Timeline): what this app keeps for the guest becomes the account's. Their images in
 // the media service, their shape libraries, and their Community copies. Idempotent, so a retry moves nothing twice.
-// A guest has no workbench (it needs a token).
 export async function mergeGuest(env: Env, guestId: string, userId: string): Promise<void> {
   // The images first, so a failure leaves the guest whole to merge again.
   const media = mediaClient(env);

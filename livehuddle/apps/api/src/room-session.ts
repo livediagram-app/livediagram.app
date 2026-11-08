@@ -58,9 +58,6 @@ export type SessionAttachment = {
   //   - `following`: the presence id this session follows (docs/specs/012-collaboration/follow-me-viewport.md
   //     "Who follows whom"), from its `follow` op; absent when it follows nobody.
   following?: string;
-  //   - `workbenchPairing`: the workbench pairing that opened this session (livediagram/docs/specs/013-workspace/workbench-embeds.md),
-  //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
-  workbenchPairing?: string | null;
   //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md
   //     "Integrity"): what the room stamps on the stickies and text it adds. 32 hex characters.
   //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
@@ -84,8 +81,6 @@ export type SessionAttachment = {
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
-// A workbench pairing id is a UUID.
-const MAX_PAIRING_ID_LEN = 36;
 // A document id is a UUID; the clamp keeps a forged header from bloating the attachment.
 const MAX_DOCUMENT_ID_LEN = 64;
 
@@ -97,7 +92,6 @@ type VerifiedSession = {
   shareCode: string | null;
   personTag: string | null;
   account?: boolean;
-  workbenchPairing: string | null;
   adderKey: string | null;
   documentId: string | null;
   grantExp?: number | null;
@@ -128,7 +122,6 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     shareCode: header('X-Verified-Share-Code'),
     personTag: header('X-Verified-Person'),
     account: request.headers.get('X-Verified-Account') === '1',
-    workbenchPairing: header('X-Verified-Workbench-Pairing'),
     adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
     grantExp: grantExpOf(request.headers.get('X-Verified-Grant-Exp')),
@@ -155,7 +148,6 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     shareCode: v.shareCode,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     account: v.account === true,
-    workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
     adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
     grantExp: v.grantExp ?? null,

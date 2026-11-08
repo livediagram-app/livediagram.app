@@ -1,5 +1,5 @@
 // A `replace` body's graph checked before it is laid out (livediagram/docs/specs/015-api/mcp-server.md §4.7, the
-// shape the MCP's `graph` argument takes): `layoutGraph` trusts its input, and a changeset's body is
+// shape livediagram's MCP `graph` argument takes): `layoutGraph` trusts its input, and a changeset's body is
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
 import {
@@ -86,6 +86,6 @@ export function graphBodyIssue(graph: unknown): string | null {
         : '; search_icons finds one by what it shows')
     );
   }
-  // What it asks that cannot be drawn (nested groups, a node in no lane), refused as the MCP refuses it.
+  // What it asks that cannot be drawn (nested groups, a node in no lane), refused as livediagram's MCP refuses it.
   return graphShapeError(graph as GraphInput) ?? null;
 }

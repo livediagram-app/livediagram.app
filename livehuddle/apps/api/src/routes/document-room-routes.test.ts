@@ -71,7 +71,6 @@ const SPOOFED = {
   'X-Verified-Tab-Scope': 'tab-evil',
   'X-Verified-Share-Code': 'evil',
   'X-Verified-Person': 'evil',
-  'X-Verified-Workbench-Pairing': 'evil',
   'X-Verified-Document': 'evil',
   'X-Verified-Grant-Exp': '99999999999',
   'X-Verified-Owner': '1',
@@ -108,7 +107,6 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Person')).toBe(await personTagFor('p1', 'user_a'));
     // An account's session: it may publish a Google picture and is sent others'.
     expect(h.get('X-Verified-Account')).toBe('1');
-    expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
     expect(h.get('X-Verified-Document')).toBe('p1');
     expect(h.get('X-Verified-Grant-Exp')).toBe(String(NOW + 600));
   });
@@ -153,19 +151,18 @@ describe('WebSocket upgrade', () => {
     expect(h.get('X-Verified-Role')).toBe('participate');
   });
 
-  // livehuddle has no workbenches (docs/specs/002-project-scope/not-in-livehuddle.md): the shared ticket's level cap
-  // still holds, and no session is ever stamped as a pairing's.
-  it('caps a ticket sealed with a cap at that level, and stamps no pairing', async () => {
+  // The shared ticket's level cap still holds, though livehuddle has no workbenches to seal one
+  // (docs/specs/002-project-scope/not-in-livehuddle.md).
+  it('caps a ticket sealed with a cap at that level', async () => {
     const { env, seen } = roomEnv();
     const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
     const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });
     await upgrade(env, `/api/documents/p1/ws?t=${encodeURIComponent(ticket)}`);
     const h = seen[0]!.headers;
     expect(h.get('X-Verified-Role')).toBe('view');
-    expect(h.get('X-Verified-Workbench-Pairing')).toBe('');
   });
 
-  it('refuses a workbench ticket whose pairing or cap was changed', async () => {
+  it('refuses a sealed ticket whose pairing or cap was changed', async () => {
     const { env, seen } = roomEnv();
     const grant = grantFor({ item: 'p1', sub: 'user_a', level: 'edit' });
     const ticket = await sealRoomTicket(env, grant, { pairing: 'wp-1', cap: 'view' });

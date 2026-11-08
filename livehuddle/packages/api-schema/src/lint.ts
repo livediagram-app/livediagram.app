@@ -1,5 +1,5 @@
 // The diagram lint's wire types (docs/specs/024-agents/diagram-lint.md; blueprint "Interfaces and
-// contracts", LN25): what the `?view=lint` JSON, a changeset's `lint` and the CLI carry.
+// contracts", LN25): what the `?view=lint` JSON, and a changeset's `lint` carry.
 
 // The spec's codes, in its table order.
 export const LINT_CODES = [

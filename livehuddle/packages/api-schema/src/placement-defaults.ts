@@ -1,6 +1,6 @@
 // Default folders (docs/specs/013-workspace/default-folders.md): where a person's new documents land when
 // no place is chosen, keyed by what the document is made as. liveworkspace's index resolves and stores them; the
-// editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
+// editor and API scripts send the creation intent, which the api hands the index as `indexIntentOf`.
 //
 // Three honest dimensions, most specific first: the first tab's kind (a specific kind, of which
 // livehuddle has none today), the template family it was made from (none today: the retrospectives left, Work Tracker

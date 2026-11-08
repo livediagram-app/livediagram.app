@@ -82,7 +82,7 @@ function threadLines(thread: Thread): ViewLine[] {
   ];
 }
 
-// A thread as a listing across tabs prints it (the CLI's `comment ls`, `wait --for comment`): the comments view's
+// A thread as a listing across tabs prints it (livediagram's CLI `comment ls`; no livehuddle door uses it): the comments view's
 // thread line without the kind, which a listing does not carry, and with the tab it is on (CLI81).
 export function threadListingLines(thread: {
   ref: string;

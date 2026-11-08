@@ -92,7 +92,6 @@ describe('/api/tokens/current (docs/specs/015-api/public-api-and-tokens.md "A to
     });
   });
 
-  // Its workbench pairings end at liveworkspace with the revoke (liveworkspace/docs/specs/011-workbench/workbench.md).
   it('revokes itself at liveworkspace', async () => {
     const work: Promise<unknown>[] = [];
     const res = await handleTokens(tokenCtx('DELETE', false, (p) => void work.push(p)));

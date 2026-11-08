@@ -1,5 +1,5 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
-// body, a whole tab from a graph, a template or raw elements, built exactly as the MCP's
+// body, a whole tab from a graph, a template or raw elements, built exactly as livediagram's MCP
 // `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.

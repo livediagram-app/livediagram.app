@@ -190,7 +190,7 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
         }),
       );
   }
-  // An API client's create answers where the index filed it (the MCP names the folder it landed in).
+  // An API client's create answers where the index filed it (a script can name the folder it landed in).
   if (filed && res.status === 201) {
     const answer = (await res.json()) as { document?: DocumentDTO | null };
     if (answer.document) answer.document = { ...answer.document, ...filed };
@@ -329,7 +329,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       const incomingTabs: Tab[] | null = Array.isArray(body.tabs)
         ? body.tabs.map((tab) => ({
             ...tab,
-            // An agent's or the API's tab write keeps no connection (connected-tabs.md "Agents and the CLI").
+            // An agent's or the API's tab write keeps no connection (connected-tabs.md "Agents and the CLI", liveworkspace's).
             ...(ctx.token ? { connection: undefined } : {}),
             name: capStoredName(
               tab.name,

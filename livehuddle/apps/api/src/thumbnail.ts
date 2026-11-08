@@ -64,8 +64,8 @@ export async function drawDocument(
   return renderTabBodyToSvg(env, doc, body, opts, community);
 }
 
-// One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): the
-// CLI's pull --svg and tab render, and any script. Unlike a snapshot it draws an empty tab too, and with no image
+// One tab drawn by the shared renderer, for `GET .../tabs/:tabId/render.svg` (docs/specs/015-api/api.md): any
+// API script. Unlike a snapshot it draws an empty tab too, and with no image
 // store its images keep their placeholders. Null when the tab is not in the document or its body does not parse.
 export async function renderTabSvg(
   env: DocumentEnv,

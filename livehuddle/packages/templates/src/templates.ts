@@ -49,7 +49,7 @@ export type TemplateDescriptor = {
   // reachable and this flag decides nothing about what a user sees.
   extra?: boolean;
   // True for templates that never appear in listings (the picker's browse
-  // grids + search, the MCP list_templates catalogue) but stay buildable via
+  // grids + search, the api's GET /api/templates) but stay buildable via
   // buildTemplate, for a dedicated entry point that names the kind directly.
   //
   // NO template sets it today. Its one user was the guided-tour
@@ -285,8 +285,8 @@ const RETIRED_TEMPLATE_TITLES: readonly string[] = [
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind
-// that arrives as a plain string from outside the type system: the MCP
-// `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
+// that arrives as a plain string from outside the type system: an API
+// create's `template`, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
 export function isTemplateKind(value: unknown): value is TemplateKind {
   return typeof value === 'string' && TEMPLATES.some((t) => t.kind === value);
 }

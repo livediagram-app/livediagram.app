@@ -1,6 +1,6 @@
 // PUT /api/documents/<id>/tabs/<tabId>/name: a tab rename on its own
-// (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"), for the CLI, the
-// MCP and any script, which never do whole-tab saves. Advances the tab's revision and is relayed to
+// (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"), for API
+// scripts, which never do whole-tab saves. Advances the tab's revision and is relayed to
 // the room as the same tab-meta an editor's own rename sends (CS42).
 
 import { getDocument, renameTab } from '../db';

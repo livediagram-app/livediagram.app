@@ -55,10 +55,10 @@ namespace_id = "1001"
 simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry relay (POST /api/events,
-# docs/specs/017-telemetry/telemetry.md "The relay"), which passes the CLI's counts on to the
+# docs/specs/017-telemetry/telemetry.md "The relay"), which passes a script's counts on to the
 # liveworkspace service. Separate namespace from the write limiter so abuse of the
 # public events endpoint can never eat into a user's document-write
-# budget. 120 batches / 60s per IP is generous for a CLI (one event per
+# budget. 120 batches / 60s per IP is generous for a script (one event per
 # command) while bounding how fast one source can inflate the public dashboard.
 # Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
 # helper allows, so a deployment still works.
@@ -168,11 +168,9 @@ name = "EMAIL"
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
 #     AUTH_ORIGIN=http://localhost:3500 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
-#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
-#     each from the GitHub repo secret of the same name and pipes it into
-#     `wrangler secret put` on every deploy, so a value rotates by
-#     editing the GitHub secret. Secrets persist across deploys
-#     independently of this file.
+#   - Production: Cloudflare Worker secrets, set once with `wrangler secret put <NAME>` (docs/ci.md). No
+#     workflow sets them: the deploy only carries CLOUDFLARE_API_TOKEN, so a value rotates by putting it again.
+#     Secrets persist across deploys independently of this file.
 #
 # Guests are liveworkspace's too: the accounts Worker hands each browser a
 # guest token for this API (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), checked
@@ -204,8 +202,7 @@ name = "EMAIL"
 #
 #   - Local dev: `COMMUNITY_KEY=dev-livehuddle-community-key` and
 #     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
-#   - Production and staging: the COMMUNITY_KEY / COMMUNITY_KEY_STAGING GitHub
-#     secrets, synced by the deploy workflow. COMMUNITY_URL comes from hosted-vars.json.
+#   - Production and staging: `wrangler secret put COMMUNITY_KEY` (and `--env staging`). COMMUNITY_URL comes from hosted-vars.json.
 #
 # Unset = no Community: publishing answers 404, and the sync does nothing.
 
@@ -215,8 +212,7 @@ name = "EMAIL"
 #
 #   - Local dev: `MEDIA_KEY=dev-livehuddle-media-key` and
 #     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
-#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
-#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#   - Production and staging: `wrangler secret put MEDIA_KEY` (and `--env staging`). MEDIA_URL comes from hosted-vars.json.
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
@@ -352,7 +348,7 @@ id = "a4a1dde286e1495e91a798641bc2d4b6" # livehuddle-calls-switch-staging
 
 
 # The four ACCOUNTS_* / API_RESOURCE values and
-# TELEMETRY_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow.
+# TELEMETRY_KEY are set once on the staging Worker with
+# `wrangler secret put <NAME> --env staging` (docs/ci.md), not by CI.
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

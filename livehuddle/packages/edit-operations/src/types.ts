@@ -29,7 +29,7 @@ export type Placement =
   | { rel: PlacementRelation; ref: Selector; gap?: number; within?: Selector; alignTo?: Selector }
   | { rel: 'at'; x: number; y: number };
 
-// `add` with a whole raw element, as the MCP's `ops` mode sends: taken as given, its geometry kept.
+// `add` with a whole raw element, as an API script's changeset sends it: taken as given, its geometry kept.
 export type AddElementOperation = { op: 'add'; element: Readonly<Record<string, unknown>> };
 
 // `add <kind> [id=] key=value… [<placement>]`.
@@ -157,7 +157,7 @@ export type ApplyRejection = { errors: EditRejection[] };
 // Discriminated by `'errors' in outcome`.
 export type ApplyOutcome = ApplySuccess | ApplyRejection;
 
-// The last line of a changeset's answer, composed by the api or the CLI from what only they know.
+// The last line of a changeset's answer, composed by the api from what only it knows.
 export type ResultFooter =
   | { dryRun: true; rev: number; lint: string }
   | {

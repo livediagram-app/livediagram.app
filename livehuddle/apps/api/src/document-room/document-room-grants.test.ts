@@ -66,7 +66,6 @@ function room() {
       null,
       null,
       null,
-      null,
       'D',
       expMs,
     );

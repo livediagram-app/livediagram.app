@@ -59,9 +59,7 @@ export async function getDocumentMeta(
 }
 
 // What liveworkspace keeps of a canvas's pictures (liveworkspace/docs/specs/006-media/previews.md), for when the index purges it
-// (routes/internal-items.ts): its previews go too. Workbench tickets and sessions scoped to it are liveworkspace's:
-// a ticket lapses in a minute, and a session's every request is gated on the canvas's grant, which a
-// purged canvas never gets again. Best effort: a preview the purge misses is unreachable (every read asks the index).
+// (routes/internal-items.ts): its previews go too. Best effort: a preview the purge misses is unreachable (every read asks the index).
 export async function purgeDocumentPreviews(env: Env, id: string): Promise<void> {
   const media = mediaClient(env);
   if (!media) return;

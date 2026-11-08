@@ -2,8 +2,8 @@
 // centre (cx, cy) and returns a fresh array of Element. Sizing
 // constants live inline so each template is self-describing. See
 // docs/specs/008-canvas/canvas-and-palette.md for the picker UX; the editor applies its theme recolour on
-// top (apps/editor/lib/template-builders.ts), and the MCP worker
-// materialises these directly (livediagram/docs/specs/015-api/mcp-server.md §4.5).
+// top (apps/editor/lib/template-builders.ts), and livediagram's MCP worker
+// materialises its own copy directly (livediagram/docs/specs/015-api/mcp-server.md §4.5).
 
 import { BLANK_PAD_DROP } from './blank-pad-drop';
 import { buildVirtualOffice } from './template-builders-office';

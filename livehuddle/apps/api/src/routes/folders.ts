@@ -1,4 +1,4 @@
-// The caller's own folders, for API clients (index-adapters.ts): the list, and a new one (the CLI's `folder create`).
+// The caller's own folders, for API clients (index-adapters.ts): the list, and a new one.
 
 import { createFolderFor } from '@liveworkspace/index-app';
 import { json, notFound } from '../responses';

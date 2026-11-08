@@ -1,5 +1,5 @@
 // @livehuddle/document-views (docs/specs/024-agents/document-views.md): read-only text projections of
-// a tab, each a pure function of it. The api and the CLI render through `renderView`; `overviewView`
+// a tab, each a pure function of it. The api renders through `renderView`; `overviewView`
 // summarises a document and `diffView` compares two reads of a tab.
 export * from './constants';
 export {

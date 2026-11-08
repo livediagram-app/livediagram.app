@@ -1,5 +1,5 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
-// doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
+// doors take, and every view's JSON form, shared by the api and
 // `@livehuddle/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
 import type { Finish, TabKind } from '@livehuddle/document';
 
@@ -19,7 +19,7 @@ export const VIEW_NAMES = [
 export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
-// What each api door serves. `diff` has no api door: the CLI computes it from its cache.
+// What each api door serves. `diff` has no api door (livediagram's CLI computes it from its cache).
 export const DOCUMENT_VIEW_NAMES = ['overview'] as const satisfies readonly ViewName[];
 export const TAB_VIEW_NAMES = [
   'outline',
@@ -199,7 +199,7 @@ export type FindView = {
   elision: Elision;
 };
 
-// No api door serves it; the CLI's `--json` prints it.
+// No api door serves it (it came over from livediagram, whose CLI prints it with `--json`).
 export type DiffView = {
   header: ViewHeader;
   since: number;

@@ -5,7 +5,8 @@ const upgrade = (headers: Record<string, string>) =>
   new Request('https://room/ws', { headers: { Upgrade: 'websocket', ...headers } });
 
 describe('verifiedSessionOf', () => {
-  it('reads every verified header, an empty one as none', () => {
+  // livehuddle has no workbenches: a pairing header is never read (docs/specs/002-project-scope/not-in-livehuddle.md).
+  it('reads every verified header, an empty one as none, and no pairing', () => {
     const v = verifiedSessionOf(
       upgrade({
         'X-Verified-Role': 'participate',
@@ -28,7 +29,6 @@ describe('verifiedSessionOf', () => {
       shareCode: null,
       personTag: 'p',
       account: false,
-      workbenchPairing: 'w',
       adderKey: 'a',
       documentId: 'd',
       grantExp: 1_700_000_000_000,
@@ -50,7 +50,6 @@ describe('newSessionAttachment', () => {
         tabScope: null,
         shareCode: null,
         personTag: long,
-        workbenchPairing: long,
         adderKey: long,
         documentId: long,
       },
@@ -58,9 +57,7 @@ describe('newSessionAttachment', () => {
     );
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
-    expect(
-      [a.personTag, a.workbenchPairing, a.adderKey, a.documentId].map((s) => s?.length),
-    ).toEqual([64, 36, 32, 64]);
+    expect([a.personTag, a.adderKey, a.documentId].map((s) => s?.length)).toEqual([64, 32, 64]);
   });
 });
 

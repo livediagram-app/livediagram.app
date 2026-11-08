@@ -625,11 +625,6 @@ export type RoomIncoming =
 // document was trashed). The editor reloads into the ordinary access path.
 export const ACCESS_CHANGED_CLOSE = 4005;
 
-// The close code the room gives a workbench pairing's sockets when liveworkspace ends the pairing
-// (liveworkspace/docs/specs/011-workbench/workbench.md). livehuddle has no workbenches, so no session of its own is ever
-// one; the shared room door that sends it stays.
-export const WORKBENCH_ENDED_CLOSE = 4006;
-
 // The room's keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"): the client sends
 // the bare text ROOM_PING on an idle socket and the room answers ROOM_PONG without waking from hibernation
 // (setWebSocketAutoResponse). Plain text, never JSON, so neither side's message handler ever sees them as ops.

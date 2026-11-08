@@ -92,8 +92,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     // reaches the room as its account but draws no avatars): only such a session may publish a Google picture
     // and be sent others' (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures"). Set on every path, like the rest.
     forwarded.headers.set('X-Verified-Account', person && isAccountIdShape(person) ? '1' : '0');
-    // livehuddle has no workbenches: no session is ever a pairing's, and a client's own header is overwritten.
-    forwarded.headers.set('X-Verified-Workbench-Pairing', '');
     forwarded.headers.set('X-Verified-Adder', (await adderKeyOf(id, role, person)) ?? '');
     forwarded.headers.set('X-Verified-Document', id);
     // When the grant lapses (epoch seconds): the room asks for a fresh one before then, and drops the socket

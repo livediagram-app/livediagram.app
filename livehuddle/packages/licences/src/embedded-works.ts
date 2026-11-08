@@ -60,7 +60,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'Inter',
     version: '3.19',
     licence: 'OFL-1.1',
-    carrier: 'the MCP server and the CLI (font)',
+    carrier: 'PNG previews (font)',
     homepage: 'https://github.com/rsms/inter',
     trigger: { assets: /(^|-)Inter-(Regular\.ttf|Bold\.otf)$/ },
     texts: text('inter-3.19-LICENSE.txt'),

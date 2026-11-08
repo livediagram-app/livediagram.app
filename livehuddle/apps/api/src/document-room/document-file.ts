@@ -1,5 +1,5 @@
 // The canvas as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
-// docs/specs/015-api/api.md "Internal"): the `livehuddle.document` envelope the CLI exports, every tab with its
+// docs/specs/015-api/api.md "Internal"): the `livehuddle.document` envelope, every tab with its
 // per-document folder, and the slide deck. The export runs inside the canvas's Durable Object, from the same tab read
 // a copy makes (document-content.ts readContentTabRows), stamped with the canvas's last save so unchanged content is
 // byte-identical. The import's file is read in the worker (readDocumentFile: parsed, fresh ids, limits) and written
@@ -82,7 +82,7 @@ export type DocumentFileContent = { presentation: string | null; copy: DocumentC
 export type DocumentFileRead =
   { ok: true; content: DocumentFileContent } | { ok: false; failure: 'invalid_file' | 'too_large' };
 
-// The fields a tab read adds beside the body (tab-row.ts rowToTab), which a file the CLI wrote carries; the body
+// The fields a tab read adds beside the body (tab-row.ts rowToTab), which an exported file carries; the body
 // is stored without them.
 // A connected tab's `connection` is its own column, read with tabConnectionOf, never stored in the body.
 const ROW_FIELDS = [
