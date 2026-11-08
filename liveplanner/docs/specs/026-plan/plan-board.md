@@ -1308,10 +1308,15 @@ theme, with the page answering throughout.
 - **Its parts snap rather than ease.** The colour ease ([Eased changes](../011-theme/canvas-and-theme-dialog.md#eased-changes))
   is skipped inside a busy board: easing every chip of hundreds of cards held the page for seconds a pick. The board's
   own surface and the rest of the canvas still ease. A board of 100 cards or fewer eases as before.
-- **Cards out of view wait.** A busy board's cards out of view are not styled or laid out until they come near the
-  view, and each keeps its last drawn height meanwhile (one never drawn takes the usual height of its size), so the
-  board scrolls as before. Where a browser cannot draw a card's shadow, ring and hover glow past its own box while
-  doing so, it draws every card as before.
+- **Cards out of view wait.** A busy board's cards out of view are not styled, laid out or painted until they come
+  near the view, a few cards at a time, and each keeps its last drawn height meanwhile (one never drawn takes the
+  usual height of its size), so the board scrolls as before. Every browser does so, Safari and the iPad included,
+  and none cuts a card's shadow, ring or hover glow at its box.
+- **A drag stays smooth.** Carrying a card on a 2,000-card board keeps up with the pointer or finger, on an iPad too:
+  picking a card up and letting it go redraw only that card (its copy appearing over the page never restyles the
+  board), a drop gap opening or closing in a long column slides the cards below it rather than redrawing them, the
+  copy under the pointer moves without laying anything out, a column's hover colour snaps rather than eases, and
+  letting go settles the cards in view (the cards out of view simply sit in their new places).
 - **Marker draws what is in view.** Marker's hand-drawn parts on a busy board are drawn on the cards in view, up to the
   usual limit; a card scrolled into view takes them the next time the board settles after a change.
 - **Sketch keeps the board.** Picking Sketch, or leaving it, keeps the board as it is (its scroll, its collapsed

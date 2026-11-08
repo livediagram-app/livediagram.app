@@ -735,18 +735,41 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
 
 - A busy board (spec "A busy board"; `PlanBoardView` `PLAN_BUSY_CARDS`): the board root carries
   `data-plan-busy` (its card size, `detailed` when unset) past that many shown cards (`projection.total`).
-  `app/globals.css` then gives each `[data-plan-card]` `content-visibility: auto`, `contain-intrinsic-size: auto 132px`
-  (`44px` under `minimal`) and `overflow-clip-margin: 24px`, inside `@supports (overflow-clip-margin: 1px)` so a
-  browser that would clip the card's shadow, presence ring and hover glow at its box draws every card as before; and
+  Its cells then draw their cards in runs (`card-runs.ts` `cardRuns`): a run starts at a card whose id hashes (FNV-1a)
+  to a start, one in `RUN_SPREAD` (8), or once a run holds `CARD_RUN_MAX` (16), so a card moving in or out of a cell
+  changes only the run it lands in or leaves; each run is a `div[data-plan-run]` keyed by its first card, a flex
+  column with the list's own gap. `app/globals.css` `plan-card-run` gives a run `content-visibility: auto`,
+  `contain-intrinsic-size: auto calc(var(--run-cards) * 140px - 8px)` (`52px` a card under `minimal`), 24 px of
+  padding taken back by a -24 px margin (so the paint clip the skipping brings sits 24 px past its cards, in every
+  browser, where the old per-card `content-visibility` needed `overflow-clip-margin`, which Safari lacks, and so drew
+  all 2,000 cards there), `pointer-events: none` on the run with `auto` on its children (its reach never takes a
+  press meant for the card beside it), and `will-change: transform` (each run its own layer: a gap's motion slides
+  the runs below it instead of repainting their cards every frame). `[data-plan-busy] .plan-col` has no transition
+  (the column hover snaps). `usePlanCardFlip` `cardsToMeasure` reads only the cards of runs within a view's length of
+  the body's view (a place read in a skipped run lays it out again); a board without runs reads every card.
   `:root.lvd-style-transition [data-plan-busy] *` turns every transition off for the moment of a Tab Style change.
+- <a id="body-end-anchor"></a>Body end anchor: `SplitViewFrame` calls `useBodyEndAnchor` (`hooks/ui/useBodyEndAnchor.ts`),
+  which keeps an empty hidden `div[data-body-end]` after the editor's root at the end of `<body>`. A portal (the drag
+  copy, a menu, a tooltip) is appended after it, so the editor's root never gains or loses `:last-child`; Safari
+  restyled the whole editor on each such change (measured 0.75-1.25 s on a 2,000-card board as the drag copy came and
+  as it went; 1 ms with the anchor).
+- The drag copy (`PlanDragGhost`) is fixed at the top left and follows the pointer by its `translate`, never `left` /
+  `top`, so following the pointer lays nothing out. It is no layer of its own: a composited copy over a busy board's
+  run layers cost Safari 1.5 s re-sorting them as it left the board. Carrying a card off a busy board, or back on,
+  still costs Safari one frame of 0.3 to 1.4 s with nothing in the page changing: turning the runs' skipping off
+  takes it to 0.06 to 0.15 s, so the skipping itself is the cost (open; main took 0.15 to 0.37 s there).
 - Card redraws: `PlanBoardCard` is `memo`; `PlanBoardView` hands it a `palette` kept by value (`useMemo` on the
   surface and the element's `fillColor` / `strokeColor` / `textColor` / `colorPreset`) and `cardHandlers` of one
   identity (`useLatest` of `onCardPress`, `onCardKey`, the plan and `drag.cancelPress`; `onOpen(id)` takes the card's
   id). `PlanCardFace` reads no finish: `--card-shadow` and `--card-hover-shadow` are always set, and
   `app/face-finish.css` empties both on `.plan-card` under `[data-face-finish]` Professional and Marker. The
   `PlanContextValue` keeps its identity across editor renders: `useFormActions` `newFormFor` reads its inputs
-  through `useLatest` and `useLinkedActionCards` `showOnCanvas` is a `useStableCallbacks` wrapper, since every card
-  reads the context.
+  through `useLatest` and `useLinkedActionCards` `showOnCanvas` is a `useStableCallbacks` wrapper. Cards read
+  none of it: `PlanProvider` also hands down `usePlanCard()` (`PlanCardData`: `items`, `types`, `statusNames`,
+  `statusPhases`, `canEditCards`, `itemsScope`, a `useMemo` on those parts) and `usePlanLatest()` (a ref to the
+  value, for handlers: `card-file-drop` `notify`, `useAttachmentUpload` at an upload's end), so a change to anything
+  else (`draggingItemId` as a card is picked up and let go, `presence`, `openItemId`) re-renders the board, never its
+  cards; `PlanBoardCard`, `PlanCardFace`, `useCardFileDrop` and `useAttachmentUpload` read only those.
   `accentOn` and `chipInkOn` (`@liveplanner/project` `plan-palette.ts`) remember their answers by colour
   (`PLAN_INK_MEMO_MAX` entries, emptied when full).
 - `BoxedElementView` renders a `plan-board` element's `SketchFace` with `keepTree`, so a finish change never
@@ -950,6 +973,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `FOCUS_ZOOM_MAX`           | 1.5                | Spec (150%); `useEditorState.ts`                                            |
 | `PLAN_BUSY_CARDS`          | 100                | Spec "A busy board"; the ease cost ~6 ms a card a pick past it; 50-200      |
 | `PLAN_INK_MEMO_MAX`        | 2048               | Bounds the card ink memo; a board asks for tens; 256-8192                   |
+| `RUN_SPREAD`               | 8                  | `card-runs.ts`: a run's average cards; small enough to skip in view; 4-16   |
+| `CARD_RUN_MAX`             | 16                 | `card-runs.ts`: bounds a run of cards hashing to no start; 8-32             |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to
