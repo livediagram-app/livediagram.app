@@ -557,7 +557,8 @@ nothing changes.
    Worker's cookies land on the app's address renamed `lw_flow.<name>`, on that path alone,
    HttpOnly, Secure, SameSite=Lax and for at most 15 minutes (`flowCookieOut`). The router names
    the visitor's address in `X-Liveworkspace-Client-IP`, which the code limits count
-   ([Limits](#limits)) instead of the router's.
+   ([Limits](#limits)) instead of the router's, when the router proves it sent it
+   (`X-Liveworkspace-Proxy-Secret`, the shared `WORKSPACE_PROXY_SECRET`).
 4. **The page** signs in exactly as on liveworkspace.app (email code, name for a new account,
    Turnstile). Then it asks `POST /api/auth/handoff/start` `{ return, bind }` for a hand-off. The
    Worker refuses unless the request's `Origin` is one of the app origins (403), there is a

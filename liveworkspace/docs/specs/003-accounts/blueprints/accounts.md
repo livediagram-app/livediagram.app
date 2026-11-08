@@ -168,7 +168,12 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 - An app's client credentials reach only its own app's data where the data is per app (settings, sightings,
   milestones, notify switches, legacy guests); the client's app comes from `oauth_client_app`, never the request.
 - Secrets (not in `[vars]`): `BETTER_AUTH_SECRET`, `TURNSTILE_SECRET_KEY`, `ADMIN_TOKEN`, `GOOGLE_CLIENT_ID`,
-  `GOOGLE_CLIENT_SECRET`, `INDEX_MERGE_KEY`, `DRIVE_KEY_ACCOUNTS`, `TELEMETRY_KEY_<APP>`, `LEGACY_GUEST_ID_HMAC_SECRET`.
+  `GOOGLE_CLIENT_SECRET`, `INDEX_MERGE_KEY`, `DRIVE_KEY_ACCOUNTS`, `TELEMETRY_KEY_<APP>`, `LEGACY_GUEST_ID_HMAC_SECRET`,
+  `WORKSPACE_PROXY_SECRET`.
+- The per-network limits (`CODE_IP_LIMITER`, `GUEST_LIMITER`, `TEAM_LINK_LIMITER`; `networkOf`, `rangeOf`) count the
+  address an app's router names only beside `X-Liveworkspace-Proxy-Secret` matching `WORKSPACE_PROXY_SECRET`
+  (`trustedClientAddress`, `@liveworkspace/sites/network`); without it, the connection's own. Unset, the named address
+  is trusted as before (the rollout order is in [architecture](../../002-architecture/blueprints/architecture.md#security-and-trust)).
 
 ## Performance and limits
 

@@ -118,11 +118,15 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
   same one again (checked against the stored hash) or removing it does neither.
 - A share password is at least 6 characters (`SHARE_PASSWORD_MIN`, after trimming): a shorter new one is 400
   `password_too_short`, while one set before the rule keeps working. A password this isolate hasn't already found right
-  is a guess (`share-guesses.ts`): it counts against the visitor's network (10 a minute) and against the item from any
-  network (30 a minute) before it is checked, and over either the answer is 429 `rate_limited` with `Retry-After: 60`,
-  even for the right password. The network is the address an app's router names (`X-Liveworkspace-Client-IP`, kept
-  apart as `via:`), else the connection's (api-kit's `clientRateKey`); an app's server asking for a visitor (a
-  `CF-Worker` subrequest, from Cloudflare's shared address) counts against the item only. A visit with no password,
+  is a guess (`share-guesses.ts`). It counts against the visitor's network (10 a minute) before it is checked; over
+  that the answer is 429 `rate_limited` with `Retry-After: 60` and nothing is derived, so one network can't make the
+  index spend more than 10 PBKDF2 derivations a minute. Then it is checked. The right password opens the item whatever
+  anyone else is trying, so a stranger hammering a link can't lock its real visitors out; a wrong one counts against the
+  item from any network (30 a minute) and, over that, is 429 rather than 403 `password_invalid`. The network is the
+  address an app's router names (`X-Liveworkspace-Client-IP`, kept apart as `via:`) when the router proves it sent it
+  (`WORKSPACE_PROXY_SECRET`), else the connection's (api-kit's `clientRateKey`). An app's server asking for a visitor (a
+  `CF-Worker` subrequest, from Cloudflare's shared address) names no network: its guess counts against the item before
+  it is checked, that being its only bound, and over it is 429 even for the right password. A visit with no password,
   or one already checked in this isolate (a visitor's grant renewals), spends nothing.
 - Emptying the Trash purges up to 1,000 items per call; the rest wait for another call or the daily run.
 
@@ -146,6 +150,7 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
 | `MIGRATION_LIMITER`           | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                                                                     |
 | `SHARE_GUESS_VISITOR_LIMITER` | rate limit binding: share-password guesses, 10 a minute per visitor's network; absent (tests), not limited                                                           |
 | `SHARE_GUESS_ITEM_LIMITER`    | rate limit binding: share-password guesses, 30 a minute per item from any network; absent (tests), not limited                                                       |
+| `WORKSPACE_PROXY_SECRET`      | secret: the one every app's router sends in `X-Liveworkspace-Proxy-Secret`; set, a named visitor's address counts only beside it. Unset, it is trusted as named      |
 
 Without `GRANT_SIGNING_KEY` outside development, `/jwks` and grants answer 503 `grants_unavailable`, and
 nothing can be made (there would be no grant to open it with).

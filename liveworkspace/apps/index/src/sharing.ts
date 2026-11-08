@@ -407,7 +407,7 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
   if (!access) {
     // The code is in the path, so the password header may come alone.
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;
-    access = await linkAccess(env, row.id, link, password, guessVisitorOf(ctx.request));
+    access = await linkAccess(env, row.id, link, password, guessVisitorOf(ctx.request, env));
     if (access instanceof Response) return access;
     // A public link (a Community post's) is not kept under Shared, and its author is not told of the visit.
     if (person && !link.public) {

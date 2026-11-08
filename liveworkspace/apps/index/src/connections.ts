@@ -346,7 +346,7 @@ async function reachable(
 
 // Over CONNECTION_OPEN_LIMITER: per person, else per network; no key, no limit.
 async function openRefusal(env: Env, caller: Caller, request: Request): Promise<Response | null> {
-  const key = caller.person ? `p:${caller.person.id}` : guessVisitorOf(request);
+  const key = caller.person ? `p:${caller.person.id}` : guessVisitorOf(request, env);
   if (!key || !env.CONNECTION_OPEN_LIMITER) return null;
   const { success } = await env.CONNECTION_OPEN_LIMITER.limit({ key });
   if (success) return null;

@@ -76,8 +76,10 @@ A handler that catches broadly and would turn an outage into another answer reth
 already forwarded once` or `router: WORKSPACE_ORIGIN is this site`), so a misconfigured origin can't loop.
 4. Cookies by the route's mode: `drop` removes them; `flow` sends only the sign-in's own `lw_flow.`-prefixed cookies,
    under their own names; `pass` sends them as they are.
-5. Headers set: `X-Liveworkspace-Proxy: <app>`, `X-Liveworkspace-Client-IP` from `CF-Connecting-IP`, and
-   `X-Forwarded-Host`. Method, body and `Authorization` come along; redirects are not followed.
+5. Headers set: `X-Liveworkspace-Proxy: <app>`, `X-Liveworkspace-Client-IP` from `CF-Connecting-IP`,
+   `X-Liveworkspace-Proxy-Secret` from the router's `WORKSPACE_PROXY_SECRET` (`proxySecret`; any copy the caller sent
+   is removed first, and none is sent when the router has no secret), and `X-Forwarded-Host`. Method, body and
+   `Authorization` come along; redirects are not followed.
 6. The answer: a `Location` inside a forwarded route is turned back to the app's address (`locationOnApp`); a
    `Set-Cookie` is removed, except on a `flow` route, where each is renamed `lw_flow.<name>`, scoped to the route's
    path, `HttpOnly`, `Secure`, `SameSite=Lax`, and capped at 900 s (a cleared cookie stays cleared).
@@ -92,7 +94,8 @@ already forwarded once` or `router: WORKSPACE_ORIGIN is this site`), so a miscon
 | Workbench     | `/api/workbench` → `/api/account/workbench`                | drop    |
 
 The index (`forwardToIndex`, `INDEX_ORIGIN`), Drive (`forwardToDrive`) and previews (`previewsTargetFor`) have their
-own forwards in the same file, each dropping the app's cookies and carrying the visitor's address.
+own forwards in the same file, each dropping the app's cookies and carrying the visitor's address. The index's also
+carries the router's secret; Drive's and previews' never do (they count no address), and drop any copy the caller sent.
 
 ## Interfaces and contracts
 
@@ -104,6 +107,15 @@ The tables below are read from each `wrangler.toml`, the root `package.json`, `a
 Forwarded requests from a router carry the visitor's address in `X-Liveworkspace-Client-IP`, set from
 `CF-Connecting-IP` and never copied from the caller. The Explorer's, the index's and Drive's forwards drop the app's
 cookies, so no app cookie reaches the platform.
+
+accounts and the index are publicly routed, so anyone can send them `X-Liveworkspace-Client-IP`. They count a named
+address as the visitor's (`trustedClientAddress`, `@liveworkspace/sites/network`) only when the request's
+`X-Liveworkspace-Proxy-Secret` matches their own `WORKSPACE_PROXY_SECRET` (compared in constant time); otherwise they
+count the connection's own `CF-Connecting-IP`, so a direct caller can't rotate a made-up address past a per-network
+limit. The secret is one value, set on every app's router and on accounts and the index, per environment. A receiver
+with no secret set trusts the named address as before, so the code deploys safely in any order; the secret goes on
+the routers first, then on the receivers (on a receiver first, every app's visitors would count as their router's one
+address until the routers have it too).
 
 ## Performance and limits
 
@@ -203,7 +215,8 @@ The visitor's address travels as `X-Liveworkspace-Client-IP` (`WORKSPACE_CLIENT_
 
 | Test                                                                                         | Pins                                                                                                                                                   |
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/sites/src/workspace-proxy.test.ts` (22)                                            | every router's forwards: routes, cookies, loop guard, visitor address, redirects, the status page                                                      |
+| `packages/sites/src/workspace-proxy.test.ts`                                                 | every router's forwards: routes, cookies, loop guard, visitor address and proof (a caller's copy removed), redirects, the status page                  |
+| `packages/sites/src/network.test.ts`                                                         | a named address trusted only beside the right secret, a spoofed one ignored, and trusted as named while no secret is set                               |
 | `packages/sites/src/previews-proxy.test.ts` (3)                                              | the previews forward and the share link's picture doors                                                                                                |
 | `packages/api-kit/src/request-failure.test.ts` (23)                                          | D1 and Durable Object outages named, bugs left to the 500, the answers and their logs, the guard (held at 100%)                                        |
 | `packages/api-kit/src/room-alarm.test.ts`                                                    | the floor, the earliest time, none due, a repeat skipped, a time passed or changed set again, an arm after a disarm set again (held at 100%)           |
@@ -221,7 +234,8 @@ Each service's own tests are in its blueprint.
 `X-Liveworkspace-Client-IP`; `ACCOUNTS_ON_APP_PATH` `/api/workspace/auth`; `FLOW_COOKIE_PREFIX` `lw_flow.`;
 `FLOW_COOKIE_MAX_AGE_SECONDS` 900; `SITE_ASSET_PREFIX` `/_liveworkspace`; `DRIVE_PATH` `/api/drive`; `PREVIEWS_PATH`
 `/api/previews`; `STATUS_PATH` `/status`; `LOOP_DETECTED` 508 (`packages/sites/src/workspace-proxy.ts`). Each router's
-`WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars. `UNAVAILABLE_RETRY_AFTER_SECONDS` 5
+`WORKSPACE_ORIGIN` and `INDEX_ORIGIN` vars. `WORKSPACE_PROXY_SECRET_HEADER` `X-Liveworkspace-Proxy-Secret`, and the
+`WORKSPACE_PROXY_SECRET` secret on each router, accounts and the index. `UNAVAILABLE_RETRY_AFTER_SECONDS` 5
 (`packages/api-kit/src/request-failure.ts`): the `Retry-After` of every storage and accounts outage; long enough for a
 short D1 or Durable Object reset, short enough that a caller's retry lands soon after one; safe from 1 to 60.
 `ROOM_ALARM_FLOOR_MS` 1,000 (`packages/api-kit/src/room-alarm.ts`): the soonest any re-armed alarm goes; it caps a

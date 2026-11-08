@@ -23,6 +23,9 @@ export interface Env {
   GRANT_SIGNING_KEY?: string;
   // Accounts' key (its INDEX_MERGE_KEY): the guest-to-account merge, and purging a closed account.
   MERGE_KEY?: string;
+  // The secret every app's router sends beside the visitor's address (X-Liveworkspace-Proxy-Secret): set, a named
+  // address counts as the visitor's (share-guesses.ts, a copy's address) only beside it. Unset, it counts as named.
+  WORKSPACE_PROXY_SECRET?: string;
   // Each app's key (wrangler secret put), the app's INDEX_KEY. Unset means that app can't push, and the
   // index can't call it.
   INDEX_KEY_LIVEDIAGRAM?: string;

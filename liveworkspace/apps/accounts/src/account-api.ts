@@ -290,7 +290,7 @@ const REMOVED_TYPES = { self: 'Self', invite: 'Invite', member: 'Member' } as co
 // Per network (an IPv4 /24 or an IPv6 /48), so one machine can't dodge the limit by changing address.
 async function overLinkLimit(request: Request, env: Env, door = 'team-link'): Promise<boolean> {
   if (!env.TEAM_LINK_LIMITER) return false;
-  return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${rangeOf(request)}` })).success;
+  return !(await env.TEAM_LINK_LIMITER.limit({ key: `${door}:${rangeOf(request, env)}` })).success;
 }
 
 // Display names by id: what collaborators see on a cursor or a comment anyway, up to MAX_PROFILE_IDS a read; ids

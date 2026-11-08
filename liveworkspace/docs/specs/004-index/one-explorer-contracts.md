@@ -309,9 +309,10 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
 - `GET /share/:code`: public: `{item, level, tabId, public}` (`public`: a Community post's link); records the item under Shared for a person who
   opens it, except through a public link (no Shared entry, no "joined" notice, no visit on the Timeline); 401
   `password_required`, 403 `password_invalid` (a public link: 404). A password not already found right
-  is a guess, limited per visitor's network (10 a minute) and per item (30 a minute) on every door that takes one
-  (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over either, 429 `rate_limited` with
-  `Retry-After` in seconds, even for the right one.
+  is a guess, limited per visitor's network (10 a minute, before it is checked) and, for a wrong one, per item (30 a
+  minute) on every door that takes one (this, `POST /items/:id/grant` and any read with `X-Share-Password`): over
+  either, 429 `rate_limited` with `Retry-After` in seconds. Over the visitor's limit that is so even for the right
+  one; the item's never turns the right one away, except for a request that names no visitor (an app's server).
 - `PUT /items/:id/share-password {password}`: a new password is 6 to 256 characters after trimming
   (`SHARE_PASSWORD_MIN`, `SHARE_PASSWORD_MAX`): shorter is 400 `password_too_short`, longer `invalid_password`; one
   set before the minimum keeps working. Spaces alone, or null, clear it. Setting a new password or changing it holds for

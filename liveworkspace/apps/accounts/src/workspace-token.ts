@@ -79,7 +79,7 @@ export async function workspaceToken(
     secret,
   );
   if (!known && env.GUEST_LIMITER) {
-    if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
+    if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request, env)}` })).success) {
       return Response.json({ error: 'rate_limited' }, { status: 429, headers: NO_STORE });
     }
   }

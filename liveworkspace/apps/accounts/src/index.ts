@@ -143,7 +143,7 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
   if (request.method === 'GET') {
     if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
     if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
-      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
+      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request, env)}` })).success) {
         return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
       return guestHandoff(request, env, getAuth(env));

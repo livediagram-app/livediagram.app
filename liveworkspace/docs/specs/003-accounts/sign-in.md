@@ -231,8 +231,11 @@ app after it. A test checks each app's example against the fixture, so the two c
   (a nonce cookie) and returns only to the app's own registered redirect URIs. The sign-in's
   cookies on the app's address are renamed, scoped to `/api/workspace/auth` and gone within 15
   minutes. The code limit per IP counts the address the app's router names
-  (`X-Liveworkspace-Client-IP`): a caller going straight to the Worker could name any address
-  there, but sending a code still needs Turnstile and the per-email limit holds.
+  (`X-Liveworkspace-Client-IP`) only beside the routers' shared secret
+  (`X-Liveworkspace-Proxy-Secret`, `WORKSPACE_PROXY_SECRET` on both sides). A caller going
+  straight to the Worker that names an address without it is counted by its own connection, so it
+  can't rotate a made-up address past the limit. Until the secret is set, the named address is
+  trusted as it was, but sending a code still needs Turnstile and the per-email limit holds.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile (the site's Trusted Types policy).
 

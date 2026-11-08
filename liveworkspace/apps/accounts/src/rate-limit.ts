@@ -10,7 +10,9 @@ export async function overCodeLimit(
   env: Env,
   sending: boolean,
 ): Promise<boolean> {
-  if (!(await env.CODE_IP_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) return true;
+  if (!(await env.CODE_IP_LIMITER.limit({ key: `ip:${networkOf(request, env)}` })).success) {
+    return true;
+  }
   if (!sending) return false;
 
   const email = await emailOf(request);
@@ -30,16 +32,17 @@ async function emailOf(request: Request): Promise<string | null> {
 
 // The visitor's network. A sign-in on an app's own address reaches this Worker through the app's router, whose request
 // comes from the router, not the visitor; the router names the visitor's address (@liveworkspace/sites/workspace-proxy),
-// and that is counted instead, apart from direct visitors. A caller could name any address there, but each code still
-// needs Turnstile to send and allows three tries, and the per-address limit holds whatever the network.
-export function networkOf(request: Request): string {
-  const { address, via } = visitorAddress(request);
+// and that is counted instead, apart from direct visitors. This Worker is publicly routed, so a named address counts
+// only beside the routers' secret (WORKSPACE_PROXY_SECRET); a caller naming one without it is counted by its own
+// connection, and can't rotate made-up addresses past the limit.
+export function networkOf(request: Request, env: Pick<Env, 'WORKSPACE_PROXY_SECRET'>): string {
+  const { address, via } = visitorAddress(request, env.WORKSPACE_PROXY_SECRET);
   return via ? `via:${address}` : address;
 }
 
 // The visitor's range (an IPv4 /24 or an IPv6 /48), counted the same way, for a door a person could otherwise
 // dodge by changing address.
-export function rangeOf(request: Request): string {
-  const { address, via } = visitorAddress(request);
+export function rangeOf(request: Request, env: Pick<Env, 'WORKSPACE_PROXY_SECRET'>): string {
+  const { address, via } = visitorAddress(request, env.WORKSPACE_PROXY_SECRET);
   return via ? `via:${addressRange(address)}` : addressRange(address);
 }
