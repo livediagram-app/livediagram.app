@@ -3,56 +3,58 @@ import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { CSSProperties, ReactNode } from 'react';
 import { listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';
+import { HeldBy } from './AppWindow';
+import { Character } from './Character';
 import { Cursor } from './Cursor';
 
 // The hero's picture of how liveworkspace fits together (liveworkspace/docs/specs/010-site/site.md "The front
 // door"): the platform's prism at the centre and the apps round it at the points of a pentagon, each joined to it by
 // a line in the app's accent with a current running along it, read clockwise in the order work moves through them.
 // Laid out on a 600 × 500 grid that the lines and the cards share, so it scales as one. Each app is a
-// link to its site; the lines, the glow and the cursors are decoration.
+// link to its site; the lines, the glow and the people at work are decoration.
 
 type Point = { x: number; y: number };
 
 const HUB: Point = { x: 300, y: 250 };
 
+// Someone at work in an app, drawn as that app shows them: a cursor on a canvas, a ring and name on the card they
+// hold on a liveplanner board (which draws no cursors), a character walking a livehuddle Space.
+type Worker = { name: string; colour: string; at: string; shows: 'cursor' | 'card' | 'character' };
+
 // Where each app sits, what it makes, and who is at work in it.
-const PLACES: Partial<
-  Record<
-    SiteId,
-    { at: Point; makes: string; glow: string; cursor: { name: string; colour: string; at: string } }
-  >
-> = {
-  'livediagram.app': {
-    at: { x: 300, y: 62 },
-    makes: 'Diagrams · whiteboards · mind maps',
-    glow: 'top-[-6%] left-[29%] bg-sky-400/25 dark:bg-sky-500/20',
-    cursor: { name: 'Ada', colour: '#0369a1', at: 'top-[20%] left-[56%]' },
-  },
-  'liveplanner.app': {
-    at: { x: 506, y: 200 },
-    makes: 'Boards · sheets · forms',
-    glow: 'top-[18%] right-[-4%] bg-violet-400/25 dark:bg-violet-500/20',
-    cursor: { name: 'Sam', colour: '#7c3aed', at: 'top-[47%] left-[78%]' },
-  },
-  'livedocuments.app': {
-    at: { x: 430, y: 420 },
-    makes: 'Articles · slides · infographics',
-    glow: 'right-[4%] bottom-[-4%] bg-amber-400/25 dark:bg-amber-500/15',
-    cursor: { name: 'Lena', colour: '#b45309', at: 'top-[66%] left-[60%]' },
-  },
-  'livedesign.app': {
-    at: { x: 170, y: 420 },
-    makes: 'Logos · wireframes · photos',
-    glow: 'bottom-[-4%] left-[4%] bg-rose-400/25 dark:bg-rose-500/15',
-    cursor: { name: 'Kai', colour: '#be123c', at: 'top-[66%] left-[22%]' },
-  },
-  'livehuddle.app': {
-    at: { x: 94, y: 200 },
-    makes: 'Meetings · workshops · retros',
-    glow: 'top-[18%] left-[-4%] bg-emerald-400/25 dark:bg-emerald-500/20',
-    cursor: { name: 'Ana', colour: '#047857', at: 'top-[47%] left-[10%]' },
-  },
-};
+const PLACES: Partial<Record<SiteId, { at: Point; makes: string; glow: string; worker: Worker }>> =
+  {
+    'livediagram.app': {
+      at: { x: 300, y: 62 },
+      makes: 'Diagrams · whiteboards · mind maps',
+      glow: 'top-[-6%] left-[29%] bg-sky-400/25 dark:bg-sky-500/20',
+      worker: { name: 'Ada', colour: '#0369a1', at: 'top-[20%] left-[56%]', shows: 'cursor' },
+    },
+    'liveplanner.app': {
+      at: { x: 506, y: 200 },
+      makes: 'Boards · sheets · forms',
+      glow: 'top-[18%] right-[-4%] bg-violet-400/25 dark:bg-violet-500/20',
+      worker: { name: 'Sam', colour: '#7c3aed', at: 'top-[55%] left-[77%]', shows: 'card' },
+    },
+    'livedocuments.app': {
+      at: { x: 430, y: 420 },
+      makes: 'Articles · slides · infographics',
+      glow: 'right-[4%] bottom-[-4%] bg-amber-400/25 dark:bg-amber-500/15',
+      worker: { name: 'Lena', colour: '#b45309', at: 'top-[66%] left-[60%]', shows: 'cursor' },
+    },
+    'livedesign.app': {
+      at: { x: 170, y: 420 },
+      makes: 'Logos · wireframes · photos',
+      glow: 'bottom-[-4%] left-[4%] bg-rose-400/25 dark:bg-rose-500/15',
+      worker: { name: 'Kai', colour: '#be123c', at: 'top-[66%] left-[22%]', shows: 'cursor' },
+    },
+    'livehuddle.app': {
+      at: { x: 94, y: 200 },
+      makes: 'Spaces · rooms · calls',
+      glow: 'top-[18%] left-[-4%] bg-emerald-400/25 dark:bg-emerald-500/20',
+      worker: { name: 'Ana', colour: '#047857', at: 'top-[52%] left-[12%]', shows: 'character' },
+    },
+  };
 
 const at = ({ x, y }: Point) => ({
   left: `${(x / 600) * 100}%`,
@@ -161,14 +163,34 @@ export function HubArt() {
       ))}
 
       {/* People at work in each app. */}
-      {apps.map(({ app, place }, i) => (
-        <Cursor
-          key={app.id}
-          name={place.cursor.name}
-          colour={place.cursor.colour}
-          className={`${i % 2 ? 'lw-drift-b' : 'lw-drift-a'} absolute ${place.cursor.at}`}
-        />
-      ))}
+      {apps.map(({ app, place }, i) => {
+        const { worker } = place;
+        const motion = `${i % 2 ? 'lw-drift-b' : 'lw-drift-a'} absolute ${worker.at}`;
+        if (worker.shows === 'card') {
+          return (
+            <span
+              key={app.id}
+              aria-hidden
+              className={`${motion} flex w-[14%] rotate-3 flex-col gap-1 rounded-md bg-white p-1.5 shadow-lg ring-2 ring-violet-600 dark:bg-slate-900 dark:ring-violet-400`}
+            >
+              <HeldBy name={worker.name} />
+              <span className="h-1 w-4/5 rounded-full bg-slate-300 dark:bg-slate-600" />
+              <span className="h-1 w-1/2 rounded-full bg-slate-200 dark:bg-slate-700" />
+            </span>
+          );
+        }
+        if (worker.shows === 'character') {
+          return (
+            <Character
+              key={app.id}
+              name={worker.name}
+              look={{ shirt: worker.colour, hair: '#78350f', skin: '#f5d0b0', long: true }}
+              className={`${motion} w-[4%]`}
+            />
+          );
+        }
+        return <Cursor key={app.id} name={worker.name} colour={worker.colour} className={motion} />;
+      })}
     </nav>
   );
 }

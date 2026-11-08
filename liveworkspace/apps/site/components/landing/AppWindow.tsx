@@ -120,7 +120,7 @@ const BOARD: { title: string; cards: { text: string; tag?: string; done?: boolea
   },
 ];
 
-// liveplanner's work: a board of cards, one of them on its way across with Sam.
+// liveplanner's work: a board of cards, one of them on its way across in Sam's hands.
 export function BoardScene() {
   return (
     <div className="relative grid aspect-[16/10] grid-cols-3 gap-2.5 bg-slate-50 p-3 sm:gap-3 sm:p-4 dark:bg-slate-950/40">
@@ -150,14 +150,24 @@ export function BoardScene() {
           ))}
         </div>
       ))}
-      <span className="absolute top-[46%] left-[40%] w-[27%] rotate-3 rounded-lg border border-violet-300 bg-white p-2 text-[10px] font-medium text-slate-800 shadow-xl shadow-violet-900/15 sm:text-[11px] dark:border-violet-500/60 dark:bg-slate-900 dark:text-slate-100">
+      <span className="absolute top-[46%] left-[40%] w-[27%] rotate-3 rounded-lg bg-white p-2 text-[10px] font-medium text-slate-800 shadow-xl ring-2 shadow-violet-900/15 ring-violet-600 sm:text-[11px] dark:bg-slate-900 dark:text-slate-100 dark:ring-violet-400">
+        <HeldBy name="Sam" />
         Invite the beta list
         <span className="mt-1.5 block h-1 overflow-hidden rounded-full bg-violet-100 dark:bg-violet-500/20">
           <span className="block h-full w-2/3 rounded-full bg-violet-500" />
         </span>
       </span>
-      <Cursor name="Sam" colour="#7c3aed" className="absolute top-[58%] left-[62%]" />
     </div>
+  );
+}
+
+// Whose hands a liveplanner card is in: their first name on a tab in their colour, over the card's ring. A board
+// draws no cursors (only a Dashboard tab does), so this is how a board shows who is there.
+export function HeldBy({ name }: { name: string }) {
+  return (
+    <span className="absolute -top-2.5 right-2 rounded-md bg-violet-600 px-1.5 py-0.5 text-[10px] leading-none font-semibold text-white shadow-sm dark:bg-violet-400 dark:text-slate-950">
+      {name}
+    </span>
   );
 }
 
@@ -268,81 +278,6 @@ export function DesignScene() {
         </div>
       </div>
       <Cursor name="Kai" colour="#be123c" className="lw-drift-b absolute right-[6%] bottom-[12%]" />
-    </div>
-  );
-}
-
-const HUDDLE_NOTES: { text: string; tone: string; tilt: string; votes: number }[] = [
-  { text: 'Ship the beta', tone: 'bg-amber-200 text-amber-950', tilt: '', votes: 3 },
-  { text: 'More demos', tone: 'bg-sky-200 text-sky-950', tilt: 'rotate-2', votes: 1 },
-  { text: 'Fix sign-up', tone: 'bg-emerald-200 text-emerald-950', tilt: '-rotate-1', votes: 2 },
-];
-
-const HUDDLE_PEOPLE: { initials: string; tone: string; at: string }[] = [
-  { initials: 'MO', tone: 'bg-emerald-600', at: 'top-[67%] left-[13%]' },
-  { initials: 'JS', tone: 'bg-sky-600', at: 'top-[73%] left-[33%]' },
-  { initials: 'AL', tone: 'bg-violet-600', at: 'top-[64%] left-[50%]' },
-];
-
-// livehuddle's work: a Space with a stand-up room, its timer running and its notes voted on, and people walked in,
-// one of them talking.
-export function HuddleScene() {
-  return (
-    <div className="relative aspect-[16/10] bg-[radial-gradient(circle,rgb(148_163_184/0.35)_1px,transparent_1.2px)] [background-size:16px_16px] dark:bg-[radial-gradient(circle,rgb(71_85_105/0.6)_1px,transparent_1.2px)]">
-      <div className="absolute inset-[8%_30%_46%_5%] flex flex-col rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/80 p-2 sm:p-3 dark:border-emerald-500/50 dark:bg-emerald-950/40">
-        <span className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold tracking-wide text-emerald-800 uppercase sm:text-[11px] dark:text-emerald-200">
-            Stand-up
-          </span>
-          <span className="flex items-center gap-1 rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-semibold text-white tabular-nums sm:text-[11px]">
-            <svg viewBox="0 0 12 12" className="size-2.5" fill="none">
-              <circle cx="6" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.4" />
-              <path
-                d="M6 4v2.5l1.5 1"
-                stroke="currentColor"
-                strokeWidth="1.4"
-                strokeLinecap="round"
-              />
-            </svg>
-            04:12
-          </span>
-        </span>
-        <span className="mt-1.5 grid min-h-0 flex-1 grid-cols-3 gap-1.5 sm:mt-2 sm:gap-2">
-          {HUDDLE_NOTES.map((note) => (
-            <span
-              key={note.text}
-              className={`flex min-h-0 flex-col justify-between rounded-md p-1.5 text-[9px] leading-snug font-medium shadow-sm sm:p-2 sm:text-[11px] ${note.tone} ${note.tilt}`}
-            >
-              {note.text}
-              <span className="flex gap-0.5">
-                {Array.from({ length: note.votes }, (_, v) => (
-                  <span key={v} className="size-1.5 rounded-full bg-slate-900/70 sm:size-2" />
-                ))}
-              </span>
-            </span>
-          ))}
-        </span>
-      </div>
-      <div className="absolute inset-[8%_5%_46%_74%] flex flex-col items-center justify-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-2 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
-        <span className="text-[9px] font-semibold tracking-wide text-slate-500 uppercase sm:text-[10px] dark:text-slate-400">
-          Up next
-        </span>
-        <span className="text-[10px] font-semibold text-slate-800 sm:text-xs dark:text-slate-100">
-          Retro
-        </span>
-      </div>
-      {HUDDLE_PEOPLE.map((person) => (
-        <span
-          key={person.initials}
-          className={`absolute flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shadow-md ring-2 ring-white sm:size-9 sm:text-xs dark:ring-slate-900 ${person.tone} ${person.at}`}
-        >
-          <span className="text-optical-centre">{person.initials}</span>
-        </span>
-      ))}
-      <span className="absolute top-[58%] left-[19%] rounded-lg rounded-bl-none bg-white px-2 py-1 text-[10px] font-medium text-slate-800 shadow-md ring-1 ring-slate-200 sm:text-[11px] dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
-        Morning, all!
-      </span>
-      <Cursor name="Ana" colour="#047857" className="lw-drift-a absolute top-[70%] left-[70%]" />
     </div>
   );
 }
