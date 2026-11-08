@@ -7,7 +7,7 @@ import { ADD, CHAPTERS, DEMO_IDS, NOTES, STICK, stickies, WRITE } from './worksh
 
 const tab = { id: 't', name: 'Tab', elements: [], backgroundColor: '#ffffff' } as unknown as Tab;
 const centre = { x: 400, y: 300 };
-const layout = stickies.layout({ centre, tab });
+const layout = stickies.layout({ centre, size: { width: 1440, height: 820 }, tab });
 const labels = (index: number, ms: number) =>
   stickies
     .frame(index, ms, layout)

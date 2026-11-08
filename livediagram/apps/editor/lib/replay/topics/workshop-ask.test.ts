@@ -8,7 +8,7 @@ import { ask, CHAPTERS, CHECK, DEMO_IDS, TILES, VOTE } from './workshop-ask';
 
 const tab = { id: 't', name: 'Tab', elements: [], backgroundColor: '#ffffff' } as unknown as Tab;
 const centre = { x: 400, y: 300 };
-const base = ask.layout({ centre, tab });
+const base = ask.layout({ centre, size: { width: 1440, height: 820 }, tab });
 const layout = { ...base, tiles: { [TILES.vote]: { x: 50, y: -200 } } };
 const byId = (index: number, ms: number, id: string) =>
   ask.frame(index, ms, layout).elements.find((e) => e.id === id) as ShapeElement | undefined;

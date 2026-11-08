@@ -7,7 +7,7 @@ import { CHAPTERS, COVER, DEMO_IDS, REACT, reveal } from './workshop-reveal';
 
 const tab = { id: 't', name: 'Tab', elements: [], backgroundColor: '#ffffff' } as unknown as Tab;
 const centre = { x: 400, y: 300 };
-const layout = reveal.layout({ centre, tab });
+const layout = reveal.layout({ centre, size: { width: 1440, height: 820 }, tab });
 const cover = (ms: number) =>
   reveal.frame(1, ms, layout).elements.find((e) => e.id === DEMO_IDS.cover) as
     ShapeElement | undefined;

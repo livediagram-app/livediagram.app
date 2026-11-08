@@ -38,11 +38,8 @@ export const STRIP_VOTE: CursorTarget = {
   selector: '[data-tour-id="session-tools"] button[aria-label*="Vote"]',
 };
 
-/** The view's width in canvas units, when the engine says (TopicEnv `size`), else room for the brief's 560. */
-export function viewWidth(env: TopicEnv): number {
-  const size = (env as TopicEnv & { size?: { readonly width: number } }).size;
-  return size?.width ?? 600;
-}
+/** The view's width in canvas units. */
+export const viewWidth = (env: TopicEnv): number => env.size.width;
 
 type Placeable = Extract<PendingDraw, { type: 'shape' | 'sticky' }>;
 
