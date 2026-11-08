@@ -138,8 +138,6 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   // Walk: a wall piece, walked past, never rung: a click is a click on the floor in front of it.
   dartboard: W,
   // Walk: areas drawn round other things, and lines and marks with nothing to read.
-  lane: W,
-  boundary: W,
   arrow: W,
   freehand: W,
   path: W,
@@ -157,13 +155,6 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   parallelogram: R,
   hexagon: R,
   document: R,
-  callout: R,
-  card: R,
-  badge: R,
-  step: R,
-  'pointer-note': R,
-  'diagram-key': R,
-  stack: R,
   stadium: R,
   actor: R,
   'final-state': R,
@@ -172,7 +163,6 @@ export const AVATAR_CLICK_INTENTS: Readonly<Record<AvatarClickKind, AvatarClickI
   trapezoid: R,
   star: R,
   'speech-bubble': R,
-  'timeline-rail': R,
   annotation: R,
 };
 

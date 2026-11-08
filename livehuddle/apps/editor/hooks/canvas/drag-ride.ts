@@ -50,17 +50,16 @@ function arrowOffset(
   return from && to && from.dx === to.dx && from.dy === to.dy ? from : null;
 }
 
-// `before` is the board the preview is laid over, by id; `still` the ids that never ride (a stack's children).
+// `before` is the board the preview is laid over, by id.
 export function ridingElements(
   overlay: DragOverlay,
   before: ReadonlyMap<string, Element>,
   links: ArrowLinks | null,
-  still: ReadonlySet<string>,
 ): Map<string, RideOffset> {
   const rides = new Map<string, RideOffset>();
   for (const [id, el] of overlay.changed) {
     const was = before.get(id);
-    if (!was || still.has(id) || !isBoxed(el) || !isBoxed(was)) continue;
+    if (!was || !isBoxed(el) || !isBoxed(was)) continue;
     if (sameBut(el, was, BOX_POSITION)) rides.set(id, rideOffset(el.x - was.x, el.y - was.y));
   }
   if (rides.size === 0) return rides;
@@ -72,7 +71,7 @@ export function ridingElements(
   for (const id of arrows) {
     const was = before.get(id);
     const now = overlay.changed.get(id) ?? was;
-    if (!was || !now || was.type !== 'arrow' || now.type !== 'arrow' || still.has(id)) continue;
+    if (!was || !now || was.type !== 'arrow' || now.type !== 'arrow') continue;
     const offset = arrowOffset(now, was, rides);
     if (offset) rides.set(id, offset);
   }

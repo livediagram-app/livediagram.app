@@ -658,3 +658,72 @@ describe('a stored table', () => {
     expect(after).toEqual([]);
   });
 });
+
+// docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3: the layout containers, each as
+// stored before the part, with fields only the deleted code knew.
+const PART_3: [string, string, Record<string, unknown>][] = [
+  ['lane', 'Lane', { titleOrientation: 'upright', laneEdge: 'left' }],
+  ['stack', 'Stack', { stackDirection: 'vertical', stackGap: 12 }],
+  ['boundary', 'Boundary', { boundaryStyle: 'c4' }],
+  ['timeline-rail', 'Timeline', { timelineItems: [{ id: 'm1', label: 'Beta' }] }],
+  ['diagram-key', 'Diagram Key', { keyRows: [{ id: 'k1', label: 'Service' }] }],
+  ['card', 'Card', { cardHeader: true, headerFill: '#ff0000' }],
+  ['callout', 'Callout', { calloutTone: 'warning' }],
+  ['badge', 'Badge', { attachedTo: 'host', attachAt: 'top-right' }],
+  ['step', 'Step Number', { attachedTo: 'host', attachAt: 'top-left' }],
+  ['pointer-note', 'Pointer Note', { pointerTip: { x: 400, y: 300 } }],
+];
+
+const storedPart3 = (shape: string, fields: Record<string, unknown>) =>
+  ({
+    id: `p3-${shape}`,
+    type: 'shape',
+    shape,
+    x: 0,
+    y: 0,
+    width: 280,
+    height: 160,
+    label: 'Checkout',
+    ...fields,
+  }) as unknown as ShapeElement;
+
+describe('a stored layout container', () => {
+  it.each(PART_3)(
+    'draws a stored %s as the placeholder named %s, with its label',
+    (kind, name, fields) => {
+      const { container } = render(
+        <ElementFaceRouter {...faceProps(storedPart3(kind, fields), false)} />,
+      );
+      const svg = container.querySelector(`svg[data-retired-element="${kind}"]`)!;
+      expect(svg).not.toBeNull();
+      expect(lines(svg)).toEqual([
+        ['name', name],
+        ['note', RETIRED_ELEMENT_NOTE],
+        ['label', 'Checkout'],
+      ]);
+      expect(container.querySelector('textarea, input, [contenteditable]')).toBeNull();
+    },
+  );
+
+  it.each(PART_3)('lets an Editor delete a stored %s, and no one else', (kind, _name, fields) => {
+    const el = storedPart3(kind, fields);
+    const editor = resolveEditorCapabilities({ level: 'edit', adderKey: null });
+    const viewer = resolveEditorCapabilities({ level: 'view', adderKey: 'a'.repeat(32) });
+    const participant = resolveEditorCapabilities({
+      level: 'participate',
+      adderKey: 'b'.repeat(32),
+    });
+    expect([editor, viewer, participant].map((can) => can.remove(el))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    const onDeleteRetired = vi.fn();
+    const editable = render(<ElementFaceRouter {...faceProps(el, false, onDeleteRetired)} />);
+    fireEvent.click(editable.container.querySelector('button[data-retired-delete]')!);
+    expect(onDeleteRetired).toHaveBeenCalledWith(el.id);
+    cleanup();
+    const readOnly = render(<ElementFaceRouter {...faceProps(el, true, onDeleteRetired)} />);
+    expect(readOnly.container.querySelector('button')).toBeNull();
+  });
+});

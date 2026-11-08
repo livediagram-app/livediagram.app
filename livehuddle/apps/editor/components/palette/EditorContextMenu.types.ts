@@ -94,7 +94,6 @@ export type EditorContextMenuProps = {
   onCommitTextColor: (color: string) => void;
   onPreviewFillColor: (color: string) => void;
   onCommitFillColor: (color: string) => void;
-  // Heading band (a table's header row, a lane's title gutter).
   // The arrowhead's own colour, for a head that should not match its line.
   onSetArrowheadColor: (color: string) => void;
   onPreviewArrowheadColor: (color: string) => void;
@@ -104,9 +103,6 @@ export type EditorContextMenuProps = {
   onSetLabelFill: (color: string) => void;
   onPreviewLabelFill: (color: string) => void;
   onCommitLabelFill: (color: string) => void;
-  onSetHeaderFill: (color: string) => void;
-  onPreviewHeaderFill: (color: string) => void;
-  onCommitHeaderFill: (color: string) => void;
   onPreviewStrokeColor: (color: string) => void;
   onCommitStrokeColor: (color: string) => void;
   onPreviewBorderStroke: (value: BorderStroke) => void;
@@ -134,10 +130,6 @@ export type EditorContextMenuProps = {
   onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
   onPreviewMarkerSize: (value: TextSizePreset) => void;
-  // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected card or concept
-  // graphic (each field only lands on its own kind), and an image's hero caption card on or off.
-  onSetWebRows: (rows: import('@livehuddle/document').WebRows) => void;
-  onSetHeroCaption: (on: boolean) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
@@ -243,10 +235,6 @@ export type EditorContextMenuProps = {
   // The colour palette every ColourRow in this menu offers (docs/specs/008-canvas/canvas-and-palette.md Colours):
   // the theme's swatches plus the user's own, spread straight onto the row.
   colourPalette: ColourPalette;
-  // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
-  // colour across the tab. Absent where the menu cannot edit the tab.
-  tagColours?: readonly import('@livehuddle/document').TagColour[];
-  onSetTagColour?: (tag: string, colour: string | null) => void;
   // Re-place a shape's inline icon (same iconId, new side). Commit +
   // hover-preview pair.
   onSetIconPosition: (elementId: string, iconId: string, position: IconPosition) => void;
@@ -264,8 +252,6 @@ export type EditorContextMenuProps = {
   // Commit + hover-preview pair.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
   onPreviewTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // A lane title turned upright in its side strip (docs/specs/009-elements/lane.md "Upright titles").
-  onSetLaneUprightTitle: (upright: boolean) => void;
   onOpenNote: (elementId: string) => void;
   onOpenComments: (elementId: string) => void;
   // Assigned actions (docs/specs/012-collaboration/assigned-actions.md): the Collaborate category's Assign Action

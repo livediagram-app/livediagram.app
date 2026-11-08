@@ -12,7 +12,6 @@ function handlers(): CommandHandlers {
     rotate: vi.fn(),
     turn: vi.fn(),
     clearAnimation: vi.fn(),
-    renumberSteps: vi.fn(),
     setMarker: vi.fn(),
     addComment: vi.fn(),
     editNote: vi.fn(),
@@ -356,15 +355,6 @@ describe('canvas tool commands', () => {
   it('gives a read-only visitor both sides, as neither writes', () => {
     expect(ids({ ...base, isReadOnly: true })).toContain('tool:avatar');
     expect(ids({ ...base, isReadOnly: true, canvasTool: 'avatar' })).toContain('tool:select');
-  });
-});
-
-// docs/specs/009-elements/step-number.md: Renumber Steps in the command palette, for an editor on a tab with steps.
-describe('buildEditorCommands — Renumber Steps', () => {
-  it('offers it only when the tab holds a step, and never read-only', () => {
-    expect(ids(base)).not.toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true })).toContain('renumber-steps');
-    expect(ids({ ...base, tabHasSteps: true, isReadOnly: true })).not.toContain('renumber-steps');
   });
 });
 

@@ -10,7 +10,6 @@ import {
   type SelectionMode,
   type ShapeKind,
   type Tab,
-  withVariantColours,
   isWallPiece,
   snapDoorToWall,
 } from '@livehuddle/document';
@@ -135,14 +134,6 @@ export function useElementCreation(opts: {
   // useShapeDrawing.commitDraw, so these are thin "arm the intent" wrappers.
   // Avatar rides the same gesture though it lives in the Tools tab (it's a
   // single circular image, not a composite — see addAvatar / the palette).
-  const addHero = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'hero' });
-  };
-  const addCallout = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'callout' });
-  };
   const addAvatar = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
@@ -237,9 +228,7 @@ export function useElementCreation(opts: {
           // A dropped door or window lands on the nearest wall (docs/specs/009-elements/room-builder.md "Door",
           // "Window").
           const placed = isWallPiece(styled) ? snapDoorToWall(styled, activeTab.elements) : styled;
-          return (
-            placed.type === 'shape' ? withVariantColours(placed, art?.choice) : placed
-          ) as typeof el;
+          return placed as typeof el;
         },
       },
     );
@@ -272,8 +261,6 @@ export function useElementCreation(opts: {
     addAnnotation,
     addLinkCard,
     addImage,
-    addHero,
-    addCallout,
     addAvatar,
     dropPaletteItem,
     addText,

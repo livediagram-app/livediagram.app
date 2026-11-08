@@ -60,12 +60,10 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 5,
-  write: 4,
+  write: 3,
   draw: 6,
   stickers: 0,
   media: 3,
-  components: 5,
   // The meeting elements, one category per group (docs/specs/010-palette/palette-top-level-categories.md
   // "The Space categories"): 88 tiles between them.
   // Travel holds the Avatar Selection Mode button too (docs/specs/009-elements/mode-button.md "Only Avatar").
@@ -79,8 +77,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-recreation': 14,
   'collab-garden': 15,
   'collab-meeting': 9,
-  // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
-  layout: 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {

@@ -96,20 +96,15 @@ describe('buildDrawnArrow', () => {
 
 describe('buildDrawnComponent', () => {
   it('drops one element at its natural size, centred on a tap', () => {
-    const out = buildDrawnComponent('callout', 500, 300, 503, 302, themed);
+    const out = buildDrawnComponent('avatar', 500, 300, 503, 302);
     if (out.type === 'arrow') throw new Error('expected a boxed element');
-    expect(out).toMatchObject(COMPONENT_SIZE.callout);
+    expect(out).toMatchObject(COMPONENT_SIZE.avatar);
     expect(out.x + out.width / 2).toBe(500);
     expect(out.y + out.height / 2).toBe(300);
   });
 
-  it('sizes to the dragged box, per axis, so the layout re-flows (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-    const out = buildDrawnComponent('callout', 10, 20, 910, 220, themed);
-    expect(out).toMatchObject({ x: 10, y: 20, width: 900, height: 200 });
-  });
-
   it('keeps an aspect-locked avatar square, centred in the dragged box', () => {
-    const out = buildDrawnComponent('avatar', 0, 0, 300, 100, themed);
+    const out = buildDrawnComponent('avatar', 0, 0, 300, 100);
     expect(out).toMatchObject({ x: 100, y: 0, width: 100, height: 100 });
   });
 });

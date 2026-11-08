@@ -24,13 +24,9 @@ export function useEditorTileActions(): PaletteTileActions {
     addAnnotation,
     addLinkCard,
     addAvatar,
-    addHero,
-    addCallout,
   } = useEditorContext();
   const byComponent = {
     avatar: addAvatar,
-    hero: addHero,
-    callout: addCallout,
   } as const;
   return {
     addShape,

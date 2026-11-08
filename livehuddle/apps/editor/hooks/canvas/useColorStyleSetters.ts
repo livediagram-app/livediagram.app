@@ -70,14 +70,6 @@ export function useColorStyleSetters(deps: {
   const setTextColorSelected = (color: string) =>
     commitSelectedStyle('textColor', (el) => applyTextColorToEl(el, color));
 
-  // Heading-band colour (debounced like the other colour pickers), for the
-  // elements that have a heading distinct from their body: a lane's title gutter
-  // (docs/specs/009-elements/lane.md).
-  const setHeaderFillSelected = (color: string) =>
-    commitSelectedStyle('headerFill', (el) =>
-      el.type === 'shape' && el.shape === 'lane' ? { ...el, headerFill: color } : el,
-    );
-
   // The arrowhead's own colour (docs/specs/008-canvas/canvas-and-palette.md arrow styles), for a head that should
   // not match its line.
   const setArrowheadColorSelected = (color: string) =>
@@ -124,7 +116,6 @@ export function useColorStyleSetters(deps: {
     setFillColorSelected,
     setStrokeColorSelected,
     setTextColorSelected,
-    setHeaderFillSelected,
     setArrowheadColorSelected,
     setLabelFillSelected,
     setOpacitySelected,

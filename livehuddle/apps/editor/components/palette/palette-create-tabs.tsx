@@ -3,8 +3,6 @@
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
-import { PaletteTileGroup } from './PaletteTileGroup';
-import { WebGroupIcon } from '@livehuddle/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // The palette's creation-category tab bodies. Every tile is
@@ -30,16 +28,7 @@ export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The structural elements (docs/specs/010-palette/build-category.md): Lane, Stack, Boundary, Timeline, Diagram key.
-// Rows with a blurb rather than a bare icon grid: these are all "a container
-// that holds other work", so the picture alone doesn't separate them — "Tab
-// adds a child, Enter a sibling" vs "A titled band that carries its steps" is
-// the thing you are choosing between.
-export function PaletteBuildTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}
-
-// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Page, Text, Sticky Note, Annotation.
+// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text, Sticky Note, Annotation.
 export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
@@ -52,8 +41,8 @@ export function PaletteDrawTab({ pendingDraw, actions, tiles }: TabProps) {
 }
 
 // The Collaborate elements (docs/specs/012-collaboration/workshop-mode.md "The palette"): six
-// categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
-// like Build and Data: mode buttons look alike at palette size, and
+// categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb:
+// mode buttons look alike at palette size, and
 // the line under each is the choice being made.
 //
 // They were once one category with a group browser inside it. In Workshop every group is
@@ -75,33 +64,6 @@ export function PaletteMediaTab({ pendingDraw, actions, tiles: media }: TabProps
         actions={actions}
         pendingDraw={pendingDraw}
       />
-    </div>
-  );
-}
-
-// The website composites (Banner, Hero, Header, Callout, Stat row, Process)
-// collapse behind one Web Elements row, the same way Media's embeds do: they
-// are six of the eleven tiles here and were crowding out the diagram content
-// that moved in beside them (docs/specs/010-palette/palette-top-level-categories.md).
-export function PaletteComponentsTab({ pendingDraw, actions, tiles: components }: TabProps) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <PaletteToolRows
-        tiles={components.filter((t) => !t.tileGroup)}
-        actions={actions}
-        pendingDraw={pendingDraw}
-      />
-      {/* A layout that leaves the whole group out leaves its row out too. */}
-      {components.some((t) => t.tileGroup === 'web') ? (
-        <PaletteTileGroup
-          title="Web Elements"
-          blurb="Themed page sections"
-          icon={<WebGroupIcon />}
-          tiles={components.filter((t) => t.tileGroup === 'web')}
-          actions={actions}
-          pendingDraw={pendingDraw}
-        />
-      ) : null}
     </div>
   );
 }

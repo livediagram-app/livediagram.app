@@ -24,13 +24,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, type RefObject } from 'react';
-import {
-  isBoxed,
-  rebindArrowAnchorsAfterMove,
-  withAttached,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { isBoxed, rebindArrowAnchorsAfterMove, type Element, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 type NudgeDeps = {
@@ -76,8 +70,7 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
           ? new Set([selectedId])
           : null;
     if (!picked || picked.size === 0) return;
-    // A host carries its badges and step numbers (docs/specs/009-elements/badge.md).
-    const ids = withAttached(deps.activeTab.elements, picked);
+    const ids = picked;
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.
     if (!burstActiveRef.current) {

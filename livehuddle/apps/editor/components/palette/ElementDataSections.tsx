@@ -13,13 +13,7 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { CardMenuSection } from '@/components/palette/CardMenuSection';
-import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
-import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
-import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
-import { StackMenuSection } from '@/components/palette/StackMenuSection';
-import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { hasBuiltInDoorway, isChipShape, isConceptShape } from '@livehuddle/document';
+import { hasBuiltInDoorway } from '@livehuddle/document';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
@@ -34,18 +28,12 @@ import {
   RoomMenuSection,
   RoomWallsMenuSection,
 } from '@/components/palette/CollabMenuSections';
-
-import {
-  hasWebRowsSection,
-  WebRowsMenuSection,
-} from '@/components/palette/context-menu-web-editors';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
-// The element menu's per-kind Tools sections (the Space pieces' settings, the containers' arrangements, a card's
-// slots and rows) and its Animation controls. Split out of ElementAppearanceSections; the type flags are passed in
+// The element menu's per-kind Tools sections (the Space pieces' settings) and its Animation controls. Split out of ElementAppearanceSections; the type flags are passed in
 // (the parent already derives them) and the shape narrowing is re-derived off target.
 type ElementDataSectionsProps = {
   props: EditorContextMenuProps;
@@ -68,14 +56,7 @@ export function ElementDataSections({
   // The Tools flyout (docs/specs/008-canvas/canvas-and-palette.md): the kind-specific controls fold behind one
   // "Tools" row, the same side-flyout pattern as Style and Text, so a piece's menu doesn't grow a band of bespoke
   // rows. Animation stays top-level (every boxed element has it).
-  const isChip = shapeTarget ? isChipShape(shapeTarget.shape) : false;
   const showTools =
-    hasWebRowsSection(target) ||
-    isChip ||
-    shapeTarget?.shape === 'boundary' ||
-    shapeTarget?.shape === 'pointer-note' ||
-    shapeTarget?.shape === 'stack' ||
-    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isPortal ||
     isChair ||
     (!!shapeTarget && hasBuiltInDoorway(shapeTarget)) ||
@@ -148,66 +129,6 @@ export function ElementDataSections({
               target={shapeTarget ?? undefined}
               sectionProps={sectionProps}
               onSetFacing={props.onSetChairFacing}
-            />
-          ) : null}
-          {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
-          {shapeTarget?.shape === 'boundary' ? (
-            <BoundaryMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
-          {shapeTarget && isChip ? (
-            <ChipMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              stepsInOrder={props.elements.some(
-                (el) => el.type === 'shape' && el.shape === 'step' && el.stepSequence === true,
-              )}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A stack's arrangement (docs/specs/009-elements/stack.md). */}
-          {shapeTarget?.shape === 'stack' ? (
-            <StackMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
-          {shapeTarget?.shape === 'pointer-note' ? (
-            <PointerNoteMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
-          {shapeTarget?.shape === 'card' ? (
-            <CardMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-              tagColours={
-                props.onSetTagColour ? (
-                  <TagColoursBlock
-                    target={shapeTarget}
-                    tagColours={props.tagColours}
-                    colourPalette={props.colourPalette}
-                    onSetTagColour={props.onSetTagColour}
-                  />
-                ) : null
-              }
-            />
-          ) : null}
-          {shapeTarget && hasWebRowsSection(shapeTarget) ? (
-            <WebRowsMenuSection
-              target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetRows={props.onSetWebRows}
             />
           ) : null}
           {/* Portal (docs/specs/009-elements/portal-element.md) — its name, where it leads (any tab), and a

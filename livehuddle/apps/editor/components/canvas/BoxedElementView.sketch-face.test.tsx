@@ -28,7 +28,6 @@ function draw(element: BoxedElement, fontFamily?: string) {
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
-      onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabSummaries={[]}
       readOnly={false}
@@ -44,11 +43,18 @@ const shape = (kind: string, finish?: string) =>
     ...(finish ? { finish } : {}),
   }) as BoxedElement;
 
-// A card draws more than a label (a title, its rows), so Sketch splits its face.
-const card = (finish?: string) => ({ ...shape('card', finish), label: 'Launch' }) as BoxedElement;
+// A stored card (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3) draws the
+// placeholder, a face with more than a label (its kind, a line, the label), so Sketch splits it.
+const card = (finish?: string) =>
+  ({
+    ...shape('square', finish),
+    id: 'card',
+    shape: 'card',
+    label: 'Launch',
+  }) as unknown as BoxedElement;
 
 describe('a sketched face', () => {
-  it('splits a card into its ink and its words under Sketch', () => {
+  it("splits a stored card's placeholder into its ink and its words under Sketch", () => {
     const { container } = draw(card('sketch'));
     expect(container.querySelector('[data-sketch-ink]')).not.toBeNull();
     expect(container.querySelector('[data-sketch-words]')?.textContent).toContain('Launch');

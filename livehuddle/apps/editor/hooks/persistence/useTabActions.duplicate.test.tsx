@@ -40,18 +40,4 @@ describe('duplicating a tab', () => {
     expect([...copy.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
     expect(copy.name.endsWith('…')).toBe(true);
   });
-
-  it("keeps an attached badge on its host's copy", () => {
-    const badge = {
-      id: 'b1',
-      type: 'shape',
-      shape: 'badge',
-      attachedTo: 's1',
-      attachAt: 'top-right',
-    } as unknown as Element;
-    const copy = duplicate({ id: 't1', name: 'Plans', elements: [square, badge] });
-    const [host, chip] = copy.elements as { id: string; attachedTo?: string }[];
-    expect(host!.id).not.toBe('s1');
-    expect(chip!.attachedTo).toBe(host!.id);
-  });
 });

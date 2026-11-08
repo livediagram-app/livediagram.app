@@ -60,7 +60,6 @@ function draw(
       onOpenComments={vi.fn()}
       onOpenAction={vi.fn()}
       onOpenNote={vi.fn()}
-      onSetPageHeading={vi.fn()}
       onContextSelect={vi.fn()}
       tabSummaries={[]}
       readOnly={false}
@@ -121,18 +120,5 @@ describe('BoxedElementView indicators', () => {
     const { container, getByText } = draw(box);
     expect(container.querySelector('[data-indicators]')).not.toBeNull();
     expect(getByText('Box')).toBeTruthy();
-  });
-
-  it('draws indicators on a lane with an upright title', () => {
-    const lane = {
-      ...createShape('lane', 0, 0),
-      width: 600,
-      height: 200,
-      label: 'Lane',
-      titleOrientation: 'upright',
-      padding: 'lg',
-      note: 'n',
-    } as BoxedElement;
-    expect(draw(lane).container.querySelector('[data-indicators]')).not.toBeNull();
   });
 });

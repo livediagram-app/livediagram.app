@@ -18,8 +18,6 @@ import {
   defaultPadding,
   isBoxed,
   positionsInlineIcon,
-  isLaneBand,
-  laneEdgeOfElement,
   supportsMarkers,
   supportsTextAlign,
   supportsBorderControls,
@@ -47,7 +45,6 @@ import {
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
-import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
 import { presetPxFor } from './TextSizeControl';
 
@@ -81,7 +78,6 @@ type ElementAppearanceSectionsProps = {
   colorProps: Scaffold['colorProps'];
   textColorHandlers: Scaffold['textColorHandlers'];
   fillColorHandlers: Scaffold['fillColorHandlers'];
-  headerFillHandlers: Scaffold['headerFillHandlers'];
   arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
   strokeColorHandlers: Scaffold['strokeColorHandlers'];
 };
@@ -95,7 +91,6 @@ export function ElementAppearanceSections({
   colorProps,
   textColorHandlers,
   fillColorHandlers,
-  headerFillHandlers,
   arrowheadColorHandlers,
   strokeColorHandlers,
   afterGroup = true,
@@ -189,7 +184,6 @@ export function ElementAppearanceSections({
             colorProps={colorProps}
             textColorHandlers={textColorHandlers}
             fillColorHandlers={fillColorHandlers}
-            headerFillHandlers={headerFillHandlers}
             arrowheadColorHandlers={arrowheadColorHandlers}
             strokeColorHandlers={strokeColorHandlers}
           />
@@ -341,18 +335,6 @@ export function ElementAppearanceSections({
                   onPreviewEnd={props.onPreviewStyleEnd}
                 />
               </div>
-              {/* A lane whose title runs down a side can read it upright
-                  (docs/specs/009-elements/lane.md "Upright titles"); a band always reads across. */}
-              {shapeTarget?.shape === 'lane' && !isLaneBand(laneEdgeOfElement(shapeTarget)) ? (
-                <MenuToggleRow
-                  label="Upright Title"
-                  description="Read bottom to top in a thin strip"
-                  checked={shapeTarget.titleOrientation === 'upright'}
-                  onToggle={() =>
-                    props.onSetLaneUprightTitle(shapeTarget.titleOrientation !== 'upright')
-                  }
-                />
-              ) : null}
             </MenuAccordionSection>
           ) : null}
           {showMarkers ? (

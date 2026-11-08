@@ -1009,15 +1009,6 @@
   }
 }
 
-/* A stack's reflow (docs/specs/009-elements/stack.md "Animation"): a child the stack holds glides from where it was to
-   its new slot. Only on children nothing is dragging (the attribute is dropped for the gesture's elements), so a drag
-   still tracks the pointer exactly. The global reduce-motion rules above collapse it to ~instant. */
-[data-stack-glide] {
-  transition:
-    left 160ms ease-out,
-    top 160ms ease-out;
-}
-
 /* The Avatar Pad (docs/specs/009-elements/avatar-pad.md). Every keyframe is stepped, so an animation restyles only
    on its steps. The pad's lights (its glow, ring and lamps: eight nodes) breathe on one gentle opacity pulse, ten
    steps each way, fine enough to read as eased. The arrival is one beam, a floor flash and six sparks per arriving

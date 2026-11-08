@@ -128,8 +128,6 @@ function shapeIntentName(intent: Extract<PendingDraw, { type: 'shape' }>): strin
 
 // User-facing component names for the draw-mode banner.
 const COMPONENT_LABELS: Record<ComponentKind, string> = {
-  hero: 'Hero',
-  callout: 'Callout',
   avatar: 'Avatar',
 };
 

@@ -7,8 +7,6 @@ import {
   ANIMATION_SET_NAME,
   DEFAULT_ANIMATION_SPEED,
   animationSetsOf,
-  isConceptShape,
-  type ConceptShape,
   type AnimationSetId,
   type Element,
   type ShapeAnimation,
@@ -20,7 +18,6 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
-import { ConceptAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -46,21 +43,11 @@ type Handlers = Pick<
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory = 'icon' | 'concept' | 'arrow';
+type OwnCategory = 'icon' | 'arrow';
 type Category = AnimationSetId | OwnCategory;
-const ORDER: readonly Category[] = [
-  'shape',
-  'sticky',
-  'drawing',
-  'media',
-  'icon',
-  'concept',
-  'text',
-  'arrow',
-];
+const ORDER: readonly Category[] = ['shape', 'sticky', 'drawing', 'media', 'icon', 'text', 'arrow'];
 const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
-  concept: 'Concept',
   arrow: 'Arrow',
 };
 
@@ -69,7 +56,6 @@ function ownCategoryOf(el: Element): OwnCategory | undefined {
   if (el.type === 'arrow') return 'arrow';
   if (el.type !== 'shape') return undefined;
   if (el.shape === 'icon') return 'icon';
-  if (isConceptShape(el.shape)) return 'concept';
   return undefined;
 }
 
@@ -165,12 +151,6 @@ function CategoryBody({
         onPreviewEnd={h.onAnimationPreviewEnd}
       />
     );
-  }
-  if (category === 'concept') {
-    const el = elements.find(
-      (e): e is ShapeElement & { shape: ConceptShape } => ownCategoryOf(e) === 'concept',
-    )!;
-    return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
   }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');

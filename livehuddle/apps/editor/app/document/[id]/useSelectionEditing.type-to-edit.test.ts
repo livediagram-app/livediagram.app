@@ -68,7 +68,9 @@ function setup(label: string, richText?: { text: string; bold?: boolean }[]) {
     hook,
     discardLastStep,
     label: () => (elements[0] as Element & { label?: string }).label,
-    element: () => elements[0] as Element & { headerSize?: number; richText?: unknown },
+    element: () => elements[0] as Element & { width?: number; richText?: unknown },
+    // A later step on the same element, as a resize commits one.
+    widen: () => commit((els) => els.map((e) => ({ ...e, width: 320 }) as Element)),
     undo: () => {
       elements = past.pop() ?? elements;
       return (elements[0] as Element & { label?: string }).label;
@@ -122,20 +124,20 @@ describe('type-to-edit, then Escape', () => {
     const s = setup('Old');
     s.hook.result.current.typeIntoSelected(s.id, 'N');
     s.hook.rerender();
-    // A later step changed the same element (its header size): popping the newest step would undo that instead.
-    s.hook.result.current.commitHeaderSize(s.id, 10);
+    // A later step changed the same element (its width): popping the newest step would undo that instead.
+    s.widen();
     s.hook.rerender();
     s.hook.result.current.cancelEdit();
     expect(s.discardLastStep).not.toHaveBeenCalled();
     expect(s.label()).toBe('Old');
-    expect(s.element().headerSize).toBe(10);
+    expect(s.element().width).toBe(320);
   });
 
   it('keeps the formatting the seed dropped', () => {
     const s = setup('Bold', [{ text: 'Bold', bold: true }]);
     s.hook.result.current.typeIntoSelected(s.id, 'N');
     s.hook.rerender();
-    s.hook.result.current.commitHeaderSize(s.id, 10);
+    s.widen();
     s.hook.rerender();
     s.hook.result.current.cancelEdit();
     expect(s.element().richText).toEqual([{ text: 'Bold', bold: true }]);

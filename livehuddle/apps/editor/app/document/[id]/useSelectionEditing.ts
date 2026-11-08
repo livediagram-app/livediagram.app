@@ -127,14 +127,6 @@ export function useSelectionEditing(opts: {
     setEditingId(elementId);
   };
 
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit on release: the drag itself is live
-  // local state in the view, so a gesture is one undo step rather than one
-  // per pixel.
-  const commitHeaderSize = (elementId: string, headerSize: number) => {
-    commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
-  };
-
   const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
     // The edit a type-to-edit seed began is one step, not two: while the element is still exactly what the seed
     // wrote, its step is discarded and this commit takes its place, so one undo puts back the label from before the
@@ -358,7 +350,6 @@ export function useSelectionEditing(opts: {
   return {
     beginEdit,
     commitLabel,
-    commitHeaderSize,
     cancelEdit,
     typeIntoSelected,
     selectElement,

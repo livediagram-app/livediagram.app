@@ -1,7 +1,5 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
-  containerContents,
-  withAttached,
   withAttachedDoors,
   anchorOutward,
   anchorPosition,
@@ -82,20 +80,10 @@ export function useBoxedDragHandlers({
       ? new Set(multiSelectedIds)
       : new Set<string>([elementId]);
 
-    // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
-    // the centre rule agents' `move` uses (`containerContents`): every element whose centre it holds,
-    // nested frames with their contents, and loose arrows whose free ends lie inside (pinned arrows
-    // follow via the rebind pass). Resizing is deliberately excluded — a frame
-    // resize re-sizes the section outline and leaves its contents put.
-    const ids =
-      mode === 'move'
-        ? // A host's badges and step numbers ride its drag (docs/specs/009-elements/badge.md).
-          // A room's doors ride it too (docs/specs/009-elements/room-builder.md "Door").
-          withAttachedDoors(
-            d.activeTab.elements,
-            withAttached(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds)),
-          )
-        : baseIds;
+    // A room's doors ride its move (docs/specs/009-elements/room-builder.md "Door"). Nothing else is carried: a stored
+    // lane or boundary is a retired placeholder that holds nothing (docs/specs/002-project-scope/not-in-livehuddle.md
+    // "The element engine", part 3).
+    const ids = mode === 'move' ? withAttachedDoors(d.activeTab.elements, baseIds) : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();
     // Free endpoints of any arrows the frame-section expansion pulled in, so

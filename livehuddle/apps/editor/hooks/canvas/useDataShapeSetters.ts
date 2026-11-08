@@ -12,21 +12,17 @@ import {
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { shapeTelemetryToken } from '@/lib/element-telemetry';
-import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 import type { StagePatch } from '@/components/palette/StageMenuSection';
-
-// The kinds carrying masthead lines (see setPageHeading).
-const MASTHEAD_SHAPES = new Set<string>(['callout', 'card', 'boundary']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // The board as it stands (useWebComponentSetters).
+  // The board as it stands.
   elements: () => Element[];
 };
 
-// The selection-wide setters for the content-bearing pieces: the masthead lines, the
+// The selection-wide setters for the content-bearing pieces: the
 // furniture's turns and the Space pieces' settings. All resolve the selection and commit through the two shared
 // handles, so they live together off useElementStyle.
 
@@ -35,25 +31,6 @@ export function useDataShapeSetters({
   commit,
   elements,
 }: DataShapeSetterDeps) {
-  // The masthead lines: a callout's or card's heading and subtitle and a boundary's
-  // (docs/specs/009-elements/web-components-and-no-groups.md). One setter for both lines rather than two
-  // near-identical ones, since the only difference is which field.
-  const setPageHeading = (
-    elementId: string,
-    field: 'pageTitle' | 'pageSubtitle',
-    value: string,
-  ) => {
-    commit((els) =>
-      els.map((el) => {
-        if (el.id !== elementId || el.type !== 'shape') return el;
-        if (!MASTHEAD_SHAPES.has(el.shape)) return el;
-        // An empty line stores as undefined rather than '', so a line that was
-        // typed into and cleared serialises the same as one never touched.
-        return { ...el, [field]: value.trim() ? value : undefined };
-      }),
-    );
-  };
-
   // Every piece of furniture that turns (docs/specs/009-elements/furniture-facing.md "A turn"): a facing picked from
   // the element menu, or a quarter turn from the Rotate buttons, the command palette or a multi-selection. Each piece
   // turns about its own centre, its box taking the turned drawing's proportions; a piece that does not turn stays as
@@ -123,12 +100,7 @@ export function useDataShapeSetters({
   const setJukeboxSourceSelected = (source: string | undefined) =>
     patchJukeboxes({ jukeboxSource: source }, 'Jukebox');
 
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md): see useWebComponentSetters.
-  const webSetters = useWebComponentSetters({ currentSelectionIds, commit, elements });
-
   return {
-    ...webSetters,
-    setPageHeading,
     setChairFacingSelected,
     turnSelected,
     setRoomDoorSelected: setRoomDoor,

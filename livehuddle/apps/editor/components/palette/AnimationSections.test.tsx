@@ -47,28 +47,18 @@ describe('animationCategoriesOf (one category per set present)', () => {
   it('an image shows Shape beside Media', () => {
     expect(animationCategoriesOf([of('image')])).toEqual(['shape', 'media']);
   });
-
-  // docs/specs/028-animation/element-animations.md "The menu": an element's own animation is a category of the
-  // Animation row, never a picker in its own section.
-  it('the timeline takes its own category, with the Shape motions', () => {
-    const own = (shape: string) =>
-      animationCategoriesOf([createShape(shape as never, 0, 0)]).filter((c) => c !== 'text');
-    expect(own('timeline-rail')).toEqual(['shape', 'concept']);
-  });
 });
 
 describe('sharedShapeAnimations (what a Shape category offers)', () => {
-  it('offers a shape the whole set, a photo the motions, a boundary its six', () => {
+  it('offers a shape the whole set and a photo the motions', () => {
     expect(sharedShapeAnimations([createShape('square', 0, 0)])).toHaveLength(15);
     expect(sharedShapeAnimations([of('image')])).toEqual(SHAPE_MOTIONS);
-    expect(sharedShapeAnimations([createShape('boundary', 0, 0)])).toHaveLength(6);
   });
 
   it('offers a mixed selection the overlap, ignoring elements outside the category', () => {
     expect(sharedShapeAnimations([createShape('square', 0, 0), of('image')])).toEqual(
       SHAPE_MOTIONS,
     );
-    expect(sharedShapeAnimations([createShape('boundary', 0, 0), of('image')])).toEqual(['blink']);
     expect(sharedShapeAnimations([of('image'), createText(0, 0), of('arrow')])).toEqual(
       SHAPE_MOTIONS,
     );

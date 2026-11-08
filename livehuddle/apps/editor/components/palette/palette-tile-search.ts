@@ -1,6 +1,6 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // which element tiles a query finds, of the ones the palette offers. Pure, so the ranking is tested without a strip.
-import { componentShapeKind, type Element } from '@livehuddle/document';
+import type { Element } from '@livehuddle/document';
 import { paletteRank } from '@liveworkspace/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { SEARCH_ONLY_TILE_IDS, paletteCategories } from './palette-layouts';
@@ -23,10 +23,8 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     case 'shape':
       if (a.kind === 'icon' || a.kind === 'sticker') return null;
       return shapeSig(a.kind, a.mode ?? a.variant);
-    case 'component': {
-      const kind = componentShapeKind(a.kind);
-      return kind ? shapeSig(kind) : null;
-    }
+    case 'component':
+      return null;
     case 'sticky':
       return 'sticky';
     case 'freehand':

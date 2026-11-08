@@ -13,14 +13,10 @@ import {
   elementFontId,
   resolveFontStack,
   isSelectionMode,
-  alignmentCoordinates,
   buildElementIndex,
   paintOrder,
-  laneSeamCoordinates,
-  snapSeamCoordinate,
   createElementGridTracker,
   type ElementIndex,
-  stackedElementIds,
 } from '@livehuddle/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
@@ -36,7 +32,6 @@ import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { type LaneGutterEdge, type LaneLike } from '@livehuddle/document';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -93,12 +88,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onSetTextAlign,
-    onCommitHeaderSize,
     onDeleteRetired,
-    onSetPageHeading,
-    onSetWebRows,
-    onSetPointerTip,
-    onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -150,27 +140,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onShiftSelect,
 
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
-    // The seam's snap targets (docs/specs/009-elements/lane.md). Resolved here because this is where
-    // the sibling elements are: BoxedElementView only ever sees its own.
-    onSnapSeam: readOnly
-      ? undefined
-      : (
-          candidate: number,
-          axis: 'x' | 'y',
-          excludeId: string,
-          edgeOf: (el: LaneLike) => LaneGutterEdge,
-          sizeOf: (el: LaneLike) => number,
-        ) =>
-          snapSeamCoordinate(candidate, {
-            seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
-            alignment: alignmentCoordinates(elements, axis, excludeId),
-          }).value,
     onDeleteRetired: readOnly ? undefined : onDeleteRetired,
-    onSetPageHeading,
-    onSetWebRows: readOnly ? undefined : onSetWebRows,
-    onSetPointerTip: readOnly ? undefined : onSetPointerTip,
-    onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressModeButton,
     onPressFocusButton,
@@ -187,8 +157,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
   const fontEpoch = useFontEpoch();
-  // What the tab's stacks hold, for the reflow glide (docs/specs/009-elements/stack.md "Animation").
-  const stackedIds = useMemo(() => stackedElementIds(elements), [elements]);
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
   // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
   const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
@@ -225,13 +193,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
       onSetTextAlign: h.onSetTextAlign,
-      onCommitHeaderSize: h.onCommitHeaderSize,
-      onSnapSeam: h.onSnapSeam,
       onDeleteRetired: h.onDeleteRetired,
-      onSetPageHeading: h.onSetPageHeading,
-      onSetWebRows: h.onSetWebRows,
-      onSetPointerTip: h.onSetPointerTip,
-      onSetHeroCaptionLine: h.onSetHeroCaptionLine,
       onCancelEdit: h.onCancelEdit,
       onFollowLink: h.onFollowLink,
       onPressModeButton: h.onPressModeButton,
@@ -288,7 +250,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     gridFor: (els) => gridTracker.gridFor(els),
     arrowLabels,
     tabFinish,
-    stackedIds,
   });
   const shownOrder = useMemo(
     () => (previewStructure ? shownWithOverlay(ordered, previewStructure) : ordered),
@@ -341,7 +302,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           tabFont={tabFont}
           tabFinish={tabFinish}
           fontEpoch={fontEpoch}
-          stackedIds={stackedIds}
         />
 
         {/* The line or arrow being drawn (docs/specs/023-draw-mode/draw-mode.md "Shapes"): the

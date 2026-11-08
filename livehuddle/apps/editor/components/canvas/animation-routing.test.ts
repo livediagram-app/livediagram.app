@@ -7,7 +7,7 @@ describe('drawsShapeSvgOverlay', () => {
   it('is true for SVG-drawn shapes and false for CSS boxes and self-faced kinds', () => {
     expect(drawsShapeSvgOverlay('diamond')).toBe(true);
     expect(drawsShapeSvgOverlay('hexagon')).toBe(true);
-    for (const k of ['square', 'circle', 'timeline-rail', 'sticker'] as const) {
+    for (const k of ['square', 'circle', 'sticker'] as const) {
       expect(drawsShapeSvgOverlay(k)).toBe(false);
     }
   });

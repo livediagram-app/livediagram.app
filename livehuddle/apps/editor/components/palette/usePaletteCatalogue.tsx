@@ -30,8 +30,6 @@ export function usePaletteCatalogue({
   onAddSticky,
   onAddAnnotation,
   onAddLinkCard,
-  onAddHero,
-  onAddCallout,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -78,8 +76,6 @@ export function usePaletteCatalogue({
   const addComponent = (kind: import('@livehuddle/document').ComponentKind) => {
     const byKind = {
       avatar: onAddAvatar,
-      hero: onAddHero,
-      callout: onAddCallout,
     } as const;
     armed(byKind[kind])();
   };

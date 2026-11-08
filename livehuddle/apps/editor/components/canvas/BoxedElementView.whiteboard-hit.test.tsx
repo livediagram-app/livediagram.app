@@ -27,7 +27,6 @@ function draw(element: BoxedElement, selected: boolean) {
         onOpenComments={vi.fn()}
         onOpenAction={vi.fn()}
         onOpenNote={vi.fn()}
-        onSetPageHeading={vi.fn()}
         onContextSelect={vi.fn()}
         tabSummaries={[]}
         readOnly={false}

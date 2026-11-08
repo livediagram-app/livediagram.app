@@ -9,9 +9,8 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// A person's container drag carries what an agent's `move` carries (docs/specs/009-elements/boundary.md "A container",
-// docs/specs/024-agents/edit-operations.md "Membership"): the centre rule of `containerContents`, driven
-// through the real drag machine.
+// Nothing holds (docs/specs/002-project-scope/not-in-livehuddle.md "The element engine", part 3): a stored boundary
+// draws the placeholder, and dragging it moves it alone, whatever sits on it. Driven through the real drag machine.
 
 const shape = (
   kind: 'boundary' | 'square',
@@ -20,7 +19,8 @@ const shape = (
   y: number,
   w: number,
   h: number,
-) => ({ ...createShape(kind, x, y), id, width: w, height: h }) as Element;
+) =>
+  ({ ...createShape('square', x, y), shape: kind, id, width: w, height: h }) as unknown as Element;
 
 // The boundary spans 100..300 on both axes.
 const BOARD = (): Element[] => [
@@ -128,35 +128,24 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('useEditorDrag — a container carries by the centre rule', () => {
-  it('carries what an agent move carries, and leaves the rest', () => {
+describe('useEditorDrag: a stored boundary carries nothing', () => {
+  it('moves the boundary alone, leaving what sits on it', () => {
     const before = BOARD();
     const h = harness(before);
     dragFrame(h, 50, 0);
     const after = h.elements();
     const moved = (id: string) => xOf(after, id)! - xOf(before, id)!;
     expect(moved('frame')).toBe(50);
-    expect(moved('inside')).toBe(50);
-    expect(moved('straddling')).toBe(50);
-    expect(moved('nested')).toBe(50);
-    expect(moved('nested-member')).toBe(50);
-    expect(moved('loose')).toBe(50);
-    expect(moved('mostly-out')).toBe(0);
-    expect(moved('neighbour')).toBe(0);
-  });
-});
-
-// A member saved locked before locking left (docs/specs/002-project-scope/not-in-livehuddle.md "Element and Tab
-// Locking") rides its frame like any other.
-describe('useEditorDrag: a frame carries a member saved locked', () => {
-  it('moves the frame with every member', () => {
-    const before = BOARD().map((el) => (el.id === 'inside' ? { ...el, locked: true } : el));
-    const h = harness(before);
-    dragFrame(h, 50, 0);
-    const after = h.elements();
-    expect(xOf(after, 'frame')! - xOf(before, 'frame')!).toBe(50);
-    expect(xOf(after, 'straddling')! - xOf(before, 'straddling')!).toBe(50);
-    expect(xOf(after, 'inside')! - xOf(before, 'inside')!).toBe(50);
+    for (const id of [
+      'inside',
+      'straddling',
+      'nested',
+      'nested-member',
+      'loose',
+      'mostly-out',
+      'neighbour',
+    ])
+      expect(moved(id), id).toBe(0);
   });
 });
 

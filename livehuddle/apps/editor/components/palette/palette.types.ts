@@ -39,8 +39,6 @@ export type PaletteProps = {
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
   // Callout needs no image and always shows; Hero (and the Tools-tab Avatar) carry an image, so they're gated on
   // image upload being available (onAddImage present).
-  onAddHero: () => void;
-  onAddCallout: () => void;
   onAddAvatar: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the

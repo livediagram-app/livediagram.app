@@ -1,7 +1,6 @@
-import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { BoxedElement, HeroCaption, TextRun, WebRows } from '@livehuddle/document';
+import type { BoxedElement, TextRun } from '@livehuddle/document';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -51,20 +50,6 @@ export type BoxedElementViewProps = {
     x: import('@livehuddle/document').TextAlignX,
     y: import('@livehuddle/document').TextAlignY,
   ) => void;
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit per gesture, so a drag is one undo step.
-  onCommitHeaderSize?: (elementId: string, px: number) => void;
-  // Resolve a dragged lane seam against its snap targets (docs/specs/009-elements/lane.md): the
-  // alignment grid, and the seams of other lanes so a stack of swimlanes can
-  // be lined up exactly. Supplied by the elements layer, which is where the
-  // sibling elements live.
-  onSnapSeam?: (
-    candidate: number,
-    axis: 'x' | 'y',
-    excludeId: string,
-    edgeOf: (el: LaneLike) => LaneGutterEdge,
-    sizeOf: (el: LaneLike) => number,
-  ) => number;
   onCancelEdit: () => void;
   onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): switches the LOCAL participant into
@@ -127,16 +112,6 @@ export type BoxedElementViewProps = {
   // Delete a retired element from its placeholder's button (docs/specs/002-project-scope/not-in-livehuddle.md
   // "Deleting it"). An Editor's alone: omitted for a Participant and a Viewer.
   onDeleteRetired?: (elementId: string) => void;
-  // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
-  stackGlide?: boolean;
-  // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).
-  onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
-  // The web components' rows and a hero's caption lines, edited in place
-  // (docs/specs/009-elements/web-components-and-no-groups.md). Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: WebRows) => void;
-  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
-  onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Right-click on the element. Receives the element id + the
   // cursor's screen-space coords so the caller can anchor a context
   // menu under it. The caller is also responsible for selecting the

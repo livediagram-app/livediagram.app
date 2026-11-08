@@ -68,26 +68,17 @@ describe('quickStyleView: which sections show', () => {
     expect(sections([shape('a', { label: '' }), shape('b')])).toContain('textAlign');
   });
 
-  it('offers no text alignment on a kind with its own face, but keeps it on a web component', () => {
+  it('offers no text alignment on a kind with its own face', () => {
     // A retired element (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements") draws its own placeholder.
     for (const kind of ['mode-button', 'qa-board', 'comment-pin']) {
       expect(sections([shape('a', { shape: kind as never, label: 'Hi' })]), kind).not.toContain(
         'textAlign',
       );
     }
-    expect(sections([shape('a', { shape: 'card' })])).toContain('textAlign');
   });
 
   it('adds icon alignment only when a shape carries an inline icon', () => {
     expect(sections([shape('a', { iconId: 'server' })])).toContain('iconAlign');
-  });
-
-  it('offers no icon alignment on a kind that places its own icon (a card, callout, boundary)', () => {
-    for (const kind of ['card', 'callout', 'boundary'] as const) {
-      expect(sections([shape('a', { shape: kind, iconId: 'server' })]), kind).not.toContain(
-        'iconAlign',
-      );
-    }
   });
 
   it('gives an arrow stroke, width and style', () => {
