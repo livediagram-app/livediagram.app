@@ -50,7 +50,7 @@ off", not "this diagram has no layout".
 
 ## Auto Layout (Tidy up)
 
-`autoLayoutElements` (`packages/document/src/auto-layout.ts`, a pure transform over the
+`autoLayoutElements` (`livediagram/packages/document/src/auto-layout.ts`, a pure transform over the
 element model so importers and the editor share it; see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
 and computes brand-new positions: a layered (Sugiyama-style) layout for DAG-ish

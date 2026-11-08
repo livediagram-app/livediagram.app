@@ -221,7 +221,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   each streak layer (stroke colour, `MARKER_STREAK_OPACITY`, `nibPx` wide), each ink layer (stroke colour,
   `MARKER_INK_OPACITY`, `strokePx`, the dash) and the details (`MARKER_DETAIL_PX`, the ink opacity), each its own
   `<path>` so crossings pool.
-- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
+- `livediagram/apps/editor/components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
   (`finishArrowWidthPx`) and the memoised `handDrawnArrow` (`flowing` while a flow runs). Under Marker `ArrowView`
   sets `strokeOpacity` to the ink opacity on the line, draws `lineOver` as a second path (same stroke, dash and
   mask), and fills a `headFill` head in the head colour at the ink opacity. `ArrowView` draws the
@@ -496,7 +496,7 @@ per command letter.
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
 | menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
 | backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
-| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
 | which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                                 |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |

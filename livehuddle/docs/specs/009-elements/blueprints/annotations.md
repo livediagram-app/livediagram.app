@@ -25,7 +25,7 @@ Scope, by file:
 | `apps/editor/components/palette/PaletteTileGrid.tsx`       | Routes the tile to `addAnnotation`, never arms a draw               |
 | `apps/editor/components/canvas/element-variant.ts`         | The round, bordered wrapper style                                   |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Renders `AnnotationGlyph` as the face                               |
-| `apps/editor/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
+| `livediagram/apps/editor/components/canvas/AnnotationMarker.tsx`       | `AnnotationGlyph`, `AnnotationHoverNote`                            |
 | `apps/editor/components/canvas/BoxedElementView.tsx`       | Hover state, preview gate, badge suppression                        |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click opens the note [QD9]                                   |
 | `apps/editor/components/canvas/element-parts.tsx`          | `SelectionChromeLayer`: resize handles for a selected marker [QD8]  |

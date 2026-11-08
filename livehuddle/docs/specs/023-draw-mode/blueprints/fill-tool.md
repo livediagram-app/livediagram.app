@@ -19,12 +19,12 @@ Scope, by file:
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/model-core/src/stroke-loop.ts` (monorepo root)              | `STROKE_LOOP_*`, `isStrokeLoop`, `closeStrokeLoop`, `insideLoop`, `loopFillPath` (pure)    |
 | `packages/workbench/src/lib/fill-choice.ts` (monorepo root)           | The bucket's colour in this browser: `parseFillChoice`, `loadFillChoice`, `saveFillChoice` |
-| `packages/document/src/stroke-loop-fill.ts`                           | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
+| `livediagram/packages/document/src/stroke-loop-fill.ts`                           | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
 | `packages/document/src/svg-render-shapes.ts`                          | Export: a filled loop's fill path under its ink                                            |
-| `packages/document/src/whiteboard-stroke.ts`                          | The Stroke eraser touches a filled loop's fill                                             |
+| `livediagram/packages/document/src/whiteboard-stroke.ts`                          | The Stroke eraser touches a filled loop's fill                                             |
 | `apps/editor/lib/draw-mode.ts`                                        | The `fill` intent, `isFillIntent`, `isHeldToolIntent`, its cursor and copy                 |
 | `packages/workbench/src/hooks/canvas/useFillPress.ts` (monorepo root) | The press: release within the slop, pinch and cancel rules (shared with livedesign)        |
-| `apps/editor/components/canvas/boxed-element-overlays.tsx`            | `FreehandSvg` draws a filled loop's fill under its ink                                     |
+| `livediagram/apps/editor/components/canvas/boxed-element-overlays.tsx`            | `FreehandSvg` draws a filled loop's fill under its ink                                     |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                    | `f` on a whiteboard                                                                        |
 
 ## Domain and naming

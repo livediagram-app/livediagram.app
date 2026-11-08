@@ -23,8 +23,8 @@ Scope, by file:
 | `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts` | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard |
 | `apps/editor/hooks/canvas/useTabCanvas.ts`             | `autoAlignTab`: judge, refuse with a notice or commit one undoable step                   |
 | `apps/editor/lib/editor-commands.ts`                   | The `auto-align` command, **Auto-align to Grid**                                          |
-| `packages/document/src/auto-layout-tidy.ts`            | The tidy profile (livediagram's Tidy Up; kept for Work Tracker #459 to decide)            |
-| `packages/document/src/auto-layout-route.ts`           | Square arrow routes around the boxes                                                      |
+| `livediagram/packages/document/src/auto-layout-tidy.ts`            | The tidy profile (livediagram's Tidy Up; kept for Work Tracker #459 to decide)            |
+| `livediagram/packages/document/src/auto-layout-route.ts`           | Square arrow routes around the boxes                                                      |
 | `../packages/model-core/src/auto-layout-route-grid.ts` | Bucket grid of the boxes a route must clear                                               |
 
 ## Domain and naming

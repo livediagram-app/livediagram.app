@@ -10,16 +10,16 @@ Scope, by file:
 
 | File                                                       | Role                                                                                            |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-bend.ts`                      | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
+| `livediagram/packages/document/src/arrow-bend.ts`                      | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
 | `../packages/workbench/src/lib/double-press.ts`            | The press ledger: double-press pairing and echo detection                                       |
 | `apps/editor/lib/canvas.ts`                                | `DragState` gains `arrow-bend`                                                                  |
-| `apps/editor/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
-| `apps/editor/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
+| `livediagram/apps/editor/hooks/canvas/useArrowDragHandlers.ts`         | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |
+| `livediagram/apps/editor/hooks/canvas/arrow-drag-apply.ts`             | Applies an `arrow-bend` tick from the start snapshot plus the delta                             |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`                | Engage threshold for every arrow drag except drawing a new arrow                                |
-| `apps/editor/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
-| `apps/editor/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
-| `apps/editor/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
-| `packages/document/src/arrow-scale.ts`                     | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
+| `livediagram/apps/editor/components/canvas/ArrowView.tsx`              | Line press begins a bend; records presses; move frame for free arrows                           |
+| `livediagram/apps/editor/components/canvas/SelectedArrowHandles.tsx`   | Endpoint, curve, bend-point and elbow handles; every press passes `guardPress`                  |
+| `livediagram/apps/editor/components/canvas/FreeArrowSelection.tsx`     | The free arrow's selection: ring (move bands) + the shared `ResizeHandles` / `EdgeResizeHandle` |
+| `livediagram/packages/document/src/arrow-scale.ts`                     | `scaleFreeArrow`: ends and bends scaled from the opposite side                                  |
 | `apps/editor/components/canvas/CanvasElementsLayer.tsx`    | Mounts `FreeArrowSelection` beside a selected free arrow's `<svg>`                              |
 | `apps/editor/components/canvas/element-parts.tsx`          | Resize handles refuse a paired press (`handlePressStarts`)                                      |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts` | Body presses are recorded; a paired press starts no drag                                        |
@@ -108,7 +108,7 @@ index, slide keeps endpoints and inserts jogs, slide of an interior segment. `do
 pairing window and slop, echo only when the first press found it unselected. `arrow-scale.test.ts`:
 corner and edge scaling, bends scale with the arrow, Shift keeps proportions, no flip or collapse,
 a flat axis stays. `arrow-drag-apply.test.ts`: the bend and scale ticks. E2E
-(`e2e/arrow-labels.spec.ts`): double-click on the line and on the label edits without bending, a
+(`livediagram/apps/editor/e2e/arrow-labels.spec.ts`): double-click on the line and on the label edits without bending, a
 blank line keeps its height, drag bends and one undo straightens, the frame moves and a corner
 scales a free arrow.
 

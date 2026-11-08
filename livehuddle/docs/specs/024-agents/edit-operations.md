@@ -1,5 +1,9 @@
 # Edit operations
 
+> **No arrows, pens, paths or annotations** ([The element engine](../002-project-scope/not-in-livehuddle.md#the-element-engine), part 4): `connect`,
+> `rewire` and `insert` are gone, with `keep-arrows`, `again`, `between` and `layout`'s style and direction; adding
+> one of those kinds is refused; `layout` sweeps the boxes into rows; `after:` reads as `below:`.
+
 > **No MCP server or CLI in livehuddle** ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)):
 > the REST API is the only front door. Where this file names the MCP or the CLI, it records livediagram's front
 > doors over the same engine, where this design came from; their wire values (`mcp`, `cli`) still parse.

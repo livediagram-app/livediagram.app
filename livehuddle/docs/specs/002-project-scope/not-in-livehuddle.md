@@ -591,8 +591,9 @@ What every part does:
     factories, defaults, validation rules, export renderer, animation rules, agent view state and summary, help
     articles and specs; the stack's reflow, the lane's seam snapping, the boundary's nesting tint, the attachment
     engine, the diagram key's derived rows, and the Timeline's concept animations.
-- **Part 4, arrows, pens, paths and annotations.** The `arrow`, `freehand`, `path` and `annotation` element types
-  join `RETIRED_ELEMENT_TYPES`. A stored one keeps every field it stored (an arrow's ends and what they are pinned to,
+- **Part 4, arrows, pens, paths and annotations.** The `freehand`, `path` and `annotation` element types
+  join `RETIRED_ELEMENT_TYPES`, and a stored `arrow`, which has no box, is its own retired type
+  (`RetiredArrowElement`); `isRetiredElement` is true for all four. A stored one keeps every field it stored (an arrow's ends and what they are pinned to,
   its label, heads, style, bends and flow; a stroke's packed points, pen and pressures; a path's nodes and contours;
   an annotation's note) and is named **Arrow** (**Line** when it has no heads), **Drawing**, **Path** or
   **Annotation**. Details:
@@ -601,7 +602,7 @@ What every part does:
     toolbar's Delete.
   - **An arrow has no box**: it is two ends, each a free point, pinned to an element's anchor, or a point along another
     arrow. A retired arrow draws as a faint dashed straight line between its ends, in the placeholder's quiet ink,
-    with the placeholder card (160 by 56) centred on the line's middle. The card is what selects, takes comments, opens
+    with the placeholder card (160 by 96) centred on the line's middle. The card is what selects, takes comments, opens
     the context menu and holds the Delete button; the line takes no press. A free end sits at its point, a pinned end
     at its anchor on its element's box (turned with the element), and an end on another arrow at its fraction of that
     arrow's straight line (four hops at most). An end whose element is gone, or is not one with a box, takes the
@@ -625,10 +626,17 @@ What every part does:
     recognition, the arrow's gestures (drawing, re-pinning an end, bending, the label editor and its drag), the
     anchors and their dots, routing (the orthogonal router, route-behind, collision avoidance, the fans), the arrow
     menus and presets, and the arrow and pen sections of format painting, style memory, quick style and Tab Style.
-  - **Agents.** `connect` (an arrow from one element to another) is gone, a changeset naming it is refused as unknown
-    vocabulary, and `add arrow`, `add line`, `add freehand`, `add path` and `add annotation` are refused ("arrows are
-    no longer supported in livehuddle", and the like). Views print a stored one as `?`; the edges view lists no
-    edge. The diagram lint's arrow checks (crossings, arrows behind boxes, arrow names) go with them.
+  - **Agents.** `connect` (an arrow from one element to another), `rewire` (moving an arrow's ends) and `insert`
+    (a box put on an arrow, with its `between`) are gone, as are the flags that only meant something to arrows
+    (`again`, `keep-arrows`, and `layout`'s `style=` and `direction=`); a changeset naming one is refused as unknown
+    vocabulary. `add arrow`, `add line`, `add freehand`, `add path` and `add annotation` are refused ("arrows are no
+    longer supported in livehuddle", and the like). Views print a stored one as `? arrow` (or its kind) and `show`
+    prints a stored arrow's `from=` and `to=`; the edges view lists no edge, and the arrow selectors (`from:`, `to:`,
+    `a->b`, `downstream:`) still read stored arrows but nothing writes them. `after:` places like `below:`. The
+    diagram lint's arrow checks go with them (crossings, arrows behind boxes, dangling arrows, label collisions,
+    isolated nodes, backwards flow, arrow names), and so do `box-overlap` and `aspect-extreme`, which judge only boxes
+    an arrow joins. The wire keeps its fields (lint measures, result deltas, `arrows_freed`, every lint code), always
+    empty or zero, so an agent written against them keeps parsing.
   - **Gone with the code**: each kind's face, its menu sections, its palette tile definition, its factory, defaults,
     validation, export renderer, animation rules (the arrow's flow), agent view state and summary, help sections and
     specs, which turn to **Gone from livehuddle** banners.

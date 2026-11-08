@@ -116,7 +116,7 @@ to the visible path and the selection halo:
 
 ## Exports
 
-The shared SVG arrow renderer (`svgArrow` in `packages/document/src/svg-render-arrows.ts`)
+The shared SVG arrow renderer (`svgArrow` in `livediagram/packages/document/src/svg-render-arrows.ts`)
 punches the same holes into the same mask as the label knockouts, so every
 export shows the gaps the canvas shows: SVG, PNG / PDF (which rasterise the
 arrows from that markup), server snapshots and thumbnails, and the api's

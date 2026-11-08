@@ -13,14 +13,14 @@ drags for collaborators.
 | `apps/editor/hooks/canvas/useLayerDragPreview.ts`       | The layer's preview store: one entry per previewed element and affected arrow    |
 | `apps/editor/components/canvas/CanvasElementList.tsx`   | Lists a `PreviewedElement` per element, in paint order                           |
 | `apps/editor/components/canvas/PreviewedElement.tsx`    | One element, drawn from its preview entry or the document                        |
-| `apps/editor/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box                 |
+| `livediagram/apps/editor/components/canvas/drag-affected-arrows.ts` | `affectedArrows`: arrows pinned to, or crossing, a previewed box                 |
 | `apps/editor/components/canvas/rect-grid.ts`            | `RectGrid`: the arrows' route-behind rects, bucketed, asked per moved box        |
 | `apps/editor/hooks/canvas/drag-ride.ts`                 | `ridingElements`: what the preview only translates, and by how much              |
 | `../packages/workbench/src/lib/drag-ride-dom.ts`        | `createRideWriter`: writes the offsets to nodes or planes, outside React; shared |
 | `apps/editor/e2e/perf/large-selection-board.ts`         | The 1,770-element large-selection board                                          |
 | `apps/editor/e2e/perf/large-selection-drag.perf.ts`     | The large-selection bench: script and frame per pointer move                     |
 | `apps/editor/hooks/canvas/useCanvasSelectionView.ts`    | Derives the selection from the previewed elements while a preview lasts          |
-| `apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label        |
+| `livediagram/apps/editor/hooks/canvas/useArrowLabelLayouts.ts`      | `draftLayout(arrow, text, elements?)`: lays out a previewed arrow's label        |
 | `packages/api-schema/src/room-messages.ts`              | `drag-preview` presence op, in `PRESENCE_OP_KINDS`                               |
 | `apps/editor/hooks/collab/useDragPreviewBroadcast.ts`   | Sends the local preview at `DRAG_PREVIEW_SEND_MS`, and its end                   |
 | `apps/editor/hooks/collab/peer-drag-previews.ts`        | Receives peers' previews: role check, expiry, cleared by real ops                |

@@ -75,7 +75,7 @@ Derived from [Not in livehuddle](../not-in-livehuddle.md) "The element engine" a
   box's centre by its `rotation`; `on-arrow` to `from + t * (to - from)` of that arrow's own resolved ends, at most
   `RETIRED_ARROW_MAX_HOPS` (4) deep. An end that does not resolve (its element missing, not boxed, a cycle, a
   non-finite number) takes the other end's point; with neither, both sit at `{ x: 0, y: 0 }` (D22).
-  `retiredArrowCard(arrow, elements)` is the 160 by 56 box centred on the two ends' midpoint; `elementBounds` returns
+  `retiredArrowCard(arrow, elements)` is the 160 by 96 box centred on the two ends' midpoint; `elementBounds` returns
   the union of that card and the line's box, so a marquee, fit-to-content, the selection toolbar and the minimap
   read a retired arrow through it. `RetiredArrowView` (editor) draws the line (`pointer-events: none`) and, over it,
   `RetiredElementFace` in a wrapper at the card's box that selects on press, opens the context menu and shows the
@@ -118,7 +118,7 @@ height }`.
   helpers that read them (`table.ts`, `table-header-colours.ts`, `svg-render-table.ts`). Shared fields a table
   also used (`headerFill`, a link) stay on the kinds that keep them.
 
-- Part 4: `RETIRED_ARROW_CARD_WIDTH = 160`, `RETIRED_ARROW_CARD_HEIGHT = 56`, `RETIRED_ARROW_MAX_HOPS = 4`,
+- Part 4: `RETIRED_ARROW_CARD_WIDTH = 160`, `RETIRED_ARROW_CARD_HEIGHT = 96`, `RETIRED_ARROW_MAX_HOPS = 4`,
   `retiredArrowEnds(arrow, elements): { from: Point; to: Point }`, `retiredArrowCard(arrow, elements): Rect`,
   `isRetiredArrow(el): el is RetiredArrowElement`.
 

@@ -51,7 +51,7 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 | `../packages/workbench/src/components/canvas/AnimationLayer.tsx` | the element's effect layer, above its face; Trace as a measured rounded rectangle                                                          |
 | `apps/editor/components/canvas/animated-words.tsx`               | `planTextAnimation`, `renderUnits`, `unitCount`, `scrambleGlyph`, `flickerPhase`                                                           |
 | `apps/editor/components/canvas/useTextAnimation.ts`              | `textAnimationView`, `useTextAnimation`, `useLabelTextAnimation`                                                                           |
-| `apps/editor/components/canvas/drawing-animation.tsx`            | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
+| `livediagram/apps/editor/components/canvas/drawing-animation.tsx`            | `useDrawingAnimation`: a drawing's mask, filters and overlay                                                                               |
 | `apps/editor/app/motion-<set>.css`                               | each set's keyframes (`shape`, `text`, `sticky`, `drawing`, `media`)                                                                       |
 
 `canvas-motion.css` keeps arrow and icon animations and the legacy text-native and

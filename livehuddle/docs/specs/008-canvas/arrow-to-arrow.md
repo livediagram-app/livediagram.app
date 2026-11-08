@@ -37,7 +37,7 @@ lifeline moves.
 ## Model
 
 `Endpoint` gains a third kind alongside `free` and `pinned`
-(`@livehuddle/document`, declared in `src/arrow-types.ts`):
+(`@livehuddle/document`, declared in `livediagram/packages/document/src/arrow-types.ts`):
 
 ```ts
 | { kind: 'on-arrow'; arrowId: ElementId; t: number }
