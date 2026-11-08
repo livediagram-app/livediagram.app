@@ -36,8 +36,12 @@ type PanAndMarquee = ReturnType<typeof useCanvasPanAndMarquee>;
 const inCornerCluster = (target: EventTarget | null): boolean =>
   !!(target as Element | null)?.closest?.('[data-zoom-cluster]');
 
-/** What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode). */
-const CHROME_OVER_CANVAS = '[data-talking-bars], [data-call-bubbles], [data-call-maximised]';
+/**
+ * What floats over the canvas with presses of its own, so a press on it is never a walk (Avatar mode): the Receptionist and his
+ * bubble too (docs/specs/008-canvas/receptionist.md "Asking the Receptionist").
+ */
+const CHROME_OVER_CANVAS =
+  '[data-talking-bars], [data-call-bubbles], [data-call-maximised], [data-receptionist], [data-receptionist-bubble]';
 
 // How presses on the bare canvas surface route between the tools
 // (docs/specs/008-canvas/canvas-and-palette.md), lifted out of Canvas's JSX: the capture-phase

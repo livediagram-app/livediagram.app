@@ -560,11 +560,24 @@ export const SHORTCUTS_OPENED = opened(
   (t) => t === 'Shortcuts',
 );
 
-// The Avatar tour's offer (docs/specs/008-canvas/avatar-tour.md); charted in its funnel on the Visitors tab.
-export const AVATAR_TOUR_OFFERED = opened(
-  'Avatar Tour Offered',
-  'The Avatar tour offered, the first time someone walks as an avatar. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => t === 'AvatarTourOffer',
+// The Receptionist's bubble opening (docs/specs/008-canvas/receptionist.md "Telemetry"); charted in his stack on the
+// Visitors tab.
+export const RECEPTIONIST_WELCOMES = opened(
+  'Receptionist Welcomes',
+  'The Receptionist\u2019s welcome opened, the first time someone arrives on his Avatar Pad.',
+  (t) => t === 'ReceptionistWelcome',
+);
+
+export const RECEPTIONIST_ASKED = opened(
+  'Receptionist Asked',
+  'The Receptionist asked over, from a press on him or Ask Receptionist in the footer.',
+  (t) => t === 'AskReceptionist',
+);
+
+export const RECEPTIONIST_BELLS = opened(
+  'Bells Answered',
+  'The Receptionist\u2019s bubble opened at a Reception Desk for the person who rang its bell.',
+  (t) => t === 'ReceptionistBell',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on

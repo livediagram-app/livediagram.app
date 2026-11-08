@@ -1,6 +1,6 @@
-// The Avatar tour's relaunch signal (docs/specs/008-canvas/avatar-tour.md "Where it appears"): the Settings row
-// Tours › "Avatar Tour", turned on from off and closed, reruns the tour. A window event keeps the dialog decoupled
-// from AvatarTourHost, as the Draw tour's relaunch does.
+// The Receptionist's welcome relaunch signal (docs/specs/008-canvas/receptionist.md "The welcome"): the Settings row Tours ›
+// "Receptionist's Welcome", turned on from off and closed, opens his welcome again. It kept the retired Avatar tour's event
+// name. A window event keeps the dialog decoupled from ReceptionistHost.
 export const AVATAR_TOUR_RELAUNCH_EVENT = 'livehuddle:avatar-tour-relaunch';
 
 export function requestAvatarTourRelaunch(): void {

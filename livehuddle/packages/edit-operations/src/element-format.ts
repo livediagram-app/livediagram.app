@@ -134,6 +134,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   corridor: ['variant'],
   // docs/specs/009-elements/office.md "Stage": who may speak from it, and whether its speakers are seen tab-wide.
   stage: ['stageSpeakers', 'stageCameras'],
+  // docs/specs/008-canvas/receptionist.md "Asking him to leave": whether the pad's Receptionist was asked to leave.
+  'avatar-pad': ['receptionistLeft'],
   // docs/specs/009-elements/social-pieces.md: a world clock's zones and a jukebox's source.
   'world-clock': ['clockZones'],
   jukebox: ['jukeboxSource', 'chairFacing'],

@@ -153,8 +153,8 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): turning its row on from off and closing reruns the
-  // tour in place, as the footer's Start Tour button does.
+  // Tours › "Receptionist's Welcome" (docs/specs/008-canvas/receptionist.md): turning its row on from off and closing has the Receptionist
+  // give his welcome again, as the footer's Ask Receptionist does.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {

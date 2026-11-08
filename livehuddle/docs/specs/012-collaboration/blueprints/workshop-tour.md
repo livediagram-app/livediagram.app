@@ -6,7 +6,7 @@
 
 What part 3 left behind, on purpose:
 
-| Kept                               | Why                                                                  |
-| ---------------------------------- | -------------------------------------------------------------------- |
-| `UserPreferences.workshopTourSeen` | Stored data: kept unread, never rewritten, no migration              |
-| The router's help redirect         | `/help/canvas/workshop-mode/workshop-tour/` lands on the Avatar tour |
+| Kept                               | Why                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| `UserPreferences.workshopTourSeen` | Stored data: kept unread, never rewritten, no migration                         |
+| The router's help redirect         | `/help/canvas/workshop-mode/workshop-tour/` lands on the Receptionist's article |

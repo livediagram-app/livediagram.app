@@ -19,9 +19,7 @@ and from [Avatar tour](../avatar-tour.md).
 | `../packages/avatar/src/components/AvatarMessagePopover.tsx` | The message popover, hung from Say                                                                |
 | `apps/editor/hooks/collab/useEditorBroadcast.ts`             | `broadcastAvatarSay`                                                                              |
 | `apps/editor/app/document/[id]/useRoomConnection.ts`         | Routes a received `avatar-say` to the speech hook                                                 |
-| `apps/editor/components/tour/avatar-tour-steps.ts`           | The tour's steps                                                                                  |
-| `apps/editor/components/tour/AvatarTourHost.tsx`             | Orchestrates the tour, as `WorkshopTourHost`                                                      |
-| `apps/editor/lib/avatar-tour.ts`                             | The relaunch event                                                                                |
+| `apps/editor/lib/avatar-tour.ts`                             | The relaunch event for the Receptionist's welcome ([receptionist](../receptionist.md))            |
 
 ## Domain and naming
 
@@ -236,18 +234,17 @@ canvas. INP: Enter opens the composer in one render.
 
 ## Testing
 
-| Rule                                | Test                                                           |
-| ----------------------------------- | -------------------------------------------------------------- |
-| Limits, word count, clamp           | `../packages/api-schema/src/avatar-say.test.ts`                |
-| Parser rejections                   | same                                                           |
-| Presence classification             | `room-messages` tests: `avatar-say` is presence                |
-| Room drops a Viewer's op            | `apps/api` document-room role test                             |
-| Flight time, motion, cap, seen ids  | `../packages/avatar/src/speech.test.ts`                        |
-| Enter opens; Escape cancels; send   | `../packages/avatar/src/hooks/useAvatarSpeech.test.tsx`        |
-| Viewer cannot open                  | same                                                           |
-| Composer and bubbles render         | `../packages/avatar/src/components/AvatarSpeechLayer.test.tsx` |
-| Say and the message popover         | `AvatarPalette.test.tsx`                                       |
-| Tour steps filter, telemetry tokens | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`         |
+| Rule                               | Test                                                           |
+| ---------------------------------- | -------------------------------------------------------------- |
+| Limits, word count, clamp          | `../packages/api-schema/src/avatar-say.test.ts`                |
+| Parser rejections                  | same                                                           |
+| Presence classification            | `room-messages` tests: `avatar-say` is presence                |
+| Room drops a Viewer's op           | `apps/api` document-room role test                             |
+| Flight time, motion, cap, seen ids | `../packages/avatar/src/speech.test.ts`                        |
+| Enter opens; Escape cancels; send  | `../packages/avatar/src/hooks/useAvatarSpeech.test.tsx`        |
+| Viewer cannot open                 | same                                                           |
+| Composer and bubbles render        | `../packages/avatar/src/components/AvatarSpeechLayer.test.tsx` |
+| Say and the message popover        | `AvatarPalette.test.tsx`                                       |
 
 ## Constants and configuration
 

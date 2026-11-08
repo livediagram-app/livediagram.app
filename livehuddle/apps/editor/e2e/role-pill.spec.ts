@@ -55,7 +55,7 @@ test.describe('Retired power user keys', () => {
     pageErrors,
   }) => {
     // What a person who had Power user mode on carries: the mode, its baseline, Minimal chrome, the offer's latch,
-    // and the preset's values (alignment guides on, the Avatar Tour and element tours seen).
+    // and the preset's values (alignment guides on, the Receptionist's welcome and element tours seen).
     await page.addInitScript((key) => {
       if (sessionStorage.getItem('seeded')) return;
       sessionStorage.setItem('seeded', '1');
@@ -95,12 +95,11 @@ test.describe('Retired power user keys', () => {
       'aria-checked',
       'true',
     );
-    // Tours seen stay seen: the Avatar Tour is not offered again.
+    // Tours seen stay seen: the Receptionist's welcome is not given again.
     await dialog(page).getByRole('button', { name: 'Tours', exact: true }).click();
-    await expect(dialog(page).getByRole('switch', { name: 'Avatar Tour' })).toHaveAttribute(
-      'aria-checked',
-      'false',
-    );
+    await expect(
+      dialog(page).getByRole('switch', { name: "Receptionist's Welcome" }),
+    ).toHaveAttribute('aria-checked', 'false');
     expectNoPageErrors(pageErrors);
   });
 });

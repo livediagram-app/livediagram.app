@@ -752,11 +752,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'avatar-tour',
-    title: 'The Avatar Tour',
+    title: 'The Receptionist',
     description:
-      'A short, optional walkthrough of Avatar mode, offered the first time you walk as an avatar and replayable from Settings.',
+      'The Receptionist walks the Space, greets everyone who arrives on the Avatar Pad, and shows you how the Space works when you ask.',
     keywords:
-      'avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
+      'receptionist receptionist host guide ask help welcome avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
     category: 'Edit or Walk',
     categorySlug: 'selection-modes/avatar-mode',
     parentSlug: 'avatar-mode',

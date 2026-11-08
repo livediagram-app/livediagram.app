@@ -63,7 +63,7 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
+      ['avatarTourSeen', 'toggle', "Receptionist's Welcome", 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],

@@ -85,6 +85,13 @@ describe('isValidElement', () => {
     expect(isValidElement({ id: 'p', type: 'path', x: 0, y: 0 })).toBe(false);
   });
 
+  it("accepts an Avatar Pad's receptionistLeft flag, rejects junk values", () => {
+    // docs/specs/008-canvas/receptionist.md "Asking him to leave".
+    const pad = { id: 'p', type: 'shape', shape: 'avatar-pad', ...box };
+    expect(isValidElement({ ...pad, receptionistLeft: true })).toBe(true);
+    expect(isValidElement({ ...pad, receptionistLeft: 'yes' })).toBe(false);
+  });
+
   it('accepts a marker\u2019s named colour on a stroke, a shape or a line, rejects any other', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The colour picker": stored by name.
     const packedPoints = encodeStrokePoints([

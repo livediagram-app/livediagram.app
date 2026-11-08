@@ -30,7 +30,10 @@ like them it is somewhere a character goes. The tile reads
 - **Theme lines, fixed light.** The outline and body follow the theme on light and dark paper, as every piece of
   furniture does, so the pad sits in the room. The light (ring, glow, core, lamps) keeps the avatar's own brand
   cyan whatever the theme, as a plant keeps its leaves: it is the part that says "the characters arrive here".
-- **No label and no settings `…`.** There is nothing to write on it and nothing to set. Its hover card names it.
+- **No label, and one setting.** There is nothing to write on it. The tab's first pad has the
+  [Receptionist](../008-canvas/receptionist.md#asking-him-to-leave): its element menu in Edit mode holds a
+  **Receptionist** section with one switch, stored as `receptionistLeft: true` when he was asked to leave (absent is
+  there). Another pad shows no section. Its hover card names it.
 - **Its proportions are locked** (unlockable from the menu like any element), so the platform stays round. An
   unlocked, stretched box fits the drawing whole and centred; it never stretches it.
 - **It lies on the floor.** Like a [rug or a room](office.md), it goes in behind everything when added, so

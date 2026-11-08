@@ -20,6 +20,9 @@ whether to come in, and a closed pod (its door shut while both seats are held) h
   room does not knock on it.
 - **One knock per 10 seconds per person**: the button reads **Knocked** for ten seconds, and the room drops a second
   knock from the same person inside that window, so a held key or a script cannot ring a room.
+- **The sound**: a knock is heard. The knocker hears two quick raps on the door as they knock, and everyone who is
+  shown the knock (below) hears the same two raps as its toast appears. It is drawn on each screen with Web Audio,
+  nothing is sent for it, and a browser that has not been pressed yet stays silent.
 
 ## Being knocked
 
@@ -73,4 +76,4 @@ Never who knocked, who answered, or which room.
 
 - A knock that waits for an answer before the doorway lets you in (rooms stay open; only a pod's seats shut a door).
 - A knock sent to people not in Avatar mode, or to a room on another tab.
-- A doorbell sound.
+- A doorbell sound, or a sound for the answers.

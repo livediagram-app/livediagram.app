@@ -29,7 +29,7 @@ import {
   API_TOKEN_ACTIVITY,
   ARTICLE_VIEWS,
   ASSIGNED_ACTIONS,
-  AVATAR_TOUR,
+  RECEPTIONIST,
   CALLS_TO_ACTION,
   CANVAS_MODES,
   CLIENT_EXCEPTIONS,
@@ -380,7 +380,7 @@ export const LIVEHUDDLE: TelemetryAppConfig = {
   tours: [
     {
       title: 'Tours',
-      metrics: [AVATAR_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+      metrics: [RECEPTIONIST, ELEMENT_TOURS, SHOW_ME_TOURS],
     },
     { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
   ],

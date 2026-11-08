@@ -81,6 +81,7 @@ export function EditorContextMenuHost() {
     setRoomDoorSelected,
     setRoomWallsSelected,
     setStageSelected,
+    setPadReceptionistSelected,
     setScreenUrlSelected,
     setClockZonesSelected,
     setJukeboxSourceSelected,
@@ -212,6 +213,7 @@ export function EditorContextMenuHost() {
       onSetRoomDoor={setRoomDoorSelected}
       onSetRoomWalls={setRoomWallsSelected}
       onSetStage={setStageSelected}
+      onSetPadReceptionist={setPadReceptionistSelected}
       onSetScreenUrl={setScreenUrlSelected}
       onSetClockZones={setClockZonesSelected}
       onSetJukeboxSource={setJukeboxSourceSelected}
