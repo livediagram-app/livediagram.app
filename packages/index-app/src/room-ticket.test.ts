@@ -49,18 +49,19 @@ describe('room tickets', () => {
   });
 
   it('never shows a workbench session the grant, so it cannot be stripped and used bare', async () => {
-    const ticket = await sealRoomTicket(env, 'grant-for-d1', { pairing: 'p1', cap: 'view' });
+    // A pairing long enough that random ciphertext can't contain it by chance: a two-letter 'p1' turned up
+    // in 439 of 20,000 sealed tickets (2.2%) and failed main's CI.
+    const pairing = 'pairing-for-d1';
+    const ticket = await sealRoomTicket(env, 'grant-for-d1', { pairing, cap: 'view' });
     expect(ticket.startsWith('rt2~')).toBe(true);
     expect(ticket).not.toContain('grant-for-d1');
-    expect(ticket).not.toContain('p1');
+    expect(ticket).not.toContain(pairing);
     // Every piece a client could cut out of it is refused.
     for (const part of ticket.split(/[~.]/)) {
       expect(await openRoomTicket(service, env, part, 'd1')).toBeNull();
     }
     // Sealed twice, never alike: a fresh IV each time.
-    expect(await sealRoomTicket(env, 'grant-for-d1', { pairing: 'p1', cap: 'view' })).not.toBe(
-      ticket,
-    );
+    expect(await sealRoomTicket(env, 'grant-for-d1', { pairing, cap: 'view' })).not.toBe(ticket);
   });
 
   it('refuses a tampered ticket, another key, or the old readable shape', async () => {
