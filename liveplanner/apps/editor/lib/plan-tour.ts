@@ -22,10 +22,20 @@ export function requestPlanTourRelaunch(): void {
 
 // The Plan tour's tracks: boards and sheets (PlanTourHost, the half picked on its welcome card), and dashboards (the
 // dashboard's own tour, offered on a dashboard, DashboardTour.tsx).
-export const PLAN_TOUR_TRACKS = ['boards', 'sheets', 'dashboards'] as const;
+// A board has three: Using a Board ('boards', the Practice Sprint), Card Types and Board Setup.
+export const PLAN_TOUR_TRACKS = [
+  'boards',
+  'card-types',
+  'board-setup',
+  'sheets',
+  'dashboards',
+] as const;
 export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
 // The tracks PlanTourHost runs, on a board or a sheet (the dashboard's tour is its own).
 export type BoardSheetTrack = Exclude<PlanTourTrack, 'dashboards'>;
+// A board's tracks, in the order its start panel lists them.
+export const BOARD_TRACKS = ['boards', 'card-types', 'board-setup'] as const;
+export type BoardTrack = (typeof BOARD_TRACKS)[number];
 
 // The tracks taken (docs/specs/026-plan/plan-tour.md "Where it appears"): `planTourTracks` lists them, for Settings and
 // for which track the Start Tour button names first. The older single flag `planTourSeen` counts none: an answer given

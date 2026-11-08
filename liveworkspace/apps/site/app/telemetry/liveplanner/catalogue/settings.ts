@@ -291,6 +291,20 @@ export const TOURS_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'CardTypesTourSeenOff',
+      'CardTypesTourSeenOn',
+      'Card Types Tour',
+      "The Boards tour's Card Types track switched back on or off.",
+    ),
+    toggle(
+      'UI',
+      'BoardSetupTourSeenOff',
+      'BoardSetupTourSeenOn',
+      'Board Setup Tour',
+      "The Boards tour's Board Setup track switched back on or off.",
+    ),
+    toggle(
+      'UI',
       'SheetsTourSeenOff',
       'SheetsTourSeenOn',
       'Sheets Tour',
@@ -309,7 +323,7 @@ export const TOURS_SETTINGS = settingsStack(
       category: 'UI',
       action: 'Toggled',
       typeIn: (type) =>
-        /^(?!(?:Plan|Boards|Sheets|Dashboards)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(
+        /^(?!(?:Plan|Boards|CardTypes|BoardSetup|Sheets|Dashboards)Tour)[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(
           type ?? '',
         ),
       title: 'Show Me Tours',

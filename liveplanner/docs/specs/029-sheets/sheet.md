@@ -55,14 +55,15 @@ cells are worked out in every browser that shows it.
 - **The dialog** is Setup Board's ([plan-board.md](../026-plan/plan-board.md) "Setup Board"): a modal over the
   editor in the app's colours, never inside the Sheet nor zoomed with the canvas, a fixed height, full screen on a
   phone; its header a sheet glyph, **Set up your sheet**, "Start from a layout, your cards or a blank grid.
-  Everything can change later from its cog.", Help and Close; the same step indicator: **Start From**, then
+  Everything can change later from its cog." and Help; the same step indicator: **Start From**, then
   **Style** (Plan Cards adds **Cards** and **Columns** between); only the step scrolls, over a footer that stays
   put. It is 60 rem wide on a wide screen (1024 px and up), where Start From's template lists and Style's Look
   beside Cell Size and Freeze Header Row sit side by side.
 - **When it opens**: for the person who placed the sheet (Start Planning, a Dashboard slot's Card Table), at once;
-  from the placeholder; and from Sheet Settings' **Setup Sheet**. Only for that person. Closing it without finishing
-  leaves the sheet awaiting setup (the placeholder) and keeps the step and the choices for when it opens again this
-  session. Clear Sheet leaves the sheet awaiting setup with the placeholder, not the dialog.
+  from the placeholder; and from Sheet Settings' **Setup Sheet**. Only for that person. Like a new board's, it cannot be
+  dismissed (no Not now or Close; Escape, the backdrop and a phone sheet's drag do nothing): only **Create Sheet** or
+  **Start Blank** leave it, so a sheet is never left awaiting setup by it. Its step and choices are kept as they are
+  made, so if the page goes away mid-setup the placeholder returns to them this session. Clear Sheet leaves the sheet awaiting setup with the placeholder, not the dialog.
 - **Keyboard** and **With others** are Setup Board's: Enter presses the primary action outside text fields, buttons
   and links; cells arriving from someone else while it is open (a peer, an agent) close it with "This sheet was just
   set up by someone else.".
@@ -95,7 +96,7 @@ cells are worked out in every browser that shows it.
   gridlines and sizes. Then **Cell Size**, an option list: **Compact** (100 × 24), **Default** (120 × 28), **Roomy** (160 × 36), then **Freeze Header Row**, a switch row (on; not shown for Blank). Tints follow the canvas
   surface at the moment of setup (light or dark) and stay as set.
 - The footer: **Back** at the left (from step 2; **Start Blank** in its place on step 1, ending setup with the empty
-  grid), and at the right **Not now** and the primary action: **Next: Style** (or **Next: Cards**, or **Choose
+  grid), and at the right the primary action: **Next: Style** (or **Next: Cards**, or **Choose
   File…** for Import CSV) moves on, **Create Sheet** on the last step. **Back** returns with nothing lost. **Create Sheet** writes the start, the look, the freeze and the sizes as one change, one undo step, and the
   sheet no longer awaits setup. A template's chart is then placed over its cells, its own undo step (as Insert
   Chart's). The dialog closes and the grid then selects A1 and takes focus. Telemetry: `Sheet · Created · <Start>` (`Blank`, `Cards`, each template's

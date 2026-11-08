@@ -12,12 +12,23 @@ const RING_PAD_PX = 4;
 
 type Box = { left: number; top: number; width: number; height: number };
 
-export function HintRing({ selector }: { selector: string }) {
+// The first of `selectors` drawn on screen, read again at every measure, so the ring moves on as the page changes.
+function firstDrawn(selectors: readonly string[]): DOMRect | null {
+  for (const s of selectors) {
+    const r = document.querySelector(s)?.getBoundingClientRect();
+    if (r && (r.width > 0 || r.height > 0)) return r;
+  }
+  return null;
+}
+
+export function HintRing({ selector }: { selector: string | readonly string[] }) {
   const [box, setBox] = useState<Box | null>(null);
+  // One string, so a fresh array of the same selectors does not restart the measure.
+  const key = typeof selector === 'string' ? selector : selector.join('\n');
   useEffect(() => {
+    const selectors = key.split('\n');
     const measure = () => {
-      const el = document.querySelector(selector);
-      const r = el?.getBoundingClientRect();
+      const r = firstDrawn(selectors);
       setBox((prev) => {
         if (!r || (r.width === 0 && r.height === 0)) return null;
         const next = {
@@ -38,7 +49,7 @@ export function HintRing({ selector }: { selector: string }) {
     measure();
     const id = window.setInterval(measure, TRACK_MS);
     return () => window.clearInterval(id);
-  }, [selector]);
+  }, [key]);
   if (!box) return null;
   return (
     <span

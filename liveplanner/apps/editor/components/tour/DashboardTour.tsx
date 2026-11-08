@@ -14,6 +14,7 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { ShowMeButton } from './ShowMe';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { LayoutView } from './LayoutView';
+import { TourStart } from './TourStart';
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 type Ctx = NonNullable<ReturnType<typeof useOptionalEditorContext>>;
@@ -22,8 +23,14 @@ type Ctx = NonNullable<ReturnType<typeof useOptionalEditorContext>>;
 export type DashboardTour = {
   active: boolean;
   n: number;
-  start: () => void;
+  // `intro`: open on the start panel first (a press on the footer's Start Tour); Show Me goes straight in.
+  start: (intro?: boolean) => void;
   end: (outcome: 'completed' | 'skipped') => void;
+  // Whether the start panel shows, and its two ways out: Start (the tour runs, and its track is taken) and Not Now
+  // (it closes, still on offer).
+  intro: boolean;
+  begin: () => void;
+  cancel: () => void;
 };
 
 // Marks the Dashboards track taken, onto the freshest preferences, not this render's: the whole blob is written.
@@ -68,21 +75,42 @@ export function useDashboardTour(hidden: boolean): {
     },
     [ctxRef],
   );
-  const start = useCallback(() => {
+  const [intro, setIntro] = useState(false);
+  const start = useCallback((withIntro = false) => {
     activeRef.current = true;
     setRun((n) => n + 1);
     setActive(true);
+    setIntro(withIntro);
   }, []);
+  const begin = useCallback(() => {
+    setIntro(false);
+    track('UI', 'Started', 'DashboardTour');
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    const now = ctxRef.current;
+    if (offeredRef.current && now && !planTrackSeen(now.userPreferences, 'dashboards'))
+      markDashboardsTaken(now);
+  }, [ctxRef]);
+  const cancel = useCallback(() => {
+    activeRef.current = false;
+    offeredRef.current = false;
+    setActive(false);
+    setIntro(false);
+  }, []);
+  // The page covered or no longer editable: a run ends as skipped; the start panel only closes (nothing ran).
   useEffect(() => {
-    if (hidden && active) end('skipped');
-  }, [hidden, active, end]);
+    if (!hidden || !active) return;
+    // The panel closes with its refs (cancel), as the run's end does: not something a render can derive.
+    // oxlint-disable-next-line react/set-state-in-effect
+    if (intro) cancel();
+    else end('skipped');
+  }, [hidden, active, intro, end, cancel]);
   // One tour at a time: published while it runs.
   useEffect(() => {
     setActiveTour('dashboard', active);
   }, [active]);
   useEffect(() => () => setActiveTour('dashboard', false), []);
   return {
-    tour: { active, n: run, start, end },
+    tour: { active, n: run, start, end, intro, begin, cancel },
     offered: (yes) => {
       offeredRef.current = yes;
     },
@@ -114,10 +142,8 @@ export function useDashboardTourOffer({
           start: () => {
             if (shown !== null || tour.active) return;
             offered(true);
-            tour.start();
-            track('UI', 'Started', 'DashboardTour');
-            // Taken as it starts, so a reload mid-tour does not put it back on the button.
-            if (!planTrackSeen(ctx.userPreferences, 'dashboards')) markDashboardsTaken(ctx);
+            tour.start(true);
+            track('UI', 'Opened', 'DashboardTourStart');
           },
           onShown: () => track('UI', 'Opened', 'DashboardTourOffer'),
           seen: planTrackSeen(ctx.userPreferences, 'dashboards'),
@@ -152,5 +178,19 @@ export function DashboardTourStage({
   tour: DashboardTour;
   layout: DashboardLayout;
 }) {
-  return tour.active ? <LayoutView key={tour.n} layout={layout} onEnd={tour.end} /> : null;
+  if (!tour.active) return null;
+  if (tour.intro)
+    return (
+      <TourStart
+        key={tour.n}
+        name="Dashboards Tour"
+        heading="Layout View"
+        line="See how this dashboard is built: its grid of twelve columns, each slot’s span and each row’s height. Then a few quick changes on the real dashboard, which Undo takes back."
+        tracks={[{ id: 'dashboards', title: 'Layout View', line: '', taken: false }]}
+        startLabel="Show the Grid"
+        onPick={tour.begin}
+        onClose={tour.cancel}
+      />
+    );
+  return <LayoutView key={tour.n} layout={layout} onEnd={tour.end} />;
 }

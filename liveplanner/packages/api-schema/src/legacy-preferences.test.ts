@@ -26,7 +26,7 @@ describe('upgradeLegacyPreferences', () => {
       notifyTips: false,
       formTourSeen: true,
       planTourSeen: true,
-      planTourTracks: ['boards', 'sheets', 'dashboards'],
+      planTourTracks: ['boards', 'card-types', 'board-setup', 'sheets', 'dashboards'],
     });
   });
 
@@ -37,7 +37,7 @@ describe('upgradeLegacyPreferences', () => {
         planTourSeen: true,
         planTourTracks: ['sheets'],
       }).planTourTracks,
-    ).toEqual(['sheets', 'boards', 'dashboards']);
+    ).toEqual(['sheets', 'boards', 'card-types', 'board-setup', 'dashboards']);
   });
 
   it('leaves the Plan tour tracks alone when the mode was off or the tour was offered again', () => {

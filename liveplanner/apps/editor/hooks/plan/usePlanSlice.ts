@@ -180,6 +180,7 @@ export function usePlanSlice(opts: {
   const people = usePlanPeople(planItems.self, opts.teamPeople, planItems.items);
 
   const write = planItems.write;
+  const capturesPractice = planItems.capturesPractice;
 
   // A card whose type requires a field it lacks waits for the New {Type} dialog (docs/specs/026-plan/item-types.md
   // "Required fields"); any other is written at once, as before.
@@ -195,22 +196,20 @@ export function usePlanSlice(opts: {
       id?: string;
     }): Promise<boolean> => {
       const made = (fields: Item['fields']) => {
-        const done = write({
-          kind: 'create',
-          creates: [
-            {
-              ...(input.id ? { id: input.id } : {}),
-              type: input.type,
-              fields,
-              place: {
-                status: input.status,
-                ...(input.after ? { after: input.after } : {}),
-                ...(input.before ? { before: input.before } : {}),
-              },
-            },
-          ],
-        });
-        track('Plan', 'Added', titleCaseType(input.type));
+        const create: ItemCreate = {
+          ...(input.id ? { id: input.id } : {}),
+          type: input.type,
+          fields,
+          place: {
+            status: input.status,
+            ...(input.after ? { after: input.after } : {}),
+            ...(input.before ? { before: input.before } : {}),
+          },
+        };
+        const practiceAdd = capturesPractice(create);
+        const done = write({ kind: 'create', creates: [create] });
+        // A practice card is the tour's, not the person's work (docs/specs/026-plan/plan-tour.md "Telemetry").
+        if (!practiceAdd) track('Plan', 'Added', titleCaseType(input.type));
         return done;
       };
       const fields = fillRequired(input.type, input.fields);
@@ -218,7 +217,7 @@ export function usePlanSlice(opts: {
         ? fields.then((filled) => (filled ? made(filled) : false))
         : made(fields);
     },
-    [write, fillRequired],
+    [write, fillRequired, capturesPractice],
   );
 
   // Many new cards as one write and one undo step (a board's Import CSV, docs/specs/026-plan/plan-board.md "CSV").
@@ -693,6 +692,7 @@ export function usePlanSlice(opts: {
     practiceIds: planItems.practiceIds,
     practise: planItems.practise,
     endPractice: planItems.endPractice,
+    capturePractice: planItems.capturePractice,
     editingType,
     // A new card waiting for its required fields (RequiredFieldsDialog), and its answer.
     requiredFields: requiredGate.request,

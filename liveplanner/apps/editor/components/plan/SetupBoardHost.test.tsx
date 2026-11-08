@@ -62,15 +62,16 @@ describe('Setup Board as a dialog', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('closes to the placeholder on Escape, and the placeholder opens it again', async () => {
+  it('cannot be left unset: no Not now or Close, and Escape keeps it open', async () => {
     markPlacedHere('board1');
     render(draw(UNSET));
     const dialog = await screen.findByRole('dialog');
+    expect(screen.queryByRole('button', { name: 'Not now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
     fireEvent.keyDown(dialog, { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
     expect(plan.updateBoard).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Set up board' }));
-    expect(await screen.findByRole('dialog', { name: 'Set up your board' })).toBeTruthy();
   });
 
   it('applies the setup on Create Board and closes', async () => {

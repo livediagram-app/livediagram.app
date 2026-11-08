@@ -212,6 +212,8 @@ export function ItemTypeLayoutEditor({
         disabled={full}
         aria-haspopup="dialog"
         aria-expanded={adding?.group === group}
+        // The Card Types tour's hint rings it (plan-tour.md "Boards: Card Types").
+        data-add-field=""
         className={`${DASHED_ADD_BUTTON} bg-white/60 dark:bg-slate-900/40`}
         onClick={(e) => setAdding({ group, opener: e.currentTarget })}
       >

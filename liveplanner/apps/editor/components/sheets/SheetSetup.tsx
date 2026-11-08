@@ -112,7 +112,7 @@ export function SheetSetup({
   open = true,
 }: {
   onImportCsv: () => void;
-  // Not now, Close, Escape or the backdrop: the sheet stays awaiting setup.
+  // Nothing in the dialog calls it (it cannot be dismissed); kept for the host's own close.
   onClose: () => void;
   // Called just before this person's own write that ends setup; the dialog closes with it.
   onFinish: () => void;
@@ -264,6 +264,8 @@ export function SheetSetup({
     <SetupDialog
       open={open}
       onClose={onClose}
+      // Only Create Sheet or Start Blank leave it (sheet.md "Setup Sheet"): left, the sheet would wait unset.
+      dismissible={false}
       returnFocus={returnFocus}
       titleId={`setup-sheet-${sheetId}`}
       title="Set up your sheet"
@@ -289,9 +291,6 @@ export function SheetSetup({
             </Button>
           )}
           <span className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              Not now
-            </Button>
             {current !== 'style' ? (
               <Button variant="primary" size="sm" disabled={cardsEmpty} onClick={next}>
                 {nextLabel}

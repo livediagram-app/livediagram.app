@@ -248,24 +248,28 @@ Where each is set, so a setting lives with what it changes, never in one central
     dialog. Whoever else has the board selected the canvas's own selection badge names, as on any element. Someone
     who may only view reads "Someone who can edit it will set it up." instead of the button. The placeholder zooms
     with the board like any of its content.
-  - **The dialog** is a modal over the editor (the editor's shared dialog: a dimmed backdrop, focus held inside,
-    Escape, the close button or a press on the backdrop closes it), never drawn inside the board and never zoomed
+  - **The dialog** is a modal over the editor (the editor's shared dialog: a dimmed backdrop, focus held inside),
+    never drawn inside the board and never zoomed
     with the canvas. It is in the app's colours (light or dark, as the editor), 40 rem wide and a fixed height (up to
     40 rem, never past the window), so moving between steps never jumps it; on a phone it fills the screen. Its
     header holds a board glyph, the title **Set up your board**, the line "Pick its cards, columns and layout. Change
-    them any time from its cog.", Help and Close. Under it, the steps as a **step indicator**: a numbered circle per
+    them any time from its cog." and Help. Under it, the steps as a **step indicator**: a numbered circle per
     step joined by a connecting line, the step's name beside its circle (under it on a narrow dialog), and "Step 2 of
     3" read out (a polite live region) as the step changes. The current step's circle is filled in the brand colour
     and its name bold (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is
     filled in the brand colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted
     and not a button. Only the step scrolls; its **footer** stays put under it: **Back** at the left (from step 2),
-    and at the right **Not now** (**Cancel** when run again) and the step's primary action.
+    and at the right the step's primary action.
+  - **It cannot be dismissed** while the board is not set up: there is no Not now and no Close, and Escape, a press
+    on the backdrop and a phone sheet's drag do nothing, so only **Create Board** leaves it. Left, it would leave a
+    board with no columns on the canvas. Run again on a set-up board (its cog's Setup), it has **Cancel** before the
+    primary action and Close in its header, and Escape and the backdrop close it, leaving the board as it was.
   - **When it opens**: for the person who placed the board (Start Planning, a Dashboard slot's new board), at once;
     and from the placeholder's **Set up board**. Only for that person:
     nobody else's screen changes. A board someone else placed, or one brought back by undo or a template, shows the
     placeholder until someone presses Set up board.
-  - **Closing without finishing** leaves the board as it was (the placeholder) and keeps what was picked: opening it
-    again on that board returns to the same step with the same choices, for the rest of the session.
+  - **Picks are kept** as they are made: if the page goes away mid-setup (a reload, a lost tab), the placeholder's
+    Set up board returns to the same step with the same choices, for the rest of the session.
   - **Keyboard**: Enter presses the step's primary action (Next or Create Board) from anywhere in the dialog but a
     text field, a button or a link (where Enter already means something: the column name field's Enter adds the
     column); a chosen option row counts, an unchosen one is picked by Enter instead. In each option list ArrowUp,

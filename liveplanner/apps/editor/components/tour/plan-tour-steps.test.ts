@@ -28,6 +28,7 @@ const card = (id: string, fields: Record<string, unknown>): Item =>
 const SHAPE: SprintShape = {
   boardId: 'b0',
   firstStatus: 'todo',
+  firstName: 'To Do',
   nextStatus: 'doing',
   nextName: 'Doing',
   shipStatus: 'done',
@@ -39,6 +40,7 @@ const ctxOf = (practice: Item[], openItemId: string | null = null): SprintCtx =>
   ...SHAPE,
   practice,
   openItemId,
+  dealtIds: new Set(['p1', 'p2']),
 });
 const dealt = () => [card('p1', { status: 'todo' }), card('p2', { status: 'todo' })];
 
@@ -47,8 +49,9 @@ afterEach(() => {
 });
 
 describe('sprintMissions', () => {
-  it('runs move, open, date and ship in order', () => {
+  it('runs add, move, open, date and ship in order', () => {
     expect(sprintMissions(SHAPE).map((m) => m.id)).toEqual([
+      'add-card',
       'move-card',
       'open-card',
       'due-date',
@@ -58,18 +61,22 @@ describe('sprintMissions', () => {
 
   it('skips the date without a Due field, and the moves on a one-column board', () => {
     expect(sprintMissions({ ...SHAPE, hasDue: false }).map((m) => m.id)).toEqual([
+      'add-card',
       'move-card',
       'open-card',
       'ship-card',
     ]);
     expect(sprintMissions({ ...SHAPE, nextStatus: 'todo' }).map((m) => m.id)).toEqual([
+      'add-card',
       'open-card',
       'due-date',
     ]);
   });
 
   it('checks each mission from the practice cards as they are', () => {
-    const [move, open, due, ship] = sprintMissions(SHAPE);
+    const [add, move, open, due, ship] = sprintMissions(SHAPE);
+    expect(add!.done(ctxOf(dealt()))).toBe(false);
+    expect(add!.done(ctxOf([...dealt(), card('p9', { status: 'todo' })]))).toBe(true);
     expect(move!.done(ctxOf(dealt()))).toBe(false);
     expect(move!.done(ctxOf([card('p1', { status: 'doing' })]))).toBe(true);
     expect(open!.done(ctxOf(dealt()))).toBe(false);
@@ -83,15 +90,20 @@ describe('sprintMissions', () => {
 
   it('words drag and open for a phone, and rings the target columns', () => {
     const phone = sprintMissions({ ...SHAPE, phone: true });
-    expect(phone[0]!.why).toMatch(/^Hold/);
-    expect(phone[0]!.hints[0]!.text).toMatch(/Hold a card/);
-    expect(phone[1]!.why).toMatch(/^Tap/);
-    expect(phone[1]!.hints[0]!.text).toBe('Tap any dashed card.');
+    expect(phone[1]!.why).toMatch(/^Hold/);
+    expect(phone[1]!.hints[0]!.text).toMatch(/Hold a card/);
+    expect(phone[2]!.why).toMatch(/^Tap/);
+    expect(phone[2]!.hints[0]!.text).toBe('Tap any dashed card.');
     const desk = sprintMissions(SHAPE);
-    expect(desk[0]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="doing"]`);
-    expect(desk[1]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-practice]`);
-    expect(desk[2]!.hints[1]!.ring!()).toBe('[role="dialog"] [data-item-field="due"]');
-    expect(desk[3]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="done"]`);
+    expect(desk[0]!.why).toContain('To Do');
+    expect(desk[0]!.hints[0]!.text).toContain('To Do');
+    expect(desk[0]!.hints[1]!.ring!()).toBe(
+      `${boardRoot('b0')} [data-plan-status="todo"] [data-add-card-trigger]`,
+    );
+    expect(desk[1]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="doing"]`);
+    expect(desk[2]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-practice]`);
+    expect(desk[3]!.hints[1]!.ring!()).toBe('[role="dialog"] [data-item-field="due"]');
+    expect(desk[4]!.hints[1]!.ring!()).toBe(`${boardRoot('b0')} [data-plan-status="done"]`);
   });
 });
 

@@ -25,7 +25,8 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
   const fill: Mission<LayoutCtx> = {
     id: 'fill-slot',
     title: 'Fill a Slot',
-    why: 'Pick what an empty slot shows, from Add to Slot.',
+    why: 'Pick what an empty slot shows, from **Add to Slot**.',
+    points: ['[data-slot-empty] [aria-haspopup="dialog"]'],
     lesson: 'A slot shows a tab, a board, a metric, a chart or a note, live from your plan.',
     hints: [
       { text: 'Press Add to Slot in an empty slot and pick anything.' },
@@ -38,6 +39,7 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
   const pairs = start.rows.some((r) => r.slots.length >= 2);
   const resize: Mission<LayoutCtx> = {
     id: 'resize-slots',
+    onPage: true,
     title: 'Resize Two Slots',
     why: 'Drag the bar between two slots, and watch the spans snap.',
     lesson: 'Slots snap to twelfths, and a row’s spans always add up to twelve.',
@@ -52,7 +54,8 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
   const add: Mission<LayoutCtx> = {
     id: 'add-slot',
     title: 'Add a Slot Beside',
-    why: 'Give a row a second slot, from a slot’s cog.',
+    why: 'Give a row a second slot, from a slot’s **cog**.',
+    points: [`${LAYOUT_VIEW_REVEAL} [aria-label="Slot Settings"]`],
     lesson: 'A row holds up to four slots, side by side.',
     hints: [
       { text: 'Open a slot’s cog, then Add a Slot › Add Slot to the Right.' },
@@ -62,6 +65,7 @@ export function layoutMissions(start: DashboardLayout, condensed: boolean): Miss
   };
   const row: Mission<LayoutCtx> = {
     id: 'row-height',
+    onPage: true,
     title: 'Change a Row’s Height',
     why: 'Drag a row’s bottom edge up or down.',
     lesson: 'Rows can be as tall as their work needs: a tall one suits a board or a Gantt.',

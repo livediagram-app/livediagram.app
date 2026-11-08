@@ -292,13 +292,15 @@ describe('Setup Sheet', () => {
     ]);
   });
 
-  it('keeps its step and picks for when it opens again, and Not now closes it', async () => {
+  it('keeps its step and picks for when it opens again, and offers no way to leave it unset', async () => {
     const view = show(h);
     fireEvent.click(radio(/^Tracker/));
     fireEvent.click(btn('Next: Style'));
     fireEvent.click(radio(/^Roomy/));
-    fireEvent.click(btn('Not now'));
-    expect(onClose).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('button', { name: 'Not now' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
     view.unmount();
     show(h);
     expect(radio(/^Roomy/).getAttribute('aria-checked')).toBe('true');
@@ -331,17 +333,15 @@ describe('Setup Sheet as a dialog', () => {
     });
   });
 
-  it('opens at once for whoever placed the sheet, with focus inside, and Escape leaves the placeholder', async () => {
+  it('opens at once for whoever placed the sheet, with focus inside, and Escape keeps it open', async () => {
     markPlacedHere(SHEET_ID);
     renderSheet(h, host, {});
     const dialog = await screen.findByRole('dialog', { name: 'Set up your sheet' });
     expect(dialog.contains(document.activeElement)).toBe(true);
     fireEvent.keyDown(dialog, { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.getByText('Not set up yet')).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
     expect(sheet(h).layout.setupPending).toBe(true);
-    fireEvent.click(btn('Set up sheet'));
-    expect(await screen.findByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
   });
 
   it('writes the setup on Create Sheet and closes, with no news to its author', async () => {

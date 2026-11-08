@@ -68,6 +68,10 @@ export type PlanItems = {
   practiceIds: ReadonlySet<string>;
   practise: (creates: Extract<ItemWrite, { kind: 'create' }>['creates']) => boolean;
   endPractice: (keep: boolean) => Promise<void>;
+  // While set, a new card it matches (one added on the Practice Sprint's board) is made a practice card instead
+  // (plan-tour.md "Add a Card"); null stops it. `capturesPractice` says whether a new card would be.
+  capturePractice: (match: PracticeCapture | null) => void;
+  capturesPractice: (create: PracticeCreate) => boolean;
   // This person's owner id: the author id their own comments carry (the delete-own check).
   ownerId: string;
   // Who is asking for which project, and through which share link (an Image field's uploads and reads, docs/specs/
@@ -81,6 +85,9 @@ export type PlanItems = {
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.
 // What a refused change says, by its reason (the store's or the api's), so a too-long field is named, not a
 // generic failure.
+type PracticeCreate = Extract<ItemWrite, { kind: 'create' }>['creates'][number];
+export type PracticeCapture = (create: PracticeCreate) => boolean;
+
 // No practice cards: one set, so a screen without them never re-renders for a new empty one.
 const NO_PRACTICE: ReadonlySet<string> = new Set();
 
@@ -181,6 +188,7 @@ export function usePlanItems(opts: {
   // The practice cards on this screen (practice-items.ts): the ref for writes, the state for drawing.
   const practiceRef = useRef<ReadonlySet<string>>(NO_PRACTICE);
   const [practiceIds, setPracticeIds] = useState<ReadonlySet<string>>(NO_PRACTICE);
+  const captureRef = useRef<PracticeCapture | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -386,9 +394,33 @@ export function usePlanItems(opts: {
     [load, settle, callbacks, scopeRef, selfRef, queueOf, levelRef, itemQueue],
   );
 
+  const practise = useCallback(
+    (creates: Extract<ItemWrite, { kind: 'create' }>['creates']): boolean => {
+      const by = selfRef.current;
+      if (!by) return false;
+      const write = withCreateIds({ kind: 'create', creates });
+      if (write.kind !== 'create') return false;
+      const next = addPracticeItems(storeRef.current, write, by, Date.now());
+      if (!next) return false;
+      const ids = new Set(practiceRef.current);
+      write.creates.forEach((c) => c.id && ids.add(c.id));
+      practiceRef.current = ids;
+      setPracticeIds(ids);
+      storeRef.current = next;
+      setStore(next);
+      return true;
+    },
+    [selfRef],
+  );
+
   const write = useCallback(
     async (input: ItemWrite, opts?: WriteOptions): Promise<boolean> => {
-      const split = splitPracticeWrite(withCreateIds(input), practiceRef.current);
+      const withIds = withCreateIds(input);
+      // A card added on the Practice Sprint's board is a practice card too (plan-tour.md "Add a Card").
+      const capture = captureRef.current;
+      if (capture && withIds.kind === 'create' && withIds.creates.every(capture))
+        return practise(withIds.creates);
+      const split = splitPracticeWrite(withIds, practiceRef.current);
       // Practice cards take no undo step and tell no one (send applies their part here).
       if (split.practice) {
         const ok = (await send(split.practice)).ok;
@@ -431,7 +463,7 @@ export function usePlanItems(opts: {
       else callbacks.current.pushUndo(step);
       return result.ok;
     },
-    [send, callbacks],
+    [send, callbacks, practise],
   );
 
   const writeQuiet = useCallback(
@@ -440,27 +472,10 @@ export function usePlanItems(opts: {
     [send],
   );
 
-  const practise = useCallback(
-    (creates: Extract<ItemWrite, { kind: 'create' }>['creates']): boolean => {
-      const by = selfRef.current;
-      if (!by) return false;
-      const write = withCreateIds({ kind: 'create', creates });
-      if (write.kind !== 'create') return false;
-      const next = addPracticeItems(storeRef.current, write, by, Date.now());
-      if (!next) return false;
-      const ids = new Set(practiceRef.current);
-      write.creates.forEach((c) => c.id && ids.add(c.id));
-      practiceRef.current = ids;
-      setPracticeIds(ids);
-      storeRef.current = next;
-      setStore(next);
-      return true;
-    },
-    [selfRef],
-  );
-
   const endPractice = useCallback(
     async (keep: boolean): Promise<void> => {
+      // Practice is over: a new card is a real one again (and the kept ones below are made real, not captured).
+      captureRef.current = null;
       const ids = practiceRef.current;
       if (ids.size === 0) return;
       const kept = keep ? storeRef.current.items.filter((i) => ids.has(i.id)) : [];
@@ -490,6 +505,14 @@ export function usePlanItems(opts: {
 
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
+  const capturePractice = useCallback((match: PracticeCapture | null) => {
+    captureRef.current = match;
+  }, []);
+  const capturesPractice = useCallback(
+    (create: PracticeCreate) => captureRef.current?.(create) === true,
+    [],
+  );
+
   return {
     store,
     items,
@@ -504,5 +527,7 @@ export function usePlanItems(opts: {
     practiceIds,
     practise,
     endPractice,
+    capturePractice,
+    capturesPractice,
   };
 }
