@@ -5,6 +5,7 @@
 // someone on them comes first; on a board of five or more cards where nobody is assigned, it is left out).
 import {
   boardAddTypes,
+  withArticle,
   itemAssignee,
   itemStatus,
   ARCHIVED_FIELD,
@@ -353,7 +354,7 @@ function typeFieldCandidates(
       const fit = (weight: number) =>
         few ? weight * 0.35 : filled === 0 ? -1 : share(filled, n) * weight;
       const reason = filled
-        ? `${filled} of ${n} ${cardsWord(n)} have a ${c.label}`
+        ? `${filled} of ${n} ${cardsWord(n)} have ${withArticle(c.label)}`
         : `From your ${t.label} cards`;
       if (c.kind === 'choice' || c.kind === 'checkbox') {
         const opts = c.options ?? [];
