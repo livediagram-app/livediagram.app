@@ -97,7 +97,9 @@ export function PracticeSprint({
     const t = window.setTimeout(() => root.removeAttribute('data-practice-deal'), DEAL_MS);
     // A card added on this board while the sprint runs is a practice card too (plan-tour.md "Add a Card").
     const statuses = new Set(setup.columns.map((c) => c.status));
-    plan.capturePractice((c) => typeof c.place?.status === 'string' && statuses.has(c.place.status));
+    plan.capturePractice(
+      (c) => typeof c.place?.status === 'string' && statuses.has(c.place.status),
+    );
     return () => {
       window.clearTimeout(t);
       root.removeAttribute('data-practice-deal');

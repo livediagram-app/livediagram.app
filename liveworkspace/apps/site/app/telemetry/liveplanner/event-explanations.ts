@@ -1466,7 +1466,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Selected|PlanTourKeepCards':
     'Someone finished the Practice Sprint and kept its practice cards as real cards on their board.',
   'UI|Selected|PlanTourPutBack':
-    'Someone finished the Plan tour\'s Card Types or Board Setup track and pressed Put It Back, undoing the type or board changes it had them make.',
+    "Someone finished the Plan tour's Card Types or Board Setup track and pressed Put It Back, undoing the type or board changes it had them make.",
   'UI|Selected|PlanTourKeepSheet':
     'Someone finished Five Small Wins and kept the practice sheet as a new Sheet tab, Practice Budget.',
   'UI|Selected|PlanTourBoards':
@@ -1551,13 +1551,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PlanTourStart':
     'Someone pressed Start Tour for the Plan tour on a board or Sheet, opening its start panel (on a board, the choice of Using a Board, Card Types and Board Setup). Nothing runs until a track is picked.',
   'UI|Opened|DashboardTourStart':
-    'Someone pressed Start Tour on a dashboard, opening the Dashboards tour\'s start panel. Layout View draws only once they press Show the Grid.',
+    "Someone pressed Start Tour on a dashboard, opening the Dashboards tour's start panel. Layout View draws only once they press Show the Grid.",
   'UI|Started|PlanTourCardTypes':
-    'Someone picked Card Types on the Boards tour\'s start panel, beginning its missions: make a type, give it a field, use it on the board.',
+    "Someone picked Card Types on the Boards tour's start panel, beginning its missions: make a type, give it a field, use it on the board.",
   'UI|Started|PlanTourBoardSetup':
-    'Someone picked Board Setup on the Boards tour\'s start panel, beginning its missions: rename a column, set a WIP limit, add a widget.',
+    "Someone picked Board Setup on the Boards tour's start panel, beginning its missions: rename a column, set a WIP limit, add a widget.",
   'UI|Started|PlanTour':
-    'Someone started the Plan tour\'s Using a Board track (the Practice Sprint) or Five Small Wins from its start panel (since November 2026); before that, from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
+    "Someone started the Plan tour's Using a Board track (the Practice Sprint) or Five Small Wins from its start panel (since November 2026); before that, from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).",
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':

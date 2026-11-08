@@ -212,7 +212,9 @@ export function PlanTourHost() {
         name="Sheets Tour"
         heading="Five Small Wins"
         line="A practice budget opens in a sheet of its own: type, add up, fill down, format and chart it. Nothing is saved unless you keep it."
-        tracks={[{ id: 'sheets', title: 'Five Small Wins', line: '', missions: 5, taken: taken('sheets') }]}
+        tracks={[
+          { id: 'sheets', title: 'Five Small Wins', line: '', missions: 5, taken: taken('sheets') },
+        ]}
         startLabel="Open the Practice Sheet"
         onPick={pick}
         onClose={close}

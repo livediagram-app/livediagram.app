@@ -76,7 +76,8 @@ export function typesMissions(boardId: string, firstName: string): Mission<Types
       title: 'Add One to the Board',
       why: `Press **Add card** in ${firstName} and pick your new type.`,
       points: [`${boardRoot(boardId)} [data-add-card-trigger]`],
-      lesson: 'The board takes it like any other. This card is practice, so it goes when you finish.',
+      lesson:
+        'The board takes it like any other. This card is practice, so it goes when you finish.',
       hints: [
         { text: `Add card sits at the foot of ${firstName}.` },
         {
@@ -104,7 +105,10 @@ export function setupMissions(boardId: string): Mission<SetupCtx>[] {
       id: 'rename-column',
       title: 'Rename a Column',
       why: 'Open a column’s **settings** and give it a new **Column Name**.',
-      points: ['[aria-label="Column name"]', `${boardRoot(boardId)} [aria-label$=" column settings"]`],
+      points: [
+        '[aria-label="Column name"]',
+        `${boardRoot(boardId)} [aria-label$=" column settings"]`,
+      ],
       lesson: 'Name columns after how your team really works: the cards keep their place.',
       hints: [
         { text: 'Hover a column’s header for its cog, then edit Column Name.' },
@@ -124,7 +128,8 @@ export function setupMissions(boardId: string): Mission<SetupCtx>[] {
         'button[aria-label="Raise the WIP limit"]',
         `${boardRoot(boardId)} [aria-label$=" column settings"]`,
       ],
-      lesson: 'Over its limit, a column’s count turns amber: finish something before starting more.',
+      lesson:
+        'Over its limit, a column’s count turns amber: finish something before starting more.',
       hints: [
         { text: 'Open a column’s cog and raise its WIP Limit.' },
         { text: 'Here.', ring: () => '[id^="column-"][id$="-wip"]' },
