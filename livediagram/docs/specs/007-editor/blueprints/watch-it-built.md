@@ -25,6 +25,13 @@ The replay never writes the document. `ReplayScope` wraps `EditorCanvasHost` and
 - the selection is the replay's store (a nested `SelectionStoreProvider`), so the real handles, toolbar and
   quick-connect ring draw on demo ids, and presence never sees them (it subscribes to the real store).
 
+Draw's dock draws inside the scope, but its model is built by `useEditorState` outside it, so a frame's `dock`
+(the tool in hand, a marker's colour and width, Shape recognition) and its `prefs.drawPattern` reach it through
+`withReplayDock` (`lib/replay/replay-dock.ts`), which `WhiteboardDock` applies to the model it draws while
+`replayStore.active`. The model's actions stay the real ones and are never called: the replay opens a dock flyout
+only by pressing its own button, and a marker's flyout only while the button reads as in hand (`aria-pressed`),
+where a press opens the flyout and never picks the pen up.
+
 Everything else (autosave, the unload save, the offline copy, room ops, undo, export) reads the real `tabs`, which
 the replay never touches.
 

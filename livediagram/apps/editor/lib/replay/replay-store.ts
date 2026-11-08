@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { Element, Tab } from '@livediagram/document';
 import type { UserPreferences } from '@/lib/user-preferences';
+import type { ReplayDock } from './topic';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
@@ -17,6 +18,8 @@ export type ReplayState = {
   // background): drawn over the real ones in ReplayScope only.
   readonly tab: Partial<Tab> | null;
   readonly prefs: Partial<UserPreferences> | null;
+  // Draw's dock as it shows (lib/replay/replay-dock.ts), likewise.
+  readonly dock: ReplayDock | null;
 };
 
 const IDLE: ReplayState = Object.freeze({
@@ -25,6 +28,7 @@ const IDLE: ReplayState = Object.freeze({
   menu: null,
   tab: null,
   prefs: null,
+  dock: null,
 });
 
 // A demo element's id starts with this, so the fade (globals.css) can tell it from the person's own.
@@ -45,7 +49,8 @@ export const replayStore = {
       merged.elements === state.elements &&
       merged.menu === state.menu &&
       merged.tab === state.tab &&
-      merged.prefs === state.prefs
+      merged.prefs === state.prefs &&
+      merged.dock === state.dock
     )
       return;
     state = merged;

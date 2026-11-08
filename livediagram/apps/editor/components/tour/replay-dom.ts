@@ -1,6 +1,7 @@
 import { clickTour, findTour } from '@liveworkspace/workbench/components/tour/tour-dom';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import type { CursorTarget, Point } from '@/lib/replay/topic';
+import { dockItemSelector } from '@/lib/replay/topics/draw-shared';
 
 // Watch It Built's hands on the real chrome (docs/specs/007-editor/blueprints/watch-it-built.md "Driving the chrome"):
 // finding what Example points at, and opening or closing the editor's own panels by pressing their own buttons, so
@@ -102,6 +103,20 @@ const byRailGroup = (things: string, n: number): Openable => ({
   },
 });
 
+// A dock flyout, opened and closed by its own button (WhiteboardDock.tsx DockFlyoutHost: `whiteboard-flyout-<kind>`
+// is in the page only while that flyout is open). `inHand`: a marker's button opens its flyout only while it is the
+// tool in hand; otherwise a press would pick the pen up and store it (DrawingToolsGroup.tsx onPress), so the press is
+// made only while the button reads as in hand (`aria-pressed`, drawn in from the frame's `dock`), and is tried again
+// on the next frame until it does.
+const byDock = (key: string, kind: string, inHand = false): Openable => ({
+  isOpen: () => !!document.getElementById(`whiteboard-flyout-${kind}`),
+  toggle: () => {
+    const button = document.querySelector<HTMLElement>(dockItemSelector(key));
+    if (!button || (inHand && button.getAttribute('aria-pressed') !== 'true')) return;
+    button.click();
+  },
+});
+
 // Every part of the chrome a topic may hold open, by the ids its frames name.
 export const OPENABLES: Record<string, Openable> = {
   // The palette's first category (Shapes; in Workshop also the first), its flyout.
@@ -146,6 +161,11 @@ export const OPENABLES: Record<string, Openable> = {
   'session-tools': byRailGroup('session tools', 1),
   'session-react': byRailGroup('session tools', 3),
   'stickers-reactions': byRailGroup('stickers', 2),
+  // Draw's dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"): Shapes, the Settings cog, and
+  // Marker 2's flyout.
+  'dock-shapes': byDock('shapes', 'shapes'),
+  'dock-settings': byDock('settings', 'settings'),
+  'dock-pen-second': byDock('second', 'second', true),
 };
 
 

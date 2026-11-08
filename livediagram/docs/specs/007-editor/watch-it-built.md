@@ -80,13 +80,18 @@ view. Lines name clicks on a computer and taps on a touch screen.
 
 ### Draw
 
-| Topic                   | Line on the start panel                            | Chapters                                                                                                                                                    |
-| ----------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sketch**              | Pick up a marker and draw.                         | **Pick Up**: presses the first marker on the dock. **Draw**: a freehand line and a little house are drawn under the cursor                                  |
-| **Shape Recognition**   | Wobbly lines become clean shapes when you hold.    | **Rough**: a wobbly circle is drawn. **Hold**: the cursor rests; the stroke snaps into a clean ellipse. **Again**: a rough box snaps into a rectangle       |
-| **Pens and Colours**    | Choose each marker's colour and width.             | **Open**: presses the marker in hand again; its flyout opens. **Colour**: picks a colour and a wider width. **Draw**: a stroke in the new pen               |
-| **Shapes and Stickies** | Add shapes and sticky notes from the dock.         | **Shapes**: opens the dock's Shapes and drops a rectangle. **Sticky**: adds a sticky note and types on it                                                   |
-| **Erase and Board**     | Rub things out and change what's behind your work. | **Erase**: picks the Eraser and rubs out a stroke. **Board**: opens the dock's settings cog and picks Dots, then Grid; the board changes behind the strokes |
+| Topic                   | Line on the start panel                            | Chapters                                                                                                                                                                                                                                           |
+| ----------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sketch**              | Pick up a marker and draw.                         | **Pick Up**: presses the first marker on the dock; it shows in hand. **Draw**: a wavy line and a little house (walls, roof, door) are drawn under the cursor, in that marker                                                                       |
+| **Shape Recognition**   | Wobbly lines become clean shapes when you hold.    | **Turn On**: opens the dock's Settings cog and presses Shape recognition. **Hold**: a wobbly circle is drawn, the cursor rests half a second and it snaps into a clean ellipse (the line names Alt). **Again**: a rough box snaps into a rectangle |
+| **Pens and Colours**    | Choose each marker's colour and width.             | **Open**: presses Marker 2, then presses it again; its flyout opens. **Colour**: picks Green, then Thick. **Draw**: a stroke in the new pen                                                                                                        |
+| **Shapes and Stickies** | Add shapes and sticky notes from the dock.         | **Shapes**: opens the dock's Shapes, searches "rectangle", picks it and drags one out. **Sticky**: opens Shapes again, searches "sticky", picks the sticky note, clicks the board and types on it                                                  |
+| **Erase and Board**     | Rub things out and change what's behind your work. | **Erase**: picks the Eraser and rubs out one of three strokes. **Board**: opens the dock's Settings cog and picks Dots, then Grid; the board changes behind the strokes                                                                            |
+
+Draw's topics never change the person's tools: the marker in hand, its colour and width, Shape recognition and the
+board are shown on the dock and the canvas from the replay (the dock draws them in while it runs), never picked or
+stored, so the tool in hand and every Draw setting are exactly as they were when it ends. Example's presses on a
+flyout's options only show a ring; the flyouts themselves are opened by their own dock buttons.
 
 ### Workshop
 

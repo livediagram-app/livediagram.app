@@ -128,6 +128,7 @@ describe('WatchItBuiltPlayer', () => {
       menu: null,
       tab: null,
       prefs: null,
+      dock: null,
     });
     expect(document.documentElement.hasAttribute('data-replay')).toBe(false);
     expect(telemetry.state.paused).toBe(false);
@@ -149,7 +150,9 @@ describe('WatchItBuiltPlayer', () => {
 
   it('ends as skipped when the tab changes under it', () => {
     editor();
-    const { rerender } = render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
+    const { rerender } = render(
+      <WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />,
+    );
     editor({ activeTab: { id: 'tab2', elements: [] } });
     rerender(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
     expect(replayStore.get().active).toBe(false);
@@ -343,7 +346,9 @@ describe('WatchItBuiltPlayer clock', () => {
 
   it('leaves nothing behind when it unmounts mid-run', () => {
     editor();
-    const { unmount } = render(<WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />);
+    const { unmount } = render(
+      <WatchItBuiltPlayer card={card} hasMore={false} onEnded={onEnded} />,
+    );
     unmount();
     expect(replayStore.get().active).toBe(false);
     expect(document.documentElement.hasAttribute('data-replay')).toBe(false);

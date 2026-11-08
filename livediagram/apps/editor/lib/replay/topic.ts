@@ -1,5 +1,8 @@
 import type { Element, ShapeElement, Tab } from '@livediagram/document';
 import type { UserPreferences } from '@/lib/user-preferences';
+import type { WhiteboardTool } from '@/lib/whiteboard-tool';
+import type { WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
+import type { WhiteboardPen, WhiteboardPenId, WhiteboardPrefs } from '@/lib/whiteboard-prefs';
 
 // A Watch It Built topic (docs/specs/007-editor/watch-it-built.md "The curriculum"): a short replay of a few chapters.
 // Pure: for any moment in a chapter it says what the demo looks like, what of the real chrome is open, and where
@@ -48,6 +51,20 @@ export type Waypoint = {
   readonly press?: boolean;
 };
 
+/**
+ * Draw's dock as it shows at a moment (watch-it-built.md "The curriculum", Draw): the tool in hand, the shape armed,
+ * a marker's colour and width and the other tool settings, drawn over the person's own on the dock only
+ * (lib/replay/replay-dock.ts), never picked or stored.
+ */
+export type ReplayDock = {
+  readonly tool?: WhiteboardTool;
+  readonly armedShape?: WhiteboardShapeKey | null;
+  readonly prefs?: Partial<Omit<WhiteboardPrefs, 'pens'>>;
+  readonly pens?: Partial<
+    Record<WhiteboardPenId, Partial<Pick<WhiteboardPen, 'colour' | 'width'>>>
+  >;
+};
+
 export type Frame = {
   readonly elements: readonly Element[];
   readonly selectedId: string | null;
@@ -66,6 +83,8 @@ export type Frame = {
   readonly prefs?: Partial<UserPreferences>;
   // Where the player sits: low over the canvas (the default), or at its top while a dialog fills the bottom.
   readonly player?: 'top';
+  // Draw's dock as it shows (the marker in hand, its colour), likewise.
+  readonly dock?: ReplayDock;
   // Example is holding something here (a carried shape, a pen drawing): the cursor sits on this canvas point, pressed.
   readonly hold?: Point | null;
 };

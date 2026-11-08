@@ -104,7 +104,14 @@ export function WatchItBuiltPlayer({
     pauseTelemetry();
     ctx.closeContextMenu();
     document.documentElement.setAttribute('data-replay', '');
-    replayStore.set({ active: true, elements: [], menu: null, tab: null, prefs: null });
+    replayStore.set({
+      active: true,
+      elements: [],
+      menu: null,
+      tab: null,
+      prefs: null,
+      dock: null,
+    });
     const reduced = reducedMotion();
     setClock({
       index: 0,
@@ -309,6 +316,7 @@ function applyFrame(frame: Frame, signatureRef: { current: string }) {
     frame.selectedId,
     frame.tab ?? null,
     frame.prefs ?? null,
+    frame.dock ?? null,
   ]);
   if (signature === signatureRef.current) return;
   // A new look eases in, as a pick in the Tab Style dialog does.
@@ -326,6 +334,7 @@ function applyFrame(frame: Frame, signatureRef: { current: string }) {
     menu,
     tab: frame.tab ?? null,
     prefs: frame.prefs ?? null,
+    dock: frame.dock ?? null,
   });
   replayStore.selection.setSelection({
     selectedId: frame.selectedId,
