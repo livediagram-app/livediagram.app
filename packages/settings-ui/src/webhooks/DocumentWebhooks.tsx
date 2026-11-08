@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CompactEmptyState, PlusIcon } from '@liveworkspace/ui';
 import {
   WEBHOOK_SIGNATURE_HEADER,
@@ -87,8 +87,9 @@ function WebhooksList() {
     };
   }, [api]);
 
-  // The form's first choice takes the keyboard as it opens.
-  useEffect(() => {
+  // The form's first choice takes the keyboard as it opens, in the same commit (a layout effect), so focus never
+  // falls to the page from the Add button the form replaces.
+  useLayoutEffect(() => {
     if (adding) firstRef.current?.focus();
   }, [adding]);
 

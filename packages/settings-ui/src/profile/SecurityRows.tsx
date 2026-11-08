@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
@@ -311,14 +311,23 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
   const [now] = useState(() => Date.now());
   // Where the keyboard was when a Sign Out was pressed. That button is disabled while it works (which drops focus
   // to the page) and then goes with its row, so focus comes back to the next Sign Out here, or to the panel it sits
-  // in: never left on the page's body, outside the Settings dialog.
-  const pressed = useRef<{ scope: HTMLElement | null; button: HTMLElement } | null>(null);
-  useEffect(() => {
+  // in: never left on the page's body, outside the Settings dialog. A signed-out row's hand-off waits for the commit
+  // that takes the row away (handing focus back to the button first, only for the row to go, left it on the body),
+  // and runs as a layout effect, in that same commit, so focus never sits on the body for a frame in between.
+  const pressed = useRef<{
+    scope: HTMLElement | null;
+    button: HTMLElement;
+    signedOut?: boolean;
+  } | null>(null);
+  useLayoutEffect(() => {
     const was = pressed.current;
     if (!was || busy !== null) return;
-    const active = document.activeElement;
-    if (active && active !== document.body && active !== was.button) return;
+    if (was.signedOut === undefined) return;
+    if (was.signedOut && was.button.isConnected) return;
     pressed.current = null;
+    const active = document.activeElement;
+    // Something else took the keyboard meanwhile: it keeps it.
+    if (active && active !== document.body && active !== was.button) return;
     const next = was.button.isConnected
       ? was.button
       : (was.scope?.querySelector<HTMLElement>('[data-session-sign-out]:not([disabled])') ??
@@ -327,10 +336,15 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
   });
 
   async function act(id: string, run: () => Promise<boolean>, button: HTMLElement) {
-    pressed.current = { scope: button.closest<HTMLElement>('[role="dialog"]'), button };
+    const was: NonNullable<typeof pressed.current> = {
+      scope: button.closest<HTMLElement>('[role="dialog"]'),
+      button,
+    };
+    pressed.current = was;
     setBusy(id);
     setFailed(false);
     const ok = await run().catch(() => false);
+    was.signedOut = ok;
     setBusy(null);
     if (ok) {
       setGone((was) => new Set(was).add(id));

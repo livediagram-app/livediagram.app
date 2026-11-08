@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { BUTTON } from './account-ui';
 
 // A destructive button that asks first, in place: Revoke becomes Revoke now and Keep (TokensPanel), Delete becomes
@@ -20,7 +20,8 @@ export function ConfirmAction({
   const firstRef = useRef<HTMLButtonElement>(null);
   const keepRef = useRef<HTMLButtonElement>(null);
   const asked = useRef(false);
-  useEffect(() => {
+  // A layout effect: the button that had the keyboard goes in this commit, and its swap takes it in the same one.
+  useLayoutEffect(() => {
     if (!asked.current) return;
     (confirming ? keepRef : firstRef).current?.focus();
   }, [confirming]);

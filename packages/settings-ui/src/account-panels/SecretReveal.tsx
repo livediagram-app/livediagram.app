@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { BUTTON, Panel } from './account-ui';
 
 // A secret shown once, with Copy and Done: a new API token (TokensPanel), a new webhook's signing secret
@@ -25,7 +25,8 @@ export function SecretReveal({
   const [copied, setCopied] = useState<'no' | 'yes' | 'failed'>('no');
   const secretRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
+  // A layout effect, so the keyboard lands on Copy in the commit that takes the form away, never on the page.
+  useLayoutEffect(() => {
     if (focusCopy) copyRef.current?.focus();
   }, [focusCopy]);
 
