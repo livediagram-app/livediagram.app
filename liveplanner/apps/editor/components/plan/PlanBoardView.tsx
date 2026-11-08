@@ -92,6 +92,7 @@ import { useCardFanIn } from './useCardFanIn';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
+import { practiceShipColumn } from './PracticeMarks';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
@@ -175,6 +176,11 @@ export function PlanBoardView({
   const setup = useMemo(
     () => (fullSetup && simplified ? slotSetup(fullSetup) : fullSetup),
     [fullSetup, simplified],
+  );
+  // The column the Practice Sprint ships to, only while there are practice cards (PracticeMarks).
+  const shipColumnId = useMemo(
+    () => (setup && plan?.practiceIds?.size ? practiceShipColumn(setup)?.id : undefined),
+    [setup, plan?.practiceIds],
   );
   const [quick, setQuick] = useState<QuickFilter>({});
   // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either; nor does a slot board.
@@ -887,6 +893,8 @@ export function PlanBoardView({
                         const firstEmpty =
                           empty && canEditCards && laneIndex === 0 && col === projection.columns[0];
                         const done = isDoneColumn(setup, col.column);
+                        // Where the Practice Sprint's cards ship (plan-tour.md "Boards: Practice Sprint").
+                        const ships = col.column.id === shipColumnId;
                         // Every type the board takes may be added in any cell: a type's left-out statuses only
                         // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
                         const cellTypes = addTypes;
@@ -938,6 +946,7 @@ export function PlanBoardView({
                                   lifted={dragging?.itemId === item.id || carried.has(item.id)}
                                   selected={selection.ids.has(item.id)}
                                   done={done}
+                                  ships={ships}
                                   // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                   setupFields={CARD_FIELDS}
                                   cardSize={cardSize}

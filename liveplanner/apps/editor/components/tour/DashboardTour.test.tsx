@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   dashboardFromPreset,
@@ -9,14 +9,8 @@ import {
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from '@/components/plan/dashboard/DashboardSettings';
-import { dashboardTourSteps } from './dashboard-tour-steps';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// jsdom lays nothing out, so "on screen" is just "in the project" here.
-vi.mock('@liveworkspace/workbench/components/tour/tour-dom', async (actual) => ({
-  ...(await actual<typeof import('@liveworkspace/workbench/components/tour/tour-dom')>()),
-  waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
-}));
 afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
@@ -29,12 +23,18 @@ const id = () => `id${n++}`;
 // The page the tour points at, as DashboardRowView and DashboardSlotView draw it.
 function drawPage(layout: DashboardLayout): HTMLElement {
   const canvas = document.createElement('div');
+  canvas.dataset.dashboard = '';
+  // jsdom lays nothing out: every row and slot gets a box, so the overlay has something to measure.
+  const box = { left: 10, top: 20, width: 900, height: 320, right: 910, bottom: 340 } as DOMRect;
+  canvas.getBoundingClientRect = () => box;
   for (const row of layout.rows) {
     const r = document.createElement('div');
-    r.dataset.dashboardRow = '';
+    r.dataset.dashboardRow = row.id;
+    r.getBoundingClientRect = () => box;
     for (const slot of row.slots) {
       const s = document.createElement('div');
       s.dataset.dashboardSlot = slot.id;
+      s.getBoundingClientRect = () => box;
       // An empty slot's Add to Slot, a filled one's Move grip: what the steps ring, never the whole slot.
       const control = document.createElement('button');
       if (!slot.content) {
@@ -62,8 +62,14 @@ function show(layout: DashboardLayout, canEdit = true) {
       actions={actions}
     />
   );
-  const { rerender } = render(page(canEdit));
-  return { setCanEdit: (edit: boolean) => rerender(page(edit)) };
+  const r = render(page(canEdit));
+  return {
+    setCanEdit: (edit: boolean) => r.rerender(page(edit)),
+    setLayout: (next: DashboardLayout) =>
+      r.rerender(
+        <DashboardSettings canvas={canvas} canEdit name="Overview" layout={next} actions={actions} />,
+      ),
+  };
 }
 
 const held = () => {
@@ -75,18 +81,12 @@ const held = () => {
   });
 };
 
-const settle = () => act(async () => new Promise((r) => setTimeout(r, 30)));
+const fillAll = (l: DashboardLayout) =>
+  l.rows
+    .flatMap((r) => r.slots)
+    .reduce((acc, s) => setDashboardContent(acc, s.id, { type: 'note', title: 'N', text: '' }), l);
 
-// The card's Next waits while the next step prepares (aria-disabled): press it once it is ready.
-const next = async () => {
-  const button = await waitFor(() => {
-    const b = screen.getByRole('button', { name: /next/i });
-    expect(b.getAttribute('aria-disabled')).toBeNull();
-    return b;
-  });
-  fireEvent.click(button);
-  await settle();
-};
+const settle = (ms = 30) => act(async () => new Promise((r) => setTimeout(r, ms)));
 
 const startShowMe = async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Dashboard Settings' }));
@@ -94,15 +94,9 @@ const startShowMe = async () => {
   await settle();
 };
 
-// docs/specs/026-plan/plan-tabs.md "Show Me".
-describe('Dashboard Show Me', () => {
-  it('points at what the dashboard has: an empty slot to fill, a filled one to change', () => {
-    const ids = (hasEmpty: boolean, hasFilled: boolean) =>
-      dashboardTourSteps({ hasEmpty, hasFilled }).map((s) => s.id);
-    expect(ids(true, true)).toEqual(['rows', 'fill', 'slot', 'settings', 'outro']);
-    expect(ids(true, false)).toEqual(['rows', 'fill', 'settings', 'outro']);
-    expect(ids(false, true)).toEqual(['rows', 'slot', 'settings', 'outro']);
-  });
+// docs/specs/026-plan/plan-tabs.md "Show Me" and plan-tour.md "Dashboards: Layout View".
+describe('Dashboard Show Me: Layout View', () => {
+  const strip = () => screen.getByRole('region', { name: 'Layout View' });
 
   it('sits in the settings title row beside Help, for an Editor only', () => {
     show(held(), false);
@@ -116,49 +110,99 @@ describe('Dashboard Show Me', () => {
     );
   });
 
-  it('closes the popover and starts on the rows, counting the steps this dashboard has', async () => {
-    show(dashboardFromPreset('two-by-two', id));
+  it('closes the popover and lays the grid over the page, with each slot’s span and each row’s height', async () => {
+    const layout = held();
+    show(layout);
     await startShowMe();
     expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull();
-    // Every slot empty: Rows, Fill and Settings.
-    expect(
-      screen.getByRole('dialog', { name: /^Show Me step 1 of 3: Rows of Slots/ }),
-    ).toBeTruthy();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
-  });
-
-  it('shows the filled slot’s grip and cog while its step is up, and hides them after', async () => {
-    show(held());
-    await startShowMe();
-    await next(); // Fill a Slot
-    await next(); // Change or Move a Slot
-    expect(screen.getByRole('dialog', { name: /Change or Move a Slot/ })).toBeTruthy();
+    expect(document.querySelector('[data-dashboard]')?.hasAttribute('data-layout-view')).toBe(true);
+    const spans = [...document.querySelectorAll('[data-layout-span]')].map((e) => e.textContent);
+    expect(spans).toEqual(layout.rows.flatMap((r) => r.slots.map((s) => `${s.span} / 12`)));
+    const heights = [...document.querySelectorAll('[data-layout-height]')].map((e) => e.textContent);
+    expect(heights).toEqual(layout.rows.map((r) => `${r.height} px`));
+    expect(screen.getByRole('img', { name: 'Mission 1 of 3' })).toBeTruthy();
+    expect(strip().textContent).toContain('Resize two slots');
+    // The filled slot's cog shows while it runs.
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
-    await next(); // Dashboard Settings
-    expect(filled?.hasAttribute('data-tour-reveal')).toBe(false);
   });
 
-  it('reports a skip when left before its end', async () => {
+  it('climbs its hints, ringing the divider', async () => {
     show(held());
     await startShowMe();
-    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hint' }));
+    expect(strip().textContent).toContain('Hover between two slots');
+    fireEvent.click(screen.getByRole('button', { name: 'More Help' }));
+    expect(strip().textContent).toContain('This bar.');
+    expect(screen.queryByRole('button', { name: /Hint|More Help/ })).toBeNull();
+  });
+
+  it('ticks a mission off by the person’s own change, then moves on', async () => {
+    const layout = held();
+    const { setLayout } = show(layout);
+    await startShowMe();
+    const row0 = layout.rows[0]!;
+    setLayout({
+      ...layout,
+      rows: [
+        { ...row0, slots: row0.slots.map((s, i) => ({ ...s, span: i === 0 ? 8 : 4 })) },
+        ...layout.rows.slice(1),
+      ],
+    });
+    await settle();
+    expect(strip().textContent).toContain('a row’s spans always add up to twelve');
+    await settle(1700);
+    expect(screen.getByRole('img', { name: 'Mission 2 of 3' })).toBeTruthy();
+    expect(strip().textContent).toContain('Change a row’s height');
+  });
+
+  it('reports a skip from End, and lets go of the page', async () => {
+    show(held());
+    await startShowMe();
+    fireEvent.click(screen.getByRole('button', { name: 'End Layout View' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
+    expect(document.querySelector('[data-dashboard]')?.hasAttribute('data-layout-view')).toBe(false);
+    expect(document.querySelector('[data-layout-span]')).toBeNull();
+  });
+
+  it('finishes with Done, as completed', async () => {
+    const layout = fillAll(held());
+    const { setLayout } = show(layout);
+    await startShowMe();
+    // Every slot filled: no Fill a Slot, so two missions.
+    expect(screen.getByRole('img', { name: 'Mission 1 of 2' })).toBeTruthy();
+    const row0 = layout.rows[0]!;
+    const resized = {
+      ...layout,
+      rows: [
+        { ...row0, slots: row0.slots.map((s, i) => ({ ...s, span: i === 0 ? 8 : 4 })) },
+        ...layout.rows.slice(1),
+      ],
+    };
+    setLayout(resized);
+    await settle();
+    await settle(1700);
+    const r0 = resized.rows[0]!;
+    setLayout({ ...resized, rows: [{ ...r0, height: r0.height + 40 }, ...resized.rows.slice(1)] });
+    await settle();
+    await settle(1700);
+    expect(screen.getByRole('img', { name: 'All 2 done' })).toBeTruthy();
+    expect(strip().textContent).toContain('That’s the grid.');
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourCompleted');
   });
 
   it('ends when the page can no longer be edited, letting go of the slot it was showing', async () => {
     const { setCanEdit } = show(held());
     await startShowMe();
-    await next(); // Fill a Slot
-    await next(); // Change or Move a Slot
     const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
-    expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
     setCanEdit(false);
     await settle();
     expect(filled?.hasAttribute('data-tour-reveal')).toBe(false);
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
     setCanEdit(true);
     await settle();
-    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
-    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
+    expect(screen.queryByRole('region', { name: 'Layout View' })).toBeNull();
   });
 });

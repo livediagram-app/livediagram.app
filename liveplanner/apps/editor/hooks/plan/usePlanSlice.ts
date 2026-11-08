@@ -231,9 +231,10 @@ export function usePlanSlice(opts: {
   const moveItem = useCallback(
     (itemId: string, move: ItemMove) => {
       void write({ kind: 'move', id: itemId, move });
-      track('Plan', 'Moved', 'Board');
+      // A practice card's move is the tour's, not the person's work (docs/specs/026-plan/plan-tour.md "Telemetry").
+      if (!planItems.practiceIds.has(itemId)) track('Plan', 'Moved', 'Board');
     },
-    [write],
+    [write, planItems.practiceIds],
   );
 
   // Many cards moved together (a group's drag, a selection's Move To): one write and one undo step, a single move for
@@ -569,6 +570,7 @@ export function usePlanSlice(opts: {
   const context = useMemo<PlanContextValue>(
     () => ({
       items: planItems.items,
+      practiceIds: planItems.practiceIds,
       types: itemTypes.types,
       itemTypes,
       editType,
@@ -621,6 +623,7 @@ export function usePlanSlice(opts: {
     }),
     [
       planItems.items,
+      planItems.practiceIds,
       itemTypes,
       editType,
       createTypeForBoard,
@@ -684,8 +687,12 @@ export function usePlanSlice(opts: {
     },
     // Opens an item without counting it as the person's (the Plan tour's card panel step).
     showItem: setOpenItemId,
-    // A write with no undo step, for the card the Plan tour makes and takes away itself.
+    // A write with no undo step, for content the editor makes and takes away itself.
     writeQuiet,
+    // The Boards tour's practice cards (docs/specs/026-plan/plan-tour.md "Practice cards").
+    practiceIds: planItems.practiceIds,
+    practise: planItems.practise,
+    endPractice: planItems.endPractice,
     editingType,
     // A new card waiting for its required fields (RequiredFieldsDialog), and its answer.
     requiredFields: requiredGate.request,

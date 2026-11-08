@@ -1,47 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { newItemId } from '@liveplanner/items';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   markPlanTracksSeen,
   PLAN_TOUR_RELAUNCH_EVENT,
   planTrackSeen,
   type BoardSheetTrack,
-  writeLeftover,
 } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import {
-  boardRoot,
-  firstCardOn,
-  needsReveal,
-  planTourSteps,
-  planTourStepTelemetryType,
-  type PlanTourApi,
-  sheetRoot,
-  visiblePlanWork,
-} from './plan-tour-steps';
-import { TourStage } from './TourStage';
-import {
-  useTourEngine,
-  type TourOutcome,
-} from '@liveworkspace/workbench/components/tour/useTourEngine';
+import { boardRoot, visiblePlanWork } from './plan-tour-steps';
+import { PracticeSheetDialog } from './PracticeSheetDialog';
+import { PracticeSprint, type SprintEnd } from './PracticeSprint';
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
-// The Boards track's example card's title.
-const TOUR_CARD_TITLE = 'Your First Card';
-
-// Each track's cards name it, never the mode (docs/specs/026-plan/plan-tour.md "The steps").
-const BOARDS_TOUR_COPY = { helpHref: '/help/plan/planning-basics/' };
-const SHEETS_TOUR_COPY = { helpHref: '/help/plan/sheets/' };
-const TRACK_NAME: Record<BoardSheetTrack, string> = {
-  boards: 'Boards tour',
-  sheets: 'Sheets tour',
-};
 // The track as the footer button names it: "Start Boards Tour".
 const BUTTON_NAME: Record<BoardSheetTrack, string> = { boards: 'Boards', sheets: 'Sheets' };
 
@@ -50,125 +26,19 @@ type PlanWork = { type: string; shape?: string; id: string };
 const isBoard = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-board';
 const isSheet = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-sheet';
 
-// What the tour runs on, fixed when it starts: the board and the Sheet on the open tab the person sees
-// (visiblePlanWork: a maximised or tab-filling one, else one on screen, else the first).
-type Subject = { boardId: string | null; sheetId: string | null };
-const NO_SUBJECT: Subject = { boardId: null, sheetId: null };
+// A run: the track, the board it runs on (Boards), and the tab it started on. `n` remounts a run started afresh.
+type Run = { track: BoardSheetTrack; boardId: string | null; tabId: string; n: number };
 
-// Orchestrates the Plan tour (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md). Mounted once in
-// EditorView beside TourHost. While the person can work on a tab with a board or Sheet on it, it offers the tour on
-// the footer's Start Tour button ("Start Boards Tour", "Start Sheets Tour": a track not yet taken first, Boards
-// between equals); a press there, or the Settings row, starts it on the board or Sheet the person sees, the tour
-// subject. It changes nothing on it: the steps only point, and the one thing they open is a card's panel. It never
-// starts or prompts on its own.
+// Orchestrates the Plan tour's Boards and Sheets tracks (docs/specs/026-plan/plan-tour.md). Mounted once in
+// EditorView. While the person can work on a tab with a board or Sheet on it, it offers the tour on the footer's Start
+// Tour button ("Start Boards Tour", "Start Sheets Tour": a track not yet taken first, Boards between equals); a press
+// there, or the Settings row, starts it: the Practice Sprint on the board the person sees, or Five Small Wins on a
+// practice sheet of its own. It never starts or prompts on its own.
 export function PlanTourHost() {
   const ctx = useEditorContext();
-  const [subject, setSubject] = useState<Subject>(NO_SUBJECT);
-
-  // The Boards track's example card, while it is on the board (writeQuiet: no undo step, so Undo never brings it
-  // back), recorded as a leftover so a reload mid-tour still takes it away (usePlanTourLeftovers).
-  const tourCardRef = useRef<string | null>(null);
-  const boardSetup = () => {
-    const el = ctx.activeTab.elements.find((e) => e.id === subject.boardId);
-    return el && 'planBoard' in el ? el.planBoard : undefined;
-  };
-  const removeTourCard = () => {
-    const id = tourCardRef.current;
-    if (!id) return;
-    tourCardRef.current = null;
-    if (ctx.plan.openItemId === id) ctx.plan.closeItem();
-    void ctx.plan.writeQuiet({ kind: 'delete', id }, { silent: true });
-    writeLeftover(null);
-  };
-  const removeTourCardRef = useLatest(removeTourCard);
-  // Taken away if the tour is torn down under it (the editor closing).
-  useEffect(() => () => removeTourCardRef.current(), [removeTourCardRef]);
-
-  const apiRef = useLatest<PlanTourApi>({
-    addTourCard: async () => {
-      if (tourCardRef.current) return tourCardRef.current;
-      const setup = boardSetup();
-      const column = setup?.columns[0];
-      if (!setup || !column || !ctx.projectId) {
-        debugLog('[plan-tour] card not added', {
-          setup: !!setup,
-          column: !!column,
-          projectId: !!ctx.projectId,
-        });
-        return null;
-      }
-      const id = newItemId();
-      tourCardRef.current = id;
-      writeLeftover({ projectId: ctx.projectId, elementId: '', itemIds: [id] });
-      const ok = await ctx.plan.writeQuiet(
-        {
-          kind: 'create',
-          creates: [
-            {
-              id,
-              type: setup.addTypes?.[0] ?? 'task',
-              fields: { title: TOUR_CARD_TITLE },
-              place: { status: column.status },
-            },
-          ],
-        },
-        { silent: true },
-      );
-      if (!ok) {
-        debugLog('[plan-tour] card refused');
-        tourCardRef.current = null;
-        writeLeftover(null);
-        return null;
-      }
-      return id;
-    },
-    moveTourCard: () => {
-      const id = tourCardRef.current;
-      const next = boardSetup()?.columns[1];
-      if (!id || !next) return;
-      void ctx.plan.writeQuiet(
-        { kind: 'move', id, move: { status: next.status } },
-        { silent: true },
-      );
-    },
-    openTourCard: () => {
-      const id = tourCardRef.current ?? firstCardOn(subject.boardId);
-      if (id && ctx.plan.openItemId !== id) ctx.plan.showItem(id);
-    },
-    tourCardId: () => tourCardRef.current,
-    boardId: () => subject.boardId,
-    sheetElementId: () => subject.sheetId,
-    firstCardId: () => firstCardOn(subject.boardId),
-    openCard: () => {
-      const id = firstCardOn(subject.boardId);
-      if (id && ctx.plan.openItemId !== id) ctx.plan.showItem(id);
-    },
-    closeCard: () => {
-      if (ctx.plan.openItemId !== null) ctx.plan.closeItem();
-    },
-    // A subject on the canvas but out of the window is panned into view (zoomed out only if it is too big to fit,
-    // scrollIntoView); one maximised or filling its tab is already on screen. Nothing is placed or moved.
-    reveal: (which) => {
-      const id = which === 'sheets' ? subject.sheetId : subject.boardId;
-      if (!id) return;
-      if (!needsReveal(which === 'sheets' ? sheetRoot(id) : boardRoot(id))) return;
-      const el = ctx.activeTab.elements.find((e) => e.id === id);
-      if (!el || !('width' in el) || !('height' in el)) return;
-      ctx.scrollIntoView(el.x, el.y, el.width, el.height);
-    },
-  });
-
-  // The track the tour runs, fixed when it starts.
-  const [tourTrack, setTourTrack] = useState<BoardSheetTrack>('boards');
-  const steps = useMemo(() => planTourSteps(tourTrack), [tourTrack]);
-  const engine = useTourEngine<PlanTourApi>({
-    steps,
-    apiRef,
-    onStepView: (step) => track('UI', 'View', planTourStepTelemetryType(step.id)),
-    onStart: () => track('UI', 'Started', 'PlanTour'),
-    onFinish: (outcome) => endTour(outcome),
-  });
-  const { active } = engine;
+  const [run, setRun] = useState<Run | null>(null);
+  const active = run !== null;
+  const runs = useRef(0);
 
   // One tour at a time: publish this one while it is on screen, and start nothing while another is.
   const shown = useActiveTour();
@@ -176,6 +46,7 @@ export function PlanTourHost() {
   useEffect(() => {
     setActiveTour('plan', active);
   }, [active]);
+  useEffect(() => () => setActiveTour('plan', false), []);
 
   const canWork =
     ctx.hydrated &&
@@ -185,19 +56,16 @@ export function PlanTourHost() {
     ctx.activeTab.locked !== true;
 
   // The plan work on the open tab: the tour is offered only once there is a board or Sheet to show, so an empty
-  // tab is started first (Start Planning), never talked over, and a Dashboard waits for a Board or Sheet tab.
+  // tab is started first (Start Planning), never talked over, and a Dashboard has its own track.
   const elements = ctx.activeTab.elements as readonly PlanWork[];
   const boardIds = elements.filter(isBoard).map((el) => el.id);
   const sheetIds = elements.filter(isSheet).map((el) => el.id);
-  // The track the button offers: of the ones with work on the tab, one not yet taken first, Boards between equals.
   const tracks: BoardSheetTrack[] = [
     ...(boardIds.length > 0 ? (['boards'] as const) : []),
     ...(sheetIds.length > 0 ? (['sheets'] as const) : []),
   ];
   const offerTrack =
     tracks.find((t) => !planTrackSeen(ctx.userPreferences, t)) ?? tracks[0] ?? null;
-  // Taken: every track with work on the tab is in the synced record its Settings rows read, so the button leaves
-  // until one is switched back on (docs/specs/026-plan/plan-tour.md "Where it appears").
   const seen = tracks.every((t) => planTrackSeen(ctx.userPreferences, t));
 
   // Records `answered` as taken, onto the freshest preferences, not this render's: the whole blob is written.
@@ -209,34 +77,38 @@ export function PlanTourHost() {
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
+  const markTakenRef = useLatest(markTaken);
 
-  const endTour = (outcome: TourOutcome) => {
-    apiRef.current.closeCard();
-    // The example card goes however the tour ended: the board is left as the person had it.
-    removeTourCard();
-    // The track shown is taken.
-    const answered: BoardSheetTrack[] = [tourTrack];
-    markTaken(answered);
-    debugLog('[plan-tour] end', { outcome, answered });
-    track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
-  };
-  const endTourRef = useLatest(endTour);
-  const engineRef = useLatest(engine);
+  // However a run ends, its track is taken (it was already, from its start; the write is idempotent).
+  const runRef = useRef<Run | null>(null);
+  useAssignRef(runRef, run);
+  const end = useCallback(
+    (outcome: 'completed' | 'skipped') => {
+      const now = runRef.current;
+      if (!now) return;
+      // Once: a finish's own end and the effect seeing the tab change after it must not both count.
+      runRef.current = null;
+      markTakenRef.current([now.track]);
+      debugLog('[plan-tour] end', { outcome, track: now.track });
+      track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
+      setRun(null);
+    },
+    [markTakenRef],
+  );
+  const onSprintEnd = useCallback((e: SprintEnd) => end(e.outcome), [end]);
 
-  // A press: the board and Sheet the person sees, read from what is drawn, then the track on offer.
+  // A press: the board the person sees, read from what is drawn, then the track on offer.
   const start = () => {
     if (active || otherTour || !offerTrack) return;
     const boardId = visiblePlanWork(boardIds, boardRoot);
-    const sheetId = visiblePlanWork(sheetIds, sheetRoot);
     debugLog('[plan-tour] start', { track: offerTrack });
-    setSubject({ boardId, sheetId });
-    setTourTrack(offerTrack);
-    engineRef.current.start();
+    runs.current += 1;
+    setRun({ track: offerTrack, boardId, tabId: ctx.activeTab.id, n: runs.current });
+    track('UI', 'Started', 'PlanTour');
     // Taken as it starts, so a reload mid-tour does not put it back on the button.
     if (!planTrackSeen(ctx.userPreferences, offerTrack)) markTaken([offerTrack]);
   };
   const canStart = canWork && offerTrack !== null;
-  // The footer's Start Tour button: offered whenever the tour could run here, until every track on the tab is taken.
   useOfferTour(
     'plan',
     canStart && offerTrack
@@ -251,8 +123,7 @@ export function PlanTourHost() {
   );
 
   // Settings rerun (the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off + closed): runs the tour once a
-  // board or Sheet is open; elsewhere the footer button is there when one is. It places nothing to show: an empty tab
-  // offers Start Planning, which makes one.
+  // board or Sheet is open; elsewhere the footer button is there when one is.
   const startRef = useLatest(start);
   const canStartRef = useLatest(canStart);
   useEffect(() => {
@@ -263,31 +134,18 @@ export function PlanTourHost() {
     return () => window.removeEventListener(PLAN_TOUR_RELAUNCH_EVENT, onRelaunch);
   }, [canStartRef, startRef]);
 
-  // Ends as skipped when the tour can no longer run where it started: edit rights gone, Plan left, another
-  // tab opened, or the tour subject deleted.
-  const activeId = ctx.activeTab.id;
-  const subjectId = tourTrack === 'sheets' ? subject.sheetId : subject.boardId;
-  const subjectGone = subjectId !== null && !elements.some((el) => el.id === subjectId);
-  const startedOnRef = useRef<string | null>(null);
+  // Ends as skipped when the tour can no longer run where it started: edit rights gone, another tab opened (a kept
+  // practice sheet opens its new tab once the run has ended), or the board deleted.
+  const boardGone = run?.boardId != null && !elements.some((el) => el.id === run.boardId);
+  const leftTab = run !== null && run.tabId !== ctx.activeTab.id;
   useEffect(() => {
-    if (!active) {
-      startedOnRef.current = null;
-      return;
-    }
-    startedOnRef.current ??= activeId;
-    if (!canWork || startedOnRef.current !== activeId || subjectGone) {
-      engineRef.current.stop();
-      endTourRef.current('skipped');
-    }
-  }, [active, canWork, activeId, subjectGone, engineRef, endTourRef]);
+    if (run && (!canWork || leftTab || boardGone)) end('skipped');
+  }, [run, canWork, leftTab, boardGone, end]);
 
-  useEffect(() => () => setActiveTour('plan', false), []);
-
-  return (
-    <TourStage
-      engine={engine}
-      ariaPrefix={TRACK_NAME[tourTrack]}
-      copy={tourTrack === 'sheets' ? SHEETS_TOUR_COPY : BOARDS_TOUR_COPY}
-    />
-  );
+  if (!run || !canWork || leftTab) return null;
+  if (run.track === 'sheets')
+    return <PracticeSheetDialog key={run.n} onEnd={(e) => end(e.outcome)} />;
+  return run.boardId && !boardGone ? (
+    <PracticeSprint key={run.n} boardId={run.boardId} onEnd={onSprintEnd} />
+  ) : null;
 }

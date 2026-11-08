@@ -37,6 +37,9 @@ export type ItemTypeEditing = 'new' | { id: string };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
+  // The Boards tour's practice cards, on this screen alone (docs/specs/026-plan/plan-tour.md "Practice cards"): drawn
+  // as practice, their comments and links not offered. Absent: none.
+  practiceIds?: ReadonlySet<string>;
   // The project's item types, in order (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).

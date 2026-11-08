@@ -61,6 +61,7 @@ import { ACTIVITY_TAB, DETAILS_TAB, ItemPanelTabBar, panelTabs } from './ItemPan
 import { track } from '@/lib/telemetry';
 import { CardActivityTab } from './threads/CardActivity';
 import { CardThreads } from './threads/CardThreads';
+import { PRACTICE_KEY } from '@/hooks/plan/practice-items';
 
 const NO_GROUPS: readonly LinkedGroup[] = [];
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();
@@ -154,7 +155,7 @@ export function ItemPanel(props: ItemPanelProps) {
     <Dialog
       open
       onClose={morphClose}
-      ariaLabel={`Item #${item.key}`}
+      ariaLabel={item.key === PRACTICE_KEY ? 'Practice Card' : `Item #${item.key}`}
       size="3xl"
       phoneSheet
       // The trap lands on the panel itself, never its first control (the type picker, which nobody opens a card
@@ -207,6 +208,8 @@ function ItemPanelContent({
   statusTypes = NO_STATUS_TYPES,
 }: ItemPanelProps) {
   const linkedPlace = linkedActions?.placeOf(item) ?? null;
+  // A practice card of the Boards tour (plan-tour.md "Practice cards"): saved nowhere, so no menu and no comments.
+  const practice = item.key === PRACTICE_KEY;
   const mobile = useIsMobileViewport();
   useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
@@ -300,7 +303,13 @@ function ItemPanelContent({
         canEdit={canEdit}
         onType={onType}
       />
-      <ItemKeyTag itemKey={item.key} />
+      {practice ? (
+        <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-brand-500">
+          Practice
+        </span>
+      ) : (
+        <ItemKeyTag itemKey={item.key} />
+      )}
       {isFlagged(item) ? (
         <span
           className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
@@ -311,20 +320,22 @@ function ItemPanelContent({
         </span>
       ) : null}
       <span className="flex-1" />
-      <ItemPanelMenu
-        itemKey={item.key}
-        canEdit={canEdit}
-        canRetire={canRetire}
-        archived={isArchived(item)}
-        flagged={isFlagged(item)}
-        onDuplicate={onDuplicate}
-        onFlag={onFlag}
-        onArchive={onArchive}
-        onTrash={onTrash}
-        onEditType={onEditType}
-        onCopyLink={onCopyLink}
-        repeat={repeat.menu}
-      />
+      {practice ? null : (
+        <ItemPanelMenu
+          itemKey={item.key}
+          canEdit={canEdit}
+          canRetire={canRetire}
+          archived={isArchived(item)}
+          flagged={isFlagged(item)}
+          onDuplicate={onDuplicate}
+          onFlag={onFlag}
+          onArchive={onArchive}
+          onTrash={onTrash}
+          onEditType={onEditType}
+          onCopyLink={onCopyLink}
+          repeat={repeat.menu}
+        />
+      )}
       {onMaximise && !mobile ? (
         <ItemMaximiseButton maximised={maximised} onToggle={onMaximise} />
       ) : null}
@@ -342,6 +353,7 @@ function ItemPanelContent({
   const detailRow = (f: string) => (
     <ItemDetailsRow
       key={f}
+      field={f}
       label={fieldLabel(type, f)}
       htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
       required={requiredIds.has(f)}
@@ -363,6 +375,14 @@ function ItemPanelContent({
 
   // A main-column field: its name over its editor.
   const mainField = (f: string): ReactNode => {
+    if (commentFields.has(f) && practice)
+      return (
+        <ItemPanelSection key={f} heading={fieldLabel(type, f)}>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400">
+            Comments are kept on real cards. This one is practice, on your screen alone.
+          </p>
+        </ItemPanelSection>
+      );
     if (commentFields.has(f))
       return (
         <CardThreads key={f} item={item} type={type} field={f} heading={fieldLabel(type, f)} />

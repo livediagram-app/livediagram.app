@@ -34,15 +34,14 @@ const editor = (over: Record<string, unknown> = {}) => {
   };
 };
 
-const slots = () => ({ hasEmpty: true, hasFilled: false });
-
-function useOffered(canWork: boolean) {
-  const { tour, freeze } = useDashboardTour(false);
-  useDashboardTourOffer({ tour, freeze, canWork, slots });
+function useOffered(canWork: boolean, hidden = false) {
+  const { tour, offered } = useDashboardTour(hidden);
+  useDashboardTourOffer({ tour, offered, canWork });
   return tour;
 }
 
 const wait = (ms = 1000) => act(async () => void (await vi.advanceTimersByTimeAsync(ms)));
+
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -66,18 +65,45 @@ describe('useDashboardTourOffer', () => {
     expect(result.current.active).toBe(false);
   });
 
-  it('starts on its first step from the button', () => {
+  it('starts from the button', () => {
     const { result } = renderHook(() => useOffered(true));
     act(() => tourOffer()!.start());
     expect(result.current.active).toBe(true);
-    expect(result.current.step?.id).toBe('rows');
+    expect(result.current.n).toBe(1);
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'DashboardTour');
+  });
+
+  it('counts an end once, as completed or skipped', () => {
+    const { result } = renderHook(() => useOffered(true));
+    act(() => tourOffer()!.start());
+    act(() => result.current.end('completed'));
+    act(() => result.current.end('skipped'));
+    const ends = track.mock.calls.filter((c) => c[1] === 'Ended');
+    expect(ends).toEqual([['UI', 'Ended', 'DashboardTourCompleted']]);
+    expect(result.current.active).toBe(false);
+  });
+
+  it('ends as skipped when the page is covered or no longer editable', () => {
+    let hidden = false;
+    const { result, rerender } = renderHook(() => useOffered(true, hidden));
+    act(() => tourOffer()!.start());
+    hidden = true;
+    rerender();
+    expect(result.current.active).toBe(false);
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
+  });
+
+  it('records nothing for a Show Me run', () => {
+    const { result } = renderHook(() => useOffered(true));
+    act(() => result.current.start());
+    act(() => result.current.end('completed'));
+    expect(writeUserPreferences).not.toHaveBeenCalled();
   });
 
   it('takes the track however it ends', () => {
     const { result } = renderHook(() => useOffered(true));
     act(() => tourOffer()!.start());
-    act(() => result.current.skip());
+    act(() => result.current.end('skipped'));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
     const written = writeUserPreferences.mock.calls[0]![0] as { planTourTracks?: string[] };
     expect(written.planTourTracks).toContain('dashboards');
