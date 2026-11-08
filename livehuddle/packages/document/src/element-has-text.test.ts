@@ -48,6 +48,13 @@ describe('elementSupportsText', () => {
       expect(elementSupportsText(el({ type })), type).toBe(false);
   });
 
+  // A deleted shape kind (a stored Q&A Board) is still a shape, but takes no typed label either: the toolbar's
+  // Add Text / Edit Text on it opened nothing.
+  it('is false for a deleted shape kind', () => {
+    expect(elementSupportsText(el({ type: 'shape', shape: 'qa-board' }))).toBe(false);
+    expect(elementSupportsText(el({ type: 'shape', shape: 'no-such-kind' }))).toBe(false);
+  });
+
   it('is false for the self-drawing shapes', () => {
     expect(elementSupportsText(el({ type: 'shape', shape: 'sticker' }))).toBe(false);
     expect(elementSupportsText(el({ type: 'shape', shape: 'plant' }))).toBe(false);
