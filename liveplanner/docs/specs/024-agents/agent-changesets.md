@@ -164,7 +164,9 @@ Every tab is in Plan, so a changeset may add a Plan board or a Sheet to any tab
 
 ## In the editor
 
-- The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them. The
+- The element ops apply as a peer's would, in one pass over the tab: each add or update is merged over the element
+  as the ops before it left it, then all apply together, so a changeset costs the tab's size plus its own, not a
+  walk of the tab per op. They fold into the save baseline, so the next autosave carries them. The
   revision a save sends as `X-Changeset-Seen` is the one its own snapshot holds, never one that arrived after it.
 - An editor joining its room reads the project's newest changesets and re-reads, in place, any open tab it is
   behind on: a changeset relayed before it joined (a first join replays no log), or one whose relay never arrived,
