@@ -49,7 +49,7 @@ error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` 
 4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account/code`;
    `POST /api/auth/delete-account/check`; `POST /api/auth/delete-account`;
    `POST /api/auth/end-session` (an app's Worker).
-5. Anything else under `/api/auth`: the code routes are limited first (below: the per-minute limiters, then the
+5. Anything else under `/api/auth`: the code routes are limited first (below: the per-minute limiters, then, for a send, the
    address's day in `sign_in_code_limit`, code-day.ts), then Better Auth's handler (for
    Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
    app's tokens on the sessions they end are deleted, `endSessionTokensOf`), then three rewrites of the answer: `GET
@@ -427,7 +427,7 @@ Migrations, in order:
 - `0016_user_time_zone.sql`: `user.timeZone`, the account's IANA zone for the send window
 - `0017_push_devices.sql`: `push_device`, phone notifications' devices ([push.md](push.md))
 - `0018_livehuddle.sql`: widens every app CHECK to livehuddle
-- `0019_sign_in_code_limit.sql`: `sign_in_code_limit`, each address's day of code sends and checks
+- `0019_sign_in_code_limit.sql`: `sign_in_code_limit`, each address's day of code sends
   ([sign-in.md](sign-in.md))
 
 Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would

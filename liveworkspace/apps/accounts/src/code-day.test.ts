@@ -1,23 +1,20 @@
 // An address's day of email codes (liveworkspace/docs/specs/003-accounts/sign-in.md "A day's codes per address"):
-// checks that never signed in lock code sign-in for the day, sends are capped, both counted per address in D1.
+// 20 codes a day per address, counted in D1 once Better Auth accepted each, so at most 60 guesses a day at it.
+// Checks are never counted, so nobody can lock an address out by guessing.
 import { betterAuth } from 'better-auth';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authOptions, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
 import {
   addressKey,
-  clearChecks,
-  CODE_CHECKS_PER_DAY,
   CODE_DAY_MS,
   CODE_DAY_SWEEP_LIMIT,
   CODE_SENDS_PER_DAY,
-  CODE_SIGN_IN_LOCKED,
-  codeRefusal,
   countSend,
   emailOfRequest,
-  refuseSend,
+  overSends,
   sweepCodeDays,
-  takeCheck,
   TOO_MANY_CODES,
+  tooManyCodes,
   withCodeDay,
 } from './code-day.ts';
 import { testD1 } from './test-d1.ts';
@@ -38,8 +35,7 @@ afterEach(() => {
 const rowOf = async (email: string) =>
   sql
     .prepare('SELECT * FROM sign_in_code_limit WHERE emailHash = ?')
-    .get(await addressKey(email)) as
-    { windowStart: number; sends: number; failures: number } | undefined;
+    .get(await addressKey(email)) as { windowStart: number; sends: number } | undefined;
 
 const codeRequest = (path: string, body: unknown) =>
   new Request(`${BASE}/api/auth${path}`, {
@@ -65,61 +61,19 @@ describe('the key an address is counted under', () => {
   });
 });
 
-describe('checks', () => {
-  it('lock the address after the day’s checks, until the window ends', async () => {
-    const key = await addressKey('a@example.com');
-    const now = 1_000_000;
-    for (let i = 0; i < CODE_CHECKS_PER_DAY; i++)
-      expect(await takeCheck(db, key, now + i)).toBeNull();
-    expect(await takeCheck(db, key, now + 100)).toBe(CODE_SIGN_IN_LOCKED);
-    expect(await refuseSend(db, key, now + 100)).toBe(CODE_SIGN_IN_LOCKED);
-    // A day after the first check, the window starts again.
-    expect(await refuseSend(db, key, now + CODE_DAY_MS)).toBeNull();
-    expect(await takeCheck(db, key, now + CODE_DAY_MS)).toBeNull();
-    expect((await rowOf('a@example.com'))!).toMatchObject({
-      windowStart: now + CODE_DAY_MS,
-      failures: 1,
-      sends: 0,
-    });
-  });
-
-  it('count each of a burst sent at once, so none share a place', async () => {
-    const key = await addressKey('a@example.com');
-    const answers = await Promise.all(
-      Array.from({ length: CODE_CHECKS_PER_DAY + 5 }, () => takeCheck(db, key)),
-    );
-    expect(answers.filter((a) => a === null)).toHaveLength(CODE_CHECKS_PER_DAY);
-    expect(answers.filter((a) => a === CODE_SIGN_IN_LOCKED)).toHaveLength(5);
-  });
-
-  it('are cleared by a check that signed in', async () => {
-    const key = await addressKey('a@example.com');
-    for (let i = 0; i < 5; i++) await takeCheck(db, key);
-    await clearChecks(db, key);
-    expect((await rowOf('a@example.com'))!.failures).toBe(0);
-  });
-});
-
 describe('sends', () => {
   it('stop at the day’s codes, and start again with the next window', async () => {
     const key = await addressKey('a@example.com');
     const now = 5_000_000;
-    expect(await refuseSend(db, key, now)).toBeNull();
+    expect(await overSends(db, key, now)).toBe(false);
     for (let i = 0; i < CODE_SENDS_PER_DAY; i++) await countSend(db, key, now + i);
-    expect(await refuseSend(db, key, now + 50)).toBe(TOO_MANY_CODES);
-    expect(await refuseSend(db, key, now + CODE_DAY_MS)).toBeNull();
+    expect(await overSends(db, key, now + 50)).toBe(true);
+    expect(await overSends(db, key, now + CODE_DAY_MS)).toBe(false);
     await countSend(db, key, now + CODE_DAY_MS);
-    expect((await rowOf('a@example.com'))!).toMatchObject({ sends: 1, failures: 0 });
-  });
-
-  it('and checks share one window', async () => {
-    const key = await addressKey('a@example.com');
-    await countSend(db, key, 10);
-    await takeCheck(db, key, 20);
-    expect((await rowOf('a@example.com'))!).toMatchObject({
-      windowStart: 10,
+    expect((await rowOf('a@example.com'))!).toEqual({
+      emailHash: key,
+      windowStart: now + CODE_DAY_MS,
       sends: 1,
-      failures: 1,
     });
   });
 });
@@ -139,11 +93,10 @@ describe('the hourly sweep', () => {
 
 describe('the refusal', () => {
   it('is a 429 the sign-in page names by its code', async () => {
-    const locked = codeRefusal(CODE_SIGN_IN_LOCKED);
-    expect(locked.status).toBe(429);
-    expect(locked.headers.get('cache-control')).toBe('no-store');
-    expect(await locked.json()).toMatchObject({ code: CODE_SIGN_IN_LOCKED });
-    expect(await codeRefusal(TOO_MANY_CODES).json()).toMatchObject({ code: TOO_MANY_CODES });
+    const refused = tooManyCodes();
+    expect(refused.status).toBe(429);
+    expect(refused.headers.get('cache-control')).toBe('no-store');
+    expect(await refused.json()).toMatchObject({ code: TOO_MANY_CODES });
   });
 });
 
@@ -175,52 +128,36 @@ describe('with Better Auth', () => {
     auth = build();
   });
 
-  const send = (
-    email: string,
-    headers: Record<string, string> = { 'x-captcha-response': 'ok' },
-  ) => {
+  const send = (email: string) => {
     const request = codeRequest(SEND_CODE_PATH, { email, type: 'sign-in' });
-    for (const [name, value] of Object.entries(headers)) request.headers.set(name, value);
-    return withCodeDay(request, db, true, () => auth.handler(request));
+    request.headers.set('x-captcha-response', 'ok');
+    return withCodeDay(request, db, () => auth.handler(request));
   };
-  const check = (email: string, otp: string) => {
-    const request = codeRequest(SIGN_IN_CODE_PATH, { email, otp });
-    return withCodeDay(request, db, false, () => auth.handler(request));
-  };
+  const check = (email: string, otp: string) =>
+    auth.handler(codeRequest(SIGN_IN_CODE_PATH, { email, otp }));
   const wrong = (code: string) => (code === '000000' ? '111111' : '000000');
 
-  it('locks code sign-in after the day’s wrong codes, even against the right one, and mails no more', async () => {
+  it('mails no more than the day’s codes, and the last one still signs in', async () => {
     const email = 'ada@example.com';
-    let guesses = 0;
-    while (guesses < CODE_CHECKS_PER_DAY) {
-      expect((await send(email)).status).toBe(200);
-      const code = codes.get(email)!;
-      for (let i = 0; i < 3 && guesses < CODE_CHECKS_PER_DAY; i++, guesses++) {
-        expect((await check(email, wrong(code))).status).not.toBe(429);
-      }
-    }
+    for (let i = 0; i < CODE_SENDS_PER_DAY; i++) expect((await send(email)).status).toBe(200);
+    const last = codes.get(email)!;
     codes.clear();
     const refused = await send(email);
     expect(refused.status).toBe(429);
-    expect(await refused.json()).toMatchObject({ code: CODE_SIGN_IN_LOCKED });
+    expect(await refused.json()).toMatchObject({ code: TOO_MANY_CODES });
     expect(codes.size).toBe(0);
-    // A code sent before the lock still can't sign in.
-    sql.prepare('UPDATE sign_in_code_limit SET failures = 0').run();
-    expect((await send(email)).status).toBe(200);
-    const code = codes.get(email)!;
-    sql.prepare(`UPDATE sign_in_code_limit SET failures = ${CODE_CHECKS_PER_DAY}`).run();
-    const locked = await check(email, code);
-    expect(locked.status).toBe(429);
-    expect(await locked.json()).toMatchObject({ code: CODE_SIGN_IN_LOCKED });
+    expect((await check(email, last)).status).toBe(200);
   });
 
-  it('forgets wrong codes once one signs in', async () => {
+  it('never counts checks, so wrong codes lock nobody out', async () => {
     const email = 'bea@example.com';
     await send(email);
+    for (let i = 0; i < 30; i++) await check(email, '000000');
+    expect((await rowOf(email))!.sends).toBe(1);
+    expect((await send(email)).status).toBe(200);
     const code = codes.get(email)!;
     expect((await check(email, wrong(code))).status).toBe(400);
     expect((await check(email, code)).status).toBe(200);
-    expect((await rowOf(email))!.failures).toBe(0);
   });
 
   it('counts only sends Better Auth accepted, so a failed Turnstile uses up nothing', async () => {
@@ -228,33 +165,25 @@ describe('with Better Auth', () => {
     const email = 'cy@example.com';
     expect((await send(email)).ok).toBe(false);
     expect(await rowOf(email)).toBeUndefined();
-    vi.stubGlobal('fetch', async () => Response.json({ success: true }));
-    for (let i = 0; i < CODE_SENDS_PER_DAY; i++) expect((await send(email)).status).toBe(200);
-    const refused = await send(email);
-    expect(refused.status).toBe(429);
-    expect(await refused.json()).toMatchObject({ code: TOO_MANY_CODES });
   });
 
   it('leaves a body with no email to Better Auth, uncounted', async () => {
-    const request = codeRequest(SIGN_IN_CODE_PATH, { otp: '123456' });
-    const answer = await withCodeDay(request, db, false, () => auth.handler(request));
+    const request = codeRequest(SEND_CODE_PATH, { type: 'sign-in' });
+    const answer = await withCodeDay(request, db, () => auth.handler(request));
     expect(answer.status).toBe(400);
     expect(sql.prepare('SELECT count(*) AS n FROM sign_in_code_limit').get()).toEqual({ n: 0 });
   });
 
   it('logs a count that fails after the answer, and keeps the answer', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const email = 'dee@example.com';
-    const request = codeRequest(SEND_CODE_PATH, { email, type: 'sign-in' });
+    const request = codeRequest(SEND_CODE_PATH, { email: 'dee@example.com', type: 'sign-in' });
     const broken = {
       prepare: (query: string) =>
         query.startsWith('SELECT')
           ? db.prepare(query)
-          : { bind: () => ({ first: () => Promise.reject(new Error('down')) }) },
+          : { bind: () => ({ run: () => Promise.reject(new Error('down')) }) },
     } as unknown as D1Database;
-    const answer = await withCodeDay(request, broken, true, async () =>
-      Response.json({ ok: true }),
-    );
+    const answer = await withCodeDay(request, broken, async () => Response.json({ ok: true }));
     expect(answer.status).toBe(200);
     expect(error).toHaveBeenCalledWith('[code-day] count failed', expect.any(Error));
   });

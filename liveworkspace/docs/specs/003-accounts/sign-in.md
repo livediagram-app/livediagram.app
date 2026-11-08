@@ -214,23 +214,21 @@ app after it. A test checks each app's example against the fixture, so the two c
   IPs. Better Auth's own limiter is off: on Workers it would count per isolate, which an attacker
   can spread across.
 - **A day's codes per address:** a new code resets the 3 tries, so the per-minute limits alone would still let
-  someone guess about 13,000 times a day at one address. So each address also has a daily count in D1
+  someone guess about 13,000 times a day at one address. So each address may be sent 20 codes a day, counted in D1
   (`sign_in_code_limit`, keyed by the SHA-256 of the trimmed, lower-case address, so addresses nobody signed up with
-  are never stored), over a 24 hour window that starts with its first send or check:
-  - **Checks.** Every code check counts before Better Auth sees it, in one atomic write, so guesses sent at once
-    can't share a count. A sign-in that succeeds sets the count back to nothing. At 10 checks that never succeeded,
-    signing in with a code is locked for that address until the window ends: every send and check answers
-    `429 { code: 'CODE_SIGN_IN_LOCKED' }` and no code is mailed. Google still signs the person in, and the page
-    goes back to its first step, where Continue with Google is, and says so: "Too many wrong codes for this address
-    today. Continue with Google, or try again tomorrow." (only "Try again tomorrow." where Google is off). The lock
-    holds against a correct code too, so it can't be guessed past. Anyone can lock an address this way (checking
-    needs no Turnstile, only the per-IP limit), but only email codes, only for a day, and never a session.
-  - **Sends.** 20 codes a day per address. A send counts once Better Auth has accepted it (Turnstile passed, code
-    mailed), so requests that fail Turnstile can't use up someone's day. Over it, `429 { code: 'TOO_MANY_CODES' }`
-    and the page says "Too many codes sent to this address today. Continue with Google, or try again tomorrow."
-    (the same without Google)
-    Sends at once can each pass the check before any counts, so the cap can be overshot by a send or two, never
-    more than the per-minute limit lets through.
+  are never stored) over a 24 hour window that starts with its first code. With 3 tries a code, that bounds guessing
+  to 60 tries a day at one address: a 60 in 1,000,000 chance, about 0.006% a day.
+  - A send counts once Better Auth has accepted it (Turnstile passed, the code mailed), so requests that fail
+    Turnstile use up nothing. Over the cap, `429 { code: 'TOO_MANY_CODES' }`, and the page says "Too many codes sent
+    to this address today. Continue with Google, or try again tomorrow." ("Try again tomorrow." where Google is
+    off). Sends at once can each pass the check before any counts, so the cap can be overshot by a send or two,
+    never more than the per-minute limit lets through.
+  - Checks are not counted and never lock an address. Checking needs no Turnstile, so a lock after so many wrong
+    codes would let anyone shut any email-only person out of signing in for a day, for free.
+  - What remains: someone who solves 20 Turnstile challenges can use up an address's day of codes, so its owner gets
+    no new code until the window ends. A code already sent still works for its 10 minutes, Google still signs them
+    in, and nobody is signed out. That costs the attacker 20 solves per address per day, where a lock on checks
+    would have cost nothing.
   - The hourly cron deletes windows that ended, up to 5,000 a run, the oldest first.
 - **Registering clients:** only `POST /api/auth/internal/clients` with `ADMIN_TOKEN` can do it. Better
   Auth's default would let any signed-in account register its own OAuth client, so
@@ -273,9 +271,9 @@ see [site.md](../010-site/site.md) for their weight.
 
 There is no cost per app request: apps check tokens against cached keys, and the accounts
 Worker is only involved at sign-in and on an hourly refresh. Each sign-in writes to D1 a
-handful of times (code, session, authorization code, tokens). The daily code counts add two small queries by
-primary key to each: a read before sending a code and a write once it is sent, and a write before checking one and
-another once it signs in. Signing in with Google and every other door pay nothing.
+handful of times (code, session, authorization code, tokens). The day's code count adds two small queries by
+primary key to sending a code: a read before and a write once it is sent. Checking a code, signing in with Google and
+every other door pay nothing.
 
 **Startup is the risk to watch.** It grows with Better Auth upgrades. If it nears the 1 s
 limit, start by checking which plugins are loaded.

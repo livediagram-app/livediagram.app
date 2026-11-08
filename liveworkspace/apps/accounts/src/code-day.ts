@@ -1,20 +1,16 @@
 // An address's day of email codes (liveworkspace/docs/specs/003-accounts/sign-in.md "A day's codes per address"). The
 // per-minute limiters (rate-limit.ts) bound bursts, but a new code resets its three tries, so on their own they let
-// someone guess at one address all day. Here each address gets a 24 hour window in D1, from its first send or check:
-// CODE_CHECKS_PER_DAY checks that never succeeded lock signing in with a code for the rest of it, and
-// CODE_SENDS_PER_DAY codes are all it is mailed. Google still signs the person in.
+// someone guess at one address all day. Here each address gets a 24 hour window in D1, from its first code:
+// CODE_SENDS_PER_DAY codes are all it is mailed, so at most CODE_SENDS_PER_DAY * 3 guesses a day. Checks are not
+// counted: they need no Turnstile, so a lock on them would let anyone shut an address out for free.
 
 export const CODE_DAY_MS = 24 * 60 * 60 * 1000;
-export const CODE_CHECKS_PER_DAY = 10;
 export const CODE_SENDS_PER_DAY = 20;
 // Ended windows deleted per cron run, the oldest first.
 export const CODE_DAY_SWEEP_LIMIT = 5_000;
 
 /** The 429 the sign-in page tells apart from the per-minute one (apps/site SignInFlow). */
-export const CODE_SIGN_IN_LOCKED = 'CODE_SIGN_IN_LOCKED';
 export const TOO_MANY_CODES = 'TOO_MANY_CODES';
-
-export type CodeRefusal = typeof CODE_SIGN_IN_LOCKED | typeof TOO_MANY_CODES;
 
 const encoder = new TextEncoder();
 
@@ -35,62 +31,26 @@ export async function emailOfRequest(request: Request): Promise<string | null> {
   }
 }
 
-/** Before a send: one read. Locked, or the day's sends used up, refuses it. */
-export async function refuseSend(
-  db: D1Database,
-  key: string,
-  now = Date.now(),
-): Promise<CodeRefusal | null> {
-  const row = await db
-    .prepare(
-      'SELECT sends, failures FROM sign_in_code_limit WHERE emailHash = ? AND windowStart > ?',
-    )
+/** Before a send: one read. True when the address has had its day's codes. */
+export async function overSends(db: D1Database, key: string, now = Date.now()): Promise<boolean> {
+  const sends = await db
+    .prepare('SELECT sends FROM sign_in_code_limit WHERE emailHash = ? AND windowStart > ?')
     .bind(key, now - CODE_DAY_MS)
-    .first<{ sends: number; failures: number }>();
-  if (!row) return null;
-  if (row.failures >= CODE_CHECKS_PER_DAY) return CODE_SIGN_IN_LOCKED;
-  if (row.sends >= CODE_SENDS_PER_DAY) return TOO_MANY_CODES;
-  return null;
+    .first<number>('sends');
+  return (sends ?? 0) >= CODE_SENDS_PER_DAY;
 }
 
-// One upsert: a window that ended starts again at `now` with this event alone; otherwise the column goes up by one.
-// SQLite evaluates every SET expression against the old row, so the three CASEs agree.
-const BUMP = (column: 'sends' | 'failures') =>
-  `INSERT INTO sign_in_code_limit (emailHash, windowStart, sends, failures)
-   VALUES (?1, ?2, ${column === 'sends' ? '1, 0' : '0, 1'})
-   ON CONFLICT (emailHash) DO UPDATE SET
-     windowStart = CASE WHEN windowStart <= ?3 THEN ?2 ELSE windowStart END,
-     sends = CASE WHEN windowStart <= ?3 THEN ${column === 'sends' ? 1 : 0} ELSE sends ${column === 'sends' ? '+ 1' : ''} END,
-     failures = CASE WHEN windowStart <= ?3 THEN ${column === 'failures' ? 1 : 0} ELSE failures ${column === 'failures' ? '+ 1' : ''} END
-   RETURNING failures`;
-
-/** After Better Auth accepted a send (Turnstile passed, the code mailed): one upsert. */
+/** After Better Auth accepted a send (Turnstile passed, the code mailed): one upsert. A window that ended starts
+ *  again at `now` with this send alone. */
 export async function countSend(db: D1Database, key: string, now = Date.now()): Promise<void> {
   await db
-    .prepare(BUMP('sends'))
+    .prepare(
+      `INSERT INTO sign_in_code_limit (emailHash, windowStart, sends) VALUES (?1, ?2, 1)
+       ON CONFLICT (emailHash) DO UPDATE SET
+         sends = CASE WHEN windowStart <= ?3 THEN 1 ELSE sends + 1 END,
+         windowStart = CASE WHEN windowStart <= ?3 THEN ?2 ELSE windowStart END`,
+    )
     .bind(key, now, now - CODE_DAY_MS)
-    .first();
-}
-
-/** Before a check reaches Better Auth: counted in one atomic upsert, so checks sent at once each take their own
- *  place. Over the day's checks, the address is locked (a correct code too) until its window ends. */
-export async function takeCheck(
-  db: D1Database,
-  key: string,
-  now = Date.now(),
-): Promise<CodeRefusal | null> {
-  const failures = await db
-    .prepare(BUMP('failures'))
-    .bind(key, now, now - CODE_DAY_MS)
-    .first<number>('failures');
-  return (failures ?? 0) > CODE_CHECKS_PER_DAY ? CODE_SIGN_IN_LOCKED : null;
-}
-
-/** A check that signed in: its count, and any before it, never were failures. */
-export async function clearChecks(db: D1Database, key: string): Promise<void> {
-  await db
-    .prepare('UPDATE sign_in_code_limit SET failures = 0 WHERE emailHash = ? AND failures > 0')
-    .bind(key)
     .run();
 }
 
@@ -106,40 +66,31 @@ export async function sweepCodeDays(db: D1Database, now = Date.now()): Promise<n
   return result.meta.changes ?? 0;
 }
 
-/** A code route's answer (`answer`, Better Auth's), held to the address's day. A send is refused when the address is
- *  locked or has had its codes, and counts once Better Auth accepted it; a check counts before Better Auth sees it and
- *  is cleared when it signs in. A body with no email is left to Better Auth. A count that fails after the answer is
- *  only logged: the code went, or the sign-in happened, either way. */
+/** A send (`answer`, Better Auth's) held to the address's day: refused once it has had its codes, counted once
+ *  Better Auth accepted it. A body with no email is left to Better Auth. A count that fails after the answer is only
+ *  logged: the code went either way. */
 export async function withCodeDay(
   request: Request,
   db: D1Database,
-  sending: boolean,
   answer: () => Promise<Response>,
 ): Promise<Response> {
   const email = await emailOfRequest(request);
   if (!email) return answer();
   const key = await addressKey(email);
-  const refusal = sending ? await refuseSend(db, key) : await takeCheck(db, key);
-  if (refusal) return codeRefusal(refusal);
+  if (await overSends(db, key)) return tooManyCodes();
   const response = await answer();
   if (response.ok) {
-    await (sending ? countSend(db, key) : clearChecks(db, key)).catch((error: unknown) =>
+    await countSend(db, key).catch((error: unknown) =>
       console.error('[code-day] count failed', error),
     );
   }
   return response;
 }
 
-/** The refusal's answer: a 429 the sign-in page names by its `code`. */
-export function codeRefusal(code: CodeRefusal): Response {
+/** The refusal: a 429 the sign-in page names by its code. */
+export function tooManyCodes(): Response {
   return Response.json(
-    {
-      code,
-      message:
-        code === CODE_SIGN_IN_LOCKED
-          ? 'Too many wrong codes for this address today'
-          : 'Too many codes sent to this address today',
-    },
+    { code: TOO_MANY_CODES, message: 'Too many codes sent to this address today' },
     { status: 429, headers: { 'cache-control': 'no-store' } },
   );
 }

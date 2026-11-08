@@ -13,7 +13,7 @@ Scope, by file:
 | `liveworkspace/apps/accounts/src/auth-options.ts`    | Every Better Auth option: paths, plugins, hooks, Google, the ID token claims                                     |
 | `liveworkspace/apps/accounts/src/auth.ts`            | `getAuth`, `getGoogleAuthFor`, `allAppOrigins`: the instances and what they are wired to                         |
 | `liveworkspace/apps/accounts/src/rate-limit.ts`      | `overCodeLimit`, `networkOf`, `rangeOf`                                                                          |
-| `liveworkspace/apps/accounts/src/code-day.ts`        | An address's day of codes: `withCodeDay`, `refuseSend`, `takeCheck`, `countSend`, `clearChecks`, `sweepCodeDays` |
+| `liveworkspace/apps/accounts/src/code-day.ts`        | An address's day of codes: `withCodeDay`, `overSends`, `countSend`, `sweepCodeDays`                              |
 | `liveworkspace/apps/accounts/src/sign-in-options.ts` | `GET /api/auth/sign-in-options`                                                                                  |
 | `liveworkspace/apps/accounts/src/handoff.ts`         | Signing in on an app's own address: `signInOnAppAddress`, `appOfReturn`, `appOriginOfProxy`, the hand-off plugin |
 | `liveworkspace/apps/accounts/src/ids.ts`             | `newUserId`, `USER_ID`, `GUEST_ID`                                                                               |
@@ -56,15 +56,12 @@ Scope, by file:
    `ip:<network>` (10 a minute), then `CODE_EMAIL_LIMITER` keyed `email:<trimmed lower-case>` (3 a minute). Over:
    `429 { code: 'RATE_LIMITED', message: 'Too many requests' }`. A body without an email is left to Better Auth.
    Then the address's day (`withCodeDay`, keyed by `addressKey`, the SHA-256 of the trimmed lower-case address): one
-   read of its live `sign_in_code_limit` row; `failures >= 10` answers `429 { code: 'CODE_SIGN_IN_LOCKED' }`,
-   `sends >= 20` answers `429 { code: 'TOO_MANY_CODES' }`, both `no-store`. Once Better Auth answers `2xx`, one upsert
+   read of its live `sign_in_code_limit` row; `sends >= 20` answers `429 { code: 'TOO_MANY_CODES' }` (`no-store`). Once Better Auth answers `2xx`, one upsert
    counts the send (a window started 24 h ago or more starts again at now); a failure to count is logged.
 2. The code is mailed in the brand of the app the request came through (an app's router proxy), else
    liveworkspace's ([email.md](email.md)).
-3. `POST /api/auth/sign-in/email-otp { email, otp }`: `CODE_IP_LIMITER`, then the address's day: one upsert
-   `failures + 1 … RETURNING failures` before Better Auth sees the check; over 10, `429 { code: 'CODE_SIGN_IN_LOCKED' }`
-   whatever the code. A `2xx` answer sets `failures` back to 0 (`UPDATE … WHERE failures > 0`). Three wrong tries kill
-   the code. A new address makes the account (signing in verifies it).
+3. `POST /api/auth/sign-in/email-otp { email, otp }`: `CODE_IP_LIMITER` only; checks are never counted per address,
+   so nobody can lock an address out by guessing. Three wrong tries kill the code. A new address makes the account (signing in verifies it).
 4. The hourly cron deletes rows whose window started 24 h ago or more, up to 5,000, oldest first.
 
 ### Google
@@ -124,7 +121,6 @@ its sessions and accounts.
 | Case                                   | Answer                                                                   |
 | -------------------------------------- | ------------------------------------------------------------------------ |
 | Too many code sends or checks          | `429 RATE_LIMITED`                                                       |
-| 10 failed code checks in a day         | `429 CODE_SIGN_IN_LOCKED` till the window ends                           |
 | 20 codes sent in a day                 | `429 TOO_MANY_CODES` till the window ends                                |
 | A wrong code three times               | the code is dead; a new one must be sent                                 |
 | A hand-off token used twice            | the second is "already used"                                             |
@@ -134,9 +130,9 @@ its sessions and accounts.
 ## Security and trust
 
 - Codes are stored hashed and live ten minutes; sending needs Turnstile and is limited per network and per address.
-- At most 10 failed checks and 20 sends per address per 24 h window (`sign_in_code_limit`, atomic upserts). The table
-  keeps only a SHA-256 of each address. Anyone can lock an address's code sign-in for a day with 10 wrong checks;
-  Google still signs in.
+- At most 20 sends per address per 24 h window (`sign_in_code_limit`), so at most 60 guesses a day at one address. The
+  table keeps only a SHA-256 of each address. Using up an address's day takes 20 Turnstile solves; Google and codes
+  already sent still sign in.
 - A request through an app's router is counted by the address the router names (`via:`), apart from direct visitors.
 - The hand-off token is 256 random bits, kept only as its SHA-256, spent once, good for 60 s, and bound to an
   HttpOnly nonce on one path.
@@ -148,7 +144,7 @@ its sessions and accounts.
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/otp-routes.test.ts` (2)      | the emailed sign-in code: only sign-in sends, unused routes are off                                                         |
 | `liveworkspace/apps/accounts/src/rate-limit.test.ts` (7)      | `overCodeLimit`; the network a code request comes from                                                                      |
-| `liveworkspace/apps/accounts/src/code-day.test.ts` (14)       | an address's day of codes, through Better Auth too                                                                          |
+| `liveworkspace/apps/accounts/src/code-day.test.ts` (10)       | an address's day of codes, through Better Auth too                                                                          |
 | `liveworkspace/apps/accounts/src/sign-in-options.test.ts` (3) | sign-in options                                                                                                             |
 | `liveworkspace/apps/accounts/src/handoff.test.ts` (14)        | the sign-in pages on the app's address; the hand-off; where a sign-in may go back to; the app origin a request came through |
 | `liveworkspace/apps/accounts/src/auth-options.test.ts` (11)   | `withNames`; `idTokenClaims`; Google sign-in pictures                                                                       |
@@ -160,8 +156,8 @@ its sessions and accounts.
 (`auth-options.ts`); `HANDOFF_PATH` `/handoff`, `HANDOFF_START_PATH`, `HANDOFF_NONCE_COOKIE` `lw_handoff`,
 `HANDOFF_BIND_PARAM` `handoff`, `HANDOFF_TTL_SECONDS` 60, `HANDOFF_NONCE_MAX_AGE_SECONDS` 900 (`handoff.ts`);
 `handoffNonceCookie` is `lw_handoff` in production and `lw_handoff_<environment>` elsewhere. `CODE_DAY_MS` 24 h,
-`CODE_CHECKS_PER_DAY` 10, `CODE_SENDS_PER_DAY` 20, `CODE_DAY_SWEEP_LIMIT` 5,000 (`code-day.ts`). The sign-in page's
-words for the two refusals are pinned by `liveworkspace/apps/site/components/account/code-day-message.test.ts` (3).
+`CODE_SENDS_PER_DAY` 20, `CODE_DAY_SWEEP_LIMIT` 5,000 (`code-day.ts`). The sign-in page's
+words for the refusal are pinned by `liveworkspace/apps/site/components/account/code-day-message.test.ts` (2).
 Rate limiters: `CODE_IP_LIMITER` namespace `1001` (staging `2001`), 10 per 60 s; `CODE_EMAIL_LIMITER` `1002`
 (`2002`), 3 per 60 s. Vars: `SIGN_IN_ON_APP_ORIGINS` `"true"`, `GOOGLE_ON_APP_ORIGINS` `"false"` in both environments;
 `TURNSTILE_SITE_KEY`. Secrets: `BETTER_AUTH_SECRET` (at least 32 characters), `TURNSTILE_SECRET_KEY`,
@@ -170,5 +166,5 @@ Rate limiters: `CODE_IP_LIMITER` namespace `1001` (staging `2001`), 10 per 60 s;
 ## Defaults ledger
 
 - `ACC4`: sending a code is held to 3 a minute per address and 10 a minute per network, checking to 10 a minute per
-  network; the daily caps per address (10 failed checks, 20 sends) are the spec's own.
+  network; the daily cap per address (20 sends) is the spec's own.
 - `ACC5`: a hand-off token lives 60 seconds and its nonce 15 minutes (the code's ten and some).

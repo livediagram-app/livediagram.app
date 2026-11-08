@@ -234,12 +234,11 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
       await endSessionTokensOf(request, route, auth, env.AUTH_DB);
     }
-    // A code route is also held to its address's day (code-day.ts).
-    let response = codeRoute
-      ? await withCodeDay(request, env.AUTH_DB, route === SEND_CODE_PATH, () =>
-          auth.handler(request),
-        )
-      : await auth.handler(request);
+    // Sending a code is also held to the address's day of codes (code-day.ts).
+    let response =
+      codeRoute && route === SEND_CODE_PATH
+        ? await withCodeDay(request, env.AUTH_DB, () => auth.handler(request))
+        : await auth.handler(request);
     // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
     if (request.method === 'GET' && route === GET_SESSION_PATH) {
       // With the browser's time zone, kept for the send window (send-window.ts).
