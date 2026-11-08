@@ -33,7 +33,11 @@ const self = (page: Page) => page.locator('[data-avatar="self"]');
 const peer = (page: Page) => page.locator('[data-avatar="peer"]');
 
 async function leftOf(avatar: Locator): Promise<number> {
-  return avatar.evaluate((el) => parseFloat((el as HTMLElement).style.left));
+  // Placed by a transform (docs/specs/008-canvas/canvas-performance.md "Walking renders the characters, not the
+  // canvas"): its x is the translate's first length.
+  return avatar.evaluate((el) =>
+    parseFloat(/translate\(([-\d.]+)px/.exec((el as HTMLElement).style.transform)?.[1] ?? 'NaN'),
+  );
 }
 
 // Steer with an arrow held down for a moment, as a person walks.
