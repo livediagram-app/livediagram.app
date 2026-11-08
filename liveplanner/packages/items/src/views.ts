@@ -11,9 +11,15 @@ function itemKeyLabel(item: Pick<Item, 'key'>): string {
   return `#${item.key}`;
 }
 
+// "#12 Fix login", or just the title for a card with no number of its own: a tour's practice card is key 0
+// (docs/specs/026-plan/plan-tour.md "Practice cards"), never read out as "#0".
+export function itemNumberedTitle(item: Item): string {
+  return item.key > 0 ? `${itemKeyLabel(item)} ${itemTitle(item)}` : itemTitle(item);
+}
+
 // "#12 Fix login, Bug, assigned to Sam, high priority"
 export function itemAccessibleName(item: Item, types: readonly ItemTypeDef[] = ITEM_TYPES): string {
-  const parts = [`${itemKeyLabel(item)} ${itemTitle(item)}`, typeIn(types, item.type).label];
+  const parts = [itemNumberedTitle(item), typeIn(types, item.type).label];
   const who = itemAssignee(item);
   if (who) parts.push(`assigned to ${who.name}`);
   const p = item.fields['priority'];
